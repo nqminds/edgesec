@@ -1,0 +1,2 @@
+/usr/bin/ar qc libwpabuf.a  CMakeFiles/wpabuf.dir/wpabuf.c.o
+/usr/bin/ranlib libwpabuf.a

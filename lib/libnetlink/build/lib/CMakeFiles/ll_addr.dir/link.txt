@@ -1,0 +1,2 @@
+/usr/bin/ar qc libll_addr.a  CMakeFiles/ll_addr.dir/ll_addr.c.o
+/usr/bin/ranlib libll_addr.a

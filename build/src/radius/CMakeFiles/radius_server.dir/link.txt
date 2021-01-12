@@ -1,0 +1,2 @@
+/usr/bin/ar qc libradius_server.a  CMakeFiles/radius_server.dir/radius_server.c.o
+/usr/bin/ranlib libradius_server.a

@@ -1,0 +1,1 @@
+/usr/bin/cc -fPIC  -D_GNU_SOURCE -DHAVE_LIBMNL -DHAVE_SETNS -DHAVE_ELF -I/usr/include/libelf -DNEED_STRLCPY -fPIC -g  -shared -Wl,-soname,libutils.so -o libutils.so CMakeFiles/utils.dir/utils.c.o  libcolor.a libjson_print.a libmpls_ntop.a libll_addr.a libmpls_pton.a libjson_writer.a libcolor.a 

@@ -1,0 +1,44 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../lib/cmocka-1.1.5/include/cmocka.h
+
+../src/utils/utarray.h
+stddef.h
+-
+string.h
+-
+stdlib.h
+-
+
+/home/alexandru/Projects/EDGESec/tests/utils/test_utarray.c
+sys/types.h
+-
+sys/stat.h
+-
+fcntl.h
+-
+stdio.h
+-
+stdlib.h
+-
+stdarg.h
+-
+string.h
+-
+inttypes.h
+-
+unistd.h
+-
+setjmp.h
+-
+cmocka.h
+-
+utils/utarray.h
+/home/alexandru/Projects/EDGESec/tests/utils/utils/utarray.h
+

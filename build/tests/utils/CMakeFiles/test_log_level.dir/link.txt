@@ -1,0 +1,1 @@
+/usr/bin/cc  -Wunused-variable -DLOG_USE_COLOR -g  -rdynamic CMakeFiles/test_log_level.dir/test_log_level.c.o  -o test_log_level  ../../src/utils/liblog.a 

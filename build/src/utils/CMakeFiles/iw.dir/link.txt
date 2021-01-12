@@ -1,0 +1,2 @@
+/usr/bin/ar qc libiw.a  CMakeFiles/iw.dir/iw.c.o
+/usr/bin/ranlib libiw.a

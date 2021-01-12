@@ -1,0 +1,22 @@
+include_directories(
+  "${PROJECT_BINARY_DIR}"
+  "${LibNL_INCLUDE_DIR}"
+  "${LIBNETLINK_INCLUDE_DIR}"
+)
+
+add_subdirectory(utils)
+add_subdirectory(supervisor)
+add_subdirectory(radius)
+add_subdirectory(hostapd)
+
+add_library(engine engine.c)
+target_link_libraries(engine log if os if_service system_checks eloop supervisor radius_server mac_mapper hostapd_service iptables)
+
+add_library(system_checks system_checks.c)
+target_link_libraries(system_checks log if iw os hashmap)
+
+add_library(if_service if_service.c)
+target_link_libraries(if_service log if iw os hashmap log)
+
+add_executable(edgesec edgesec.c)
+target_link_libraries(edgesec engine minIni os hashmap)

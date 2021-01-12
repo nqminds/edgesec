@@ -1,0 +1,2 @@
+/usr/bin/ar qc libif.a  CMakeFiles/if.dir/if.c.o
+/usr/bin/ranlib libif.a

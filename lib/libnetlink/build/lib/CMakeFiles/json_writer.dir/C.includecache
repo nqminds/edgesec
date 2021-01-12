@@ -1,0 +1,32 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../include/json_writer.h
+stdbool.h
+-
+stdint.h
+-
+
+/home/alexandru/Projects/EDGESec/lib/libnetlink/lib/json_writer.c
+stdio.h
+-
+stdbool.h
+-
+stdarg.h
+-
+assert.h
+-
+malloc.h
+-
+inttypes.h
+-
+stdint.h
+-
+json_writer.h
+/home/alexandru/Projects/EDGESec/lib/libnetlink/lib/json_writer.h
+

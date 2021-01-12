@@ -1,0 +1,2 @@
+/usr/bin/ar qc libjson_print.a  CMakeFiles/json_print.dir/json_print.c.o
+/usr/bin/ranlib libjson_print.a

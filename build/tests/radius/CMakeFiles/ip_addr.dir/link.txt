@@ -1,0 +1,2 @@
+/usr/bin/ar qc libip_addr.a  CMakeFiles/ip_addr.dir/ip_addr.c.o
+/usr/bin/ranlib libip_addr.a

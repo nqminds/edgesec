@@ -1,0 +1,2 @@
+/usr/bin/ar qc libbridge_list.a  CMakeFiles/bridge_list.dir/bridge_list.c.o
+/usr/bin/ranlib libbridge_list.a

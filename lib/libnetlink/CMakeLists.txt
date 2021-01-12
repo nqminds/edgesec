@@ -1,0 +1,22 @@
+project(LIBNETLINK)
+
+cmake_minimum_required(VERSION 3.10)
+SET(LIBMNL_PATH "" CACHE STRING "libmnl path")
+
+set(LIBMNL_INCLUDE_DIR "${LIBMNL_PATH}/include")
+find_library(LIBMNL_LIB NAMES mnl PATHS "${LIBMNL_PATH}/build/lib")
+
+set(CMAKE_BUILD_TYPE Debug)
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_GNU_SOURCE")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DHAVE_LIBMNL")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DHAVE_SETNS")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DHAVE_ELF -I/usr/include/libelf")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNEED_STRLCPY")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DHAVE_LIBCAP")
+
+set(SRC_INCLUDE_DIR "${CMAKE_HOME_DIRECTORY}/include")
+set(UAPI_INCLUDE_DIR "${CMAKE_HOME_DIRECTORY}/include/uapi")
+
+add_subdirectory(lib)

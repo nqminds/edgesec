@@ -1,0 +1,1 @@
+/usr/bin/cc  -Wunused-variable -DLOG_USE_COLOR -g  -rdynamic CMakeFiles/test_utarray.dir/test_utarray.c.o  -o test_utarray  -Wl,-rpath,/home/alexandru/Projects/EDGESec/lib/cmocka-1.1.5/build/src ../../../lib/cmocka-1.1.5/build/src/libcmocka.so 
