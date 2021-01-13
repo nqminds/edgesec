@@ -259,10 +259,10 @@ GITCOMMAND:FILEPATH=/usr/bin/git
 HGCOMMAND:FILEPATH=HGCOMMAND-NOTFOUND
 
 //Path to a program.
-HOSTAPD:FILEPATH=HOSTAPD-NOTFOUND
+HOSTAPD:FILEPATH=/home/alexandru/Projects/EDGESec/build/hostapd
 
 //Path to a library.
-LIBMNL_LIB:FILEPATH=LIBMNL_LIB-NOTFOUND
+LIBMNL_LIB:FILEPATH=/home/alexandru/Projects/EDGESec/lib/libmnl-1.0.4/build/lib/libmnl.so
 
 //Path to a library.
 LIBNETLINK_LIB:FILEPATH=/home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib/liblibnetlink.so
