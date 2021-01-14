@@ -20,7 +20,7 @@
 /**
  * @file config_generator.h 
  * @author Alexandru Mereacre 
- * @brief File containing the hostapd config generation utilities.
+ * @brief File containing the definition of hostapd config generation utilities.
  */
 
 #ifndef CONFIG_GENERATOR_H

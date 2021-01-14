@@ -60,15 +60,15 @@ include lib/CMakeFiles/rt_names.dir/flags.make
 lib/CMakeFiles/rt_names.dir/rt_names.c.o: lib/CMakeFiles/rt_names.dir/flags.make
 lib/CMakeFiles/rt_names.dir/rt_names.c.o: ../lib/rt_names.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/lib/libnetlink/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object lib/CMakeFiles/rt_names.dir/rt_names.c.o"
-	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/rt_names.dir/rt_names.c.o   -c /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/rt_names.c
+	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/rt_names.dir/rt_names.c.o   -c /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/rt_names.c
 
 lib/CMakeFiles/rt_names.dir/rt_names.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/rt_names.dir/rt_names.c.i"
-	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/rt_names.c > CMakeFiles/rt_names.dir/rt_names.c.i
+	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/rt_names.c > CMakeFiles/rt_names.dir/rt_names.c.i
 
 lib/CMakeFiles/rt_names.dir/rt_names.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/rt_names.dir/rt_names.c.s"
-	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/rt_names.c -o CMakeFiles/rt_names.dir/rt_names.c.s
+	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/rt_names.c -o CMakeFiles/rt_names.dir/rt_names.c.s
 
 # Object files for target rt_names
 rt_names_OBJECTS = \

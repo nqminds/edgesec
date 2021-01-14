@@ -60,15 +60,15 @@ include lib/CMakeFiles/libnetlink.dir/flags.make
 lib/CMakeFiles/libnetlink.dir/libnetlink.c.o: lib/CMakeFiles/libnetlink.dir/flags.make
 lib/CMakeFiles/libnetlink.dir/libnetlink.c.o: ../lib/libnetlink.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/lib/libnetlink/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object lib/CMakeFiles/libnetlink.dir/libnetlink.c.o"
-	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/libnetlink.dir/libnetlink.c.o   -c /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/libnetlink.c
+	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/libnetlink.dir/libnetlink.c.o   -c /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/libnetlink.c
 
 lib/CMakeFiles/libnetlink.dir/libnetlink.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/libnetlink.dir/libnetlink.c.i"
-	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/libnetlink.c > CMakeFiles/libnetlink.dir/libnetlink.c.i
+	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/libnetlink.c > CMakeFiles/libnetlink.dir/libnetlink.c.i
 
 lib/CMakeFiles/libnetlink.dir/libnetlink.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/libnetlink.dir/libnetlink.c.s"
-	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/libnetlink.c -o CMakeFiles/libnetlink.dir/libnetlink.c.s
+	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/libnetlink.c -o CMakeFiles/libnetlink.dir/libnetlink.c.s
 
 # Object files for target libnetlink
 libnetlink_OBJECTS = \

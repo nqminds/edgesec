@@ -5,6 +5,13 @@
  * This software may be distributed under the terms of the BSD license.
  * See README for more details.
  */
+
+/**
+ * @file radius.c
+ * @authors Jouni Malinen, Alexandru Mereacre
+ * @brief RADIUS message processing.
+ */
+
 #include <stddef.h>
 #include <sys/un.h>
 #include <sys/socket.h>

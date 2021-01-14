@@ -6,6 +6,12 @@
  * See README for more details.
  */
 
+/**
+ * @file md5_internal.h 
+ * @author Jouni Malinen
+ * @brief MD5 internal definitions.
+ */
+
 #ifndef MD5_INTERNAL_H
 #define MD5_INTERNAL_H
 

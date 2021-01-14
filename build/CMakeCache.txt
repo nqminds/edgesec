@@ -259,7 +259,7 @@ GITCOMMAND:FILEPATH=/usr/bin/git
 HGCOMMAND:FILEPATH=HGCOMMAND-NOTFOUND
 
 //Path to a program.
-HOSTAPD:FILEPATH=/home/alexandru/Projects/EDGESec/build/hostapd
+HOSTAPD:FILEPATH=HOSTAPD-NOTFOUND
 
 //Path to a library.
 LIBMNL_LIB:FILEPATH=/home/alexandru/Projects/EDGESec/lib/libmnl-1.0.4/build/lib/libmnl.so

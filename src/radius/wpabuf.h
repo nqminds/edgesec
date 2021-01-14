@@ -6,6 +6,12 @@
  * See README for more details.
  */
 
+/**
+ * @file wpabuf.h
+ * @author Jouni Malinen
+ * @brief Dynamic data buffer.
+ */
+
 #ifndef WPABUF_H
 #define WPABUF_H
 

@@ -6,6 +6,12 @@
  * See README for more details.
  */
 
+/**
+ * @file md5_internal.c 
+ * @author Jouni Malinen
+ * @brief MD5 hash implementation and interface functions.
+ */
+
 #include <stdint.h>
 #include <sys/types.h>
 #include <unistd.h>

@@ -6,6 +6,12 @@
  * See README for more details.
  */
 
+/**
+ * @file radius.h
+ * @authors Jouni Malinen, Alexandru Mereacre
+ * @brief RADIUS message processing.
+ */
+
 #ifndef RADIUS_H
 #define RADIUS_H
 

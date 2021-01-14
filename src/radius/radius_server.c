@@ -6,6 +6,12 @@
  * See README for more details.
  */
 
+/**
+ * @file radius_server.h 
+ * @authors Jouni Malinen, Alexandru Mereacre
+ * @brief RADIUS authentication server.
+ */
+
 #include <stdint.h>
 #include <sys/types.h>
 #include <unistd.h>

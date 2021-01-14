@@ -60,15 +60,15 @@ include lib/CMakeFiles/utils.dir/flags.make
 lib/CMakeFiles/utils.dir/utils.c.o: lib/CMakeFiles/utils.dir/flags.make
 lib/CMakeFiles/utils.dir/utils.c.o: ../lib/utils.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/lib/libnetlink/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object lib/CMakeFiles/utils.dir/utils.c.o"
-	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/utils.dir/utils.c.o   -c /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/utils.c
+	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/utils.dir/utils.c.o   -c /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/utils.c
 
 lib/CMakeFiles/utils.dir/utils.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/utils.dir/utils.c.i"
-	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/utils.c > CMakeFiles/utils.dir/utils.c.i
+	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/utils.c > CMakeFiles/utils.dir/utils.c.i
 
 lib/CMakeFiles/utils.dir/utils.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/utils.dir/utils.c.s"
-	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/utils.c -o CMakeFiles/utils.dir/utils.c.s
+	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/utils.c -o CMakeFiles/utils.dir/utils.c.s
 
 # Object files for target utils
 utils_OBJECTS = \

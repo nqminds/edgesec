@@ -6,6 +6,12 @@
  * See README for more details.
  */
 
+/**
+ * @file radius_server.h 
+ * @authors Jouni Malinen, Alexandru Mereacre
+ * @brief RADIUS authentication server.
+ */
+
 #ifndef RADIUS_SERVER_H
 #define RADIUS_SERVER_H
 
@@ -125,13 +131,17 @@ struct radius_server_data {
 	struct radius_server_counters counters;
 };
 
+/**
+ * @brief Radius configuration structure
+ * 
+ */
 struct radius_conf {
-  int                 radius_port;
-  char                radius_client_ip[IP_LEN];
-	int									radius_client_mask;
-  char                radius_server_ip[IP_LEN];
-	int									radius_server_mask;
-  char                radius_secret[RADIUS_SECRET_LEN];
+  	int                 radius_port;							/**< Radius port */
+  	char                radius_client_ip[IP_LEN];				/**< Radius client IP string */
+	int					radius_client_mask;						/**< Radius client IP mask string */
+  	char                radius_server_ip[IP_LEN];				/**< Radius server IP string */
+	int					radius_server_mask;						/**< Radius server IP mask string */
+  	char                radius_secret[RADIUS_SECRET_LEN];		/**< Radius secret string */
 };
 
 struct radius_server_data *radius_server_init(int auth_port, struct radius_client *clients);

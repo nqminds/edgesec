@@ -5,6 +5,13 @@
  * This software may be distributed under the terms of the BSD license.
  * See README for more details.
  */
+
+/**
+ * @file wpabuf.c
+ * @author Jouni Malinen
+ * @brief Dynamic data buffer.
+ */
+
 #include <stdio.h>
 #include <stddef.h>
 #include <stdint.h>
