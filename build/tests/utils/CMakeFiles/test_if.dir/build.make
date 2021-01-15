@@ -60,15 +60,15 @@ include tests/utils/CMakeFiles/test_if.dir/flags.make
 tests/utils/CMakeFiles/test_if.dir/test_if.c.o: tests/utils/CMakeFiles/test_if.dir/flags.make
 tests/utils/CMakeFiles/test_if.dir/test_if.c.o: ../tests/utils/test_if.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object tests/utils/CMakeFiles/test_if.dir/test_if.c.o"
-	cd /home/alexandru/Projects/EDGESec/build/tests/utils && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/test_if.dir/test_if.c.o   -c /home/alexandru/Projects/EDGESec/tests/utils/test_if.c
+	cd /home/alexandru/Projects/EDGESec/build/tests/utils && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/test_if.dir/test_if.c.o   -c /home/alexandru/Projects/EDGESec/tests/utils/test_if.c
 
 tests/utils/CMakeFiles/test_if.dir/test_if.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/test_if.dir/test_if.c.i"
-	cd /home/alexandru/Projects/EDGESec/build/tests/utils && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/tests/utils/test_if.c > CMakeFiles/test_if.dir/test_if.c.i
+	cd /home/alexandru/Projects/EDGESec/build/tests/utils && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/tests/utils/test_if.c > CMakeFiles/test_if.dir/test_if.c.i
 
 tests/utils/CMakeFiles/test_if.dir/test_if.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/test_if.dir/test_if.c.s"
-	cd /home/alexandru/Projects/EDGESec/build/tests/utils && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/tests/utils/test_if.c -o CMakeFiles/test_if.dir/test_if.c.s
+	cd /home/alexandru/Projects/EDGESec/build/tests/utils && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/tests/utils/test_if.c -o CMakeFiles/test_if.dir/test_if.c.s
 
 # Object files for target test_if
 test_if_OBJECTS = \

@@ -60,15 +60,15 @@ include tests/hostapd/CMakeFiles/test_config_generator.dir/flags.make
 tests/hostapd/CMakeFiles/test_config_generator.dir/test_config_generator.c.o: tests/hostapd/CMakeFiles/test_config_generator.dir/flags.make
 tests/hostapd/CMakeFiles/test_config_generator.dir/test_config_generator.c.o: ../tests/hostapd/test_config_generator.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object tests/hostapd/CMakeFiles/test_config_generator.dir/test_config_generator.c.o"
-	cd /home/alexandru/Projects/EDGESec/build/tests/hostapd && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/test_config_generator.dir/test_config_generator.c.o   -c /home/alexandru/Projects/EDGESec/tests/hostapd/test_config_generator.c
+	cd /home/alexandru/Projects/EDGESec/build/tests/hostapd && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/test_config_generator.dir/test_config_generator.c.o   -c /home/alexandru/Projects/EDGESec/tests/hostapd/test_config_generator.c
 
 tests/hostapd/CMakeFiles/test_config_generator.dir/test_config_generator.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/test_config_generator.dir/test_config_generator.c.i"
-	cd /home/alexandru/Projects/EDGESec/build/tests/hostapd && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/tests/hostapd/test_config_generator.c > CMakeFiles/test_config_generator.dir/test_config_generator.c.i
+	cd /home/alexandru/Projects/EDGESec/build/tests/hostapd && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/tests/hostapd/test_config_generator.c > CMakeFiles/test_config_generator.dir/test_config_generator.c.i
 
 tests/hostapd/CMakeFiles/test_config_generator.dir/test_config_generator.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/test_config_generator.dir/test_config_generator.c.s"
-	cd /home/alexandru/Projects/EDGESec/build/tests/hostapd && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/tests/hostapd/test_config_generator.c -o CMakeFiles/test_config_generator.dir/test_config_generator.c.s
+	cd /home/alexandru/Projects/EDGESec/build/tests/hostapd && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/tests/hostapd/test_config_generator.c -o CMakeFiles/test_config_generator.dir/test_config_generator.c.s
 
 # Object files for target test_config_generator
 test_config_generator_OBJECTS = \

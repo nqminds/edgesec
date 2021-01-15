@@ -60,15 +60,15 @@ include src/CMakeFiles/system_checks.dir/flags.make
 src/CMakeFiles/system_checks.dir/system_checks.c.o: src/CMakeFiles/system_checks.dir/flags.make
 src/CMakeFiles/system_checks.dir/system_checks.c.o: ../src/system_checks.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object src/CMakeFiles/system_checks.dir/system_checks.c.o"
-	cd /home/alexandru/Projects/EDGESec/build/src && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/system_checks.dir/system_checks.c.o   -c /home/alexandru/Projects/EDGESec/src/system_checks.c
+	cd /home/alexandru/Projects/EDGESec/build/src && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/system_checks.dir/system_checks.c.o   -c /home/alexandru/Projects/EDGESec/src/system_checks.c
 
 src/CMakeFiles/system_checks.dir/system_checks.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/system_checks.dir/system_checks.c.i"
-	cd /home/alexandru/Projects/EDGESec/build/src && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/src/system_checks.c > CMakeFiles/system_checks.dir/system_checks.c.i
+	cd /home/alexandru/Projects/EDGESec/build/src && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/src/system_checks.c > CMakeFiles/system_checks.dir/system_checks.c.i
 
 src/CMakeFiles/system_checks.dir/system_checks.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/system_checks.dir/system_checks.c.s"
-	cd /home/alexandru/Projects/EDGESec/build/src && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/src/system_checks.c -o CMakeFiles/system_checks.dir/system_checks.c.s
+	cd /home/alexandru/Projects/EDGESec/build/src && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/src/system_checks.c -o CMakeFiles/system_checks.dir/system_checks.c.s
 
 # Object files for target system_checks
 system_checks_OBJECTS = \

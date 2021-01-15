@@ -60,15 +60,15 @@ include tests/CMakeFiles/test_mac_mapper.dir/flags.make
 tests/CMakeFiles/test_mac_mapper.dir/test_mac_mapper.c.o: tests/CMakeFiles/test_mac_mapper.dir/flags.make
 tests/CMakeFiles/test_mac_mapper.dir/test_mac_mapper.c.o: ../tests/test_mac_mapper.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object tests/CMakeFiles/test_mac_mapper.dir/test_mac_mapper.c.o"
-	cd /home/alexandru/Projects/EDGESec/build/tests && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/test_mac_mapper.dir/test_mac_mapper.c.o   -c /home/alexandru/Projects/EDGESec/tests/test_mac_mapper.c
+	cd /home/alexandru/Projects/EDGESec/build/tests && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/test_mac_mapper.dir/test_mac_mapper.c.o   -c /home/alexandru/Projects/EDGESec/tests/test_mac_mapper.c
 
 tests/CMakeFiles/test_mac_mapper.dir/test_mac_mapper.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/test_mac_mapper.dir/test_mac_mapper.c.i"
-	cd /home/alexandru/Projects/EDGESec/build/tests && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/tests/test_mac_mapper.c > CMakeFiles/test_mac_mapper.dir/test_mac_mapper.c.i
+	cd /home/alexandru/Projects/EDGESec/build/tests && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/tests/test_mac_mapper.c > CMakeFiles/test_mac_mapper.dir/test_mac_mapper.c.i
 
 tests/CMakeFiles/test_mac_mapper.dir/test_mac_mapper.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/test_mac_mapper.dir/test_mac_mapper.c.s"
-	cd /home/alexandru/Projects/EDGESec/build/tests && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/tests/test_mac_mapper.c -o CMakeFiles/test_mac_mapper.dir/test_mac_mapper.c.s
+	cd /home/alexandru/Projects/EDGESec/build/tests && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/tests/test_mac_mapper.c -o CMakeFiles/test_mac_mapper.dir/test_mac_mapper.c.s
 
 # Object files for target test_mac_mapper
 test_mac_mapper_OBJECTS = \

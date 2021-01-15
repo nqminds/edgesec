@@ -60,15 +60,15 @@ include tests/radius/CMakeFiles/ip_addr.dir/flags.make
 tests/radius/CMakeFiles/ip_addr.dir/ip_addr.c.o: tests/radius/CMakeFiles/ip_addr.dir/flags.make
 tests/radius/CMakeFiles/ip_addr.dir/ip_addr.c.o: ../tests/radius/ip_addr.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object tests/radius/CMakeFiles/ip_addr.dir/ip_addr.c.o"
-	cd /home/alexandru/Projects/EDGESec/build/tests/radius && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/ip_addr.dir/ip_addr.c.o   -c /home/alexandru/Projects/EDGESec/tests/radius/ip_addr.c
+	cd /home/alexandru/Projects/EDGESec/build/tests/radius && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/ip_addr.dir/ip_addr.c.o   -c /home/alexandru/Projects/EDGESec/tests/radius/ip_addr.c
 
 tests/radius/CMakeFiles/ip_addr.dir/ip_addr.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/ip_addr.dir/ip_addr.c.i"
-	cd /home/alexandru/Projects/EDGESec/build/tests/radius && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/tests/radius/ip_addr.c > CMakeFiles/ip_addr.dir/ip_addr.c.i
+	cd /home/alexandru/Projects/EDGESec/build/tests/radius && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/tests/radius/ip_addr.c > CMakeFiles/ip_addr.dir/ip_addr.c.i
 
 tests/radius/CMakeFiles/ip_addr.dir/ip_addr.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/ip_addr.dir/ip_addr.c.s"
-	cd /home/alexandru/Projects/EDGESec/build/tests/radius && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/tests/radius/ip_addr.c -o CMakeFiles/ip_addr.dir/ip_addr.c.s
+	cd /home/alexandru/Projects/EDGESec/build/tests/radius && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/tests/radius/ip_addr.c -o CMakeFiles/ip_addr.dir/ip_addr.c.s
 
 # Object files for target ip_addr
 ip_addr_OBJECTS = \

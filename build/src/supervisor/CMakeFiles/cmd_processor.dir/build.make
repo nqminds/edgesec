@@ -60,15 +60,15 @@ include src/supervisor/CMakeFiles/cmd_processor.dir/flags.make
 src/supervisor/CMakeFiles/cmd_processor.dir/cmd_processor.c.o: src/supervisor/CMakeFiles/cmd_processor.dir/flags.make
 src/supervisor/CMakeFiles/cmd_processor.dir/cmd_processor.c.o: ../src/supervisor/cmd_processor.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object src/supervisor/CMakeFiles/cmd_processor.dir/cmd_processor.c.o"
-	cd /home/alexandru/Projects/EDGESec/build/src/supervisor && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/cmd_processor.dir/cmd_processor.c.o   -c /home/alexandru/Projects/EDGESec/src/supervisor/cmd_processor.c
+	cd /home/alexandru/Projects/EDGESec/build/src/supervisor && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/cmd_processor.dir/cmd_processor.c.o   -c /home/alexandru/Projects/EDGESec/src/supervisor/cmd_processor.c
 
 src/supervisor/CMakeFiles/cmd_processor.dir/cmd_processor.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/cmd_processor.dir/cmd_processor.c.i"
-	cd /home/alexandru/Projects/EDGESec/build/src/supervisor && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/src/supervisor/cmd_processor.c > CMakeFiles/cmd_processor.dir/cmd_processor.c.i
+	cd /home/alexandru/Projects/EDGESec/build/src/supervisor && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/src/supervisor/cmd_processor.c > CMakeFiles/cmd_processor.dir/cmd_processor.c.i
 
 src/supervisor/CMakeFiles/cmd_processor.dir/cmd_processor.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/cmd_processor.dir/cmd_processor.c.s"
-	cd /home/alexandru/Projects/EDGESec/build/src/supervisor && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/src/supervisor/cmd_processor.c -o CMakeFiles/cmd_processor.dir/cmd_processor.c.s
+	cd /home/alexandru/Projects/EDGESec/build/src/supervisor && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/src/supervisor/cmd_processor.c -o CMakeFiles/cmd_processor.dir/cmd_processor.c.s
 
 # Object files for target cmd_processor
 cmd_processor_OBJECTS = \

@@ -60,15 +60,15 @@ include tests/utils/CMakeFiles/test_utarray.dir/flags.make
 tests/utils/CMakeFiles/test_utarray.dir/test_utarray.c.o: tests/utils/CMakeFiles/test_utarray.dir/flags.make
 tests/utils/CMakeFiles/test_utarray.dir/test_utarray.c.o: ../tests/utils/test_utarray.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object tests/utils/CMakeFiles/test_utarray.dir/test_utarray.c.o"
-	cd /home/alexandru/Projects/EDGESec/build/tests/utils && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/test_utarray.dir/test_utarray.c.o   -c /home/alexandru/Projects/EDGESec/tests/utils/test_utarray.c
+	cd /home/alexandru/Projects/EDGESec/build/tests/utils && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/test_utarray.dir/test_utarray.c.o   -c /home/alexandru/Projects/EDGESec/tests/utils/test_utarray.c
 
 tests/utils/CMakeFiles/test_utarray.dir/test_utarray.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/test_utarray.dir/test_utarray.c.i"
-	cd /home/alexandru/Projects/EDGESec/build/tests/utils && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/tests/utils/test_utarray.c > CMakeFiles/test_utarray.dir/test_utarray.c.i
+	cd /home/alexandru/Projects/EDGESec/build/tests/utils && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/tests/utils/test_utarray.c > CMakeFiles/test_utarray.dir/test_utarray.c.i
 
 tests/utils/CMakeFiles/test_utarray.dir/test_utarray.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/test_utarray.dir/test_utarray.c.s"
-	cd /home/alexandru/Projects/EDGESec/build/tests/utils && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/tests/utils/test_utarray.c -o CMakeFiles/test_utarray.dir/test_utarray.c.s
+	cd /home/alexandru/Projects/EDGESec/build/tests/utils && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/tests/utils/test_utarray.c -o CMakeFiles/test_utarray.dir/test_utarray.c.s
 
 # Object files for target test_utarray
 test_utarray_OBJECTS = \

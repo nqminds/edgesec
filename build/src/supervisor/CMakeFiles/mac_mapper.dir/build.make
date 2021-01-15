@@ -60,15 +60,15 @@ include src/supervisor/CMakeFiles/mac_mapper.dir/flags.make
 src/supervisor/CMakeFiles/mac_mapper.dir/mac_mapper.c.o: src/supervisor/CMakeFiles/mac_mapper.dir/flags.make
 src/supervisor/CMakeFiles/mac_mapper.dir/mac_mapper.c.o: ../src/supervisor/mac_mapper.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object src/supervisor/CMakeFiles/mac_mapper.dir/mac_mapper.c.o"
-	cd /home/alexandru/Projects/EDGESec/build/src/supervisor && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/mac_mapper.dir/mac_mapper.c.o   -c /home/alexandru/Projects/EDGESec/src/supervisor/mac_mapper.c
+	cd /home/alexandru/Projects/EDGESec/build/src/supervisor && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/mac_mapper.dir/mac_mapper.c.o   -c /home/alexandru/Projects/EDGESec/src/supervisor/mac_mapper.c
 
 src/supervisor/CMakeFiles/mac_mapper.dir/mac_mapper.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/mac_mapper.dir/mac_mapper.c.i"
-	cd /home/alexandru/Projects/EDGESec/build/src/supervisor && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/src/supervisor/mac_mapper.c > CMakeFiles/mac_mapper.dir/mac_mapper.c.i
+	cd /home/alexandru/Projects/EDGESec/build/src/supervisor && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/src/supervisor/mac_mapper.c > CMakeFiles/mac_mapper.dir/mac_mapper.c.i
 
 src/supervisor/CMakeFiles/mac_mapper.dir/mac_mapper.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/mac_mapper.dir/mac_mapper.c.s"
-	cd /home/alexandru/Projects/EDGESec/build/src/supervisor && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/src/supervisor/mac_mapper.c -o CMakeFiles/mac_mapper.dir/mac_mapper.c.s
+	cd /home/alexandru/Projects/EDGESec/build/src/supervisor && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/src/supervisor/mac_mapper.c -o CMakeFiles/mac_mapper.dir/mac_mapper.c.s
 
 # Object files for target mac_mapper
 mac_mapper_OBJECTS = \

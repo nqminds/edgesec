@@ -60,15 +60,15 @@ include src/CMakeFiles/if_service.dir/flags.make
 src/CMakeFiles/if_service.dir/if_service.c.o: src/CMakeFiles/if_service.dir/flags.make
 src/CMakeFiles/if_service.dir/if_service.c.o: ../src/if_service.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object src/CMakeFiles/if_service.dir/if_service.c.o"
-	cd /home/alexandru/Projects/EDGESec/build/src && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/if_service.dir/if_service.c.o   -c /home/alexandru/Projects/EDGESec/src/if_service.c
+	cd /home/alexandru/Projects/EDGESec/build/src && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/if_service.dir/if_service.c.o   -c /home/alexandru/Projects/EDGESec/src/if_service.c
 
 src/CMakeFiles/if_service.dir/if_service.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/if_service.dir/if_service.c.i"
-	cd /home/alexandru/Projects/EDGESec/build/src && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/src/if_service.c > CMakeFiles/if_service.dir/if_service.c.i
+	cd /home/alexandru/Projects/EDGESec/build/src && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/src/if_service.c > CMakeFiles/if_service.dir/if_service.c.i
 
 src/CMakeFiles/if_service.dir/if_service.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/if_service.dir/if_service.c.s"
-	cd /home/alexandru/Projects/EDGESec/build/src && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/src/if_service.c -o CMakeFiles/if_service.dir/if_service.c.s
+	cd /home/alexandru/Projects/EDGESec/build/src && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/src/if_service.c -o CMakeFiles/if_service.dir/if_service.c.s
 
 # Object files for target if_service
 if_service_OBJECTS = \

@@ -1,13 +1,27 @@
-/**************************************************************************************************
-*  Filename:        iw.h
-*  Author:          Alexandru Mereacre (mereacre@gmail.com)
-*  Revised:
-*  Revision:
-*
-*  Description:     iw include file
-*
-*  Copyright (C) 2020 NQMCyber Ltd - http://www.nqmcyber.com/
-*************************************************************************************************/
+/****************************************************************************
+ * Copyright (C) 2020 by NQMCyber Ltd                                       *
+ *                                                                          *
+ * This file is part of EDGESec.                                            *
+ *                                                                          *
+ *   EDGESec is free software: you can redistribute it and/or modify it     *
+ *   under the terms of the GNU Lesser General Public License as published  *
+ *   by the Free Software Foundation, either version 3 of the License, or   *
+ *   (at your option) any later version.                                    *
+ *                                                                          *
+ *   EDGESec is distributed in the hope that it will be useful,             *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of         *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
+ *   GNU Lesser General Public License for more details.                    *
+ *                                                                          *
+ *   You should have received a copy of the GNU Lesser General Public       *
+ *   License along with EDGESec. If not, see <http://www.gnu.org/licenses/>.*
+ ****************************************************************************/
+
+/**
+ * @file iw.h 
+ * @author Alexandru Mereacre 
+ * @brief File containing the definition of the wireless interface utilities.
+ */
 
 #ifndef IW_H_
 #define IW_H_
@@ -31,15 +45,31 @@ struct nl80211_state {
 	int nl80211_id;
 };
 
+/**
+ * @brief Network wireless interface information structure
+ * 
+ */
 typedef struct {
-	char ifname[IFNAMSIZ];
-	uint32_t ifindex;
-	uint64_t wdev;
-	uint8_t addr[ETH_ALEN];
-	uint32_t wiphy;
+	char ifname[IFNAMSIZ];				/**< Interface string name */
+	uint32_t ifindex;					/**< Interface index */
+	uint64_t wdev;						/**< Physical interface wdev param */
+	uint8_t addr[ETH_ALEN];				/**< Interface byte MAC address */
+	uint32_t wiphy;						/**< Physical interface ID */
 } netiw_info_t;
 
+/**
+ * @brief Check if wireless physical interface has VLAN capability
+ * 
+ * @param wiphy Wireless physical interface ID
+ * @return true if capability present, false otherwise
+ */
 bool iwace_isvlan(uint32_t wiphy);
+
+/**
+ * @brief Get the array of all wireless physical interfaces
+ * 
+ * @return UT_array* The array of wireless physical interfaces
+ */
 UT_array *get_netiw_info(void);
 
 #endif

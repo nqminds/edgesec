@@ -1,1 +1,1 @@
-/usr/bin/cc  -Wunused-variable -DLOG_USE_COLOR -g  -rdynamic CMakeFiles/test_log_err.dir/test_log_err.c.o  -o test_log_err  ../../src/utils/liblog.a 
+/usr/bin/gcc-9  -Wunused-variable -DLOG_USE_COLOR -g  -rdynamic CMakeFiles/test_log_err.dir/test_log_err.c.o  -o test_log_err  ../../src/utils/liblog.a 

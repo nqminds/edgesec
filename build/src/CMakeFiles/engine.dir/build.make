@@ -60,15 +60,15 @@ include src/CMakeFiles/engine.dir/flags.make
 src/CMakeFiles/engine.dir/engine.c.o: src/CMakeFiles/engine.dir/flags.make
 src/CMakeFiles/engine.dir/engine.c.o: ../src/engine.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object src/CMakeFiles/engine.dir/engine.c.o"
-	cd /home/alexandru/Projects/EDGESec/build/src && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/engine.dir/engine.c.o   -c /home/alexandru/Projects/EDGESec/src/engine.c
+	cd /home/alexandru/Projects/EDGESec/build/src && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/engine.dir/engine.c.o   -c /home/alexandru/Projects/EDGESec/src/engine.c
 
 src/CMakeFiles/engine.dir/engine.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/engine.dir/engine.c.i"
-	cd /home/alexandru/Projects/EDGESec/build/src && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/src/engine.c > CMakeFiles/engine.dir/engine.c.i
+	cd /home/alexandru/Projects/EDGESec/build/src && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/src/engine.c > CMakeFiles/engine.dir/engine.c.i
 
 src/CMakeFiles/engine.dir/engine.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/engine.dir/engine.c.s"
-	cd /home/alexandru/Projects/EDGESec/build/src && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/src/engine.c -o CMakeFiles/engine.dir/engine.c.s
+	cd /home/alexandru/Projects/EDGESec/build/src && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/src/engine.c -o CMakeFiles/engine.dir/engine.c.s
 
 # Object files for target engine
 engine_OBJECTS = \

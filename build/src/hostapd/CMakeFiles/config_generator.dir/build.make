@@ -60,15 +60,15 @@ include src/hostapd/CMakeFiles/config_generator.dir/flags.make
 src/hostapd/CMakeFiles/config_generator.dir/config_generator.c.o: src/hostapd/CMakeFiles/config_generator.dir/flags.make
 src/hostapd/CMakeFiles/config_generator.dir/config_generator.c.o: ../src/hostapd/config_generator.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object src/hostapd/CMakeFiles/config_generator.dir/config_generator.c.o"
-	cd /home/alexandru/Projects/EDGESec/build/src/hostapd && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/config_generator.dir/config_generator.c.o   -c /home/alexandru/Projects/EDGESec/src/hostapd/config_generator.c
+	cd /home/alexandru/Projects/EDGESec/build/src/hostapd && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/config_generator.dir/config_generator.c.o   -c /home/alexandru/Projects/EDGESec/src/hostapd/config_generator.c
 
 src/hostapd/CMakeFiles/config_generator.dir/config_generator.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/config_generator.dir/config_generator.c.i"
-	cd /home/alexandru/Projects/EDGESec/build/src/hostapd && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/src/hostapd/config_generator.c > CMakeFiles/config_generator.dir/config_generator.c.i
+	cd /home/alexandru/Projects/EDGESec/build/src/hostapd && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/src/hostapd/config_generator.c > CMakeFiles/config_generator.dir/config_generator.c.i
 
 src/hostapd/CMakeFiles/config_generator.dir/config_generator.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/config_generator.dir/config_generator.c.s"
-	cd /home/alexandru/Projects/EDGESec/build/src/hostapd && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/src/hostapd/config_generator.c -o CMakeFiles/config_generator.dir/config_generator.c.s
+	cd /home/alexandru/Projects/EDGESec/build/src/hostapd && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/src/hostapd/config_generator.c -o CMakeFiles/config_generator.dir/config_generator.c.s
 
 # Object files for target config_generator
 config_generator_OBJECTS = \

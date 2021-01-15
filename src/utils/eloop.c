@@ -6,6 +6,12 @@
  * See README for more details.
  */
 
+/**
+ * @file eloop.c
+ * @author Jouni Malinen
+ * @brief Event loop.
+ */
+
 // #include "includes.h"
 #include <stdio.h>
 #include <stddef.h>

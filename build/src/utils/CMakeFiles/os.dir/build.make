@@ -60,15 +60,15 @@ include src/utils/CMakeFiles/os.dir/flags.make
 src/utils/CMakeFiles/os.dir/os.c.o: src/utils/CMakeFiles/os.dir/flags.make
 src/utils/CMakeFiles/os.dir/os.c.o: ../src/utils/os.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object src/utils/CMakeFiles/os.dir/os.c.o"
-	cd /home/alexandru/Projects/EDGESec/build/src/utils && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/os.dir/os.c.o   -c /home/alexandru/Projects/EDGESec/src/utils/os.c
+	cd /home/alexandru/Projects/EDGESec/build/src/utils && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/os.dir/os.c.o   -c /home/alexandru/Projects/EDGESec/src/utils/os.c
 
 src/utils/CMakeFiles/os.dir/os.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/os.dir/os.c.i"
-	cd /home/alexandru/Projects/EDGESec/build/src/utils && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/src/utils/os.c > CMakeFiles/os.dir/os.c.i
+	cd /home/alexandru/Projects/EDGESec/build/src/utils && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/src/utils/os.c > CMakeFiles/os.dir/os.c.i
 
 src/utils/CMakeFiles/os.dir/os.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/os.dir/os.c.s"
-	cd /home/alexandru/Projects/EDGESec/build/src/utils && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/src/utils/os.c -o CMakeFiles/os.dir/os.c.s
+	cd /home/alexandru/Projects/EDGESec/build/src/utils && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/src/utils/os.c -o CMakeFiles/os.dir/os.c.s
 
 # Object files for target os
 os_OBJECTS = \

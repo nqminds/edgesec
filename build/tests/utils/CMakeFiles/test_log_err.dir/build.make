@@ -60,15 +60,15 @@ include tests/utils/CMakeFiles/test_log_err.dir/flags.make
 tests/utils/CMakeFiles/test_log_err.dir/test_log_err.c.o: tests/utils/CMakeFiles/test_log_err.dir/flags.make
 tests/utils/CMakeFiles/test_log_err.dir/test_log_err.c.o: ../tests/utils/test_log_err.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object tests/utils/CMakeFiles/test_log_err.dir/test_log_err.c.o"
-	cd /home/alexandru/Projects/EDGESec/build/tests/utils && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/test_log_err.dir/test_log_err.c.o   -c /home/alexandru/Projects/EDGESec/tests/utils/test_log_err.c
+	cd /home/alexandru/Projects/EDGESec/build/tests/utils && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/test_log_err.dir/test_log_err.c.o   -c /home/alexandru/Projects/EDGESec/tests/utils/test_log_err.c
 
 tests/utils/CMakeFiles/test_log_err.dir/test_log_err.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/test_log_err.dir/test_log_err.c.i"
-	cd /home/alexandru/Projects/EDGESec/build/tests/utils && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/tests/utils/test_log_err.c > CMakeFiles/test_log_err.dir/test_log_err.c.i
+	cd /home/alexandru/Projects/EDGESec/build/tests/utils && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/tests/utils/test_log_err.c > CMakeFiles/test_log_err.dir/test_log_err.c.i
 
 tests/utils/CMakeFiles/test_log_err.dir/test_log_err.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/test_log_err.dir/test_log_err.c.s"
-	cd /home/alexandru/Projects/EDGESec/build/tests/utils && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/tests/utils/test_log_err.c -o CMakeFiles/test_log_err.dir/test_log_err.c.s
+	cd /home/alexandru/Projects/EDGESec/build/tests/utils && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/tests/utils/test_log_err.c -o CMakeFiles/test_log_err.dir/test_log_err.c.s
 
 # Object files for target test_log_err
 test_log_err_OBJECTS = \

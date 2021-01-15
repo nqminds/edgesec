@@ -60,15 +60,15 @@ include src/hostapd/CMakeFiles/hostapd_service.dir/flags.make
 src/hostapd/CMakeFiles/hostapd_service.dir/hostapd_service.c.o: src/hostapd/CMakeFiles/hostapd_service.dir/flags.make
 src/hostapd/CMakeFiles/hostapd_service.dir/hostapd_service.c.o: ../src/hostapd/hostapd_service.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object src/hostapd/CMakeFiles/hostapd_service.dir/hostapd_service.c.o"
-	cd /home/alexandru/Projects/EDGESec/build/src/hostapd && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/hostapd_service.dir/hostapd_service.c.o   -c /home/alexandru/Projects/EDGESec/src/hostapd/hostapd_service.c
+	cd /home/alexandru/Projects/EDGESec/build/src/hostapd && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/hostapd_service.dir/hostapd_service.c.o   -c /home/alexandru/Projects/EDGESec/src/hostapd/hostapd_service.c
 
 src/hostapd/CMakeFiles/hostapd_service.dir/hostapd_service.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/hostapd_service.dir/hostapd_service.c.i"
-	cd /home/alexandru/Projects/EDGESec/build/src/hostapd && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/src/hostapd/hostapd_service.c > CMakeFiles/hostapd_service.dir/hostapd_service.c.i
+	cd /home/alexandru/Projects/EDGESec/build/src/hostapd && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/src/hostapd/hostapd_service.c > CMakeFiles/hostapd_service.dir/hostapd_service.c.i
 
 src/hostapd/CMakeFiles/hostapd_service.dir/hostapd_service.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/hostapd_service.dir/hostapd_service.c.s"
-	cd /home/alexandru/Projects/EDGESec/build/src/hostapd && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/src/hostapd/hostapd_service.c -o CMakeFiles/hostapd_service.dir/hostapd_service.c.s
+	cd /home/alexandru/Projects/EDGESec/build/src/hostapd && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/src/hostapd/hostapd_service.c -o CMakeFiles/hostapd_service.dir/hostapd_service.c.s
 
 # Object files for target hostapd_service
 hostapd_service_OBJECTS = \

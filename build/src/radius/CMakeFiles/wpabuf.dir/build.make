@@ -60,15 +60,15 @@ include src/radius/CMakeFiles/wpabuf.dir/flags.make
 src/radius/CMakeFiles/wpabuf.dir/wpabuf.c.o: src/radius/CMakeFiles/wpabuf.dir/flags.make
 src/radius/CMakeFiles/wpabuf.dir/wpabuf.c.o: ../src/radius/wpabuf.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object src/radius/CMakeFiles/wpabuf.dir/wpabuf.c.o"
-	cd /home/alexandru/Projects/EDGESec/build/src/radius && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/wpabuf.dir/wpabuf.c.o   -c /home/alexandru/Projects/EDGESec/src/radius/wpabuf.c
+	cd /home/alexandru/Projects/EDGESec/build/src/radius && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/wpabuf.dir/wpabuf.c.o   -c /home/alexandru/Projects/EDGESec/src/radius/wpabuf.c
 
 src/radius/CMakeFiles/wpabuf.dir/wpabuf.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/wpabuf.dir/wpabuf.c.i"
-	cd /home/alexandru/Projects/EDGESec/build/src/radius && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/src/radius/wpabuf.c > CMakeFiles/wpabuf.dir/wpabuf.c.i
+	cd /home/alexandru/Projects/EDGESec/build/src/radius && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/src/radius/wpabuf.c > CMakeFiles/wpabuf.dir/wpabuf.c.i
 
 src/radius/CMakeFiles/wpabuf.dir/wpabuf.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/wpabuf.dir/wpabuf.c.s"
-	cd /home/alexandru/Projects/EDGESec/build/src/radius && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/src/radius/wpabuf.c -o CMakeFiles/wpabuf.dir/wpabuf.c.s
+	cd /home/alexandru/Projects/EDGESec/build/src/radius && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/src/radius/wpabuf.c -o CMakeFiles/wpabuf.dir/wpabuf.c.s
 
 # Object files for target wpabuf
 wpabuf_OBJECTS = \

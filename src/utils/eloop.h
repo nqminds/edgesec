@@ -14,6 +14,12 @@
  * mechanisms.
  */
 
+/**
+ * @file eloop.h 
+ * @author Jouni Malinen
+ * @brief Event loop.
+ */
+
 #ifndef ELOOP_H
 #define ELOOP_H
 

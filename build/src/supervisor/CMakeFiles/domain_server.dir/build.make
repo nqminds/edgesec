@@ -60,15 +60,15 @@ include src/supervisor/CMakeFiles/domain_server.dir/flags.make
 src/supervisor/CMakeFiles/domain_server.dir/domain_server.c.o: src/supervisor/CMakeFiles/domain_server.dir/flags.make
 src/supervisor/CMakeFiles/domain_server.dir/domain_server.c.o: ../src/supervisor/domain_server.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object src/supervisor/CMakeFiles/domain_server.dir/domain_server.c.o"
-	cd /home/alexandru/Projects/EDGESec/build/src/supervisor && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/domain_server.dir/domain_server.c.o   -c /home/alexandru/Projects/EDGESec/src/supervisor/domain_server.c
+	cd /home/alexandru/Projects/EDGESec/build/src/supervisor && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/domain_server.dir/domain_server.c.o   -c /home/alexandru/Projects/EDGESec/src/supervisor/domain_server.c
 
 src/supervisor/CMakeFiles/domain_server.dir/domain_server.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/domain_server.dir/domain_server.c.i"
-	cd /home/alexandru/Projects/EDGESec/build/src/supervisor && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/src/supervisor/domain_server.c > CMakeFiles/domain_server.dir/domain_server.c.i
+	cd /home/alexandru/Projects/EDGESec/build/src/supervisor && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/src/supervisor/domain_server.c > CMakeFiles/domain_server.dir/domain_server.c.i
 
 src/supervisor/CMakeFiles/domain_server.dir/domain_server.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/domain_server.dir/domain_server.c.s"
-	cd /home/alexandru/Projects/EDGESec/build/src/supervisor && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/src/supervisor/domain_server.c -o CMakeFiles/domain_server.dir/domain_server.c.s
+	cd /home/alexandru/Projects/EDGESec/build/src/supervisor && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/src/supervisor/domain_server.c -o CMakeFiles/domain_server.dir/domain_server.c.s
 
 # Object files for target domain_server
 domain_server_OBJECTS = \
