@@ -21,6 +21,12 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+/**
+ * @file utarray.h
+ * @author Troy D. Hanson
+ * @brief File containing the definition of the dynamic array functionalities.
+ */
+
 /* a dynamic array implementation using macros
  */
 #ifndef UTARRAY_H

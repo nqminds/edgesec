@@ -60,15 +60,15 @@ include tests/utils/CMakeFiles/test_os.dir/flags.make
 tests/utils/CMakeFiles/test_os.dir/test_os.c.o: tests/utils/CMakeFiles/test_os.dir/flags.make
 tests/utils/CMakeFiles/test_os.dir/test_os.c.o: ../tests/utils/test_os.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object tests/utils/CMakeFiles/test_os.dir/test_os.c.o"
-	cd /home/alexandru/Projects/EDGESec/build/tests/utils && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/test_os.dir/test_os.c.o   -c /home/alexandru/Projects/EDGESec/tests/utils/test_os.c
+	cd /home/alexandru/Projects/EDGESec/build/tests/utils && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/test_os.dir/test_os.c.o   -c /home/alexandru/Projects/EDGESec/tests/utils/test_os.c
 
 tests/utils/CMakeFiles/test_os.dir/test_os.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/test_os.dir/test_os.c.i"
-	cd /home/alexandru/Projects/EDGESec/build/tests/utils && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/tests/utils/test_os.c > CMakeFiles/test_os.dir/test_os.c.i
+	cd /home/alexandru/Projects/EDGESec/build/tests/utils && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/tests/utils/test_os.c > CMakeFiles/test_os.dir/test_os.c.i
 
 tests/utils/CMakeFiles/test_os.dir/test_os.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/test_os.dir/test_os.c.s"
-	cd /home/alexandru/Projects/EDGESec/build/tests/utils && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/tests/utils/test_os.c -o CMakeFiles/test_os.dir/test_os.c.s
+	cd /home/alexandru/Projects/EDGESec/build/tests/utils && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/tests/utils/test_os.c -o CMakeFiles/test_os.dir/test_os.c.s
 
 # Object files for target test_os
 test_os_OBJECTS = \

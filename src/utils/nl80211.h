@@ -1,3 +1,9 @@
+/**
+ * @file nl80211.h 
+ * @author Intel Corporation 
+ * @brief 802.11 netlink interface public header.
+ */
+
 #ifndef __LINUX_NL80211_H
 #define __LINUX_NL80211_H
 /*

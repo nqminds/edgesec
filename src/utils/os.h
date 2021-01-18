@@ -1,13 +1,27 @@
-/**************************************************************************************************
-*  Filename:        os.h
-*  Author:          Alexandru Mereacre (mereacre@gmail.com)
-*  Revised:
-*  Revision:
-*
-*  Description:     os include file
-*
-*  Copyright (C) 2020 NQMCyber Ltd - http://www.nqmcyber.com/
-*************************************************************************************************/
+/****************************************************************************
+ * Copyright (C) 2020 by NQMCyber Ltd                                       *
+ *                                                                          *
+ * This file is part of EDGESec.                                            *
+ *                                                                          *
+ *   EDGESec is free software: you can redistribute it and/or modify it     *
+ *   under the terms of the GNU Lesser General Public License as published  *
+ *   by the Free Software Foundation, either version 3 of the License, or   *
+ *   (at your option) any later version.                                    *
+ *                                                                          *
+ *   EDGESec is distributed in the hope that it will be useful,             *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of         *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
+ *   GNU Lesser General Public License for more details.                    *
+ *                                                                          *
+ *   You should have received a copy of the GNU Lesser General Public       *
+ *   License along with EDGESec. If not, see <http://www.gnu.org/licenses/>.*
+ ****************************************************************************/
+
+/**
+ * @file os.h 
+ * @author Alexandru Mereacre 
+ * @brief File containing the definition of the os functionalities.
+ */
 
 #ifndef OS_H
 #define OS_H
@@ -62,42 +76,29 @@ struct os_reltime {
 };
 
 /**
- * os_get_time - Get current time (sec, usec)
- * @t: Pointer to buffer for the time
- * Returns: 0 on success, -1 on failure
+ * @brief Get current time (sec, usec)
+ * 
+ * @param t Pointer to buffer for the time
+ * @return int 0 on success, -1 on failure
  */
 int os_get_time(struct os_time *t);
 
 /**
- * os_get_reltime - Get relative time (sec, usec)
- * @t: Pointer to buffer for the time
- * Returns: 0 on success, -1 on failure
+ * @brief Get relative time (sec, usec)
+ * 
+ * @param t Pointer to buffer for the time
+ * @return int 0 on success, -1 on failure
  */
 int os_get_reltime(struct os_reltime *t);
 
 
-/* Helpers for handling struct os_time */
-
-static inline int os_time_before(struct os_time *a, struct os_time *b)
-{
-	return (a->sec < b->sec) ||
-	       (a->sec == b->sec && a->usec < b->usec);
-}
-
-
-static inline void os_time_sub(struct os_time *a, struct os_time *b,
-			       struct os_time *res)
-{
-	res->sec = a->sec - b->sec;
-	res->usec = a->usec - b->usec;
-	if (res->usec < 0) {
-		res->sec--;
-		res->usec += 1000000;
-	}
-}
-
-/* Helpers for handling struct os_reltime */
-
+/**
+ * @brief Compares the seconds value of two time params
+ * 
+ * @param a struct os_reltime first param
+ * @param b struct os_reltime second param
+ * @return int true if a->sec < b->sec
+ */
 static inline int os_reltime_before(struct os_reltime *a,
 				    struct os_reltime *b)
 {
@@ -105,7 +106,13 @@ static inline int os_reltime_before(struct os_reltime *a,
 	       (a->sec == b->sec && a->usec < b->usec);
 }
 
-
+/**
+ * @brief Subtracts the time value of two time params
+ * 
+ * @param a struct os_reltime first param
+ * @param b struct os_reltime second param
+ * @param res The resulting difference of the time params
+ */
 static inline void os_reltime_sub(struct os_reltime *a, struct os_reltime *b,
 				  struct os_reltime *res)
 {
@@ -117,83 +124,84 @@ static inline void os_reltime_sub(struct os_reltime *a, struct os_reltime *b,
 	}
 }
 
-
-static inline void os_reltime_age(struct os_reltime *start,
-				  struct os_reltime *age)
-{
-	struct os_reltime now;
-
-	os_get_reltime(&now);
-	os_reltime_sub(&now, start, age);
-}
-
-
-static inline int os_reltime_expired(struct os_reltime *now,
-				     struct os_reltime *ts,
-				     os_time_t timeout_secs)
-{
-	struct os_reltime age;
-
-	os_reltime_sub(now, ts, &age);
-	return (age.sec > timeout_secs) ||
-	       (age.sec == timeout_secs && age.usec > 0);
-}
-
-
-static inline int os_reltime_initialized(struct os_reltime *t)
-{
-	return t->sec != 0 || t->usec != 0;
-}
-
 /**
- * os_get_random - Get cryptographically strong pseudo random data
- * @buf: Buffer for pseudo random data
- * @len: Length of the buffer
- * Returns: 0 on success, -1 on failure
+ * @brief Get cryptographically strong pseudo random data
+ * 
+ * @param buf Buffer for pseudo random data.
+ * @param len Length of the buffer.
+ * @return int 0 on success, -1 on failure
  */
 int os_get_random(unsigned char *buf, size_t len);
 
+/**
+ * @brief Hex two char string to byte convertes 
+ * 
+ * @param hex Two char string
+ * @return int Converted byte
+ */
 int hex2byte(const char *hex);
-int hexstr2bin(const char *hex, uint8_t *buf, size_t len);
-int hwaddr_aton2(const char *txt, uint8_t *addr);
-
-bool is_number(const char *ptr);
-
-void bin_clear_free(void *bin, size_t len);
-void forced_memzero(void *ptr, size_t len);
 
 /**
- * os_strlcpy - Copy a string with size bound and NUL-termination
- * @dest: Destination
- * @src: Source
- * @siz: Size of the target buffer
- * Returns: Total length of the target string (length of src) (not including
- * NUL-termination)
- *
+ * @brief Convert ASCII hex string into binary data
+ * 
+ * @param hex ASCII hex string (e.g., "01ab")
+ * @param buf Buffer for the binary data
+ * @param len Length of the text to convert in bytes (of buf); hex will be double this size
+ * @return int 0 on success, -1 on failure (invalid hex string)
+ */
+int hexstr2bin(const char *hex, uint8_t *buf, size_t len);
+
+/**
+ * @brief Convert ASCII string to MAC address (in any known format)
+ * 
+ * @param txt MAC address as a string (e.g., 00:11:22:33:44:55 or 0011.2233.4455)
+ * @param addr Buffer for the MAC address (ETH_ALEN = 6 bytes)
+ * @return int Characters used (> 0) on success, -1 on failure
+ */
+int hwaddr_aton2(const char *txt, uint8_t *addr);
+
+/**
+ * @brief Check oif a string is a number
+ * 
+ * @param ptr String pointer
+ * @return true if numer, false otherwise
+ */
+bool is_number(const char *ptr);
+
+/**
+ * @brief Copy a string with size bound and NUL-termination
+ * 
  * This function matches in behavior with the strlcpy(3) function in OpenBSD.
+ * 
+ * @param dest Destination string
+ * @param src Source string
+ * @param siz Size of the target buffer
+ * @return size_t Total length of the target string (length of src) (not including NUL-termination)
  */
 size_t os_strlcpy(char *dest, const char *src, size_t siz);
 
 /**
- * os_zalloc - Allocate and zero memory
- * @size: Number of bytes to allocate
- * Returns: Pointer to allocated and zeroed memory or %NULL on failure
- *
+ * @brief Allocate and zero memory
+ * 
  * Caller is responsible for freeing the returned buffer with os_free().
+ * 
+ * @param size Number of bytes to allocate
+ * @return void* Pointer to allocated and zeroed memory or %NULL on failure
  */
 void * os_zalloc(size_t size);
 
 /**
- * os_calloc - Allocate and zero memory for an array
- * @nmemb: Number of members in the array
- * @size: Number of bytes in each member
- * Returns: Pointer to allocated and zeroed memory or %NULL on failure
- *
+ * @brief Allocate and zero memory for an array
+ * 
  * This function can be used as a wrapper for os_zalloc(nmemb * size) when an
  * allocation is used for an array. The main benefit over os_zalloc() is in
  * having an extra check to catch integer overflows in multiplication.
  *
  * Caller is responsible for freeing the returned buffer with os_free().
+ *
+ * @param nmemb Number of members in the array
+ * @param size Number of bytes in each member
+ * @return void* Pointer to allocated and zeroed memory or %NULL on failure
  */
 static inline void * os_calloc(size_t nmemb, size_t size)
 {
@@ -203,13 +211,14 @@ static inline void * os_calloc(size_t nmemb, size_t size)
 }
 
 /**
- * os_memdup - Allocate duplicate of passed memory chunk
- * @src: Source buffer to duplicate
- * @len: Length of source buffer
- * Returns: %NULL if allocation failed, copy of src buffer otherwise
- *
+ * @brief Allocate duplicate of passed memory chunk
+ * 
  * This function allocates a memory block like os_malloc() would, and
  * copies the given source buffer into it.
+ *
+ * @param src Source buffer to duplicate
+ * @param len Length of source buffer
+ * @return void* %NULL if allocation failed, copy of src buffer otherwise
  */
 void * os_memdup(const void *src, size_t len);
 
@@ -247,11 +256,7 @@ static inline void * os_realloc_array(void *ptr, size_t nmemb, size_t size)
 }
 
 /**
- * os_memcmp_const - Constant time memory comparison
- * @a: First buffer to compare
- * @b: Second buffer to compare
- * @len: Number of octets to compare
- * Returns: 0 if buffers are equal, non-zero if not
+ * @brief Constant time memory comparison
  *
  * This function is meant for comparing passwords or hash values where
  * difference in execution time could provide external observer information
@@ -260,6 +265,11 @@ static inline void * os_realloc_array(void *ptr, size_t nmemb, size_t size)
  * sort items into a defined order. Unlike os_memcmp(), execution time of
  * os_memcmp_const() does not depend on the contents of the compared memory
  * buffers, but only on the total compared length.
+ *
+ * @param a First buffer to compare
+ * @param b Second buffer to compare
+ * @param len Number of octets to compare
+ * @return int 0 if buffers are equal, non-zero if not
  */
 int os_memcmp_const(const void *a, const void *b, size_t len);
 
@@ -277,21 +287,93 @@ void * __hide_aliasing_typecast(void *foo);
 
 typedef void (*process_callback_fn)(void *buf, size_t count);
 
+/**
+ * @brief Executes a command
+ * 
+ * @param argv The command arguments including the process path
+ * @param envp The environment variables
+ * @param process_callback_fn Callback function
+ * @return int excve status code
+ */
 int run_command(char *const argv[], char *const envp[], process_callback_fn);
 
 typedef void(*split_string_fn)(const char *, size_t, void *);
 
+/**
+ * @brief Splits a string into substrings (execute callback function)
+ * 
+ * @param str String to split
+ * @param sep String separator
+ * @param fun Callback function
+ * @param data Param for callback function
+ * @return ssize_t number of stubstrings
+ */
 ssize_t split_string(const char *str, char sep, split_string_fn fun, void *data);
+
+/**
+ * @brief Splits a string into substrings (save to array)
+ * 
+ * @param str String to split
+ * @param sep String separator
+ * @param arr Array to save the substrings
+ * @return ssize_t number of stubstrings
+ */
 ssize_t split_string_array(const char *str, char sep, UT_array *arr);
+
+/**
+ * @brief Allocate a string (copies the source)
+ * 
+ * @param src Sources string
+ * @return char* Allocated string
+ */
 char *allocate_string(char *src);
 
+/**
+ * @brief Concated to strign paths
+ * 
+ * @param path_left First string path
+ * @param path_right Second string path
+ * @return char* Concatenated paths
+ */
 char *concat_paths(char *path_left, char *path_right);
+
+/**
+ * @brief Get the valid path string
+ * 
+ * @param path Input string path
+ * @return char* output valid path
+ */
 char *get_valid_path(char *path);
+
+/**
+ * @brief Constrict a valuid path from two paths
+ * 
+ * @param path_left First path
+ * @param path_right Second path
+ * @return char* output valid path
+ */
 char *construct_path(char *path_left, char *path_right);
 
+/**
+ * @brief Get the secure path string of a binary
+ * 
+ * @param bin_path_arr The path string of binary
+ * @param filename The binary name
+ * @param filehash The binary hashstring
+ * @return char* teh secure path
+ */
 char* get_secure_path(UT_array *bin_path_arr, char *filename, char *filehash);
 
 typedef void(*list_dir_fn)(char *, void *args);
+
+/**
+ * @brief List the files in a directory
+ * 
+ * @param dirpath The directory path
+ * @param fun The callback function
+ * @param args The callback function arguments
+ * @return int 
+ */
 int list_dir(char *dirpath, list_dir_fn fun, void *args);
 
 #endif /* OS_H */

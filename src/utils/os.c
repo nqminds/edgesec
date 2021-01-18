@@ -90,14 +90,6 @@ int hex2byte(const char *hex)
 	return (a << 4) | b;
 }
 
-/**
- * hexstr2bin - Convert ASCII hex string into binary data
- * @hex: ASCII hex string (e.g., "01ab")
- * @buf: Buffer for the binary data
- * @len: Length of the text to convert in bytes (of buf); hex will be double
- * this size
- * Returns: 0 on success, -1 on failure (invalid hex string)
- */
 int hexstr2bin(const char *hex, uint8_t *buf, size_t len)
 {
 	size_t i;
@@ -115,12 +107,6 @@ int hexstr2bin(const char *hex, uint8_t *buf, size_t len)
 	return 0;
 }
 
-/**
- * hwaddr_aton2 - Convert ASCII string to MAC address (in any known format)
- * @txt: MAC address as a string (e.g., 00:11:22:33:44:55 or 0011.2233.4455)
- * @addr: Buffer for the MAC address (ETH_ALEN = 6 bytes)
- * Returns: Characters used (> 0) on success, -1 on failure
- */
 int hwaddr_aton2(const char *txt, uint8_t *addr)
 {
 	int i;
@@ -142,32 +128,6 @@ int hwaddr_aton2(const char *txt, uint8_t *addr)
 	}
 
 	return pos - txt;
-}
-
-/* Try to prevent most compilers from optimizing out clearing of memory that
- * becomes unaccessible after this function is called. This is mostly the case
- * for clearing local stack variables at the end of a function. This is not
- * exactly perfect, i.e., someone could come up with a compiler that figures out
- * the pointer is pointing to memset and then end up optimizing the call out, so
- * try go a bit further by storing the first octet (now zero) to make this even
- * a bit more difficult to optimize out. Once memset_s() is available, that
- * could be used here instead. */
-static void * (* const volatile memset_func)(void *, int, size_t) = memset;
-static uint8_t forced_memzero_val;
-
-void forced_memzero(void *ptr, size_t len)
-{
-	memset_func(ptr, 0, len);
-	if (len)
-		forced_memzero_val = ((uint8_t *) ptr)[0];
-}
-
-void bin_clear_free(void *bin, size_t len)
-{
-	if (bin) {
-		forced_memzero(bin, len);
-		os_free(bin);
-	}
 }
 
 size_t os_strlcpy(char *dest, const char *src, size_t siz)

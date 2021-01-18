@@ -60,15 +60,15 @@ include tests/supervisor/CMakeFiles/test_domain_server.dir/flags.make
 tests/supervisor/CMakeFiles/test_domain_server.dir/test_domain_server.c.o: tests/supervisor/CMakeFiles/test_domain_server.dir/flags.make
 tests/supervisor/CMakeFiles/test_domain_server.dir/test_domain_server.c.o: ../tests/supervisor/test_domain_server.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object tests/supervisor/CMakeFiles/test_domain_server.dir/test_domain_server.c.o"
-	cd /home/alexandru/Projects/EDGESec/build/tests/supervisor && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/test_domain_server.dir/test_domain_server.c.o   -c /home/alexandru/Projects/EDGESec/tests/supervisor/test_domain_server.c
+	cd /home/alexandru/Projects/EDGESec/build/tests/supervisor && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/test_domain_server.dir/test_domain_server.c.o   -c /home/alexandru/Projects/EDGESec/tests/supervisor/test_domain_server.c
 
 tests/supervisor/CMakeFiles/test_domain_server.dir/test_domain_server.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/test_domain_server.dir/test_domain_server.c.i"
-	cd /home/alexandru/Projects/EDGESec/build/tests/supervisor && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/tests/supervisor/test_domain_server.c > CMakeFiles/test_domain_server.dir/test_domain_server.c.i
+	cd /home/alexandru/Projects/EDGESec/build/tests/supervisor && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/tests/supervisor/test_domain_server.c > CMakeFiles/test_domain_server.dir/test_domain_server.c.i
 
 tests/supervisor/CMakeFiles/test_domain_server.dir/test_domain_server.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/test_domain_server.dir/test_domain_server.c.s"
-	cd /home/alexandru/Projects/EDGESec/build/tests/supervisor && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/tests/supervisor/test_domain_server.c -o CMakeFiles/test_domain_server.dir/test_domain_server.c.s
+	cd /home/alexandru/Projects/EDGESec/build/tests/supervisor && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/tests/supervisor/test_domain_server.c -o CMakeFiles/test_domain_server.dir/test_domain_server.c.s
 
 # Object files for target test_domain_server
 test_domain_server_OBJECTS = \

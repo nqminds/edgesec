@@ -60,15 +60,15 @@ include tests/radius/CMakeFiles/radius_client.dir/flags.make
 tests/radius/CMakeFiles/radius_client.dir/radius_client.c.o: tests/radius/CMakeFiles/radius_client.dir/flags.make
 tests/radius/CMakeFiles/radius_client.dir/radius_client.c.o: ../tests/radius/radius_client.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object tests/radius/CMakeFiles/radius_client.dir/radius_client.c.o"
-	cd /home/alexandru/Projects/EDGESec/build/tests/radius && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/radius_client.dir/radius_client.c.o   -c /home/alexandru/Projects/EDGESec/tests/radius/radius_client.c
+	cd /home/alexandru/Projects/EDGESec/build/tests/radius && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/radius_client.dir/radius_client.c.o   -c /home/alexandru/Projects/EDGESec/tests/radius/radius_client.c
 
 tests/radius/CMakeFiles/radius_client.dir/radius_client.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/radius_client.dir/radius_client.c.i"
-	cd /home/alexandru/Projects/EDGESec/build/tests/radius && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/tests/radius/radius_client.c > CMakeFiles/radius_client.dir/radius_client.c.i
+	cd /home/alexandru/Projects/EDGESec/build/tests/radius && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/tests/radius/radius_client.c > CMakeFiles/radius_client.dir/radius_client.c.i
 
 tests/radius/CMakeFiles/radius_client.dir/radius_client.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/radius_client.dir/radius_client.c.s"
-	cd /home/alexandru/Projects/EDGESec/build/tests/radius && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/tests/radius/radius_client.c -o CMakeFiles/radius_client.dir/radius_client.c.s
+	cd /home/alexandru/Projects/EDGESec/build/tests/radius && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/tests/radius/radius_client.c -o CMakeFiles/radius_client.dir/radius_client.c.s
 
 # Object files for target radius_client
 radius_client_OBJECTS = \

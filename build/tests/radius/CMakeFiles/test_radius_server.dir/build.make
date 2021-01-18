@@ -60,15 +60,15 @@ include tests/radius/CMakeFiles/test_radius_server.dir/flags.make
 tests/radius/CMakeFiles/test_radius_server.dir/test_radius_server.c.o: tests/radius/CMakeFiles/test_radius_server.dir/flags.make
 tests/radius/CMakeFiles/test_radius_server.dir/test_radius_server.c.o: ../tests/radius/test_radius_server.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object tests/radius/CMakeFiles/test_radius_server.dir/test_radius_server.c.o"
-	cd /home/alexandru/Projects/EDGESec/build/tests/radius && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/test_radius_server.dir/test_radius_server.c.o   -c /home/alexandru/Projects/EDGESec/tests/radius/test_radius_server.c
+	cd /home/alexandru/Projects/EDGESec/build/tests/radius && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/test_radius_server.dir/test_radius_server.c.o   -c /home/alexandru/Projects/EDGESec/tests/radius/test_radius_server.c
 
 tests/radius/CMakeFiles/test_radius_server.dir/test_radius_server.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/test_radius_server.dir/test_radius_server.c.i"
-	cd /home/alexandru/Projects/EDGESec/build/tests/radius && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/tests/radius/test_radius_server.c > CMakeFiles/test_radius_server.dir/test_radius_server.c.i
+	cd /home/alexandru/Projects/EDGESec/build/tests/radius && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/tests/radius/test_radius_server.c > CMakeFiles/test_radius_server.dir/test_radius_server.c.i
 
 tests/radius/CMakeFiles/test_radius_server.dir/test_radius_server.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/test_radius_server.dir/test_radius_server.c.s"
-	cd /home/alexandru/Projects/EDGESec/build/tests/radius && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/tests/radius/test_radius_server.c -o CMakeFiles/test_radius_server.dir/test_radius_server.c.s
+	cd /home/alexandru/Projects/EDGESec/build/tests/radius && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/tests/radius/test_radius_server.c -o CMakeFiles/test_radius_server.dir/test_radius_server.c.s
 
 # Object files for target test_radius_server
 test_radius_server_OBJECTS = \

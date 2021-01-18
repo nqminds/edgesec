@@ -60,15 +60,15 @@ include src/radius/CMakeFiles/radius.dir/flags.make
 src/radius/CMakeFiles/radius.dir/radius.c.o: src/radius/CMakeFiles/radius.dir/flags.make
 src/radius/CMakeFiles/radius.dir/radius.c.o: ../src/radius/radius.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object src/radius/CMakeFiles/radius.dir/radius.c.o"
-	cd /home/alexandru/Projects/EDGESec/build/src/radius && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/radius.dir/radius.c.o   -c /home/alexandru/Projects/EDGESec/src/radius/radius.c
+	cd /home/alexandru/Projects/EDGESec/build/src/radius && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/radius.dir/radius.c.o   -c /home/alexandru/Projects/EDGESec/src/radius/radius.c
 
 src/radius/CMakeFiles/radius.dir/radius.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/radius.dir/radius.c.i"
-	cd /home/alexandru/Projects/EDGESec/build/src/radius && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/src/radius/radius.c > CMakeFiles/radius.dir/radius.c.i
+	cd /home/alexandru/Projects/EDGESec/build/src/radius && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/src/radius/radius.c > CMakeFiles/radius.dir/radius.c.i
 
 src/radius/CMakeFiles/radius.dir/radius.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/radius.dir/radius.c.s"
-	cd /home/alexandru/Projects/EDGESec/build/src/radius && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/src/radius/radius.c -o CMakeFiles/radius.dir/radius.c.s
+	cd /home/alexandru/Projects/EDGESec/build/src/radius && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/src/radius/radius.c -o CMakeFiles/radius.dir/radius.c.s
 
 # Object files for target radius
 radius_OBJECTS = \

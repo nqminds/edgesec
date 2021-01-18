@@ -20,6 +20,12 @@
  *  Version: $Id: minIni.c 53 2015-01-18 13:35:11Z thiadmer.riemersma@gmail.com $
  */
 
+/**
+ * @file minIni.c 
+ * @author CompuPhase
+ * @brief minIni - Multi-Platform INI file parser, suitable for embedded systems.
+ */
+
 #if (defined _UNICODE || defined __UNICODE__ || defined UNICODE) && !defined INI_ANSIONLY
 # if !defined UNICODE   /* for Windows */
 #   define UNICODE

@@ -60,15 +60,15 @@ include src/radius/CMakeFiles/md5.dir/flags.make
 src/radius/CMakeFiles/md5.dir/md5.c.o: src/radius/CMakeFiles/md5.dir/flags.make
 src/radius/CMakeFiles/md5.dir/md5.c.o: ../src/radius/md5.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object src/radius/CMakeFiles/md5.dir/md5.c.o"
-	cd /home/alexandru/Projects/EDGESec/build/src/radius && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/md5.dir/md5.c.o   -c /home/alexandru/Projects/EDGESec/src/radius/md5.c
+	cd /home/alexandru/Projects/EDGESec/build/src/radius && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/md5.dir/md5.c.o   -c /home/alexandru/Projects/EDGESec/src/radius/md5.c
 
 src/radius/CMakeFiles/md5.dir/md5.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/md5.dir/md5.c.i"
-	cd /home/alexandru/Projects/EDGESec/build/src/radius && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/src/radius/md5.c > CMakeFiles/md5.dir/md5.c.i
+	cd /home/alexandru/Projects/EDGESec/build/src/radius && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/src/radius/md5.c > CMakeFiles/md5.dir/md5.c.i
 
 src/radius/CMakeFiles/md5.dir/md5.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/md5.dir/md5.c.s"
-	cd /home/alexandru/Projects/EDGESec/build/src/radius && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/src/radius/md5.c -o CMakeFiles/md5.dir/md5.c.s
+	cd /home/alexandru/Projects/EDGESec/build/src/radius && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/src/radius/md5.c -o CMakeFiles/md5.dir/md5.c.s
 
 # Object files for target md5
 md5_OBJECTS = \

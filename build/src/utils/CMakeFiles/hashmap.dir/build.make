@@ -60,15 +60,15 @@ include src/utils/CMakeFiles/hashmap.dir/flags.make
 src/utils/CMakeFiles/hashmap.dir/hashmap.c.o: src/utils/CMakeFiles/hashmap.dir/flags.make
 src/utils/CMakeFiles/hashmap.dir/hashmap.c.o: ../src/utils/hashmap.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object src/utils/CMakeFiles/hashmap.dir/hashmap.c.o"
-	cd /home/alexandru/Projects/EDGESec/build/src/utils && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/hashmap.dir/hashmap.c.o   -c /home/alexandru/Projects/EDGESec/src/utils/hashmap.c
+	cd /home/alexandru/Projects/EDGESec/build/src/utils && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/hashmap.dir/hashmap.c.o   -c /home/alexandru/Projects/EDGESec/src/utils/hashmap.c
 
 src/utils/CMakeFiles/hashmap.dir/hashmap.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/hashmap.dir/hashmap.c.i"
-	cd /home/alexandru/Projects/EDGESec/build/src/utils && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/src/utils/hashmap.c > CMakeFiles/hashmap.dir/hashmap.c.i
+	cd /home/alexandru/Projects/EDGESec/build/src/utils && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/src/utils/hashmap.c > CMakeFiles/hashmap.dir/hashmap.c.i
 
 src/utils/CMakeFiles/hashmap.dir/hashmap.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/hashmap.dir/hashmap.c.s"
-	cd /home/alexandru/Projects/EDGESec/build/src/utils && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/src/utils/hashmap.c -o CMakeFiles/hashmap.dir/hashmap.c.s
+	cd /home/alexandru/Projects/EDGESec/build/src/utils && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/src/utils/hashmap.c -o CMakeFiles/hashmap.dir/hashmap.c.s
 
 # Object files for target hashmap
 hashmap_OBJECTS = \

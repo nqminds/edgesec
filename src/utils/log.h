@@ -5,6 +5,12 @@
  * under the terms of the MIT license. See `log.c` for details.
  */
 
+/**
+ * @file log.h 
+ * @authors rxi, Alexandru Mereacre 
+ * @brief File containing the definition of the logging functions.
+ */
+
 #ifndef LOG_H
 #define LOG_H
 

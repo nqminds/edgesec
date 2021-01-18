@@ -8,6 +8,12 @@
  *  warranties or conditions of any kind, either express or implied.
  */
 
+/**
+ * @file minGlue.h 
+ * @author CompuPhase
+ * @brief Glue functions for the minIni library.
+ */
+
 /* map required file I/O types and functions to the standard C library */
 #include <stdio.h>
 

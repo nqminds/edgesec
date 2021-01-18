@@ -60,15 +60,15 @@ include tests/supervisor/CMakeFiles/test_bridge_list.dir/flags.make
 tests/supervisor/CMakeFiles/test_bridge_list.dir/test_bridge_list.c.o: tests/supervisor/CMakeFiles/test_bridge_list.dir/flags.make
 tests/supervisor/CMakeFiles/test_bridge_list.dir/test_bridge_list.c.o: ../tests/supervisor/test_bridge_list.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object tests/supervisor/CMakeFiles/test_bridge_list.dir/test_bridge_list.c.o"
-	cd /home/alexandru/Projects/EDGESec/build/tests/supervisor && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/test_bridge_list.dir/test_bridge_list.c.o   -c /home/alexandru/Projects/EDGESec/tests/supervisor/test_bridge_list.c
+	cd /home/alexandru/Projects/EDGESec/build/tests/supervisor && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/test_bridge_list.dir/test_bridge_list.c.o   -c /home/alexandru/Projects/EDGESec/tests/supervisor/test_bridge_list.c
 
 tests/supervisor/CMakeFiles/test_bridge_list.dir/test_bridge_list.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/test_bridge_list.dir/test_bridge_list.c.i"
-	cd /home/alexandru/Projects/EDGESec/build/tests/supervisor && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/tests/supervisor/test_bridge_list.c > CMakeFiles/test_bridge_list.dir/test_bridge_list.c.i
+	cd /home/alexandru/Projects/EDGESec/build/tests/supervisor && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/tests/supervisor/test_bridge_list.c > CMakeFiles/test_bridge_list.dir/test_bridge_list.c.i
 
 tests/supervisor/CMakeFiles/test_bridge_list.dir/test_bridge_list.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/test_bridge_list.dir/test_bridge_list.c.s"
-	cd /home/alexandru/Projects/EDGESec/build/tests/supervisor && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/tests/supervisor/test_bridge_list.c -o CMakeFiles/test_bridge_list.dir/test_bridge_list.c.s
+	cd /home/alexandru/Projects/EDGESec/build/tests/supervisor && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/tests/supervisor/test_bridge_list.c -o CMakeFiles/test_bridge_list.dir/test_bridge_list.c.s
 
 # Object files for target test_bridge_list
 test_bridge_list_OBJECTS = \

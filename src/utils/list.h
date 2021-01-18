@@ -6,6 +6,12 @@
  * See README for more details.
  */
 
+/**
+ * @file list.h 
+ * @author Alexandru Mereacre 
+ * @brief Doubly-linked list.
+ */
+
 #ifndef LIST_H
 #define LIST_H
 

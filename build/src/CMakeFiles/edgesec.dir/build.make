@@ -60,15 +60,15 @@ include src/CMakeFiles/edgesec.dir/flags.make
 src/CMakeFiles/edgesec.dir/edgesec.c.o: src/CMakeFiles/edgesec.dir/flags.make
 src/CMakeFiles/edgesec.dir/edgesec.c.o: ../src/edgesec.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object src/CMakeFiles/edgesec.dir/edgesec.c.o"
-	cd /home/alexandru/Projects/EDGESec/build/src && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/edgesec.dir/edgesec.c.o   -c /home/alexandru/Projects/EDGESec/src/edgesec.c
+	cd /home/alexandru/Projects/EDGESec/build/src && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/edgesec.dir/edgesec.c.o   -c /home/alexandru/Projects/EDGESec/src/edgesec.c
 
 src/CMakeFiles/edgesec.dir/edgesec.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/edgesec.dir/edgesec.c.i"
-	cd /home/alexandru/Projects/EDGESec/build/src && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/src/edgesec.c > CMakeFiles/edgesec.dir/edgesec.c.i
+	cd /home/alexandru/Projects/EDGESec/build/src && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/src/edgesec.c > CMakeFiles/edgesec.dir/edgesec.c.i
 
 src/CMakeFiles/edgesec.dir/edgesec.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/edgesec.dir/edgesec.c.s"
-	cd /home/alexandru/Projects/EDGESec/build/src && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/src/edgesec.c -o CMakeFiles/edgesec.dir/edgesec.c.s
+	cd /home/alexandru/Projects/EDGESec/build/src && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/src/edgesec.c -o CMakeFiles/edgesec.dir/edgesec.c.s
 
 # Object files for target edgesec
 edgesec_OBJECTS = \

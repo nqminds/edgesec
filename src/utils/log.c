@@ -20,6 +20,12 @@
  * IN THE SOFTWARE.
  */
 
+/**
+ * @file log.h 
+ * @authors rxi, Alexandru Mereacre 
+ * @brief File containing the implementation of the logging functions.
+ */
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>

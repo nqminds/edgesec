@@ -16,6 +16,13 @@
  *
  *  Version: $Id: minIni.h 53 2015-01-18 13:35:11Z thiadmer.riemersma@gmail.com $
  */
+
+/**
+ * @file minIni.h 
+ * @author CompuPhase
+ * @brief minIni - Multi-Platform INI file parser, suitable for embedded systems.
+ */
+
 #ifndef MININI_H
 #define MININI_H
 

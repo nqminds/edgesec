@@ -1,1 +1,1 @@
-/usr/bin/gcc-9  -Wunused-variable -DLOG_USE_COLOR -g  -rdynamic CMakeFiles/test_os.dir/test_os.c.o  -o test_os  -Wl,-rpath,/home/alexandru/Projects/EDGESec/lib/cmocka-1.1.5/build/src ../../src/utils/libos.a ../../../lib/cmocka-1.1.5/build/src/libcmocka.so ../../src/utils/liblog.a 
+/usr/bin/cc  -Wunused-variable -DLOG_USE_COLOR -g  -rdynamic CMakeFiles/test_os.dir/test_os.c.o  -o test_os  -Wl,-rpath,/home/alexandru/Projects/EDGESec/lib/cmocka-1.1.5/build/src ../../src/utils/libos.a ../../../lib/cmocka-1.1.5/build/src/libcmocka.so ../../src/utils/liblog.a 
