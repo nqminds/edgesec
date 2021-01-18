@@ -23,7 +23,7 @@ jobs:
     - uses: actions/checkout@v2
     
     - name: Install package
-      run: sudo apt install -y cmake build-essentials doxygen libnl-genl-3-dev libnl-route-3-dev graphviz
+      run: sudo apt install -y libnl-genl-3-dev libnl-route-3-dev graphviz
 
     - name: configure
       run: mkdir build && cd build && cmake ../
