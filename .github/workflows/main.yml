@@ -36,3 +36,17 @@ jobs:
 
     - name: test
       run: cd build && make test
+    
+    - name: builds docs
+      run: cd build && make docs
+
+    - name: publish docs
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./doc/html/
+        enable_jekyll: false
+        allow_empty_commit: false
+        force_orphan: true
+        publish_branch: gh-pages
+
