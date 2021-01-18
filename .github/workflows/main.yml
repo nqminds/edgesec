@@ -21,6 +21,9 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
+    
+    - name: Install package
+      run: sudo apt install -y cmake build-essentials doxygen libnl-genl-3-dev libnl-route-3-dev graphviz
 
     - name: configure
       run: mkdir build && cd build && cmake ../
