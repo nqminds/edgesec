@@ -113,8 +113,6 @@ static void test_1_is_iw_vlan(void **state)
 
   bool ret = is_iw_vlan("wlan0");
   assert_true(ret);
-
-  utarray_free(netif_list);
 }
 
 static void test_2_is_iw_vlan(void **state)
@@ -144,8 +142,6 @@ static void test_2_is_iw_vlan(void **state)
 
   bool ret = is_iw_vlan("wlan1");
   assert_false(ret);
-
-  utarray_free(netif_list);
 }
 
 static void test_3_is_iw_vlan(void **state)
