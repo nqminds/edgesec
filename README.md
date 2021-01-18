@@ -7,7 +7,7 @@ See [`./docs`](./docs) for how to build the documentation website.
 
 ## Build
 
-<!-- Compiling ManySecured is done with CMake. -->
+Compiling ManySecured is done with CMake.
 
 ### Installing Dependencies
 
