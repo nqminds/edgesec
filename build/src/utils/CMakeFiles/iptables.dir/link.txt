@@ -1,2 +1,0 @@
-/usr/bin/ar qc libiptables.a  CMakeFiles/iptables.dir/iptables.c.o
-/usr/bin/ranlib libiptables.a

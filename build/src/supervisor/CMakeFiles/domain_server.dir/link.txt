@@ -1,2 +1,0 @@
-/usr/bin/ar qc libdomain_server.a  CMakeFiles/domain_server.dir/domain_server.c.o
-/usr/bin/ranlib libdomain_server.a

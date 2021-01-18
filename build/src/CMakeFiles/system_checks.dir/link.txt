@@ -1,2 +1,0 @@
-/usr/bin/ar qc libsystem_checks.a  CMakeFiles/system_checks.dir/system_checks.c.o
-/usr/bin/ranlib libsystem_checks.a

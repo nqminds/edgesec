@@ -1,2 +1,0 @@
-/usr/bin/ar qc libos.a  CMakeFiles/os.dir/os.c.o
-/usr/bin/ranlib libos.a

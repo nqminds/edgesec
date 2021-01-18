@@ -1,2 +1,0 @@
-/usr/bin/ar qc libradius.a  CMakeFiles/radius.dir/radius.c.o
-/usr/bin/ranlib libradius.a

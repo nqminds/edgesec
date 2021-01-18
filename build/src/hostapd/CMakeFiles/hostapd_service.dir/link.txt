@@ -1,2 +1,0 @@
-/usr/bin/ar qc libhostapd_service.a  CMakeFiles/hostapd_service.dir/hostapd_service.c.o
-/usr/bin/ranlib libhostapd_service.a

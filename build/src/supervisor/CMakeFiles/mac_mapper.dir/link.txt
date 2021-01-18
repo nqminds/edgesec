@@ -1,2 +1,0 @@
-/usr/bin/ar qc libmac_mapper.a  CMakeFiles/mac_mapper.dir/mac_mapper.c.o
-/usr/bin/ranlib libmac_mapper.a

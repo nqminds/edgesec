@@ -1,2 +1,0 @@
-/usr/bin/ar qc libif_service.a  CMakeFiles/if_service.dir/if_service.c.o
-/usr/bin/ranlib libif_service.a

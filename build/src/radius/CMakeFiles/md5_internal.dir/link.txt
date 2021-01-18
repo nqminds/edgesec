@@ -1,2 +1,0 @@
-/usr/bin/ar qc libmd5_internal.a  CMakeFiles/md5_internal.dir/md5_internal.c.o
-/usr/bin/ranlib libmd5_internal.a

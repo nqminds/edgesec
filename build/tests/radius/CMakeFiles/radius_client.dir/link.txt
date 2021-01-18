@@ -1,2 +1,0 @@
-/usr/bin/ar qc libradius_client.a  CMakeFiles/radius_client.dir/radius_client.c.o
-/usr/bin/ranlib libradius_client.a

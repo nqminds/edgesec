@@ -1,2 +1,0 @@
-/usr/bin/ar qc libminIni.a  CMakeFiles/minIni.dir/minIni.c.o
-/usr/bin/ranlib libminIni.a

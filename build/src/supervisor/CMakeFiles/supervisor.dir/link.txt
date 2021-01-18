@@ -1,2 +1,0 @@
-/usr/bin/ar qc libsupervisor.a  CMakeFiles/supervisor.dir/supervisor.c.o
-/usr/bin/ranlib libsupervisor.a

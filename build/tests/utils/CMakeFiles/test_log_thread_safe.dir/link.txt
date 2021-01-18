@@ -1,1 +1,0 @@
-/usr/bin/cc  -Wunused-variable -DLOG_USE_COLOR -g  -rdynamic CMakeFiles/test_log_thread_safe.dir/test_log_thread_safe.c.o  -o test_log_thread_safe  ../../src/utils/liblog.a -lpthread 

@@ -1,2 +1,0 @@
-/usr/bin/ar qc libeloop.a  CMakeFiles/eloop.dir/eloop.c.o
-/usr/bin/ranlib libeloop.a

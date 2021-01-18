@@ -1,2 +1,0 @@
-/usr/bin/ar qc libconfig_generator.a  CMakeFiles/config_generator.dir/config_generator.c.o
-/usr/bin/ranlib libconfig_generator.a
