@@ -6,7 +6,7 @@ name: C/C++ CI
 # events but only for the master branch
 on:
   push:
-    branches: [ main_temp ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
