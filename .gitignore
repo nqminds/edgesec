@@ -70,8 +70,6 @@ lib/libmnl-1.0.4/**/Makefile
 lib/libmnl-1.0.4/**/.deps
 lib/libmnl-1.0.4/build/**
 lib/libmnl-1.0.4/src/*.o
-lib/libmnl-1.0.4/src/*.lo
-lib/libmnl-1.0.4/src/*.map
 lib/libmnl-1.0.4/src/.deps/**
 lib/libmnl-1.0.4/src/.libs/**
 lib/libmnl-1.0.4/examples/.libs/**
