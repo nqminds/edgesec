@@ -40,6 +40,6 @@
  * @param hmap_bin_hashes Map of systems binaries to hashes
  * @return hmap_str_keychar* Map for binary to path 
  */
-hmap_str_keychar *check_systems_commands(char *commands[], UT_array *bin_path_arr, hmap_str_keychar *hmap_bin_hashes);
+// hmap_str_keychar *check_systems_commands(char *commands[], UT_array *bin_path_arr, hmap_str_keychar *hmap_bin_hashes);
 
 #endif
