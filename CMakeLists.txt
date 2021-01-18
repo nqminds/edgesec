@@ -122,9 +122,10 @@ if (DOXYGEN_FOUND)
     set(DOXYGEN_IN Doxyfile.in)
     set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
     # Doxygen.in file parameters
-    set(DOXYGEN_INPUT src)
+    set(DOXYGEN_INPUT "src docs")
+    set(DOXYGEN_IMAGE_PATH docs)
+    set(DOXYGEN_DOTFILE_DIRS docs)
     set(DOXYGEN_OUTPUT_DIRECTORY docs)
-
     # request to configure the file
     configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
     message("Doxygen build started")

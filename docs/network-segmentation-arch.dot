@@ -1,0 +1,40 @@
+digraph D {
+
+  node [shape=plaintext fontname="Sans serif" fontsize="8"];
+
+  edgesec [ label=<
+   <table border="1" cellborder="0" cellspacing="1">
+     <tr><td align="left"><b>Edgesec command line tool</b></td></tr>
+     <tr><td align="left"><i>edgesec.c</i></td></tr>
+     <tr><td align="left">Read the configuration file and executes the engine</td></tr>
+     <tr><td align="left"><font color="darkgreen">config.ini</font></td></tr>
+   </table>>];
+
+  engine [ label=<
+   <table border="1" cellborder="0" cellspacing="1">
+     <tr><td align="left"><b>Engine service</b></td></tr>
+     <tr><td align="left"><i>engine.c</i></td></tr>
+     <tr><td align="left">Runs all the newtwork segmentation services</td></tr>
+     <tr><td align="left"><font color="darkgreen">struct app_config</font></td></tr>
+   </table>>];
+
+  subnet_service [ label=<
+   <table border="1" cellborder="0" cellspacing="1">
+     <tr><td align="left"><b>Subnet service</b></td></tr>
+     <tr><td align="left"><i>if_service.c</i></td></tr>
+     <tr><td align="left">Creates the subnet interfaces</td></tr>
+     <tr><td align="left"><font color="darkgreen">struct config_ifinfo_t</font></td></tr>
+   </table>>];
+
+  supervisor [ label=<
+   <table border="1" cellborder="0" cellspacing="1">
+     <tr><td align="left"><b>Supervisor service</b></td></tr>
+     <tr><td align="left"><i>supervisor.c</i></td></tr>
+     <tr><td align="left">Creates the UNIX domain socket and processes commands </td></tr>
+     <tr><td align="left"><font color="darkgreen">struct supervisor_context</font></td></tr>
+   </table>>];
+
+  edgesec -> engine;
+  engine -> subnet_service;
+  engine -> supervisor;
+}
