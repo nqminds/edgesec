@@ -30,11 +30,29 @@ digraph D {
    <table border="1" cellborder="0" cellspacing="1">
      <tr><td align="left"><b>Supervisor service</b></td></tr>
      <tr><td align="left"><i>supervisor.c</i></td></tr>
-     <tr><td align="left">Creates the UNIX domain socket and processes commands </td></tr>
+     <tr><td align="left">Creates the UNIX domain socket and processes commands</td></tr>
      <tr><td align="left"><font color="darkgreen">struct supervisor_context</font></td></tr>
+   </table>>];
+
+  radius [ label=<
+   <table border="1" cellborder="0" cellspacing="1">
+     <tr><td align="left"><b>Radius server</b></td></tr>
+     <tr><td align="left"><i>radius_server.c</i></td></tr>
+     <tr><td align="left">Creates the RADIUS server and and configures the RADIUS client</td></tr>
+     <tr><td align="left"><font color="darkgreen">struct radius_client</font></td></tr>
+   </table>>];
+
+  hostapd [ label=<
+   <table border="1" cellborder="0" cellspacing="1">
+     <tr><td align="left"><b>Hostapd service</b></td></tr>
+     <tr><td align="left"><i>hostapd_service.c</i></td></tr>
+     <tr><td align="left">Runs the hostapd service, which manages the WiFi AP</td></tr>
+     <tr><td align="left"><font color="darkgreen">struct hostapd_conf</font></td></tr>
    </table>>];
 
   edgesec -> engine;
   engine -> subnet_service;
   engine -> supervisor;
+  engine -> radius;
+  engine -> hostapd;
 }
