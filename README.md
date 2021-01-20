@@ -14,7 +14,8 @@ Compiling EDGESec is done with CMake.
 On Ubuntu, we need a C compiler, CMake, Doxygen, and libnl-genl-3-dev:
 
 ```console
-$ sudo apt update && sudo apt install -y cmake build-essentials doxygen libnl-genl-3-dev libnl-route-3-dev graphviz
+sudo apt update
+sudo apt install cmake build-essentials doxygen libnl-genl-3-dev libnl-route-3-dev graphviz
 ```
 
 ### Compile
@@ -38,3 +39,6 @@ cmake --build -j2 .. # replace 2 with number of threads to use for building
 ```
 ./build/src/edgesec -c ./build/config.ini -ddddd
 ```
+
+[## Hostapd and supervisor commands](./COMMANDS.md)
+[## ISSUES](./ISSUES.md)
