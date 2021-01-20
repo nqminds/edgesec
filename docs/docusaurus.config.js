@@ -1,19 +1,19 @@
 module.exports = {
-  title: "ManySecured Documentation",
-  tagline: "NqurigingMind's ManySecured Documentation Website",
+  title: "EDGESec Documentation",
+  tagline: "NqurigingMind's EDGESec Documentation Website",
   url: "https://nqminds.com",
-  baseUrl: "/ManySecured/",
+  baseUrl: "/EDGESec/",
   favicon: "images/safe-box.svg",
   organizationName: "nqminds", // Usually your GitHub org/user name.
-  projectName: "ManySecured", // Usually your repo name.
+  projectName: "EDGESec", // Usually your repo name.
   themeConfig: {
     prism: {
       additionalLanguages: ["protobuf"],
     },
     navbar: {
-      title: "ManySecured",
+      title: "EDGESec",
       logo: {
-        alt: "ManySecured Logo",
+        alt: "EDGESec Logo",
         src: "images/safe-box.svg",
       },
       links: [
@@ -24,7 +24,7 @@ module.exports = {
           position: "right",
         },
         {
-          href: "https://github.com/nqminds/ManySecured",
+          href: "https://github.com/nqminds/EDGESec",
           label: "GitHub",
           position: "right",
         },
@@ -77,7 +77,7 @@ module.exports = {
           sidebarPath: require.resolve("./sidebars.js"),
           // Please change this to your repo.
           editUrl:
-            "https://github.com/nqminds/ManySecured/edit/master/docs/",
+            "https://github.com/nqminds/EDGESec/edit/main/docs/",
           showLastUpdateTime: true,
           remarkPlugins: [
             [require("remark-mermaid-dataurl"), {}],

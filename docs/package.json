@@ -8,7 +8,7 @@
     "serve-build": "node scripts/serve-build.js",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
-    "pdf": "docusaurus start --no-open --port=3002 & pid=\"$!\" && trap 'echo \"killing $pid\" && kill -2 \"$pid\"' EXIT && sleep 5 && docusaurus-pdf http://localhost:3002/ManySecured/",
+    "pdf": "docusaurus start --no-open --port=3002 & pid=\"$!\" && trap 'echo \"killing $pid\" && kill -2 \"$pid\"' EXIT && sleep 5 && docusaurus-pdf http://localhost:3002/EDGESec/",
     "lint": "eslint *.js scripts/**/*.js src/"
   },
   "dependencies": {

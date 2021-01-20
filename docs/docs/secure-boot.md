@@ -1,4 +1,4 @@
-# ManySecured Secure Boot
+# EDGESec Secure Boot
 
 ## State of the art
 

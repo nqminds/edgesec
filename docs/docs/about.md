@@ -2,7 +2,7 @@
 title: About
 ---
 
-This is **nquiring**minds's documentation website for the ManySecured project.
+This is **nquiring**minds's documentation website for the EDGESec project.
 
 For more information, please visit
 [the **nquiring**minds website](https://nqmcyber.com).

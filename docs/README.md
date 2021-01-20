@@ -88,10 +88,10 @@ Their url would be the same as their path in the static folder.
 
 E.g., if you place an image in
 [./static/images/safe-box.svg](./static/images/safe-box.svg), you can show
-it as a markdown image by entering (replaced `/static/` with `/ManySecured/`):
+it as a markdown image by entering (replaced `/static/` with `/EDGESec/`):
 
 ```markdown
-![My example image](/ManySecured/images/safe-box.svg)
+![My example image](/EDGESec/images/safe-box.svg)
 ```
 
 #### Adding to the sidebar
