@@ -27,17 +27,17 @@ After succesful compilation the binary will be located in ```./build/src/edgesec
 
 ## Running
 
+To run ```edgesec``` tool with a configuration file ```config.ini``` located in ```./build``` folder use:
 ```
 ./build/src/edgesec -c ./build/config.ini
 ```
 
-**Enabling verbose debug mode**
-
+To enable verbose debug mode use:
 ```
 ./build/src/edgesec -c ./build/config.ini -ddddd
 ```
 
-## Documentation
+## Developer Documentation
 
 See [`./docs`](./docs) for how to build the documentation website.
 
