@@ -15,19 +15,19 @@ sudo apt install cmake build-essentials doxygen libnl-genl-3-dev libnl-route-3-d
 ```
 
 ### Compile
-
+First create the makefiles by using the following commands:
 ```console
 mkdir -p build/
 cd build/
 cmake ..
 ```
-For paralle builds use:
+For parallel builds use:
 ```console
 cmake -j n ..
 ```
 where ```n``` is the number of cores.
 
-To compile the ```edgesec``` tool and the tests use:
+Second, to compile the ```edgesec``` tool and the tests use:
 ```console
 make all
 ```
@@ -56,7 +56,7 @@ To run each test individually the test binaries can be located in ```./build/tes
 
 ## Developer Documentation
 
-To compile the docs from ```./build``` fodler:
+To compile the docs from ```./build``` folder:
 ```console
 make docs
 ```
