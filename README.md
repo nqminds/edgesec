@@ -41,6 +41,8 @@ To enable verbose debug mode use:
 
 See [`./docs`](./docs) for how to build the documentation website.
 
-## Hostapd and supervisor commands
+## Commands
+[Hostapd and supervisor commands](./COMMANDS.md)
 
 ## ISSUES
+[Installation and compilation issues](./ISSUES.md)
