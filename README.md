@@ -39,10 +39,10 @@ To enable verbose debug mode use:
 
 ## Developer Documentation
 
-See [`./docs`](./docs) for how to build the documentation website.
+See [`./docs`](./docs) for how to build the developer doxygen documentation website.
 
 ## Commands
-[Hostapd and supervisor commands](./COMMANDS.md)
+[Hostapd and supervisor commands](./docs/COMMANDS.md)
 
 ## ISSUES
-[Installation and compilation issues](./ISSUES.md)
+[Installation and compilation issues](./docs/ISSUES.md)
