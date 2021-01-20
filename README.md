@@ -16,32 +16,50 @@ sudo apt install cmake build-essentials doxygen libnl-genl-3-dev libnl-route-3-d
 
 ### Compile
 
-```
+```console
 mkdir -p build/
 cd build/
 cmake ..
 ```
-For paralle  builds use:
+For paralle builds use:
 ```console
 cmake -j n ..
 ```
 where ```n``` is the number of cores.
 
-After succesful compilation the binary will be located in ```./build/src/edgesec```.
+To compile the ```edgesec``` tool and the tests use:
+```console
+make all
+```
+
+After succesful compilation the binary will be located in ```./build/src``` folder. 
 
 ## Running
 
 To run ```edgesec``` tool with a configuration file ```config.ini``` located in ```./build``` folder use:
-```
+```console
 ./build/src/edgesec -c ./build/config.ini
 ```
 
 To enable verbose debug mode use:
-```
+```console
 ./build/src/edgesec -c ./build/config.ini -ddddd
 ```
 
+## Testing
+To run the tests use:
+```console
+make tests
+```
+
+To run each test individually the test binaries can be located in ```./build/tests``` folder.
+
 ## Developer Documentation
+
+To compile the docs from ```./build``` fodler:
+```console
+make docs
+```
 
 See [`./docs`](./docs) for how to build the developer doxygen documentation website.
 
