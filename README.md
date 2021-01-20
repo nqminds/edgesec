@@ -1,5 +1,5 @@
 # ManySecured
-[![Github Pages](https://github.com/nqminds/EDGESec/workflows/Github%20Pages/badge.svg?branch=master)](https://github.com/nqminds/EDGESec/actions?query=workflow%3A%22Github+Pages%22)
+[![C/C++ CI](https://github.com/nqminds/EDGESec/workflows/C/C++%20CI/badge.svg?branch=main)](https://github.com/nqminds/EDGESec/actions?query=workflow%3A%22Github+Pages%22)
 
 ## docs
 
