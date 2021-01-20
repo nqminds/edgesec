@@ -20,8 +20,12 @@ sudo apt install cmake build-essentials doxygen libnl-genl-3-dev libnl-route-3-d
 mkdir -p build/
 cd build/
 cmake ..
-cmake --build -j2 .. # replace 2 with number of threads to use for building
 ```
+For paralle  builds use:
+```console
+cmake -j n ..
+```
+where ```n``` is the number of cores.
 
 After succesful compilation the binary will be located in ```./build/src/edgesec```.
 
