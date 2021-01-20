@@ -227,7 +227,7 @@ The RADIUS server password used by the clients.
 The nat group defines the parameter for NAT interface.
 
 ### natInterface (string)
-The NAt interface name.
+The NAT interface name.
 
 ## [connections] group
 The connections groups defines the parameters for devices that connect to the WiFi AP.
