@@ -34,3 +34,10 @@ It is also possible to reorganize the naming policy by overriding /lib/systemd/n
  NamePolicy=mac
  MACAddressPolicy=persistent
 ```
+
+The folder ```./scripts``` contains the ```predictable_wifi_name.sh``` script to automaticall create the above lik file.
+
+Usage:
+```console
+sudo ./scripts/predictable_wifi_name.sh source_if_name destination_fi_name
+```
