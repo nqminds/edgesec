@@ -1,10 +1,6 @@
 # EDGESec
 [![C/C++ CI](https://github.com/nqminds/EDGESec/workflows/C/C++%20CI/badge.svg?branch=main)](https://github.com/nqminds/EDGESec/actions?query=workflow%3A%22Github+Pages%22)
 
-## docs
-
-See [`./docs`](./docs) for how to build the documentation website.
-
 ## Build
 
 Compiling EDGESec is done with CMake.
@@ -40,5 +36,10 @@ cmake --build -j2 .. # replace 2 with number of threads to use for building
 ./build/src/edgesec -c ./build/config.ini -ddddd
 ```
 
-[## Hostapd and supervisor commands](./COMMANDS.md)
-[## ISSUES](./ISSUES.md)
+## Documentation
+
+See [`./docs`](./docs) for how to build the documentation website.
+
+## Hostapd and supervisor commands
+
+## ISSUES
