@@ -11,7 +11,7 @@ Compiling EDGESec is done with CMake.
 
 ### Installing Dependencies
 
-On Ubuntu, we need a C compiler, CMake, Doxygen, and libnl-genl-3-dev:
+On Ubuntu, we need a C compiler, CMake, Doxygen, and libnl libraries:
 
 ```console
 sudo apt update
@@ -25,8 +25,9 @@ mkdir -p build/
 cd build/
 cmake ..
 cmake --build -j2 .. # replace 2 with number of threads to use for building
-# edgesec software will be at ./src/edgesec
 ```
+
+After succesful compilation the binary will be located in ```./build/src/edgesec```.
 
 ## Running
 
