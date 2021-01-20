@@ -2,9 +2,6 @@
 [![C/C++ CI](https://github.com/nqminds/EDGESec/workflows/C/C++%20CI/badge.svg?branch=main)](https://github.com/nqminds/EDGESec/actions?query=workflow%3A%22Github+Pages%22)
 
 ## Build
-
-Compiling EDGESec is done with CMake.
-
 ### Installing Dependencies
 
 On Ubuntu, we need a C compiler, CMake, Doxygen, and libnl libraries:
@@ -15,7 +12,7 @@ sudo apt install cmake build-essentials doxygen libnl-genl-3-dev libnl-route-3-d
 ```
 
 ### Compile
-First create the makefiles by using the following commands:
+Compiling EDGESec is done with CMake. First create the makefiles by using the following commands:
 ```console
 mkdir -p build/
 cd build/
