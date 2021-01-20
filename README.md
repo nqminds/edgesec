@@ -60,6 +60,9 @@ make docs
 
 See [`./docs`](./docs) for how to build the developer doxygen documentation website.
 
+## Config
+[Configuration file structure](./docs/CONFIG.md)
+
 ## Commands
 [Hostapd and supervisor commands](./docs/COMMANDS.md)
 
