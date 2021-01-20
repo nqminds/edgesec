@@ -88,32 +88,175 @@ The configuration file is based on the ```ini``` file type format. Each paramete
 * *[connections]*
 * *[interfaces]*
 
-## System group
+## [system] group
 The system group contains all the parameters that are reponsible to configure the ```edgesec``` system tool paths, the hashes of the system binaries and tool flags.
 
-### binPath [string]
+### binPath (string)
 A list of systems binary paths separated with ":" used by the ```edgesec``` tool to configure interfaces, etc.
 
-### hashIpCommand [string]
+### hashIpCommand (string)
 A list of hashes for each system binary used by the tool. [WIP]
 
-### createInterfaces [boolean]
+### createInterfaces (boolean)
 ```edgesec``` will create subnetnetwork interfaces if the flag is set to ```true```. If set to ```false``` one will have to use a similar service to ```dhcpcd``` to preconfigure the network interfaces.
 
-### ignoreErrorOnIfCreate [boolean]
+### ignoreErrorOnIfCreate (boolean)
 If set to ```true```, ```edgesec``` will ignore the "network interface already exists" error. This flag is to be used if the network interfaces are already preconfigured.
 
-### allowAllConnections [boolean]
+### allowAllConnections (boolean)
 If set to ```true```, ```edgesec``` will allow all WiFi connection requests regarding of the MAC value.
 
-### apDetect [boolean]
+### apDetect (boolean)
 If set to ```true```, ```edgesec``` will try to detect the WiFi network interfaces that supports VLAN capability. The detected network interface will be used by ```hostapd``` service to create an AP.
 
-### execHostapd [boolean]
+### execHostapd (boolean)
 If set to ```true```, ```edgesec``` will execute the ```hostapd``` service using ```excve``` system command. If set to ```false``` the ```hostapd``` service has to be run before executing ```edgesec```.
 
-### defaultOpenVlanId [integer]
+### defaultOpenVlanId (integer)
 The default VLAN ID positive integer number assigned to new devices if ```allowAllConnections``` flag is set to ```true```.
 
-### execRadius [boolean]
+### execRadius (boolean)
 If set to ```true```, ```edgesec``` will execute the ```radius``` service.
+
+## [supervisor] group
+The supervisor group defines the parameters to run the supervisor service.
+
+### domainServerPath (string)
+The absolute path to the UNIX domain socket used by the supervisor service.
+
+## [hostapd] group
+The hostapd groups defines all the paremeters to run ```hostapd``` service. Most of the parameters are inherited from the ```hostapd``` config file.
+
+### hostapdBinPath (string)
+Absolute path to the ```hostapd``` binary.
+
+### hostapdFilePath (string)
+Absolute path to the ```hostapd``` configuratyion file.
+
+### interface (string)
+Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
+
+### ssid (string)
+Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
+
+### wpaPassphrase (string)
+Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
+
+### bridge (string)
+Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
+
+### driver (string)
+Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
+
+### hwMode (string)
+Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
+
+### channel (integer)
+Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
+
+### wmmEnabled (integer)
+Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
+
+### authAlgs (integer)
+Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
+
+### wpa (integer)
+Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
+
+### wpaKeyMgmt (string)
+Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
+
+### rsnPairwise (string)
+Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
+
+### ctrlInterface (string)
+Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
+
+### macaddrAcl (integer)
+Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
+
+### dynamicVlan (integer)
+Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
+
+### vlanBridge (string)
+Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
+
+### vlanFile (string)
+Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
+
+### loggerStdout (integer)
+Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
+
+### loggerStdoutLevel (integer)
+Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
+
+### loggerSyslog (integer)
+Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
+
+### loggerSyslogLevel (integer)
+Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
+
+### ignoreBroadcastSsid (integer)
+Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
+
+### wpaPskRadius (integer)
+Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
+
+## [radius] group
+The radius group defines the port, IP and network mask for creating the RADIUS server.
+
+### port (integer)
+The port value for the RADIUS server.
+
+### clientIP (string)
+The connecting client IP with format ```x.y.z.q```. Current config uses ```localhost``` (127.0.0.1).
+
+### clientMask (integer)
+The client IP network mask encoding bit-length of the prefix.
+
+### serverIP (string)
+The RADIUS server IP. Current config uses ```localhost``` (127.0.0.1).
+
+### serverMask (integer)
+The server IP network mask encoding bit-length of the prefix.
+
+### secret (string)
+The RADIUS server password used by the clients.
+
+## [nat] group
+The nat group defines the parameter for NAT interface.
+
+### natInterface (string)
+The NAt interface name.
+
+## [connections] group
+The connections groups defines the parameters for devices that connect to the WiFi AP.
+
+### con(idx) (string)
+The ```con``` indexed by ```idx≥0``` defines all the MAC addresses and WiFi passwords for devices that are allowed to connect to the WiFi AP. It has the following format:
+```
+d|a,aa:bb:cc:dd:ee:ff,x,y,pass
+```
+where:
+
+ - ```d|a``` - (d)eny or (a)llow the device with the given MAC to connect to the WiFi AP,
+ - ```aa:bb:cc:dd:ee:ff``` - the given MAC address of the device,
+ - ```x``` - denotes the VLAN ID integer assigned to the device,
+ - ```y``` - if ```1``` the device is allowed NAT, ```0``` otherwise,
+ - ```pass``` - the WiFi password used by the device to connect to the WiFi AP.
+
+## [interfaces] groups
+The interfaces group defines the parameters for WiFi subnet interfaces.
+
+### subnetMask (string)
+The WiFi subnet mask with format ```x.y.z.q```.
+
+### if(idx) (string)
+The ```if``` indexed by ```idx≥0``` defines the network interfaces for a particular subnet. It has the following format:
+```
+ifname,ip0,ipn
+```
+where
+ - ```ifname``` - is the network interface name for this particular subnet,
+ - ```ip0``` - the subnet starting IP address with format ```x.y.z.q```,
+ - ```ipn``` - the subnet ending IP address with format ```x.y.z.q```.
