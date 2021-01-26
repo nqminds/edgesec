@@ -47,6 +47,7 @@
 struct hostapd_conf {
   char hostapd_bin_path[MAX_OS_PATH_LEN];             /**< The hostapd binary path string */
   char hostapd_file_path[MAX_OS_PATH_LEN];            /**< The hostapd file configuration path string */
+  char hostapd_log_path[MAX_OS_PATH_LEN];             /**< The hostapd log path string */
   char interface[IFNAMSIZ];                           /**< The hostapd @c interface param @see https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf */
   char ssid[HOSTAPD_AP_NAME_LEN];                     /**< The hostapd @c ssid param @see https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf */
   char wpa_passphrase[HOSTAPD_AP_SECRET_LEN];         /**< WiFi AP password if @c struct app_config::allow_all_connections flag is set */

@@ -163,6 +163,14 @@ bool set_interface_ip(char *ip_addr, char *brd_addr, char *if_name);
 bool set_interface_state(char *if_name, bool state);
 
 /**
+ * @brief Resets the interface
+ * 
+ * @param if_name The interface name string
+ * @return true on success, false otherwise
+ */
+bool reset_interface(char *if_name);
+
+/**
  * @brief Get the array of @c struct netif_info_t for each available interface
  * 
  * @param if_id The intreface id, if 0 return all interfaces

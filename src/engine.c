@@ -167,7 +167,7 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
   struct radius_server_data *radius_srv = NULL;
   int domain_sock = -1;
   int hostapd_fd = -1;
-  char *commands[] = {"ip", "iw", "xtables-multi", NULL};
+  char *commands[] = {"ip", "iw", "iptables", NULL};
   char *nat_ip = NULL;
   struct radius_client *client = init_radius_client(&app_config->rconfig, get_mac_conn);
 
@@ -191,7 +191,7 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
     goto run_engine_fail;
   }
 
-  char *iptables_path = hmap_str_keychar_get(&hmap_bin_paths, "xtables-multi");
+  char *iptables_path = hmap_str_keychar_get(&hmap_bin_paths, "iptables");
   if (iptables_path == NULL) {
     log_debug("Couldn't find xtables-multi binary");
     goto run_engine_fail;
@@ -216,6 +216,12 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
   }
 
   log_info("Found wifi interface %s", app_config->hconfig.interface);
+  log_info("Resetting wifi interface %s", app_config->hconfig.interface);
+    if (!reset_interface(app_config->hconfig.interface)) {
+    log_debug("reset_interface fail");
+    goto run_engine_fail;
+  }
+
   if (strlen(app_config->nat_interface)) {
     log_info("Checking nat interface %s", app_config->nat_interface);
     if (!get_nat_if_ip(app_config->nat_interface, &nat_ip)) {

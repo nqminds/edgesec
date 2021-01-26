@@ -131,7 +131,10 @@ The hostapd groups defines all the paremeters to run ```hostapd``` service. Most
 Absolute path to the ```hostapd``` binary.
 
 ### hostapdFilePath (string)
-Absolute path to the ```hostapd``` configuratyion file.
+Absolute path to the ```hostapd``` configuration file.
+
+### hostapdLogPath (string)
+Absolute path to the ```hostapd``` log file. If empty no log file is generated
 
 ### interface (string)
 Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)

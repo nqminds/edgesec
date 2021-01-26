@@ -501,7 +501,7 @@ char* get_secure_path(UT_array *bin_path_arr, char *filename, char *filehash)
     if (stat(path, &sb) != -1) {
       // Get the real path of the needed path in case it is symbolic link
       char *real_path = realpath(path, NULL);
-      log_trace("got real path %s", path);
+      log_trace("got real path %s", real_path);
 
       if (check_file_hash(real_path, filehash)) {
         os_free(path);

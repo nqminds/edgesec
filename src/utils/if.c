@@ -833,6 +833,22 @@ err:
 	return false;
 }
 
+bool reset_interface(char *if_name)
+{
+  log_trace("Resseting interface state for if_name=%s", if_name);
+  if (!set_interface_state(if_name, false)) {
+    log_trace("set_interface_state fail");
+    return false;
+  }
+
+  if (!set_interface_state(if_name, true)) {
+    log_trace("set_interface_state fail");
+    return false;
+  }
+
+  return true;
+}
+
 int get_if_mapper(hmap_if_conn **hmap, in_addr_t subnet, char *ifname)
 {
 	hmap_if_conn *s;

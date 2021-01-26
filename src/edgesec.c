@@ -373,6 +373,12 @@ bool load_hostapd_conf(const char *filename, struct app_config *config)
   strncpy(config->hconfig.hostapd_bin_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
+  // Load hostapd log path
+  value = os_malloc(INI_BUFFERSIZE);
+  ret = ini_gets("hostapd", "hostapdLogPath", "", value, INI_BUFFERSIZE, filename);
+  strncpy(config->hconfig.hostapd_log_path, value, MAX_OS_PATH_LEN);
+  os_free(value);
+
   // Load hostapd bridge
   value = os_malloc(INI_BUFFERSIZE);
   ret = ini_gets("hostapd", "bridge", "", value, INI_BUFFERSIZE, filename);

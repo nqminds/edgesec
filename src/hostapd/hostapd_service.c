@@ -39,6 +39,8 @@
 #include "utils/if.h"
 #include "utils/log.h"
 
+#define HOSTAPD_LOG_FILE_OPTION "-f"
+
 long is_hostapd(char *path)
 {
   char exe_path[MAX_OS_PATH_LEN];
@@ -80,16 +82,24 @@ void find_dir_fn(char *path, void *args)
     *is_h = 0;
 }
 
-int run_process(char *hostapd_bin_path, char *hostapd_file_path)
+int run_process(char *hostapd_bin_path, char *hostapd_file_path, char *hostapd_log_path)
 {
   pid_t child_pid, ret;
   int status, check_count = 0;
 
   // char *argv[4] = {"hostapd", "-B", hostapd_file_path, NULL};
-  char *argv[3] = {"hostapd", hostapd_file_path, NULL};
+  // char *argv[3] = {"hostapd", hostapd_file_path, NULL};
+  char *argv[5] = {hostapd_bin_path, NULL, NULL, NULL, NULL};
 
+  if (strlen(hostapd_log_path)) {
+    argv[1] = HOSTAPD_LOG_FILE_OPTION;
+    argv[2] = hostapd_log_path;
+    argv[3] = hostapd_file_path;
+  } else {
+    argv[1] = hostapd_file_path;
+  }
   log_trace("Running hostapd process %s", hostapd_bin_path);
-  log_trace("\t with params %s %s", argv[1], argv[2]);
+  log_trace("\t with params %s %s %s", argv[1], argv[2], argv[3]);
 
   switch (child_pid = fork()) {
   case -1:            /* fork() failed */
@@ -173,7 +183,7 @@ int run_hostapd(struct hostapd_conf *hconf, struct radius_conf *rconf, bool exec
       return -1;
     }
 
-    while((ret = run_process(hconf->hostapd_bin_path, hconf->hostapd_file_path)) > 0) {
+    while((ret = run_process(hconf->hostapd_bin_path, hconf->hostapd_file_path, hconf->hostapd_log_path)) > 0) {
       sleep(2);
 
       log_trace("Killing hostapd process");
