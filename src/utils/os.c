@@ -542,7 +542,12 @@ int list_dir(char *dirpath, list_dir_fn fun, void *args)
 
     /* Print directory + filename */
     char *path = construct_path(dirpath, dp->d_name);
-    fun(path, args);
+    if (!fun(path, args)) {
+      log_trace("list_dir callback fail");
+      os_free(path);
+      goto exit_list_dir;
+    }
+
     os_free(path);
   }
 
@@ -551,10 +556,59 @@ int list_dir(char *dirpath, list_dir_fn fun, void *args)
     return -1;
   }
 
+exit_list_dir:
   if (closedir(dirp) == -1) {
     log_err("closedir");
     return -1;
   }
 
   return 0;
+}
+
+long is_app(char *path, char *proc_name)
+{
+  char exe_path[MAX_OS_PATH_LEN];
+  char resolved_path[MAX_OS_PATH_LEN];
+
+  unsigned long pid = strtoul(basename(path), NULL, 10);
+
+  if (errno != ERANGE && pid != 0L) {
+    snprintf(exe_path, MAX_OS_PATH_LEN - 1, "%s/exe", path);
+    if (realpath(exe_path, resolved_path) != NULL) {
+      if (strcmp(basename(resolved_path), proc_name) == 0) {
+        return pid;
+      }
+    }
+  }
+
+  return 0;
+}
+
+bool kill_dir_fn(char *path, void *args)
+{
+  unsigned long pid;
+  pid_t current_pid = getpid();
+
+  if ((pid = is_app(path, args)) != 0) {
+    if (current_pid != pid) {
+      if (kill(pid, SIGKILL) == -1) {
+        log_err("kill");
+        return false;
+      } else
+        log_trace("killed %s process with pid=%d", args, pid);
+    }
+  }
+
+  return true;
+}
+
+bool kill_process(char *proc_name)
+{
+  // Kill a process process if running
+  if (list_dir("/proc", kill_dir_fn, proc_name) == -1) {
+    log_trace("list_dir fail");
+    return false;
+  }
+
+  return true;
 }

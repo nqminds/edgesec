@@ -33,6 +33,7 @@
 #include <stdbool.h>
 #include <errno.h>
 #include <net/if.h>
+#include <libgen.h>
 
 #include "version.h"
 #include "utils/log.h"
@@ -285,7 +286,7 @@ bool load_connection_list(const char *filename, struct app_config *config)
   os_free(key);
   return true;
 }
-void load_radius_conf(const char *filename, struct app_config *config)
+bool load_radius_conf(const char *filename, struct app_config *config)
 {
   char *value = os_malloc(INI_BUFFERSIZE);
 
@@ -294,7 +295,8 @@ void load_radius_conf(const char *filename, struct app_config *config)
   int ret = ini_gets("hostapd", "ssid", "", value, INI_BUFFERSIZE, filename);
   if (!ret) {
     fprintf(stderr, "hostapd ssid was not specified\n");
-    exit(1);
+    os_free(value);
+    return false;
   }
 
   strncpy(config->hconfig.ssid, value, HOSTAPD_AP_NAME_LEN);
@@ -312,7 +314,8 @@ void load_radius_conf(const char *filename, struct app_config *config)
   ret = ini_gets("hostapd", "interface", "", value, INI_BUFFERSIZE, filename);
   if (!ret) {
     fprintf(stderr, "AP interface was not specified\n");
-    exit(1);
+    os_free(value);
+    return false;
   }
 
   strncpy(config->hconfig.interface, value, IFNAMSIZ);
@@ -346,6 +349,8 @@ void load_radius_conf(const char *filename, struct app_config *config)
   ini_gets("radius", "secret", "", value, INI_BUFFERSIZE, filename);
   strncpy(config->rconfig.radius_secret, value, RADIUS_SECRET_LEN);
   os_free(value);
+
+  return true;
 }
 
 bool load_hostapd_conf(const char *filename, struct app_config *config)
@@ -356,7 +361,8 @@ bool load_hostapd_conf(const char *filename, struct app_config *config)
   int ret = ini_gets("hostapd", "hostapdFilePath", "", value, INI_BUFFERSIZE, filename);
   if (!ret) {
     fprintf(stderr, "hostapd file path was not specified\n");
-    exit(1);
+    os_free(value);
+    return false;
   }
 
   strncpy(config->hconfig.hostapd_file_path, value, MAX_OS_PATH_LEN);
@@ -367,7 +373,8 @@ bool load_hostapd_conf(const char *filename, struct app_config *config)
   ret = ini_gets("hostapd", "hostapdBinPath", "", value, INI_BUFFERSIZE, filename);
   if (!ret) {
     fprintf(stderr, "hostapd hostapdBinPath was not specified\n");
-    exit(1);
+    os_free(value);
+    return false;
   }
 
   strncpy(config->hconfig.hostapd_bin_path, value, MAX_OS_PATH_LEN);
@@ -384,7 +391,8 @@ bool load_hostapd_conf(const char *filename, struct app_config *config)
   ret = ini_gets("hostapd", "bridge", "", value, INI_BUFFERSIZE, filename);
   if (!ret) {
     fprintf(stderr, "hostapd bridge was not specified\n");
-    exit(1);
+    os_free(value);
+    return false;
   }
 
   strncpy(config->hconfig.bridge, value, IFNAMSIZ);
@@ -443,7 +451,8 @@ bool load_hostapd_conf(const char *filename, struct app_config *config)
   ret = ini_gets("hostapd", "vlanBridge", "", value, INI_BUFFERSIZE, filename);
   if (!ret) {
     fprintf(stderr, "hostapd vlanBridge was not specified\n");
-    exit(1);
+    os_free(value);
+    return false;
   }
 
   strncpy(config->hconfig.vlan_bridge, value, IFNAMSIZ);
@@ -454,7 +463,8 @@ bool load_hostapd_conf(const char *filename, struct app_config *config)
   ret = ini_gets("hostapd", "vlanFile", "", value, INI_BUFFERSIZE, filename);
   if (!ret) {
     fprintf(stderr, "hostapd vlanFile was not specified\n");
-    exit(1);
+    os_free(value);
+    return false;
   }
 
   strncpy(config->hconfig.vlan_file, value, MAX_OS_PATH_LEN);
@@ -477,6 +487,48 @@ bool load_hostapd_conf(const char *filename, struct app_config *config)
 
   // Load hostapd wpaPskRadius
   config->hconfig.wpa_psk_radius = (int) ini_getl("hostapd", "wpaPskRadius", 2, filename);
+
+  return true;
+}
+
+bool load_dns_conf(const char *filename, struct app_config *config)
+{
+  char *value = os_malloc(INI_BUFFERSIZE);
+
+  // Load the DNS server addresses
+  ini_gets("system", "binPath", "", value, INI_BUFFERSIZE, filename);
+  split_string_array(value, ',', config->dns_config.server_array);
+  os_free(value);
+
+  return true;
+}
+
+bool load_dhcp_conf(const char *filename, struct app_config *config)
+{
+  char *value = os_malloc(INI_BUFFERSIZE);
+
+  // Load dhpc config file path
+  int ret = ini_gets("dhcp", "dhcpConfigPath", "", value, INI_BUFFERSIZE, filename);
+  if (!ret) {
+    fprintf(stderr, "dhcp dhcpConfigPath was not specified\n");
+    os_free(value);
+    return false;
+  }
+
+  strncpy(config->dhcp_config.dhcp_conf_path, value, MAX_OS_PATH_LEN);
+  os_free(value);
+
+  // Load dhpc script file path
+  value = os_malloc(INI_BUFFERSIZE);
+  ret = ini_gets("dhcp", "dhcpScriptPath", "", value, INI_BUFFERSIZE, filename);
+  if (!ret) {
+    fprintf(stderr, "dhcp dhcpScriptPath was not specified\n");
+    os_free(value);
+    return false;
+  }
+
+  strncpy(config->dhcp_config.dhcp_script_path, value, MAX_OS_PATH_LEN);
+  os_free(value);
 
   return true;
 }
@@ -511,6 +563,9 @@ void load_app_config(const char *filename, struct app_config *config)
 
   // Load the exec radius flag
   config->exec_radius = ini_getbool("system", "execRadius", 0, filename);
+
+  // Load the exec dhcp flag
+  config->exec_dhcp = ini_getbool("system", "execDhcp", 0, filename);
 
   // Load the default open vlanid
   config->default_open_vlanid = (int) ini_getl("system", "defaultOpenVlanId", 0, filename);
@@ -560,13 +615,30 @@ void load_app_config(const char *filename, struct app_config *config)
   }
 
   // Load hostapd radius config params
-  load_radius_conf(filename, config);
+  if(!load_radius_conf(filename, config)) {
+    fprintf(stderr, "radius config parsing error.\n");
+    exit(1);
+  }
 
   // Load hostapd config params
   if(!load_hostapd_conf(filename, config)) {
-    fprintf(stderr, "hostapd confif parsing error.\n");
+    fprintf(stderr, "hostapd config parsing error.\n");
     exit(1);
   }
+
+  if(!load_dns_conf(filename, config)) {
+    fprintf(stderr, "dns config parsing error.\n");
+    exit(1);
+  }
+
+  if(!load_dhcp_conf(filename, config)) {
+    fprintf(stderr, "dhcp config parsing error.\n");
+    exit(1);
+  }
+}
+
+char *get_app_name(char *app_path) {
+  return basename(app_path);
 }
 
 int main(int argc, char *argv[])
@@ -577,6 +649,7 @@ int main(int argc, char *argv[])
   UT_array *bin_path_arr;
   UT_array *config_ifinfo_arr;
   UT_array *mac_conn_arr;
+  UT_array *server_arr;
   struct app_config config;
 
   // Create the empty dynamic array for bin path strings
@@ -591,6 +664,10 @@ int main(int argc, char *argv[])
   utarray_new(mac_conn_arr, &mac_conn_icd);
   config.connections = mac_conn_arr;
 
+  // Create the dns server array
+  utarray_new(server_arr, &ut_str_icd);
+  config.dns_config.server_array = server_arr;
+
   process_app_options(argc, argv, &verbosity, &filename);
 
   if (verbosity > MAX_LOG_LEVELS) {
@@ -604,6 +681,12 @@ int main(int argc, char *argv[])
   if (optind <= 1) show_app_help(argv[0]);
 
   load_app_config(filename, &config);
+
+  // Kill all edgesec processes if running
+  if(!kill_process(get_app_name(argv[0]))){
+    exit(1);
+  }
+
   if (!run_engine(&config, level)) {
     fprintf(stderr, "Failed to start edgesec engine.\n");
   } else
@@ -612,5 +695,6 @@ int main(int argc, char *argv[])
   utarray_free(bin_path_arr);
   utarray_free(config_ifinfo_arr);
   utarray_free(mac_conn_arr);
+  utarray_free(server_arr);
   exit(0);
 }

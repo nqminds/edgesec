@@ -169,15 +169,16 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
   int hostapd_fd = -1;
   char *commands[] = {"ip", "iw", "iptables", NULL};
   char *nat_ip = NULL;
+
+  // Set the log level
+  log_set_level(log_level);
+
   struct radius_client *client = init_radius_client(&app_config->rconfig, get_mac_conn);
 
   if (!init_context(app_config)) {
     log_trace("init_context fail");
     goto run_engine_fail;
   }
-
-  // Set the log level
-  log_set_level(log_level);
 
   log_info("AP name: %s", app_config->hconfig.ssid);
   log_info("AP interface: %s", app_config->hconfig.interface);

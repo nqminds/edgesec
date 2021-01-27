@@ -5,13 +5,14 @@ Below is an example of the configuration file that is passed as a parameter to `
 [system]
 binPath = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"
 hashIpCommand = ""
-createInterfaces = false
-ignoreErrorOnIfCreate = false
+createInterfaces = true
+ignoreErrorOnIfCreate = true
 allowAllConnections = false
 apDetect = false
-execHostapd = false
 defaultOpenVlanId = 0
-execRadius = false
+execHostapd = true
+execRadius = true
+execDhcp = true
 
 [supervisor]
 domainServerPath = /tmp/edgesec-domain-server
@@ -19,7 +20,8 @@ domainServerPath = /tmp/edgesec-domain-server
 [hostapd]
 hostapdBinPath = "./hostapd"
 hostapdFilePath = "/tmp/hostapd.conf"
-interface = "wlan5"
+hostapdLogPath = "/tmp/hostapd.log"
+interface = "wifiap0"
 ssid = "IOTH_IMX7"
 wpaPassphrase = "1234554321"
 bridge = "br0"
@@ -52,7 +54,14 @@ serverMask = 32
 secret = "radius"
 
 [nat]
-natInterface = "wlan3"
+natInterface = "enp2s0"
+
+[dns]
+servers="8.8.4.4,8.8.8.8"
+
+[dhcp]
+dhcpConfigPath = "/tmp/dnsmasq.conf"
+dhcpScriptPath = "/tmp/dnsmasq_exec.sh"
 
 [connections]
 con1 = "d,04:f0:21:5a:f4:c4,0,1,1234554321"
@@ -62,7 +71,7 @@ con4 = "d,60:70:c0:0a:23:ba,3,1,1234554321"
 con5 = "d,00:0f:00:70:62:88,4,1,1234554321"
 con6 = "d,9c:ef:d5:fd:db:56,5,1,1234554321"
 con7 = "d,c0:ee:fb:d5:5a:ec,6,1,1234554321"
-con8 = "a,00:0f:60:0b:6a:07,7,1,1234554321"
+con8 = "a,00:0f:00:70:62:88,7,1,1234554321"
 
 [interfaces]
 subnetMask = "255.255.255.0"
@@ -85,6 +94,8 @@ The configuration file is based on the ```ini``` file type format. Each paramete
 * *[hostapd]*
 * *[radius]*
 * *[nat]*
+* *[dns]*
+* *[dhcp]*
 * *[connections]*
 * *[interfaces]*
 
@@ -109,14 +120,17 @@ If set to ```true```, ```edgesec``` will allow all WiFi connection requests rega
 ### apDetect (boolean)
 If set to ```true```, ```edgesec``` will try to detect the WiFi network interfaces that supports VLAN capability. The detected network interface will be used by ```hostapd``` service to create an AP.
 
-### execHostapd (boolean)
-If set to ```true```, ```edgesec``` will execute the ```hostapd``` service using ```excve``` system command. If set to ```false``` the ```hostapd``` service has to be run before executing ```edgesec```.
-
 ### defaultOpenVlanId (integer)
 The default VLAN ID positive integer number assigned to new devices if ```allowAllConnections``` flag is set to ```true```.
 
+### execHostapd (boolean)
+If set to ```true```, ```edgesec``` will execute the ```hostapd``` service using ```excve``` system command. If set to ```false``` the ```hostapd``` service has to be run before executing ```edgesec```.
+
 ### execRadius (boolean)
 If set to ```true```, ```edgesec``` will execute the ```radius``` service.
+
+### execDhcp (boolean)
+If set to ```true```, ```edgesec``` will execute the ```dhcp``` service.
 
 ## [supervisor] group
 The supervisor group defines the parameters to run the supervisor service.
@@ -231,6 +245,21 @@ The nat group defines the parameter for NAT interface.
 
 ### natInterface (string)
 The NAT interface name.
+
+## [dns] group
+The dns groups defines the parameters for the DNS server configuration.
+
+### servers (string)
+A comma delimited string of dns server IP addresses with the format ```x.y.z.q,a.b.c.d,...```.
+
+## [dhcp] group
+The dhpc groups defines the parameters for the DHCP server configuration.
+
+### dhcpConfigPath (string)
+The absolute path to the DHCP server configuration file
+
+### dhcpScriptPath (string)
+The absolute path to the DHCP server aditional executable script.
 
 ## [connections] group
 The connections groups defines the parameters for devices that connect to the WiFi AP.

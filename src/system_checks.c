@@ -27,6 +27,17 @@
 #include <stdbool.h>
 #include <netinet/in.h>
 #include <net/if.h>
+#include <errno.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <stdbool.h>
+#include <errno.h>
+#include <signal.h>
+#include <unistd.h>
+#include <libgen.h>
+#include <fcntl.h>
+
 
 #include "utils/utarray.h"
 #include "utils/hashmap.h"
@@ -65,14 +76,4 @@ hmap_str_keychar *check_systems_commands(char *commands[], UT_array *bin_path_ar
   }
 
   return hmap_bin_paths;
-}
-
-void check_iptables(void)
-{
-
-}
-
-void check_dnsmasq_service(void)
-{
-
 }

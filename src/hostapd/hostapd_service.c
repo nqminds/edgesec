@@ -60,18 +60,7 @@ long is_hostapd(char *path)
   return 0;
 }
 
-void kill_dir_fn(char *path, void *args)
-{
-  unsigned long pid;
-  if ((pid = is_hostapd(path)) != 0) {
-    if (kill(pid, SIGKILL) == -1)
-      log_err("kill");
-    else
-      log_trace("killed hostapd process with pid=%d",pid);
-  }
-}
-
-void find_dir_fn(char *path, void *args)
+bool find_dir_fn(char *path, void *args)
 {
   unsigned long pid;
   int *is_h = args;
@@ -80,6 +69,20 @@ void find_dir_fn(char *path, void *args)
     *is_h = 1;
   else
     *is_h = 0;
+
+  return true;
+}
+
+void get_hostapd_args(char *hostapd_bin_path, char *hostapd_file_path, char *hostapd_log_path, char *argv[])
+{
+  argv[0] = hostapd_bin_path;
+  if (strlen(hostapd_log_path)) {
+    argv[1] = HOSTAPD_LOG_FILE_OPTION;  /* ./hostapd -f hostapd.log hostapd.conf */
+    argv[2] = hostapd_log_path;
+    argv[3] = hostapd_file_path;
+  } else {
+    argv[1] = hostapd_file_path;        /* ./hostapd hostapd.conf */
+  }
 }
 
 int run_process(char *hostapd_bin_path, char *hostapd_file_path, char *hostapd_log_path)
@@ -89,15 +92,9 @@ int run_process(char *hostapd_bin_path, char *hostapd_file_path, char *hostapd_l
 
   // char *argv[4] = {"hostapd", "-B", hostapd_file_path, NULL};
   // char *argv[3] = {"hostapd", hostapd_file_path, NULL};
-  char *argv[5] = {hostapd_bin_path, NULL, NULL, NULL, NULL};
+  char *argv[5] = {NULL, NULL, NULL, NULL, NULL};
+  get_hostapd_args(hostapd_bin_path, hostapd_file_path, hostapd_log_path, argv);
 
-  if (strlen(hostapd_log_path)) {
-    argv[1] = HOSTAPD_LOG_FILE_OPTION;
-    argv[2] = hostapd_log_path;
-    argv[3] = hostapd_file_path;
-  } else {
-    argv[1] = hostapd_file_path;
-  }
   log_trace("Running hostapd process %s", hostapd_bin_path);
   log_trace("\t with params %s %s %s", argv[1], argv[2], argv[3]);
 
@@ -127,7 +124,7 @@ int run_process(char *hostapd_bin_path, char *hostapd_file_path, char *hostapd_l
   default:
     log_trace("hostapd child created with id=%d", child_pid);
     log_trace("Checking hostapd execution status...");
-    while ((ret = waitpid(child_pid, &status, WNOHANG)) == 0 && check_count < 4) {
+    while ((ret = waitpid(child_pid, &status, WNOHANG)) == 0 && check_count < 6) {
       check_count ++;
       sleep(3);
       log_trace("\ttry: %d", check_count);
@@ -178,8 +175,8 @@ int run_hostapd(struct hostapd_conf *hconf, struct radius_conf *rconf, bool exec
 
   if (exec_hostapd) {
     // Kill any running hostapd process
-    if (list_dir("/proc", kill_dir_fn, NULL) == -1) {
-      log_trace("list_dir fail");
+    if (!kill_process("hostapd")) {
+      log_trace("kill_process fail");
       return -1;
     }
 
@@ -188,9 +185,9 @@ int run_hostapd(struct hostapd_conf *hconf, struct radius_conf *rconf, bool exec
 
       log_trace("Killing hostapd process");
 
-      // Kill hostapd process if still running
-      if (list_dir("/proc", kill_dir_fn, NULL) == -1) {
-        log_trace("list_dir fail");
+      // Kill any running hostapd process
+      if (!kill_process("hostapd")) {
+        log_trace("kill_process fail");
         return -1;
       }
     }
@@ -225,8 +222,9 @@ int run_hostapd(struct hostapd_conf *hconf, struct radius_conf *rconf, bool exec
 
 bool close_hostapd(int sock)
 {
-  if (list_dir("/proc", kill_dir_fn, NULL) == -1) {
-    log_trace("list_dir fail");
+  // Kill any running hostapd process
+  if (!kill_process("hostapd")) {
+    log_trace("kill_process fail");
     return false;
   }
 

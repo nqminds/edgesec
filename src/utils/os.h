@@ -364,7 +364,7 @@ char *construct_path(char *path_left, char *path_right);
  */
 char* get_secure_path(UT_array *bin_path_arr, char *filename, char *filehash);
 
-typedef void(*list_dir_fn)(char *, void *args);
+typedef bool(*list_dir_fn)(char *, void *args);
 
 /**
  * @brief List the files in a directory
@@ -376,4 +376,11 @@ typedef void(*list_dir_fn)(char *, void *args);
  */
 int list_dir(char *dirpath, list_dir_fn fun, void *args);
 
+/**
+ * @brief Kill a process by name
+ * 
+ * @param proc_name The process name
+ * @return bool true on success, false otherwise 
+ */
+bool kill_process(char *proc_name);
 #endif /* OS_H */

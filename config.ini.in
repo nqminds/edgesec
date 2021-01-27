@@ -1,13 +1,14 @@
 [system]
 binPath = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"
 hashIpCommand = ""
-createInterfaces = false
-ignoreErrorOnIfCreate = false
+createInterfaces = true
+ignoreErrorOnIfCreate = true
 allowAllConnections = false
 apDetect = false
-execHostapd = true
 defaultOpenVlanId = 0
-execRadius = false
+execHostapd = true
+execRadius = true
+execDhcp = true
 
 [supervisor]
 domainServerPath = /tmp/edgesec-domain-server
@@ -51,6 +52,13 @@ secret = "radius"
 [nat]
 natInterface = "enp2s0"
 
+[dns]
+servers="8.8.4.4,8.8.8.8"
+
+[dhcp]
+dhcpConfigPath = "/tmp/dnsmasq.conf"
+dhcpScriptPath = "/tmp/dnsmasq_exec.sh"
+
 [connections]
 con1 = "d,04:f0:21:5a:f4:c4,0,1,1234554321"
 con2 = "d,30:52:cb:e9:00:8f,1,1,1234554321"
@@ -59,7 +67,7 @@ con4 = "d,60:70:c0:0a:23:ba,3,1,1234554321"
 con5 = "d,00:0f:00:70:62:88,4,1,1234554321"
 con6 = "d,9c:ef:d5:fd:db:56,5,1,1234554321"
 con7 = "d,c0:ee:fb:d5:5a:ec,6,1,1234554321"
-con8 = "a,00:0f:60:0b:6a:07,7,1,1234554321"
+con8 = "a,00:0f:00:70:62:88,7,1,1234554321"
 
 [interfaces]
 subnetMask = "255.255.255.0"

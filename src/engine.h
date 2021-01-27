@@ -34,6 +34,8 @@
 #include "utils/os.h"
 #include "hostapd/config_generator.h"
 #include "radius/radius_server.h"
+#include "dns/dns_service.h"
+#include "dhcp/dhcp_service.h"
 #include "if_service.h"
 #include "supervisor/mac_mapper.h"
 
@@ -46,6 +48,7 @@ struct app_config {
   bool                ap_detect;                            /**< Flag to detect an existing wifi interface to create the access point. */
   bool                exec_hostapd;                         /**< Flag to execute the hostapd service. */
   bool                exec_radius;                          /**< Flag to execute the radius service. */
+  bool                exec_dhcp;                            /**< Flag to execute the dhcp service. */
   char                nat_interface[IFNAMSIZ];              /**< The NAT interface string. */
   bool                create_interfaces;                    /**< Flag to create the WiFi subnet interfaces. */
   bool                ignore_if_error;                      /**< Flag if set ignores the errors if subnet already exists. */
@@ -57,6 +60,8 @@ struct app_config {
   UT_array            *connections;                         /**< MAC mapper to @c struct mac_conn. */
   struct radius_conf  rconfig;                              /**< Radius service configuration. */
   struct hostapd_conf hconfig;                              /**< Hostapd service configuration. */
+  struct dns_conf     dns_config;                           /**< DNS service configuration. */
+  struct dhcp_conf    dhcp_config;                          /**< DHCP service configuration. */
 };
 
 /**
