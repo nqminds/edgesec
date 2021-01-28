@@ -96,19 +96,19 @@ struct mac_conn_info get_mac_conn(uint8_t mac_addr[])
   return info;
 }
 
-bool create_if_mapper(struct app_config *app_config, hmap_if_conn **hmap)
+bool create_if_mapper(UT_array *config_ifinfo_array, hmap_if_conn **hmap)
 {
   config_ifinfo_t *p = NULL;
   in_addr_t addr;
 
-  if (app_config->config_ifinfo_array == NULL) {
+  if (config_ifinfo_array == NULL) {
     log_trace("config_ifinfo_array param is NULL");
     return false;
   }
 
-  while(p = (config_ifinfo_t *) utarray_next(app_config->config_ifinfo_array, p)) {
-    log_trace("Adding ifname=%s with ip=%s to mapper", p->ifname, p->ip_addr);
-    if(!ip_2_nbo(p->ip_addr, app_config->subnet_mask, &addr)) {
+  while(p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) {
+    log_trace("Adding ifname=%s with ip=%s and subnet_mask=%s to mapper", p->ifname, p->ip_addr, p->subnet_mask);
+    if(!ip_2_nbo(p->ip_addr, p->subnet_mask, &addr)) {
       log_trace("ip_2_nbo fail");
       free_if_mapper(hmap);
       return false;
@@ -124,11 +124,29 @@ bool create_if_mapper(struct app_config *app_config, hmap_if_conn **hmap)
   return true;
 }
 
+bool init_ifbridge_names(UT_array *config_ifinfo_array, char *if_bridge)
+{
+  config_ifinfo_t *p = NULL;
+
+  while(p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) {
+    if (snprintf(p->ifname, IFNAMSIZ, "%s%d", if_bridge, p->vlanid) < 0) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 bool init_context(struct app_config *app_config)
 {
   char *ctrl_if_path;
 
   os_memset(&context, 0, sizeof(struct supervisor_context));
+
+  if (!init_ifbridge_names(app_config->config_ifinfo_array, app_config->hconfig.vlan_bridge)) {
+    log_trace("init_ifbridge_names fail");
+    return false;
+  }
 
   context.allow_all_connections = app_config->allow_all_connections;
   context.default_open_vlanid = app_config->default_open_vlanid;
@@ -136,7 +154,6 @@ bool init_context(struct app_config *app_config)
 
   strncpy(context.wpa_passphrase, app_config->hconfig.wpa_passphrase, HOSTAPD_AP_SECRET_LEN);
   strncpy(context.nat_interface, app_config->nat_interface, IFNAMSIZ);
-  strncpy(context.subnet_mask, app_config->subnet_mask, IP_LEN);
 
   ctrl_if_path = construct_path(app_config->hconfig.ctrl_interface, app_config->hconfig.interface);
   if (ctrl_if_path == NULL) {
@@ -154,7 +171,7 @@ bool init_context(struct app_config *app_config)
   }
 
   log_info("Adding interfaces to the mapper...");
-  if (!create_if_mapper(app_config, &context.if_mapper)) {
+  if (!create_if_mapper(app_config->config_ifinfo_array, &context.if_mapper)) {
     log_debug("create_if_mapper fail");
     return false;
   }
@@ -167,7 +184,7 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
   struct radius_server_data *radius_srv = NULL;
   int domain_sock = -1;
   int hostapd_fd = -1;
-  char *commands[] = {"ip", "iw", "iptables", NULL};
+  char *commands[] = {"ip", "iw", "iptables", "dnsmasq", NULL};
   char *nat_ip = NULL;
 
   // Set the log level
@@ -238,8 +255,7 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
 
   if (app_config->create_interfaces) {
     log_info("Creating subnet interfaces...");
-    if (!create_subnet_ifs(app_config->config_ifinfo_array, app_config->subnet_mask,
-      app_config->ignore_if_error)) {
+    if (!create_subnet_ifs(app_config->config_ifinfo_array, app_config->ignore_if_error)) {
       log_debug("create_subnet_ifs fail");
       goto run_engine_fail;
     }

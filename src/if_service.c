@@ -60,7 +60,7 @@ uint8_t get_short_subnet(char *subnet_mask)
 
 }
 
-bool create_subnet_ifs(UT_array *ifinfo_array, char *subnet_mask, bool ignore_error)
+bool create_subnet_ifs(UT_array *ifinfo_array, bool ignore_error)
 {
   config_ifinfo_t *p = NULL;
   char longip[IP_LEN];
@@ -70,15 +70,10 @@ bool create_subnet_ifs(UT_array *ifinfo_array, char *subnet_mask, bool ignore_er
     return false;
   }
 
-  if (subnet_mask == NULL) {
-    log_trace("subnet_mask param is NULL");
-    return false;
-  }
-
   while(p = (config_ifinfo_t*) utarray_next(ifinfo_array, p)) {
-    snprintf(longip, IP_LEN,"%s/%d", p->ip_addr, get_short_subnet(subnet_mask));
+    snprintf(longip, IP_LEN,"%s/%d", p->ip_addr, get_short_subnet(p->subnet_mask));
 
-    log_trace("Creating ifname=%s ip_addr=%s brd_addr=%s subnet_mask=%s", p->ifname, p->ip_addr, p->brd_addr, subnet_mask);
+    log_trace("Creating ifname=%s ip_addr=%s brd_addr=%s subnet_mask=%s", p->ifname, p->ip_addr, p->brd_addr, p->subnet_mask);
 
     if (!create_interface(p->ifname, "bridge")) {
       log_trace("create_interface fail");

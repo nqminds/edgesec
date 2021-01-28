@@ -42,6 +42,7 @@
 #include "utils/utarray.h"
 #include "utils/os.h"
 #include "utils/if.h"
+#include "dhcp/dhcp_config.h"
 #include "engine.h"
 #include "if_service.h"
 
@@ -50,6 +51,7 @@
 
 static const UT_icd config_ifinfo_icd = {sizeof(config_ifinfo_t), NULL, NULL, NULL};
 static const UT_icd mac_conn_icd = {sizeof(struct mac_conn), NULL, NULL, NULL};
+static const UT_icd config_dhcpinfo_icd = {sizeof(config_dhcpinfo_t), NULL, NULL, NULL};
 
 static __thread char version_buf[10];
 
@@ -144,10 +146,12 @@ bool get_config_ifinfo(char *info, config_ifinfo_t *el)
 
   char **p = NULL;
   p = (char**) utarray_next(info_arr, p);
-  if (*p != NULL)
-    strcpy(el->ifname, *p);
-  else
-    goto err;  
+  if (*p != NULL) {
+    el->vlanid = (int) strtol(*p, NULL, 10);
+    if (errno == EINVAL)
+      goto err;
+  } else
+    goto err;
 
   p = (char**) utarray_next(info_arr, p);
   if (*p != NULL) {
@@ -158,6 +162,12 @@ bool get_config_ifinfo(char *info, config_ifinfo_t *el)
   p = (char**) utarray_next(info_arr, p);
   if (*p != NULL)
     strcpy(el->brd_addr, *p);
+  else
+    goto err;
+
+  p = (char**) utarray_next(info_arr, p);
+  if (*p != NULL)
+    strcpy(el->subnet_mask, *p);
   else
     goto err;
 
@@ -240,16 +250,39 @@ bool load_interface_list(const char *filename, struct app_config *config)
   while(ini_getkey("interfaces", idx++, key, INI_BUFFERSIZE, filename) > 0) {
     char *value = os_malloc(INI_BUFFERSIZE);
     int count = ini_gets("interfaces", key, "", value, INI_BUFFERSIZE, filename);
-    if (count && strlen(key) > 2) {
-      if (key[0] == 'i' && key[1] == 'f') {
-        config_ifinfo_t el;
-        if(!get_config_ifinfo(value, &el)) {
-          os_free(value);
-          os_free(key);
-          return false;
-        }
-        utarray_push_back(config->config_ifinfo_array, &el);
+    if (strstr(key, "if") == (char *)key) {
+      config_ifinfo_t el;
+      if(!get_config_ifinfo(value, &el)) {
+        os_free(value);
+        os_free(key);
+        return false;
       }
+      utarray_push_back(config->config_ifinfo_array, &el);
+    }
+    os_free(value);
+    os_free(key);
+    key = os_malloc(INI_BUFFERSIZE);
+  }
+
+  os_free(key);
+  return true;
+}
+
+bool load_dhcp_list(const char *filename, struct app_config *config)
+{
+  char *key = os_malloc(INI_BUFFERSIZE);
+  int idx = 0;
+  while(ini_getkey("dhcp", idx++, key, INI_BUFFERSIZE, filename) > 0) {
+    char *value = os_malloc(INI_BUFFERSIZE);
+    int count = ini_gets("dhcp", key, "", value, INI_BUFFERSIZE, filename);
+    if (strstr(key, "dhcpRange") == (char *)key) {
+      config_ifinfo_t el;
+      if(!get_config_ifinfo(value, &el)) {
+        os_free(value);
+        os_free(key);
+        return false;
+      }
+      utarray_push_back(config->config_ifinfo_array, &el);
     }
     os_free(value);
     os_free(key);
@@ -577,26 +610,9 @@ void load_app_config(const char *filename, struct app_config *config)
   strncpy(config->nat_interface, value, IFNAMSIZ);
   os_free(value);
 
-  // Load the subnet mask
-  value = os_malloc(INI_BUFFERSIZE);
-  int ret = ini_gets("interfaces", "subnetMask", "", value, INI_BUFFERSIZE, filename);
-  if (!ret) {
-    fprintf(stderr, "subnetMask was not specified\n");
-    exit(1);
-  }
-
-  strncpy(config->subnet_mask, value, IP_LEN);
-  os_free(value);
-
-  // Load the list of interfaces
-  if(!load_interface_list(filename, config)) {
-    fprintf(stderr, "Interface list parsing error.\n");
-    exit(1);
-  }
-
   // Load domainServerPath
   value = os_malloc(INI_BUFFERSIZE);
-  ret = ini_gets("supervisor", "domainServerPath", "", value, INI_BUFFERSIZE, filename);
+  int ret = ini_gets("supervisor", "domainServerPath", "", value, INI_BUFFERSIZE, filename);
   if (!ret) {
     fprintf(stderr, "Domain server path was not specified\n");
     exit(1);
@@ -608,11 +624,8 @@ void load_app_config(const char *filename, struct app_config *config)
   // Load allow all connection flag
   config->allow_all_connections = ini_getbool("system", "allowAllConnections", 0, filename);
 
-  // Load the list of connections
-  if(!load_connection_list(filename, config)) {
-    fprintf(stderr, "Connection list parsing error.\n");
-    exit(1);
-  }
+  // Load killRunningProcess flag
+  config->kill_running_proc = ini_getbool("system", "killRunningProcess", 0, filename);
 
   // Load hostapd radius config params
   if(!load_radius_conf(filename, config)) {
@@ -626,13 +639,27 @@ void load_app_config(const char *filename, struct app_config *config)
     exit(1);
   }
 
+  // Load the DNS server configuration
   if(!load_dns_conf(filename, config)) {
     fprintf(stderr, "dns config parsing error.\n");
     exit(1);
   }
 
+  // Load the DHCP server configuration
   if(!load_dhcp_conf(filename, config)) {
     fprintf(stderr, "dhcp config parsing error.\n");
+    exit(1);
+  }
+
+  // Load the list of connections
+  if(!load_connection_list(filename, config)) {
+    fprintf(stderr, "Connection list parsing error.\n");
+    exit(1);
+  }
+
+  // Load the list of interfaces
+  if(!load_interface_list(filename, config)) {
+    fprintf(stderr, "Interface list parsing error.\n");
     exit(1);
   }
 }
@@ -683,8 +710,11 @@ int main(int argc, char *argv[])
   load_app_config(filename, &config);
 
   // Kill all edgesec processes if running
-  if(!kill_process(get_app_name(argv[0]))){
-    exit(1);
+  if (config.kill_running_proc) {
+    if(!kill_process(get_app_name(argv[0]))){
+      fprintf(stderr, "kill_process fail.\n");
+      exit(1);
+    }
   }
 
   if (!run_engine(&config, level)) {

@@ -27,7 +27,7 @@
 #define SUPERVISOR_H
 
 #include <stdbool.h>
-#include "../hostapd/config_generator.h"
+#include "../hostapd/hostapd_config.h"
 #include "../utils/if.h"
 
 #include "mac_mapper.h"

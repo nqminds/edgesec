@@ -376,6 +376,16 @@ typedef bool(*list_dir_fn)(char *, void *args);
  */
 int list_dir(char *dirpath, list_dir_fn fun, void *args);
 
+
+/**
+ * @brief Check if a process path from /proc folder contains the process name
+ * 
+ * @param path The process path from /proc fodler
+ * @param proc_name The process name
+ * @return long The process PID
+ */
+long is_proc_app(char *path, char *proc_name);
+
 /**
  * @brief Kill a process by name
  * 
@@ -383,4 +393,12 @@ int list_dir(char *dirpath, list_dir_fn fun, void *args);
  * @return bool true on success, false otherwise 
  */
 bool kill_process(char *proc_name);
+
+/**
+ * @brief Executes a process with an array of strign arguments
+ * 
+ * @param argv The array of string arguments terminated with NULL and the first argument is the absolute path of the process.
+ * @return int 1 if process started, 0 if the child specified by pid exist, but have not yet changed state, -1 on error
+ */
+int run_process(char *argv[]);
 #endif /* OS_H */

@@ -8,6 +8,7 @@ add_subdirectory(utils)
 add_subdirectory(supervisor)
 add_subdirectory(radius)
 add_subdirectory(hostapd)
+add_subdirectory(dhcp)
 
 add_executable(test_mac_mapper test_mac_mapper.c)
 target_link_libraries(test_mac_mapper log system_checks os mac_mapper ${CMOCKA_LIB})

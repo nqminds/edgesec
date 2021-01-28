@@ -34,11 +34,10 @@
  * @brief Create the subnet interface
  * 
  * @param ifinfo_array Interface info array
- * @param subnet_mask Interface subnet mask
  * @param ignore_error Flag to ignore error if subnet already exists
  * @return true succes, false if creation fails with error
  */
-bool create_subnet_ifs(UT_array *ifinfo_array, char *subnet_mask, bool ignore_error);
+bool create_subnet_ifs(UT_array *ifinfo_array, bool ignore_error);
 
 /**
  * @brief Check if interface has the VLAN capability

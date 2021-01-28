@@ -33,7 +33,7 @@
 #include <libgen.h>
 #include <fcntl.h>
 
-#include "config_generator.h"
+#include "hostapd_config.h"
 #include "radius/radius_server.h"
 #include "utils/os.h"
 #include "utils/if.h"
@@ -41,40 +41,29 @@
 
 #define HOSTAPD_LOG_FILE_OPTION "-f"
 
-long is_hostapd(char *path)
-{
-  char exe_path[MAX_OS_PATH_LEN];
-  char resolved_path[MAX_OS_PATH_LEN];
-
-  unsigned long pid = strtoul(basename(path), NULL, 10);
-
-  if (errno != ERANGE && pid != 0L) {
-    snprintf(exe_path, MAX_OS_PATH_LEN - 1, "%s/exe", path);
-    if (realpath(exe_path, resolved_path) != NULL) {
-      if (strcmp(basename(resolved_path), "hostapd") == 0) {
-        return pid;
-      }
-    }
-  }
-
-  return 0;
-}
+struct find_dir_type {
+  int hostapd_running;
+  char *proc_name;
+};
 
 bool find_dir_fn(char *path, void *args)
 {
   unsigned long pid;
-  int *is_h = args;
+  struct find_dir_type *dir_args = (struct find_dir_type *)args;
 
-  if ((pid = is_hostapd(path)) != 0)
-    *is_h = 1;
+  if ((pid = is_proc_app(path, dir_args->proc_name)) != 0)
+    dir_args->hostapd_running = 1;
   else
-    *is_h = 0;
+    dir_args->hostapd_running = 0;
 
   return true;
 }
 
 void get_hostapd_args(char *hostapd_bin_path, char *hostapd_file_path, char *hostapd_log_path, char *argv[])
 {
+  // argv = {"hostapd", "-B", hostapd_file_path, NULL};
+  // argv = {"hostapd", hostapd_file_path, NULL};
+
   argv[0] = hostapd_bin_path;
   if (strlen(hostapd_log_path)) {
     argv[1] = HOSTAPD_LOG_FILE_OPTION;  /* ./hostapd -f hostapd.log hostapd.conf */
@@ -83,63 +72,6 @@ void get_hostapd_args(char *hostapd_bin_path, char *hostapd_file_path, char *hos
   } else {
     argv[1] = hostapd_file_path;        /* ./hostapd hostapd.conf */
   }
-}
-
-int run_process(char *hostapd_bin_path, char *hostapd_file_path, char *hostapd_log_path)
-{
-  pid_t child_pid, ret;
-  int status, check_count = 0;
-
-  // char *argv[4] = {"hostapd", "-B", hostapd_file_path, NULL};
-  // char *argv[3] = {"hostapd", hostapd_file_path, NULL};
-  char *argv[5] = {NULL, NULL, NULL, NULL, NULL};
-  get_hostapd_args(hostapd_bin_path, hostapd_file_path, hostapd_log_path, argv);
-
-  log_trace("Running hostapd process %s", hostapd_bin_path);
-  log_trace("\t with params %s %s %s", argv[1], argv[2], argv[3]);
-
-  switch (child_pid = fork()) {
-  case -1:            /* fork() failed */
-    log_err("fork");
-    return -1;
-
-  case 0:                           /* Child: exec command */
-    /* redirect stdout, stdin and stderr to /dev/null */
-    close(STDIN_FILENO);
-
-    /* Reopen standard fd's to /dev/null */
-    int fd = open("/dev/null", O_RDWR);
-
-    if (fd != STDIN_FILENO)         /* 'fd' should be 0 */
-      return -1;
-    if (dup2(STDIN_FILENO, STDOUT_FILENO) != STDOUT_FILENO)
-      return -1;
-    if (dup2(STDIN_FILENO, STDERR_FILENO) != STDERR_FILENO)
-      return -1;
-
-    execv(hostapd_bin_path, argv);
-
-    log_err("execv");
-    return -1;       /* We could not exec the command */
-  default:
-    log_trace("hostapd child created with id=%d", child_pid);
-    log_trace("Checking hostapd execution status...");
-    while ((ret = waitpid(child_pid, &status, WNOHANG)) == 0 && check_count < 6) {
-      check_count ++;
-      sleep(3);
-      log_trace("\ttry: %d", check_count);
-    }
-    if (ret > 0) {
-      if (WIFEXITED(status)) {
-        log_trace("excve status %d", WEXITSTATUS(status));
-        return 1;
-      }
-    } else if (ret == -1)
-      return -1;
-    break;
-  }
-
-  return 0;
 }
 
 int check_ctrl_if_exists(char *ctrl_if_path)
@@ -160,7 +92,11 @@ int check_ctrl_if_exists(char *ctrl_if_path)
 int run_hostapd(struct hostapd_conf *hconf, struct radius_conf *rconf, bool exec_hostapd, char *ctrl_if_path)
 {
   int ret;
-  int hostapd_running = 0;
+  char *proc_name = basename(hconf->hostapd_bin_path);
+  struct find_dir_type dir_args = {.hostapd_running = 0, .proc_name = proc_name};
+
+  char *process_argv[5] = {NULL, NULL, NULL, NULL, NULL};
+  get_hostapd_args(hconf->hostapd_bin_path, hconf->hostapd_file_path, hconf->hostapd_log_path, process_argv);
 
   if (!generate_vlan_conf(hconf->vlan_file, hconf->interface)) {
     log_trace("generate_vlan_conf fail");
@@ -175,18 +111,18 @@ int run_hostapd(struct hostapd_conf *hconf, struct radius_conf *rconf, bool exec
 
   if (exec_hostapd) {
     // Kill any running hostapd process
-    if (!kill_process("hostapd")) {
+    if (!kill_process(proc_name)) {
       log_trace("kill_process fail");
       return -1;
     }
 
-    while((ret = run_process(hconf->hostapd_bin_path, hconf->hostapd_file_path, hconf->hostapd_log_path)) > 0) {
+    while((ret = run_process(process_argv)) > 0) {
       sleep(2);
 
       log_trace("Killing hostapd process");
 
       // Kill any running hostapd process
-      if (!kill_process("hostapd")) {
+      if (!kill_process(proc_name)) {
         log_trace("kill_process fail");
         return -1;
       }
@@ -197,12 +133,12 @@ int run_hostapd(struct hostapd_conf *hconf, struct radius_conf *rconf, bool exec
       return -1;
     }
 
-    if (list_dir("/proc", find_dir_fn, (void *)&hostapd_running) == -1) {
+    if (list_dir("/proc", find_dir_fn, (void *)&dir_args) == -1) {
       log_trace("list_dir fail");
       return -1;
     }
 
-    if (hostapd_running)
+    if (dir_args.hostapd_running)
       log_trace("hostapd running");
     else {
       log_trace("hostapd is not running");

@@ -32,7 +32,7 @@
 #include "utils/utarray.h"
 #include "utils/hashmap.h"
 #include "utils/os.h"
-#include "hostapd/config_generator.h"
+#include "hostapd/hostapd_config.h"
 #include "radius/radius_server.h"
 #include "dns/dns_service.h"
 #include "dhcp/dhcp_service.h"
@@ -53,10 +53,10 @@ struct app_config {
   bool                create_interfaces;                    /**< Flag to create the WiFi subnet interfaces. */
   bool                ignore_if_error;                      /**< Flag if set ignores the errors if subnet already exists. */
   int                 default_open_vlanid;                  /**< Sets the default vlan index for open connections or if MAC is not in the list of connections. */
-  UT_array            *config_ifinfo_array;                 /**< Interface list mapping interface name and IP address range. */
-  char                subnet_mask[IP_LEN];                  /**< Subnet mask string for WiFi subnets. */
+  UT_array            *config_ifinfo_array;                 /**< Interface list mapping bridge interface name and IP address range. */
   char                domain_server_path[MAX_OS_PATH_LEN];  /**< Path to the control server. */
   bool                allow_all_connections;                /**< Flag to allow all connections. */
+  bool                kill_running_proc;                    /**< Flag to terminate running app processes. */
   UT_array            *connections;                         /**< MAC mapper to @c struct mac_conn. */
   struct radius_conf  rconfig;                              /**< Radius service configuration. */
   struct hostapd_conf hconfig;                              /**< Hostapd service configuration. */

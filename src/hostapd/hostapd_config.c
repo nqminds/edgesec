@@ -26,7 +26,7 @@
 #include <stdbool.h>
 #include <errno.h>
 
-#include "config_generator.h"
+#include "hostapd_config.h"
 #include "utils/log.h"
 
 bool generate_vlan_conf(char *vlan_file, char *interface)

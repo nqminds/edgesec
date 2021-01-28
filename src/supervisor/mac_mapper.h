@@ -31,7 +31,7 @@
 
 #include "bridge_list.h"
 
-#include "../hostapd/config_generator.h"
+#include "../hostapd/hostapd_config.h"
 
 #include "../utils/os.h"
 #include "../utils/utarray.h"

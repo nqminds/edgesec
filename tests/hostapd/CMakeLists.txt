@@ -4,7 +4,7 @@ include_directories(
 )
 
 add_executable(test_config_generator test_config_generator.c)
-target_link_libraries(test_config_generator config_generator log ${CMOCKA_LIB})
+target_link_libraries(test_config_generator hostapd_config log ${CMOCKA_LIB})
 
 add_test(NAME test_config_generator COMMAND test_config_generator)
 set_tests_properties(test_config_generator

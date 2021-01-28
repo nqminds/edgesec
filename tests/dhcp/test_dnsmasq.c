@@ -13,36 +13,20 @@
 #include <cmocka.h>
 
 #include "utils/log.h"
-#include "hostapd/hostapd_config.h"
+#include "dhcp/dnsmasq.h"
 
-static char *test_hostapd_vlan_file = "/tmp/hostapd-test.vlan";
-static char *test_hostapd_conf_file = "/tmp/hostapd-test.conf";
-static char *test_hostapd_conf_content =
-"interface=wlan0\n"
+static char *test_dhcp_conf_path = "/tmp/dnsmasq.conf";
+static char *test_dhcp_script_path = "/tmp/dnsmasq_exec.sh";
+static char *test_dhcp_conf_content =
+"no-resolv\n"
 "bridge=br0\n"
-"driver=nl80211\n"
-"ssid=IOTH_IMX7\n"
-"hw_mode=g\n"
-"channel=11\n"
-"wmm_enabled=1\n"
-"auth_algs=1\n"
-"wpa=2\n"
-"wpa_key_mgmt=WPA-PSK\n"
-"rsn_pairwise=CCMP\n"
-"ctrl_interface=/var/run/hostapd\n"
-"own_ip_addr=192.168.1.2\n"
-"auth_server_addr=192.168.1.1\n"
-"auth_server_port=1812\n"
-"auth_server_shared_secret=radius\n"
-"macaddr_acl=2\n"
-"dynamic_vlan=1\n"
-"vlan_bridge=br\n"
-"vlan_file=/tmp/hostapd-test.vlan\n"
-"logger_stdout=-1\n"
-"logger_stdout_level=0\n"
-"logger_syslog=-1\n"
-"logger_syslog_level=0\n"
-"ignore_broadcast_ssid=0\n"
+"server=8.8.4.4\n"
+"server=8.8.8.8\n"
+"dhcp-script=/tmp/dnsmasq_exec.sh\n"
+"dhcp-range=wifi_if,10.0.0.1,10.0.0.254,255.255.255.0,24h\n"
+"dhcp-range=wifi_if.1,10.0.1.1,10.0.1.254,255.255.255.0,24h\n"
+"dhcp-range=wifi_if.2,10.0.2.1,10.0.2.254,255.255.255.0,24h\n"
+"dhcp-range=wifi_if.3,10.0.3.1,10.0.3.254,255.255.255.0,24h\n"
 "wpa_psk_radius=2\n";
 
 static char *test_hostapd_vlan_content = "*\twlan0.#\n";

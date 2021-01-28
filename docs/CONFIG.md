@@ -123,6 +123,9 @@ If set to ```true```, ```edgesec``` will try to detect the WiFi network interfac
 ### defaultOpenVlanId (integer)
 The default VLAN ID positive integer number assigned to new devices if ```allowAllConnections``` flag is set to ```true```.
 
+### killRunningProcess (boolean)
+If set to true the current running ```edgesec``` will terminate exisiting running ```edgesec``` processes.
+
 ### execHostapd (boolean)
 If set to ```true```, ```edgesec``` will execute the ```hostapd``` service using ```excve``` system command. If set to ```false``` the ```hostapd``` service has to be run before executing ```edgesec```.
 
@@ -286,9 +289,10 @@ The WiFi subnet mask with format ```x.y.z.q```.
 ### if(idx) (string)
 The ```if``` indexed by ```idx≥0``` defines the network interfaces for a particular subnet. It has the following format:
 ```
-ifname,ip0,ipn
+vlanid,ip0,ipn,mask
 ```
 where
- - ```ifname``` - is the network interface name for this particular subnet,
+ - ```vlanid``` - is the VLAN ID,
  - ```ip0``` - the subnet starting IP address with format ```x.y.z.q```,
- - ```ipn``` - the subnet ending IP address with format ```x.y.z.q```.
+ - ```ipn``` - the subnet ending IP address with format ```x.y.z.q``` and
+ - ```mask``` - the subnet mask IP address with format ```x.y.z.q```.

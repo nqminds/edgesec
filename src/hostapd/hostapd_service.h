@@ -30,7 +30,7 @@
 #include <linux/if.h>
 #include <stdbool.h>
 
-#include "config_generator.h"
+#include "hostapd_config.h"
 #include "../radius/radius_server.h"
 #include "../utils/os.h"
 #include "../utils/if.h"
@@ -42,7 +42,7 @@
  * @param rconf The radius configuration structure
  * @param exec_hostapd If set executes the hostapd process, if false only generates confgi files
  * @param ctrl_if_path The path of the hostapd control interface
- * @return int 
+ * @return int 0 on success, -1 on error
  */
 int run_hostapd(struct hostapd_conf *hconf, struct radius_conf *rconf, bool exec_hostapd, char *ctrl_if_path);
 

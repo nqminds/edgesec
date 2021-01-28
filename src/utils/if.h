@@ -73,10 +73,12 @@ struct iplink_req {
  * @brief Interface configuration info structure
  * 
  */
-typedef struct {
+typedef struct config_ifinfo_t{
+	int       					vlanid;                 /**< Interface VLAN ID */
 	char 						ifname[IFNAMSIZ];		/**< Interface string name */
 	char 						ip_addr[IP_LEN];		/**< Interface string IP address */
 	char 						brd_addr[IP_LEN];		/**< Interface string IP broadcast address */
+	char 						subnet_mask[IP_LEN];	/**< Interface string IP subnet mask */
 } config_ifinfo_t;
 
 /**

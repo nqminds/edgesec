@@ -18,26 +18,33 @@
  ****************************************************************************/
 
 /**
- * @file dhcp_service.h
+ * @file dhcp_config.h
  * @author Alexandru Mereacre 
- * @brief File containing the definition of dhcp service configuration utilities.
+ * @brief File containing the definition of dhcp configuration structures.
  */
-#ifndef DHCP_SERVICE_H
-#define DHCP_SERVICE_H
+#ifndef DHCP_CONFIG_H
+#define DHCP_CONFIG_H
 
-#include "dhcp_config.h"
 #include "../utils/os.h"
 #include "../utils/utarray.h"
 
+#define DHCP_LEASE_TIME_SIZE  10
+
+typedef struct config_dhcpinfo_t {
+	int       			        vlanid;                                     /**< Interface VLAN ID */
+	char 						ip_addr_low[IP_LEN];		                /**< Interface string IP address lower bound*/
+	char 						ip_addr_upp[IP_LEN];		                /**< Interface string IP address upper bound*/
+	char 						subnet_mask[IP_LEN];	                    /**< Interface string IP subnet mask */
+  char 						    lease_time[DHCP_LEASE_TIME_SIZE];	        /**< Interface lease time string */
+} config_dhcpinfo_t;
+
 /**
- * @brief Run the DHCP server
+ * @brief The dhcp configuration structures.
  * 
- * @param dconf The dhcp configuration structures
- * @param config_ifinfo_array Interface list mapping bridge interface name and IP address range.
- * @param interface The WiFi AP interface name.
- * @param dns_server_array The array including the DNS servers IP addresses.
- * @return int 0 on success, -1 on error
  */
-int run_dhcpserver(struct dhcp_conf *dconf, UT_array *config_ifinfo_array,
-  char *interface, UT_array *dns_server_array);
+struct dhcp_conf {
+  char dhcp_conf_path[MAX_OS_PATH_LEN];                 /**< The dhcp config path string */
+  char dhcp_script_path[MAX_OS_PATH_LEN];               /**< The dhcp executable script path string */
+  UT_array  *config_dhcpinfo_array;                     /**< Array containg the mapping between VLAN ID sand IP address range. */
+};
 #endif

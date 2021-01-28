@@ -251,14 +251,15 @@ static void test_create_subnet_ifs(void **state)
   strcpy(el.ifname, "wlan0");
   strcpy(el.ip_addr, "127.0.0.1");
   strcpy(el.brd_addr, "127.0.0.255");
+  strcpy(el.subnet_mask, "255.255.255.0");
   utarray_push_back(ifinfo_array, &el);
 
-  bool ret = create_subnet_ifs(ifinfo_array, "255.255.255.0", false);
+  bool ret = create_subnet_ifs(ifinfo_array, false);
   utarray_free(ifinfo_array);
   assert_true(ret);
 
   ifinfo_array = NULL;
-  ret = create_subnet_ifs(ifinfo_array, "255.255.255.0", false);
+  ret = create_subnet_ifs(ifinfo_array, false);
   assert_false(ret);
 }
 

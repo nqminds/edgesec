@@ -27,7 +27,7 @@
 #include <stdbool.h>
 #include <dirent.h>
 #include <ctype.h>
-
+#include <fcntl.h>
 #include "utarray.h"
 #include "os.h"
 #include "log.h"
@@ -565,7 +565,7 @@ exit_list_dir:
   return 0;
 }
 
-long is_app(char *path, char *proc_name)
+long is_proc_app(char *path, char *proc_name)
 {
   char exe_path[MAX_OS_PATH_LEN];
   char resolved_path[MAX_OS_PATH_LEN];
@@ -589,7 +589,7 @@ bool kill_dir_fn(char *path, void *args)
   unsigned long pid;
   pid_t current_pid = getpid();
 
-  if ((pid = is_app(path, args)) != 0) {
+  if ((pid = is_proc_app(path, args)) != 0) {
     if (current_pid != pid) {
       if (kill(pid, SIGKILL) == -1) {
         log_err("kill");
@@ -611,4 +611,57 @@ bool kill_process(char *proc_name)
   }
 
   return true;
+}
+
+int run_process(char *argv[])
+{
+  pid_t child_pid, ret;
+  int status, check_count = 0;
+  int arg_idx = 0;
+
+  log_trace("Running process %s with params:", argv[0]);
+  while(argv[++arg_idx]) log_trace("\t %s", argv[arg_idx]);
+
+  switch (child_pid = fork()) {
+  case -1:            /* fork() failed */
+    log_err("fork");
+    return -1;
+
+  case 0:                           /* Child: exec command */
+    /* redirect stdout, stdin and stderr to /dev/null */
+    close(STDIN_FILENO);
+
+    /* Reopen standard fd's to /dev/null */
+    int fd = open("/dev/null", O_RDWR);
+
+    if (fd != STDIN_FILENO)         /* 'fd' should be 0 */
+      return -1;
+    if (dup2(STDIN_FILENO, STDOUT_FILENO) != STDOUT_FILENO)
+      return -1;
+    if (dup2(STDIN_FILENO, STDERR_FILENO) != STDERR_FILENO)
+      return -1;
+
+    execv(argv[0], argv);
+
+    log_err("execv");
+    return -1;       /* We could not exec the command */
+  default:
+    log_trace("process child created with id=%d", child_pid);
+    log_trace("Checking process execution status...");
+    while ((ret = waitpid(child_pid, &status, WNOHANG)) == 0 && check_count < 6) {
+      check_count ++;
+      sleep(3);
+      log_trace("\ttry: %d", check_count);
+    }
+    if (ret > 0) {
+      if (WIFEXITED(status)) {
+        log_trace("excve status %d", WEXITSTATUS(status));
+        return 1;
+      }
+    } else if (ret == -1)
+      return -1;
+    break;
+  }
+
+  return 0;
 }

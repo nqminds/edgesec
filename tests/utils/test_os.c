@@ -447,12 +447,14 @@ static void test_get_secure_path(void **state)
   utarray_free(arr);
 }
 
-void dir_fn(char *dirpath, void *args)
+bool dir_fn(char *dirpath, void *args)
 {
   int *is_uname = args;
   if (strcmp(dirpath, "/bin/uname") == 0) {
     *is_uname = 1;
   }
+
+  return true;
 }
 
 static void test_list_dir(void **state)
