@@ -32,12 +32,22 @@
 /**
  * @brief Run the DHCP server
  * 
- * @param dconf The dhcp configuration structures
- * @param config_ifinfo_array Interface list mapping bridge interface name and IP address range.
+ * @param dhcp_bin_path The dhcp server binary path
+ * @param dconf The dhcp configuration structures.
  * @param interface The WiFi AP interface name.
  * @param dns_server_array The array including the DNS servers IP addresses.
+ * @param domain_server_path The UNIX domain server path.
  * @return int 0 on success, -1 on error
  */
-int run_dhcpserver(struct dhcp_conf *dconf, UT_array *config_ifinfo_array,
-  char *interface, UT_array *dns_server_array);
+int run_dhcp(char *dhcp_bin_path, struct dhcp_conf *dconf,
+  char *interface, UT_array *dns_server_array, char *domain_server_path);
+
+/**
+ * @brief Closes (terminates) dhcp process
+ * 
+ * @param sock Not used
+ * @return true success, false otherwise
+ */
+bool close_dhcp(int sock);
+
 #endif

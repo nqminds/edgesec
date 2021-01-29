@@ -565,17 +565,49 @@ exit_list_dir:
   return 0;
 }
 
+bool is_string_in_file(char *filename, char *str)
+{
+  FILE *fp = fopen(filename, "r");
+  char read;
+  uint32_t match_idx = 0;
+  if (fp == NULL) {
+    log_err("fopen");
+    return false;
+  }
+
+  while ((read = (char)fgetc(fp)) != EOF && strlen(str)) {
+    if (match_idx < strlen(str)) {
+      if (read == str[match_idx])
+        match_idx ++;
+      else
+        match_idx = 0;
+
+      if (match_idx == strlen(str)) {
+        fclose(fp);
+        return true;
+      }
+    }
+  }
+
+  fclose(fp);
+  return false;
+}
+
 long is_proc_app(char *path, char *proc_name)
 {
   char exe_path[MAX_OS_PATH_LEN];
+  char cmdline_path[MAX_OS_PATH_LEN];
   char resolved_path[MAX_OS_PATH_LEN];
 
   unsigned long pid = strtoul(basename(path), NULL, 10);
 
   if (errno != ERANGE && pid != 0L) {
     snprintf(exe_path, MAX_OS_PATH_LEN - 1, "%s/exe", path);
+    snprintf(cmdline_path, MAX_OS_PATH_LEN - 1, "%s/cmdline", path);
     if (realpath(exe_path, resolved_path) != NULL) {
-      if (strcmp(basename(resolved_path), proc_name) == 0) {
+      bool in_file = is_string_in_file(cmdline_path, proc_name);
+      log_trace("in_file=%d pid=%d %s", in_file, pid, cmdline_path);
+      if (strcmp(basename(resolved_path), proc_name) == 0 || in_file) {
         return pid;
       }
     }
@@ -591,6 +623,7 @@ bool kill_dir_fn(char *path, void *args)
 
   if ((pid = is_proc_app(path, args)) != 0) {
     if (current_pid != pid) {
+      log_trace("Found process pid=%d current_pid=%d", pid, current_pid);
       if (kill(pid, SIGKILL) == -1) {
         log_err("kill");
         return false;
@@ -605,6 +638,7 @@ bool kill_dir_fn(char *path, void *args)
 bool kill_process(char *proc_name)
 {
   // Kill a process process if running
+  log_trace("Killing process %s", proc_name);
   if (list_dir("/proc", kill_dir_fn, proc_name) == -1) {
     log_trace("list_dir fail");
     return false;

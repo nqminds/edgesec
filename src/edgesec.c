@@ -134,6 +134,57 @@ void process_app_options(int argc, char *argv[], uint8_t *verbosity,
   }
 }
 
+bool get_config_dhcpinfo(char *info, config_dhcpinfo_t *el)
+{
+  UT_array *info_arr;
+  utarray_new(info_arr, &ut_str_icd);
+
+  split_string_array(info, ',', info_arr);
+
+  if (!utarray_len(info_arr))
+    goto err;
+
+  char **p = NULL;
+  p = (char**) utarray_next(info_arr, p);
+  if (*p != NULL) {
+    el->vlanid = (int) strtol(*p, NULL, 10);
+    if (errno == EINVAL)
+      goto err;
+  } else
+    goto err;
+
+  p = (char**) utarray_next(info_arr, p);
+  if (*p != NULL) {
+    strcpy(el->ip_addr_low, *p);
+  } else
+    goto err;
+
+  p = (char**) utarray_next(info_arr, p);
+  if (*p != NULL)
+    strcpy(el->ip_addr_upp, *p);
+  else
+    goto err;
+
+  p = (char**) utarray_next(info_arr, p);
+  if (*p != NULL)
+    strcpy(el->subnet_mask, *p);
+  else
+    goto err;
+
+  p = (char**) utarray_next(info_arr, p);
+  if (*p != NULL)
+    strcpy(el->lease_time, *p);
+  else
+    goto err;
+
+  utarray_free(info_arr);
+  return true;
+
+err:
+  utarray_free(info_arr);
+  return false;
+}
+
 bool get_config_ifinfo(char *info, config_ifinfo_t *el)
 {
   UT_array *info_arr;
@@ -249,7 +300,7 @@ bool load_interface_list(const char *filename, struct app_config *config)
   int idx = 0;
   while(ini_getkey("interfaces", idx++, key, INI_BUFFERSIZE, filename) > 0) {
     char *value = os_malloc(INI_BUFFERSIZE);
-    int count = ini_gets("interfaces", key, "", value, INI_BUFFERSIZE, filename);
+    ini_gets("interfaces", key, "", value, INI_BUFFERSIZE, filename);
     if (strstr(key, "if") == (char *)key) {
       config_ifinfo_t el;
       if(!get_config_ifinfo(value, &el)) {
@@ -274,15 +325,15 @@ bool load_dhcp_list(const char *filename, struct app_config *config)
   int idx = 0;
   while(ini_getkey("dhcp", idx++, key, INI_BUFFERSIZE, filename) > 0) {
     char *value = os_malloc(INI_BUFFERSIZE);
-    int count = ini_gets("dhcp", key, "", value, INI_BUFFERSIZE, filename);
+    ini_gets("dhcp", key, "", value, INI_BUFFERSIZE, filename);
     if (strstr(key, "dhcpRange") == (char *)key) {
-      config_ifinfo_t el;
-      if(!get_config_ifinfo(value, &el)) {
+      config_dhcpinfo_t el;
+      if(!get_config_dhcpinfo(value, &el)) {
         os_free(value);
         os_free(key);
         return false;
       }
-      utarray_push_back(config->config_ifinfo_array, &el);
+      utarray_push_back(config->dhcp_config.config_dhcpinfo_array, &el);
     }
     os_free(value);
     os_free(key);
@@ -529,7 +580,7 @@ bool load_dns_conf(const char *filename, struct app_config *config)
   char *value = os_malloc(INI_BUFFERSIZE);
 
   // Load the DNS server addresses
-  ini_gets("system", "binPath", "", value, INI_BUFFERSIZE, filename);
+  ini_gets("dns", "servers", "", value, INI_BUFFERSIZE, filename);
   split_string_array(value, ',', config->dns_config.server_array);
   os_free(value);
 
@@ -563,6 +614,11 @@ bool load_dhcp_conf(const char *filename, struct app_config *config)
   strncpy(config->dhcp_config.dhcp_script_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
+  // Load the dhcprange params
+  if (!load_dhcp_list(filename, config)) {
+    fprintf(stderr, "load_dhcp_list parsing error\n");
+    return false;
+  }
   return true;
 }
 
@@ -675,6 +731,7 @@ int main(int argc, char *argv[])
   const char *filename = NULL;
   UT_array *bin_path_arr;
   UT_array *config_ifinfo_arr;
+  UT_array *config_dhcpinfo_arr;
   UT_array *mac_conn_arr;
   UT_array *server_arr;
   struct app_config config;
@@ -686,6 +743,10 @@ int main(int argc, char *argv[])
   // Create the config interface
   utarray_new(config_ifinfo_arr, &config_ifinfo_icd);
   config.config_ifinfo_array = config_ifinfo_arr;
+
+  // Create the dhcp config interface
+  utarray_new(config_dhcpinfo_arr, &config_dhcpinfo_icd);
+  config.dhcp_config.config_dhcpinfo_array = config_dhcpinfo_arr;
 
   // Create the connections list
   utarray_new(mac_conn_arr, &mac_conn_icd);
@@ -717,13 +778,14 @@ int main(int argc, char *argv[])
     }
   }
 
-  if (!run_engine(&config, level)) {
-    fprintf(stderr, "Failed to start edgesec engine.\n");
-  } else
-    fprintf(stderr, "Edgesec engine stopped.\n");
+  // if (!run_engine(&config, level)) {
+  //   fprintf(stderr, "Failed to start edgesec engine.\n");
+  // } else
+  //   fprintf(stderr, "Edgesec engine stopped.\n");
 
   utarray_free(bin_path_arr);
   utarray_free(config_ifinfo_arr);
+  utarray_free(config_dhcpinfo_arr);
   utarray_free(mac_conn_arr);
   utarray_free(server_arr);
   exit(0);

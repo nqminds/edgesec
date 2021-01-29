@@ -8,9 +8,10 @@ add_subdirectory(utils)
 add_subdirectory(supervisor)
 add_subdirectory(radius)
 add_subdirectory(hostapd)
+add_subdirectory(dhcp)
 
 add_library(engine engine.c)
-target_link_libraries(engine log if os if_service system_checks eloop supervisor radius_server mac_mapper hostapd_service iptables)
+target_link_libraries(engine log if os if_service system_checks eloop supervisor radius_server mac_mapper hostapd_service iptables dhcp_service)
 
 add_library(system_checks system_checks.c)
 target_link_libraries(system_checks log if iw os hashmap)

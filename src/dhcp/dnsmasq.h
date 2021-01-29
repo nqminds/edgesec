@@ -22,6 +22,7 @@
  * @author Alexandru Mereacre 
  * @brief File containing the definition of dnsmasq service configuration utilities.
  */
+
 #ifndef DNSMASQ_H
 #define DNSMASQ_H
 #include <net/if.h>
@@ -34,23 +35,30 @@
 /**
  * @brief Generates the dnsmasq configuration file
  * 
- * @param dhcp_conf_path The dhcp config path string.
- * @param dhcp_script_path The dhcp executable script path string.
- * @param config_ifinfo_array Interface list mapping bridge interface name and IP address range.
+ * @param dconf The dhcp configuration structure.
  * @param interface The WiFi AP interface name.
  * @param dns_server_array The array including the DNS servers IP addresses.
  * @return true on success, false otherwise
  */
-bool generate_dnsmasq_conf(char *dhcp_conf_path, char *dhcp_script_path,
-    UT_array *config_ifinfo_array, char *interface, UT_array *dns_server_array);
+bool generate_dnsmasq_conf(struct dhcp_conf *dconf, char *interface, UT_array *dns_server_array);
 
 /**
  * @brief Generates the dnsmasq executable script for DHCP requests.
  * 
- * @param dhcp_script_path The dhcp executable script path string
- * @param domain_server_path The UNIX domains server path
+ * @param dhcp_script_path The dhcp executable script path string.
+ * @param domain_server_path The UNIX domains server path.
  * @return true on success, false otherwise
  */
 bool generate_dnsmasq_script(char *dhcp_script_path, char *domain_server_path);
 
+/**
+ * @brief Generates the DHCP configs
+ * 
+ * @param dconf The dhcp configuration structure.
+ * @param interface The WiFi AP interface name.
+ * @param dns_server_array The array including the DNS servers IP addresses.
+ * @param domain_server_path The UNIX domains server path.
+ * @return true on success, false otherwise
+ */
+bool generate_dhcp_configs(struct dhcp_conf *dconf, char *interface, UT_array *dns_server_array, char *domain_server_path);
 #endif

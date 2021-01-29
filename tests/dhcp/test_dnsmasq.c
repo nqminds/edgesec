@@ -1,74 +1,126 @@
 #define _GNU_SOURCE
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#include <string.h>
-#include <inttypes.h>
+#include <fcntl.h>
+#include <ctype.h>
 #include <unistd.h>
+#include <pthread.h>
+#include <stdbool.h>
+#include <errno.h>
+#include <net/if.h>
+#include <libgen.h>
 #include <setjmp.h>
 #include <cmocka.h>
 
 #include "utils/log.h"
 #include "dhcp/dnsmasq.h"
+#include "dhcp/dhcp_config.h"
+
+static const UT_icd config_dhcpinfo_icd = {sizeof(config_dhcpinfo_t), NULL, NULL, NULL};
 
 static char *test_dhcp_conf_path = "/tmp/dnsmasq.conf";
 static char *test_dhcp_script_path = "/tmp/dnsmasq_exec.sh";
+static char *test_domain_server_path = "/tmp/edgesec-domain-server";
 static char *test_dhcp_conf_content =
 "no-resolv\n"
-"bridge=br0\n"
 "server=8.8.4.4\n"
 "server=8.8.8.8\n"
 "dhcp-script=/tmp/dnsmasq_exec.sh\n"
-"dhcp-range=wifi_if,10.0.0.1,10.0.0.254,255.255.255.0,24h\n"
-"dhcp-range=wifi_if.1,10.0.1.1,10.0.1.254,255.255.255.0,24h\n"
-"dhcp-range=wifi_if.2,10.0.2.1,10.0.2.254,255.255.255.0,24h\n"
-"dhcp-range=wifi_if.3,10.0.3.1,10.0.3.254,255.255.255.0,24h\n"
-"wpa_psk_radius=2\n";
+"dhcp-range=wifi_if,10.0.0.2,10.0.0.254,255.255.255.0,24h\n"
+"dhcp-range=wifi_if.1,10.0.1.2,10.0.1.254,255.255.255.0,24h\n"
+"dhcp-range=wifi_if.2,10.0.2.2,10.0.2.254,255.255.255.0,24h\n"
+"dhcp-range=wifi_if.3,10.0.3.2,10.0.3.254,255.255.255.0,24h\n";
 
-static char *test_hostapd_vlan_content = "*\twlan0.#\n";
+static char *test_dhcp_script_content =
+"#!/bin/sh\n"
+"str=\"SET_IP $1 $2 $3\"\n"
+"echo \"Sending $str ...\"\n"
+"echo $str | nc -uU /tmp/edgesec-domain-server -w2 -W1\n";
 
-static void test_generate_hostapd_conf(void **state)
+static char *interface="wifi_if";
+static char *dns_server="8.8.4.4,8.8.8.8";
+
+bool get_config_dhcpinfo(char *info, config_dhcpinfo_t *el)
+{
+  UT_array *info_arr;
+  utarray_new(info_arr, &ut_str_icd);
+
+  split_string_array(info, ',', info_arr);
+
+  if (!utarray_len(info_arr))
+    goto err;
+
+  char **p = NULL;
+  p = (char**) utarray_next(info_arr, p);
+  if (*p != NULL) {
+    el->vlanid = (int) strtol(*p, NULL, 10);
+    if (errno == EINVAL)
+      goto err;
+  } else
+    goto err;
+
+  p = (char**) utarray_next(info_arr, p);
+  if (*p != NULL) {
+    strcpy(el->ip_addr_low, *p);
+  } else
+    goto err;
+
+  p = (char**) utarray_next(info_arr, p);
+  if (*p != NULL)
+    strcpy(el->ip_addr_upp, *p);
+  else
+    goto err;
+
+  p = (char**) utarray_next(info_arr, p);
+  if (*p != NULL)
+    strcpy(el->subnet_mask, *p);
+  else
+    goto err;
+
+  p = (char**) utarray_next(info_arr, p);
+  if (*p != NULL)
+    strcpy(el->lease_time, *p);
+  else
+    goto err;
+
+  utarray_free(info_arr);
+  return true;
+
+err:
+  utarray_free(info_arr);
+  return false;
+}
+
+static void test_generate_dhcp_conf(void **state)
 {
   (void) state; /* unused */
-  struct hostapd_conf hconf;
-  strcpy(hconf.hostapd_file_path, test_hostapd_conf_file);
-  strcpy(hconf.interface, "wlan0");
-  strcpy(hconf.ssid, "IOTH_IMX7");
-  strcpy(hconf.wpa_passphrase, "1234554321");
-  strcpy(hconf.bridge, "br0");
-  strcpy(hconf.driver, "nl80211");
-  strcpy(hconf.hw_mode, "g");
-  hconf.channel = 11;
-  hconf.wmm_enabled = 1;
-  hconf.auth_algs = 1;
-  hconf.wpa = 2;
-  strcpy(hconf.wpa_key_mgmt, "WPA-PSK");
-  strcpy(hconf.rsn_pairwise, "CCMP");
-  strcpy(hconf.ctrl_interface, "/var/run/hostapd");
-  hconf.macaddr_acl = 2;
-  hconf.dynamic_vlan = 1;
-  strcpy(hconf.vlan_bridge, "br");
-  strcpy(hconf.vlan_file, "/tmp/hostapd-test.vlan");
-  hconf.logger_stdout = -1;
-  hconf.logger_stdout_level = 0;
-  hconf.logger_syslog = -1;
-  hconf.logger_syslog_level = 0;
-  hconf.ignore_broadcast_ssid = 0;
-  hconf.wpa_psk_radius = 2;
+  struct dhcp_conf dconf;
+  UT_array *server_arr;
+  config_dhcpinfo_t el;
 
-  struct radius_conf rconf;
-  strcpy(rconf.radius_server_ip, "192.168.1.1");
-  strcpy(rconf.radius_client_ip, "192.168.1.2");
-  rconf.radius_port = 1812;
-  strcpy(rconf.radius_secret, "radius");
-  bool ret = generate_hostapd_conf(&hconf, &rconf);
+  utarray_new(dconf.config_dhcpinfo_array, &config_dhcpinfo_icd);
+  utarray_new(server_arr, &ut_str_icd);
+
+  strcpy(dconf.dhcp_conf_path, test_dhcp_conf_path);
+  strcpy(dconf.dhcp_script_path, test_dhcp_script_path);
+
+  get_config_dhcpinfo("0,10.0.0.2,10.0.0.254,255.255.255.0,24h", &el);
+  utarray_push_back(dconf.config_dhcpinfo_array, &el);
+  get_config_dhcpinfo("1,10.0.1.2,10.0.1.254,255.255.255.0,24h", &el);
+  utarray_push_back(dconf.config_dhcpinfo_array, &el);
+  get_config_dhcpinfo("2,10.0.2.2,10.0.2.254,255.255.255.0,24h", &el);
+  utarray_push_back(dconf.config_dhcpinfo_array, &el);
+  get_config_dhcpinfo("3,10.0.3.2,10.0.3.254,255.255.255.0,24h", &el);
+  utarray_push_back(dconf.config_dhcpinfo_array, &el);
+
+  split_string_array(dns_server, ',', server_arr);
+
+  bool ret = generate_dnsmasq_conf(&dconf, interface, server_arr);
   assert_true(ret);
 
-  FILE *fp = fopen(test_hostapd_conf_file, "r");
+  FILE *fp = fopen(test_dhcp_conf_path, "r");
   assert_non_null(fp);
 
   long lSize;
@@ -81,23 +133,25 @@ static void test_generate_hostapd_conf(void **state)
   assert_non_null(buffer);
 
   size_t result = fread(buffer, 1, lSize, fp);
-  assert_int_equal(result, strlen(test_hostapd_conf_content));
-  int cmp = memcmp(buffer, test_hostapd_conf_content, result);
+  assert_int_equal(result, strlen(test_dhcp_conf_content));
+  int cmp = memcmp(buffer, test_dhcp_conf_content, result);
   assert_int_equal(cmp, 0);
 
   fclose(fp);
   free(buffer);
+
+  utarray_free(server_arr);
+  utarray_free(dconf.config_dhcpinfo_array);
 }
 
-static void test_generate_vlan_conf(void **state)
+static void test_generate_script_conf(void **state)
 {
   (void) state; /* unused */
 
-  bool ret = generate_vlan_conf(test_hostapd_vlan_file, "wlan0");
-
+  bool ret = generate_dnsmasq_script(test_dhcp_script_path, test_domain_server_path);
   assert_true(ret);
 
-  FILE *fp = fopen(test_hostapd_vlan_file, "r");
+  FILE *fp = fopen(test_dhcp_script_path, "r");
   assert_non_null(fp);
 
   long lSize;
@@ -110,9 +164,8 @@ static void test_generate_vlan_conf(void **state)
   assert_non_null(buffer);
 
   size_t result = fread(buffer, 1, lSize, fp);
-  assert_int_equal(result, strlen(test_hostapd_vlan_content));
-
-  int cmp = memcmp(buffer, test_hostapd_vlan_content, result);
+  assert_int_equal(result, strlen(test_dhcp_script_content));
+  int cmp = memcmp(buffer, test_dhcp_script_content, result);
   assert_int_equal(cmp, 0);
 
   fclose(fp);
@@ -124,8 +177,8 @@ int main(int argc, char *argv[])
   log_set_quiet(true);
 
   const struct CMUnitTest tests[] = {
-    cmocka_unit_test(test_generate_hostapd_conf),
-    cmocka_unit_test(test_generate_vlan_conf)
+    cmocka_unit_test(test_generate_dhcp_conf),
+    cmocka_unit_test(test_generate_script_conf)
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);
