@@ -778,10 +778,10 @@ int main(int argc, char *argv[])
     }
   }
 
-  // if (!run_engine(&config, level)) {
-  //   fprintf(stderr, "Failed to start edgesec engine.\n");
-  // } else
-  //   fprintf(stderr, "Edgesec engine stopped.\n");
+  if (!run_engine(&config, level)) {
+    fprintf(stderr, "Failed to start edgesec engine.\n");
+  } else
+    fprintf(stderr, "Edgesec engine stopped.\n");
 
   utarray_free(bin_path_arr);
   utarray_free(config_ifinfo_arr);

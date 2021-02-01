@@ -34,6 +34,11 @@
 
 #define MAX_64BIT_DIGITS 19
 
+struct find_dir_type {
+  int proc_running;
+  char *proc_name;
+};
+
 bool is_number(const char *ptr)
 {
   if (ptr == NULL)
@@ -565,31 +570,27 @@ exit_list_dir:
   return 0;
 }
 
-bool is_string_in_file(char *filename, char *str)
+bool is_string_in_cmdline_file(char *filename, char *str)
 {
   FILE *fp = fopen(filename, "r");
-  char read;
-  uint32_t match_idx = 0;
   if (fp == NULL) {
     log_err("fopen");
     return false;
   }
 
-  while ((read = (char)fgetc(fp)) != EOF && strlen(str)) {
-    if (match_idx < strlen(str)) {
-      if (read == str[match_idx])
-        match_idx ++;
-      else
-        match_idx = 0;
+  char *line = NULL;
+  size_t len = 0;
+  ssize_t nread;
 
-      if (match_idx == strlen(str)) {
-        fclose(fp);
-        return true;
-      }
+  while ((nread = getdelim(&line, &len, '\0', fp)) != -1) {
+    if (strstr(line, str)) {
+      free(line);
+      return true;
     }
+    free(line);
+    line = NULL;
   }
 
-  fclose(fp);
   return false;
 }
 
@@ -605,8 +606,7 @@ long is_proc_app(char *path, char *proc_name)
     snprintf(exe_path, MAX_OS_PATH_LEN - 1, "%s/exe", path);
     snprintf(cmdline_path, MAX_OS_PATH_LEN - 1, "%s/cmdline", path);
     if (realpath(exe_path, resolved_path) != NULL) {
-      bool in_file = is_string_in_file(cmdline_path, proc_name);
-      log_trace("in_file=%d pid=%d %s", in_file, pid, cmdline_path);
+      bool in_file = is_string_in_cmdline_file(cmdline_path, proc_name);
       if (strcmp(basename(resolved_path), proc_name) == 0 || in_file) {
         return pid;
       }
@@ -616,15 +616,28 @@ long is_proc_app(char *path, char *proc_name)
   return 0;
 }
 
+bool find_dir_proc_fn(char *path, void *args)
+{
+  unsigned long pid;
+  struct find_dir_type *dir_args = (struct find_dir_type *)args;
+
+  if ((pid = is_proc_app(path, dir_args->proc_name)) != 0)
+    dir_args->proc_running = 1;
+  else
+    dir_args->proc_running = 0;
+
+  return true;
+}
+
 bool kill_dir_fn(char *path, void *args)
 {
   unsigned long pid;
   pid_t current_pid = getpid();
-
+  pid_t current_pid_group = getpgid(current_pid);
   if ((pid = is_proc_app(path, args)) != 0) {
-    if (current_pid != pid) {
-      log_trace("Found process pid=%d current_pid=%d", pid, current_pid);
-      if (kill(pid, SIGKILL) == -1) {
+    if (current_pid != pid && pid != current_pid_group) {
+      log_trace("Found process pid=%d current_pid=%d current_pid_group=%d", pid, current_pid, current_pid_group);
+      if (kill(pid, SIGTERM) == -1) {
         log_err("kill");
         return false;
       } else
@@ -652,6 +665,8 @@ int run_process(char *argv[])
   pid_t child_pid, ret;
   int status, check_count = 0;
   int arg_idx = 0;
+
+  struct find_dir_type dir_args = {.proc_running = 0, .proc_name = basename(argv[0])};
 
   log_trace("Running process %s with params:", argv[0]);
   while(argv[++arg_idx]) log_trace("\t %s", argv[arg_idx]);
@@ -682,19 +697,31 @@ int run_process(char *argv[])
   default:
     log_trace("process child created with id=%d", child_pid);
     log_trace("Checking process execution status...");
-    while ((ret = waitpid(child_pid, &status, WNOHANG)) == 0 && check_count < 6) {
+    while ((ret = waitpid(child_pid, &status, WNOHANG)) == 0 && check_count < 7) {
       check_count ++;
-      sleep(3);
-      log_trace("\ttry: %d", check_count);
+      sleep(2);
+
+      if (list_dir("/proc", find_dir_proc_fn, (void *)&dir_args) == -1) {
+        log_trace("list_dir fail");
+        return -1;
+      }
+
+      if (dir_args.proc_running) {
+        log_trace("Found %s running", dir_args.proc_name);
+        return 0;
+      }
+
+      log_trace("\ttry: %d exit status %d", check_count, WIFEXITED(status));
     }
+
     if (ret > 0) {
       if (WIFEXITED(status)) {
         log_trace("excve status %d", WEXITSTATUS(status));
         return 1;
       }
-    } else if (ret == -1)
+    } else if (ret == -1) {
       return -1;
-    break;
+    }
   }
 
   return 0;

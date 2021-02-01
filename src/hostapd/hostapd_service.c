@@ -41,23 +41,7 @@
 
 #define HOSTAPD_LOG_FILE_OPTION "-f"
 
-struct find_dir_type {
-  int hostapd_running;
-  char *proc_name;
-};
-
-bool find_dir_fn(char *path, void *args)
-{
-  unsigned long pid;
-  struct find_dir_type *dir_args = (struct find_dir_type *)args;
-
-  if ((pid = is_proc_app(path, dir_args->proc_name)) != 0)
-    dir_args->hostapd_running = 1;
-  else
-    dir_args->hostapd_running = 0;
-
-  return true;
-}
+#define PROCESS_RESTART_TIME  5 // In seconds
 
 void get_hostapd_args(char *hostapd_bin_path, char *hostapd_file_path, char *hostapd_log_path, char *argv[])
 {
@@ -93,7 +77,6 @@ int run_hostapd(struct hostapd_conf *hconf, struct radius_conf *rconf, bool exec
 {
   int ret;
   char *proc_name = basename(hconf->hostapd_bin_path);
-  struct find_dir_type dir_args = {.hostapd_running = 0, .proc_name = proc_name};
 
   char *process_argv[5] = {NULL, NULL, NULL, NULL, NULL};
   get_hostapd_args(hconf->hostapd_bin_path, hconf->hostapd_file_path, hconf->hostapd_log_path, process_argv);
@@ -117,8 +100,6 @@ int run_hostapd(struct hostapd_conf *hconf, struct radius_conf *rconf, bool exec
     }
 
     while((ret = run_process(process_argv)) > 0) {
-      sleep(2);
-
       log_trace("Killing hostapd process");
 
       // Kill any running hostapd process
@@ -126,22 +107,13 @@ int run_hostapd(struct hostapd_conf *hconf, struct radius_conf *rconf, bool exec
         log_trace("kill_process fail");
         return -1;
       }
+
+      log_trace("Restarting process in %d seconds", PROCESS_RESTART_TIME);
+      sleep(PROCESS_RESTART_TIME);
     }
 
-    if (ret == -1) {
+    if (ret != 0) {
       log_trace("run_process fail");
-      return -1;
-    }
-
-    if (list_dir("/proc", find_dir_fn, (void *)&dir_args) == -1) {
-      log_trace("list_dir fail");
-      return -1;
-    }
-
-    if (dir_args.hostapd_running)
-      log_trace("hostapd running");
-    else {
-      log_trace("hostapd is not running");
       return -1;
     }
 
