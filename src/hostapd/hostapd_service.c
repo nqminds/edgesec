@@ -73,13 +73,19 @@ int check_ctrl_if_exists(char *ctrl_if_path)
   return 0;
 }
 
-int run_hostapd(struct hostapd_conf *hconf, struct radius_conf *rconf, bool exec_hostapd, char *ctrl_if_path)
+int run_hostapd(struct hostapd_conf *hconf, struct radius_conf *rconf, char *ctrl_if_path)
 {
   int ret;
   char *proc_name = basename(hconf->hostapd_bin_path);
 
   char *process_argv[5] = {NULL, NULL, NULL, NULL, NULL};
   get_hostapd_args(hconf->hostapd_bin_path, hconf->hostapd_file_path, hconf->hostapd_log_path, process_argv);
+
+  log_trace("Resetting wifi interface %s", hconf->interface);
+  if (!reset_interface(hconf->interface)) {
+    log_debug("reset_interface fail");
+    return -1;
+  }
 
   if (!generate_vlan_conf(hconf->vlan_file, hconf->interface)) {
     log_trace("generate_vlan_conf fail");
@@ -92,37 +98,33 @@ int run_hostapd(struct hostapd_conf *hconf, struct radius_conf *rconf, bool exec
     return -1;
   }
 
-  if (exec_hostapd) {
+  // Kill any running hostapd process
+  if (!kill_process(proc_name)) {
+    log_trace("kill_process fail");
+    return -1;
+  }
+
+  while((ret = run_process(process_argv)) > 0) {
+    log_trace("Killing hostapd process");
     // Kill any running hostapd process
     if (!kill_process(proc_name)) {
       log_trace("kill_process fail");
       return -1;
     }
+    log_trace("Restarting process in %d seconds", PROCESS_RESTART_TIME);
+    sleep(PROCESS_RESTART_TIME);
+  }
 
-    while((ret = run_process(process_argv)) > 0) {
-      log_trace("Killing hostapd process");
+  if (ret < 0) {
+    log_trace("run_process fail");
+    return -1;
+  }
 
-      // Kill any running hostapd process
-      if (!kill_process(proc_name)) {
-        log_trace("kill_process fail");
-        return -1;
-      }
-
-      log_trace("Restarting process in %d seconds", PROCESS_RESTART_TIME);
-      sleep(PROCESS_RESTART_TIME);
-    }
-
-    if (ret != 0) {
-      log_trace("run_process fail");
-      return -1;
-    }
-
-    if (check_ctrl_if_exists(ctrl_if_path) != -1) {
-      log_trace("hostapd unix domain control path %s", ctrl_if_path);
-    } else {
-      log_trace("hostapd unix domain control path fail");
-      return -1;    
-    }
+  if (check_ctrl_if_exists(ctrl_if_path) != -1) {
+    log_trace("hostapd unix domain control path %s", ctrl_if_path);
+  } else {
+    log_trace("hostapd unix domain control path fail");
+    return -1;    
   }
 
   return 0;

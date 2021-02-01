@@ -401,4 +401,13 @@ bool kill_process(char *proc_name);
  * @return int 1 if process started, 0 if the child specified by pid exist, but have not yet changed state, -1 on error
  */
 int run_process(char *argv[]);
+
+/**
+ * @brief Makes a file given by descriptor executable
+ * 
+ * @param fd File descriptor
+ * @return int 0 on succes, -1 on error
+ */
+int make_file_exec_fd(int fd);
+
 #endif /* OS_H */

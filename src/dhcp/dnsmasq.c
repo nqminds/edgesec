@@ -95,6 +95,16 @@ bool generate_dnsmasq_script(char *dhcp_script_path, char *domain_server_path)
   fprintf(fp, "echo \"Sending $str ...\"\n");
   fprintf(fp, "echo $str | nc -uU %s -w2 -W1\n", domain_server_path);
 
+  int fd = fileno(fd);
+
+  if (fd == -1) {
+    log_err("fileno");
+    fclose(fp);
+    return false;
+  }
+
+  // Make file executable
+  
   fclose(fp);
   return true;
 }

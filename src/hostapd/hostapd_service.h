@@ -40,11 +40,10 @@
  * 
  * @param hconf The hostapd configuration structure
  * @param rconf The radius configuration structure
- * @param exec_hostapd If set executes the hostapd process, if false only generates confgi files
  * @param ctrl_if_path The path of the hostapd control interface
  * @return int 0 on success, -1 on error
  */
-int run_hostapd(struct hostapd_conf *hconf, struct radius_conf *rconf, bool exec_hostapd, char *ctrl_if_path);
+int run_hostapd(struct hostapd_conf *hconf, struct radius_conf *rconf, char *ctrl_if_path);
 
 /**
  * @brief Closes (terminates) hostapd process

@@ -138,10 +138,22 @@ bool init_ifbridge_names(UT_array *config_ifinfo_array, char *if_bridge)
   return true;
 }
 
+bool construct_hostapd_ctrlif(char *ctrl_interface, char *interface)
+{
+  char *ctrl_if_path = construct_path(ctrl_interface, interface);
+  if (ctrl_if_path == NULL) {
+    log_trace("construct_path fail");
+    return false;
+  }
+
+  strncpy(context.hostapd_ctrl_if_path, ctrl_if_path, HOSTAPD_AP_SECRET_LEN);
+  free(ctrl_if_path);
+
+  return true;
+}
+
 bool init_context(struct app_config *app_config)
 {
-  char *ctrl_if_path;
-
   os_memset(&context, 0, sizeof(struct supervisor_context));
 
   if (!init_ifbridge_names(app_config->config_ifinfo_array, app_config->hconfig.vlan_bridge)) {
@@ -155,15 +167,6 @@ bool init_context(struct app_config *app_config)
 
   strncpy(context.wpa_passphrase, app_config->hconfig.wpa_passphrase, HOSTAPD_AP_SECRET_LEN);
   strncpy(context.nat_interface, app_config->nat_interface, IFNAMSIZ);
-
-  ctrl_if_path = construct_path(app_config->hconfig.ctrl_interface, app_config->hconfig.interface);
-  if (ctrl_if_path == NULL) {
-    log_trace("construct_path fail");
-    return false;
-  }
-
-  strncpy(context.hostapd_ctrl_if_path, ctrl_if_path, HOSTAPD_AP_SECRET_LEN);
-  free(ctrl_if_path);
 
   log_info("Adding default mac mappers...");
   if (!create_mac_mapper(app_config->connections, &context.mac_mapper)) {
@@ -236,9 +239,8 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
   }
 
   log_info("Found wifi interface %s", app_config->hconfig.interface);
-  log_info("Resetting wifi interface %s", app_config->hconfig.interface);
-    if (!reset_interface(app_config->hconfig.interface)) {
-    log_debug("reset_interface fail");
+  if(!construct_hostapd_ctrlif(app_config->hconfig.ctrl_interface, app_config->hconfig.interface)) {
+    log_debug("construct_hostapd_ctrlif fail");
     goto run_engine_fail;
   }
 
@@ -300,11 +302,12 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
     }
   }
 
-  log_info("Running the hostapd service...");
-  if ((hostapd_fd = run_hostapd(&app_config->hconfig, &app_config->rconfig,
-        app_config->exec_hostapd, context.hostapd_ctrl_if_path)) == -1) {
-    log_debug("run_hostapd fail");
-    goto run_engine_fail;
+  if (app_config->exec_hostapd) {
+    log_info("Running the hostapd service...");
+    if ((hostapd_fd = run_hostapd(&app_config->hconfig, &app_config->rconfig, context.hostapd_ctrl_if_path)) == -1) {
+      log_debug("run_hostapd fail");
+      goto run_engine_fail;
+    }
   }
 
   log_info("Running event loop");
