@@ -726,3 +726,24 @@ int run_process(char *argv[])
 
   return 0;
 }
+
+int make_file_exec_fd(int fd)
+{
+  struct stat sb;
+  mode_t mode;
+
+  if(fstat(fd, &sb) == -1) {
+    log_err("fstat");
+    return -1;
+  }
+
+  // execute/search by owner ("search" applies for directories, and means that entries within the directory can be accessed)
+  mode = (sb.st_mode | S_IXUSR);
+
+  if (fchmod(fd, mode) == -1) {
+    log_err("fchmod");
+    return -1;
+  }
+
+  return 0;
+}

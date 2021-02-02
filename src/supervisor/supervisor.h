@@ -45,7 +45,6 @@ struct supervisor_context {
   char            hostapd_ctrl_if_path[MAX_OS_PATH_LEN];      /**< @c ctrl_interface param from @c struct hostapd_conf */
   char            wpa_passphrase[HOSTAPD_AP_SECRET_LEN];      /**< @c wpa_passphrase from @c struct hostapd_conf */
   char            nat_interface[IFNAMSIZ];                    /**< @c nat_interface param from @c struct app_config */
-  char            subnet_mask[IP_LEN];                        /**< @c subnet_mask param from @c struct app_config */
   int             default_open_vlanid;                        /**< @c default_open_vlanid from @c struct app_config */
   UT_array        *config_ifinfo_array;                       /**< @c config_ifinfo_array from @c struct app_config */
 };

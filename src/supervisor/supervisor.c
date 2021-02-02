@@ -43,12 +43,12 @@
 #define OK_REPLY    "OK"
 #define FAIL_REPLY  "FAIL"
 
-bool get_bridge_ifname(hmap_if_conn **if_mapper, char *ip, char *subnet_mask, char *ifname)
+bool get_bridge_ifname(hmap_if_conn **if_mapper, UT_array *config_ifinfo_array, char *ip, char *ifname)
 {
   in_addr_t subnet_addr;
 
-  if (!ip_2_nbo(ip, subnet_mask, &subnet_addr)) {
-    log_trace("ip_2_nbo fail");
+  if (find_subnet_address(config_ifinfo_array, ip, &subnet_addr) != 0) {
+    log_trace("find_subnet_address fail");
     return false;
   }
 
@@ -159,7 +159,7 @@ ssize_t process_add_nat_cmd(int sock, char *client_addr,
       conn.info = info;
 
       if (strlen(info.ip_addr)) {
-        if (!get_bridge_ifname(&context->if_mapper, info.ip_addr, context->subnet_mask, ifname)) {
+        if (!get_bridge_ifname(&context->if_mapper, context->config_ifinfo_array, info.ip_addr, ifname)) {
           log_trace("get_bridge_ifname fail");
           return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
         }
@@ -200,7 +200,7 @@ ssize_t process_remove_nat_cmd(int sock, char *client_addr,
       conn.info = info;
 
       if (strlen(info.ip_addr)) {
-        if (!get_bridge_ifname(&context->if_mapper, info.ip_addr, context->subnet_mask, ifname)) {
+        if (!get_bridge_ifname(&context->if_mapper, context->config_ifinfo_array, info.ip_addr, ifname)) {
           log_trace("get_bridge_ifname fail");
           return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
         }
@@ -347,7 +347,7 @@ ssize_t process_set_ip_cmd(int sock, char *client_addr,
         if (strlen(*ptr) < IP_LEN) {
           log_trace("SET_IP type=%s mac=%02x:%02x:%02x:%02x:%02x:%02x ip=%s", add_type, MAC2STR(addr), *ptr);
 
-          if (!get_bridge_ifname(&context->if_mapper, *ptr, context->subnet_mask, ifname)) {
+          if (!get_bridge_ifname(&context->if_mapper, context->config_ifinfo_array, *ptr, ifname)) {
             log_trace("get_bridge_ifname fail");
             return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
           }

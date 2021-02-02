@@ -172,7 +172,7 @@ static void test_radius_server_init(void **state)
 		exit(1);
 	}
 
-  radius_srv = radius_server_init(srv->port, client);
+  	radius_srv = radius_server_init(srv->port, client);
 	assert_non_null(radius_srv);
 
 	eloop_register_timeout(0, 0, start_test, &ctx, NULL);

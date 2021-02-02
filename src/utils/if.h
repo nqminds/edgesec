@@ -74,11 +74,11 @@ struct iplink_req {
  * 
  */
 typedef struct config_ifinfo_t{
-	int       					vlanid;                 /**< Interface VLAN ID */
-	char 						ifname[IFNAMSIZ];		/**< Interface string name */
-	char 						ip_addr[IP_LEN];		/**< Interface string IP address */
-	char 						brd_addr[IP_LEN];		/**< Interface string IP broadcast address */
-	char 						subnet_mask[IP_LEN];	/**< Interface string IP subnet mask */
+  int       				vlanid;                 /**< Interface VLAN ID */
+  char 						ifname[IFNAMSIZ];		/**< Interface string name */
+  char 						ip_addr[IP_LEN];		/**< Interface string IP address */
+  char 						brd_addr[IP_LEN];		/**< Interface string IP broadcast address */
+  char 						subnet_mask[IP_LEN];	/**< Interface string IP subnet mask */
 } config_ifinfo_t;
 
 /**
@@ -179,5 +179,15 @@ bool reset_interface(char *if_name);
  * @return UT_array* The returned array of @c struct netif_info_t
  */
 UT_array *get_interfaces(int if_id);
+
+/**
+ * @brief Returns the subnet address as a in_addr_t type from an IP address and an array of interface configuration info structure.
+ * 
+ * @param config_ifinfo_array The array of interface configuration structures.
+ * @param ip The IP Address
+ * @param subnet_addr The returned subnet address
+ * @return 0 on success, -1 on error and 1 if IP is not in any subnets
+ */
+int find_subnet_address(UT_array *config_ifinfo_array, char *ip, in_addr_t *subnet_addr);
 
 #endif

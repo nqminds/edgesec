@@ -941,3 +941,42 @@ bool ip_2_nbo(char *ip, char *subnet_mask, in_addr_t *addr)
 
 	return true;
 }
+
+int find_subnet_address(UT_array *config_ifinfo_array, char *ip, in_addr_t *subnet_addr)
+{
+  config_ifinfo_t *p = NULL;
+  in_addr_t addr_config;
+
+  if (config_ifinfo_array == NULL) {
+    log_trace("config_ifinfo_array param is NULL");
+    return false;
+  }
+
+  if (ip == NULL) {
+	log_trace("ip param is NULL");
+	return -1;
+  }
+
+  if (subnet_addr == NULL) {
+	log_trace("subnet_addr param is NULL");
+	return -1;
+  }
+
+  while(p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) {
+	if (!ip_2_nbo(p->ip_addr, p->subnet_mask, &addr_config)) {
+	  log_trace("ip_2_nbo fail");
+	  return -1;
+	}
+
+	if (!ip_2_nbo(ip, p->subnet_mask, subnet_addr)) {
+	  log_trace("ip_2_nbo fail");
+	  return -1;
+	}
+
+	if (addr_config == *subnet_addr) {
+	  return 0;
+	}
+  }
+
+  return 1;
+}
