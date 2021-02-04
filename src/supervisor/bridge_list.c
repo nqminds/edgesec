@@ -46,13 +46,15 @@ struct bridge_mac_list *init_bridge_list(void)
 
 void bridge_mac_list_free(struct bridge_mac_list *e)
 {
-	dl_list_del(&e->list);
-	os_free(e);
+	if (e) {
+    dl_list_del(&e->list);
+	  os_free(e);
+  }
 }
 
 void free_bridge_list(struct bridge_mac_list *ml)
 {
-	struct bridge_mac_list *e;
+  struct bridge_mac_list *e;
   struct dl_list *list = &ml->list;
 
 	while ((e = dl_list_first(list, struct bridge_mac_list, list)))

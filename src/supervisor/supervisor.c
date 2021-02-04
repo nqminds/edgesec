@@ -334,8 +334,10 @@ ssize_t process_set_ip_cmd(int sock, char *client_addr,
   ptr = (char**) utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
     strncpy(add_type, *ptr, 4);
-  } else
+  } else {
+    log_trace("Wrong type");
     return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+  }
 
   // MAC address
   ptr = (char**) utarray_next(cmd_arr, ptr);
@@ -344,7 +346,7 @@ ssize_t process_set_ip_cmd(int sock, char *client_addr,
       // ip
       ptr = (char**) utarray_next(cmd_arr, ptr);
       if (ptr != NULL && *ptr != NULL) {
-        if (strlen(*ptr) < IP_LEN) {
+        if (validate_ipv4_string(*ptr)) {
           log_trace("SET_IP type=%s mac=%02x:%02x:%02x:%02x:%02x:%02x ip=%s", add_type, MAC2STR(addr), *ptr);
 
           if (!get_bridge_ifname(&context->if_mapper, context->config_ifinfo_array, *ptr, ifname)) {
@@ -378,9 +380,12 @@ ssize_t process_set_ip_cmd(int sock, char *client_addr,
 
           if (put_mac_mapper(&context->mac_mapper, conn))
             return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
+        } else {
+          log_trace("IP string, wrong format");
+          return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
         }
       }
-    } 
+    }
   }
 
   return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);

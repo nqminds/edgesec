@@ -747,3 +747,20 @@ int make_file_exec_fd(int fd)
 
   return 0;
 }
+
+char *rtrim(char *str, const char *seps)
+{
+  int i;
+
+  if (seps == NULL) {
+      seps = "\t\n\v\f\r ";
+  }
+
+  i = strlen(str) - 1;
+  while (i >= 0 && strchr(seps, str[i]) != NULL) {
+      str[i] = '\0';
+      i--;
+  }
+
+  return str;
+}

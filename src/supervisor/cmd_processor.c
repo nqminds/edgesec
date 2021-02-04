@@ -51,7 +51,8 @@ bool process_domain_buffer(char *domain_buffer, size_t domain_buffer_len, UT_arr
   os_memcpy(cmd_line, domain_buffer, domain_buffer_len);
   cmd_line[domain_buffer_len] = '\0';
 
-  if (split_string_array(cmd_line, CMD_DELIMITER, cmd_arr) == -1) {
+  // remove the end new line character
+  if (split_string_array(rtrim(cmd_line, NULL), CMD_DELIMITER, cmd_arr) == -1) {
     log_trace("split_string_array fail");
     os_free(cmd_line);
     return false;

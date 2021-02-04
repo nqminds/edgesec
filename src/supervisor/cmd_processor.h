@@ -45,7 +45,7 @@
 #define CMD_SAVE_ALL			"SAVE_ALL"
 #define CMD_SET_IP				"SET_IP"
 #define CMD_ADD_BRIDGE			"ADD_BRIDGE"
-#define CMD_REMOVE_BRIDGE		"REMOVE_B RIDGE"
+#define CMD_REMOVE_BRIDGE		"REMOVE_BRIDGE"
 
 /**
  * @brief Processes the domain command string

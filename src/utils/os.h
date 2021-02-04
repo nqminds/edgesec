@@ -410,4 +410,12 @@ int run_process(char *argv[]);
  */
 int make_file_exec_fd(int fd);
 
+/**
+ * @brief Right trim the string
+ * 
+ * @param str The source string
+ * @param seps The separator string, if NULL then the separator used is "\t\n\v\f\r "
+ * @return char* The pointer to the source string
+ */
+char *rtrim(char *str, const char *seps);
 #endif /* OS_H */

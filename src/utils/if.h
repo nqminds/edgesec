@@ -190,4 +190,11 @@ UT_array *get_interfaces(int if_id);
  */
 int find_subnet_address(UT_array *config_ifinfo_array, char *ip, in_addr_t *subnet_addr);
 
+/**
+ * @brief Checks whether a string denotes a IPv4 address
+ * 
+ * @param ip The IP in fromat x.y.z.q
+ * @return true if the string is an IP, false otherwise 
+ */
+bool validate_ipv4_string(char *ip);
 #endif

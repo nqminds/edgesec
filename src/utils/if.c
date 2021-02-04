@@ -980,3 +980,14 @@ int find_subnet_address(UT_array *config_ifinfo_array, char *ip, in_addr_t *subn
 
   return 1;
 }
+
+bool validate_ipv4_string(char *ip)
+{
+  struct sockaddr_in sa;
+  int ret = inet_pton(AF_INET, ip, &(sa.sin_addr));
+  if (ret == -1) {
+	log_err("inet_pton");
+	return false;
+  }
+  return ret > 0;
+}
