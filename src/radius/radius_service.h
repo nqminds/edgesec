@@ -26,22 +26,23 @@
 #ifndef RADIUS_SERVICE_H
 #define RADIUS_SERVICE_H
 
+#include "../supervisor/supervisor.h"
+#include "radius_server.h"
+
 /**
  * @brief Runs the radius service
  * 
- * @param hconf The hostapd configuration structure
- * @param rconf The radius configuration structure
- * @param ctrl_if_path The path of the hostapd control interface
- * @return int 0 on success, -1 on error
+ * @param rconf The radius config
+ * @param pcontext The supervisor context
+ * @return Pointer to private RADIUS server context or NULL on failure
  */
-int run_radius(struct hostapd_conf *hconf, struct radius_conf *rconf, char *ctrl_if_path);
+struct radius_server_data *run_radius(struct radius_conf *rconf, struct supervisor_context *pcontext);
 
 /**
  * @brief Closes the radius service
  * 
- * @param sock Not used
- * @return true success, false otherwise
+ * @param srv Pointer to private RADIUS server context
  */
-bool close_radius(int sock);
+void close_radius(struct radius_server_data *srv);
 
 #endif

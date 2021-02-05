@@ -41,7 +41,8 @@
 #include "utils/iptables.h"
 
 #include "supervisor/supervisor.h"
-#include "radius/radius_server.h"
+// #include "radius/radius_server.h"
+#include "radius/radius_service.h"
 #include "hostapd/hostapd_service.h"
 #include "dhcp/dhcp_service.h"
 
@@ -69,33 +70,33 @@ static void lock_fn(bool lock)
   }
 }
 
-struct mac_conn_info get_mac_conn(uint8_t mac_addr[])
-{
-  struct mac_conn_info info;
+// struct mac_conn_info get_mac_conn(uint8_t mac_addr[])
+// {
+//   struct mac_conn_info info;
 
-  log_trace("RADIUS requested vland id for mac=%02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(mac_addr));
+//   log_trace("RADIUS requested vland id for mac=%02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(mac_addr));
 
-  int find_mac = get_mac_mapper(&context.mac_mapper, mac_addr, &info);
+//   int find_mac = get_mac_mapper(&context.mac_mapper, mac_addr, &info);
 
-  if (!find_mac || context.allow_all_connections) {
-    log_trace("RADIUS allowing mac=%02x:%02x:%02x:%02x:%02x:%02x on default vlanid=%d", MAC2STR(mac_addr), context.default_open_vlanid);
-    info.vlanid = context.default_open_vlanid;
-    info.pass_len = context.wpa_passphrase_len;
-    memcpy(info.pass, context.wpa_passphrase, info.pass_len);
-    return info;
-  } else if (find_mac == 1) {
-    if (info.allow_connection) {
-      log_trace("RADIUS allowing mac=%02x:%02x:%02x:%02x:%02x:%02x on vlanid=%d", MAC2STR(mac_addr), info.vlanid);
-      return info;
-    }
-  } else if (find_mac == -1) {
-    log_trace("get_mac_mapper fail");
-  }
+//   if (!find_mac || context.allow_all_connections) {
+//     log_trace("RADIUS allowing mac=%02x:%02x:%02x:%02x:%02x:%02x on default vlanid=%d", MAC2STR(mac_addr), context.default_open_vlanid);
+//     info.vlanid = context.default_open_vlanid;
+//     info.pass_len = context.wpa_passphrase_len;
+//     memcpy(info.pass, context.wpa_passphrase, info.pass_len);
+//     return info;
+//   } else if (find_mac == 1) {
+//     if (info.allow_connection) {
+//       log_trace("RADIUS allowing mac=%02x:%02x:%02x:%02x:%02x:%02x on vlanid=%d", MAC2STR(mac_addr), info.vlanid);
+//       return info;
+//     }
+//   } else if (find_mac == -1) {
+//     log_trace("get_mac_mapper fail");
+//   }
 
-  log_trace("RADIUS rejecting mac=%02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(mac_addr));
-  info.vlanid = -1;
-  return info;
-}
+//   log_trace("RADIUS rejecting mac=%02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(mac_addr));
+//   info.vlanid = -1;
+//   return info;
+// }
 
 bool create_if_mapper(UT_array *config_ifinfo_array, hmap_if_conn **hmap)
 {
@@ -199,7 +200,7 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
   // Set the log level
   log_set_level(log_level);
 
-  struct radius_client *client = init_radius_client(&app_config->rconfig, get_mac_conn);
+  // struct radius_client *client = init_radius_client(&app_config->rconfig, get_mac_conn);
 
   if (!init_context(app_config)) {
     log_trace("init_context fail");
@@ -284,9 +285,10 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
     log_info("Creating the radius server on port %d with client ip %s",
       app_config->rconfig.radius_port, app_config->rconfig.radius_client_ip);
 
-    radius_srv = radius_server_init(app_config->rconfig.radius_port, client);
+    // radius_srv = radius_server_init(app_config->rconfig.radius_port, client);
+    radius_srv = run_radius(&app_config->rconfig, &context);
     if (radius_srv == NULL) {
-      log_debug("radius_server_init fail");
+      log_debug("run_radius fail");
       goto run_engine_fail;
     }
   }
@@ -320,7 +322,8 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
   close_supervisor(domain_sock);
   close_hostapd(hostapd_fd);
   close_dhcp(dhcp_fd);
-  radius_server_deinit(radius_srv);
+  // radius_server_deinit(radius_srv);
+  close_radius(radius_srv);
   eloop_destroy();
   free(nat_ip);
   hmap_str_keychar_free(&hmap_bin_paths);
@@ -334,7 +337,8 @@ run_engine_fail:
   close_supervisor(domain_sock);
   close_hostapd(hostapd_fd);
   close_dhcp(dhcp_fd);
-  radius_server_deinit(radius_srv);
+  // radius_server_deinit(radius_srv);
+  close_radius(radius_srv);
   eloop_destroy();
   free(nat_ip);
   hmap_str_keychar_free(&hmap_bin_paths);

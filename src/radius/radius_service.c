@@ -23,16 +23,24 @@
  * @brief File containing the implementation of the radius service.
  */
 
-#include "../supervisor/mac_mapper.h"
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <stdbool.h>
+#include <errno.h>
+#include <signal.h>
+#include <unistd.h>
+#include <libgen.h>
+#include <fcntl.h>
 
-#include "../utils/os.h"
-#include "../utils/log.h"
+#include "supervisor/mac_mapper.h"
+#include "supervisor/supervisor.h"
+
+#include "utils/os.h"
+#include "utils/log.h"
 #include "radius_server.h"
 
-static hmap_mac_conn *mac_mapper;
-static bool *allow_all_connections;
-static int *default_open_vlanid;
-static char *wpa_passphrase;
+static struct supervisor_context *context = NULL;
 
 struct mac_conn_info get_mac_conn(uint8_t mac_addr[])
 {
@@ -40,13 +48,13 @@ struct mac_conn_info get_mac_conn(uint8_t mac_addr[])
 
   log_trace("RADIUS requested vland id for mac=%02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(mac_addr));
 
-  int find_mac = get_mac_mapper(&mac_mapper, mac_addr, &info);
+  int find_mac = get_mac_mapper(&context->mac_mapper, mac_addr, &info);
 
-  if (!find_mac || *allow_all_connections) {
-    log_trace("RADIUS allowing mac=%02x:%02x:%02x:%02x:%02x:%02x on default vlanid=%d", MAC2STR(mac_addr), *default_open_vlanid);
-    info.vlanid = *default_open_vlanid;
-    strcpy(info.pass, wpa_passphrase);
-    info.pass_len = strlen(wpa_passphrase);
+  if (find_mac == 0 && context->allow_all_connections) {
+    log_trace("RADIUS allowing mac=%02x:%02x:%02x:%02x:%02x:%02x on default vlanid=%d", MAC2STR(mac_addr), context->default_open_vlanid);
+    info.vlanid = context->default_open_vlanid;
+    info.pass_len = context->wpa_passphrase_len;
+    memcpy(info.pass, context->wpa_passphrase, info.pass_len);
     return info;
   } else if (find_mac == 1) {
     if (info.allow_connection) {
@@ -60,4 +68,18 @@ struct mac_conn_info get_mac_conn(uint8_t mac_addr[])
   log_trace("RADIUS rejecting mac=%02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(mac_addr));
   info.vlanid = -1;
   return info;
+}
+
+struct radius_server_data *run_radius(struct radius_conf *rconf, struct supervisor_context *pcontext)
+{
+  context = pcontext;
+  struct radius_client *client = init_radius_client(rconf, get_mac_conn);
+
+  return radius_server_init(rconf->radius_port, client);
+}
+
+void close_radius(struct radius_server_data *srv)
+{
+  if (srv)
+    radius_server_deinit(srv);
 }
