@@ -20,14 +20,14 @@
 
 static const UT_icd config_dhcpinfo_icd = {sizeof(config_dhcpinfo_t), NULL, NULL, NULL};
 
-static char *test_dhcp_conf_path = "/tmp/dnsmasq.conf";
-static char *test_dhcp_script_path = "/tmp/dnsmasq_exec.sh";
+static char *test_dhcp_conf_path = "/tmp/dnsmasq-test.conf";
+static char *test_dhcp_script_path = "/tmp/dnsmasq_exec-test.sh";
 static char *test_domain_server_path = "/tmp/edgesec-domain-server";
 static char *test_dhcp_conf_content =
 "no-resolv\n"
 "server=8.8.4.4\n"
 "server=8.8.8.8\n"
-"dhcp-script=/tmp/dnsmasq_exec.sh\n"
+"dhcp-script=/tmp/dnsmasq_exec-test.sh\n"
 "dhcp-range=wifi_if,10.0.0.2,10.0.0.254,255.255.255.0,24h\n"
 "dhcp-range=wifi_if.1,10.0.1.2,10.0.1.254,255.255.255.0,24h\n"
 "dhcp-range=wifi_if.2,10.0.2.2,10.0.2.254,255.255.255.0,24h\n"

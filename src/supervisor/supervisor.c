@@ -394,13 +394,13 @@ ssize_t process_set_ip_cmd(int sock, char *client_addr,
 ssize_t process_add_bridge_cmd(int sock, char *client_addr,
   struct supervisor_context *context, UT_array *cmd_arr)
 {
-  char **ptr = (char**) utarray_next(cmd_arr, NULL);
-  uint8_t addr[ETH_ALEN];
-  uint8_t addr_bridge[ETH_ALEN];
-  struct mac_conn conn;
-  struct mac_conn_info info = {.vlanid = 0, .nat = false, .allow_connection = false, .pass_len = 0};
+  // char **ptr = (char**) utarray_next(cmd_arr, NULL);
+  // uint8_t addr[ETH_ALEN];
+  // uint8_t addr_bridge[ETH_ALEN];
+  // struct mac_conn conn;
+  // struct mac_conn_info info = {.vlanid = 0, .nat = false, .allow_connection = false, .pass_len = 0};
 
-  os_memset(info.ip_addr, 0x0, IP_LEN);
+  // os_memset(info.ip_addr, 0x0, IP_LEN);
 
   // // MAC address
   // ptr = (char**) utarray_next(cmd_arr, ptr);

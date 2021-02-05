@@ -43,10 +43,12 @@ struct supervisor_context {
   hmap_if_conn    *if_mapper;                                 /**< WiFi subnet interface mapper */
   bool            allow_all_connections;                      /**< @c allow_all_connections Flag from @c struct app_config */
   char            hostapd_ctrl_if_path[MAX_OS_PATH_LEN];      /**< @c ctrl_interface param from @c struct hostapd_conf */
-  char            wpa_passphrase[HOSTAPD_AP_SECRET_LEN];      /**< @c wpa_passphrase from @c struct hostapd_conf */
+  uint8_t         wpa_passphrase[HOSTAPD_AP_SECRET_LEN];      /**< @c wpa_passphrase from @c struct hostapd_conf */
+  ssize_t         wpa_passphrase_len;                         /**< the length of @c wpa_passphrase*/
   char            nat_interface[IFNAMSIZ];                    /**< @c nat_interface param from @c struct app_config */
   int             default_open_vlanid;                        /**< @c default_open_vlanid from @c struct app_config */
   UT_array        *config_ifinfo_array;                       /**< @c config_ifinfo_array from @c struct app_config */
+  struct bridge_mac_list *bridge_list;                        /**< List of assigned bridges */
 };
 
 /**

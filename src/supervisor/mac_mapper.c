@@ -32,11 +32,6 @@
 #include "mac_mapper.h"
 #include "bridge_list.h"
 
-void free_mapper_element(struct mac_conn_info *info)
-{
-  free_bridge_list(&info->ml);
-}
-
 int get_mac_mapper(hmap_mac_conn **hmap, uint8_t mac_addr[ETH_ALEN], struct mac_conn_info *info)
 {
 	hmap_mac_conn *s;
@@ -85,9 +80,6 @@ bool put_mac_mapper(hmap_mac_conn **hmap, struct mac_conn conn)
 		// HASH_ADD_STR(hmap, key, s);
     HASH_ADD(hh, *hmap, key[0], ETH_ALEN, s);
   } else {
-    // Free the current element
-    log_trace("HERE %d", s->value.vlanid);
-    free_mapper_element(&(s->value));
 		// Copy the value
     s->value = conn.info;
 	}

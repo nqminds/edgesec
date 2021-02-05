@@ -80,8 +80,8 @@ struct mac_conn_info get_mac_conn(uint8_t mac_addr[])
   if (!find_mac || context.allow_all_connections) {
     log_trace("RADIUS allowing mac=%02x:%02x:%02x:%02x:%02x:%02x on default vlanid=%d", MAC2STR(mac_addr), context.default_open_vlanid);
     info.vlanid = context.default_open_vlanid;
-    strcpy(info.pass, context.wpa_passphrase);
-    info.pass_len = strlen(context.wpa_passphrase);
+    info.pass_len = context.wpa_passphrase_len;
+    memcpy(info.pass, context.wpa_passphrase, info.pass_len);
     return info;
   } else if (find_mac == 1) {
     if (info.allow_connection) {
@@ -165,7 +165,9 @@ bool init_context(struct app_config *app_config)
   context.default_open_vlanid = app_config->default_open_vlanid;
   context.config_ifinfo_array = app_config->config_ifinfo_array;
 
-  strncpy(context.wpa_passphrase, app_config->hconfig.wpa_passphrase, HOSTAPD_AP_SECRET_LEN);
+  context.wpa_passphrase_len = strlen(app_config->hconfig.wpa_passphrase);
+  memcpy(context.wpa_passphrase, app_config->hconfig.wpa_passphrase, context.wpa_passphrase_len);
+  
   strncpy(context.nat_interface, app_config->nat_interface, IFNAMSIZ);
 
   log_info("Adding default mac mappers...");
@@ -180,6 +182,8 @@ bool init_context(struct app_config *app_config)
     return false;
   }
 
+  // Init the list of bridges
+  context.bridge_list = init_bridge_list();
   return true;
 }
 
@@ -313,28 +317,30 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
   log_info("Running event loop");
   eloop_run();
 
-  free_iptables();
-  free_mac_mapper(&context.mac_mapper);
-  free_if_mapper(&context.if_mapper);
+  close_supervisor(domain_sock);
   close_hostapd(hostapd_fd);
   close_dhcp(dhcp_fd);
-  close_supervisor(domain_sock);
   radius_server_deinit(radius_srv);
   eloop_destroy();
   free(nat_ip);
   hmap_str_keychar_free(&hmap_bin_paths);
+  free_iptables();
+  free_mac_mapper(&context.mac_mapper);
+  free_if_mapper(&context.if_mapper);
+  free_bridge_list(context.bridge_list);
   return true;
 
 run_engine_fail:
-  free_iptables();
-  free_mac_mapper(&context.mac_mapper);
-  free_if_mapper(&context.if_mapper);
+  close_supervisor(domain_sock);
   close_hostapd(hostapd_fd);
   close_dhcp(dhcp_fd);
-  close_supervisor(domain_sock);
   radius_server_deinit(radius_srv);
   eloop_destroy();
   free(nat_ip);
   hmap_str_keychar_free(&hmap_bin_paths);
+  free_iptables();
+  free_mac_mapper(&context.mac_mapper);
+  free_if_mapper(&context.if_mapper);
+  free_bridge_list(context.bridge_list);
   return false;
 }

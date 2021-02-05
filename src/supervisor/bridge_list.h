@@ -30,43 +30,73 @@
 #include "../utils/os.h"
 
 /**
- * @brief The MAC address store list
+ * @brief The bridge MAc tuple definition
+ * 
+ */
+struct bridge_mac_tuple {
+  uint8_t left_addr[ETH_ALEN];            /**< MAC address in byte format for left node*/
+  uint8_t right_addr[ETH_ALEN];           /**< MAC address in byte format for right node*/
+};
+/**
+ * @brief The MAC bridge address store list
  * 
  */
 struct bridge_mac_list {
-  char mac_addr[ETH_ALEN];        /**< MAC address in byte format */
-  struct dl_list list;            /**< List definition */
+  struct bridge_mac_tuple mac_tuple;          /**< The MAC address tuple */
+  struct dl_list list;                        /**< List definition */
 };
 
 /**
- * @brief Init the MAC address list for bridge assignment (WIP)
+ * @brief Init the MAC brideg address list for bridge assignment
  * 
- * @return struct bridge_mac_list* The initialised list (WIP)
+ * @return struct bridge_mac_list* The initialised list
  */
 struct bridge_mac_list *init_bridge_list(void);
 
 /**
- * @brief Free MAC address list (WIP)
+ * @brief Free MAC bridge address list
  * 
- * @param ml The MAC address list (WIP)
+ * @param ml The MAC bridge address list
  */
 void free_bridge_list(struct bridge_mac_list *ml);
 
 /**
- * @brief Add a MAC address to the MAC address list (WIP)
+ * @brief Add bridge connection to the MAC bridge address list
  * 
- * @param ml The MAC address list (WIP)
- * @param mac_addr The MAC address in byte format to be added (WIP)
- * @return int (WIP)
+ * @param ml The MAC bridge address list
+ * @param mac_addr_left The MAC address in byte format for left node
+ * @param mac_addr_right The MAC address in byte format for right node
+ * @return int 0 on success, -1 on error
  */
-int add_bridge_mac(struct bridge_mac_list *ml, const char *mac_addr);
+int add_bridge_mac(struct bridge_mac_list *ml, const uint8_t *mac_addr_left, const uint8_t *mac_addr_right);
 
 /**
- * @brief WIP
+ * @brief Removes a bridge connection from the MAC address list
  * 
- * @param ml 
- * @param mac_addr 
+ * @param ml The MAC bridge address list
+ * @param mac_addr_left The MAC address in byte format for left node
+ * @param mac_addr_right The MAC address in byte format for right node
+ * @return int 0 on success, -1 on error
  */
-void remove_bridge_mac(struct bridge_mac_list *ml, const char *mac_addr);
+int remove_bridge_mac(struct bridge_mac_list *ml, const uint8_t *mac_addr_left, const uint8_t *mac_addr_right);
+
+/**
+ * @brief Get the bridge mac object from a brideg connection
+ * 
+ * @param ml The MAC bridge address list
+ * @param mac_addr_left The MAC address in byte format for left node
+ * @param mac_addr_right The MAC address in byte format for rigth node
+ * @return struct bridge_mac_list* The MAC bridge element, NULL if not found
+ */
+struct bridge_mac_list *get_bridge_mac(struct bridge_mac_list *ml, const uint8_t *mac_addr_left, const uint8_t *mac_addr_right);
+
+/**
+ * @brief Get the bridge tuple list array
+ * 
+ * @param ml The MAC bridge address list
+ * @param tuple_list The returned list of tuples
+ * @return int The total number of tuples
+ */
+int get_bridge_tuple_list(struct bridge_mac_list *ml, struct bridge_mac_tuple **tuple_list);
 
 #endif

@@ -51,7 +51,6 @@ struct mac_conn_info {
 	ssize_t		pass_len;                       /**< WiFi password length assigned to the MAC devices */
   char      ip_addr[IP_LEN];                /**< IP address assigned to the MAC device */
   char      ifname[IFNAMSIZ];               /**< WiFi subnet interface assigned to the MAC device */
-  struct bridge_mac_list ml;                /**< List of assigned bridges */
 };
 
 /**
