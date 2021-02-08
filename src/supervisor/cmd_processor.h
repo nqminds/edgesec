@@ -31,6 +31,8 @@
 
 #include "utils/utarray.h"
 
+#include "supervisor_config.h"
+
 #define CMD_DELIMITER   		0x20
 
 #define CMD_PING        		"PING"
@@ -47,6 +49,9 @@
 #define CMD_ADD_BRIDGE			"ADD_BRIDGE"
 #define CMD_REMOVE_BRIDGE		"REMOVE_BRIDGE"
 
+#define OK_REPLY                "OK"
+#define FAIL_REPLY              "FAIL"
+
 /**
  * @brief Processes the domain command string
  * 
@@ -56,5 +61,133 @@
  * @return true on success, false otherwise
  */
 bool process_domain_buffer(char *domain_buffer, size_t domain_buffer_len, UT_array *cmd_arr);
+
+/**
+ * @brief Processes the PING command
+ * 
+ * @param sock The domain server socket
+ * @param client_addr The client address for replies
+ * @return ssize_t Size of reply written data
+ */
+ssize_t process_ping_cmd(int sock, char *client_addr);
+
+/**
+ * @brief Processes the HOSTAPD_IF command
+ * 
+ * @param sock The domain server socket
+ * @param client_addr The client address for replies
+ * @param context The supervisor structure instance
+ * @return ssize_t Size of reply written data
+ */
+ssize_t process_hostapd_ctrlif_cmd(int sock, char *client_addr, struct supervisor_context *context);
+
+/**
+ * @brief Processes the ACCEPT_MAC command
+ * 
+ * @param sock The domain server socket
+ * @param client_addr The client address for replies
+ * @param context The supervisor structure instance
+ * @param cmd_arr The array of received commands
+ * @return ssize_t Size of reply written data
+ */
+ssize_t process_accept_mac_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+
+/**
+ * @brief Processes the DENY_MAC command
+ * 
+ * @param sock The domain server socket
+ * @param client_addr The client address for replies
+ * @param context The supervisor structure instance
+ * @param cmd_arr The array of received commands
+ * @return ssize_t Size of reply written data
+ */
+ssize_t process_deny_mac_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+
+/**
+ * @brief Processes the ADD_NAT command
+ * 
+ * @param sock The domain server socket
+ * @param client_addr The client address for replies
+ * @param context The supervisor structure instance
+ * @param cmd_arr The array of received commands
+ * @return ssize_t Size of reply written data
+ */
+ssize_t process_add_nat_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+
+/**
+ * @brief Processes the REMOVE_NAT command
+ * 
+ * @param sock The domain server socket
+ * @param client_addr The client address for replies
+ * @param context The supervisor structure instance
+ * @param cmd_arr The array of received commands
+ * @return ssize_t Size of reply written data
+ */
+ssize_t process_remove_nat_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+
+/**
+ * @brief Processes the ASSIGN_PSK command
+ * 
+ * @param sock The domain server socket
+ * @param client_addr The client address for replies
+ * @param context The supervisor structure instance
+ * @param cmd_arr The array of received commands
+ * @return ssize_t Size of reply written data
+ */
+ssize_t process_assign_psk_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+
+/**
+ * @brief Processes the GET_MAP command
+ * 
+ * @param sock The domain server socket
+ * @param client_addr The client address for replies
+ * @param context The supervisor structure instance
+ * @param cmd_arr The array of received commands
+ * @return ssize_t Size of reply written data
+ */
+ssize_t process_get_map_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+
+/**
+ * @brief Processes the GET_ALL command
+ * 
+ * @param sock The domain server socket
+ * @param client_addr The client address for replies
+ * @param context The supervisor structure instance
+ * @return ssize_t Size of reply written data
+ */
+ssize_t process_get_all_cmd(int sock, char *client_addr, struct supervisor_context *context);
+
+/**
+ * @brief Processes the SET_IP command
+ * 
+ * @param sock The domain server socket
+ * @param client_addr The client address for replies
+ * @param context The supervisor structure instance
+ * @param cmd_arr The array of received commands
+ * @return ssize_t Size of reply written data
+ */
+ssize_t process_set_ip_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+
+/**
+ * @brief Processes the ADD_BRIDGE command
+ * 
+ * @param sock The domain server socket
+ * @param client_addr The client address for replies
+ * @param context The supervisor structure instance
+ * @param cmd_arr The array of received commands
+ * @return ssize_t Size of reply written data
+ */
+ssize_t process_add_bridge_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+
+/**
+ * @brief Processes the REMOVE_BRIDGE command
+ * 
+ * @param sock The domain server socket
+ * @param client_addr The client address for replies
+ * @param context The supervisor structure instance
+ * @param cmd_arr The array of received commands
+ * @return ssize_t Size of reply written data
+ */
+ssize_t process_remove_bridge_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 #endif

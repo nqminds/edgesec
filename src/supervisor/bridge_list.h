@@ -81,7 +81,7 @@ int add_bridge_mac(struct bridge_mac_list *ml, const uint8_t *mac_addr_left, con
 int remove_bridge_mac(struct bridge_mac_list *ml, const uint8_t *mac_addr_left, const uint8_t *mac_addr_right);
 
 /**
- * @brief Get the bridge mac object from a brideg connection
+ * @brief Get the bridge mac object from a bridge connection
  * 
  * @param ml The MAC bridge address list
  * @param mac_addr_left The MAC address in byte format for left node
@@ -91,12 +91,13 @@ int remove_bridge_mac(struct bridge_mac_list *ml, const uint8_t *mac_addr_left, 
 struct bridge_mac_list *get_bridge_mac(struct bridge_mac_list *ml, const uint8_t *mac_addr_left, const uint8_t *mac_addr_right);
 
 /**
- * @brief Get the bridge tuple list array
+ * @brief Get the bridge tuple list array for a source MAC address (if NULL returns all the connections)
  * 
  * @param ml The MAC bridge address list
- * @param tuple_list The returned list of tuples
- * @return int The total number of tuples
+ * @param mac_addr_src The source MAC address in byte format
+ * @param tuple_list_arr The returned array of tuples
+ * @return int The total number of tuples, -1 on error
  */
-int get_bridge_tuple_list(struct bridge_mac_list *ml, struct bridge_mac_tuple **tuple_list);
+int get_bridge_tuple_list(struct bridge_mac_list *ml, const uint8_t *mac_addr_src, UT_array **tuple_list_arr);
 
 #endif

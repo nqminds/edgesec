@@ -1,6 +1,7 @@
 {
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
     "files.associations": {
-        "radius_server.h": "c"
+        "radius_server.h": "c",
+        "bridge_list.h": "c"
     }
 }

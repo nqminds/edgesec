@@ -18,46 +18,36 @@
  ****************************************************************************/
 
 /**
- * @file domain_server.h 
+ * @file supervisor_config.c
  * @author Alexandru Mereacre 
- * @brief File containing the definition of the domain server service.
+ * @brief File containing the definition of the supervisor service structure.
  */
 
-#ifndef DOMAIN_SERVER_H
-#define DOMAIN_SERVER_H
+#ifndef SUPERVISOR_CONFIG_H
+#define SUPERVISOR_CONFIG_H
 
-#include <sys/types.h>
+#include <stdbool.h>
 
-#define MAX_DOMAIN_RECEIVE_DATA 1024
+#include "../hostapd/hostapd_config.h"
+#include "../utils/if.h"
+
+#include "mac_mapper.h"
 
 /**
- * @brief Create a domain server object
+ * @brief Supervisor structure definition
  * 
- * @param server_path Server UNIX domain socket path
- * @return int Domain server socket
  */
-int create_domain_server(char *server_path);
-
-/**
- * @brief Read data from the domain server socket
- * 
- * @param sock Domain Server socket
- * @param data Data buffer
- * @param data_len Data buffer length
- * @param addr Sender address
- * @return ssize_t Size of read data
- */
-ssize_t read_domain_data(int sock, char *data, size_t data_len, char *addr);
-
-/**
- * @brief Write data to the domain server socket
- * 
- * @param sock Domain server socket
- * @param data Data buffer
- * @param data_len Data buffer length
- * @param addr Client address
- * @return ssize_t Size of written data
- */
-ssize_t write_domain_data(int sock, char *data, size_t data_len, char *addr);
+struct supervisor_context {
+  hmap_mac_conn   *mac_mapper;                                /**< MAC mapper connection structure */
+  hmap_if_conn    *if_mapper;                                 /**< WiFi subnet interface mapper */
+  bool            allow_all_connections;                      /**< @c allow_all_connections Flag from @c struct app_config */
+  char            hostapd_ctrl_if_path[MAX_OS_PATH_LEN];      /**< @c ctrl_interface param from @c struct hostapd_conf */
+  uint8_t         wpa_passphrase[HOSTAPD_AP_SECRET_LEN];      /**< @c wpa_passphrase from @c struct hostapd_conf */
+  ssize_t         wpa_passphrase_len;                         /**< the length of @c wpa_passphrase*/
+  char            nat_interface[IFNAMSIZ];                    /**< @c nat_interface param from @c struct app_config */
+  int             default_open_vlanid;                        /**< @c default_open_vlanid from @c struct app_config */
+  UT_array        *config_ifinfo_array;                       /**< @c config_ifinfo_array from @c struct app_config */
+  struct bridge_mac_list *bridge_list;                        /**< List of assigned bridges */
+};
 
 #endif

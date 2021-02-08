@@ -26,8 +26,11 @@
 #include "utils/os.h"
 #include "utils/log.h"
 #include "utils/list.h"
+#include "utils/utarray.h"
 
 #include "bridge_list.h"
+
+static const UT_icd tuple_list_icd = {sizeof(struct bridge_mac_tuple), NULL, NULL, NULL};
 
 struct bridge_mac_list *init_bridge_list(void)
 {
@@ -177,31 +180,34 @@ int remove_bridge_mac(struct bridge_mac_list *ml, const uint8_t *mac_addr_left, 
   return 0;
 }
 
-int get_bridge_tuple_list(struct bridge_mac_list *ml, struct bridge_mac_tuple **tuple_list)
+int get_bridge_tuple_list(struct bridge_mac_list *ml, const uint8_t *mac_addr_src, UT_array **tuple_list_arr)
 {
   int count = 0, idx = 0;
-  struct bridge_mac_tuple *ptr = NULL;
   struct bridge_mac_list *e;
-  *tuple_list = NULL;
+  utarray_new(*tuple_list_arr, &tuple_list_icd);
 
   if (ml == NULL) {
     log_trace("ml param is NULL");
-    *tuple_list = NULL;
-    return 0;
+    return -1;
   }
 
   struct dl_list *list = &ml->list;
-  count += dl_list_len(list);
 
-  if (count) {
-    ptr = (struct bridge_mac_tuple *) os_malloc(count * sizeof(struct bridge_mac_tuple));
+  if (mac_addr_src == NULL) {
 	  dl_list_for_each(e, list, struct bridge_mac_list, list) {
-      memcpy(ptr[idx].left_addr, e->mac_tuple.left_addr, ETH_ALEN);
-      memcpy(ptr[idx].right_addr, e->mac_tuple.right_addr, ETH_ALEN);
-      idx ++;
+      utarray_push_back(*tuple_list_arr, &e->mac_tuple);
+      count ++;
     }
+  } else {
+    count = -1;
+	  // dl_list_for_each(e, list, struct bridge_mac_list, list) {
+    //   if (
+    //     memcmp(mac_addr_src, e->mac_tuple.left_addr, ETH_ALEN) == 0 ||
+    //     memcmp(mac_addr_src, e->mac_tuple.right_addr, ETH_ALEN) == 0
+    //   )
+    //     count ++;
+    // }
   }
-  
-  *tuple_list = ptr;
+
   return count;
 }
