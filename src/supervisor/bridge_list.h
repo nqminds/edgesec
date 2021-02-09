@@ -34,8 +34,8 @@
  * 
  */
 struct bridge_mac_tuple {
-  uint8_t left_addr[ETH_ALEN];            /**< MAC address in byte format for left node*/
-  uint8_t right_addr[ETH_ALEN];           /**< MAC address in byte format for right node*/
+  uint8_t src_addr[ETH_ALEN];            /**< MAC address in byte format for source node*/
+  uint8_t dst_addr[ETH_ALEN];           /**< MAC address in byte format for destination node*/
 };
 /**
  * @brief The MAC bridge address store list
@@ -44,6 +44,15 @@ struct bridge_mac_tuple {
 struct bridge_mac_list {
   struct bridge_mac_tuple mac_tuple;          /**< The MAC address tuple */
   struct dl_list list;                        /**< List definition */
+};
+
+/**
+ * @brief The structure for edge definition
+ * 
+ */
+struct bridge_mac_list_tuple {
+  struct bridge_mac_list *left_edge;
+  struct bridge_mac_list *right_edge;
 };
 
 /**
@@ -86,18 +95,18 @@ int remove_bridge_mac(struct bridge_mac_list *ml, const uint8_t *mac_addr_left, 
  * @param ml The MAC bridge address list
  * @param mac_addr_left The MAC address in byte format for left node
  * @param mac_addr_right The MAC address in byte format for rigth node
- * @return struct bridge_mac_list* The MAC bridge element, NULL if not found
+ * @return bridge_mac_list_tuple The MAC bridge edge element, structure elements set to NULL if edge not found
  */
-struct bridge_mac_list *get_bridge_mac(struct bridge_mac_list *ml, const uint8_t *mac_addr_left, const uint8_t *mac_addr_right);
+struct bridge_mac_list_tuple get_bridge_mac(struct bridge_mac_list *ml, const uint8_t *mac_addr_left, const uint8_t *mac_addr_right);
 
 /**
  * @brief Get the bridge tuple list array for a source MAC address (if NULL returns all the connections)
  * 
  * @param ml The MAC bridge address list
- * @param mac_addr_src The source MAC address in byte format
+ * @param src_addr The source MAC address in byte format
  * @param tuple_list_arr The returned array of tuples
  * @return int The total number of tuples, -1 on error
  */
-int get_bridge_tuple_list(struct bridge_mac_list *ml, const uint8_t *mac_addr_src, UT_array **tuple_list_arr);
+int get_bridge_tuple_list(struct bridge_mac_list *ml, const uint8_t *src_addr, UT_array **tuple_list_arr);
 
 #endif
