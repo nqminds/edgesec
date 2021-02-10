@@ -31,6 +31,7 @@
 #include "bridge_list.h"
 
 static const UT_icd tuple_list_icd = {sizeof(struct bridge_mac_tuple), NULL, NULL, NULL};
+static const UT_icd mac_list_icd = {sizeof(uint8_t) * ETH_ALEN, NULL, NULL, NULL};
 
 struct bridge_mac_list *init_bridge_list(void)
 {
@@ -70,11 +71,11 @@ void free_bridge_list(struct bridge_mac_list *ml)
   bridge_mac_list_free(ml);
 }
 
-bool check_if_src_mac(struct bridge_mac_list *ml, const uint8_t *mac_addr)
+bool check_edge(struct bridge_mac_list *e, const uint8_t *mac_addr_left, const uint8_t *mac_addr_right)
 {
-  if (ml && mac_addr) {
-    if (memcmp(ml->mac_tuple.src_addr, mac_addr, ETH_ALEN))
-      return true;
+  if (memcmp(e->mac_tuple.src_addr, mac_addr_left, ETH_ALEN) == 0 &&
+      memcmp(e->mac_tuple.dst_addr, mac_addr_right, ETH_ALEN) == 0) {
+    return true;
   }
 
   return false;
@@ -102,11 +103,11 @@ struct bridge_mac_list_tuple get_bridge_mac(struct bridge_mac_list *ml, const ui
 
   struct dl_list *list = &ml->list;
 	dl_list_for_each(e, list, struct bridge_mac_list, list) {
-    if (check_if_src_mac(e, mac_addr_left)) {
+    if (check_edge(e, mac_addr_left, mac_addr_right)) {
       ret.left_edge = e;
     }
 
-    if (check_if_src_mac(e, mac_addr_right)) {
+    if (check_edge(e, mac_addr_right, mac_addr_left)) {
       ret.right_edge = e;
     }
 	}
@@ -139,9 +140,10 @@ int add_bridge_mac(struct bridge_mac_list *ml, const uint8_t *mac_addr_left, con
   }
 
   struct bridge_mac_list_tuple ret = get_bridge_mac(ml, mac_addr_left, mac_addr_right);
-	if(ret.left_edge || ret.right_edge)
+  // Existing edge
+	if(ret.left_edge && ret.right_edge)
     return 0;
-
+  
 	src_el = os_zalloc(sizeof(*src_el));
 	if (src_el == NULL) {
     log_err("os_zalloc");
@@ -162,65 +164,72 @@ int add_bridge_mac(struct bridge_mac_list *ml, const uint8_t *mac_addr_left, con
   memcpy(dst_el->mac_tuple.dst_addr, mac_addr_left, ETH_ALEN);
 	dl_list_add(&ml->list, &dst_el->list);
 
-	return 0;
+	return 1;
 }
 
-// int remove_bridge_mac(struct bridge_mac_list *ml, const uint8_t *mac_addr_left, const uint8_t *mac_addr_right)
-// {
-// 	  if (ml == NULL) {
-//     log_trace("ml param is NULL");
-//     return -1;
-//   }
+int remove_bridge_mac(struct bridge_mac_list *ml, const uint8_t *mac_addr_left, const uint8_t *mac_addr_right)
+{
+	  if (ml == NULL) {
+    log_trace("ml param is NULL");
+    return -1;
+  }
 
-//   if (mac_addr_left == NULL) {
-//     log_trace("mac_addr_left param is NULL");
-//     return -1;
-//   }
+  if (mac_addr_left == NULL) {
+    log_trace("mac_addr_left param is NULL");
+    return -1;
+  }
 
-//   if (mac_addr_right == NULL) {
-//     log_trace("mac_addr_right param is NULL");
-//     return -1;
-//   }
+  if (mac_addr_right == NULL) {
+    log_trace("mac_addr_right param is NULL");
+    return -1;
+  }
 
-//   struct bridge_mac_list *e = get_bridge_mac(ml, mac_addr_left, mac_addr_right);
-// 	if (e)
-// 		bridge_mac_list_free(e);
+  struct bridge_mac_list_tuple e = get_bridge_mac(ml, mac_addr_left, mac_addr_right);
+	if ((e.left_edge == NULL && e.right_edge != NULL) || (e.left_edge != NULL && e.right_edge == NULL)) {
+    log_trace("Missing edge");
+    return -1;
+  }
+  
+  bridge_mac_list_free(e.left_edge);
+  bridge_mac_list_free(e.right_edge);
+  
+  return 0;
+}
 
-//   return 0;
-// }
+int get_src_mac_list(struct bridge_mac_list *ml, const uint8_t *src_addr, UT_array **mac_list_arr)
+{
+  struct bridge_mac_list *e;
+  utarray_new(*mac_list_arr, &mac_list_icd);
 
-// int get_bridge_tuple_list(struct bridge_mac_list *ml, const uint8_t *mac_addr_src, UT_array **tuple_list_arr)
-// {
-//   struct bridge_mac_tuple tuple;
-//   int count = 0;
-//   struct bridge_mac_list *e;
-//   utarray_new(*tuple_list_arr, &tuple_list_icd);
+  if (ml == NULL) {
+    log_trace("ml param is NULL");
+    return -1;
+  }
 
-//   if (ml == NULL) {
-//     log_trace("ml param is NULL");
-//     return -1;
-//   }
+  struct dl_list *list = &ml->list;
+	dl_list_for_each(e, list, struct bridge_mac_list, list) {
+    if (memcmp(src_addr, e->mac_tuple.src_addr, ETH_ALEN) == 0) {
+      utarray_push_back(*mac_list_arr, e->mac_tuple.dst_addr);
+    }
+  }
 
-//   struct dl_list *list = &ml->list;
+  return utarray_len(*mac_list_arr);
+}
 
-//   if (mac_addr_src == NULL) {
-// 	  dl_list_for_each(e, list, struct bridge_mac_list, list) {
-//       utarray_push_back(*tuple_list_arr, &e->mac_tuple);
-//       count ++;
-//     }
-//   } else {
-// 	  dl_list_for_each(e, list, struct bridge_mac_list, list) {
-//       if (memcmp(mac_addr_src, e->mac_tuple.left_addr, ETH_ALEN) == 0) {
-//         utarray_push_back(*tuple_list_arr, &e->mac_tuple);
-//         count ++;
-//       } else if (memcmp(mac_addr_src, e->mac_tuple.right_addr, ETH_ALEN) == 0) {
-//         memcpy(tuple.left_addr, e->mac_tuple.right_addr, ETH_ALEN);
-//         memcpy(tuple.right_addr, e->mac_tuple.left_addr, ETH_ALEN);
-//         utarray_push_back(*tuple_list_arr, &tuple);
-//         count ++;
-//       }
-//     }
-//   }
+int get_all_bridge_edges(struct bridge_mac_list *ml, UT_array **tuple_list_arr)
+{
+  struct bridge_mac_list *e;
+  utarray_new(*tuple_list_arr, &tuple_list_icd);
 
-//   return count;
-// }
+  if (ml == NULL) {
+    log_trace("ml param is NULL");
+    return -1;
+  }
+
+  struct dl_list *list = &ml->list;
+	dl_list_for_each(e, list, struct bridge_mac_list, list) {
+    utarray_push_back(*tuple_list_arr, &e->mac_tuple);
+  }
+
+  return utarray_len(*tuple_list_arr);
+}
