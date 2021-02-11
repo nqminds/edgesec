@@ -67,23 +67,6 @@ bool process_domain_buffer(char *domain_buffer, size_t domain_buffer_len, UT_arr
   return true;
 }
 
-bool get_bridge_ifname(hmap_if_conn **if_mapper, UT_array *config_ifinfo_array, char *ip, char *ifname)
-{
-  in_addr_t subnet_addr;
-
-  if (find_subnet_address(config_ifinfo_array, ip, &subnet_addr) != 0) {
-    log_trace("find_subnet_address fail");
-    return false;
-  }
-
-  if (!get_if_mapper(if_mapper, subnet_addr, ifname)) {
-    log_trace("get_if_mapper fail");
-    return false;
-  }
-
-  return true;
-}
-
 ssize_t process_ping_cmd(int sock, char *client_addr)
 {
   char *buf = "PONG";
@@ -119,7 +102,11 @@ ssize_t process_accept_mac_cmd(int sock, char *client_addr,
         if (errno != ERANGE && is_number(*ptr)) {
           log_trace("ACCEPT_MAC mac=%02x:%02x:%02x:%02x:%02x:%02x with vlanid=%d", MAC2STR(addr), vlanid);
 
-          get_mac_mapper(&context->mac_mapper, addr, &info);
+          if (get_mac_mapper(&context->mac_mapper, addr, &info) < 0) {
+            log_trace("get_mac_mapper fail");
+            return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);          
+          }
+
           memcpy(conn.mac_addr, addr, ETH_ALEN);
           info.vlanid = vlanid;
           conn.info = info;
@@ -177,14 +164,18 @@ ssize_t process_add_nat_cmd(int sock, char *client_addr,
   if (ptr != NULL && *ptr != NULL) {
     if (hwaddr_aton2(*ptr, addr) != -1) {
       log_trace("ADD_NAT mac=%02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(addr));
-      get_mac_mapper(&context->mac_mapper, addr, &info);
+      if (get_mac_mapper(&context->mac_mapper, addr, &info) < 0) {
+        log_trace("get_mac_mapper fail");
+        return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+      }
+
       memcpy(conn.mac_addr, addr, ETH_ALEN);
       info.nat = true;
       conn.info = info;
 
-      if (strlen(info.ip_addr)) {
-        if (!get_bridge_ifname(&context->if_mapper, context->config_ifinfo_array, info.ip_addr, ifname)) {
-          log_trace("get_bridge_ifname fail");
+      if (validate_ipv4_string(info.ip_addr)) {
+        if (!get_ifname_from_ip(&context->if_mapper, context->config_ifinfo_array, info.ip_addr, ifname)) {
+          log_trace("get_ifname_from_ip fail");
           return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
         }
 
@@ -218,14 +209,18 @@ ssize_t process_remove_nat_cmd(int sock, char *client_addr,
   if (ptr != NULL && *ptr != NULL) {
     if (hwaddr_aton2(*ptr, addr) != -1) {
       log_trace("REMOVE_NAT mac=%02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(addr));
-      get_mac_mapper(&context->mac_mapper, addr, &info);
+      if (get_mac_mapper(&context->mac_mapper, addr, &info) < 0) {
+        log_trace("get_mac_mapper fail");
+        return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+      }
+
       memcpy(conn.mac_addr, addr, ETH_ALEN);
       info.nat = false;
       conn.info = info;
 
-      if (strlen(info.ip_addr)) {
-        if (!get_bridge_ifname(&context->if_mapper, context->config_ifinfo_array, info.ip_addr, ifname)) {
-          log_trace("get_bridge_ifname fail");
+      if (validate_ipv4_string(info.ip_addr)) {
+        if (!get_ifname_from_ip(&context->if_mapper, context->config_ifinfo_array, info.ip_addr, ifname)) {
+          log_trace("get_ifname_from_ip fail");
           return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
         }
 
@@ -371,14 +366,15 @@ ssize_t process_set_ip_cmd(int sock, char *client_addr,
       ptr = (char**) utarray_next(cmd_arr, ptr);
       if (ptr != NULL && *ptr != NULL) {
         if (validate_ipv4_string(*ptr)) {
-          log_trace("SET_IP type=%s mac=%02x:%02x:%02x:%02x:%02x:%02x ip=%s", add_type, MAC2STR(addr), *ptr);
-
-          if (!get_bridge_ifname(&context->if_mapper, context->config_ifinfo_array, *ptr, ifname)) {
-            log_trace("get_bridge_ifname fail");
+          if (!get_ifname_from_ip(&context->if_mapper, context->config_ifinfo_array, *ptr, ifname)) {
+            log_trace("get_ifname_from_ip fail");
             return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
           }
 
-          get_mac_mapper(&context->mac_mapper, addr, &info);
+          if (get_mac_mapper(&context->mac_mapper, addr, &info) < 0) {
+            log_trace("get_mac_mapper fail");
+            return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+          }
 
           if (!strcmp(add_type, "add") || !strcmp(add_type, "old")) {
             strcpy(info.ip_addr, *ptr);
@@ -401,7 +397,7 @@ ssize_t process_set_ip_cmd(int sock, char *client_addr,
 
           memcpy(conn.mac_addr, addr, ETH_ALEN);
           conn.info = info;
-
+          log_trace("SET_IP type=%s mac=%02x:%02x:%02x:%02x:%02x:%02x ip=%s if=%s", add_type, MAC2STR(conn.mac_addr), conn.info.ip_addr, conn.info.ifname);
           if (put_mac_mapper(&context->mac_mapper, conn))
             return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
         } else {
@@ -418,36 +414,40 @@ ssize_t process_set_ip_cmd(int sock, char *client_addr,
 ssize_t process_add_bridge_cmd(int sock, char *client_addr,
   struct supervisor_context *context, UT_array *cmd_arr)
 {
-  // char **ptr = (char**) utarray_next(cmd_arr, NULL);
-  // uint8_t addr[ETH_ALEN];
-  // uint8_t addr_bridge[ETH_ALEN];
-  // struct mac_conn conn;
-  // struct mac_conn_info info = {.vlanid = 0, .nat = false, .allow_connection = false, .pass_len = 0};
+  char **ptr = (char**) utarray_next(cmd_arr, NULL);
+  uint8_t left_addr[ETH_ALEN];
+  uint8_t right_addr[ETH_ALEN];
+  struct mac_conn_info left_info, right_info;
 
-  // os_memset(info.ip_addr, 0x0, IP_LEN);
-
-  // // MAC address
-  // ptr = (char**) utarray_next(cmd_arr, ptr);
-  // if (ptr != NULL && *ptr != NULL) {
-  //   if (hwaddr_aton2(*ptr, addr) != -1) {
-  //     // vlanid
-  //     ptr = (char**) utarray_next(cmd_arr, ptr);
-  //     if (ptr != NULL && *ptr != NULL) {
-  //       vlanid = (int) strtoul(*ptr, NULL, 10);
-  //       if (errno != ERANGE && is_number(*ptr)) {
-  //         log_trace("ACCEPT_MAC mac=%02x:%02x:%02x:%02x:%02x:%02x with vlanid=%d", MAC2STR(addr), vlanid);
-
-  //         get_mac_mapper(&context->mac_mapper, addr, &info);
-  //         memcpy(conn.mac_addr, addr, ETH_ALEN);
-  //         info.vlanid = vlanid;
-  //         conn.info = info;
-
-  //         if (put_mac_mapper(&context->mac_mapper, conn))
-  //           return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
-  //       }
-  //     }
-  //   } 
-  // }
+  // MAC address source
+  ptr = (char**) utarray_next(cmd_arr, ptr);
+  if (ptr != NULL && *ptr != NULL) {
+    if (hwaddr_aton2(*ptr, left_addr) != -1) {
+      // MAC address destination
+      ptr = (char**) utarray_next(cmd_arr, ptr);
+      if (ptr != NULL && *ptr != NULL) {
+        if (hwaddr_aton2(*ptr, right_addr) != -1) {
+          if (add_bridge_mac(context->bridge_list, left_addr, right_addr) >= 0) {
+            log_trace("ADD_BRIDGE left_mac=%02x:%02x:%02x:%02x:%02x:%02x right_mac=%02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(left_addr), MAC2STR(right_addr));
+            if (get_mac_mapper(&context->mac_mapper, left_addr, &left_info) == 1 &&
+                get_mac_mapper(&context->mac_mapper, right_addr, &right_info) == 1
+            ) {
+              if (validate_ipv4_string(left_info.ip_addr) && validate_ipv4_string(right_info.ip_addr)) {
+                log_trace("Adding iptable rule for sip=%s sif=%s dip=%s dif=%s", left_info.ip_addr, left_info.ifname, right_info.ip_addr, right_info.ifname);
+                if (!add_bridge_rules(left_info.ip_addr, left_info.ifname, right_info.ip_addr, right_info.ifname)) {
+                  log_trace("add_bridge_rules fail");
+                  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+                }
+              }
+            }
+            return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
+          } else {
+            log_trace("add_bridge_mac fail");
+          }
+        }
+      }
+    }
+  }
 
   return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }

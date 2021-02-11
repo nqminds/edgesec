@@ -191,6 +191,17 @@ UT_array *get_interfaces(int if_id);
 int find_subnet_address(UT_array *config_ifinfo_array, char *ip, in_addr_t *subnet_addr);
 
 /**
+ * @brief Get the interface name from an IP string
+ * 
+ * @param if_mapper The mapper from VLAn to interface
+ * @param config_ifinfo_array The list of IP subnets
+ * @param ip The input IP address
+ * @param ifname The returned interface name (string has to be preallocated)
+ * @return true on success, false otherwise
+ */
+bool get_ifname_from_ip(hmap_if_conn **if_mapper, UT_array *config_ifinfo_array, char *ip, char *ifname);
+
+/**
  * @brief Checks whether a string denotes a IPv4 address
  * 
  * @param ip The IP in fromat x.y.z.q

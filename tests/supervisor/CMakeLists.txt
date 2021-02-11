@@ -10,7 +10,12 @@ add_executable(test_domain_server test_domain_server.c)
 target_link_libraries(test_domain_server domain_server log ${CMOCKA_LIB})
 
 add_executable(test_cmd_processor test_cmd_processor.c)
-target_link_libraries(test_cmd_processor cmd_processor log ${CMOCKA_LIB})
+target_link_libraries(test_cmd_processor cmd_processor log engine ${CMOCKA_LIB})
+
+set_target_properties(test_cmd_processor
+        PROPERTIES
+        LINK_FLAGS  "-Wl,--wrap=write_domain_data -Wl,--wrap=add_bridge_rules"
+)
 
 add_test(NAME test_bridge_list COMMAND test_bridge_list)
 set_tests_properties(test_bridge_list

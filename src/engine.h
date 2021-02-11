@@ -29,40 +29,17 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
-#include "utils/utarray.h"
-#include "utils/hashmap.h"
-#include "utils/os.h"
-#include "hostapd/hostapd_config.h"
-#include "radius/radius_server.h"
-#include "dns/dns_service.h"
-#include "dhcp/dhcp_service.h"
-#include "if_service.h"
-#include "supervisor/mac_mapper.h"
+#include "app_config.h"
+#include "supervisor/supervisor_config.h"
 
 /**
- * @brief The App configuration structures. Used for configuring the networking services.
+ * @brief Initialises the app context structure
  * 
+ * @param app_config The app config structure
+ * @param ctx The app context structure
+ * @return true on success, false otherwise
  */
-struct app_config {
-  UT_array            *bin_path_array;                      /**< The array including the paths of systems binaries. */
-  bool                ap_detect;                            /**< Flag to detect an existing wifi interface to create the access point. */
-  bool                exec_hostapd;                         /**< Flag to execute the hostapd service. */
-  bool                exec_radius;                          /**< Flag to execute the radius service. */
-  bool                exec_dhcp;                            /**< Flag to execute the dhcp service. */
-  char                nat_interface[IFNAMSIZ];              /**< The NAT interface string. */
-  bool                create_interfaces;                    /**< Flag to create the WiFi subnet interfaces. */
-  bool                ignore_if_error;                      /**< Flag if set ignores the errors if subnet already exists. */
-  int                 default_open_vlanid;                  /**< Sets the default vlan index for open connections or if MAC is not in the list of connections. */
-  UT_array            *config_ifinfo_array;                 /**< Interface list mapping bridge interface name and IP address range. */
-  char                domain_server_path[MAX_OS_PATH_LEN];  /**< Path to the control server. */
-  bool                allow_all_connections;                /**< Flag to allow all connections. */
-  bool                kill_running_proc;                    /**< Flag to terminate running app processes. */
-  UT_array            *connections;                         /**< MAC mapper to @c struct mac_conn. */
-  struct radius_conf  rconfig;                              /**< Radius service configuration. */
-  struct hostapd_conf hconfig;                              /**< Hostapd service configuration. */
-  struct dns_conf     dns_config;                           /**< DNS service configuration. */
-  struct dhcp_conf    dhcp_config;                          /**< DHCP service configuration. */
-};
+bool init_context(struct app_config *app_config, struct supervisor_context *ctx);
 
 /**
  * @brief Executes the edgesec WiFi networking engine. Creates subnets and starts the supervisor, radius servers and hostapd service.

@@ -735,6 +735,9 @@ int main(int argc, char *argv[])
   UT_array *mac_conn_arr;
   UT_array *server_arr;
   struct app_config config;
+  
+  // Init the app config struct
+  memset(&config, 0, sizeof(struct app_config));
 
   // Create the empty dynamic array for bin path strings
   utarray_new(bin_path_arr, &ut_str_icd);

@@ -41,7 +41,6 @@
 #include "utils/iptables.h"
 
 #include "supervisor/supervisor.h"
-// #include "radius/radius_server.h"
 #include "radius/radius_service.h"
 #include "hostapd/hostapd_service.h"
 #include "dhcp/dhcp_service.h"
@@ -51,7 +50,7 @@
 #include "if_service.h"
 
 static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
-struct supervisor_context context;
+static struct supervisor_context context;
 
 static void lock_fn(bool lock)
 {
@@ -70,69 +69,38 @@ static void lock_fn(bool lock)
   }
 }
 
-// struct mac_conn_info get_mac_conn(uint8_t mac_addr[])
-// {
-//   struct mac_conn_info info;
-
-//   log_trace("RADIUS requested vland id for mac=%02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(mac_addr));
-
-//   int find_mac = get_mac_mapper(&context.mac_mapper, mac_addr, &info);
-
-//   if (!find_mac || context.allow_all_connections) {
-//     log_trace("RADIUS allowing mac=%02x:%02x:%02x:%02x:%02x:%02x on default vlanid=%d", MAC2STR(mac_addr), context.default_open_vlanid);
-//     info.vlanid = context.default_open_vlanid;
-//     info.pass_len = context.wpa_passphrase_len;
-//     memcpy(info.pass, context.wpa_passphrase, info.pass_len);
-//     return info;
-//   } else if (find_mac == 1) {
-//     if (info.allow_connection) {
-//       log_trace("RADIUS allowing mac=%02x:%02x:%02x:%02x:%02x:%02x on vlanid=%d", MAC2STR(mac_addr), info.vlanid);
-//       return info;
-//     }
-//   } else if (find_mac == -1) {
-//     log_trace("get_mac_mapper fail");
-//   }
-
-//   log_trace("RADIUS rejecting mac=%02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(mac_addr));
-//   info.vlanid = -1;
-//   return info;
-// }
-
 bool create_if_mapper(UT_array *config_ifinfo_array, hmap_if_conn **hmap)
 {
   config_ifinfo_t *p = NULL;
   in_addr_t addr;
 
-  if (config_ifinfo_array == NULL) {
-    log_trace("config_ifinfo_array param is NULL");
-    return false;
-  }
+  if (config_ifinfo_array != NULL) {
+    while(p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) {
+      log_trace("Adding ifname=%s with ip=%s and subnet_mask=%s to mapper", p->ifname, p->ip_addr, p->subnet_mask);
+      if(!ip_2_nbo(p->ip_addr, p->subnet_mask, &addr)) {
+        log_trace("ip_2_nbo fail");
+        free_if_mapper(hmap);
+        return false;
+      }
 
-  while(p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) {
-    log_trace("Adding ifname=%s with ip=%s and subnet_mask=%s to mapper", p->ifname, p->ip_addr, p->subnet_mask);
-    if(!ip_2_nbo(p->ip_addr, p->subnet_mask, &addr)) {
-      log_trace("ip_2_nbo fail");
-      free_if_mapper(hmap);
-      return false;
-    }
-
-    if (!put_if_mapper(hmap, addr, p->ifname)) {
-      log_trace("put_if_mapper fail");
-      free_if_mapper(hmap);
-      return false;
+      if (!put_if_mapper(hmap, addr, p->ifname)) {
+        log_trace("put_if_mapper fail");
+        free_if_mapper(hmap);
+        return false;
+      }
     }
   }
-
   return true;
 }
 
 bool init_ifbridge_names(UT_array *config_ifinfo_array, char *if_bridge)
 {
   config_ifinfo_t *p = NULL;
-
-  while(p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) {
-    if (snprintf(p->ifname, IFNAMSIZ, "%s%d", if_bridge, p->vlanid) < 0) {
-      return false;
+  if (config_ifinfo_array != NULL && if_bridge != NULL) {
+    while(p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) {
+      if (snprintf(p->ifname, IFNAMSIZ, "%s%d", if_bridge, p->vlanid) < 0) {
+        return false;
+      }
     }
   }
 
@@ -153,38 +121,38 @@ bool construct_hostapd_ctrlif(char *ctrl_interface, char *interface)
   return true;
 }
 
-bool init_context(struct app_config *app_config)
+bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
 {
-  os_memset(&context, 0, sizeof(struct supervisor_context));
+  os_memset(ctx, 0, sizeof(struct supervisor_context));
 
   if (!init_ifbridge_names(app_config->config_ifinfo_array, app_config->hconfig.vlan_bridge)) {
     log_trace("init_ifbridge_names fail");
     return false;
   }
 
-  context.allow_all_connections = app_config->allow_all_connections;
-  context.default_open_vlanid = app_config->default_open_vlanid;
-  context.config_ifinfo_array = app_config->config_ifinfo_array;
+  ctx->allow_all_connections = app_config->allow_all_connections;
+  ctx->default_open_vlanid = app_config->default_open_vlanid;
+  ctx->config_ifinfo_array = app_config->config_ifinfo_array;
 
-  context.wpa_passphrase_len = strlen(app_config->hconfig.wpa_passphrase);
-  memcpy(context.wpa_passphrase, app_config->hconfig.wpa_passphrase, context.wpa_passphrase_len);
+  ctx->wpa_passphrase_len = strlen(app_config->hconfig.wpa_passphrase);
+  memcpy(ctx->wpa_passphrase, app_config->hconfig.wpa_passphrase, ctx->wpa_passphrase_len);
   
-  strncpy(context.nat_interface, app_config->nat_interface, IFNAMSIZ);
-
-  log_info("Adding default mac mappers...");
-  if (!create_mac_mapper(app_config->connections, &context.mac_mapper)) {
-    log_debug("create_mac_mapper fail");
-    return false;
-  }
+  strncpy(ctx->nat_interface, app_config->nat_interface, IFNAMSIZ);
 
   log_info("Adding interfaces to the mapper...");
-  if (!create_if_mapper(app_config->config_ifinfo_array, &context.if_mapper)) {
+  if (!create_if_mapper(app_config->config_ifinfo_array, &ctx->if_mapper)) {
     log_debug("create_if_mapper fail");
     return false;
   }
 
+  log_info("Adding default mac mappers...");
+  if (!create_mac_mapper(NULL, NULL, app_config->connections, &ctx->mac_mapper)) {
+    log_debug("create_mac_mapper fail");
+    return false;
+  }
+
   // Init the list of bridges
-  context.bridge_list = init_bridge_list();
+  ctx->bridge_list = init_bridge_list();
   return true;
 }
 
@@ -200,9 +168,7 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
   // Set the log level
   log_set_level(log_level);
 
-  // struct radius_client *client = init_radius_client(&app_config->rconfig, get_mac_conn);
-
-  if (!init_context(app_config)) {
+  if (!init_context(app_config, &context)) {
     log_trace("init_context fail");
     goto run_engine_fail;
   }
@@ -285,7 +251,6 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
     log_info("Creating the radius server on port %d with client ip %s",
       app_config->rconfig.radius_port, app_config->rconfig.radius_client_ip);
 
-    // radius_srv = radius_server_init(app_config->rconfig.radius_port, client);
     radius_srv = run_radius(&app_config->rconfig, &context);
     if (radius_srv == NULL) {
       log_debug("run_radius fail");
@@ -322,7 +287,6 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
   close_supervisor(domain_sock);
   close_hostapd(hostapd_fd);
   close_dhcp(dhcp_fd);
-  // radius_server_deinit(radius_srv);
   close_radius(radius_srv);
   eloop_destroy();
   free(nat_ip);
@@ -337,7 +301,6 @@ run_engine_fail:
   close_supervisor(domain_sock);
   close_hostapd(hostapd_fd);
   close_dhcp(dhcp_fd);
-  // radius_server_deinit(radius_srv);
   close_radius(radius_srv);
   eloop_destroy();
   free(nat_ip);

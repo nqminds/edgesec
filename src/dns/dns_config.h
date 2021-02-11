@@ -18,12 +18,12 @@
  ****************************************************************************/
 
 /**
- * @file dns_service.h 
+ * @file dns_config.h 
  * @author Alexandru Mereacre 
  * @brief File containing the definition of dns service configuration utilities.
  */
-#ifndef DNS_SERVICE_H
-#define DNS_SERVICE_H
+#ifndef DNS_CONFIG_H
+#define DNS_CONFIG_H
 
 #include "../utils/utarray.h"
 

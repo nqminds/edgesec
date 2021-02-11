@@ -981,6 +981,23 @@ int find_subnet_address(UT_array *config_ifinfo_array, char *ip, in_addr_t *subn
   return 1;
 }
 
+bool get_ifname_from_ip(hmap_if_conn **if_mapper, UT_array *config_ifinfo_array, char *ip, char *ifname)
+{
+  in_addr_t subnet_addr;
+
+  if (find_subnet_address(config_ifinfo_array, ip, &subnet_addr) != 0) {
+    log_trace("find_subnet_address fail");
+    return false;
+  }
+
+  if (!get_if_mapper(if_mapper, subnet_addr, ifname)) {
+    log_trace("get_if_mapper fail");
+    return false;
+  }
+
+  return true;
+}
+
 bool validate_ipv4_string(char *ip)
 {
   struct sockaddr_in sa;

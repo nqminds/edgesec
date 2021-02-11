@@ -391,6 +391,16 @@ bool add_bridge_rule(char *sip, char *sif, char *dip, char *dif)
   char *bridge_rule[16] = {"-I", "FORWARD", NULL, "-t", "filter", "--src",
     NULL, "--dst", NULL, "-i", NULL, "-o", NULL, "-j", "ACCEPT", NULL};
 
+  if (!validate_ipv4_string(sip)) {
+    log_trace("Wrong source IP format");
+    return false;
+  }
+
+  if (!validate_ipv4_string(dip)) {
+    log_trace("Wrong destination IP format");
+    return false;
+  }
+
   if (!get_filter_rules()) {
     log_trace("iptables rules empty");
     return false;
@@ -398,11 +408,16 @@ bool add_bridge_rule(char *sip, char *sif, char *dip, char *dif)
 
   long num = find_baseif_rulenum(rule_list, sif);
   if (!num) {
-    log_trace("No base rule found");
+    log_trace("Wrong source interface");
     return false;
   }
 
   sprintf(num_buf, "%ld", num);
+
+  if (!find_baseif_rulenum(rule_list, dif)) {
+    log_trace("Wrong destination interface");
+    return false;
+  }
 
   bridge_rule[2] = num_buf;
   bridge_rule[6] = sip;

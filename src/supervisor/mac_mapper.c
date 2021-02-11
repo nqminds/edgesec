@@ -97,21 +97,18 @@ void free_mac_mapper(hmap_mac_conn **hmap)
   }
 }
 
-bool create_mac_mapper(UT_array *connections, hmap_mac_conn **hmap)
+bool create_mac_mapper(hmap_if_conn **if_mapper, UT_array *config_ifinfo_array, UT_array *connections, hmap_mac_conn **hmap)
 {
   struct mac_conn *p = NULL;
 
-  if (connections == NULL) {
-    log_trace("connections param is NULL");
-    return false;
-  }
-
-  while(p = (struct mac_conn *) utarray_next(connections, p)) {
-    log_trace("Adding mac=%02x:%02x:%02x:%02x:%02x:%02x with vlanid=%d and nat=%d", MAC2STR(p->mac_addr), p->info.vlanid, p->info.nat);
-    if (!put_mac_mapper(hmap, *p)) {
-      log_trace("put_mac_mapper fail");
-      free_mac_mapper(hmap);
-      return false;
+  if (connections != NULL) {
+    while(p = (struct mac_conn *) utarray_next(connections, p)) {
+      log_trace("Adding mac=%02x:%02x:%02x:%02x:%02x:%02x with vlanid=%d and nat=%d", MAC2STR(p->mac_addr), p->info.vlanid, p->info.nat);
+      if (!put_mac_mapper(hmap, *p)) {
+        log_trace("put_mac_mapper fail");
+        free_mac_mapper(hmap);
+        return false;
+      }
     }
   }
 

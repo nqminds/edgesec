@@ -10,6 +10,9 @@ add_subdirectory(radius)
 add_subdirectory(hostapd)
 add_subdirectory(dhcp)
 
+add_executable(test_engine test_engine.c)
+target_link_libraries(test_engine engine log system_checks os mac_mapper ${CMOCKA_LIB})
+
 add_executable(test_mac_mapper test_mac_mapper.c)
 target_link_libraries(test_mac_mapper log system_checks os mac_mapper ${CMOCKA_LIB})
 
@@ -22,6 +25,11 @@ set_target_properties(test_if_service
         PROPERTIES
         LINK_FLAGS  "-Wl,--wrap=iface_exists -Wl,--wrap=get_netiw_info -Wl,--wrap=iwace_isvlan -Wl,--wrap=create_interface -Wl,--wrap=set_interface_ip -Wl,--wrap=set_interface_state -Wl,--wrap=get_interfaces -Wl,--wrap=if_nametoindex"
 )
+
+add_test(NAME test_engine COMMAND test_engine)
+set_tests_properties(test_engine
+  PROPERTIES
+  WILL_FAIL FALSE)
 
 add_test(NAME test_mac_mapper COMMAND test_mac_mapper)
 set_tests_properties(test_mac_mapper
