@@ -26,23 +26,21 @@ static void test_put_mac_mapper(void **state)
   utarray_new(mac_conn_arr, &mac_conn_icd);  
 
   hmap_mac_conn *hmap = NULL;
-  bool ret = create_mac_mapper(mac_conn_arr, &hmap);
-  assert_true(ret);
 
   struct mac_conn el[6] = {
-    {{0x04, 0xf0, 0x21, 0x5a, 0xf4, 0xc4}, 0, 1},
-    {{0x30, 0x52, 0xcb, 0xe9, 0x00, 0x8f}, 1, 0},
-    {{0x40, 0xb4, 0xcd, 0xf1, 0x18, 0xbc}, 2, 1},
-    {{0x60, 0x70, 0xc0, 0x0a, 0x23, 0xba}, 3, 0},
-    {{0x60, 0x70, 0xc0, 0x0a, 0x23, 0xba}, 3, 1},
-    {{0x00, 0x0f, 0x00, 0x70, 0x62, 0x88}, 4, 1}
+    {{0x04, 0xf0, 0x21, 0x5a, 0xf4, 0xc4}, 0, 1, 0, {}, 0, {}, {'b', 'r', '0', '\0'}},
+    {{0x30, 0x52, 0xcb, 0xe9, 0x00, 0x8f}, 1, 0, 0, {}, 0, {}, {'b', 'r', '1', '\0'}},
+    {{0x40, 0xb4, 0xcd, 0xf1, 0x18, 0xbc}, 2, 1, 0, {}, 0, {}, {'b', 'r', '2', '\0'}},
+    {{0x60, 0x70, 0xc0, 0x0a, 0x23, 0xba}, 3, 0, 0, {}, 0, {}, {'b', 'r', '3', '\0'}},
+    {{0x60, 0x70, 0xc0, 0x0a, 0x23, 0xba}, 4, 1, 0, {}, 0, {}, {'b', 'r', '4', '\0'}},
+    {{0x00, 0x0f, 0x00, 0x70, 0x62, 0x88}, 5, 1, 0, {}, 0, {}, {'b', 'r', '5', '\0'}}
   };
 
   for (int i = 0; i < 5; i++)
     put_mac_mapper(&hmap, el[i]);
 
   struct mac_conn_info info;
-  ret = get_mac_mapper(&hmap, el[1].mac_addr, &info);
+  bool ret = get_mac_mapper(&hmap, el[1].mac_addr, &info);
   assert_true(ret);
   assert_int_equal(info.vlanid, el[1].info.vlanid);
   assert_int_equal(info.nat, el[1].info.nat);
@@ -63,6 +61,7 @@ static void test_create_mac_mapper(void **state)
 
   UT_array *mac_conn_arr;
   utarray_new(mac_conn_arr, &mac_conn_icd);
+
   struct mac_conn el[5] = {
     {{0x04, 0xf0, 0x21, 0x5a, 0xf4, 0xc4}, 0, 1},
     {{0x30, 0x52, 0xcb, 0xe9, 0x00, 0x8f}, 1, 0},

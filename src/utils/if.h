@@ -82,7 +82,7 @@ typedef struct config_ifinfo_t{
 } config_ifinfo_t;
 
 /**
- * @brief Interface connection mapper
+ * @brief Subnet to interface connection mapper
  * 
  */
 typedef struct hashmap_if_conn {
@@ -90,6 +90,16 @@ typedef struct hashmap_if_conn {
     char 						value[IFNAMSIZ];		/**< value as the interface name */
     UT_hash_handle 				hh;         		    /**< makes this structure hashable */
 } hmap_if_conn;
+
+/**
+ * @brief VLAN to interface connection mapper
+ * 
+ */
+typedef struct hashmap_vlan_conn {
+    int 						key;               		/**< VLAN id as subnet */
+    char 						value[IFNAMSIZ];		/**< value as the interface name */
+    UT_hash_handle 				hh;         		    /**< makes this structure hashable */
+} hmap_vlan_conn;
 
 /**
  * @brief IP string to @c struct in_addr_t converter
@@ -127,6 +137,33 @@ bool put_if_mapper(hmap_if_conn **hmap, in_addr_t subnet, char *ifname);
  * @param hmap The interface connection mapper object
  */
 void free_if_mapper(hmap_if_conn **hmap);
+
+/**
+ * @brief Get the interface name corresponding to a VLAN ID
+ * 
+ * @param hmap The VLAN ID to interface connection mapper object
+ * @param vlanid The VLAN ID
+ * @param ifname The returned interface name 
+ * @return int 1 if found, 0 not found, -1 on error
+ */
+int get_vlan_mapper(hmap_vlan_conn **hmap, int vlanid, char *ifname);
+
+/**
+ * @brief Insertes an interface and VLAN ID value into the interface connection mapper
+ * 
+ * @param hmap The VLAN ID to interface connection mapper object
+ * @param vlanid The VLAN ID
+ * @param ifname The interface name
+ * @return true on success, false otherwise
+ */
+bool put_vlan_mapper(hmap_vlan_conn **hmap, int vlanid, char *ifname);
+
+/**
+ * @brief Frees the VLAN ID to interface connection mapper object
+ * 
+ * @param hmap The VLAN ID to interface connection mapper object
+ */
+void free_vlan_mapper(hmap_vlan_conn **hmap);
 
 /**
  * @brief Check if an interface exist (network system check)
@@ -193,10 +230,10 @@ int find_subnet_address(UT_array *config_ifinfo_array, char *ip, in_addr_t *subn
 /**
  * @brief Get the interface name from an IP string
  * 
- * @param if_mapper The mapper from VLAn to interface
+ * @param if_mapper The mapper from subnet to interface
  * @param config_ifinfo_array The list of IP subnets
  * @param ip The input IP address
- * @param ifname The returned interface name (string has to be preallocated)
+ * @param ifname The returned interface name (buffer has to be preallocated)
  * @return true on success, false otherwise
  */
 bool get_ifname_from_ip(hmap_if_conn **if_mapper, UT_array *config_ifinfo_array, char *ip, char *ifname);

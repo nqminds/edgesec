@@ -91,4 +91,13 @@ bool generate_hostapd_conf(struct hostapd_conf *hconf, struct radius_conf *rconf
  */
 bool generate_vlan_conf(char *vlan_file, char *interface);
 
+/**
+ * @brief Construct the hostapd control interface path
+ * 
+ * @param ctrl_interface The control interface path
+ * @param interface The WiFi interface name
+ * @param hostapd_ctrl_if_path Returned hostapd control interface path (buffer has to be preallocated)
+ * @return true on success, false otherwise
+ */
+bool construct_hostapd_ctrlif(char *ctrl_interface, char *interface, char *hostapd_ctrl_if_path);
 #endif

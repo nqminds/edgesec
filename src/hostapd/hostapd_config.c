@@ -103,3 +103,18 @@ bool generate_hostapd_conf(struct hostapd_conf *hconf, struct radius_conf *rconf
   fclose(fp);
   return true;
 }
+
+bool construct_hostapd_ctrlif(char *ctrl_interface, char *interface, char *hostapd_ctrl_if_path)
+{
+  char *ctrl_if_path = construct_path(ctrl_interface, interface);
+  if (ctrl_if_path == NULL) {
+    log_trace("construct_path fail");
+    return false;
+  }
+
+  strncpy(hostapd_ctrl_if_path, ctrl_if_path, HOSTAPD_AP_SECRET_LEN);
+  free(ctrl_if_path);
+
+  return true;
+}
+

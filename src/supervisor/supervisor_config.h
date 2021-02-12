@@ -39,7 +39,8 @@
  */
 struct supervisor_context {
   hmap_mac_conn   *mac_mapper;                                /**< MAC mapper connection structure */
-  hmap_if_conn    *if_mapper;                                 /**< WiFi subnet interface mapper */
+  hmap_if_conn    *if_mapper;                                 /**< WiFi subnet to interface mapper */
+  hmap_vlan_conn  *vlan_mapper;                               /**< WiFi VLAN to interface mapper */
   bool            allow_all_connections;                      /**< @c allow_all_connections Flag from @c struct app_config */
   char            hostapd_ctrl_if_path[MAX_OS_PATH_LEN];      /**< @c ctrl_interface param from @c struct hostapd_conf */
   uint8_t         wpa_passphrase[HOSTAPD_AP_SECRET_LEN];      /**< @c wpa_passphrase from @c struct hostapd_conf */

@@ -64,4 +64,30 @@ char* get_valid_iw(char *if_buf);
  */
 bool get_nat_if_ip(const char *nat_interface, char **ip_buf);
 
+/**
+ * @brief Create the subnet to interface mapper
+ * 
+ * @param config_ifinfo_array The connection info array
+ * @param hmap The subnet to interface mapper
+ * @return true on success, false otherwise
+ */
+bool create_if_mapper(UT_array *config_ifinfo_array, hmap_if_conn **hmap);
+
+/**
+ * @brief Create the VLAN ID to interface mapper
+ * 
+ * @param config_ifinfo_array The connection info array
+ * @param hmap The VLAN ID to interface mapper
+ * @return true on success, false otherwise
+ */
+bool create_vlan_mapper(UT_array *config_ifinfo_array, hmap_vlan_conn **hmap);
+
+/**
+ * @brief Initialises interface name param in connection info array
+ * 
+ * @param config_ifinfo_array The connection info array
+ * @param if_bridge The interface array
+ * @return true on success, false otherwise
+ */
+bool init_ifbridge_names(UT_array *config_ifinfo_array, char *if_bridge);
 #endif

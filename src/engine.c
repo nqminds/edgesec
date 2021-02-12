@@ -29,7 +29,6 @@
 #include <fcntl.h>
 #include <ctype.h>
 #include <unistd.h>
-#include <pthread.h>
 #include <stdbool.h>
 
 #include "utils/log.h"
@@ -49,74 +48,24 @@
 #include "system_checks.h"
 #include "if_service.h"
 
-static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
 static struct supervisor_context context;
 
-static void lock_fn(bool lock)
+bool init_mac_mapper_ifnames(UT_array *connections, hmap_vlan_conn **vlan_mapper)
 {
-  int res;
+  struct mac_conn *p = NULL;
 
-  if (lock) {
-    res = pthread_mutex_lock(&mtx);
-    if (res != 0) {
-      log_err_exp("pthread_mutex_lock\n");
-    }
-  } else {
-    res = pthread_mutex_unlock(&mtx);
-    if (res != 0) {
-      log_err_exp("pthread_mutex_unlock\n");
-    }
-  }
-}
-
-bool create_if_mapper(UT_array *config_ifinfo_array, hmap_if_conn **hmap)
-{
-  config_ifinfo_t *p = NULL;
-  in_addr_t addr;
-
-  if (config_ifinfo_array != NULL) {
-    while(p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) {
-      log_trace("Adding ifname=%s with ip=%s and subnet_mask=%s to mapper", p->ifname, p->ip_addr, p->subnet_mask);
-      if(!ip_2_nbo(p->ip_addr, p->subnet_mask, &addr)) {
-        log_trace("ip_2_nbo fail");
-        free_if_mapper(hmap);
+  if (connections != NULL) {
+    while(p = (struct mac_conn *) utarray_next(connections, p)) {
+      int ret = get_vlan_mapper(vlan_mapper, p->info.vlanid, p->info.ifname);
+      if (ret < 0) {
+        log_trace("get_vlan_mapper fail");
         return false;
-      }
-
-      if (!put_if_mapper(hmap, addr, p->ifname)) {
-        log_trace("put_if_mapper fail");
-        free_if_mapper(hmap);
+      } else if (ret == 0) {
+        log_trace("vlan not in mapper");
         return false;
       }
     }
   }
-  return true;
-}
-
-bool init_ifbridge_names(UT_array *config_ifinfo_array, char *if_bridge)
-{
-  config_ifinfo_t *p = NULL;
-  if (config_ifinfo_array != NULL && if_bridge != NULL) {
-    while(p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) {
-      if (snprintf(p->ifname, IFNAMSIZ, "%s%d", if_bridge, p->vlanid) < 0) {
-        return false;
-      }
-    }
-  }
-
-  return true;
-}
-
-bool construct_hostapd_ctrlif(char *ctrl_interface, char *interface)
-{
-  char *ctrl_if_path = construct_path(ctrl_interface, interface);
-  if (ctrl_if_path == NULL) {
-    log_trace("construct_path fail");
-    return false;
-  }
-
-  strncpy(context.hostapd_ctrl_if_path, ctrl_if_path, HOSTAPD_AP_SECRET_LEN);
-  free(ctrl_if_path);
 
   return true;
 }
@@ -139,14 +88,25 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
   
   strncpy(ctx->nat_interface, app_config->nat_interface, IFNAMSIZ);
 
-  log_info("Adding interfaces to the mapper...");
+  log_info("Creating subnet to interface mapper...");
   if (!create_if_mapper(app_config->config_ifinfo_array, &ctx->if_mapper)) {
     log_debug("create_if_mapper fail");
     return false;
   }
 
+  log_info("Creating VLAN ID to interface mapper...");
+  if (!create_vlan_mapper(app_config->config_ifinfo_array, &ctx->vlan_mapper)) {
+    log_debug("create_if_mapper fail");
+    return false;
+  }
+
+  if (!init_mac_mapper_ifnames(app_config->connections, &ctx->vlan_mapper)) {
+    log_debug("init_mac_mapper_ifnames fail");
+    return false;
+  }
+
   log_info("Adding default mac mappers...");
-  if (!create_mac_mapper(NULL, NULL, app_config->connections, &ctx->mac_mapper)) {
+  if (!create_mac_mapper(app_config->connections, &ctx->mac_mapper)) {
     log_debug("create_mac_mapper fail");
     return false;
   }
@@ -210,7 +170,7 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
   }
 
   log_info("Found wifi interface %s", app_config->hconfig.interface);
-  if(!construct_hostapd_ctrlif(app_config->hconfig.ctrl_interface, app_config->hconfig.interface)) {
+  if(!construct_hostapd_ctrlif(app_config->hconfig.ctrl_interface, app_config->hconfig.interface, context.hostapd_ctrl_if_path)) {
     log_debug("construct_hostapd_ctrlif fail");
     goto run_engine_fail;
   }
@@ -294,6 +254,7 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
   free_iptables();
   free_mac_mapper(&context.mac_mapper);
   free_if_mapper(&context.if_mapper);
+  free_vlan_mapper(&context.vlan_mapper);
   free_bridge_list(context.bridge_list);
   return true;
 
@@ -308,6 +269,7 @@ run_engine_fail:
   free_iptables();
   free_mac_mapper(&context.mac_mapper);
   free_if_mapper(&context.if_mapper);
+  free_vlan_mapper(&context.vlan_mapper);
   free_bridge_list(context.bridge_list);
   return false;
 }

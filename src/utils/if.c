@@ -851,22 +851,22 @@ bool reset_interface(char *if_name)
 
 int get_if_mapper(hmap_if_conn **hmap, in_addr_t subnet, char *ifname)
 {
-	hmap_if_conn *s;
+  hmap_if_conn *s;
 
   if (hmap == NULL) {
-		log_trace("hmap param is NULL");
-		return -1;
+	log_trace("hmap param is NULL");
+	return -1;
   }
 
-	if(ifname == NULL) {
-		log_trace("ifname param is NULL");
-		return -1;
-	}
+  if(ifname == NULL) {
+  	log_trace("ifname param is NULL");
+  	return -1;
+  }
 
-	HASH_FIND(hh, *hmap, &subnet, sizeof(in_addr_t), s); /* id already in the hash? */
+  HASH_FIND(hh, *hmap, &subnet, sizeof(in_addr_t), s); /* id already in the hash? */
 
-	if (s != NULL) {
-		memcpy(ifname, s->value, IFNAMSIZ);
+  if (s != NULL) {
+	memcpy(ifname, s->value, IFNAMSIZ);
     return 1;
   }
  
@@ -878,43 +878,114 @@ bool put_if_mapper(hmap_if_conn **hmap, in_addr_t subnet, char *ifname)
   hmap_if_conn *s;
 
   if (hmap == NULL) {
-		log_trace("hmap param is NULL");
-		return false;
+	log_trace("hmap param is NULL");
+	return false;
   }
 
   if (ifname == NULL) {
-		log_trace("ifname param is NULL");
-		return false;
+	log_trace("ifname param is NULL");
+	return false;
   }
 
   HASH_FIND(hh, *hmap, &subnet, sizeof(in_addr_t), s); /* id already in the hash? */
 
   if (s == NULL) {
     s = (hmap_if_conn *) os_malloc(sizeof(hmap_if_conn));
-		if (s == NULL) {
-			log_err_ex("os_malloc");
-		}
+	if (s == NULL) {
+	  log_err("os_malloc");
+	  return false;
+	}
 
-		// Copy the key and value
-		s->key = subnet;
+	// Copy the key and value
+	s->key = subnet;
     memcpy(s->value, ifname, IFNAMSIZ);
 
     HASH_ADD(hh, *hmap, key, sizeof(in_addr_t), s);
   } else {
-		// Copy the value
+	// Copy the value
     memcpy(s->value, ifname, IFNAMSIZ);
-	}
+  }
 
   return true;	
 }
 
 void free_if_mapper(hmap_if_conn **hmap)
 {
-	hmap_if_conn *current, *tmp;
+  hmap_if_conn *current, *tmp;
 
-	HASH_ITER(hh, *hmap, current, tmp) {
+  HASH_ITER(hh, *hmap, current, tmp) {
     HASH_DEL(*hmap, current);  							/* delete it (users advances to next) */
     os_free(current);            						/* free it */
+  }
+}
+
+int get_vlan_mapper(hmap_vlan_conn **hmap, int vlanid, char *ifname)
+{
+  hmap_vlan_conn *s;
+
+  if (hmap == NULL) {
+	log_trace("hmap param is NULL");
+	return -1;
+  }
+
+  if(ifname == NULL) {
+	log_trace("ifname param is NULL");
+	return -1;
+  }
+
+  HASH_FIND(hh, *hmap, &vlanid, sizeof(int), s); /* id already in the hash? */
+
+  if (s != NULL) {
+	memcpy(ifname, s->value, IFNAMSIZ);
+	return 1;
+  }
+ 
+  return 0;
+}
+
+bool put_vlan_mapper(hmap_vlan_conn **hmap, int vlanid, char *ifname)
+{
+  hmap_vlan_conn *s;
+
+  if (hmap == NULL) {
+	log_trace("hmap param is NULL");
+	return false;
+  }
+
+  if (ifname == NULL) {
+	log_trace("ifname param is NULL");
+	return false;
+  }
+
+  HASH_FIND(hh, *hmap, &vlanid, sizeof(int), s); /* id already in the hash? */
+
+  if (s == NULL) {
+    s = (hmap_vlan_conn *) os_malloc(sizeof(hmap_vlan_conn));
+	if (s == NULL) {
+	  log_err("os_malloc");
+	  return false;
+	}
+
+	// Copy the key and value
+	s->key = vlanid;
+    memcpy(s->value, ifname, IFNAMSIZ);
+
+    HASH_ADD(hh, *hmap, key, sizeof(int), s);
+  } else {
+	// Copy the value
+    memcpy(s->value, ifname, IFNAMSIZ);
+  }
+
+  return true;	
+}
+
+void free_vlan_mapper(hmap_vlan_conn **hmap)
+{
+  hmap_vlan_conn *current, *tmp;
+
+  HASH_ITER(hh, *hmap, current, tmp) {
+  	HASH_DEL(*hmap, current);  							/* delete it (users advances to next) */
+  	os_free(current);            						/* free it */
   }
 }
 
@@ -990,9 +1061,13 @@ bool get_ifname_from_ip(hmap_if_conn **if_mapper, UT_array *config_ifinfo_array,
     return false;
   }
 
-  if (!get_if_mapper(if_mapper, subnet_addr, ifname)) {
+  int ret = get_if_mapper(if_mapper, subnet_addr, ifname);
+  if (ret < 0) {
     log_trace("get_if_mapper fail");
     return false;
+  } else if (ret == 0) {
+	log_trace("subnet not in mapper");
+	return false;
   }
 
   return true;

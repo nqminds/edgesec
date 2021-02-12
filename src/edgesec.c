@@ -49,11 +49,30 @@
 #define OPT_STRING    ":c:dvh"
 #define USAGE_STRING  "\t%s [-c filename] [-d] [-h] [-v]\n"
 
+static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
+
 static const UT_icd config_ifinfo_icd = {sizeof(config_ifinfo_t), NULL, NULL, NULL};
 static const UT_icd mac_conn_icd = {sizeof(struct mac_conn), NULL, NULL, NULL};
 static const UT_icd config_dhcpinfo_icd = {sizeof(config_dhcpinfo_t), NULL, NULL, NULL};
 
 static __thread char version_buf[10];
+
+static void lock_fn(bool lock)
+{
+  int res;
+
+  if (lock) {
+    res = pthread_mutex_lock(&mtx);
+    if (res != 0) {
+      log_err_exp("pthread_mutex_lock\n");
+    }
+  } else {
+    res = pthread_mutex_unlock(&mtx);
+    if (res != 0) {
+      log_err_exp("pthread_mutex_unlock\n");
+    }
+  }
+}
 
 char *get_static_version_string(uint8_t major, uint8_t minor, uint8_t patch)
 {

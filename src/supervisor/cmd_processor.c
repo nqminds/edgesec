@@ -111,6 +111,11 @@ ssize_t process_accept_mac_cmd(int sock, char *client_addr,
           info.vlanid = vlanid;
           conn.info = info;
 
+          if (get_vlan_mapper(&context->vlan_mapper, conn.info.vlanid, conn.info.ifname) <= 0) {
+            log_trace("get_vlan_mapper fail");
+            return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+          }
+
           if (put_mac_mapper(&context->mac_mapper, conn))
             return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
         }

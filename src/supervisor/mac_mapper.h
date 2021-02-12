@@ -75,14 +75,13 @@ typedef struct hashmap_mac_conn {           /**< hashmap key */
 /**
  * @brief Create a MAC mapper connection object
  * 
- * @param if_mapper Interface mapper
- * @param config_ifinfo_array Interface list
  * @param connections Array of MAC connections
  * @param hmap Output MAC mapper object
  * @return true on success, false otherwise
 
  */
-bool create_mac_mapper(hmap_if_conn **if_mapper, UT_array *config_ifinfo_array, UT_array *connections, hmap_mac_conn **hmap);
+bool create_mac_mapper(UT_array *connections, hmap_mac_conn **hmap);
+
 
 /**
  * @brief Get the MAC connection info structure for a given MAC address
