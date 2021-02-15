@@ -20,7 +20,8 @@
 #include "engine.h"
 
 typedef enum TEST_COMMANDS {
-  TEST_PROCESS_ADD_BRIDGE_CMD_ONE = 0
+  TEST_PROCESS_ADD_BRIDGE_CMD_ONE = 0,
+  TEST_PROCESS_REMOVE_BRIDGE_CMD_ONE
 } TEST_COMMANDS;
 
 static const UT_icd config_ifinfo_icd = {sizeof(config_ifinfo_t), NULL, NULL, NULL};
@@ -33,6 +34,8 @@ ssize_t __wrap_write_domain_data(int sock, char *data, size_t data_len, char *ad
 {
   switch (sock) {
     case TEST_PROCESS_ADD_BRIDGE_CMD_ONE:
+      return data_len;
+    case TEST_PROCESS_REMOVE_BRIDGE_CMD_ONE:
       return data_len;
   }
   return 0;
@@ -190,7 +193,45 @@ static void test_process_add_bridge_cmd(void **state)
 
   assert_int_equal(strcmp(ip_tables_mock_buf, "10.0.1.23br110.0.3.45br3"),0);
 
-  log_trace("%s", ip_tables_mock_buf);
+  utarray_clear(cmd_arr);
+  memset(ip_tables_mock_buf, 0, 255);
+
+  assert_int_not_equal(split_string_array("ADD_BRIDGE 1f:2f:3f:4f:5f:6f aa:bb:cc:dd:ee:ff", CMD_DELIMITER, cmd_arr), -1);  
+  ret = process_add_bridge_cmd(TEST_PROCESS_ADD_BRIDGE_CMD_ONE, client_addr, &context, cmd_arr);
+  assert_int_equal(ret, strlen(OK_REPLY));
+
+  tuple = get_bridge_mac(context.bridge_list, mac_addr_left, mac_addr_right);
+  assert_non_null(tuple.left_edge);
+  assert_non_null(tuple.right_edge);
+
+  assert_int_equal(strlen(ip_tables_mock_buf),0);
+
+  utarray_clear(cmd_arr);
+  memset(ip_tables_mock_buf, 0, 255);
+
+  assert_int_not_equal(split_string_array("ADD_BRIDGE 1f", CMD_DELIMITER, cmd_arr), -1);  
+  ret = process_add_bridge_cmd(TEST_PROCESS_ADD_BRIDGE_CMD_ONE, client_addr, &context, cmd_arr);
+  assert_int_equal(ret, strlen(FAIL_REPLY));
+
+  utarray_free(cmd_arr);
+  free_test_context(&context);
+}
+
+static void test_process_remove_bridge_cmd(void **state)
+{
+  (void) state; /* unused */
+  char *client_addr = "127.0.0.1";
+  uint8_t mac_addr_left[ETH_ALEN];
+  uint8_t mac_addr_right[ETH_ALEN];
+
+  struct supervisor_context context = {};
+  UT_array *cmd_arr;
+  utarray_new(cmd_arr, &ut_str_icd);
+
+  assert_int_not_equal(split_string_array("REMOVE_BRIDGE 11:22:33:44:55:66 aa:bb:cc:dd:ee:ff", CMD_DELIMITER, cmd_arr), -1);  
+  ssize_t ret = process_remove_bridge_cmd(TEST_PROCESS_ADD_BRIDGE_CMD_ONE, client_addr, &context, cmd_arr);
+  assert_int_equal(ret, strlen(FAIL_REPLY));
+
   utarray_free(cmd_arr);
   free_test_context(&context);
 }
@@ -201,7 +242,8 @@ int main(int argc, char *argv[])
 
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_process_domain_buffer),
-    cmocka_unit_test(test_process_add_bridge_cmd)
+    cmocka_unit_test(test_process_add_bridge_cmd),
+    cmocka_unit_test(test_process_remove_bridge_cmd)
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);
