@@ -185,7 +185,7 @@ int remove_bridge_mac(struct bridge_mac_list *ml, const uint8_t *mac_addr_left, 
   }
 
   struct bridge_mac_list_tuple e = get_bridge_mac(ml, mac_addr_left, mac_addr_right);
-	if ((e.left_edge == NULL && e.right_edge != NULL) || (e.left_edge != NULL && e.right_edge == NULL)) {
+	if (e.left_edge == NULL || e.right_edge == NULL) {
     log_trace("Missing edge");
     return -1;
   }

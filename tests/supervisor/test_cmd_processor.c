@@ -228,9 +228,49 @@ static void test_process_remove_bridge_cmd(void **state)
   UT_array *cmd_arr;
   utarray_new(cmd_arr, &ut_str_icd);
 
+  hwaddr_aton2("11:22:33:44:55:66", mac_addr_left);
+  hwaddr_aton2("aa:bb:cc:dd:ee:ff", mac_addr_right);
+
+  init_test_context(&context);
+
   assert_int_not_equal(split_string_array("REMOVE_BRIDGE 11:22:33:44:55:66 aa:bb:cc:dd:ee:ff", CMD_DELIMITER, cmd_arr), -1);  
-  ssize_t ret = process_remove_bridge_cmd(TEST_PROCESS_ADD_BRIDGE_CMD_ONE, client_addr, &context, cmd_arr);
+  ssize_t ret = process_remove_bridge_cmd(TEST_PROCESS_REMOVE_BRIDGE_CMD_ONE, client_addr, &context, cmd_arr);
   assert_int_equal(ret, strlen(FAIL_REPLY));
+
+  utarray_clear(cmd_arr);
+
+  assert_int_not_equal(split_string_array("ADD_BRIDGE 11:22:33:44:55:66 aa:bb:cc:dd:ee:ff", CMD_DELIMITER, cmd_arr), -1);  
+  ret = process_add_bridge_cmd(TEST_PROCESS_ADD_BRIDGE_CMD_ONE, client_addr, &context, cmd_arr);
+  assert_int_equal(ret, strlen(OK_REPLY));
+
+  utarray_clear(cmd_arr);
+  assert_int_not_equal(split_string_array("REMOVE_BRIDGE 11:22:33:44:55:66 aa:bb:cc:dd:ee:ff", CMD_DELIMITER, cmd_arr), -1);  
+  ret = process_remove_bridge_cmd(TEST_PROCESS_REMOVE_BRIDGE_CMD_ONE, client_addr, &context, cmd_arr);
+  assert_int_equal(ret, strlen(OK_REPLY));
+
+  utarray_clear(cmd_arr);
+
+  assert_int_not_equal(split_string_array("SET_IP add 11:22:33:44:55:66 10.0.1.23", CMD_DELIMITER, cmd_arr), -1);  
+  ret = process_set_ip_cmd(TEST_PROCESS_ADD_BRIDGE_CMD_ONE, client_addr, &context, cmd_arr);
+  assert_int_equal(ret, strlen(OK_REPLY));
+
+  utarray_clear(cmd_arr);
+
+  assert_int_not_equal(split_string_array("SET_IP add aa:bb:cc:dd:ee:ff 10.0.3.45", CMD_DELIMITER, cmd_arr), -1);  
+  ret = process_set_ip_cmd(TEST_PROCESS_ADD_BRIDGE_CMD_ONE, client_addr, &context, cmd_arr);
+  assert_int_equal(ret, strlen(OK_REPLY));
+
+  utarray_clear(cmd_arr);
+
+  assert_int_not_equal(split_string_array("ADD_BRIDGE 11:22:33:44:55:66 aa:bb:cc:dd:ee:ff", CMD_DELIMITER, cmd_arr), -1);  
+  ret = process_add_bridge_cmd(TEST_PROCESS_ADD_BRIDGE_CMD_ONE, client_addr, &context, cmd_arr);
+  assert_int_equal(ret, strlen(OK_REPLY));
+
+  utarray_clear(cmd_arr);
+
+  assert_int_not_equal(split_string_array("REMOVE_BRIDGE 11:22:33:44:55:66 aa:bb:cc:dd:ee:ff", CMD_DELIMITER, cmd_arr), -1);  
+  ret = process_remove_bridge_cmd(TEST_PROCESS_REMOVE_BRIDGE_CMD_ONE, client_addr, &context, cmd_arr);
+  assert_int_equal(ret, strlen(OK_REPLY));
 
   utarray_free(cmd_arr);
   free_test_context(&context);

@@ -474,19 +474,19 @@ ssize_t process_remove_bridge_cmd(int sock, char *client_addr,
       if (ptr != NULL && *ptr != NULL) {
         if (hwaddr_aton2(*ptr, right_addr) != -1) {
           if (remove_bridge_mac(context->bridge_list, left_addr, right_addr) >= 0) {
-            // log_trace("REMOVE_BRIDGE left_mac=%02x:%02x:%02x:%02x:%02x:%02x right_mac=%02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(left_addr), MAC2STR(right_addr));
-            // if (get_mac_mapper(&context->mac_mapper, left_addr, &left_info) == 1 &&
-            //     get_mac_mapper(&context->mac_mapper, right_addr, &right_info) == 1
-            // ) {
-            //   if (validate_ipv4_string(left_info.ip_addr) && validate_ipv4_string(right_info.ip_addr)) {
-            //     log_trace("Adding iptable rule for sip=%s sif=%s dip=%s dif=%s", left_info.ip_addr, left_info.ifname, right_info.ip_addr, right_info.ifname);
-            //     if (!add_bridge_rules(left_info.ip_addr, left_info.ifname, right_info.ip_addr, right_info.ifname)) {
-            //       log_trace("add_bridge_rules fail");
-            //       return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
-            //     }
-            //   }
-            // }
-            // return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
+            log_trace("REMOVE_BRIDGE left_mac=%02x:%02x:%02x:%02x:%02x:%02x right_mac=%02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(left_addr), MAC2STR(right_addr));
+                        if (get_mac_mapper(&context->mac_mapper, left_addr, &left_info) == 1 &&
+                get_mac_mapper(&context->mac_mapper, right_addr, &right_info) == 1
+            ) {
+              if (validate_ipv4_string(left_info.ip_addr) && validate_ipv4_string(right_info.ip_addr)) {
+                log_trace("Removing iptable rule for sip=%s sif=%s dip=%s dif=%s", left_info.ip_addr, left_info.ifname, right_info.ip_addr, right_info.ifname);
+                if (!delete_bridge_rules(left_info.ip_addr, left_info.ifname, right_info.ip_addr, right_info.ifname)) {
+                  log_trace("delete_bridge_rules fail");
+                  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+                }
+              }
+            }
+            return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
           } else {
             log_trace("remove_bridge_mac fail");
           }
