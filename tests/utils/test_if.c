@@ -170,6 +170,19 @@ static void test_find_subnet_address(void **state)
   utarray_free(config_ifinfo_arr);
 }
 
+static void test_validate_ipv4_string(void **state)
+{
+  bool ret = validate_ipv4_string("10.0.0.1");
+  assert_true(ret);
+
+  ret = validate_ipv4_string("10.0.0");
+  assert_false(ret);
+
+  ret = validate_ipv4_string("a.b.c.d");
+  assert_false(ret);
+}
+
+
 int main(int argc, char *argv[])
 {  
   log_set_quiet(true);
@@ -179,7 +192,8 @@ int main(int argc, char *argv[])
     cmocka_unit_test(test_ip_2_nbo),
     cmocka_unit_test(test_get_if_mapper),
     cmocka_unit_test(test_put_if_mapper),
-    cmocka_unit_test(test_find_subnet_address)
+    cmocka_unit_test(test_find_subnet_address),
+    cmocka_unit_test(test_validate_ipv4_string)
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

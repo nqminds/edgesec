@@ -14,7 +14,7 @@ target_link_libraries(test_cmd_processor cmd_processor log engine ${CMOCKA_LIB})
 
 set_target_properties(test_cmd_processor
         PROPERTIES
-        LINK_FLAGS  "-Wl,--wrap=write_domain_data -Wl,--wrap=add_bridge_rules"
+        LINK_FLAGS  "-Wl,--wrap=write_domain_data -Wl,--wrap=add_bridge_rules -Wl,--wrap=delete_bridge_rules -Wl,--wrap=add_nat_rules -Wl,--wrap=delete_nat_rules"
 )
 
 add_test(NAME test_bridge_list COMMAND test_bridge_list)

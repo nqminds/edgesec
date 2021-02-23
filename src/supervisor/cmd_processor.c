@@ -108,6 +108,7 @@ ssize_t process_accept_mac_cmd(int sock, char *client_addr,
           }
 
           memcpy(conn.mac_addr, addr, ETH_ALEN);
+          info.allow_connection = true;
           info.vlanid = vlanid;
           conn.info = info;
 
