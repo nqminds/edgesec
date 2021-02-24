@@ -48,6 +48,7 @@
 #define CMD_SET_IP				"SET_IP"
 #define CMD_ADD_BRIDGE			"ADD_BRIDGE"
 #define CMD_REMOVE_BRIDGE		"REMOVE_BRIDGE"
+#define CMD_GET_BRIDGES		    "GET_BRIDGES"
 
 #define OK_REPLY                "OK"
 #define FAIL_REPLY              "FAIL"
@@ -189,5 +190,15 @@ ssize_t process_add_bridge_cmd(int sock, char *client_addr, struct supervisor_co
  * @return ssize_t Size of reply written data
  */
 ssize_t process_remove_bridge_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+
+/**
+ * @brief Processes the GET_BRIDGES command
+ * 
+ * @param sock The domain server socket
+ * @param client_addr The client address for replies
+ * @param context The supervisor structure instance
+ * @return ssize_t Size of reply written data
+ */
+ssize_t process_get_bridges_cmd(int sock, char *client_addr, struct supervisor_context *context);
 
 #endif

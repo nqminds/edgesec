@@ -199,7 +199,6 @@ int remove_bridge_mac(struct bridge_mac_list *ml, const uint8_t *mac_addr_left, 
 int get_src_mac_list(struct bridge_mac_list *ml, const uint8_t *src_addr, UT_array **mac_list_arr)
 {
   struct bridge_mac_list *e;
-  utarray_new(*mac_list_arr, &mac_list_icd);
 
   if (ml == NULL) {
     log_trace("ml param is NULL");
@@ -207,6 +206,7 @@ int get_src_mac_list(struct bridge_mac_list *ml, const uint8_t *src_addr, UT_arr
   }
 
   struct dl_list *list = &ml->list;
+  utarray_new(*mac_list_arr, &mac_list_icd);
 	dl_list_for_each(e, list, struct bridge_mac_list, list) {
     if (memcmp(src_addr, e->mac_tuple.src_addr, ETH_ALEN) == 0) {
       utarray_push_back(*mac_list_arr, e->mac_tuple.dst_addr);
@@ -219,7 +219,6 @@ int get_src_mac_list(struct bridge_mac_list *ml, const uint8_t *src_addr, UT_arr
 int get_all_bridge_edges(struct bridge_mac_list *ml, UT_array **tuple_list_arr)
 {
   struct bridge_mac_list *e;
-  utarray_new(*tuple_list_arr, &tuple_list_icd);
 
   if (ml == NULL) {
     log_trace("ml param is NULL");
@@ -227,6 +226,7 @@ int get_all_bridge_edges(struct bridge_mac_list *ml, UT_array **tuple_list_arr)
   }
 
   struct dl_list *list = &ml->list;
+  utarray_new(*tuple_list_arr, &tuple_list_icd);
 	dl_list_for_each(e, list, struct bridge_mac_list, list) {
     utarray_push_back(*tuple_list_arr, &e->mac_tuple);
   }

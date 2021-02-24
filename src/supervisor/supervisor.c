@@ -121,6 +121,11 @@ void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
       log_trace("process_remove_bridge_cmd fail");
       goto end;
     }
+  } else if (!strcmp(*ptr, CMD_GET_BRIDGES)) {
+    if (process_get_bridges_cmd(sock, client_addr, context) == -1) {
+      log_trace("process_get_bridges_cmd fail");
+      goto end;
+    }
   } else {
     log_debug("supervisor received unknown command");
   }
