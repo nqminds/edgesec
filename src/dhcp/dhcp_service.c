@@ -22,7 +22,6 @@
  * @author Alexandru Mereacre 
  * @brief File containing the implementation of dhcp service configuration utilities.
  */
-
 #include "dnsmasq.h"
 #include "dhcp_config.h"
 #include "../utils/log.h"
@@ -36,10 +35,18 @@ int run_dhcp(char *dhcp_bin_path, struct dhcp_conf *dconf,
     log_trace("generate_dhcp_configs fail");
     return -1;
   }
-  return 0;
+
+  return run_dhcp_process(dhcp_bin_path, dconf->dhcp_conf_path);
 }
 
 bool close_dhcp(int sock)
 {
+  // // Kill any running hostapd process
+  // if (!kill_process("hostapd")) {
+  //   log_trace("kill_process fail");
+  //   return false;
+  // }
+
   return true;
+
 }

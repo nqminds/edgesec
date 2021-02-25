@@ -24,13 +24,28 @@
  */
 
 #include <stdio.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <stdbool.h>
 #include <errno.h>
+#include <signal.h>
+#include <unistd.h>
+#include <libgen.h>
+#include <fcntl.h>
+
 
 #include "dhcp_config.h"
 #include "../utils/log.h"
 #include "../utils/os.h"
 #include "../utils/utarray.h"
+
+#define PROCESS_RESTART_TIME  5 // In seconds
+
+#define DNSMASQ_BIND_INTERFACE_OPTION "--bind-interfaces"
+#define DNSMASQ_NO_DAEMON_OPTION      "--no-daemon"
+#define DNSMASQ_LOG_QUERIES_OPTION    "--log-queries"
+#define DNSMASQ_CONF_FILE_OPTION      "--conf-file="
 
 bool generate_dnsmasq_conf(struct dhcp_conf *dconf, char *interface, UT_array *dns_server_array)
 {
@@ -118,4 +133,65 @@ bool generate_dhcp_configs(struct dhcp_conf *dconf, char *interface, UT_array *d
     return false;
   
   return generate_dnsmasq_script(dconf->dhcp_script_path, domain_server_path);
+}
+
+char* get_dnsmasq_args(char *dnsmasq_bin_path, char *dnsmasq_conf_path, char *argv[])
+{
+  // argv = {"dnsmasq", "--bind-interfaces", "--no-daemon", "--log-queries", "--conf-file=/tmp/dnsmasq.conf", NULL};
+  // argv = {"dnsmasq", "--bind-interfaces", "--no-daemon", "--conf-file=/tmp/dnsmasq.conf", NULL};
+
+  if (strlen(dnsmasq_conf_path) > MAX_OS_PATH_LEN)
+    return NULL;
+
+  char *conf_arg = os_malloc(sizeof(char)*(MAX_OS_PATH_LEN + strlen(DNSMASQ_CONF_FILE_OPTION) + 1));
+  conf_arg[0] = '\0';
+  strcat(conf_arg, DNSMASQ_CONF_FILE_OPTION);
+  strcat(conf_arg, dnsmasq_conf_path);
+
+  argv[0] = dnsmasq_bin_path;
+  argv[1] = DNSMASQ_BIND_INTERFACE_OPTION;
+  argv[2] = DNSMASQ_NO_DAEMON_OPTION;
+  argv[3] = conf_arg;
+}
+
+int run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path)
+{
+  // sudo dnsmasq --bind-interfaces --no-daemon --log-queries --conf-file=/tmp/dnsmasq.conf
+  int ret;
+  char *process_argv[5] = {NULL, NULL, NULL, NULL, NULL};
+  char *proc_name = basename(dhcp_bin_path);
+
+  // Kill any running hostapd process
+  if (!kill_process(proc_name)) {
+    log_trace("kill_process fail");
+    return -1;
+  }
+
+  char *conf_arg = get_dnsmasq_args(dhcp_bin_path, dhcp_conf_path, process_argv);
+
+  if (conf_arg == NULL) {
+    log_trace("get_dnsmasq_args fail");
+    return -1;
+  }
+
+  while((ret = run_process(process_argv)) > 0) {
+    log_trace("Killing dhcp process");
+    // Kill any running hostapd process
+    if (!kill_process(proc_name)) {
+      log_trace("kill_process fail");
+      os_free(conf_arg);
+      return -1;
+    }
+    log_trace("Restarting process in %d seconds", PROCESS_RESTART_TIME);
+    sleep(PROCESS_RESTART_TIME);
+  }
+
+  if (ret < 0) {
+    log_trace("run_process fail");
+    os_free(conf_arg);
+    return -1;
+  }
+
+  os_free(conf_arg);
+  return 0;
 }

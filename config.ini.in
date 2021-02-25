@@ -57,6 +57,7 @@ natInterface = "enp2s0"
 servers="8.8.4.4,8.8.8.8"
 
 [dhcp]
+dhcpBinPath = "/usr/sbin/dnsmasq"
 dhcpConfigPath = "/tmp/dnsmasq.conf"
 dhcpScriptPath = "/tmp/dnsmasq_exec.sh"
 dhcpRange0 = "0,10.0.0.2,10.0.0.254,255.255.255.0,24h"
