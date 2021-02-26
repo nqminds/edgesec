@@ -180,12 +180,27 @@ static void test_validate_ipv4_string(void **state)
 
   ret = validate_ipv4_string("a.b.c.d");
   assert_false(ret);
+
+  ret = validate_ipv4_string("0.0.0.0");
+  assert_true(ret);
+
+  ret = validate_ipv4_string("127.0.0.1/32");
+  assert_true(ret);
+
+  ret = validate_ipv4_string("127.0.0.1/");
+  assert_false(ret);
+
+  ret = validate_ipv4_string("127.0.0.1/33");
+  assert_false(ret);
+
+  ret = validate_ipv4_string("127.0.0.1/3a");
+  assert_false(ret);
 }
 
 
 int main(int argc, char *argv[])
 {  
-  log_set_quiet(true);
+  log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_iface_exists),

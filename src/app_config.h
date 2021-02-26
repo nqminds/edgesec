@@ -32,7 +32,7 @@
 #include "utils/utarray.h"
 #include "utils/hashmap.h"
 #include "utils/os.h"
-#include "hostapd/hostapd_config.h"
+#include "ap/ap_config.h"
 #include "radius/radius_server.h"
 #include "dns/dns_config.h"
 #include "dhcp/dhcp_config.h"
@@ -57,7 +57,7 @@ struct app_config {
   bool                kill_running_proc;                    /**< Flag to terminate running app processes. */
   UT_array            *connections;                         /**< MAC mapper to @c struct mac_conn. */
   struct radius_conf  rconfig;                              /**< Radius service configuration. */
-  struct hostapd_conf hconfig;                              /**< Hostapd service configuration. */
+  struct apconf       hconfig;                              /**< AP service configuration. */
   struct dns_conf     dns_config;                           /**< DNS service configuration. */
   struct dhcp_conf    dhcp_config;                          /**< DHCP service configuration. */
 };

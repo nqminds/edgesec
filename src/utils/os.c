@@ -250,7 +250,6 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn fn)
 
   char *command = argv[0];
 
-  log_trace("Running command %s", command);
   fflush(stdout);
   fflush(stderr);
 
@@ -302,7 +301,7 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn fn)
     log_err_ex("close");
 
   if (WIFEXITED(status)) {
-    log_trace("excve status %d", WEXITSTATUS(status));
+    log_trace("Command run %s excve status %d", command, WEXITSTATUS(status));
     return WEXITSTATUS(status);
   }
 

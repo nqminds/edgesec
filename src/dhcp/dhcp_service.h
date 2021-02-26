@@ -45,9 +45,8 @@ int run_dhcp(char *dhcp_bin_path, struct dhcp_conf *dconf,
 /**
  * @brief Closes (terminates) dhcp process
  * 
- * @param sock Not used
  * @return true success, false otherwise
  */
-bool close_dhcp(int sock);
+bool close_dhcp(void);
 
 #endif

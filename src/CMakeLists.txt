@@ -7,11 +7,11 @@ include_directories(
 add_subdirectory(utils)
 add_subdirectory(supervisor)
 add_subdirectory(radius)
-add_subdirectory(hostapd)
+add_subdirectory(ap)
 add_subdirectory(dhcp)
 
 add_library(engine engine.c)
-target_link_libraries(engine log if os if_service system_checks eloop supervisor radius_service mac_mapper hostapd_service iptables dhcp_service)
+target_link_libraries(engine log if os if_service system_checks eloop supervisor radius_service mac_mapper ap_service iptables dhcp_service)
 
 add_library(system_checks system_checks.c)
 target_link_libraries(system_checks log if iw os hashmap)

@@ -298,7 +298,7 @@ bool get_connection_info(char *info, struct mac_conn *el)
 
   p = (char**) utarray_next(info_arr, p);
   if (*p != NULL) {
-    strncpy(el->info.pass, *p, HOSTAPD_AP_SECRET_LEN);
+    strncpy(el->info.pass, *p, AP_SECRET_LEN);
     el->info.pass_len = strlen(el->info.pass);
   } else
     goto err;
@@ -402,14 +402,14 @@ bool load_radius_conf(const char *filename, struct app_config *config)
     return false;
   }
 
-  strncpy(config->hconfig.ssid, value, HOSTAPD_AP_NAME_LEN);
+  strncpy(config->hconfig.ssid, value, AP_NAME_LEN);
   os_free(value);
 
   // Load AP password
   value = os_malloc(INI_BUFFERSIZE);
   ini_gets("hostapd", "wpaPassphrase", "", value, INI_BUFFERSIZE, filename);
 
-  strncpy(config->hconfig.wpa_passphrase, value, HOSTAPD_AP_SECRET_LEN);
+  strncpy(config->hconfig.wpa_passphrase, value, AP_SECRET_LEN);
   os_free(value);
 
   // Load AP interface
@@ -468,7 +468,7 @@ bool load_hostapd_conf(const char *filename, struct app_config *config)
     return false;
   }
 
-  strncpy(config->hconfig.hostapd_file_path, value, MAX_OS_PATH_LEN);
+  strncpy(config->hconfig.ap_file_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
   // Load hostapd bin path
@@ -480,13 +480,13 @@ bool load_hostapd_conf(const char *filename, struct app_config *config)
     return false;
   }
 
-  strncpy(config->hconfig.hostapd_bin_path, value, MAX_OS_PATH_LEN);
+  strncpy(config->hconfig.ap_bin_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
   // Load hostapd log path
   value = os_malloc(INI_BUFFERSIZE);
   ret = ini_gets("hostapd", "hostapdLogPath", "", value, INI_BUFFERSIZE, filename);
-  strncpy(config->hconfig.hostapd_log_path, value, MAX_OS_PATH_LEN);
+  strncpy(config->hconfig.ap_log_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
   // Load hostapd bridge
@@ -504,13 +504,13 @@ bool load_hostapd_conf(const char *filename, struct app_config *config)
   // Load hostapd driver
   value = os_malloc(INI_BUFFERSIZE);
   ini_gets("hostapd", "driver", "nl80211", value, INI_BUFFERSIZE, filename);
-  strncpy(config->hconfig.driver, value, HOSTAPD_DRIVE_LEN);
+  strncpy(config->hconfig.driver, value, AP_DRIVE_LEN);
   os_free(value);
 
   // Load hostapd hw mode
   value = os_malloc(INI_BUFFERSIZE);
   ini_gets("hostapd", "hwMode", "g", value, INI_BUFFERSIZE, filename);
-  strncpy(config->hconfig.hw_mode, value, HOSTAPD_HWMODE_LEN);
+  strncpy(config->hconfig.hw_mode, value, AP_HWMODE_LEN);
   os_free(value);
 
   // Load hostapd channel
@@ -528,13 +528,13 @@ bool load_hostapd_conf(const char *filename, struct app_config *config)
   // Load hostapd wpaKeyMgmt
   value = os_malloc(INI_BUFFERSIZE);
   ini_gets("hostapd", "wpaKeyMgmt", "WPA-PSK", value, INI_BUFFERSIZE, filename);
-  strncpy(config->hconfig.wpa_key_mgmt, value, HOSTAPD_WPA_KEY_MGMT_LEN);
+  strncpy(config->hconfig.wpa_key_mgmt, value, AP_WPA_KEY_MGMT_LEN);
   os_free(value);
 
   // Load hostapd rsnPairwise
   value = os_malloc(INI_BUFFERSIZE);
   ini_gets("hostapd", "rsnPairwise", "CCMP", value, INI_BUFFERSIZE, filename);
-  strncpy(config->hconfig.rsn_pairwise, value, HOSTAPD_RSN_PAIRWISE_LEN);
+  strncpy(config->hconfig.rsn_pairwise, value, AP_RSN_PAIRWISE_LEN);
   os_free(value);
   
   // Load hostapd ctrlInterface

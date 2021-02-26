@@ -73,7 +73,7 @@ void init_default_mac_info(struct mac_conn_info *info, int default_open_vlanid)
   info->allow_connection = false;
   info->nat = false;
   info->pass_len = 0;
-  os_memset(info->pass, 0, HOSTAPD_AP_SECRET_LEN);
+  os_memset(info->pass, 0, AP_SECRET_LEN);
   os_memset(info->ip_addr, 0, IP_LEN);
   os_memset(info->ifname, 0, IFNAMSIZ);
 }
@@ -269,7 +269,7 @@ ssize_t process_assign_psk_cmd(int sock, char *client_addr,
       ptr = (char**) utarray_next(cmd_arr, ptr);
       if (ptr != NULL && *ptr != NULL) {
         pass_len = strlen(*ptr);
-        if (pass_len <= HOSTAPD_AP_SECRET_LEN && pass_len) {
+        if (pass_len <= AP_SECRET_LEN && pass_len) {
           log_trace("ASSIGN_PSK mac=%02x:%02x:%02x:%02x:%02x:%02x, pass_len=%d", MAC2STR(addr), pass_len);
 
           get_mac_mapper(&context->mac_mapper, addr, &info);
@@ -409,11 +409,13 @@ ssize_t process_set_ip_cmd(int sock, char *client_addr,
 
           // Change the NAT iptables rules
           if (dhcp_type && info.nat) {
+            log_trace("Adding NAT rule");
             if (!add_nat_rules(*ptr, ifname, context->nat_interface)) {
               log_trace("add_nat_rules fail");
               return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
             }
           } else if (!dhcp_type && info.nat){
+            log_trace("Deleting NAT rule");
             if (!delete_nat_rules(*ptr, ifname, context->nat_interface)) {
               log_trace("delete_nat_rules fail");
               return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);

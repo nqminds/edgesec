@@ -7,7 +7,7 @@ include_directories (
 add_subdirectory(utils)
 add_subdirectory(supervisor)
 add_subdirectory(radius)
-add_subdirectory(hostapd)
+add_subdirectory(ap)
 add_subdirectory(dhcp)
 
 add_executable(test_engine test_engine.c)

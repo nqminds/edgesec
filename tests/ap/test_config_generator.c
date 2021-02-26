@@ -13,7 +13,8 @@
 #include <cmocka.h>
 
 #include "utils/log.h"
-#include "hostapd/hostapd_config.h"
+#include "ap/ap_config.h"
+#include "ap/hostapd.h"
 
 static char *test_hostapd_vlan_file = "/tmp/hostapd-test.vlan";
 static char *test_hostapd_conf_file = "/tmp/hostapd-test.conf";
@@ -50,8 +51,8 @@ static char *test_hostapd_vlan_content = "*\twlan0.#\n";
 static void test_generate_hostapd_conf(void **state)
 {
   (void) state; /* unused */
-  struct hostapd_conf hconf;
-  strcpy(hconf.hostapd_file_path, test_hostapd_conf_file);
+  struct apconf hconf;
+  strcpy(hconf.ap_file_path, test_hostapd_conf_file);
   strcpy(hconf.interface, "wlan0");
   strcpy(hconf.ssid, "IOTH_IMX7");
   strcpy(hconf.wpa_passphrase, "1234554321");

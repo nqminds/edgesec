@@ -18,37 +18,38 @@
  ****************************************************************************/
 
 /**
- * @file supervisor_config.c
+ * @file hostapd_service.h 
  * @author Alexandru Mereacre 
- * @brief File containing the definition of the supervisor service structure.
+ * @brief File containing the definition of the hostapd service.
  */
 
-#ifndef SUPERVISOR_CONFIG_H
-#define SUPERVISOR_CONFIG_H
+#ifndef HOSTAPD_SERVICE_H
+#define HOSTAPD_SERVICE_H
 
+#include <sys/types.h>
+#include <linux/if.h>
 #include <stdbool.h>
 
-#include "../ap/ap_config.h"
+#include "ap_config.h"
+#include "../radius/radius_server.h"
+#include "../utils/os.h"
 #include "../utils/if.h"
 
-#include "mac_mapper.h"
+/**
+ * @brief Runs the AP service
+ * 
+ * @param hconf The AP configuration structure
+ * @param rconf The radius configuration structure
+ * @param ctrl_if_path The path of the AP control interface
+ * @return int 0 on success, -1 on error
+ */
+int run_ap(struct apconf *hconf, struct radius_conf *rconf, char *ctrl_if_path);
 
 /**
- * @brief Supervisor structure definition
+ * @brief Closes (terminates) AP process
  * 
+ * @return true success, false otherwise
  */
-struct supervisor_context {
-  hmap_mac_conn   *mac_mapper;                                /**< MAC mapper connection structure */
-  hmap_if_conn    *if_mapper;                                 /**< WiFi subnet to interface mapper */
-  hmap_vlan_conn  *vlan_mapper;                               /**< WiFi VLAN to interface mapper */
-  bool            allow_all_connections;                      /**< @c allow_all_connections Flag from @c struct app_config */
-  char            hostapd_ctrl_if_path[MAX_OS_PATH_LEN];      /**< @c ctrl_interface param from @c struct hostapd_conf */
-  uint8_t         wpa_passphrase[AP_SECRET_LEN];      /**< @c wpa_passphrase from @c struct hostapd_conf */
-  ssize_t         wpa_passphrase_len;                         /**< the length of @c wpa_passphrase*/
-  char            nat_interface[IFNAMSIZ];                    /**< @c nat_interface param from @c struct app_config */
-  int             default_open_vlanid;                        /**< @c default_open_vlanid from @c struct app_config */
-  UT_array        *config_ifinfo_array;                       /**< @c config_ifinfo_array from @c struct app_config */
-  struct bridge_mac_list *bridge_list;                        /**< List of assigned bridges */
-};
+bool close_ap(void);
 
 #endif

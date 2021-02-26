@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (C) 2020 by NQMCyber Ltd                                       *
+ * Copyright (C) 2021 by NQMCyber Ltd                                       *
  *                                                                          *
  * This file is part of EDGESec.                                            *
  *                                                                          *
@@ -18,39 +18,54 @@
  ****************************************************************************/
 
 /**
- * @file hostapd_service.h 
+ * @file hostapd.h 
  * @author Alexandru Mereacre 
- * @brief File containing the definition of the hostapd service.
+ * @brief File containing the definition of hostapd config generation utilities.
  */
 
-#ifndef HOSTAPD_SERVICE_H
-#define HOSTAPD_SERVICE_H
+#ifndef HOSTAPD_H
+#define HOSTAPD_H
 
 #include <sys/types.h>
-#include <linux/if.h>
+#include <net/if.h>
 #include <stdbool.h>
 
-#include "hostapd_config.h"
-#include "../radius/radius_server.h"
+#include "ap_config.h"
 #include "../utils/os.h"
-#include "../utils/if.h"
+#include "../radius/radius_server.h"
 
 /**
- * @brief Runs the hostapd service (executes the compiled hostapd process binary)
+ * @brief Generates and saves the hostapd configuration files
  * 
  * @param hconf The hostapd configuration structure
  * @param rconf The radius configuration structure
- * @param ctrl_if_path The path of the hostapd control interface
- * @return int 0 on success, -1 on error
+ * @return true if config file saved, false otherwise
  */
-int run_hostapd(struct hostapd_conf *hconf, struct radius_conf *rconf, char *ctrl_if_path);
+bool generate_hostapd_conf(struct apconf *hconf, struct radius_conf *rconf);
 
 /**
- * @brief Closes (terminates) hostapd process
+ * @brief Generates and save the VLAN configuration file
  * 
- * @param sock Not used
- * @return true success, false otherwise
+ * @param vlan_file The VLAN configuration file path
+ * @param interface The WiFi AP interface name
+ * @return true  if VLAN config file saved, false otherwise
  */
-bool close_hostapd(int sock);
+bool generate_vlan_conf(char *vlan_file, char *interface);
+
+/**
+ * @brief Executes the hostapd process
+ * 
+ * @param hconf The hostapd process config structure
+ * @param ctrl_if_path The hostpad control interface
+ * @return int 0 on success, -1 on error
+ */
+int run_ap_process(struct apconf *hconf, char *ctrl_if_path);
+
+/**
+ * @brief Terminate the AP service
+ * 
+ * @return bool true on success, false otherwise 
+ */
+bool kill_ap_process(void);
 
 #endif

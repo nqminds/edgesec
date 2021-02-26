@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (C) 2020 by NQMCyber Ltd                                       *
+ * Copyright (C) 2021 by NQMCyber Ltd                                       *
  *                                                                          *
  * This file is part of EDGESec.                                            *
  *                                                                          *
@@ -18,16 +18,31 @@
  ****************************************************************************/
 
 /**
- * @file config_generator.c
+ * @file hostapd.c
  * @author Alexandru Mereacre 
  * @brief File containing the implementation of hostapd config generation utilities.
  */
-#include <stdio.h>
-#include <stdbool.h>
-#include <errno.h>
 
-#include "hostapd_config.h"
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <errno.h>
+#include <signal.h>
+#include <unistd.h>
+#include <libgen.h>
+#include <fcntl.h>
+
+#include "ap_config.h"
 #include "utils/log.h"
+#include "utils/if.h"
+
+#define HOSTAPD_LOG_FILE_OPTION "-f"
+
+#define PROCESS_RESTART_TIME  5 // In seconds
+
+static char hostapd_proc_name[MAX_OS_PATH_LEN];
 
 bool generate_vlan_conf(char *vlan_file, char *interface)
 {
@@ -54,24 +69,24 @@ bool generate_vlan_conf(char *vlan_file, char *interface)
   return true;
 }
 
-bool generate_hostapd_conf(struct hostapd_conf *hconf, struct radius_conf *rconf)
+bool generate_hostapd_conf(struct apconf *hconf, struct radius_conf *rconf)
 {
   // Delete the config file if present
-  int stat = unlink(hconf->hostapd_file_path);
+  int stat = unlink(hconf->ap_file_path);
 
   if (stat == -1 && errno != ENOENT) {
     log_err("unlink");
     return false;
   }
 
-  FILE *fp = fopen(hconf->hostapd_file_path, "a+");
+  FILE *fp = fopen(hconf->ap_file_path, "a+");
 
   if (fp == NULL) {
     log_err("fopen");
     return false;
   }
 
-  log_trace("Writing into %s", hconf->hostapd_file_path);
+  log_trace("Writing into %s", hconf->ap_file_path);
 
   fprintf(fp, "interface=%s\n", hconf->interface);
   fprintf(fp, "bridge=%s\n", hconf->bridge);
@@ -104,17 +119,86 @@ bool generate_hostapd_conf(struct hostapd_conf *hconf, struct radius_conf *rconf
   return true;
 }
 
-bool construct_hostapd_ctrlif(char *ctrl_interface, char *interface, char *hostapd_ctrl_if_path)
+void get_hostapd_args(char *hostapd_bin_path, char *hostapd_file_path, char *hostapd_log_path, char *argv[])
 {
-  char *ctrl_if_path = construct_path(ctrl_interface, interface);
-  if (ctrl_if_path == NULL) {
-    log_trace("construct_path fail");
-    return false;
+  // argv = {"hostapd", "-B", hostapd_file_path, NULL};
+  // argv = {"hostapd", hostapd_file_path, NULL};
+
+  argv[0] = hostapd_bin_path;
+  if (strlen(hostapd_log_path)) {
+    argv[1] = HOSTAPD_LOG_FILE_OPTION;  /* ./hostapd -f hostapd.log hostapd.conf */
+    argv[2] = hostapd_log_path;
+    argv[3] = hostapd_file_path;
+  } else {
+    argv[1] = hostapd_file_path;        /* ./hostapd hostapd.conf */
   }
-
-  strncpy(hostapd_ctrl_if_path, ctrl_if_path, HOSTAPD_AP_SECRET_LEN);
-  free(ctrl_if_path);
-
-  return true;
 }
 
+int check_ctrl_if_exists(char *ctrl_if_path)
+{
+  struct stat sb;
+
+  if (stat(ctrl_if_path, &sb) == -1) {
+    log_err("stat %s", ctrl_if_path);
+    return -1;
+  }
+
+  if ((sb.st_mode & S_IFMT) != S_IFSOCK)
+    return -1;
+
+  return 0;
+}
+
+int run_ap_process(struct apconf *hconf, char *ctrl_if_path)
+{
+  int ret;
+  char *process_argv[5] = {NULL, NULL, NULL, NULL, NULL};
+
+  memset(hostapd_proc_name, '\0', MAX_OS_PATH_LEN);
+  strcpy(hostapd_proc_name, basename(hconf->ap_bin_path));
+
+  get_hostapd_args(hconf->ap_bin_path, hconf->ap_file_path, hconf->ap_log_path, process_argv);
+
+  // Kill any running hostapd process
+  if (!kill_process(hostapd_proc_name)) {
+    log_trace("kill_process fail");
+    return -1;
+  }
+
+  log_trace("Resetting wifi interface %s", hconf->interface);
+  if (!reset_interface(hconf->interface)) {
+    log_debug("reset_interface fail");
+    return -1;
+  }
+
+  while((ret = run_process(process_argv)) > 0) {
+    log_trace("Killing hostapd process");
+    // Kill any running hostapd process
+    if (!kill_process(hostapd_proc_name)) {
+      log_trace("kill_process fail");
+      return -1;
+    }
+    log_trace("Restarting process in %d seconds", PROCESS_RESTART_TIME);
+    sleep(PROCESS_RESTART_TIME);
+  }
+
+  if (ret < 0) {
+    log_trace("run_process fail");
+    return -1;
+  }
+
+  if (check_ctrl_if_exists(ctrl_if_path) != -1) {
+    log_trace("hostapd unix domain control path %s", ctrl_if_path);
+  } else {
+    log_trace("hostapd unix domain control path fail");
+    return -1;    
+  }
+
+  return 0;
+}
+
+bool kill_ap_process(void)
+{
+  // Kill any running dnsmasq process
+  return kill_process(hostapd_proc_name);
+}

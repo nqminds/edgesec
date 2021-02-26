@@ -41,7 +41,7 @@
 
 #include "supervisor/supervisor.h"
 #include "radius/radius_service.h"
-#include "hostapd/hostapd_service.h"
+#include "ap/ap_service.h"
 #include "dhcp/dhcp_service.h"
 
 #include "engine.h"
@@ -49,6 +49,20 @@
 #include "if_service.h"
 
 static struct supervisor_context context;
+
+bool construct_hostapd_ctrlif(char *ctrl_interface, char *interface, char *hostapd_ctrl_if_path)
+{
+  char *ctrl_if_path = construct_path(ctrl_interface, interface);
+  if (ctrl_if_path == NULL) {
+    log_trace("construct_path fail");
+    return false;
+  }
+
+  strncpy(hostapd_ctrl_if_path, ctrl_if_path, AP_SECRET_LEN);
+  free(ctrl_if_path);
+
+  return true;
+}
 
 bool init_mac_mapper_ifnames(UT_array *connections, hmap_vlan_conn **vlan_mapper)
 {
@@ -121,7 +135,6 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
   struct radius_server_data *radius_srv = NULL;
   int domain_sock = -1;
   int hostapd_fd = -1;
-  int dhcp_fd = -1;
   char *commands[] = {"ip", "iw", "iptables", "dnsmasq", NULL};
   char *nat_ip = NULL;
 
@@ -218,6 +231,14 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
     }
   }
 
+  if (app_config->exec_hostapd) {
+    log_info("Running the hostapd service...");
+    if ((hostapd_fd = run_ap(&app_config->hconfig, &app_config->rconfig, context.hostapd_ctrl_if_path)) == -1) {
+      log_debug("run_hostapd fail");
+      goto run_engine_fail;
+    }
+  }
+
   if (app_config->exec_dhcp) {
     log_info("Running the dhcp service...");
     char *dnsmasq_path = hmap_str_keychar_get(&hmap_bin_paths, "dnsmasq");
@@ -233,20 +254,12 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
     }
   }
 
-  if (app_config->exec_hostapd) {
-    log_info("Running the hostapd service...");
-    if ((hostapd_fd = run_hostapd(&app_config->hconfig, &app_config->rconfig, context.hostapd_ctrl_if_path)) == -1) {
-      log_debug("run_hostapd fail");
-      goto run_engine_fail;
-    }
-  }
-
   log_info("Running event loop");
   eloop_run();
 
   close_supervisor(domain_sock);
-  close_hostapd(hostapd_fd);
-  close_dhcp(dhcp_fd);
+  close_ap();
+  close_dhcp();
   close_radius(radius_srv);
   eloop_destroy();
   free(nat_ip);
@@ -260,8 +273,8 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
 
 run_engine_fail:
   close_supervisor(domain_sock);
-  close_hostapd(hostapd_fd);
-  close_dhcp(dhcp_fd);
+  close_ap();
+  close_dhcp();
   close_radius(radius_srv);
   eloop_destroy();
   free(nat_ip);

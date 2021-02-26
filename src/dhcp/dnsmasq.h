@@ -70,4 +70,11 @@ bool generate_dhcp_configs(struct dhcp_conf *dconf, char *interface, UT_array *d
  * @return int 0 on success, -1 on error
  */
 int run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path);
+
+/**
+ * @brief Terminate the DHCP server
+ * 
+ * @return bool true on success, false otherwise 
+ */
+bool kill_dhcp_process(void);
 #endif

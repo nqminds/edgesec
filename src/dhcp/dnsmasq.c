@@ -47,6 +47,8 @@
 #define DNSMASQ_LOG_QUERIES_OPTION    "--log-queries"
 #define DNSMASQ_CONF_FILE_OPTION      "--conf-file="
 
+static char dnsmasq_proc_name[MAX_OS_PATH_LEN];
+
 bool generate_dnsmasq_conf(struct dhcp_conf *dconf, char *interface, UT_array *dns_server_array)
 {
   char **p = NULL;
@@ -137,6 +139,7 @@ bool generate_dhcp_configs(struct dhcp_conf *dconf, char *interface, UT_array *d
 
 char* get_dnsmasq_args(char *dnsmasq_bin_path, char *dnsmasq_conf_path, char *argv[])
 {
+  // sudo dnsmasq --bind-interfaces --no-daemon --log-queries --conf-file=/tmp/dnsmasq.conf
   // argv = {"dnsmasq", "--bind-interfaces", "--no-daemon", "--log-queries", "--conf-file=/tmp/dnsmasq.conf", NULL};
   // argv = {"dnsmasq", "--bind-interfaces", "--no-daemon", "--conf-file=/tmp/dnsmasq.conf", NULL};
 
@@ -156,13 +159,14 @@ char* get_dnsmasq_args(char *dnsmasq_bin_path, char *dnsmasq_conf_path, char *ar
 
 int run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path)
 {
-  // sudo dnsmasq --bind-interfaces --no-daemon --log-queries --conf-file=/tmp/dnsmasq.conf
   int ret;
   char *process_argv[5] = {NULL, NULL, NULL, NULL, NULL};
-  char *proc_name = basename(dhcp_bin_path);
+
+  memset(dnsmasq_proc_name, '\0', MAX_OS_PATH_LEN);
+  strcpy(dnsmasq_proc_name, basename(dhcp_bin_path));
 
   // Kill any running hostapd process
-  if (!kill_process(proc_name)) {
+  if (!kill_process(dnsmasq_proc_name)) {
     log_trace("kill_process fail");
     return -1;
   }
@@ -177,7 +181,7 @@ int run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path)
   while((ret = run_process(process_argv)) > 0) {
     log_trace("Killing dhcp process");
     // Kill any running hostapd process
-    if (!kill_process(proc_name)) {
+    if (!kill_process(dnsmasq_proc_name)) {
       log_trace("kill_process fail");
       os_free(conf_arg);
       return -1;
@@ -194,4 +198,10 @@ int run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path)
 
   os_free(conf_arg);
   return 0;
+}
+
+bool kill_dhcp_process(void)
+{
+  // Kill any running dnsmasq process
+  return kill_process(dnsmasq_proc_name);
 }

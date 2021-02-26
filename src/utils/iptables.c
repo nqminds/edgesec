@@ -392,12 +392,12 @@ bool add_bridge_rule(char *sip, char *sif, char *dip, char *dif)
     NULL, "--dst", NULL, "-i", NULL, "-o", NULL, "-j", "ACCEPT", NULL};
 
   if (!validate_ipv4_string(sip)) {
-    log_trace("Wrong source IP format");
+    log_trace("Wrong source IP format %s", sip);
     return false;
   }
 
   if (!validate_ipv4_string(dip)) {
-    log_trace("Wrong destination IP format");
+    log_trace("Wrong destination IP format %s", dip);
     return false;
   }
 
@@ -408,16 +408,11 @@ bool add_bridge_rule(char *sip, char *sif, char *dip, char *dif)
 
   long num = find_baseif_rulenum(rule_list, sif);
   if (!num) {
-    log_trace("Wrong source interface");
-    return false;
+    log_trace("Rule not found for sif=%s", sif);
+    num ++;
   }
 
   sprintf(num_buf, "%ld", num);
-
-  if (!find_baseif_rulenum(rule_list, dif)) {
-    log_trace("Wrong destination interface");
-    return false;
-  }
 
   bridge_rule[2] = num_buf;
   bridge_rule[6] = sip;
@@ -458,7 +453,7 @@ bool delete_nat_rules(char *sip, char *sif, char *nif)
   char num_buf[10];
 
   if (!delete_bridge_rules(sip, sif, "0.0.0.0/0", nif)) {
-    log_trace("delete_bridge_rules fail");
+    log_trace("delete_bridge_rule fail for sip=%s sif=%s dip=0.0.0.0/0 dif=%s", sip, sif, nif);
     return false;
   }
 
@@ -496,7 +491,7 @@ bool add_nat_rules(char *sip, char *sif, char *nif)
   delete_nat_rules(sip, sif, nif);
 
   if (!add_bridge_rule(sip, sif, "0.0.0.0/0", nif)) {
-    log_trace("add_bridge_rule fail");
+    log_trace("add_bridge_rule fail for sip=%s sif=%s dip=0.0.0.0/0 dif=%s", sip, sif, nif);
     return false;
   }
 

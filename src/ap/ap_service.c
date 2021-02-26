@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (C) 2021 by NQMCyber Ltd                                       *
+ * Copyright (C) 2020 by NQMCyber Ltd                                       *
  *                                                                          *
  * This file is part of EDGESec.                                            *
  *                                                                          *
@@ -18,28 +18,36 @@
  ****************************************************************************/
 
 /**
- * @file dhcp_service.c
+ * @file hostapd_service.c 
  * @author Alexandru Mereacre 
- * @brief File containing the implementation of dhcp service configuration utilities.
+ * @brief File containing the implementation of the hostapd service.
  */
-#include "dnsmasq.h"
-#include "dhcp_config.h"
-#include "../utils/log.h"
-#include "../utils/os.h"
-#include "../utils/utarray.h"
+#include <unistd.h>
 
-int run_dhcp(char *dhcp_bin_path, struct dhcp_conf *dconf,
-  char *interface, UT_array *dns_server_array, char *domain_server_path)
+#include "ap_config.h"
+#include "hostapd.h"
+#include "radius/radius_server.h"
+#include "utils/os.h"
+#include "utils/if.h"
+#include "utils/log.h"
+
+int run_ap(struct apconf *hconf, struct radius_conf *rconf, char *ctrl_if_path)
 {
-  if (!generate_dhcp_configs(dconf, interface, dns_server_array, domain_server_path)) {
-    log_trace("generate_dhcp_configs fail");
+  if (!generate_vlan_conf(hconf->vlan_file, hconf->interface)) {
+    log_trace("generate_vlan_conf fail");
     return -1;
   }
 
-  return run_dhcp_process(dhcp_bin_path, dconf->dhcp_conf_path);
+  if (!generate_hostapd_conf(hconf, rconf)) {
+    unlink(hconf->vlan_file);
+    log_trace("generate_hostapd_conf fail");
+    return -1;
+  }
+
+  return run_ap_process(hconf, ctrl_if_path);
 }
 
-bool close_dhcp(void)
+bool close_ap(void)
 {
-  return kill_dhcp_process();
+  return kill_ap_process();
 }
