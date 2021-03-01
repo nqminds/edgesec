@@ -86,75 +86,6 @@ UT_array *__wrap_get_interfaces(int if_id)
   return arr;
 }
 
-static void test_1_is_iw_vlan(void **state)
-{
-  (void) state; /* unused */
-
-  UT_array *netif_list = NULL;
-  netiw_info_t el;
-  utarray_new(netif_list, &netiw_info_icd);
-
-  expect_string(__wrap_iface_exists, ifname, "wlan0");
-  will_return(__wrap_iface_exists, true);
-
-  strcpy(el.ifname, "wlan0");
-  el.wiphy = 0;
-  utarray_push_back(netif_list, &el);
-
-  strcpy(el.ifname, "wlan1");
-  el.wiphy = 1;
-  utarray_push_back(netif_list, &el);
-
-  strcpy(el.ifname, "wlan2");
-  el.wiphy = 2;
-  utarray_push_back(netif_list, &el);
-
-  will_return(__wrap_get_netiw_info, netif_list);
-
-  bool ret = is_iw_vlan("wlan0");
-  assert_true(ret);
-}
-
-static void test_2_is_iw_vlan(void **state)
-{
-  (void) state; /* unused */
-
-  UT_array *netif_list = NULL;
-  netiw_info_t el;
-  utarray_new(netif_list, &netiw_info_icd);
-
-  expect_string(__wrap_iface_exists, ifname, "wlan1");
-  will_return(__wrap_iface_exists, true);
-
-  strcpy(el.ifname, "wlan0");
-  el.wiphy = 0;
-  utarray_push_back(netif_list, &el);
-
-  strcpy(el.ifname, "wlan1");
-  el.wiphy = 1;
-  utarray_push_back(netif_list, &el);
-
-  strcpy(el.ifname, "wlan2");
-  el.wiphy = 2;
-  utarray_push_back(netif_list, &el);
-
-  will_return(__wrap_get_netiw_info, netif_list);
-
-  bool ret = is_iw_vlan("wlan1");
-  assert_false(ret);
-}
-
-static void test_3_is_iw_vlan(void **state)
-{
-  (void) state; /* unused */
-
-  expect_any(__wrap_iface_exists, ifname);
-  will_return(__wrap_iface_exists, false);
-
-  bool ret = is_iw_vlan(NULL);
-  assert_false(ret);
-}
-
 static void test_1_get_valid_iw(void **state)
 {
   (void) state; /* unused */
@@ -268,9 +199,6 @@ int main(int argc, char *argv[])
   log_set_quiet(true);
 
   const struct CMUnitTest tests[] = {
-    cmocka_unit_test(test_1_is_iw_vlan),
-    cmocka_unit_test(test_2_is_iw_vlan),
-    cmocka_unit_test(test_3_is_iw_vlan),
     cmocka_unit_test(test_1_get_valid_iw),
     cmocka_unit_test(test_2_get_valid_iw),
     cmocka_unit_test(test_1_get_nat_if_ip),

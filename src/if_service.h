@@ -40,14 +40,6 @@
 bool create_subnet_ifs(UT_array *ifinfo_array, bool ignore_error);
 
 /**
- * @brief Check if interface has the VLAN capability
- * 
- * @param ap_interface Interface name string
- * @return true if VLAN capable, false otherwise
- */
-bool is_iw_vlan(const char *ap_interface);
-
-/**
  * @brief Returns an exisiting WiFi interface name that supports VLAN
  * 
  * @param if_buf Interface working buffer

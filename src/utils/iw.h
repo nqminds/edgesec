@@ -72,4 +72,12 @@ bool iwace_isvlan(uint32_t wiphy);
  */
 UT_array *get_netiw_info(void);
 
+/**
+ * @brief Check if interface has the VLAN capability
+ * 
+ * @param ap_interface Interface name string
+ * @return true if VLAN capable, false otherwise
+ */
+bool is_iw_vlan(const char *ap_interface);
+
 #endif
