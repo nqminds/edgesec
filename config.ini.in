@@ -7,17 +7,17 @@ allowAllConnections = false
 apDetect = false
 defaultOpenVlanId = 0
 killRunningProcess = true
-execHostapd = true
+execAp = true
 execRadius = true
 execDhcp = true
 
 [supervisor]
 domainServerPath = /tmp/edgesec-domain-server
 
-[hostapd]
-hostapdBinPath = "./hostapd"
-hostapdFilePath = "/tmp/hostapd.conf"
-hostapdLogPath = "/tmp/hostapd.log"
+[ap]
+apBinPath = "./hostapd"
+apFilePath = "/tmp/hostapd.conf"
+apLogPath = "/tmp/hostapd.log"
 interface = "wifiap0"
 ssid = "IOTH_IMX7"
 wpaPassphrase = "1234554321"

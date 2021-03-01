@@ -134,7 +134,7 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
 {
   struct radius_server_data *radius_srv = NULL;
   int domain_sock = -1;
-  int hostapd_fd = -1;
+  int ap_fd = -1;
   char *commands[] = {"ip", "iw", "iptables", "dnsmasq", NULL};
   char *nat_ip = NULL;
 
@@ -231,10 +231,10 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
     }
   }
 
-  if (app_config->exec_hostapd) {
-    log_info("Running the hostapd service...");
-    if ((hostapd_fd = run_ap(&app_config->hconfig, &app_config->rconfig, context.hostapd_ctrl_if_path)) == -1) {
-      log_debug("run_hostapd fail");
+  if (app_config->exec_ap) {
+    log_info("Running the ap service...");
+    if ((ap_fd = run_ap(&app_config->hconfig, &app_config->rconfig, context.hostapd_ctrl_if_path)) == -1) {
+      log_debug("run_ap fail");
       goto run_engine_fail;
     }
   }
@@ -247,7 +247,7 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
       goto run_engine_fail;
     }
 
-    if ((hostapd_fd = run_dhcp(dnsmasq_path, &app_config->dhcp_config, app_config->hconfig.interface,
+    if ((ap_fd = run_dhcp(dnsmasq_path, &app_config->dhcp_config, app_config->hconfig.interface,
           app_config->dns_config.server_array, app_config->domain_server_path)) == -1) {
       log_debug("run_dhcp fail");
       goto run_engine_fail;

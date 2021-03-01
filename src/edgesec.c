@@ -395,9 +395,9 @@ bool load_radius_conf(const char *filename, struct app_config *config)
 
   // Load AP name
   value = os_malloc(INI_BUFFERSIZE);
-  int ret = ini_gets("hostapd", "ssid", "", value, INI_BUFFERSIZE, filename);
+  int ret = ini_gets("ap", "ssid", "", value, INI_BUFFERSIZE, filename);
   if (!ret) {
-    fprintf(stderr, "hostapd ssid was not specified\n");
+    fprintf(stderr, "ap ssid was not specified\n");
     os_free(value);
     return false;
   }
@@ -407,14 +407,14 @@ bool load_radius_conf(const char *filename, struct app_config *config)
 
   // Load AP password
   value = os_malloc(INI_BUFFERSIZE);
-  ini_gets("hostapd", "wpaPassphrase", "", value, INI_BUFFERSIZE, filename);
+  ini_gets("ap", "wpaPassphrase", "", value, INI_BUFFERSIZE, filename);
 
   strncpy(config->hconfig.wpa_passphrase, value, AP_SECRET_LEN);
   os_free(value);
 
   // Load AP interface
   value = os_malloc(INI_BUFFERSIZE);
-  ret = ini_gets("hostapd", "interface", "", value, INI_BUFFERSIZE, filename);
+  ret = ini_gets("ap", "interface", "", value, INI_BUFFERSIZE, filename);
   if (!ret) {
     fprintf(stderr, "AP interface was not specified\n");
     os_free(value);
@@ -456,14 +456,14 @@ bool load_radius_conf(const char *filename, struct app_config *config)
   return true;
 }
 
-bool load_hostapd_conf(const char *filename, struct app_config *config)
+bool load_ap_conf(const char *filename, struct app_config *config)
 {
   char *value = os_malloc(INI_BUFFERSIZE);
 
-  // Load hostapd file path
-  int ret = ini_gets("hostapd", "hostapdFilePath", "", value, INI_BUFFERSIZE, filename);
+  // Load ap file path
+  int ret = ini_gets("ap", "apFilePath", "", value, INI_BUFFERSIZE, filename);
   if (!ret) {
-    fprintf(stderr, "hostapd file path was not specified\n");
+    fprintf(stderr, "apFilePath was not specified\n");
     os_free(value);
     return false;
   }
@@ -471,11 +471,11 @@ bool load_hostapd_conf(const char *filename, struct app_config *config)
   strncpy(config->hconfig.ap_file_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
-  // Load hostapd bin path
+  // Load ap bin path
   value = os_malloc(INI_BUFFERSIZE);
-  ret = ini_gets("hostapd", "hostapdBinPath", "", value, INI_BUFFERSIZE, filename);
+  ret = ini_gets("ap", "apBinPath", "", value, INI_BUFFERSIZE, filename);
   if (!ret) {
-    fprintf(stderr, "hostapd hostapdBinPath was not specified\n");
+    fprintf(stderr, "apBinPath was not specified\n");
     os_free(value);
     return false;
   }
@@ -483,17 +483,17 @@ bool load_hostapd_conf(const char *filename, struct app_config *config)
   strncpy(config->hconfig.ap_bin_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
-  // Load hostapd log path
+  // Load ap log path
   value = os_malloc(INI_BUFFERSIZE);
-  ret = ini_gets("hostapd", "hostapdLogPath", "", value, INI_BUFFERSIZE, filename);
+  ret = ini_gets("ap", "apLogPath", "", value, INI_BUFFERSIZE, filename);
   strncpy(config->hconfig.ap_log_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
-  // Load hostapd bridge
+  // Load ap bridge
   value = os_malloc(INI_BUFFERSIZE);
-  ret = ini_gets("hostapd", "bridge", "", value, INI_BUFFERSIZE, filename);
+  ret = ini_gets("ap", "bridge", "", value, INI_BUFFERSIZE, filename);
   if (!ret) {
-    fprintf(stderr, "hostapd bridge was not specified\n");
+    fprintf(stderr, "ap bridge was not specified\n");
     os_free(value);
     return false;
   }
@@ -501,59 +501,59 @@ bool load_hostapd_conf(const char *filename, struct app_config *config)
   strncpy(config->hconfig.bridge, value, IFNAMSIZ);
   os_free(value);
 
-  // Load hostapd driver
+  // Load ap driver
   value = os_malloc(INI_BUFFERSIZE);
-  ini_gets("hostapd", "driver", "nl80211", value, INI_BUFFERSIZE, filename);
+  ini_gets("ap", "driver", "nl80211", value, INI_BUFFERSIZE, filename);
   strncpy(config->hconfig.driver, value, AP_DRIVE_LEN);
   os_free(value);
 
-  // Load hostapd hw mode
+  // Load ap hw mode
   value = os_malloc(INI_BUFFERSIZE);
-  ini_gets("hostapd", "hwMode", "g", value, INI_BUFFERSIZE, filename);
+  ini_gets("ap", "hwMode", "g", value, INI_BUFFERSIZE, filename);
   strncpy(config->hconfig.hw_mode, value, AP_HWMODE_LEN);
   os_free(value);
 
-  // Load hostapd channel
-  config->hconfig.channel = (int) ini_getl("hostapd", "channel", 11, filename);
+  // Load ap channel
+  config->hconfig.channel = (int) ini_getl("ap", "channel", 11, filename);
 
-  // Load hostapd wmmEnabled
-  config->hconfig.wmm_enabled = (int) ini_getl("hostapd", "wmmEnabled", 1, filename);
+  // Load ap wmmEnabled
+  config->hconfig.wmm_enabled = (int) ini_getl("ap", "wmmEnabled", 1, filename);
 
-  // Load hostapd authAlgs
-  config->hconfig.auth_algs = (int) ini_getl("hostapd", "authAlgs", 1, filename);
+  // Load ap authAlgs
+  config->hconfig.auth_algs = (int) ini_getl("ap", "authAlgs", 1, filename);
 
-  // Load hostapd wpa
-  config->hconfig.wpa = (int) ini_getl("hostapd", "wpa", 2, filename);
+  // Load ap wpa
+  config->hconfig.wpa = (int) ini_getl("ap", "wpa", 2, filename);
 
-  // Load hostapd wpaKeyMgmt
+  // Load ap wpaKeyMgmt
   value = os_malloc(INI_BUFFERSIZE);
-  ini_gets("hostapd", "wpaKeyMgmt", "WPA-PSK", value, INI_BUFFERSIZE, filename);
+  ini_gets("ap", "wpaKeyMgmt", "WPA-PSK", value, INI_BUFFERSIZE, filename);
   strncpy(config->hconfig.wpa_key_mgmt, value, AP_WPA_KEY_MGMT_LEN);
   os_free(value);
 
-  // Load hostapd rsnPairwise
+  // Load ap rsnPairwise
   value = os_malloc(INI_BUFFERSIZE);
-  ini_gets("hostapd", "rsnPairwise", "CCMP", value, INI_BUFFERSIZE, filename);
+  ini_gets("ap", "rsnPairwise", "CCMP", value, INI_BUFFERSIZE, filename);
   strncpy(config->hconfig.rsn_pairwise, value, AP_RSN_PAIRWISE_LEN);
   os_free(value);
   
-  // Load hostapd ctrlInterface
+  // Load ap ctrlInterface
   value = os_malloc(INI_BUFFERSIZE);
-  ini_gets("hostapd", "ctrlInterface", "/var/run/hostapd", value, INI_BUFFERSIZE, filename);
+  ini_gets("ap", "ctrlInterface", "/var/run/hostapd", value, INI_BUFFERSIZE, filename);
   strncpy(config->hconfig.ctrl_interface, value, MAX_OS_PATH_LEN);
   os_free(value);
 
-  // Load hostapd macaddrAcl
-  config->hconfig.macaddr_acl = (int) ini_getl("hostapd", "macaddrAcl", 2, filename);
+  // Load ap macaddrAcl
+  config->hconfig.macaddr_acl = (int) ini_getl("ap", "macaddrAcl", 2, filename);
 
-  // Load hostapd dynamicVlan
-  config->hconfig.dynamic_vlan = (int) ini_getl("hostapd", "dynamicVlan", 1, filename);
+  // Load ap dynamicVlan
+  config->hconfig.dynamic_vlan = (int) ini_getl("ap", "dynamicVlan", 1, filename);
 
-  // Load hostapd vlanBridge
+  // Load ap vlanBridge
   value = os_malloc(INI_BUFFERSIZE);
-  ret = ini_gets("hostapd", "vlanBridge", "", value, INI_BUFFERSIZE, filename);
+  ret = ini_gets("ap", "vlanBridge", "", value, INI_BUFFERSIZE, filename);
   if (!ret) {
-    fprintf(stderr, "hostapd vlanBridge was not specified\n");
+    fprintf(stderr, "ap vlanBridge was not specified\n");
     os_free(value);
     return false;
   }
@@ -561,11 +561,11 @@ bool load_hostapd_conf(const char *filename, struct app_config *config)
   strncpy(config->hconfig.vlan_bridge, value, IFNAMSIZ);
   os_free(value);
 
-  // Load hostapd vlanFile
+  // Load ap vlanFile
   value = os_malloc(INI_BUFFERSIZE);
-  ret = ini_gets("hostapd", "vlanFile", "", value, INI_BUFFERSIZE, filename);
+  ret = ini_gets("ap", "vlanFile", "", value, INI_BUFFERSIZE, filename);
   if (!ret) {
-    fprintf(stderr, "hostapd vlanFile was not specified\n");
+    fprintf(stderr, "ap vlanFile was not specified\n");
     os_free(value);
     return false;
   }
@@ -573,23 +573,23 @@ bool load_hostapd_conf(const char *filename, struct app_config *config)
   strncpy(config->hconfig.vlan_file, value, MAX_OS_PATH_LEN);
   os_free(value);
 
-  // Load hostapd loggerStdout
-  config->hconfig.logger_stdout = (int) ini_getl("hostapd", "loggerStdout", -1, filename);
+  // Load ap loggerStdout
+  config->hconfig.logger_stdout = (int) ini_getl("ap", "loggerStdout", -1, filename);
 
-  // Load hostapd loggerStdoutLevel
-  config->hconfig.logger_stdout_level = (int) ini_getl("hostapd", "loggerStdoutLevel", 0, filename);
+  // Load ap loggerStdoutLevel
+  config->hconfig.logger_stdout_level = (int) ini_getl("ap", "loggerStdoutLevel", 0, filename);
 
-  // Load hostapd loggerSyslog
-  config->hconfig.logger_syslog = (int) ini_getl("hostapd", "loggerSyslog", -1, filename);
+  // Load ap loggerSyslog
+  config->hconfig.logger_syslog = (int) ini_getl("ap", "loggerSyslog", -1, filename);
 
-  // Load hostapd loggerStdoutLevel
-  config->hconfig.logger_syslog_level = (int) ini_getl("hostapd", "loggerSyslogLevel", 0, filename);
+  // Load ap loggerStdoutLevel
+  config->hconfig.logger_syslog_level = (int) ini_getl("ap", "loggerSyslogLevel", 0, filename);
 
-  // Load hostapd ignoreBroadcastSsid
-  config->hconfig.ignore_broadcast_ssid = (int) ini_getl("hostapd", "ignoreBroadcastSsid", 0, filename);
+  // Load ap ignoreBroadcastSsid
+  config->hconfig.ignore_broadcast_ssid = (int) ini_getl("ap", "ignoreBroadcastSsid", 0, filename);
 
-  // Load hostapd wpaPskRadius
-  config->hconfig.wpa_psk_radius = (int) ini_getl("hostapd", "wpaPskRadius", 2, filename);
+  // Load ap wpaPskRadius
+  config->hconfig.wpa_psk_radius = (int) ini_getl("ap", "wpaPskRadius", 2, filename);
 
   return true;
 }
@@ -666,8 +666,8 @@ void load_app_config(const char *filename, struct app_config *config)
   // Load the AP detect flag
   config->ap_detect = ini_getbool("system", "apDetect", 0, filename);
 
-  // Load the exec hostapd flag
-  config->exec_hostapd = ini_getbool("system", "execHostapd", 0, filename);
+  // Load the exec ap flag
+  config->exec_ap = ini_getbool("system", "execAp", 0, filename);
 
   // Load the exec radius flag
   config->exec_radius = ini_getbool("system", "execRadius", 0, filename);
@@ -702,15 +702,15 @@ void load_app_config(const char *filename, struct app_config *config)
   // Load killRunningProcess flag
   config->kill_running_proc = ini_getbool("system", "killRunningProcess", 0, filename);
 
-  // Load hostapd radius config params
+  // Load ap radius config params
   if(!load_radius_conf(filename, config)) {
     fprintf(stderr, "radius config parsing error.\n");
     exit(1);
   }
 
-  // Load hostapd config params
-  if(!load_hostapd_conf(filename, config)) {
-    fprintf(stderr, "hostapd config parsing error.\n");
+  // Load ap config params
+  if(!load_ap_conf(filename, config)) {
+    fprintf(stderr, "ap config parsing error.\n");
     exit(1);
   }
 

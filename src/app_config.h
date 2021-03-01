@@ -44,7 +44,7 @@
 struct app_config {
   UT_array            *bin_path_array;                      /**< The array including the paths of systems binaries. */
   bool                ap_detect;                            /**< Flag to detect an existing wifi interface to create the access point. */
-  bool                exec_hostapd;                         /**< Flag to execute the hostapd service. */
+  bool                exec_ap;                              /**< Flag to execute the ap service. */
   bool                exec_radius;                          /**< Flag to execute the radius service. */
   bool                exec_dhcp;                            /**< Flag to execute the dhcp service. */
   char                nat_interface[IFNAMSIZ];              /**< The NAT interface string. */

@@ -20,4 +20,4 @@ mkdir build
 ./configure --prefix=${BUILD_PATH}
 make
 make install
-make clean
+#make clean
