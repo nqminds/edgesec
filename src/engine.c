@@ -47,6 +47,7 @@
 #include "engine.h"
 #include "system_checks.h"
 #include "if_service.h"
+#include "config.h"
 
 static struct supervisor_context context;
 

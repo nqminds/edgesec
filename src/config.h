@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (C) 2020 by NQMCyber Ltd                                       *
+ * Copyright (C) 2021 by NQMCyber Ltd                                       *
  *                                                                          *
  * This file is part of EDGESec.                                            *
  *                                                                          *
@@ -18,16 +18,12 @@
  ****************************************************************************/
 
 /**
- * @file app_config.h 
+ * @file config.h 
  * @author Alexandru Mereacre 
- * @brief File containing the definition of the app configuration structure.
+ * @brief File containing the definition of the app configuration utilities.
  */
-#ifndef ENGINE_CONFIG_H
-#define ENGINE_CONFIG_H
-
-#include <net/if.h>
-#include <inttypes.h>
-#include <stdbool.h>
+#ifndef CONFIG_H
+#define CONFIG_H
 
 #include "utils/utarray.h"
 #include "utils/hashmap.h"
@@ -37,6 +33,7 @@
 #include "dns/dns_config.h"
 #include "dhcp/dhcp_config.h"
 #include "supervisor/supervisor_config.h"
+
 /**
  * @brief The App configuration structures. Used for configuring the networking services.
  * 
@@ -62,4 +59,12 @@ struct app_config {
   struct dhcp_conf    dhcp_config;                          /**< DHCP service configuration. */
 };
 
+/**
+ * @brief Load the app configuration
+ * 
+ * @param filename The app configuration file
+ * @param config The configuration structure
+ * @return true on success, false otherwise
+ */
+bool load_app_config(const char *filename, struct app_config *config);
 #endif

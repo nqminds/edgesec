@@ -60,15 +60,15 @@ include lib/CMakeFiles/json_print.dir/flags.make
 lib/CMakeFiles/json_print.dir/json_print.c.o: lib/CMakeFiles/json_print.dir/flags.make
 lib/CMakeFiles/json_print.dir/json_print.c.o: ../lib/json_print.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/lib/libnetlink/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object lib/CMakeFiles/json_print.dir/json_print.c.o"
-	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/json_print.dir/json_print.c.o   -c /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/json_print.c
+	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/json_print.dir/json_print.c.o   -c /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/json_print.c
 
 lib/CMakeFiles/json_print.dir/json_print.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/json_print.dir/json_print.c.i"
-	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/json_print.c > CMakeFiles/json_print.dir/json_print.c.i
+	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/json_print.c > CMakeFiles/json_print.dir/json_print.c.i
 
 lib/CMakeFiles/json_print.dir/json_print.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/json_print.dir/json_print.c.s"
-	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/json_print.c -o CMakeFiles/json_print.dir/json_print.c.s
+	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/json_print.c -o CMakeFiles/json_print.dir/json_print.c.s
 
 # Object files for target json_print
 json_print_OBJECTS = \

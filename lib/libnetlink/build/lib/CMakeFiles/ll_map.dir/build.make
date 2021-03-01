@@ -60,15 +60,15 @@ include lib/CMakeFiles/ll_map.dir/flags.make
 lib/CMakeFiles/ll_map.dir/ll_map.c.o: lib/CMakeFiles/ll_map.dir/flags.make
 lib/CMakeFiles/ll_map.dir/ll_map.c.o: ../lib/ll_map.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/lib/libnetlink/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object lib/CMakeFiles/ll_map.dir/ll_map.c.o"
-	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/ll_map.dir/ll_map.c.o   -c /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/ll_map.c
+	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/ll_map.dir/ll_map.c.o   -c /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/ll_map.c
 
 lib/CMakeFiles/ll_map.dir/ll_map.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/ll_map.dir/ll_map.c.i"
-	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/ll_map.c > CMakeFiles/ll_map.dir/ll_map.c.i
+	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/ll_map.c > CMakeFiles/ll_map.dir/ll_map.c.i
 
 lib/CMakeFiles/ll_map.dir/ll_map.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/ll_map.dir/ll_map.c.s"
-	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/ll_map.c -o CMakeFiles/ll_map.dir/ll_map.c.s
+	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/ll_map.c -o CMakeFiles/ll_map.dir/ll_map.c.s
 
 # Object files for target ll_map
 ll_map_OBJECTS = \

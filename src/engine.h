@@ -29,7 +29,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
-#include "app_config.h"
+#include "config.h"
 #include "supervisor/supervisor_config.h"
 
 /**

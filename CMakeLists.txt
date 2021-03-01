@@ -58,14 +58,14 @@ find_library(LL_PROTO_LIB NAMES ll_proto PATHS "${CMAKE_HOME_DIRECTORY}/lib/libn
 message("Found ll_types library: ${LL_PROTO_LIB}")
 
 # Compilelinmicrohttpd-0.9.72
-find_library(LIBMICROHTTPD_LIB NAMES libmicrohttpd PATHS "${CMAKE_HOME_DIRECTORY}/lib/libmicrohttpd-0.9.72/build/lib")
-if (LIBMICROHTTPD_LIB)
-  message("Found libmicrohttpd library: ${LIBMICROHTTPD_LIB}")
-ELSE (LIBMICROHTTPD_LIB)
-  execute_process(COMMAND bash "${CMAKE_HOME_DIRECTORY}/lib/compile_libmicrohttpd.sh")
-  find_library(LIBMICROHTTPD_LIB NAMES libmicrohttpd PATHS "${CMAKE_HOME_DIRECTORY}/lib/libmicrohttpd-0.9.72/build/lib")
-endif (LIBMICROHTTPD_LIB)
-set(LIBMICROHTTPD_INCLUDE_DIR "${CMAKE_HOME_DIRECTORY}/lib/libmicrohttpd-0.9.72/build/lib/include")
+# find_library(LIBMICROHTTPD_LIB NAMES libmicrohttpd PATHS "${CMAKE_HOME_DIRECTORY}/lib/libmicrohttpd-0.9.72/build/lib")
+# if (LIBMICROHTTPD_LIB)
+#   message("Found libmicrohttpd library: ${LIBMICROHTTPD_LIB}")
+# ELSE (LIBMICROHTTPD_LIB)
+#   execute_process(COMMAND bash "${CMAKE_HOME_DIRECTORY}/lib/compile_libmicrohttpd.sh")
+#   find_library(LIBMICROHTTPD_LIB NAMES libmicrohttpd PATHS "${CMAKE_HOME_DIRECTORY}/lib/libmicrohttpd-0.9.72/build/lib")
+# endif (LIBMICROHTTPD_LIB)
+# set(LIBMICROHTTPD_INCLUDE_DIR "${CMAKE_HOME_DIRECTORY}/lib/libmicrohttpd-0.9.72/build/lib/include")
 
 # C compiler options
 set(CMAKE_BUILD_TYPE Debug)

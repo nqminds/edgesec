@@ -19,5 +19,8 @@ target_link_libraries(system_checks log if iw os hashmap)
 add_library(if_service if_service.c)
 target_link_libraries(if_service log if iw os hashmap log)
 
+add_library(config config.c)
+target_link_libraries(config minIni)
+
 add_executable(edgesec edgesec.c)
-target_link_libraries(edgesec engine minIni os hashmap)
+target_link_libraries(edgesec config engine minIni os hashmap)

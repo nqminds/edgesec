@@ -60,15 +60,15 @@ include lib/CMakeFiles/ll_addr.dir/flags.make
 lib/CMakeFiles/ll_addr.dir/ll_addr.c.o: lib/CMakeFiles/ll_addr.dir/flags.make
 lib/CMakeFiles/ll_addr.dir/ll_addr.c.o: ../lib/ll_addr.c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alexandru/Projects/EDGESec/lib/libnetlink/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object lib/CMakeFiles/ll_addr.dir/ll_addr.c.o"
-	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/ll_addr.dir/ll_addr.c.o   -c /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/ll_addr.c
+	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/ll_addr.dir/ll_addr.c.o   -c /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/ll_addr.c
 
 lib/CMakeFiles/ll_addr.dir/ll_addr.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/ll_addr.dir/ll_addr.c.i"
-	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/ll_addr.c > CMakeFiles/ll_addr.dir/ll_addr.c.i
+	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/ll_addr.c > CMakeFiles/ll_addr.dir/ll_addr.c.i
 
 lib/CMakeFiles/ll_addr.dir/ll_addr.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/ll_addr.dir/ll_addr.c.s"
-	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/gcc-9 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/ll_addr.c -o CMakeFiles/ll_addr.dir/ll_addr.c.s
+	cd /home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/ll_addr.c -o CMakeFiles/ll_addr.dir/ll_addr.c.s
 
 # Object files for target ll_addr
 ll_addr_OBJECTS = \
