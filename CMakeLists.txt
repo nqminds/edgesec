@@ -3,10 +3,15 @@ project(EDGESEC)
 
 include(CTest)
 
-# The version number.
+# The edgesec version number.
 set(EDGESEC_VERSION_MAJOR 0)
 set(EDGESEC_VERSION_MINOR 1)
 set(EDGESEC_VERSION_PATCH 0)
+
+# The restsrv version number.
+set(RESTSRV_VERSION_MAJOR 0)
+set(RESTSRV_VERSION_MINOR 1)
+set(RESTSRV_VERSION_PATCH 0)
 
 enable_testing()
 
@@ -58,14 +63,15 @@ find_library(LL_PROTO_LIB NAMES ll_proto PATHS "${CMAKE_HOME_DIRECTORY}/lib/libn
 message("Found ll_types library: ${LL_PROTO_LIB}")
 
 # Compilelinmicrohttpd-0.9.72
-# find_library(LIBMICROHTTPD_LIB NAMES libmicrohttpd PATHS "${CMAKE_HOME_DIRECTORY}/lib/libmicrohttpd-0.9.72/build/lib")
-# if (LIBMICROHTTPD_LIB)
-#   message("Found libmicrohttpd library: ${LIBMICROHTTPD_LIB}")
-# ELSE (LIBMICROHTTPD_LIB)
-#   execute_process(COMMAND bash "${CMAKE_HOME_DIRECTORY}/lib/compile_libmicrohttpd.sh")
-#   find_library(LIBMICROHTTPD_LIB NAMES libmicrohttpd PATHS "${CMAKE_HOME_DIRECTORY}/lib/libmicrohttpd-0.9.72/build/lib")
-# endif (LIBMICROHTTPD_LIB)
-# set(LIBMICROHTTPD_INCLUDE_DIR "${CMAKE_HOME_DIRECTORY}/lib/libmicrohttpd-0.9.72/build/lib/include")
+find_library(LIBMICROHTTPD_LIB NAMES microhttpd PATHS "${CMAKE_HOME_DIRECTORY}/lib/libmicrohttpd-0.9.72/build/lib")
+set(LIBMICROHTTPD_INCLUDE_DIR "${CMAKE_HOME_DIRECTORY}/lib/libmicrohttpd-0.9.72/build/include")
+if (LIBMICROHTTPD_LIB)
+  message("Found libmicrohttpd library: ${LIBMICROHTTPD_LIB}")
+ELSE (LIBMICROHTTPD_LIB)
+  execute_process(COMMAND bash "${CMAKE_HOME_DIRECTORY}/lib/compile_libmicrohttpd.sh")
+  find_library(LIBMICROHTTPD_LIB NAMES microhttpd PATHS "${CMAKE_HOME_DIRECTORY}/lib/libmicrohttpd-0.9.72/build/lib")
+endif (LIBMICROHTTPD_LIB)
+
 
 # C compiler options
 set(CMAKE_BUILD_TYPE Debug)

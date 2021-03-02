@@ -2,6 +2,7 @@ include_directories(
   "${PROJECT_BINARY_DIR}"
   "${LibNL_INCLUDE_DIR}"
   "${LIBNETLINK_INCLUDE_DIR}"
+  "${LIBMICROHTTPD_INCLUDE_DIR}"
 )
 
 add_subdirectory(utils)
@@ -20,3 +21,6 @@ target_link_libraries(config minIni)
 
 add_executable(edgesec edgesec.c)
 target_link_libraries(edgesec config engine minIni os hashmap)
+
+add_executable(restsrv restsrv.c)
+target_link_libraries(restsrv config minIni os hashmap ${LIBMICROHTTPD_LIB})

@@ -78,7 +78,7 @@ char *get_static_version_string(uint8_t major, uint8_t minor, uint8_t patch)
   int ret = snprintf(version_buf, 10, "%d.%d.%d", major, minor, patch);
 
   if (ret < 0) {
-    log_trace("snprintf");
+    fprintf(stderr, "snprintf");
     return NULL;
   }
 
@@ -95,7 +95,7 @@ void show_app_help(char *app_name)
 {
   show_app_version();
   fprintf(stdout, "Usage:\n");
-  fprintf(stdout, USAGE_STRING, app_name);
+  fprintf(stdout, USAGE_STRING, basename(app_name));
   fprintf(stdout, "\nOptions:\n");
   fprintf(stdout, "\t-c filename\t Path to the config file name\n");
   fprintf(stdout, "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n");

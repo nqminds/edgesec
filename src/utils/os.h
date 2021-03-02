@@ -161,7 +161,7 @@ int hexstr2bin(const char *hex, uint8_t *buf, size_t len);
 int hwaddr_aton2(const char *txt, uint8_t *addr);
 
 /**
- * @brief Check oif a string is a number
+ * @brief Check if a string is a number
  * 
  * @param ptr String pointer
  * @return true if numer, false otherwise
