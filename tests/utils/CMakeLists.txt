@@ -6,13 +6,6 @@ include_directories(
 add_executable(test_if test_if.c)
 target_link_libraries(test_if if ${CMOCKA_LIB})
 
-add_executable(test_iw test_iw.c)
-target_link_libraries(test_iw if iw ${CMOCKA_LIB})
-set_target_properties(test_iw
-        PROPERTIES
-        LINK_FLAGS  "-Wl,--wrap=iface_exists -Wl,--wrap=get_netiw_info -Wl,--wrap=iwace_isvlan"
-)
-
 add_executable(test_os test_os.c)
 target_link_libraries(test_os os ${CMOCKA_LIB})
 
@@ -36,11 +29,6 @@ target_link_libraries(test_log_err PRIVATE log)
 
 add_test(NAME test_if COMMAND test_if)
 set_tests_properties(test_if
-  PROPERTIES
-  WILL_FAIL FALSE)
-
-add_test(NAME test_iw COMMAND test_iw)
-set_tests_properties(test_iw
   PROPERTIES
   WILL_FAIL FALSE)
 

@@ -12,7 +12,7 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
-#include "if_service.h"
+#include "subnet/subnet_service.h"
 
 #include "utils/hashmap.h"
 #include "utils/log.h"
@@ -20,7 +20,6 @@
 #include "utils/iw.h"
 
 static const UT_icd netif_info_icd = {sizeof(netif_info_t), NULL, NULL, NULL};
-static const UT_icd netiw_info_icd = {sizeof(netiw_info_t), NULL, NULL, NULL};
 static const UT_icd config_ifinfo_icd = {sizeof(config_ifinfo_t), NULL, NULL, NULL};
 
 bool __wrap_iface_exists(const char *ifname);
@@ -86,67 +85,6 @@ UT_array *__wrap_get_interfaces(int if_id)
   return arr;
 }
 
-static void test_1_get_valid_iw(void **state)
-{
-  (void) state; /* unused */
-  char wifibuf[100];
-
-  UT_array *netif_list = NULL;
-  netiw_info_t el;
-  utarray_new(netif_list, &netiw_info_icd);
-
-  strcpy(el.ifname, "wlan0");
-  el.wiphy = 0;
-  utarray_push_back(netif_list, &el);
-
-  strcpy(el.ifname, "wlan1");
-  el.wiphy = 1;
-  utarray_push_back(netif_list, &el);
-
-  strcpy(el.ifname, "wlan2");
-  el.wiphy = 2;
-  utarray_push_back(netif_list, &el);
-
-  will_return(__wrap_get_netiw_info, netif_list);
-
-  char *wifi = get_valid_iw(wifibuf);
-  assert_string_equal(wifi, "wlan0");
-}
-
-static void test_2_get_valid_iw(void **state)
-{
-  (void) state; /* unused */
-  char wifibuf[100];
-  UT_array *netif_list = NULL;
-  netiw_info_t el;
-  utarray_new(netif_list, &netiw_info_icd);
-
-  strcpy(el.ifname, "wlan1");
-  el.wiphy = 1;
-  utarray_push_back(netif_list, &el);
-
-  strcpy(el.ifname, "wlan2");
-  el.wiphy = 2;
-  utarray_push_back(netif_list, &el);
-
-  will_return(__wrap_get_netiw_info, netif_list);
-
-  char *wifi = get_valid_iw(wifibuf);
-  assert_null(wifi);
-}
-
-static void test_3_get_valid_iw(void **state)
-{
-  (void) state; /* unused */
-  char wifibuf[100];
-  UT_array *netif_list = NULL;
-
-  will_return(__wrap_get_netiw_info, netif_list);
-
-  char *wifi = get_valid_iw(wifibuf);
-  assert_null(wifi);
-}
-
 static void test_1_get_nat_if_ip(void **state)
 {
   (void) state; /* unused */
@@ -199,8 +137,6 @@ int main(int argc, char *argv[])
   log_set_quiet(true);
 
   const struct CMUnitTest tests[] = {
-    cmocka_unit_test(test_1_get_valid_iw),
-    cmocka_unit_test(test_2_get_valid_iw),
     cmocka_unit_test(test_1_get_nat_if_ip),
     cmocka_unit_test(test_2_get_nat_if_ip),
     cmocka_unit_test(test_create_subnet_ifs)

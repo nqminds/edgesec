@@ -17,6 +17,10 @@ set_target_properties(test_cmd_processor
         LINK_FLAGS  "-Wl,--wrap=write_domain_data -Wl,--wrap=add_bridge_rules -Wl,--wrap=delete_bridge_rules -Wl,--wrap=add_nat_rules -Wl,--wrap=delete_nat_rules"
 )
 
+add_executable(test_mac_mapper test_mac_mapper.c)
+target_link_libraries(test_mac_mapper log system_checks os mac_mapper ${CMOCKA_LIB})
+
+
 add_test(NAME test_bridge_list COMMAND test_bridge_list)
 set_tests_properties(test_bridge_list
   PROPERTIES
@@ -31,3 +35,10 @@ add_test(NAME test_cmd_processor COMMAND test_cmd_processor)
 set_tests_properties(test_cmd_processor
   PROPERTIES
   WILL_FAIL FALSE)
+
+add_test(NAME test_mac_mapper COMMAND test_mac_mapper)
+set_tests_properties(test_mac_mapper
+  PROPERTIES
+  WILL_FAIL FALSE)
+  
+  

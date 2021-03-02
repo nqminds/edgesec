@@ -18,18 +18,19 @@
  ****************************************************************************/
 
 /**
- * @file if_service.h 
+ * @file subnet_service.h 
  * @author Alexandru Mereacre 
- * @brief File containing the definition of the interface services utilites.
+ * @brief File containing the definition of the subnet interface services utilites.
  */
 
-#ifndef IF_SERVICE_H
-#define IF_SERVICE_H
+#ifndef SUBNET_SERVICE_H_
+#define SUBNET_SERVICE_H_
 
 #include <inttypes.h>
 #include <stdbool.h>
 
-#include "utils/if.h"
+#include "../utils/if.h"
+
 /**
  * @brief Create the subnet interface
  * 
@@ -38,14 +39,6 @@
  * @return true succes, false if creation fails with error
  */
 bool create_subnet_ifs(UT_array *ifinfo_array, bool ignore_error);
-
-/**
- * @brief Returns an exisiting WiFi interface name that supports VLAN
- * 
- * @param if_buf Interface working buffer
- * @return char* WiFi interface name
- */
-char* get_valid_iw(char *if_buf);
 
 /**
  * @brief Returns the IP of the NAT interface

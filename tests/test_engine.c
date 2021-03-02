@@ -12,7 +12,7 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
-#include "system_checks.h"
+#include "system/system_checks.h"
 #include "utils/hashmap.h"
 #include "utils/log.h"
 #include "utils/utarray.h"

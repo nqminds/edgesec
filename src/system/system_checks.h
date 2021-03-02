@@ -29,8 +29,8 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
-#include "utils/utarray.h"
-#include "utils/hashmap.h"
+#include "../utils/utarray.h"
+#include "../utils/hashmap.h"
 
 /**
  * @brief Check if the system binaries are present and return their absolute paths

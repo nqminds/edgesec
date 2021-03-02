@@ -355,14 +355,13 @@ UT_array *get_netiw_info(void)
 
 bool is_iw_vlan(const char *ap_interface)
 {
-  UT_array *netif_list = NULL;
   log_debug("Checking %s exists", ap_interface);
   if (!iface_exists(ap_interface)) {
     log_trace("WiFi interface %s doesn't exist", ap_interface);
     return false;
   }
 
-  netif_list = get_netiw_info();
+  UT_array *netif_list = get_netiw_info();
 
   if (netif_list == NULL) {
     log_trace("Couldn't list wifi interfaces");
@@ -386,3 +385,32 @@ bool is_iw_vlan(const char *ap_interface)
   utarray_free(netif_list);
   return false;
 }
+
+char* get_valid_iw(char *if_buf)
+{
+  UT_array *netif_list = get_netiw_info();
+
+  if (netif_list == NULL) {
+    log_trace("Couldn't list wifi interfaces");
+    return NULL;
+  }
+
+  if (if_buf == NULL) {
+    log_trace("if_buf param is NULL");
+    utarray_free(netif_list);
+    return NULL;
+  }
+
+  netiw_info_t *el;
+  for (el = (netiw_info_t*) utarray_front(netif_list); el != NULL; el = (netiw_info_t *) utarray_next(netif_list, el)) {
+    if (iwace_isvlan(el->wiphy)) {
+      strcpy(if_buf, el->ifname);
+      utarray_free(netif_list);
+      return if_buf;
+    }
+  }
+
+  utarray_free(netif_list);
+  return NULL;
+}
+

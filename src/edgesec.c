@@ -43,7 +43,6 @@
 #include "utils/if.h"
 #include "dhcp/dhcp_config.h"
 #include "engine.h"
-#include "if_service.h"
 #include "config.h"
 
 #define OPT_STRING    ":c:dvh"

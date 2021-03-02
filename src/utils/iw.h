@@ -80,4 +80,12 @@ UT_array *get_netiw_info(void);
  */
 bool is_iw_vlan(const char *ap_interface);
 
+/**
+ * @brief Returns an exisiting WiFi interface name that supports VLAN
+ * 
+ * @param if_buf Interface working buffer
+ * @return char* WiFi interface name
+ */
+char* get_valid_iw(char *if_buf);
+
 #endif

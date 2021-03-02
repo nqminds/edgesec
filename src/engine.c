@@ -45,8 +45,8 @@
 #include "dhcp/dhcp_service.h"
 
 #include "engine.h"
-#include "system_checks.h"
-#include "if_service.h"
+#include "system/system_checks.h"
+#include "subnet/subnet_service.h"
 #include "utils/iw.h"
 #include "config.h"
 
