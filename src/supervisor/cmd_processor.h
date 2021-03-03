@@ -29,7 +29,7 @@
 #include <sys/types.h>
 #include <stdbool.h>
 
-#include "utils/utarray.h"
+#include "../utils/utarray.h"
 
 #include "supervisor_config.h"
 

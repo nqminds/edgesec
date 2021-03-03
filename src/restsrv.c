@@ -36,6 +36,7 @@
 #include <libgen.h>
 
 
+#include "supervisor/cmd_processor.h"
 #include "microhttpd.h"
 #include "version.h"
 #include "utils/os.h"
@@ -45,7 +46,7 @@
 #define USAGE_STRING  "\t%s [-s address] [-a address] [-p port] [-h] [-v]\n"
 
 #define PAGE \
-  "<html><head><title>libmicrohttpd demo</title></head><body>Query string for &quot;%s&quot; was &quot;%s&quot;</body></html>"
+  "<html><head><title>EDGESec Rest Server</title></head><body>%s<br/>%s</body></html>"
 
 static __thread char version_buf[10];
 
@@ -144,6 +145,25 @@ void process_app_options(int argc, char *argv[], char *spath, char *apath, int *
   }
 }
 
+int print_out_key (void *cls, enum MHD_ValueKind kind, 
+                   const char *key, const char *value)
+{
+  fprintf(stdout, "HEADER --> key=%s value=%s\n", key, value);
+  return MHD_YES;
+}
+
+void create_command_string(const char *cmd, const char *args, char *cmd_str)
+{
+  char *cmd_tmp;
+  if (cmd_str) {
+    cmd_tmp = allocate_string(cmd);
+    upper_string(cmd_tmp);
+    sprintf(cmd_str, "%s %s\n", cmd_tmp, args);
+    replace_string_char(cmd_str, ',', CMD_DELIMITER);
+    os_free(cmd_tmp);
+  }
+}
+
 static enum MHD_Result
 ahc_echo (void *cls,
           struct MHD_Connection *connection,
@@ -154,7 +174,7 @@ ahc_echo (void *cls,
 {
   static int aptr;
   const char *fmt = cls;
-  const char *val;
+  const char *cmd, *args;
   char *me;
   struct MHD_Response *response;
   enum MHD_Result ret;
@@ -163,34 +183,45 @@ ahc_echo (void *cls,
   (void) upload_data;       /* Unused. Silent compiler warning. */
   (void) upload_data_size;  /* Unused. Silent compiler warning. */
 
-  if (0 != strcmp (method, "GET"))
-    return MHD_NO;              /* unexpected method */
-  if (&aptr != *ptr)
-  {
+  /* unexpected method */
+  if (0 != strcmp (method, "GET")) return MHD_NO;
+
+  if (&aptr != *ptr) {
     /* do never respond on first call */
     *ptr = &aptr;
     return MHD_YES;
   }
 
   *ptr = NULL;                  /* reset when done */
-  val = MHD_lookup_connection_value (connection, MHD_GET_ARGUMENT_KIND, "q");
-  me = os_malloc (snprintf (NULL, 0, fmt, "q", val) + 1);
+  cmd = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "cmd");
+  args = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "args");
+  me = os_malloc(snprintf(NULL, 0, fmt, "cmd", cmd) + 1);
 
-  if (me == NULL)
-    return MHD_NO;
+  if (me == NULL) return MHD_NO;
 
+  MHD_get_connection_values(connection, MHD_HEADER_KIND, (MHD_KeyValueIterator)&print_out_key, NULL);
   fprintf(stdout, "URL --> %s %s\n", method, url);
+  fprintf(stdout, "PARAMS --> cmd=%s args=%s\n", cmd, args);
 
-  sprintf (me, fmt, "q", val);
-  response = MHD_create_response_from_buffer (strlen (me), me,
-                                              MHD_RESPMEM_MUST_FREE);
-  if (response == NULL)
-  {
-    os_free (me);
+  char cmd_str[255];
+
+  create_command_string(cmd, args, cmd_str);
+  fprintf(stdout, "%s\n", cmd_str);
+  sprintf (me, fmt, cmd_str, "");
+
+  if (cmd_str) {
+    fprintf(stdout, "%s\n", cmd_str);
+  }
+
+  response = MHD_create_response_from_buffer(strlen (me), me, MHD_RESPMEM_MUST_FREE);
+  if (response == NULL) {
+    os_free(me);
     return MHD_NO;
   }
-  ret = MHD_queue_response (connection, MHD_HTTP_OK, response);
-  MHD_destroy_response (response);
+
+  ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
+  MHD_destroy_response(response);
+
   return ret;
 }
 

@@ -297,6 +297,22 @@ typedef void (*process_callback_fn)(void *buf, size_t count);
  */
 int run_command(char *const argv[], char *const envp[], process_callback_fn);
 
+/**
+ * @brief Convert the string to upper case
+ * 
+ * @param s The input string
+ */
+void upper_string(char *s);
+
+/**
+ * @brief Replace a character in a string with a given characater
+ * 
+ * @param s The input string
+ * @param in The character to be replaced
+ * @param out The character to replace with
+ */
+void replace_string_char(char *s, char in, char out);
+
 typedef void(*split_string_fn)(const char *, size_t, void *);
 
 /**

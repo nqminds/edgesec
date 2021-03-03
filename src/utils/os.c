@@ -763,3 +763,29 @@ char *rtrim(char *str, const char *seps)
 
   return str;
 }
+
+void upper_string(char *s)
+{
+  int idx = 0;
+  if (s) {
+    while (s[idx] != '\0') {
+       if (s[idx] >= 'a' && s[idx] <= 'z') {
+          s[idx] = s[idx] - 32;
+       }
+       idx++;
+    }
+  }
+}
+
+void replace_string_char(char *s, char in, char out)
+{
+  int idx = 0;
+  if (s) {
+    while (s[idx] != '\0') {
+      if (s[idx] == in) {
+         s[idx] = out;
+      }
+      idx++;
+    }
+  }
+}
