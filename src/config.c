@@ -526,6 +526,30 @@ bool load_dhcp_conf(const char *filename, struct app_config *config)
   return true;
 }
 
+bool load_capture_config(const char *filename, struct capture_conf *config)
+{
+  char *value = os_malloc(INI_BUFFERSIZE);
+
+  // Load dhpc config file path
+  int ret = ini_gets("capture", "captureInterface", "", value, INI_BUFFERSIZE, filename);
+  if (!ret) {
+    fprintf(stderr, "captureInterface was not specified\n");
+    os_free(value);
+    return false;
+  }
+
+  strncpy(config->capture_interface, value, MAX_OS_PATH_LEN);
+  os_free(value);
+
+  // Load promiscuous param
+  config->promiscuous = (int) ini_getl("capture", "promiscuous", 0, filename);
+
+  // Load bufferTimeout param
+  config->buffer_timeout = (int) ini_getl("capture", "bufferTimeout", 1000, filename);
+
+  return true;
+}
+
 bool load_app_config(const char *filename, struct app_config *config)
 {
   FILE *fp = fopen(filename, "rb");

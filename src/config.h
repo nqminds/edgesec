@@ -33,6 +33,7 @@
 #include "dns/dns_config.h"
 #include "dhcp/dhcp_config.h"
 #include "supervisor/supervisor_config.h"
+#include "capture/capture_config.h"
 
 /**
  * @brief The App configuration structures. Used for configuring the networking services.
@@ -67,4 +68,13 @@ struct app_config {
  * @return true on success, false otherwise
  */
 bool load_app_config(const char *filename, struct app_config *config);
+
+/**
+ * @brief Loads the capture config
+ * 
+ * @param filename The app configuration file
+ * @param config The configuration structure
+ * @return true on success, false otherwise
+ */
+bool load_capture_config(const char *filename, struct capture_conf *config);
 #endif

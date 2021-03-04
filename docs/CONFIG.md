@@ -10,17 +10,21 @@ ignoreErrorOnIfCreate = true
 allowAllConnections = false
 apDetect = false
 defaultOpenVlanId = 0
-execHostapd = true
+killRunningProcess = true
+execAp = true
 execRadius = true
 execDhcp = true
+
+[capture]
+captureInterface = "any"
 
 [supervisor]
 domainServerPath = /tmp/edgesec-domain-server
 
-[hostapd]
-hostapdBinPath = "./hostapd"
-hostapdFilePath = "/tmp/hostapd.conf"
-hostapdLogPath = "/tmp/hostapd.log"
+[ap]
+apBinPath = "./hostapd"
+apFilePath = "/tmp/hostapd.conf"
+apLogPath = "/tmp/hostapd.log"
 interface = "wifiap0"
 ssid = "IOTH_IMX7"
 wpaPassphrase = "1234554321"
@@ -60,8 +64,20 @@ natInterface = "enp2s0"
 servers="8.8.4.4,8.8.8.8"
 
 [dhcp]
+dhcpBinPath = "/usr/sbin/dnsmasq"
 dhcpConfigPath = "/tmp/dnsmasq.conf"
 dhcpScriptPath = "/tmp/dnsmasq_exec.sh"
+dhcpRange0 = "0,10.0.0.2,10.0.0.254,255.255.255.0,24h"
+dhcpRange1 = "1,10.0.1.2,10.0.1.254,255.255.255.0,24h"
+dhcpRange2 = "2,10.0.2.2,10.0.2.254,255.255.255.0,24h"
+dhcpRange3 = "3,10.0.3.2,10.0.3.254,255.255.255.0,24h"
+dhcpRange4 = "4,10.0.4.2,10.0.4.254,255.255.255.0,24h"
+dhcpRange5 = "5,10.0.5.2,10.0.5.254,255.255.255.0,24h"
+dhcpRange6 = "6,10.0.6.2,10.0.6.254,255.255.255.0,24h"
+dhcpRange7 = "7,10.0.7.2,10.0.7.254,255.255.255.0,24h"
+dhcpRange8 = "8,10.0.8.2,10.0.8.254,255.255.255.0,24h"
+dhcpRange9 = "9,10.0.9.2,10.0.9.254,255.255.255.0,24h"
+dhcpRange10 = "10,10.0.10.2,10.0.10.254,255.255.255.0,24h"
 
 [connections]
 con1 = "d,04:f0:21:5a:f4:c4,0,1,1234554321"
@@ -74,22 +90,22 @@ con7 = "d,c0:ee:fb:d5:5a:ec,6,1,1234554321"
 con8 = "a,00:0f:00:70:62:88,7,1,1234554321"
 
 [interfaces]
-subnetMask = "255.255.255.0"
-if0 = "br0,10.0.0.1,10.0.0.255"
-if1 = "br1,10.0.1.1,10.0.1.255"
-if2 = "br2,10.0.2.1,10.0.2.255"
-if3 = "br3,10.0.3.1,10.0.3.255"
-if4 = "br4,10.0.4.1,10.0.4.255"
-if5 = "br5,10.0.5.1,10.0.5.255"
-if6 = "br6,10.0.6.1,10.0.6.255"
-if7 = "br7,10.0.7.1,10.0.7.255"
-if8 = "br8,10.0.8.1,10.0.8.255"
-if9 = "br9,10.0.9.1,10.0.9.255"
-if10 = "br10,10.0.10.1,10.0.10.255"
+if0 = "0,10.0.0.1,10.0.0.255,255.255.255.0"
+if1 = "1,10.0.1.1,10.0.1.255,255.255.255.0"
+if2 = "2,10.0.2.1,10.0.2.255,255.255.255.0"
+if3 = "3,10.0.3.1,10.0.3.255,255.255.255.0"
+if4 = "4,10.0.4.1,10.0.4.255,255.255.255.0"
+if5 = "5,10.0.5.1,10.0.5.255,255.255.255.0"
+if6 = "6,10.0.6.1,10.0.6.255,255.255.255.0"
+if7 = "7,10.0.7.1,10.0.7.255,255.255.255.0"
+if8 = "8,10.0.8.1,10.0.8.255,255.255.255.0"
+if9 = "9,10.0.9.1,10.0.9.255,255.255.255.0"
+if10 = "10,10.0.10.1,10.0.10.255,255.255.255.0"
 ```
 
 The configuration file is based on the ```ini``` file type format. Each parameter in the file is set using a key and a value pair. The ```edgesec``` configuration file is composed of the following groups:
 * *[system]*
+* *[capture]*
 * *[supervisor]*
 * *[hostapd]*
 * *[radius]*
@@ -134,6 +150,18 @@ If set to ```true```, ```edgesec``` will execute the ```radius``` service.
 
 ### execDhcp (boolean)
 If set to ```true```, ```edgesec``` will execute the ```dhcp``` service.
+
+## [capture] group
+The capture group contains all the parameters that are reponsible to configure the ```capture``` app service.
+
+### captureInterface (string)
+The name of the capture interface. If set to "any" the service will traffic from all interfaces.
+
+### promiscuous (number)
+If set to ```1``` the capture interface is set to promiscuous mode. The default value is ```0```.
+
+### bufferTimeout (number)
+The timeout in milliseconds to read a packet. The default value is 1000.
 
 ## [supervisor] group
 The supervisor group defines the parameters to run the supervisor service.

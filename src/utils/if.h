@@ -112,6 +112,14 @@ typedef struct hashmap_vlan_conn {
 bool ip_2_nbo(char *ip, char *subnetMask, in_addr_t *addr);
 
 /**
+ * @brief Convert a 32 bit number IP to an IP string (string needs to be freed)
+ * 
+ * @param net The IP in 32 bit format
+ * @return char* The returned IP
+ */
+char *bit32_2_ip(uint32_t net);
+
+/**
  * @brief Get the interface name corresponding to an IP address of the subnet
  * 
  * @param hmap The interface connection mapper object

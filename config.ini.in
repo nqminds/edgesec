@@ -11,6 +11,11 @@ execAp = true
 execRadius = true
 execDhcp = true
 
+[capture]
+captureInterface = "any"
+promiscuous = 0
+bufferTimeout = 100
+
 [supervisor]
 domainServerPath = /tmp/edgesec-domain-server
 

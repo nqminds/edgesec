@@ -13,6 +13,11 @@ set(RESTSRV_VERSION_MAJOR 0)
 set(RESTSRV_VERSION_MINOR 1)
 set(RESTSRV_VERSION_PATCH 0)
 
+# The capture version number.
+set(CAPTURE_VERSION_MAJOR 0)
+set(CAPTURE_VERSION_MINOR 1)
+set(CAPTURE_VERSION_PATCH 0)
+
 enable_testing()
 
 # Find the hostapd program
@@ -130,6 +135,14 @@ ELSE (LibNL_FOUND)
 	endif (LibNL_FIND_REQUIRED)
 endif (LibNL_FOUND)
 
+find_library(LIBPCAP_LIB NAMES pcap)
+if (LIBPCAP_LIB)
+  message("Found libpcap library: ${LIBPCAP_LIB}")
+ELSE (LIBPCAP_LIB)
+  message(FATAL_ERROR "Could not find pcap library.")
+endif (LIBPCAP_LIB)
+
+
 # check if Doxygen is installed
 find_package(Doxygen)
 
@@ -152,7 +165,7 @@ if (DOXYGEN_FOUND)
         COMMENT "Generating API documentation with Doxygen"
         VERBATIM )
 else (DOXYGEN_FOUND)
-  message("Doxygen need to be installed to generate the doxygen documentation")
+  message(WARNING "Doxygen need to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
 
 add_subdirectory(src)
