@@ -12,7 +12,7 @@ execRadius = true
 execDhcp = true
 
 [capture]
-captureInterface = "any"
+captureInterface = "wls1"
 promiscuous = 0
 bufferTimeout = 100
 

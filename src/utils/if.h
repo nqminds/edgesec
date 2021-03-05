@@ -30,6 +30,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 #include <netinet/in.h>
+#include <net/ethernet.h>
 
 #include "linux/rtnetlink.h"
 #include "utarray.h"

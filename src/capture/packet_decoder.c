@@ -40,6 +40,7 @@
 #include <pcap.h>
 
 #include "../utils/log.h"
+#include "../utils/os.h"
 
 int decode_packet(const struct pcap_pkthdr *header, const u_char *packet)
 {
@@ -48,6 +49,7 @@ int decode_packet(const struct pcap_pkthdr *header, const u_char *packet)
   uint32_t packet_caplen = header->caplen;
   uint32_t packet_len = header->len;
 
+  log_trace("Packet type=0x%x ether_dhost=" MACSTR, ntohs(eth_hdr->ether_type), MAC2STR(eth_hdr->ether_dhost));
   if (ntohs(eth_hdr->ether_type) == ETHERTYPE_IP) {
     log_trace("Found IP packet");
   } else {

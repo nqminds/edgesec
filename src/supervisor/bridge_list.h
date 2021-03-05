@@ -26,6 +26,8 @@
 #ifndef BRIDGE_LIST_H
 #define BRIDGE_LIST_H
 
+#include <net/ethernet.h>
+
 #include "../utils/list.h"
 #include "../utils/os.h"
 

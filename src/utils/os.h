@@ -38,8 +38,8 @@
 
 /* Common costant defintions */
 #define MAX_OS_PATH_LEN	255
-#define IP_LEN 					20
-#define ETH_ALEN 				6
+#define IP_LEN 			20
+// #define ETH_ALEN 		6
 #define LINK_TYPE_LEN 	64
 
 #ifdef __GNUC__
