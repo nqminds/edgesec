@@ -46,26 +46,26 @@ struct mac_conn_info get_mac_conn(uint8_t mac_addr[])
 {
   struct mac_conn_info info;
 
-  log_trace("RADIUS requested vland id for mac=%02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(mac_addr));
+  log_trace("RADIUS requested vland id for mac=" MACSTR, MAC2STR(mac_addr));
 
   int find_mac = get_mac_mapper(&context->mac_mapper, mac_addr, &info);
 
   if (find_mac == 0 && context->allow_all_connections) {
-    log_trace("RADIUS allowing mac=%02x:%02x:%02x:%02x:%02x:%02x on default vlanid=%d", MAC2STR(mac_addr), context->default_open_vlanid);
+    log_trace("RADIUS allowing mac=" MACSTR " on default vlanid=%d", MAC2STR(mac_addr), context->default_open_vlanid);
     info.vlanid = context->default_open_vlanid;
     info.pass_len = context->wpa_passphrase_len;
     memcpy(info.pass, context->wpa_passphrase, info.pass_len);
     return info;
   } else if (find_mac == 1) {
     if (info.allow_connection) {
-      log_trace("RADIUS allowing mac=%02x:%02x:%02x:%02x:%02x:%02x on vlanid=%d", MAC2STR(mac_addr), info.vlanid);
+      log_trace("RADIUS allowing mac=" MACSTR " on vlanid=%d", MAC2STR(mac_addr), info.vlanid);
       return info;
     }
   } else if (find_mac == -1) {
     log_trace("get_mac_mapper fail");
   }
 
-  log_trace("RADIUS rejecting mac=%02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(mac_addr));
+  log_trace("RADIUS rejecting mac=" MACSTR, MAC2STR(mac_addr));
   info.vlanid = -1;
   return info;
 }

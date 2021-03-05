@@ -103,7 +103,7 @@ bool create_mac_mapper(UT_array *connections, hmap_mac_conn **hmap)
   
   if (connections != NULL) {
     while(p = (struct mac_conn *) utarray_next(connections, p)) {
-      log_trace("Adding mac=%02x:%02x:%02x:%02x:%02x:%02x with vlanid=%d ifname=%s nat=%d", MAC2STR(p->mac_addr), p->info.vlanid, p->info.ifname, p->info.nat);
+      log_trace("Adding mac=" MACSTR " with vlanid=%d ifname=%s nat=%d", MAC2STR(p->mac_addr), p->info.vlanid, p->info.ifname, p->info.nat);
 
       if (!put_mac_mapper(hmap, *p)) {
         log_trace("put_mac_mapper fail");

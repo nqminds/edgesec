@@ -75,8 +75,9 @@ bool find_device(char *ifname, bpf_u_int32 *net, bpf_u_int32 *mask)
 
 void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
 {
-  // log_trace("timestamp=%llu caplen=%lu len=%lu", packet_timestamp, packet_caplen, packet_len);
-  decode_packet(header, packet);
+  // Only decode Ethernet packets
+  if (header->caplen >= sizeof(struct ether_header))
+    decode_packet(header, packet);
 }
 
 int run_capture(struct capture_conf *config)
@@ -85,7 +86,7 @@ int run_capture(struct capture_conf *config)
   pcap_t *handle;
   char err[PCAP_ERRBUF_SIZE];
   bpf_u_int32 mask, net;
-  char *net_str, *mask_str;
+  char ip_str[INET_ADDRSTRLEN], mask_str[INET_ADDRSTRLEN];
 
   log_info("Capturing interface %s", config->capture_interface);
   log_info("Promiscuous mode=%d", config->promiscuous);
@@ -96,11 +97,9 @@ int run_capture(struct capture_conf *config)
     return -1;
   }
 
-  net_str = bit32_2_ip((uint32_t) net);
-  mask_str = bit32_2_ip((uint32_t) mask);
-  log_info("Found device=%s IP=%s netmask=%s", config->capture_interface, bit32_2_ip((uint32_t) net), bit32_2_ip((uint32_t) mask));
-  os_free(net_str);
-  os_free(mask_str);
+  bit32_2_ip((uint32_t) net, ip_str);
+  bit32_2_ip((uint32_t) mask, mask_str);
+  log_info("Found device=%s IP=" IPSTR " netmask=" IPSTR, config->capture_interface, IP2STR(ip_str), IP2STR(mask_str));
 
 	handle = pcap_open_live(config->capture_interface, BUFSIZ,
                           config->promiscuous, config->buffer_timeout, err);

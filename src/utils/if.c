@@ -1013,17 +1013,16 @@ bool ip_2_nbo(char *ip, char *subnet_mask, in_addr_t *addr)
 	return true;
 }
 
-char *bit32_2_ip(uint32_t net)
+char *in_addr_2_ip(struct in_addr *addr, char *ip)
+{
+  return inet_ntop(AF_INET, addr, ip, INET_ADDRSTRLEN);
+}
+
+const char *bit32_2_ip(uint32_t addr, char *ip)
 {
   struct in_addr in;
-  in.s_addr = net;
-  char *ip_ret = inet_ntoa(in);
-  if (ip_ret == NULL) {
-	log_err("inet_ntoa fail");
-	return NULL;
-  }
-
-  return os_strdup(ip_ret);
+  in.s_addr = addr;
+  return inet_ntop(AF_INET, &in, ip, INET_ADDRSTRLEN);
 }
 
 int find_subnet_address(UT_array *config_ifinfo_array, char *ip, in_addr_t *subnet_addr)

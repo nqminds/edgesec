@@ -363,7 +363,7 @@ radius_server_get_new_session(struct radius_server_data *data,
 		if (hwaddr_aton2(buf, sess->mac_addr) < 0)
 			os_memset(sess->mac_addr, 0, ETH_ALEN);
 		else
-			log_trace("Calling-Station-Id: %02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(sess->mac_addr));
+			log_trace("Calling-Station-Id: " MACSTR, MAC2STR(sess->mac_addr));
 	}
 
 	srv_log(sess, "New session created");
@@ -409,7 +409,7 @@ radius_server_macacl(struct radius_server_data *data,
 
 		code = RADIUS_CODE_ACCESS_ACCEPT;
 	}	else {
-		log_trace("RADIUS mac=%02x:%02x:%02x:%02x:%02x:%02x not accepted", MAC2STR(sess->mac_addr));
+		log_trace("RADIUS mac=" MACSTR " not accepted", MAC2STR(sess->mac_addr));
 		code = RADIUS_CODE_ACCESS_REJECT;
 	}
 

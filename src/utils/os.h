@@ -59,6 +59,11 @@
 #define COMPACT_MACSTR "%02x%02x%02x%02x%02x%02x"
 #endif
 
+#ifndef IP2STR
+#define IP2STR(a) (a)[0], (a)[1], (a)[2], (a)[3]
+#define IPSTR "%d.%d.%d.%d"
+#endif
+
 #ifndef BIT
 #define BIT(x) (1U << (x))
 #endif

@@ -115,10 +115,20 @@ bool ip_2_nbo(char *ip, char *subnetMask, in_addr_t *addr);
 /**
  * @brief Convert a 32 bit number IP to an IP string (string needs to be freed)
  * 
- * @param net The IP in 32 bit format
- * @return char* The returned IP
+ * @param addr The IP in 32 bit format
+ * @param ip The input buffer to store the IP
+ * @return char* Pointer to the returned IP
  */
-char *bit32_2_ip(uint32_t net);
+const char *bit32_2_ip(uint32_t addr, char *ip);
+
+/**
+ * @brief Convert the in_addr encoded IP address to an IP string (string needs to be freed)
+ * 
+ * @param addr The in_addr encoded IP
+ * @param ip The input buffer to store the IP
+ * @return char* Pointer to the returned IP
+ */
+char *in_addr_2_ip(struct in_addr *addr, char *ip);
 
 /**
  * @brief Get the interface name corresponding to an IP address of the subnet

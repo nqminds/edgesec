@@ -24,3 +24,6 @@ add_library(minIni minIni.c)
 
 add_library(eloop eloop.c)
 target_link_libraries(eloop log os)
+
+add_library(hash hash.c)
+target_link_libraries(hash os)

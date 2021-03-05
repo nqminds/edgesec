@@ -110,7 +110,7 @@ ssize_t process_accept_mac_cmd(int sock, char *client_addr,
       if (ptr != NULL && *ptr != NULL) {
         vlanid = (int) strtoul(*ptr, NULL, 10);
         if (errno != ERANGE && is_number(*ptr)) {
-          log_trace("ACCEPT_MAC mac=%02x:%02x:%02x:%02x:%02x:%02x with vlanid=%d", MAC2STR(addr), vlanid);
+          log_trace("ACCEPT_MAC mac=" MACSTR " with vlanid=%d", MAC2STR(addr), vlanid);
 
           if (get_mac_mapper(&context->mac_mapper, addr, &info) < 0) {
             log_trace("get_mac_mapper fail");
@@ -150,7 +150,7 @@ ssize_t process_deny_mac_cmd(int sock, char *client_addr,
   ptr = (char**) utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
     if (hwaddr_aton2(*ptr, addr) != -1) {
-      log_trace("DENY_MAC mac=%02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(addr));
+      log_trace("DENY_MAC mac=" MACSTR, MAC2STR(addr));
       get_mac_mapper(&context->mac_mapper, addr, &info);
       memcpy(conn.mac_addr, addr, ETH_ALEN);
       info.allow_connection = false;
@@ -177,7 +177,7 @@ ssize_t process_add_nat_cmd(int sock, char *client_addr,
   ptr = (char**) utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
     if (hwaddr_aton2(*ptr, addr) != -1) {
-      log_trace("ADD_NAT mac=%02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(addr));
+      log_trace("ADD_NAT mac=" MACSTR, MAC2STR(addr));
       if (get_mac_mapper(&context->mac_mapper, addr, &info) < 0) {
         log_trace("get_mac_mapper fail");
         return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
@@ -221,7 +221,7 @@ ssize_t process_remove_nat_cmd(int sock, char *client_addr,
   ptr = (char**) utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
     if (hwaddr_aton2(*ptr, addr) != -1) {
-      log_trace("REMOVE_NAT mac=%02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(addr));
+      log_trace("REMOVE_NAT mac=" MACSTR, MAC2STR(addr));
       if (get_mac_mapper(&context->mac_mapper, addr, &info) < 0) {
         log_trace("get_mac_mapper fail");
         return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
@@ -270,7 +270,7 @@ ssize_t process_assign_psk_cmd(int sock, char *client_addr,
       if (ptr != NULL && *ptr != NULL) {
         pass_len = strlen(*ptr);
         if (pass_len <= AP_SECRET_LEN && pass_len) {
-          log_trace("ASSIGN_PSK mac=%02x:%02x:%02x:%02x:%02x:%02x, pass_len=%d", MAC2STR(addr), pass_len);
+          log_trace("ASSIGN_PSK mac=" MACSTR ", pass_len=%d", MAC2STR(addr), pass_len);
 
           get_mac_mapper(&context->mac_mapper, addr, &info);
           memcpy(info.pass, *ptr, pass_len);
@@ -300,7 +300,7 @@ ssize_t process_get_map_cmd(int sock, char *client_addr,
   ptr = (char**) utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
     if (hwaddr_aton2(*ptr, addr) != -1) {
-      log_trace("GET_MAP for mac=%02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(addr));
+      log_trace("GET_MAP for mac=" MACSTR, MAC2STR(addr));
 
       int ret = get_mac_mapper(&context->mac_mapper, addr, &info);
 
@@ -403,7 +403,7 @@ ssize_t process_set_ip_cmd(int sock, char *client_addr,
           else
             os_memset(conn.info.ip_addr, 0x0, IP_LEN);
 
-          log_trace("SET_IP type=%s mac=%02x:%02x:%02x:%02x:%02x:%02x ip=%s if=%s", add_type, MAC2STR(addr), *ptr, ifname);
+          log_trace("SET_IP type=%s mac=" MACSTR " ip=%s if=%s", add_type, MAC2STR(addr), *ptr, ifname);
           if (!put_mac_mapper(&context->mac_mapper, conn))
             return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 
@@ -477,7 +477,7 @@ ssize_t process_add_bridge_cmd(int sock, char *client_addr,
       if (ptr != NULL && *ptr != NULL) {
         if (hwaddr_aton2(*ptr, right_addr) != -1) {
           if (add_bridge_mac(context->bridge_list, left_addr, right_addr) >= 0) {
-            log_trace("ADD_BRIDGE left_mac=%02x:%02x:%02x:%02x:%02x:%02x right_mac=%02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(left_addr), MAC2STR(right_addr));
+            log_trace("ADD_BRIDGE left_mac=" MACSTR " right_mac=" MACSTR, MAC2STR(left_addr), MAC2STR(right_addr));
             if (get_mac_mapper(&context->mac_mapper, left_addr, &left_info) == 1 &&
                 get_mac_mapper(&context->mac_mapper, right_addr, &right_info) == 1
             ) {
@@ -518,7 +518,7 @@ ssize_t process_remove_bridge_cmd(int sock, char *client_addr,
       if (ptr != NULL && *ptr != NULL) {
         if (hwaddr_aton2(*ptr, right_addr) != -1) {
           if (remove_bridge_mac(context->bridge_list, left_addr, right_addr) >= 0) {
-            log_trace("REMOVE_BRIDGE left_mac=%02x:%02x:%02x:%02x:%02x:%02x right_mac=%02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(left_addr), MAC2STR(right_addr));
+            log_trace("REMOVE_BRIDGE left_mac=" MACSTR " right_mac=" MACSTR, MAC2STR(left_addr), MAC2STR(right_addr));
                         if (get_mac_mapper(&context->mac_mapper, left_addr, &left_info) == 1 &&
                 get_mac_mapper(&context->mac_mapper, right_addr, &right_info) == 1
             ) {
@@ -552,7 +552,7 @@ ssize_t process_get_bridges_cmd(int sock, char *client_addr, struct supervisor_c
   if(get_all_bridge_edges(context->bridge_list, &tuple_list_arr) >= 0) {
     log_trace("GET_BRIDGES");
     while(p = (struct bridge_mac_tuple *) utarray_next(tuple_list_arr, p)) {
-      int line_size = snprintf(temp, 255, "%02x:%02x:%02x:%02x:%02x:%02x,%02x:%02x:%02x:%02x:%02x:%02x\n", MAC2STR(p->src_addr), MAC2STR(p->dst_addr));
+      int line_size = snprintf(temp, 255, MACSTR "," MACSTR "\n", MAC2STR(p->src_addr), MAC2STR(p->dst_addr));
       total += line_size + 1;
       if (reply_buf == NULL)
         reply_buf = os_zalloc(total);
