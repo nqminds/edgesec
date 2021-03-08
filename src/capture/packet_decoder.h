@@ -31,6 +31,7 @@
 #include <net/if.h>
 #include <netinet/if_ether.h>
 #include <netinet/ip6.h>
+#include <netinet/icmp6.h>
 #include <netinet/ip_icmp.h>
 #include <net/ethernet.h>
 #include <netinet/tcp.h>
@@ -39,17 +40,33 @@
 #include <pcap.h>
 
 /**
+ * @brief DNS header definition
+ * 
+ */
+struct dns_header {
+	uint16_t tid;		                      /**< Transaction ID */
+	uint16_t flags;	                      /**< Flags */
+	uint16_t nqueries;	                  /**< Questions */
+	uint16_t nanswers;	                  /**< Answers */
+	uint16_t nauth;		                    /**< Authority PRs */
+	uint16_t nother;		                  /**< Other PRs */
+	unsigned char	data[1];	              /**< Data, variable length */
+};
+
+/**
  * @brief Capturee structure definition
  * 
  */
 struct capture_packet {
   struct ether_header *ethh;           /**< Ethernet header.  */
-  struct ether_arp *arph;             /**< Embedded ARP header.  */
+  struct ether_arp *arph;              /**< Embedded ARP header.  */
   struct ip *ip4h;
   struct ip6_hdr *ip6h;
   struct tcphdr *tcph;
   struct udphdr *udph;
   struct icmphdr *icmp4h;
+  struct icmp6_hdr *icmp6h;
+  struct dns_header *dnsh;
   uint64_t timestamp;
   uint32_t caplen;
   uint32_t length;
@@ -59,6 +76,9 @@ struct capture_packet {
   uint32_t ip6h_hash;
   uint32_t tcph_hash;
   uint32_t udph_hash;
+  uint32_t icmp4h_hash;
+  uint32_t icmp6h_hash;
+  uint32_t dnsh_hash;
 };
 
 /**

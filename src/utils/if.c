@@ -1013,9 +1013,14 @@ bool ip_2_nbo(char *ip, char *subnet_mask, in_addr_t *addr)
 	return true;
 }
 
-char *in_addr_2_ip(struct in_addr *addr, char *ip)
+const char *inaddr4_2_ip(struct in_addr *addr, char *ip)
 {
   return inet_ntop(AF_INET, addr, ip, INET_ADDRSTRLEN);
+}
+
+const char *inaddr6_2_ip(struct in6_addr *addr, char *ip)
+{
+  return inet_ntop(AF_INET6, addr, ip, INET6_ADDRSTRLEN);
 }
 
 const char *bit32_2_ip(uint32_t addr, char *ip)
