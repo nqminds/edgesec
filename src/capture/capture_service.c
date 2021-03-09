@@ -82,7 +82,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 
 int run_capture(struct capture_conf *config)
 {
-	int ret;
+	int ret, fd;
   pcap_t *handle;
   char err[PCAP_ERRBUF_SIZE];
   bpf_u_int32 mask, net;
@@ -108,8 +108,26 @@ int run_capture(struct capture_conf *config)
 	  return -1;
 	}
 
+  fd = pcap_get_selectable_fd(handle);
+
+  if (fd == -1) {
+    log_trace("pcap device doesn't support file descriptors");
+	  /* And close the session */
+	  pcap_close(handle);
+    return -1;
+  }
+
+
   log_info("Capture started on %s with link_type=%s", config->capture_interface,
             pcap_datalink_val_to_name(pcap_datalink(handle)));
+
+  if (pcap_setnonblock(handle, 1, err) < 0) {
+    log_trace("pcap_setnonblock fail: %s", err);
+    pcap_close(handle);
+    return -1;
+  }
+
+  log_trace("Non-blocking state %d", pcap_getnonblock(handle, err));
   if ((ret = pcap_loop(handle, -1, got_packet, NULL)) < 0 ) {
     if (ret == -2) {
       log_trace("pcap_loop fail");

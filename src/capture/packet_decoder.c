@@ -57,6 +57,8 @@
 
 #define DNS_PORT            53
 #define MDNS_PORT           5353
+#define DHCP_CLIENT_PORT    68
+#define DHCP_SERVER_PORT    67
 
 bool decode_ip4_packet(struct capture_packet *cpac)
 {
@@ -117,26 +119,42 @@ bool decode_icmp4_packet(struct capture_packet *cpac)
   return true;
 }
 
-void decode_dns_packet(struct capture_packet *cpac)
+bool decode_dns_packet(struct capture_packet *cpac)
 {
-  // if ((void *)cpac->tcph != NULL && (void *)cpac->udph == NULL)
-  //   cpac->udph = (struct udphdr *) ((void *)cpac->ip4h + sizeof(struct ip));
-  // else if ((void *)cpac->ip4h == NULL && (void *)cpac->ip6h != NULL)
-  //   cpac->udph = (struct udphdr *) ((void *)cpac->ip6h + sizeof(struct ip6_hdr));
-  // else
-  //   return false;
+  if ((void *)cpac->tcph != NULL && (void *)cpac->udph == NULL)
+    cpac->dnsh = (struct dns_header *) ((void *)cpac->tcph + sizeof(struct tcphdr));
+  else if ((void *)cpac->tcph == NULL && (void *)cpac->udph != NULL)
+    cpac->dnsh = (struct dns_header *) ((void *)cpac->udph + sizeof(struct udphdr));
+  else
+    return false;
+
+  cpac->dnsh_hash = md_hash((const char*) cpac->dnsh, sizeof(struct dns_header));
 
   log_trace("DNS");
+
+  return true;
 }
 
-void decode_mdns_packet(struct capture_packet *cpac)
+bool decode_mdns_packet(struct capture_packet *cpac)
 {
-  log_trace("MDNS");
+  if ((void *)cpac->tcph != NULL && (void *)cpac->udph == NULL)
+    cpac->mdnsh = (struct mdns_header *) ((void *)cpac->tcph + sizeof(struct tcphdr));
+  else if ((void *)cpac->tcph == NULL && (void *)cpac->udph != NULL)
+    cpac->mdnsh = (struct mdns_header *) ((void *)cpac->udph + sizeof(struct udphdr));
+  else
+    return false;
+
+  cpac->mdnsh_hash = md_hash((const char*) cpac->mdnsh, sizeof(struct mdns_header));
+
+  log_trace("mDNS");
+
+  return true;
 }
 
-void decode_dhcp_packet(struct capture_packet *cpac)
+bool decode_dhcp_packet(struct capture_packet *cpac)
 {
-
+  log_trace("DHCP");
+  return true;
 }
 
 bool decode_icmp6_packet(struct capture_packet *cpac)
@@ -235,6 +253,9 @@ int decode_packet(const struct pcap_pkthdr *header, const uint8_t *packet)
       decode_dns_packet(&cpac);
     } else if (ntohs((cpac.udph)->source) == MDNS_PORT || ntohs((cpac.udph)->dest) == MDNS_PORT) {
       decode_mdns_packet(&cpac);
+    } else if ((ntohs((cpac.udph)->source) == DHCP_CLIENT_PORT && ntohs((cpac.udph)->dest) == DHCP_SERVER_PORT) ||
+              (ntohs((cpac.udph)->source) == DHCP_SERVER_PORT && ntohs((cpac.udph)->dest) == DHCP_CLIENT_PORT)) {
+      decode_dhcp_packet(&cpac);
     }
   }
   return 0;

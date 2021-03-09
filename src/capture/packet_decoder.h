@@ -50,9 +50,38 @@ struct dns_header {
 	uint16_t nanswers;	                  /**< Answers */
 	uint16_t nauth;		                    /**< Authority PRs */
 	uint16_t nother;		                  /**< Other PRs */
-	unsigned char	data[1];	              /**< Data, variable length */
 };
 
+/**
+ * @brief mDNS header definition
+ * 
+ */
+struct mdns_header {
+	uint16_t tid;		                      /**< Transaction ID */
+	uint16_t flags;	                      /**< Flags */
+	uint16_t nqueries;	                  /**< Questions */
+	uint16_t nanswers;	                  /**< Answers */
+	uint16_t nauth;		                    /**< Authority PRs */
+	uint16_t nother;		                  /**< Other PRs */
+};
+
+/**
+ * @brief DHCP header definition (truncated)
+ * 
+ */
+struct dhcp_header_trunc {
+  uint8_t  op;                          /**< packet type */
+  uint8_t  htype;                       /**< type of hardware address for this machine (Ethernet, etc) */
+  uint8_t  hlen;                        /**< length of hardware address (of this machine) */
+  uint8_t  hops;                        /**< hops */
+  uint32_t xid;                         /**< random transaction id number - chosen by this machine */
+  uint16_t secs;                        /**< seconds used in timing */
+  uint16_t flags;                       /**< flags */
+  struct in_addr ciaddr;                /**< IP address of this machine (if we already have one) */
+  struct in_addr yiaddr;                /**< IP address of this machine (offered by the DHCP server) */
+  struct in_addr siaddr;                /**< IP address of DHCP server */
+  struct in_addr giaddr;                /**< IP address of DHCP relay */
+};
 /**
  * @brief Capturee structure definition
  * 
@@ -67,6 +96,8 @@ struct capture_packet {
   struct icmphdr *icmp4h;
   struct icmp6_hdr *icmp6h;
   struct dns_header *dnsh;
+  struct mdns_header *mdnsh;
+  struct dhcp_header_trunc *dhcph;
   uint64_t timestamp;
   uint32_t caplen;
   uint32_t length;
@@ -79,6 +110,8 @@ struct capture_packet {
   uint32_t icmp4h_hash;
   uint32_t icmp6h_hash;
   uint32_t dnsh_hash;
+  uint32_t mdnsh_hash;
+  uint32_t dhcph_hash;
 };
 
 /**
