@@ -542,10 +542,16 @@ bool load_capture_config(const char *filename, struct capture_conf *config)
   os_free(value);
 
   // Load promiscuous param
-  config->promiscuous = (int) ini_getl("capture", "promiscuous", 0, filename);
+  config->promiscuous = (int) ini_getbool("capture", "promiscuous", 0, filename);
+
+  // Load immediate param
+  config->immediate = (int) ini_getbool("capture", "immediate", 0, filename);
 
   // Load bufferTimeout param
-  config->buffer_timeout = (int) ini_getl("capture", "bufferTimeout", 1000, filename);
+  config->buffer_timeout = (uint16_t) ini_getl("capture", "bufferTimeout", 10, filename);
+
+  // Load processInterval param
+  config->process_interval = (uint16_t) ini_getl("capture", "processInterval", 10, filename);
 
   return true;
 }

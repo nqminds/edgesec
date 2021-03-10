@@ -316,12 +316,12 @@ void eloop_unregister_sock(int sock, eloop_event_type type)
 }
 
 
-int eloop_register_timeout(unsigned int secs, unsigned int usecs,
+int eloop_register_timeout(unsigned long secs, unsigned long usecs,
 			   eloop_timeout_handler handler,
 			   void *eloop_data, void *user_data)
 {
 	struct eloop_timeout *timeout, *tmp;
-	os_time_t now_sec;
+	os_time_t now_sec, now_usec;
 
 	timeout = os_zalloc(sizeof(*timeout));
 	if (timeout == NULL)
@@ -331,6 +331,7 @@ int eloop_register_timeout(unsigned int secs, unsigned int usecs,
 		return -1;
 	}
 	now_sec = timeout->time.sec;
+	now_usec = timeout->time.usec;
 	timeout->time.sec += secs;
 	if (timeout->time.sec < now_sec) {
 		/*
@@ -342,6 +343,12 @@ int eloop_register_timeout(unsigned int secs, unsigned int usecs,
 		return 0;
 	}
 	timeout->time.usec += usecs;
+	if (timeout->time.usec < now_usec) {
+		log_trace("ELOOP: Overflow for long timeout (usecs=%u) - ignore it", usecs);
+		os_free(timeout);
+		return 0;
+	}
+
 	while (timeout->time.usec >= 1000000) {
 		timeout->time.sec++;
 		timeout->time.usec -= 1000000;
@@ -435,7 +442,7 @@ int eloop_is_timeout_registered(eloop_timeout_handler handler,
 }
 
 
-int eloop_deplete_timeout(unsigned int req_secs, unsigned int req_usecs,
+int eloop_deplete_timeout(unsigned long req_secs, unsigned long req_usecs,
 			  eloop_timeout_handler handler, void *eloop_data,
 			  void *user_data)
 {
@@ -467,7 +474,7 @@ int eloop_deplete_timeout(unsigned int req_secs, unsigned int req_usecs,
 }
 
 
-int eloop_replenish_timeout(unsigned int req_secs, unsigned int req_usecs,
+int eloop_replenish_timeout(unsigned long req_secs, unsigned long req_usecs,
 			    eloop_timeout_handler handler, void *eloop_data,
 			    void *user_data)
 {

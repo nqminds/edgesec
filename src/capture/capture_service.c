@@ -38,8 +38,20 @@
 
 #include "capture_config.h"
 #include "packet_decoder.h"
+#include "packet_queue.h"
 #include "../utils/if.h"
 #include "../utils/log.h"
+#include "../utils/eloop.h"
+#include "../utils/list.h"
+
+#define PCAP_SNAPSHOT_LENGTH  1500
+#define PCAP_BUFFER_SIZE      64*1024
+
+struct capture_context {
+  uint32_t process_interval;
+  pcap_t *pd;
+  struct packet_queue *queue;
+};
 
 bool find_device(char *ifname, bpf_u_int32 *net, bpf_u_int32 *mask)
 {
@@ -80,20 +92,48 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
     decode_packet(header, packet);
 }
 
+void eloop_read_fd_handler(int sock, void *eloop_ctx, void *sock_ctx)
+{
+  struct capture_context *context = (struct capture_context *) sock_ctx;
+  if (pcap_dispatch(context->pd, -1, got_packet, NULL) < 0) {
+    log_trace("pcap_dispatch fail");
+  }
+}
+
+void eloop_tout_handler(void *eloop_ctx, void *user_ctx)
+{
+  struct capture_context *context = (struct capture_context *) user_ctx;
+
+  if (eloop_register_timeout(0, context->process_interval * 1000, eloop_tout_handler, (void *)NULL, (void *)context) == -1) {
+    log_trace("eloop_register_timeout fail");
+  }
+}
+
 int run_capture(struct capture_conf *config)
 {
 	int ret, fd;
-  pcap_t *handle;
   char err[PCAP_ERRBUF_SIZE];
   bpf_u_int32 mask, net;
   char ip_str[INET_ADDRSTRLEN], mask_str[INET_ADDRSTRLEN];
+  struct capture_context context;
+
+  context.process_interval = config->process_interval;
+  context.queue = init_packet_queue();
+
+  if (context.queue == NULL) {
+    log_trace("init_packet_queue fail");
+    return -1;
+  }
 
   log_info("Capturing interface %s", config->capture_interface);
   log_info("Promiscuous mode=%d", config->promiscuous);
+  log_info("Immediate mode=%d", config->immediate);
   log_info("Buffer timeout=%d", config->buffer_timeout);
-
+  log_info("Process interval=%d", context.process_interval);
+  
   if (!find_device(config->capture_interface, &net, &mask)) {
     log_trace("find_interfaces fail");
+    free_packet_queue(context.queue);
     return -1;
   }
 
@@ -101,46 +141,107 @@ int run_capture(struct capture_conf *config)
   bit32_2_ip((uint32_t) mask, mask_str);
   log_info("Found device=%s IP=" IPSTR " netmask=" IPSTR, config->capture_interface, IP2STR(ip_str), IP2STR(mask_str));
 
-	handle = pcap_open_live(config->capture_interface, BUFSIZ,
-                          config->promiscuous, config->buffer_timeout, err);
-	if (handle == NULL) {
+	if ((context.pd = pcap_create(config->capture_interface, err)) == NULL) {
 	  log_trace("Couldn't open device %s: %s", config->capture_interface, err);
+    free_packet_queue(context.queue);
 	  return -1;
 	}
 
-  fd = pcap_get_selectable_fd(handle);
+  if (pcap_set_snaplen(context.pd, PCAP_SNAPSHOT_LENGTH) < 0) {
+    log_trace("pcap_set_snaplen fail %d", ret);
+    pcap_close(context.pd);
+    free_packet_queue(context.queue);
+    return -1;
+  }
 
-  if (fd == -1) {
+  if ((ret = pcap_set_immediate_mode(context.pd, 0)) < 0) {
+    log_trace("pcap_set_immediate_mode fail %d", ret);
+    pcap_close(context.pd);
+    free_packet_queue(context.queue);
+    return -1;
+  }
+
+  if ((ret = pcap_set_promisc(context.pd, config->promiscuous)) < 0) {
+    log_trace("pcap_set_promisc fail: %d", ret);
+    pcap_close(context.pd);
+    free_packet_queue(context.queue);
+    return -1;
+  }
+
+  if ((ret = pcap_set_timeout(context.pd, (int)config->buffer_timeout)) < 0) {
+    log_trace("pcap_set_timeout fail: %d", ret);
+    pcap_close(context.pd);
+    free_packet_queue(context.queue);
+    return -1;
+  }
+
+  if ((ret = pcap_set_buffer_size(context.pd, PCAP_BUFFER_SIZE)) < 0) {
+    log_trace("pcap_set_buffer_size fail: %d", ret);
+    pcap_close(context.pd);
+    free_packet_queue(context.queue);
+    return -1;
+  }
+
+  ret = pcap_activate(context.pd);
+
+  if(ret < 0) {
+    log_trace("pcap_activate fail: %d", ret);
+    pcap_close(context.pd);
+    free_packet_queue(context.queue);
+    return -1;
+  } else if (ret > 0) {
+    log_warn("pcap_activate %d", ret);
+  }
+
+  if ((fd = pcap_get_selectable_fd(context.pd)) == -1) {
     log_trace("pcap device doesn't support file descriptors");
 	  /* And close the session */
-	  pcap_close(handle);
+	  pcap_close(context.pd);
+    free_packet_queue(context.queue);
     return -1;
   }
-
 
   log_info("Capture started on %s with link_type=%s", config->capture_interface,
-            pcap_datalink_val_to_name(pcap_datalink(handle)));
+            pcap_datalink_val_to_name(pcap_datalink(context.pd)));
 
-  if (pcap_setnonblock(handle, 1, err) < 0) {
+  if (pcap_setnonblock(context.pd, 1, err) < 0) {
     log_trace("pcap_setnonblock fail: %s", err);
-    pcap_close(handle);
+    pcap_close(context.pd);
+    free_packet_queue(context.queue);
     return -1;
   }
 
-  log_trace("Non-blocking state %d", pcap_getnonblock(handle, err));
-  if ((ret = pcap_loop(handle, -1, got_packet, NULL)) < 0 ) {
-    if (ret == -2) {
-      log_trace("pcap_loop fail");
-      pcap_close(handle);
-      return -1;
-    } else if (ret == -1) {
-      log_trace("pcap_breakloop fail");
-      pcap_close(handle);
-      return 0;
-    }
-  } 
-	/* And close the session */
-	pcap_close(handle);
+  log_trace("Non-blocking state %d", pcap_getnonblock(context.pd, err));
+
+  if (eloop_init()) {
+		log_debug("Failed to initialize event loop");
+		pcap_close(context.pd);
+    free_packet_queue(context.queue);
+    return -1;
+	}
+
+  if (eloop_register_read_sock(fd, eloop_read_fd_handler, (void*)NULL, (void *)&context) ==  -1) {
+    log_trace("eloop_register_read_sock fail");
+    goto fail;
+  }
+
+  if (eloop_register_timeout(0, config->process_interval * 1000, eloop_tout_handler, (void *)NULL, (void *)&context) == -1) {
+    log_trace("eloop_register_timeout fail");
+    goto fail;
+  }
+
+  eloop_run();
   log_info("Capture ended.");
+
+	/* And close the session */
+	pcap_close(context.pd);
+  eloop_destroy();
+  free_packet_queue(context.queue);
   return 0;
+
+fail:
+	pcap_close(context.pd);
+  eloop_destroy();
+  free_packet_queue(context.queue);
+  return -1;
 }

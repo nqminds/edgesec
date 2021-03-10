@@ -184,7 +184,7 @@ void eloop_unregister_event(void *event, size_t event_size);
  * Register a timeout that will cause the handler function to be called after
  * given time.
  */
-int eloop_register_timeout(unsigned int secs, unsigned int usecs,
+int eloop_register_timeout(unsigned long secs, unsigned long usecs,
 			   eloop_timeout_handler handler,
 			   void *eloop_data, void *user_data);
 
@@ -243,7 +243,7 @@ int eloop_is_timeout_registered(eloop_timeout_handler handler,
  * Find a registered matching <handler,eloop_data,user_data> timeout. If found,
  * deplete the timeout if remaining time is more than the requested time.
  */
-int eloop_deplete_timeout(unsigned int req_secs, unsigned int req_usecs,
+int eloop_deplete_timeout(unsigned long req_secs, unsigned long req_usecs,
 			  eloop_timeout_handler handler, void *eloop_data,
 			  void *user_data);
 
@@ -260,7 +260,7 @@ int eloop_deplete_timeout(unsigned int req_secs, unsigned int req_usecs,
  * Find a registered matching <handler,eloop_data,user_data> timeout. If found,
  * replenish the timeout if remaining time is less than the requested time.
  */
-int eloop_replenish_timeout(unsigned int req_secs, unsigned int req_usecs,
+int eloop_replenish_timeout(unsigned long req_secs, unsigned long req_usecs,
 			    eloop_timeout_handler handler, void *eloop_data,
 			    void *user_data);
 

@@ -157,11 +157,17 @@ The capture group contains all the parameters that are reponsible to configure t
 ### captureInterface (string)
 The name of the capture interface. If set to "any" the service will traffic from all interfaces.
 
-### promiscuous (number)
-If set to ```1``` the capture interface is set to promiscuous mode. The default value is ```0```.
+### promiscuous (boolean)
+If set to ```true``` the capture interface is set to promiscuous mode. The default value is ```false```.
+
+### immediate (boolean)
+If set to ```true``` the capture interface is set to immediate mode. The default value is ```false```.
 
 ### bufferTimeout (number)
-The timeout in milliseconds to read a packet. The default value is 1000.
+The timeout in milliseconds to read a packet. The default value is 10.
+
+### processInterval (number)
+The interval in milliseconds to process a packet from the queue. The default value is 10.
 
 ## [supervisor] group
 The supervisor group defines the parameters to run the supervisor service.

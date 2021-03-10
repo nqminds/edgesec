@@ -18,28 +18,48 @@
  ****************************************************************************/
 
 /**
- * @file capture_config.h 
+ * @file packet_queue.h 
  * @author Alexandru Mereacre 
- * @brief File containing the definition of the capture config structures.
+ * @brief File containing the definition of the packet queue utilities.
  */
 
-#ifndef CAPTURE_CONFIG_H
-#define CAPTURE_CONFIG_H
+#ifndef PACKET_QUEUE_H
+#define PACKET_QUEUE_H
 
-#include <sys/types.h>
-#include <net/if.h>
-#include <stdbool.h>
+#include "packet_decoder.h"
+#include "../utils/list.h"
 
 /**
- * @brief The capture configuration structure
+ * @brief Packet queueu structure definition
  * 
  */
-struct capture_conf {
-  char capture_interface[IFNAMSIZ];                           /**< The capture interface name (any - to capture on all interfaces) */
-  int promiscuous;                                            /**< Specifies whether the interface is to be put into promiscuous mode. If promiscuous param is non-zero, promiscuous mode will be set, otherwise it will not be set */
-  int immediate;                                              /**< sets whether immediate mode should be set on a capture handle when the handle is activated. If immediate param is non-zero, immediate mode will be set, otherwise it will not be set. */
-  uint16_t buffer_timeout;                                    /**< Specifies the packet buffer timeout, as a non-negative value, in milliseconds. (See pcap(3PCAP) for an explanation of the packet buffer timeout.) */
-  uint16_t process_interval;                                  /**< Specifies the packet process interval, in milliseconds */ 
+struct packet_queue {
+  void *packet;                 /**< Packet address (mallos allocated) */
+  PACKET_TYPES type;            /**< Packet type */
+  struct dl_list list;          /**< List defintion */
 };
 
+/**
+ * @brief Initialises and empty packet queue
+ * 
+ * @return struct packet_queue* Returned initialised empty packet queue
+ */
+struct packet_queue* init_packet_queue(void);
+
+/**
+ * @brief Pushes a packet in the packet queue
+ * 
+ * @param queue The packet queue
+ * @param packet The packet address
+ * @param type The packet type
+ * @return struct packet_queue* Returned initialised empty packet queue
+ */
+struct packet_queue* push_packet_queue(struct packet_queue* queue, void *packet, PACKET_TYPES type);
+
+/**
+ * @brief Frees the packet queue
+ * 
+ * @param queue The pointer to the packet queue
+ */
+void free_packet_queue(struct packet_queue* queue);
 #endif

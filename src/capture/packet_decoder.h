@@ -39,6 +39,11 @@
 #include <arpa/inet.h>
 #include <pcap.h>
 
+typedef enum packet_types {
+  PACKET_ETHERNET = 0,
+  PACKET_ARP
+} PACKET_TYPES;
+
 /**
  * @brief DNS header definition
  * 

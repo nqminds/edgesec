@@ -13,8 +13,10 @@ execDhcp = true
 
 [capture]
 captureInterface = "wls1"
-promiscuous = 0
-bufferTimeout = -1
+promiscuous = false
+bufferTimeout = 10
+processInterval = 10
+immediate = false
 
 [supervisor]
 domainServerPath = /tmp/edgesec-domain-server

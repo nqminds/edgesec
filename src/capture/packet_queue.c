@@ -18,28 +18,77 @@
  ****************************************************************************/
 
 /**
- * @file capture_config.h 
+ * @file packet_queue.c
  * @author Alexandru Mereacre 
- * @brief File containing the definition of the capture config structures.
+ * @brief File containing the implementation of the packet queue utilities.
  */
 
-#ifndef CAPTURE_CONFIG_H
-#define CAPTURE_CONFIG_H
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include <sys/types.h>
-#include <net/if.h>
-#include <stdbool.h>
+#include "packet_queue.h"
+#include "../utils/os.h"
+#include "../utils/log.h"
 
-/**
- * @brief The capture configuration structure
- * 
- */
-struct capture_conf {
-  char capture_interface[IFNAMSIZ];                           /**< The capture interface name (any - to capture on all interfaces) */
-  int promiscuous;                                            /**< Specifies whether the interface is to be put into promiscuous mode. If promiscuous param is non-zero, promiscuous mode will be set, otherwise it will not be set */
-  int immediate;                                              /**< sets whether immediate mode should be set on a capture handle when the handle is activated. If immediate param is non-zero, immediate mode will be set, otherwise it will not be set. */
-  uint16_t buffer_timeout;                                    /**< Specifies the packet buffer timeout, as a non-negative value, in milliseconds. (See pcap(3PCAP) for an explanation of the packet buffer timeout.) */
-  uint16_t process_interval;                                  /**< Specifies the packet process interval, in milliseconds */ 
-};
+struct packet_queue* init_packet_queue(void)
+{
+  struct packet_queue *queue;
+  queue = os_zalloc(sizeof(*queue));
 
-#endif
+  if (queue == NULL) {
+    log_err("os_zalloc");
+    return NULL;
+  }
+
+  dl_list_init(&queue->list);
+
+  return queue;
+}
+
+struct packet_queue* push_packet_queue(struct packet_queue* queue, void *packet, PACKET_TYPES type)
+{
+  struct packet_queue* el;
+
+  if (queue == NULL) {
+    log_trace("queue param is NULL");
+    return NULL;
+  }
+  
+  if ((el = init_packet_queue()) == NULL) {
+    log_trace("init_packet_queue fail");
+    return NULL;
+  }
+
+  el->packet = packet;
+  el->type = type;
+  dl_list_add_tail(&queue->list, &el->list);
+}
+
+struct packet_queue* pop_packet_queue(struct packet_queue* queue)
+{
+  if (queue == NULL)
+    return NULL;
+
+  return dl_list_first(&queue->list, struct packet_queue, list);
+}
+
+void free_packet_queue_el(struct packet_queue* el)
+{
+  if (el) {
+    dl_list_del(&el->list);
+    if (el->packet != NULL)
+      os_free(el->packet);
+	os_free(el);
+  }
+}
+
+void free_packet_queue(struct packet_queue* queue)
+{
+  struct packet_queue* el;
+
+  while ((el = pop_packet_queue(queue)) != NULL)
+    free_packet_queue_el(el);
+
+  free_packet_queue_el(queue);
+}
