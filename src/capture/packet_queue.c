@@ -52,12 +52,12 @@ struct packet_queue* push_packet_queue(struct packet_queue* queue, struct tuple_
   struct packet_queue* el;
 
   if (queue == NULL) {
-    log_trace("queue param is NULL");
+    log_debug("queue param is NULL");
     return NULL;
   }
   
   if ((el = init_packet_queue()) == NULL) {
-    log_trace("init_packet_queue fail");
+    log_debug("init_packet_queue fail");
     return NULL;
   }
 
