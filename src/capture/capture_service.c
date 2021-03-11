@@ -85,17 +85,37 @@ bool find_device(char *ifname, bpf_u_int32 *net, bpf_u_int32 *mask)
   return false;
 }
 
+void add_packet_queue(UT_array *tp_array, int count, struct packet_queue *queue)
+{
+  struct tuple_packet *p = NULL;
+  while((p = (struct tuple_packet *) utarray_next(tp_array, p)) != NULL) {
+    if (push_packet_queue(queue, *p) == NULL) {
+      // Free the packet if cannot be added to the queue
+      free_packet_tuple(p);
+    }
+  }
+
+  log_trace("QUEUE LENGTH %lu", get_packet_queue_length(queue));
+}
+
 void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
 {
-  // Only decode Ethernet packets
-  if (header->caplen >= sizeof(struct ether_header))
-    decode_packet(header, packet);
+  UT_array *tp_array;
+  int count;
+  struct capture_context *context = (struct capture_context *) args;
+  
+
+  if ((count = extract_packets(header, packet, &tp_array)) > 0) {
+    add_packet_queue(tp_array, count, context->queue);
+  }
+
+  utarray_free(tp_array);
 }
 
 void eloop_read_fd_handler(int sock, void *eloop_ctx, void *sock_ctx)
 {
   struct capture_context *context = (struct capture_context *) sock_ctx;
-  if (pcap_dispatch(context->pd, -1, got_packet, NULL) < 0) {
+  if (pcap_dispatch(context->pd, -1, got_packet, (u_char *) sock_ctx) < 0) {
     log_trace("pcap_dispatch fail");
   }
 }
@@ -103,7 +123,19 @@ void eloop_read_fd_handler(int sock, void *eloop_ctx, void *sock_ctx)
 void eloop_tout_handler(void *eloop_ctx, void *user_ctx)
 {
   struct capture_context *context = (struct capture_context *) user_ctx;
+  struct packet_queue *el;
+  ssize_t count = 0;
 
+  // Process all packets in the queue
+  while(get_packet_queue_length(context->queue)) {
+    if ((el = pop_packet_queue(context->queue)) != NULL) {
+      // Process packet
+      free_packet_queue_el(el);
+      count ++;
+    }
+  }
+
+  log_trace("PROCESSED %d", count);
   if (eloop_register_timeout(0, context->process_interval * 1000, eloop_tout_handler, (void *)NULL, (void *)context) == -1) {
     log_trace("eloop_register_timeout fail");
   }

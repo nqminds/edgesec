@@ -26,6 +26,10 @@
 #ifndef PACKET_QUEUE_H
 #define PACKET_QUEUE_H
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "packet_decoder.h"
 #include "../utils/list.h"
 
@@ -34,8 +38,7 @@
  * 
  */
 struct packet_queue {
-  void *packet;                 /**< Packet address (mallos allocated) */
-  PACKET_TYPES type;            /**< Packet type */
+  struct tuple_packet tp;       /**< Packet address and metadata */
   struct dl_list list;          /**< List defintion */
 };
 
@@ -50,11 +53,33 @@ struct packet_queue* init_packet_queue(void);
  * @brief Pushes a packet in the packet queue
  * 
  * @param queue The packet queue
- * @param packet The packet address
- * @param type The packet type
+ * @param tp The packet tuple
  * @return struct packet_queue* Returned initialised empty packet queue
  */
-struct packet_queue* push_packet_queue(struct packet_queue* queue, void *packet, PACKET_TYPES type);
+struct packet_queue* push_packet_queue(struct packet_queue* queue, struct tuple_packet tp);
+
+/**
+ * @brief Extract the first packet from the packet queueu
+ * 
+ * @param queue The packet queue
+ * @return struct packet_queue* The returned packet (NULL if queue is empty)
+ */
+struct packet_queue* pop_packet_queue(struct packet_queue* queue);
+
+/**
+ * @brief Delete a packet entry
+ * 
+ * @param el The packet queue entry
+ */
+void free_packet_queue_el(struct packet_queue* el);
+
+/**
+ * @brief Returns the packet queue length
+ * 
+ * @param el The pointer to the packet queue
+ * @return ssize_t The packet queue length
+ */
+ssize_t get_packet_queue_length(struct packet_queue* queue);
 
 /**
  * @brief Frees the packet queue

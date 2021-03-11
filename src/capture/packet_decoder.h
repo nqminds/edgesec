@@ -39,9 +39,21 @@
 #include <arpa/inet.h>
 #include <pcap.h>
 
+#include "../utils/utarray.h"
+
 typedef enum packet_types {
-  PACKET_ETHERNET = 0,
-  PACKET_ARP
+  PACKET_NONE = 0,
+  PACKET_ETHERNET,
+  PACKET_ARP,
+  PACKET_IP4,
+  PACKET_IP6,
+  PACKET_TCP,
+  PACKET_UDP,
+  PACKET_ICMP4,
+  PACKET_ICMP6,
+  PACKET_DNS,
+  PACKET_MDNS,
+  PACKET_DHCP
 } PACKET_TYPES;
 
 /**
@@ -74,7 +86,7 @@ struct mdns_header {
  * @brief DHCP header definition (truncated)
  * 
  */
-struct dhcp_header_trunc {
+struct dhcp_header {
   uint8_t  op;                          /**< packet type */
   uint8_t  htype;                       /**< type of hardware address for this machine (Ethernet, etc) */
   uint8_t  hlen;                        /**< length of hardware address (of this machine) */
@@ -87,45 +99,38 @@ struct dhcp_header_trunc {
   struct in_addr siaddr;                /**< IP address of DHCP server */
   struct in_addr giaddr;                /**< IP address of DHCP relay */
 };
+
 /**
- * @brief Capturee structure definition
+ * @brief Meta packet structure definition
  * 
  */
-struct capture_packet {
-  struct ether_header *ethh;           /**< Ethernet header.  */
-  struct ether_arp *arph;              /**< Embedded ARP header.  */
-  struct ip *ip4h;
-  struct ip6_hdr *ip6h;
-  struct tcphdr *tcph;
-  struct udphdr *udph;
-  struct icmphdr *icmp4h;
-  struct icmp6_hdr *icmp6h;
-  struct dns_header *dnsh;
-  struct mdns_header *mdnsh;
-  struct dhcp_header_trunc *dhcph;
-  uint64_t timestamp;
-  uint32_t caplen;
-  uint32_t length;
-  uint32_t ethh_hash;
-  uint32_t arph_hash;
-  uint32_t ip4h_hash;
-  uint32_t ip6h_hash;
-  uint32_t tcph_hash;
-  uint32_t udph_hash;
-  uint32_t icmp4h_hash;
-  uint32_t icmp6h_hash;
-  uint32_t dnsh_hash;
-  uint32_t mdnsh_hash;
-  uint32_t dhcph_hash;
+struct meta_packet {
+  PACKET_TYPES type;            /**< Packet type */
+  uint32_t hash;                /**< Packet hash */
+  uint64_t timestamp;           /**< Packet timestamp */
+  uint32_t caplen;              /**< Packet caplen */
+  uint32_t length;              /**< Packet length */
+};
+
+struct tuple_packet {
+  uint8_t *packet;                  /**< Packet data */
+  struct meta_packet mp;            /**< Packet metadata */
 };
 
 /**
- * @brief Decodes the packet
+ * @brief Extract packets from pcap packet data
  * 
  * @param header The packet header as per pcap
  * @param packet The packet data
- * @return int 0 on success, -1 otherwise
+ * @param tp_array The array of returned packet tuples
+ * @return int Total count of packet tuples
  */
-int decode_packet(const struct pcap_pkthdr *header, const u_char *packet);
+int extract_packets(const struct pcap_pkthdr *header, const uint8_t *packet, UT_array **tp_array);
 
+/**
+ * @brief Frees an allocated packet tuple
+ * 
+ * @param tp The pointer to the packet tuple
+ */
+void free_packet_tuple(struct tuple_packet *tp);
 #endif
