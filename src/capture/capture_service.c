@@ -39,6 +39,7 @@
 #include "capture_config.h"
 #include "packet_decoder.h"
 #include "packet_queue.h"
+#include "sqlite_writer.h"
 #include "../utils/if.h"
 #include "../utils/log.h"
 #include "../utils/eloop.h"
@@ -51,6 +52,7 @@ struct capture_context {
   uint32_t process_interval;
   pcap_t *pd;
   struct packet_queue *queue;
+  struct sqlite_context *sctx;
 };
 
 bool find_device(char *ifname, bpf_u_int32 *net, bpf_u_int32 *mask)
@@ -94,8 +96,6 @@ void add_packet_queue(UT_array *tp_array, int count, struct packet_queue *queue)
       free_packet_tuple(p);
     }
   }
-
-  log_trace("QUEUE LENGTH %lu", get_packet_queue_length(queue));
 }
 
 void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
@@ -129,13 +129,13 @@ void eloop_tout_handler(void *eloop_ctx, void *user_ctx)
   // Process all packets in the queue
   while(get_packet_queue_length(context->queue)) {
     if ((el = pop_packet_queue(context->queue)) != NULL) {
+      extract_schema(&(el->tp));
       // Process packet
       free_packet_queue_el(el);
       count ++;
     }
   }
 
-  log_trace("PROCESSED %d", count);
   if (eloop_register_timeout(0, context->process_interval * 1000, eloop_tout_handler, (void *)NULL, (void *)context) == -1) {
     log_debug("eloop_register_timeout fail");
   }
@@ -149,6 +149,13 @@ int run_capture(struct capture_conf *config)
   char ip_str[INET_ADDRSTRLEN], mask_str[INET_ADDRSTRLEN];
   struct capture_context context;
 
+  log_info("Capturing interface %s", config->capture_interface);
+  log_info("Promiscuous mode=%d", config->promiscuous);
+  log_info("Immediate mode=%d", config->immediate);
+  log_info("Buffer timeout=%d", config->buffer_timeout);
+  log_info("Process interval=%d", config->process_interval);
+  log_info("DB path=%s", config->db);
+
   context.process_interval = config->process_interval;
   context.queue = init_packet_queue();
 
@@ -157,12 +164,6 @@ int run_capture(struct capture_conf *config)
     return -1;
   }
 
-  log_info("Capturing interface %s", config->capture_interface);
-  log_info("Promiscuous mode=%d", config->promiscuous);
-  log_info("Immediate mode=%d", config->immediate);
-  log_info("Buffer timeout=%d", config->buffer_timeout);
-  log_info("Process interval=%d", context.process_interval);
-  
   if (!find_device(config->capture_interface, &net, &mask)) {
     log_debug("find_interfaces fail");
     free_packet_queue(context.queue);
@@ -245,6 +246,15 @@ int run_capture(struct capture_conf *config)
 
   log_info("Non-blocking state %d", pcap_getnonblock(context.pd, err));
 
+  context.sctx = open_sqlite_db(config->db);
+
+  if (context.sctx == NULL) {
+    log_debug("open_sqlite_db fail");
+    pcap_close(context.pd);
+    free_packet_queue(context.queue);
+    return -1;
+  }
+
   if (eloop_init()) {
 		log_debug("Failed to initialize event loop");
 		pcap_close(context.pd);
@@ -262,18 +272,20 @@ int run_capture(struct capture_conf *config)
     goto fail;
   }
 
-  eloop_run();
+  // eloop_run();
   log_info("Capture ended.");
 
 	/* And close the session */
 	pcap_close(context.pd);
   eloop_destroy();
   free_packet_queue(context.queue);
+  free_sqlite_db(context.sctx);
   return 0;
 
 fail:
 	pcap_close(context.pd);
   eloop_destroy();
   free_packet_queue(context.queue);
+  free_sqlite_db(context.sctx);
   return -1;
 }

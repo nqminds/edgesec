@@ -3,7 +3,7 @@ include_directories (
 )
 
 add_library(sqlite_writer sqlite_writer.c)
-target_link_libraries(sqlite_writer log os)
+target_link_libraries(sqlite_writer log os ${LIBSQLITE3_LIB})
 
 add_library(packet_queue packet_queue.c)
 target_link_libraries(packet_queue log os)

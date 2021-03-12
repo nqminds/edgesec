@@ -30,6 +30,7 @@
 #include <net/if.h>
 #include <stdbool.h>
 
+#include "../utils/os.h"
 /**
  * @brief The capture configuration structure
  * 
@@ -40,6 +41,7 @@ struct capture_conf {
   int immediate;                                              /**< sets whether immediate mode should be set on a capture handle when the handle is activated. If immediate param is non-zero, immediate mode will be set, otherwise it will not be set. */
   uint16_t buffer_timeout;                                    /**< Specifies the packet buffer timeout, as a non-negative value, in milliseconds. (See pcap(3PCAP) for an explanation of the packet buffer timeout.) */
   uint16_t process_interval;                                  /**< Specifies the packet process interval, in milliseconds */ 
+  char db[MAX_OS_PATH_LEN];                                   /**< Specifies the path to the sqlite3 db */ 
 };
 
 #endif

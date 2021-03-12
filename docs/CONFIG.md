@@ -169,6 +169,9 @@ The timeout in milliseconds to read a packet. The default value is 10.
 ### processInterval (number)
 The interval in milliseconds to process a packet from the queue. The default value is 10.
 
+### db (string)
+Absolute path to the sqlite3 db.
+
 ## [supervisor] group
 The supervisor group defines the parameters to run the supervisor service.
 

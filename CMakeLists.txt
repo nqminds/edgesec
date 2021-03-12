@@ -142,6 +142,13 @@ ELSE (LIBPCAP_LIB)
   message(FATAL_ERROR "Could not find pcap library.")
 endif (LIBPCAP_LIB)
 
+find_library(LIBSQLITE3_LIB NAMES sqlite3)
+if (LIBSQLITE3_LIB)
+  message("Found libsqlite3 library: ${LIBSQLITE_LIB}")
+ELSE (LIBSQLITE3_LIB)
+  message(FATAL_ERROR "Could not find libsqlite3 library.")
+endif (LIBSQLITE3_LIB)
+
 
 # check if Doxygen is installed
 find_package(Doxygen)

@@ -553,6 +553,17 @@ bool load_capture_config(const char *filename, struct capture_conf *config)
   // Load processInterval param
   config->process_interval = (uint16_t) ini_getl("capture", "processInterval", 10, filename);
 
+  value = os_malloc(INI_BUFFERSIZE);
+  ret = ini_gets("capture", "db", "", value, INI_BUFFERSIZE, filename);
+  if (!ret) {
+    fprintf(stderr, "capture db was not specified\n");
+    os_free(value);
+    return false;
+  }
+
+  strncpy(config->db, value, MAX_OS_PATH_LEN);
+  os_free(value);
+
   return true;
 }
 

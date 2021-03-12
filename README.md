@@ -8,7 +8,7 @@ On Ubuntu, we need a C compiler, CMake, Doxygen, and libnl libraries:
 
 ```console
 sudo apt update
-sudo apt install cmake build-essentials doxygen libnl-genl-3-dev libnl-route-3-dev graphviz dnsmasq libpcap-dev
+sudo apt install cmake build-essentials doxygen libnl-genl-3-dev libnl-route-3-dev graphviz dnsmasq libpcap-dev libsqlite3-dev
 ```
 
 ### Compile
