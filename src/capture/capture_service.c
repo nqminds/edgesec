@@ -129,14 +129,14 @@ void eloop_tout_handler(void *eloop_ctx, void *user_ctx)
   // Process all packets in the queue
   while(get_packet_queue_length(context->queue)) {
     if ((el = pop_packet_queue(context->queue)) != NULL) {
-      extract_schema(&(el->tp));
+      extract_statements(context->sctx, &(el->tp));
       // Process packet
       free_packet_queue_el(el);
       count ++;
     }
   }
 
-  if (eloop_register_timeout(0, context->process_interval * 1000, eloop_tout_handler, (void *)NULL, (void *)context) == -1) {
+  if (eloop_register_timeout(0, context->process_interval, eloop_tout_handler, (void *)NULL, (void *)context) == -1) {
     log_debug("eloop_register_timeout fail");
   }
 }
@@ -153,10 +153,12 @@ int run_capture(struct capture_conf *config)
   log_info("Promiscuous mode=%d", config->promiscuous);
   log_info("Immediate mode=%d", config->immediate);
   log_info("Buffer timeout=%d", config->buffer_timeout);
-  log_info("Process interval=%d", config->process_interval);
+  log_info("Process interval=%d (milliseconds)", config->process_interval);
   log_info("DB path=%s", config->db);
 
-  context.process_interval = config->process_interval;
+  // Transform to microseconds
+  context.process_interval = config->process_interval * 1000;
+
   context.queue = init_packet_queue();
 
   if (context.queue == NULL) {
@@ -267,12 +269,12 @@ int run_capture(struct capture_conf *config)
     goto fail;
   }
 
-  if (eloop_register_timeout(0, config->process_interval * 1000, eloop_tout_handler, (void *)NULL, (void *)&context) == -1) {
+  if (eloop_register_timeout(0, context.process_interval, eloop_tout_handler, (void *)NULL, (void *)&context) == -1) {
     log_debug("eloop_register_timeout fail");
     goto fail;
   }
 
-  // eloop_run();
+  eloop_run();
   log_info("Capture ended.");
 
 	/* And close the session */

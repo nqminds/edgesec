@@ -322,6 +322,7 @@ int extract_packets(const struct pcap_pkthdr *header, const uint8_t *packet, UT_
       tp.mp.caplen = cpac.caplen;
       tp.mp.length = cpac.length;
       tp.mp.timestamp = cpac.timestamp;
+      tp.mp.ethh_hash = cpac.ethh_hash;
 
       if (cpac.ethh != NULL) {
         tp.packet = os_malloc(sizeof(struct ether_header));

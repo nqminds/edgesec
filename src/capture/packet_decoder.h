@@ -106,7 +106,8 @@ struct dhcp_header {
  */
 struct meta_packet {
   PACKET_TYPES type;            /**< Packet type */
-  uint32_t hash;                /**< Packet hash */
+  uint32_t hash;                /**< Packet header hash */
+  uint32_t ethh_hash;           /**< Packet ethernet header hash */
   uint64_t timestamp;           /**< Packet timestamp */
   uint32_t caplen;              /**< Packet caplen */
   uint32_t length;              /**< Packet length */

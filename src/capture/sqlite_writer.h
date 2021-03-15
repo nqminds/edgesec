@@ -32,7 +32,66 @@
 #include "packet_decoder.h"
 
 #define MAX_SCHEMA_STR_LENGTH 100
-#define ETH_CREATE_TABLE "CREATE TABLE eth (hash INTEGER NOT NULL, timestamp NUMERIC NOT NULL, caplen NUMERIC, length NUMERIC, ether_dhost TEXT, ether_shost TEXT, ether_type NUMERIC, PRIMARY KEY (hash, timestamp));"
+#define ETH_CREATE_TABLE "CREATE TABLE eth (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, "\
+                         "caplen INTEGER, length INTEGER, " \
+                         "ether_dhost TEXT, ether_shost TEXT, ether_type INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash));"
+
+#define ARP_CREATE_TABLE "CREATE TABLE arp (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, "\
+                         "caplen INTEGER, length INTEGER, " \
+                         "ar_hrd INTEGER, ar_pro INTEGER, ar_hln INTEGER, " \
+                         "ar_pln INTEGER, ar_op INTEGER, arp_sha TEXT, arp_spa TEXT, " \
+                         "arp_tha TEXT, arp_tpa TEXT, PRIMARY KEY (hash, timestamp, ethh_hash));"
+
+#define IP4_CREATE_TABLE "CREATE TABLE ip4 (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, " \
+                         "caplen INTEGER, length INTEGER, " \
+                         "ip_hl INTEGER, ip_v INTEGER, ip_tos INTEGER, ip_len INTEGER, ip_id INTEGER, " \
+                         "ip_off INTEGER, ip_ttl INTEGER, ip_p INTEGER, ip_sum INTEGER, ip_src TEXT, " \
+                         "ip_dst TEXT, PRIMARY KEY (hash, timestamp, ethh_hash));"
+
+#define IP6_CREATE_TABLE "CREATE TABLE ip6 (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, " \
+                         "caplen INTEGER, length INTEGER, " \
+                         "ip6_un1_flow INTEGER, ip6_un1_plen INTEGER, ip6_un1_nxt INTEGER, cip6_un1_hlim INTEGER, " \
+                         "ip6_un2_vfc INTEGER, ip6_src TEXT, ip6_dst TEXT, PRIMARY KEY (hash, timestamp, ethh_hash));"
+
+#define TCP_CREATE_TABLE "CREATE TABLE tcp (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, " \
+                         "caplen INTEGER, length INTEGER, " \
+                         "source INTEGER, dest INTEGER, seq INTEGER, ack_seq INTEGER, res1 INTEGER, doff INTEGER, fin INTEGER, " \
+                         "syn INTEGER, rst INTEGER, psh INTEGER, ack INTEGER, urg INTEGER, window INTEGER, check_p INTEGER, " \
+                         "urg_ptr INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash));"
+
+#define UDP_CREATE_TABLE "CREATE TABLE udp (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, " \
+                         "caplen INTEGER, length INTEGER, " \
+                         "source INTEGER, dest INTEGER, len INTEGER, check_p INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash));"
+
+#define ICMP4_CREATE_TABLE "CREATE TABLE icmp4 (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, " \
+                           "caplen INTEGER, length INTEGER, " \
+                           "type INTEGER, code INTEGER, checksum INTEGER, gateway INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash));"
+
+#define ICMP6_CREATE_TABLE "CREATE TABLE icmp6 (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, " \
+                           "caplen INTEGER, length INTEGER, " \
+                           "icmp6_type INTEGER, icmp6_code INTEGER, icmp6_cksum INTEGER, icmp6_un_data32 INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash));"
+
+#define DNS_CREATE_TABLE "CREATE TABLE dns (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, " \
+                         "caplen INTEGER, length INTEGER, " \
+                         "tid INTEGER, flags INTEGER, nqueries INTEGER, nanswers INTEGER, nauth INTEGER, " \
+                         "nother INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash));"
+
+#define MDNS_CREATE_TABLE "CREATE TABLE mdns (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, " \
+                          "caplen INTEGER, length INTEGER, " \
+                          "tid INTEGER, flags INTEGER, nqueries INTEGER, nanswers INTEGER, nauth INTEGER, " \
+                          "nother INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash));"
+
+#define DHCP_CREATE_TABLE "CREATE TABLE dhcp (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, " \
+                          "caplen INTEGER, length INTEGER, " \
+                          "op INTEGER, htype INTEGER, hlen INTEGER, hops INTEGER, xid INTEGER, secs INTEGER, flags INTEGER, " \
+                          "ciaddr TEXT, yiaddr TEXT, siaddr TEXT, giaddr TEXT, PRIMARY KEY (hash, timestamp, ethh_hash));"
+
+#define ETH_INSERT_INTO "INSERT INTO eth VALUES(@hash, @timestamp, @ethh_hash, @caplen, @length, @ether_dhost, @ether_shost, @ether_type)"
+#define ARP_INSERT_INTO "INSERT INTO arp VALUES(@hash, @timestamp, @ethh_hash, @caplen, @length, " \
+                        "@ar_hrd, @ar_pro, @ar_hln, @ar_pln, @ar_op, @arp_sha, @arp_spa, " \
+                        "@arp_tha, @arp_tpa);"
+#define IP4_INSERT_INTO "INSERT INTO ip4 VALUES(@hash, @timestamp, @ethh_hash, @caplen, @length, @ip_hl, @ip_v, @ip_tos, @ip_len, @ip_id, " \
+                        "@ip_off, @ip_ttl, @ip_p, @ip_sum, @ip_src, @ip_dst);"
 
 /**
  * @brief Ethernet protocol schema defintion
@@ -130,7 +189,7 @@ struct tcp_schema {
   uint16_t ack;                  /**< Packet ack flag */
   uint16_t urg;                  /**< Packet urg flag */
   uint16_t window;              /**< Packet window */
-  uint16_t check;               /**< Packet check */
+  uint16_t check_p;               /**< Packet check */
   uint16_t urg_ptr;             /**< Packet urg_ptr */
 };
 
@@ -146,7 +205,7 @@ struct udp_schema {
   uint16_t source;              /**< Packet source port */
   uint16_t dest;                /**< Packet destination port */
   uint16_t len;                 /**< Packet udp length */
-  uint16_t check;               /**< Packet udp checksum */
+  uint16_t check_p;               /**< Packet udp checksum */
 };
 
 /**
@@ -239,7 +298,7 @@ struct sqlite_context {
   sqlite3 *db;
 };
 
-void extract_schema(struct tuple_packet *tp);
+void extract_statements(struct sqlite_context *ctx, struct tuple_packet *tp);
 
 /**
  * @brief Opens the sqlite3 database
