@@ -38,8 +38,8 @@
 
 #define ARP_CREATE_TABLE "CREATE TABLE arp (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, "\
                          "caplen INTEGER, length INTEGER, " \
-                         "ar_hrd INTEGER, ar_pro INTEGER, ar_hln INTEGER, " \
-                         "ar_pln INTEGER, ar_op INTEGER, arp_sha TEXT, arp_spa TEXT, " \
+                         "arp_hrd INTEGER, arp_pro INTEGER, arp_hln INTEGER, " \
+                         "arp_pln INTEGER, arp_op INTEGER, arp_sha TEXT, arp_spa TEXT, " \
                          "arp_tha TEXT, arp_tpa TEXT, PRIMARY KEY (hash, timestamp, ethh_hash));"
 
 #define IP4_CREATE_TABLE "CREATE TABLE ip4 (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, " \
@@ -88,10 +88,28 @@
 
 #define ETH_INSERT_INTO "INSERT INTO eth VALUES(@hash, @timestamp, @ethh_hash, @caplen, @length, @ether_dhost, @ether_shost, @ether_type)"
 #define ARP_INSERT_INTO "INSERT INTO arp VALUES(@hash, @timestamp, @ethh_hash, @caplen, @length, " \
-                        "@ar_hrd, @ar_pro, @ar_hln, @ar_pln, @ar_op, @arp_sha, @arp_spa, " \
+                        "@arp_hrd, @arp_pro, @arp_hln, @arp_pln, @arp_op, @arp_sha, @arp_spa, " \
                         "@arp_tha, @arp_tpa);"
 #define IP4_INSERT_INTO "INSERT INTO ip4 VALUES(@hash, @timestamp, @ethh_hash, @caplen, @length, @ip_hl, @ip_v, @ip_tos, @ip_len, @ip_id, " \
                         "@ip_off, @ip_ttl, @ip_p, @ip_sum, @ip_src, @ip_dst);"
+#define IP6_INSERT_INTO "INSERT INTO ip6 VALUES(@hash, @timestamp, @ethh_hash, @caplen, @length, " \
+                        "@ip6_un1_flow, @ip6_un1_plen, @ip6_un1_nxt, @cip6_un1_hlim, @ip6_un2_vfc, @ip6_src, @ip6_dst);"
+#define TCP_INSERT_INTO "INSERT INTO tcp VALUES(@hash, @timestamp, @ethh_hash, @caplen, @length, " \
+                        "@source, @dest, @seq, @ack_seq, @res1, @doff, @fin, " \
+                        "@syn, @rst, @psh, @ack, @urg, @window, @check_p, @urg_ptr);"
+#define UDP_INSERT_INTO "INSERT INTO udp VALUES(@hash, @timestamp, @ethh_hash, @caplen, @length, " \
+                        "@source, @dest, @len, @check_p);"
+#define ICMP4_INSERT_INTO "INSERT INTO icmp4 VALUES(@hash, @timestamp, @ethh_hash, @caplen, @length, " \
+                          "@type, @code, @checksum, @gateway);"
+#define ICMP6_INSERT_INTO "INSERT INTO icmp6 VALUES(@hash, @timestamp, @ethh_hash, @caplen, @length, " \
+                          "@icmp6_type, @icmp6_code, @icmp6_cksum, @icmp6_un_data32);"
+#define DNS_INSERT_INTO "INSERT INTO dns VALUES(@hash, @timestamp, @ethh_hash, @caplen, @length, " \
+                        "@tid, @flags, @nqueries, @nanswers, @nauth, @nother);"
+#define MDNS_INSERT_INTO "INSERT INTO mdns VALUES(@hash, @timestamp, @ethh_hash, @caplen, @length, " \
+                         "@tid, @flags, @nqueries, @nanswers, @nauth, @nother);"
+#define DHCP_INSERT_INTO "INSERT INTO dhcp VALUES(@hash, @timestamp, @ethh_hash, @caplen, @length, " \
+                          "@op, @htype, @hlen, @hops, @xid, @secs, @flags, " \
+                          "@ciaddr, @yiaddr, @siaddr, @giaddr);"
 
 /**
  * @brief Ethernet protocol schema defintion
