@@ -50,19 +50,21 @@ struct mac_conn_info get_mac_conn(uint8_t mac_addr[])
 
   int find_mac = get_mac_mapper(&context->mac_mapper, mac_addr, &info);
 
-  if (find_mac == 0 && context->allow_all_connections) {
+  if (context->allow_all_connections) {
     log_trace("RADIUS allowing mac=" MACSTR " on default vlanid=%d", MAC2STR(mac_addr), context->default_open_vlanid);
     info.vlanid = context->default_open_vlanid;
     info.pass_len = context->wpa_passphrase_len;
     memcpy(info.pass, context->wpa_passphrase, info.pass_len);
     return info;
-  } else if (find_mac == 1) {
-    if (info.allow_connection) {
-      log_trace("RADIUS allowing mac=" MACSTR " on vlanid=%d", MAC2STR(mac_addr), info.vlanid);
-      return info;
-    }
+  }
+  
+  if (find_mac == 1 && info.allow_connection) {
+    log_trace("RADIUS allowing mac=" MACSTR " on vlanid=%d", MAC2STR(mac_addr), info.vlanid);
+    return info;
   } else if (find_mac == -1) {
     log_trace("get_mac_mapper fail");
+  } else if (find_mac == 0) {
+    log_trace("mac=" MACSTR " not found", MAC2STR(mac_addr));
   }
 
   log_trace("RADIUS rejecting mac=" MACSTR, MAC2STR(mac_addr));
