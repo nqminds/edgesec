@@ -68,9 +68,11 @@ bool process_domain_buffer(char *domain_buffer, size_t domain_buffer_len, UT_arr
  * 
  * @param sock The domain server socket
  * @param client_addr The client address for replies
+ * @param context The supervisor structure instance
+ * @param cmd_arr The array of received commands
  * @return ssize_t Size of reply written data
  */
-ssize_t process_ping_cmd(int sock, char *client_addr);
+ssize_t process_ping_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Processes the HOSTAPD_IF command
@@ -78,9 +80,10 @@ ssize_t process_ping_cmd(int sock, char *client_addr);
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
+ * @param cmd_arr The array of received commands
  * @return ssize_t Size of reply written data
  */
-ssize_t process_hostapd_ctrlif_cmd(int sock, char *client_addr, struct supervisor_context *context);
+ssize_t process_hostapd_ctrlif_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Processes the ACCEPT_MAC command
@@ -154,6 +157,7 @@ ssize_t process_get_map_cmd(int sock, char *client_addr, struct supervisor_conte
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
+ * @param cmd_arr The array of received commands
  * @return ssize_t Size of reply written data
  */
 ssize_t process_get_all_cmd(int sock, char *client_addr, struct supervisor_context *context);
@@ -197,6 +201,7 @@ ssize_t process_remove_bridge_cmd(int sock, char *client_addr, struct supervisor
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
+ * @param cmd_arr The array of received commands
  * @return ssize_t Size of reply written data
  */
 ssize_t process_get_bridges_cmd(int sock, char *client_addr, struct supervisor_context *context);

@@ -20,14 +20,14 @@ immediate = false
 db = "./pcap.sqlite"
 
 [supervisor]
-domainServerPath = /tmp/edgesec-domain-server
+domainServerPath = "/tmp/edgesec-domain-server"
 
 [ap]
 apBinPath = "./hostapd"
 apFilePath = "/tmp/hostapd.conf"
 apLogPath = "/tmp/hostapd.log"
 interface = "wifiap0"
-ssid = "IOTH_IMX7"
+ssid = "IOTH_TEST"
 wpaPassphrase = "1234554321"
 bridge = "br0"
 driver = "nl80211"

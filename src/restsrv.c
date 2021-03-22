@@ -172,7 +172,7 @@ ahc_echo (void *cls,
           const char *version,
           const char *upload_data, size_t *upload_data_size, void **ptr)
 {
-  static int aptr;
+  static int aptr, response_size = 0;
   const char *fmt = cls;
   const char *cmd, *args;
   char *me;
@@ -195,7 +195,9 @@ ahc_echo (void *cls,
   *ptr = NULL;                  /* reset when done */
   cmd = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "cmd");
   args = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "args");
-  me = os_malloc(snprintf(NULL, 0, fmt, "cmd", cmd) + 1);
+  response_size = snprintf(NULL, 0, fmt, "cmd", cmd);
+  fprintf(stdout, "Response size=%d me=%s\n", response_size, me);
+  me = os_malloc(response_size + 1);
 
   if (me == NULL) return MHD_NO;
 
@@ -213,8 +215,11 @@ ahc_echo (void *cls,
     fprintf(stdout, "%s\n", cmd_str);
   }
 
-  response = MHD_create_response_from_buffer(strlen (me), me, MHD_RESPMEM_MUST_FREE);
+  response_size = strlen(me);
+  fprintf(stdout, "Response size=%d me=%s\n", response_size, me);
+  response = MHD_create_response_from_buffer(strlen(me), me, MHD_RESPMEM_MUST_FREE);
   if (response == NULL) {
+    fprintf(stderr, "NULL response error\n");
     os_free(me);
     return MHD_NO;
   }

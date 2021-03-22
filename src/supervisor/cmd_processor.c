@@ -78,15 +78,18 @@ void init_default_mac_info(struct mac_conn_info *info, int default_open_vlanid)
   os_memset(info->ifname, 0, IFNAMSIZ);
 }
 
-ssize_t process_ping_cmd(int sock, char *client_addr)
+ssize_t process_ping_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
 {
+  (void) context; /* unused */
+  (void) cmd_arr; /* unused */
   char *buf = "PONG";
   return write_domain_data(sock, buf, strlen(buf), client_addr);
 }
 
-ssize_t process_hostapd_ctrlif_cmd(int sock, char *client_addr,
-  struct supervisor_context *context)
+ssize_t process_hostapd_ctrlif_cmd(int sock, char *client_addr, struct supervisor_context *context,
+  UT_array *cmd_arr)
 {
+  (void) cmd_arr; /* unused */
   return write_domain_data(sock, context->hostapd_ctrl_if_path,
     strlen(context->hostapd_ctrl_if_path), client_addr);
 }

@@ -62,12 +62,12 @@ void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
   ptr = (char**) utarray_next(cmd_arr, ptr);
 
   if (!strcmp(*ptr, CMD_PING)) {
-    if (process_ping_cmd(sock, client_addr) == -1) {
+    if (process_ping_cmd(sock, client_addr, NULL, NULL) == -1) {
       log_trace("process_ping_cmd fail");
       goto end;
     }
   } else if (!strcmp(*ptr, CMD_HOSTAPD_CTRLIF)) {
-    if (process_hostapd_ctrlif_cmd(sock, client_addr, context) == -1) {
+    if (process_hostapd_ctrlif_cmd(sock, client_addr, context, NULL) == -1) {
       log_trace("process_hostapd_ctrlif_cmd fail");
       goto end;
     }
