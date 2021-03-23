@@ -34,6 +34,12 @@
 #include <errno.h>
 #include <net/if.h>
 #include <libgen.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <string.h>
+#include <inttypes.h>
+#include <sys/un.h>
+#include <sys/socket.h>
 
 
 #include "supervisor/cmd_processor.h"
@@ -48,8 +54,14 @@
 
 #define JSON_RESPONSE_OK "{\"cmd\":\"%s\",\"response\":\"%s\"}"
 #define JSON_RESPONSE_FAIL "{\"error\":\"invalid get request\"}"
+char *socket_path = "\0hidden";
 
 static __thread char version_buf[10];
+
+struct domain_options {
+  int supervisor_sock;
+  int ap_sock;
+};
 
 char *get_static_version_string(uint8_t major, uint8_t minor, uint8_t patch)
 {
@@ -149,6 +161,29 @@ void process_app_options(int argc, char *argv[], char *spath, char *apath,
     default: show_app_help(argv[0]);
     }
   }
+}
+
+int create_domain_client(void)
+{
+  struct sockaddr_un claddr;
+  int sock;
+  memset(&claddr, 0, sizeof(struct sockaddr_un));
+  claddr.sun_family = AF_UNIX;
+  *claddr.sun_path = '\0';
+  strncpy(claddr.sun_path+1, socket_path+1, sizeof(claddr.sun_path)-2);
+
+  sock = socket(AF_UNIX, SOCK_DGRAM, 0);
+  if (sock == -1) {
+    log_err("socket");
+    return -1;
+  }
+
+  if (connect(sock, (struct sockaddr *) &claddr, sizeof(struct sockaddr_un)) == -1) {
+    log_err("connect");
+    return -1;
+  }
+
+  return sock;
 }
 
 int print_out_key (void *cls, enum MHD_ValueKind kind, 
@@ -255,6 +290,7 @@ int main(int argc, char *argv[])
   uint8_t level = 0;
   char apath[MAX_OS_PATH_LEN], spath[MAX_OS_PATH_LEN];
   int port = -1;
+  struct domain_options dopt;
 
   process_app_options(argc, argv, apath, spath, &port, &verbosity); 
 
@@ -281,8 +317,18 @@ int main(int argc, char *argv[])
   fprintf(stdout, "AP address --> %s\n", spath);
   fprintf(stdout, "Port --> %d\n", port);
 
-  d = MHD_start_daemon (MHD_USE_INTERNAL_POLLING_THREAD | MHD_USE_EPOLL | MHD_USE_ERROR_LOG,
-                        (uint16_t) port,
+  if ((dopt.supervisor_sock = create_domain_client()) == -1) {
+    fprintf(stderr,"create_domain_client fail");
+    exit(EXIT_FAILURE);
+  }
+
+  if ((dopt.ap_sock = create_domain_client()) == -1) {
+    close(dopt.supervisor_sock);
+    fprintf(stderr,"create_domain_client fail");
+    exit(EXIT_FAILURE);
+  }
+
+  d = MHD_start_daemon (MHD_USE_THREAD_PER_CONNECTION, (uint16_t) port,
                         NULL, NULL, &mhd_reply, NULL, MHD_OPTION_END);
 
   if (d == NULL) {
@@ -292,6 +338,8 @@ int main(int argc, char *argv[])
 
   (void) getc (stdin);
   MHD_stop_daemon (d);
+  close(dopt.supervisor_sock);
+  close(dopt.ap_sock);
   fprintf(stdout, "Server stopped\n");
   exit(EXIT_SUCCESS);
 }
