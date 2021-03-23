@@ -40,13 +40,14 @@
 #include "microhttpd.h"
 #include "version.h"
 #include "utils/os.h"
+#include "utils/log.h"
 #include "utils/minIni.h"
 
-#define OPT_STRING    ":a:s:p:vh"
-#define USAGE_STRING  "\t%s [-s address] [-a address] [-p port] [-h] [-v]\n"
+#define OPT_STRING    ":a:s:p:dvh"
+#define USAGE_STRING  "\t%s [-s address] [-a address] [-p port] [-d] [-h] [-v]\n"
 
-#define PAGE \
-  "<html><head><title>EDGESec Rest Server</title></head><body>%s<br/>%s</body></html>"
+#define JSON_RESPONSE_OK "{\"cmd\":\"%s\",\"response\":\"%s\"}"
+#define JSON_RESPONSE_FAIL "{\"error\":\"invalid get request\"}"
 
 static __thread char version_buf[10];
 
@@ -78,6 +79,7 @@ void show_app_help(char *app_name)
   fprintf(stdout, "\t-s address\t Path to supervisor socket\n");
   fprintf(stdout, "\t-a address\t Path to AP socket\n");
   fprintf(stdout, "\t-p port\t\t Server port\n");
+  fprintf(stdout, "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n");
   fprintf(stdout, "\t-h\t\t Show help\n");
   fprintf(stdout, "\t-v\t\t Show app version\n\n");
   fprintf(stdout, "Copyright Nquirignminds Ltd\n\n");
@@ -108,13 +110,17 @@ int get_port(char *port_str)
   return strtol(port_str, NULL, 10);
 }
 
-void process_app_options(int argc, char *argv[], char *spath, char *apath, int *port)
+void process_app_options(int argc, char *argv[], char *spath, char *apath,
+  int *port, uint8_t *verbosity)
 {
   int opt;
   int p;
 
   while ((opt = getopt(argc, argv, OPT_STRING)) != -1) {
     switch (opt) {
+    case 'd':
+      (*verbosity)++;
+      break;
     case 'h':
       show_app_help(argv[0]);
       break;
@@ -148,35 +154,63 @@ void process_app_options(int argc, char *argv[], char *spath, char *apath, int *
 int print_out_key (void *cls, enum MHD_ValueKind kind, 
                    const char *key, const char *value)
 {
-  fprintf(stdout, "HEADER --> key=%s value=%s\n", key, value);
+  log_info("HEADER --> key=%s value=%s", key, value);
   return MHD_YES;
 }
 
-void create_command_string(const char *cmd, const char *args, char *cmd_str)
+char* create_command_string(char *cmd, char *args, char *cmd_str)
 {
   char *cmd_tmp;
-  if (cmd_str) {
+  if (cmd == NULL || cmd_str == NULL)
+    return NULL;
+
+  if (strlen(cmd)) {
     cmd_tmp = allocate_string(cmd);
     upper_string(cmd_tmp);
-    sprintf(cmd_str, "%s %s\n", cmd_tmp, args);
+    if (args ==  NULL)
+      sprintf(cmd_str, "%s\n", cmd_tmp);
+    else
+      sprintf(cmd_str, "%s %s\n", cmd_tmp, args);
     replace_string_char(cmd_str, ',', CMD_DELIMITER);
     os_free(cmd_tmp);
+
+    return cmd_str;
   }
+
+  return NULL;
 }
 
-static enum MHD_Result
-ahc_echo (void *cls,
-          struct MHD_Connection *connection,
-          const char *url,
-          const char *method,
-          const char *version,
-          const char *upload_data, size_t *upload_data_size, void **ptr)
+enum MHD_Result create_connection_response(char *data, struct MHD_Connection *connection)
+{
+  struct MHD_Response *response;
+  enum MHD_Result ret;
+  response = MHD_create_response_from_buffer(strlen(data), data, MHD_RESPMEM_MUST_COPY);
+  if (response == NULL) {
+    log_debug("NULL response error");
+    // os_free(me);
+    return MHD_NO;
+  }
+
+  ret = MHD_add_response_header(response, MHD_HTTP_HEADER_CONTENT_TYPE, "application/json");
+  if (ret == MHD_NO) {
+    log_debug("MHD_add_response_header error");
+    MHD_destroy_response(response);  
+    // os_free(me);
+    return MHD_NO;
+  }
+  ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
+  MHD_destroy_response(response);
+
+  return ret;
+}
+
+static enum MHD_Result mhd_reply(void *cls, struct MHD_Connection *connection, const char *url,
+  const char *method, const char *version, const char *upload_data, size_t *upload_data_size, void **ptr)
 {
   static int aptr, response_size = 0;
-  const char *fmt = cls;
-  const char *cmd, *args;
-  char *me;
-  struct MHD_Response *response;
+  char *fmt = cls, *cmd, *args;
+  char cmd_str[255];
+  char response_buf[255];
   enum MHD_Result ret;
 
   (void) version;           /* Unused. Silent compiler warning. */
@@ -184,7 +218,9 @@ ahc_echo (void *cls,
   (void) upload_data_size;  /* Unused. Silent compiler warning. */
 
   /* unexpected method */
-  if (0 != strcmp (method, "GET")) return MHD_NO;
+  if (0 != strcmp (method, "GET")) {
+    return MHD_NO;
+  }
 
   if (&aptr != *ptr) {
     /* do never respond on first call */
@@ -193,53 +229,47 @@ ahc_echo (void *cls,
   }
 
   *ptr = NULL;                  /* reset when done */
-  cmd = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "cmd");
-  args = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "args");
-  response_size = snprintf(NULL, 0, fmt, "cmd", cmd);
-  fprintf(stdout, "Response size=%d me=%s\n", response_size, me);
-  me = os_malloc(response_size + 1);
-
-  if (me == NULL) return MHD_NO;
-
   MHD_get_connection_values(connection, MHD_HEADER_KIND, (MHD_KeyValueIterator)&print_out_key, NULL);
-  fprintf(stdout, "URL --> %s %s\n", method, url);
-  fprintf(stdout, "PARAMS --> cmd=%s args=%s\n", cmd, args);
+  cmd = (char *) MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "cmd");
+  args = (char *) MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "args");
 
-  char cmd_str[255];
+  log_info("URL --> %s %s", method, url);
+  log_info("PARAMS --> cmd=%s args=%s", cmd, args);
 
-  create_command_string(cmd, args, cmd_str);
-  fprintf(stdout, "%s\n", cmd_str);
-  sprintf (me, fmt, cmd_str, "");
-
-  if (cmd_str) {
-    fprintf(stdout, "%s\n", cmd_str);
+  if (create_command_string(cmd, args, cmd_str) == NULL) {
+    log_debug("create_command_string fail");
+    sprintf(response_buf, JSON_RESPONSE_FAIL);
+    return create_connection_response(response_buf, connection);
   }
 
-  response_size = strlen(me);
-  fprintf(stdout, "Response size=%d me=%s\n", response_size, me);
-  response = MHD_create_response_from_buffer(strlen(me), me, MHD_RESPMEM_MUST_FREE);
-  if (response == NULL) {
-    fprintf(stderr, "NULL response error\n");
-    os_free(me);
-    return MHD_NO;
-  }
+  // // Here send the command to the UNIX domain socket
 
-  ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
-  MHD_destroy_response(response);
-
-  return ret;
+  sprintf(response_buf, JSON_RESPONSE_OK, cmd, "12345");
+  return create_connection_response(response_buf, connection);
 }
 
 int main(int argc, char *argv[])
 {
   struct MHD_Daemon *d;
-
+  uint8_t verbosity = 0;
+  uint8_t level = 0;
   char apath[MAX_OS_PATH_LEN], spath[MAX_OS_PATH_LEN];
   int port = -1;
 
-  process_app_options(argc, argv, apath, spath, &port); 
+  process_app_options(argc, argv, apath, spath, &port, &verbosity); 
 
   if (optind <= 1) show_app_help(argv[0]);
+
+  if (verbosity > MAX_LOG_LEVELS) {
+    level = 0;
+  } else if (!verbosity) {
+    level = MAX_LOG_LEVELS - 1;
+  } else {
+    level = MAX_LOG_LEVELS - verbosity;
+  }
+
+  // Set the log level
+  log_set_level(level);
 
   if (port == -1) {
     log_cmdline_error("Unrecognized port value -%d\n", port);
@@ -253,7 +283,7 @@ int main(int argc, char *argv[])
 
   d = MHD_start_daemon (MHD_USE_INTERNAL_POLLING_THREAD | MHD_USE_EPOLL | MHD_USE_ERROR_LOG,
                         (uint16_t) port,
-                        NULL, NULL, &ahc_echo, PAGE, MHD_OPTION_END);
+                        NULL, NULL, &mhd_reply, NULL, MHD_OPTION_END);
 
   if (d == NULL) {
     fprintf(stderr, "Error: Failed to start server\n");

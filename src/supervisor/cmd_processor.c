@@ -321,8 +321,10 @@ ssize_t process_get_map_cmd(int sock, char *client_addr,
   return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
-ssize_t process_get_all_cmd(int sock, char *client_addr, struct supervisor_context *context)
+ssize_t process_get_all_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
 {
+  (void) cmd_arr; /* unused */
+
   char temp[255], *reply_buf = NULL; 
   struct mac_conn *mac_list = NULL;
   int mac_list_len = get_mac_list(&context->mac_mapper, &mac_list);
@@ -545,8 +547,10 @@ ssize_t process_remove_bridge_cmd(int sock, char *client_addr,
   return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
-ssize_t process_get_bridges_cmd(int sock, char *client_addr, struct supervisor_context *context)
+ssize_t process_get_bridges_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
 {
+  (void) cmd_arr; /* unused */
+
   char temp[255], *reply_buf = NULL; 
   UT_array *tuple_list_arr;
   int total = 0;
@@ -574,4 +578,39 @@ ssize_t process_get_bridges_cmd(int sock, char *client_addr, struct supervisor_c
   }
 
   return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+}
+
+process_cmd_fn get_command_function(char *cmd)
+{
+  if (!strcmp(cmd, CMD_PING)) {
+    return process_ping_cmd;
+  } else if (!strcmp(cmd, CMD_HOSTAPD_CTRLIF)) {
+    return process_hostapd_ctrlif_cmd;
+  } else if (!strcmp(cmd, CMD_ACCEPT_MAC)) {
+    return process_accept_mac_cmd;
+  } else if (!strcmp(cmd, CMD_DENY_MAC)) {
+    return process_deny_mac_cmd;
+  } else if (!strcmp(cmd, CMD_ADD_NAT)) {
+    return process_add_nat_cmd;
+  } else if (!strcmp(cmd, CMD_REMOVE_NAT)) {
+    return process_remove_nat_cmd;
+  } else if (!strcmp(cmd, CMD_ASSIGN_PSK)) {
+    return process_assign_psk_cmd;
+  } else if (!strcmp(cmd, CMD_GET_MAP)) {
+    return process_get_map_cmd;
+  } else if (!strcmp(cmd, CMD_GET_ALL)) {
+    return process_get_all_cmd;
+  } else if (!strcmp(cmd, CMD_SET_IP)) {
+    return process_set_ip_cmd;
+  } else if (!strcmp(cmd, CMD_ADD_BRIDGE)) {
+    return process_add_bridge_cmd;
+  } else if (!strcmp(cmd, CMD_REMOVE_BRIDGE)) {
+    return process_remove_bridge_cmd;
+  } else if (!strcmp(cmd, CMD_GET_BRIDGES)) {
+    return process_get_bridges_cmd;
+  } else {
+    log_debug("unknown command");
+  }
+
+  return NULL;
 }

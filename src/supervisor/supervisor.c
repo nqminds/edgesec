@@ -41,6 +41,7 @@ void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
 {
   char **ptr = NULL;
   UT_array *cmd_arr;
+  process_cmd_fn cfn;
   char buf[MAX_DOMAIN_RECEIVE_DATA];
   struct supervisor_context *context = (struct supervisor_context *) sock_ctx;
 
@@ -61,73 +62,11 @@ void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
 
   ptr = (char**) utarray_next(cmd_arr, ptr);
 
-  if (!strcmp(*ptr, CMD_PING)) {
-    if (process_ping_cmd(sock, client_addr, NULL, NULL) == -1) {
-      log_trace("process_ping_cmd fail");
+  if ((cfn = get_command_function(*ptr)) != NULL) {
+    if (cfn(sock, client_addr, context, cmd_arr) == -1) {
+      log_trace("%s fail", *ptr);
       goto end;
     }
-  } else if (!strcmp(*ptr, CMD_HOSTAPD_CTRLIF)) {
-    if (process_hostapd_ctrlif_cmd(sock, client_addr, context, NULL) == -1) {
-      log_trace("process_hostapd_ctrlif_cmd fail");
-      goto end;
-    }
-  } else if (!strcmp(*ptr, CMD_ACCEPT_MAC)) {
-    if (process_accept_mac_cmd(sock, client_addr, context, cmd_arr) == -1) {
-      log_trace("process_accept_mac_cmd fail");
-      goto end;
-    }
-  } else if (!strcmp(*ptr, CMD_DENY_MAC)) {
-    if (process_deny_mac_cmd(sock, client_addr, context, cmd_arr) == -1) {
-      log_trace("process_deny_mac_cmd fail");
-      goto end;
-    }
-  } else if (!strcmp(*ptr, CMD_ADD_NAT)) {
-    if (process_add_nat_cmd(sock, client_addr, context, cmd_arr) == -1) {
-      log_trace("process_add_nat_cmd fail");
-      goto end;
-    }
-  } else if (!strcmp(*ptr, CMD_REMOVE_NAT)) {
-    if (process_remove_nat_cmd(sock, client_addr, context, cmd_arr) == -1) {
-      log_trace("process_remove_nat_cmd fail");
-      goto end;
-    }
-  } else if (!strcmp(*ptr, CMD_ASSIGN_PSK)) {
-    if (process_assign_psk_cmd(sock, client_addr, context, cmd_arr) == -1) {
-      log_trace("process_assign_psk_cmd fail");
-      goto end;
-    }
-  } else if (!strcmp(*ptr, CMD_GET_MAP)) {
-    if (process_get_map_cmd(sock, client_addr, context, cmd_arr) == -1) {
-      log_trace("process_get_map_cmd fail");
-      goto end;
-    }
-  } else if (!strcmp(*ptr, CMD_GET_ALL)) {
-    if (process_get_all_cmd(sock, client_addr, context) == -1) {
-      log_trace("process_get_all_cmd fail");
-      goto end;
-    }
-  } else if (!strcmp(*ptr, CMD_SET_IP)) {
-    if (process_set_ip_cmd(sock, client_addr, context, cmd_arr) == -1) {
-      log_trace("process_set_ip_cmd fail");
-      goto end;
-    }
-  } else if (!strcmp(*ptr, CMD_ADD_BRIDGE)) {
-    if (process_add_bridge_cmd(sock, client_addr, context, cmd_arr) == -1) {
-      log_trace("process_add_bridge_cmd fail");
-      goto end;
-    }
-  } else if (!strcmp(*ptr, CMD_REMOVE_BRIDGE)) {
-    if (process_remove_bridge_cmd(sock, client_addr, context, cmd_arr) == -1) {
-      log_trace("process_remove_bridge_cmd fail");
-      goto end;
-    }
-  } else if (!strcmp(*ptr, CMD_GET_BRIDGES)) {
-    if (process_get_bridges_cmd(sock, client_addr, context) == -1) {
-      log_trace("process_get_bridges_cmd fail");
-      goto end;
-    }
-  } else {
-    log_debug("supervisor received unknown command");
   }
 
 end:

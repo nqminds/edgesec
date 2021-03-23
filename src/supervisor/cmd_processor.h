@@ -35,7 +35,7 @@
 
 #define CMD_DELIMITER   		0x20
 
-#define CMD_PING        		"PING"
+#define CMD_PING        		"PING_SUPERVISOR"
 #define CMD_HOSTAPD_CTRLIF      "HOSTAPD_IF"
 #define CMD_ACCEPT_MAC			"ACCEPT_MAC"
 #define CMD_DENY_MAC			"DENY_MAC"
@@ -52,6 +52,8 @@
 
 #define OK_REPLY                "OK"
 #define FAIL_REPLY              "FAIL"
+
+typedef ssize_t (*process_cmd_fn)(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Processes the domain command string
@@ -160,7 +162,7 @@ ssize_t process_get_map_cmd(int sock, char *client_addr, struct supervisor_conte
  * @param cmd_arr The array of received commands
  * @return ssize_t Size of reply written data
  */
-ssize_t process_get_all_cmd(int sock, char *client_addr, struct supervisor_context *context);
+ssize_t process_get_all_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Processes the SET_IP command
@@ -204,6 +206,13 @@ ssize_t process_remove_bridge_cmd(int sock, char *client_addr, struct supervisor
  * @param cmd_arr The array of received commands
  * @return ssize_t Size of reply written data
  */
-ssize_t process_get_bridges_cmd(int sock, char *client_addr, struct supervisor_context *context);
+ssize_t process_get_bridges_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
+/**
+ * @brief Get the command function pointer
+ * 
+ * @param cmd The command string
+ * @return process_cmd_fn The returned function pointer
+ */
+process_cmd_fn get_command_function(char *cmd);
 #endif

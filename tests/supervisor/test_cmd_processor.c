@@ -516,7 +516,7 @@ static void test_process_get_all_cmd(void **state)
 
   init_test_context(&context);
 
-  ssize_t ret = process_get_all_cmd(TEST_PROCESS_GET_ALL_CMD_ONE, client_addr, &context);
+  ssize_t ret = process_get_all_cmd(TEST_PROCESS_GET_ALL_CMD_ONE, client_addr, &context, NULL);
   assert_int_equal(ret, strlen(OK_REPLY));
 
   assert_int_not_equal(split_string_array("ACCEPT_MAC 11:22:33:44:55:66 1", CMD_DELIMITER, cmd_arr), -1);  
@@ -529,7 +529,7 @@ static void test_process_get_all_cmd(void **state)
   ret = process_accept_mac_cmd(TEST_PROCESS_GET_ALL_CMD_ONE, client_addr, &context, cmd_arr);
   assert_int_equal(ret, strlen(OK_REPLY));
 
-  ret = process_get_all_cmd(TEST_PROCESS_GET_ALL_CMD_TWO, client_addr, &context);
+  ret = process_get_all_cmd(TEST_PROCESS_GET_ALL_CMD_TWO, client_addr, &context, NULL);
   assert_int_equal(ret, 0);
 
   utarray_clear(cmd_arr);
@@ -544,7 +544,7 @@ static void test_process_get_all_cmd(void **state)
   ret = process_deny_mac_cmd(TEST_PROCESS_GET_ALL_CMD_ONE, client_addr, &context, cmd_arr);
   assert_int_equal(ret, strlen(OK_REPLY));
 
-  ret = process_get_all_cmd(TEST_PROCESS_GET_ALL_CMD_THREE, client_addr, &context);
+  ret = process_get_all_cmd(TEST_PROCESS_GET_ALL_CMD_THREE, client_addr, &context, NULL);
   assert_int_equal(ret, 0);
 
   utarray_free(cmd_arr);
@@ -789,7 +789,7 @@ static void test_process_get_bridges_cmd(void ** state)
   init_test_context(&context);
 
   assert_int_not_equal(split_string_array("GET_BRIDGES", CMD_DELIMITER, cmd_arr), -1);  
-  ssize_t ret = process_get_bridges_cmd(TEST_PROCESS_GET_BRIDGES_CMD_ONE, client_addr, &context);
+  ssize_t ret = process_get_bridges_cmd(TEST_PROCESS_GET_BRIDGES_CMD_ONE, client_addr, &context, NULL);
   assert_int_equal(ret, strlen(OK_REPLY));
 
   utarray_clear(cmd_arr);
@@ -801,7 +801,7 @@ static void test_process_get_bridges_cmd(void ** state)
   utarray_clear(cmd_arr);
 
   assert_int_not_equal(split_string_array("GET_BRIDGES", CMD_DELIMITER, cmd_arr), -1);  
-  ret = process_get_bridges_cmd(TEST_PROCESS_GET_BRIDGES_CMD_TWO, client_addr, &context);
+  ret = process_get_bridges_cmd(TEST_PROCESS_GET_BRIDGES_CMD_TWO, client_addr, &context, NULL);
   assert_int_equal(ret, 0);
 
   utarray_clear(cmd_arr);
@@ -813,7 +813,7 @@ static void test_process_get_bridges_cmd(void ** state)
   utarray_clear(cmd_arr);
 
   assert_int_not_equal(split_string_array("GET_BRIDGES", CMD_DELIMITER, cmd_arr), -1);  
-  ret = process_get_bridges_cmd(TEST_PROCESS_GET_BRIDGES_CMD_THREE, client_addr, &context);
+  ret = process_get_bridges_cmd(TEST_PROCESS_GET_BRIDGES_CMD_THREE, client_addr, &context, NULL);
   assert_int_equal(ret, 0);
 
 
