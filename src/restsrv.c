@@ -32,17 +32,18 @@
 #include <pthread.h>
 #include <stdbool.h>
 #include <errno.h>
-#include <net/if.h>
 #include <libgen.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <string.h>
-#include <inttypes.h>
 #include <sys/un.h>
 #include <sys/socket.h>
-
+#include <sys/ioctl.h>
+#include <net/if.h>
+#include <string.h>
+#include <inttypes.h>
 
 #include "supervisor/cmd_processor.h"
+#include "supervisor/domain_server.h"
 #include "microhttpd.h"
 #include "version.h"
 #include "utils/os.h"
@@ -54,13 +55,15 @@
 
 #define JSON_RESPONSE_OK "{\"cmd\":\"%s\",\"response\":\"%s\"}"
 #define JSON_RESPONSE_FAIL "{\"error\":\"invalid get request\"}"
+
+#define MESSAGE_REPLY_TIMEOUT 10  // In seceonds
 char *socket_path = "\0hidden";
 
 static __thread char version_buf[10];
 
-struct domain_options {
-  int supervisor_sock;
-  int ap_sock;
+struct socket_address {
+  char apath[MAX_OS_PATH_LEN];
+  char spath[MAX_OS_PATH_LEN];
 };
 
 char *get_static_version_string(uint8_t major, uint8_t minor, uint8_t patch)
@@ -163,14 +166,22 @@ void process_app_options(int argc, char *argv[], char *spath, char *apath,
   }
 }
 
-int create_domain_client(void)
+char* generate_random_name(char *buf)
+{
+  unsigned char crypto_rand[4];
+  if (os_get_random(crypto_rand, 4) == -1) {
+    log_debug("os_get_random fail");
+    return NULL;
+  }
+  sprintf(buf, "%x%x%x%x", crypto_rand[0], crypto_rand[1], crypto_rand[2], crypto_rand[3]);
+  return buf;
+}
+
+int create_domain_socket(void)
 {
   struct sockaddr_un claddr;
   int sock;
-  memset(&claddr, 0, sizeof(struct sockaddr_un));
-  claddr.sun_family = AF_UNIX;
-  *claddr.sun_path = '\0';
-  strncpy(claddr.sun_path+1, socket_path+1, sizeof(claddr.sun_path)-2);
+  char rand_name[9];
 
   sock = socket(AF_UNIX, SOCK_DGRAM, 0);
   if (sock == -1) {
@@ -178,8 +189,19 @@ int create_domain_client(void)
     return -1;
   }
 
-  if (connect(sock, (struct sockaddr *) &claddr, sizeof(struct sockaddr_un)) == -1) {
-    log_err("connect");
+  if (generate_random_name(rand_name) == NULL) {
+    log_debug("generate_random_name fail");
+    return -1;
+  }
+
+  log_debug("Using socket name=%s", rand_name);
+
+  os_memset(&claddr, 0, sizeof(struct sockaddr_un));
+  claddr.sun_family = AF_UNIX;
+  strncpy(&claddr.sun_path[1], rand_name, strlen(rand_name));
+
+  if (bind(sock, (struct sockaddr *) &claddr, sizeof(sa_family_t) + strlen(rand_name) + 1) == -1) {
+    log_err("bind");
     return -1;
   }
 
@@ -203,9 +225,9 @@ char* create_command_string(char *cmd, char *args, char *cmd_str)
     cmd_tmp = allocate_string(cmd);
     upper_string(cmd_tmp);
     if (args ==  NULL)
-      sprintf(cmd_str, "%s\n", cmd_tmp);
+      sprintf(cmd_str, "%s", cmd_tmp);
     else
-      sprintf(cmd_str, "%s %s\n", cmd_tmp, args);
+      sprintf(cmd_str, "%s %s", cmd_tmp, args);
     replace_string_char(cmd_str, ',', CMD_DELIMITER);
     os_free(cmd_tmp);
 
@@ -239,14 +261,73 @@ enum MHD_Result create_connection_response(char *data, struct MHD_Connection *co
   return ret;
 }
 
+int forward_command(char *cmd_str, char *socket_path, char **sresponse)
+{
+  int sfd;
+  struct sockaddr_un svaddr;
+  ssize_t send_count, rec_bytes;
+  struct timeval timeout;
+  fd_set readfds, masterfds;
+
+  timeout.tv_sec = MESSAGE_REPLY_TIMEOUT;
+  timeout.tv_usec = 0;
+
+  if ((sfd = create_domain_socket()) == -1) {
+    log_debug("create_domain_socket fail");
+    return -1;
+  }
+
+  FD_ZERO(&masterfds);
+  FD_SET(sfd, &masterfds);
+  os_memcpy(&readfds, &masterfds, sizeof(fd_set));
+
+  os_memset(&svaddr, 0, sizeof(struct sockaddr_un));
+  svaddr.sun_family = AF_UNIX;
+  strncpy(svaddr.sun_path, socket_path, strlen(socket_path));
+
+  if ((send_count = sendto(sfd, cmd_str, strlen(cmd_str), 0, (struct sockaddr *)&svaddr, sizeof(struct sockaddr_un))) != strlen(cmd_str)) {
+    log_err("sendto");
+    close(sfd);
+    return -1;  
+  }
+  log_debug("Sent %d bytes to %s", send_count, socket_path);
+
+  if (select(sfd + 1, &readfds, NULL, NULL, &timeout) < 0) {
+    log_err("select");
+    close(sfd);
+    return -1;
+  }
+
+  if(FD_ISSET(sfd, &readfds)) {
+    // rec_bytes = recvfrom(sfd, tmp_buf, SIZE_MAX, MSG_PEEK, NULL, NULL);
+    if (ioctl(sfd, FIONREAD, &rec_bytes) == -1) {
+      log_err("ioctl");
+      *sresponse = NULL;
+      close(sfd);
+      return -1;
+    }
+
+    log_debug("Received %d bytes", rec_bytes);
+    *sresponse = os_malloc(rec_bytes * sizeof(char));
+    recv(sfd, *sresponse, rec_bytes, 0);
+  } else {
+    log_debug("Socket timeout");
+    *sresponse = NULL;
+    close(sfd);
+    return -1;
+  }
+  close(sfd);
+  return 0;
+}
+
 static enum MHD_Result mhd_reply(void *cls, struct MHD_Connection *connection, const char *url,
   const char *method, const char *version, const char *upload_data, size_t *upload_data_size, void **ptr)
 {
-  static int aptr, response_size = 0;
-  char *fmt = cls, *cmd, *args;
+  static int aptr;
+  struct socket_address *sad = (struct socket_address *)cls;
+  char *cmd, *args, *address = NULL, *socket_response;
   char cmd_str[255];
   char response_buf[255];
-  enum MHD_Result ret;
 
   (void) version;           /* Unused. Silent compiler warning. */
   (void) upload_data;       /* Unused. Silent compiler warning. */
@@ -277,7 +358,21 @@ static enum MHD_Result mhd_reply(void *cls, struct MHD_Connection *connection, c
     return create_connection_response(response_buf, connection);
   }
 
-  // // Here send the command to the UNIX domain socket
+  if (get_command_function(cmd) != NULL) {
+    log_debug("Supervisor command=%s", cmd);
+    address = sad->spath;
+  } else {
+    log_debug("AP command=%s", cmd);
+    address = sad->apath;
+  }
+
+  if (forward_command(cmd_str, address, &socket_response) == -1) {
+    log_debug("forward_command fail");
+    sprintf(response_buf, JSON_RESPONSE_FAIL);
+    return create_connection_response(response_buf, connection);
+  }
+
+  os_free(socket_response);
 
   sprintf(response_buf, JSON_RESPONSE_OK, cmd, "12345");
   return create_connection_response(response_buf, connection);
@@ -288,11 +383,10 @@ int main(int argc, char *argv[])
   struct MHD_Daemon *d;
   uint8_t verbosity = 0;
   uint8_t level = 0;
-  char apath[MAX_OS_PATH_LEN], spath[MAX_OS_PATH_LEN];
+  struct socket_address sad;
   int port = -1;
-  struct domain_options dopt;
 
-  process_app_options(argc, argv, apath, spath, &port, &verbosity); 
+  process_app_options(argc, argv, sad.spath, sad.apath, &port, &verbosity); 
 
   if (optind <= 1) show_app_help(argv[0]);
 
@@ -313,23 +407,12 @@ int main(int argc, char *argv[])
   }
 
   fprintf(stdout, "Starting server with:\n");
-  fprintf(stdout, "Supervisor address --> %s\n", apath);
-  fprintf(stdout, "AP address --> %s\n", spath);
+  fprintf(stdout, "Supervisor address --> %s\n", sad.apath);
+  fprintf(stdout, "AP address --> %s\n", sad.spath);
   fprintf(stdout, "Port --> %d\n", port);
 
-  if ((dopt.supervisor_sock = create_domain_client()) == -1) {
-    fprintf(stderr,"create_domain_client fail");
-    exit(EXIT_FAILURE);
-  }
-
-  if ((dopt.ap_sock = create_domain_client()) == -1) {
-    close(dopt.supervisor_sock);
-    fprintf(stderr,"create_domain_client fail");
-    exit(EXIT_FAILURE);
-  }
-
   d = MHD_start_daemon (MHD_USE_THREAD_PER_CONNECTION, (uint16_t) port,
-                        NULL, NULL, &mhd_reply, NULL, MHD_OPTION_END);
+                        NULL, NULL, &mhd_reply, (void*)&sad, MHD_OPTION_END);
 
   if (d == NULL) {
     fprintf(stderr, "Error: Failed to start server\n");
@@ -338,8 +421,6 @@ int main(int argc, char *argv[])
 
   (void) getc (stdin);
   MHD_stop_daemon (d);
-  close(dopt.supervisor_sock);
-  close(dopt.ap_sock);
   fprintf(stdout, "Server stopped\n");
   exit(EXIT_SUCCESS);
 }

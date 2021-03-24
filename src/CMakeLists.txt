@@ -24,7 +24,7 @@ add_executable(edgesec edgesec.c)
 target_link_libraries(edgesec config engine minIni os hashmap)
 
 add_executable(restsrv restsrv.c)
-target_link_libraries(restsrv config minIni os hashmap ${LIBMICROHTTPD_LIB})
+target_link_libraries(restsrv config minIni os hashmap cmd_processor ${LIBMICROHTTPD_LIB})
 
 add_executable(capsrv capsrv.c)
 target_link_libraries(capsrv capture_service config minIni os hashmap ${LIBPCAP_LIB})
