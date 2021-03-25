@@ -40,7 +40,7 @@
 #include "utils/iptables.h"
 
 
-bool process_domain_buffer(char *domain_buffer, size_t domain_buffer_len, UT_array *cmd_arr)
+bool process_domain_buffer(char *domain_buffer, size_t domain_buffer_len, UT_array *cmd_arr, char sep)
 {
   if (domain_buffer == NULL || cmd_arr == NULL)
     return false;
@@ -57,7 +57,7 @@ bool process_domain_buffer(char *domain_buffer, size_t domain_buffer_len, UT_arr
   cmd_line[domain_buffer_len] = '\0';
 
   // remove the end new line character
-  if (split_string_array(rtrim(cmd_line, NULL), CMD_DELIMITER, cmd_arr) == -1) {
+  if (split_string_array(rtrim(cmd_line, NULL), sep, cmd_arr) == -1) {
     log_trace("split_string_array fail");
     os_free(cmd_line);
     return false;

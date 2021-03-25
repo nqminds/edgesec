@@ -53,7 +53,7 @@
 #define OPT_STRING    ":a:s:p:dvh"
 #define USAGE_STRING  "\t%s [-s address] [-a address] [-p port] [-d] [-h] [-v]\n"
 
-#define JSON_RESPONSE_OK "{\"cmd\":\"%s\",\"response\":\"%s\"}"
+#define JSON_RESPONSE_OK "{\"cmd\":\"%s\",\"response\":[%s]}"
 #define JSON_RESPONSE_FAIL "{\"error\":\"invalid get request\"}"
 
 #define MESSAGE_REPLY_TIMEOUT 10  // In seceonds
@@ -329,14 +329,37 @@ fail:
   return -1;
 }
 
+char* process_response_array(UT_array *cmd_arr)
+{
+  char **p = NULL;
+  char *json_response = NULL;
+  ssize_t len = 0; 
+  while(p = (char**) utarray_next(cmd_arr, p)) {
+    len += strlen(*p) + 2 + 1;
+    if (json_response == NULL) {
+      json_response = os_malloc(len);
+      sprintf(json_response, "\"%s\"", *p);
+    } else {
+      json_response = os_realloc(json_response, len);
+      strcat(json_response, ",");
+      strcat(json_response, "\"");
+      strcat(json_response, *p);
+      strcat(json_response, "\"");
+    }
+  }
+
+  return json_response;
+}
+
 static enum MHD_Result mhd_reply(void *cls, struct MHD_Connection *connection, const char *url,
   const char *method, const char *version, const char *upload_data, size_t *upload_data_size, void **ptr)
 {
   static int aptr;
   struct socket_address *sad = (struct socket_address *)cls;
-  char *cmd, *args, *address = NULL, *socket_response;
-  char cmd_str[255];
-  char response_buf[255];
+  char *cmd, *args, *address = NULL, *socket_response, *json_response = NULL, *succ_response;
+  char cmd_str[255], fail_response_buf[255];
+  UT_array *cmd_arr;
+  enum MHD_Result ret;
 
   (void) version;           /* Unused. Silent compiler warning. */
   (void) upload_data;       /* Unused. Silent compiler warning. */
@@ -363,8 +386,8 @@ static enum MHD_Result mhd_reply(void *cls, struct MHD_Connection *connection, c
 
   if (create_command_string(cmd, args, cmd_str) == NULL) {
     log_debug("create_command_string fail");
-    sprintf(response_buf, JSON_RESPONSE_FAIL);
-    return create_connection_response(response_buf, connection);
+    sprintf(fail_response_buf, JSON_RESPONSE_FAIL);
+    return create_connection_response(fail_response_buf, connection);
   }
 
   if (get_command_function(cmd) != NULL) {
@@ -377,13 +400,29 @@ static enum MHD_Result mhd_reply(void *cls, struct MHD_Connection *connection, c
 
   if (forward_command(cmd_str, address, &socket_response) == -1) {
     log_debug("forward_command fail");
-    sprintf(response_buf, JSON_RESPONSE_FAIL);
-    return create_connection_response(response_buf, connection);
+    sprintf(fail_response_buf, JSON_RESPONSE_FAIL);
+    return create_connection_response(fail_response_buf, connection);
   }
-  sprintf(response_buf, JSON_RESPONSE_OK, cmd, socket_response);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  if (!process_domain_buffer(socket_response, strlen(socket_response), cmd_arr, '\n')) {
+    log_debug("process_domain_buffer fail");
+    sprintf(fail_response_buf, JSON_RESPONSE_FAIL);
+    os_free(socket_response);
+    utarray_free(cmd_arr);
+    return create_connection_response(fail_response_buf, connection);
+  }
   os_free(socket_response);
 
-  return create_connection_response(response_buf, connection);
+  json_response = process_response_array(cmd_arr);
+  succ_response = os_malloc(strlen(JSON_RESPONSE_OK) + strlen(json_response) + strlen(cmd) + 1);
+  sprintf(succ_response, JSON_RESPONSE_OK, cmd, json_response);
+  os_free(json_response);
+  utarray_free(cmd_arr);
+  ret = create_connection_response(succ_response, connection);
+  os_free(succ_response);
+
+  return ret;
 }
 
 int main(int argc, char *argv[])

@@ -61,9 +61,10 @@ typedef ssize_t (*process_cmd_fn)(int sock, char *client_addr, struct supervisor
  * @param domain_buffer The domain command string
  * @param domain_buffer_len The domain command string length
  * @param cmd_arr The processed command array
+ * @param sep The string separator
  * @return true on success, false otherwise
  */
-bool process_domain_buffer(char *domain_buffer, size_t domain_buffer_len, UT_array *cmd_arr);
+bool process_domain_buffer(char *domain_buffer, size_t domain_buffer_len, UT_array *cmd_arr, char sep);
 
 /**
  * @brief Processes the PING command

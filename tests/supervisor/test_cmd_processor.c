@@ -194,7 +194,7 @@ static void test_process_domain_buffer(void **state)
 
   char buf1[5] = {'c', CMD_DELIMITER, 'a', CMD_DELIMITER, 'b'};
 
-  bool ret = process_domain_buffer(buf1, 5, arr);
+  bool ret = process_domain_buffer(buf1, 5, arr, CMD_DELIMITER);
 
   assert_true(ret);
 
@@ -213,7 +213,7 @@ static void test_process_domain_buffer(void **state)
 
   utarray_new(arr, &ut_str_icd);
   char buf2[4] = {'P', 'I', 'N', 'G'};
-  ret = process_domain_buffer(buf2, 4, arr);
+  ret = process_domain_buffer(buf2, 4, arr, CMD_DELIMITER);
 
   assert_true(ret);
 
