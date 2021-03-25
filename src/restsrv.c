@@ -177,11 +177,10 @@ char* generate_random_name(char *buf)
   return buf;
 }
 
-int create_domain_socket(void)
+int create_domain_socket(char *socket_name)
 {
   struct sockaddr_un claddr;
   int sock;
-  char rand_name[9];
 
   sock = socket(AF_UNIX, SOCK_DGRAM, 0);
   if (sock == -1) {
@@ -189,18 +188,18 @@ int create_domain_socket(void)
     return -1;
   }
 
-  if (generate_random_name(rand_name) == NULL) {
+  if (generate_random_name(socket_name) == NULL) {
     log_debug("generate_random_name fail");
     return -1;
   }
 
-  log_debug("Using socket name=%s", rand_name);
+  log_debug("Using socket name=%s", socket_name);
 
   os_memset(&claddr, 0, sizeof(struct sockaddr_un));
   claddr.sun_family = AF_UNIX;
-  strncpy(&claddr.sun_path[1], rand_name, strlen(rand_name));
+  strncpy((char *)&claddr.sun_path, socket_name, strlen(socket_name));
 
-  if (bind(sock, (struct sockaddr *) &claddr, sizeof(sa_family_t) + strlen(rand_name) + 1) == -1) {
+  if (bind(sock, (struct sockaddr *) &claddr, sizeof(struct sockaddr_un)) == -1) {
     log_err("bind");
     return -1;
   }
@@ -268,11 +267,12 @@ int forward_command(char *cmd_str, char *socket_path, char **sresponse)
   ssize_t send_count, rec_bytes;
   struct timeval timeout;
   fd_set readfds, masterfds;
-
+  char socket_name[9];
+  char *rec_data = NULL;
   timeout.tv_sec = MESSAGE_REPLY_TIMEOUT;
   timeout.tv_usec = 0;
 
-  if ((sfd = create_domain_socket()) == -1) {
+  if ((sfd = create_domain_socket(socket_name)) == -1) {
     log_debug("create_domain_socket fail");
     return -1;
   }
@@ -287,37 +287,46 @@ int forward_command(char *cmd_str, char *socket_path, char **sresponse)
 
   if ((send_count = sendto(sfd, cmd_str, strlen(cmd_str), 0, (struct sockaddr *)&svaddr, sizeof(struct sockaddr_un))) != strlen(cmd_str)) {
     log_err("sendto");
-    close(sfd);
-    return -1;  
+    goto fail;
   }
   log_debug("Sent %d bytes to %s", send_count, socket_path);
 
   if (select(sfd + 1, &readfds, NULL, NULL, &timeout) < 0) {
     log_err("select");
-    close(sfd);
-    return -1;
+    goto fail;
   }
 
   if(FD_ISSET(sfd, &readfds)) {
-    // rec_bytes = recvfrom(sfd, tmp_buf, SIZE_MAX, MSG_PEEK, NULL, NULL);
     if (ioctl(sfd, FIONREAD, &rec_bytes) == -1) {
       log_err("ioctl");
-      *sresponse = NULL;
-      close(sfd);
-      return -1;
+      goto fail;
     }
 
     log_debug("Received %d bytes", rec_bytes);
-    *sresponse = os_malloc(rec_bytes * sizeof(char));
-    recv(sfd, *sresponse, rec_bytes, 0);
+    rec_data = os_malloc((rec_bytes + 1) * sizeof(char));
+    recv(sfd, rec_data, rec_bytes, 0);
+    rec_data[rec_bytes] = '\0';
+    *sresponse = rtrim(rec_data, NULL);
   } else {
     log_debug("Socket timeout");
-    *sresponse = NULL;
-    close(sfd);
+    goto fail;
+  }
+
+  close(sfd);
+  if (unlink(socket_name) < 0) {
+    log_err("unlink");
     return -1;
   }
-  close(sfd);
+
   return 0;
+
+fail:
+  *sresponse = NULL;
+  close(sfd);
+  if (unlink(socket_name) < 0) {
+    log_err("unlink");
+  }
+  return -1;
 }
 
 static enum MHD_Result mhd_reply(void *cls, struct MHD_Connection *connection, const char *url,
@@ -371,10 +380,9 @@ static enum MHD_Result mhd_reply(void *cls, struct MHD_Connection *connection, c
     sprintf(response_buf, JSON_RESPONSE_FAIL);
     return create_connection_response(response_buf, connection);
   }
-
+  sprintf(response_buf, JSON_RESPONSE_OK, cmd, socket_response);
   os_free(socket_response);
 
-  sprintf(response_buf, JSON_RESPONSE_OK, cmd, "12345");
   return create_connection_response(response_buf, connection);
 }
 
