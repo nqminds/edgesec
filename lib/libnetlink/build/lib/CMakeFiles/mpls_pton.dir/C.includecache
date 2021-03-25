@@ -146,7 +146,7 @@ rtm_map.h
 json_print.h
 ../include/json_print.h
 
-/home/alexandru/Projects/EDGESec/lib/libnetlink/lib/mpls_pton.c
+/home/alex/Projects/EDGESec/lib/libnetlink/lib/mpls_pton.c
 errno.h
 -
 string.h
@@ -158,5 +158,5 @@ netinet/in.h
 linux/mpls.h
 -
 utils.h
-/home/alexandru/Projects/EDGESec/lib/libnetlink/lib/utils.h
+/home/alex/Projects/EDGESec/lib/libnetlink/lib/utils.h
 

@@ -6,5 +6,5 @@ C_FLAGS =  -D_GNU_SOURCE -DHAVE_LIBMNL -DHAVE_SETNS -DHAVE_ELF -I/usr/include/li
 
 C_DEFINES = 
 
-C_INCLUDES = -I/home/alexandru/Projects/EDGESec/lib/libnetlink/include -I/home/alexandru/Projects/EDGESec/lib/libnetlink/include/uapi -I/home/alexandru/Projects/EDGESec/lib/libmnl-1.0.4/include 
+C_INCLUDES = -I/home/alex/Projects/EDGESec/lib/libnetlink/include -I/home/alex/Projects/EDGESec/lib/libnetlink/include/uapi -I/home/alex/Projects/EDGESec/lib/libmnl-1.0.4/include 
 

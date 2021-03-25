@@ -22,4 +22,4 @@ lib/CMakeFiles/rt_names.dir/rt_names.c.o
  ../include/uapi/linux/sysinfo.h
  ../include/uapi/linux/types.h
  ../include/utils.h
- /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/rt_names.c
+ /home/alex/Projects/EDGESec/lib/libnetlink/lib/rt_names.c

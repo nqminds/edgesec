@@ -144,7 +144,7 @@ rtm_map.h
 json_print.h
 ../include/json_print.h
 
-/home/alexandru/Projects/EDGESec/lib/libnetlink/lib/ll_map.c
+/home/alex/Projects/EDGESec/lib/libnetlink/lib/ll_map.c
 stdio.h
 -
 stdlib.h
@@ -162,11 +162,11 @@ string.h
 net/if.h
 -
 libnetlink.h
-/home/alexandru/Projects/EDGESec/lib/libnetlink/lib/libnetlink.h
+/home/alex/Projects/EDGESec/lib/libnetlink/lib/libnetlink.h
 ll_map.h
-/home/alexandru/Projects/EDGESec/lib/libnetlink/lib/ll_map.h
+/home/alex/Projects/EDGESec/lib/libnetlink/lib/ll_map.h
 list.h
-/home/alexandru/Projects/EDGESec/lib/libnetlink/lib/list.h
+/home/alex/Projects/EDGESec/lib/libnetlink/lib/list.h
 utils.h
-/home/alexandru/Projects/EDGESec/lib/libnetlink/lib/utils.h
+/home/alex/Projects/EDGESec/lib/libnetlink/lib/utils.h
 

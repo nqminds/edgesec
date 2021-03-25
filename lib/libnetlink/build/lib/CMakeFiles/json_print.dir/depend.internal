@@ -21,4 +21,4 @@ lib/CMakeFiles/json_print.dir/json_print.c.o
  ../include/uapi/linux/sysinfo.h
  ../include/uapi/linux/types.h
  ../include/utils.h
- /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/json_print.c
+ /home/alex/Projects/EDGESec/lib/libnetlink/lib/json_print.c

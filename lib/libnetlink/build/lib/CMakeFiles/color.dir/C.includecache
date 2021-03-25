@@ -156,7 +156,7 @@ rtm_map.h
 json_print.h
 ../include/json_print.h
 
-/home/alexandru/Projects/EDGESec/lib/libnetlink/lib/color.c
+/home/alex/Projects/EDGESec/lib/libnetlink/lib/color.c
 stdio.h
 -
 stdarg.h
@@ -174,7 +174,7 @@ sys/types.h
 linux/if.h
 -
 color.h
-/home/alexandru/Projects/EDGESec/lib/libnetlink/lib/color.h
+/home/alex/Projects/EDGESec/lib/libnetlink/lib/color.h
 utils.h
-/home/alexandru/Projects/EDGESec/lib/libnetlink/lib/utils.h
+/home/alex/Projects/EDGESec/lib/libnetlink/lib/utils.h
 

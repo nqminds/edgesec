@@ -214,7 +214,7 @@ rtm_map.h
 json_print.h
 ../include/json_print.h
 
-/home/alexandru/Projects/EDGESec/lib/libnetlink/lib/utils.c
+/home/alex/Projects/EDGESec/lib/libnetlink/lib/utils.c
 stdio.h
 -
 stdlib.h
@@ -260,11 +260,11 @@ errno.h
 sys/capability.h
 -
 rt_names.h
-/home/alexandru/Projects/EDGESec/lib/libnetlink/lib/rt_names.h
+/home/alex/Projects/EDGESec/lib/libnetlink/lib/rt_names.h
 utils.h
-/home/alexandru/Projects/EDGESec/lib/libnetlink/lib/utils.h
+/home/alex/Projects/EDGESec/lib/libnetlink/lib/utils.h
 ll_map.h
-/home/alexandru/Projects/EDGESec/lib/libnetlink/lib/ll_map.h
+/home/alex/Projects/EDGESec/lib/libnetlink/lib/ll_map.h
 namespace.h
-/home/alexandru/Projects/EDGESec/lib/libnetlink/lib/namespace.h
+/home/alex/Projects/EDGESec/lib/libnetlink/lib/namespace.h
 

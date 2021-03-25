@@ -144,7 +144,7 @@ rtm_map.h
 json_print.h
 ../include/json_print.h
 
-/home/alexandru/Projects/EDGESec/lib/libnetlink/lib/rt_names.c
+/home/alex/Projects/EDGESec/lib/libnetlink/lib/rt_names.c
 stdio.h
 -
 stdlib.h
@@ -168,7 +168,7 @@ asm/types.h
 linux/rtnetlink.h
 -
 rt_names.h
-/home/alexandru/Projects/EDGESec/lib/libnetlink/lib/rt_names.h
+/home/alex/Projects/EDGESec/lib/libnetlink/lib/rt_names.h
 utils.h
-/home/alexandru/Projects/EDGESec/lib/libnetlink/lib/utils.h
+/home/alex/Projects/EDGESec/lib/libnetlink/lib/utils.h
 

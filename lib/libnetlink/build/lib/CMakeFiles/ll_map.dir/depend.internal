@@ -22,4 +22,4 @@ lib/CMakeFiles/ll_map.dir/ll_map.c.o
  ../include/uapi/linux/sysinfo.h
  ../include/uapi/linux/types.h
  ../include/utils.h
- /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/ll_map.c
+ /home/alex/Projects/EDGESec/lib/libnetlink/lib/ll_map.c

@@ -1,4 +1,4 @@
-# Install script for directory: /home/alexandru/Projects/EDGESec/lib/libnetlink/lib
+# Install script for directory: /home/alex/Projects/EDGESec/lib/libnetlink/lib
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

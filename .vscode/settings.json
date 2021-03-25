@@ -6,5 +6,6 @@
         "inet.h": "c",
         "if_arp.h": "c",
         "tcp.h": "c"
-    }
+    },
+    "cmake.configureOnOpen": true
 }

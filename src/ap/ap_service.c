@@ -31,17 +31,17 @@
 #include "utils/if.h"
 #include "utils/log.h"
 
-int run_ap(struct apconf *hconf, struct radius_conf *rconf, char *ctrl_if_path)
+char* run_ap(struct apconf *hconf, struct radius_conf *rconf, char *ctrl_if_path)
 {
   if (!generate_vlan_conf(hconf->vlan_file, hconf->interface)) {
     log_trace("generate_vlan_conf fail");
-    return -1;
+    return NULL;
   }
 
   if (!generate_hostapd_conf(hconf, rconf)) {
     unlink(hconf->vlan_file);
     log_trace("generate_hostapd_conf fail");
-    return -1;
+    return NULL;
   }
 
   return run_ap_process(hconf, ctrl_if_path);

@@ -26,7 +26,7 @@ domainServerPath = "/tmp/edgesec-domain-server"
 apBinPath = "./hostapd"
 apFilePath = "/tmp/hostapd.conf"
 apLogPath = "/tmp/hostapd.log"
-interface = "wifiap0"
+interface = "wlan0"
 ssid = "IOTH_TEST"
 wpaPassphrase = "1234554321"
 bridge = "br0"
@@ -59,7 +59,7 @@ serverMask = 32
 secret = "radius"
 
 [nat]
-natInterface = "enp2s0"
+natInterface = "wlan3"
 
 [dns]
 servers="8.8.4.4,8.8.8.8"

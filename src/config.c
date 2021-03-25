@@ -663,4 +663,6 @@ bool load_app_config(const char *filename, struct app_config *config)
     fprintf(stderr, "Interface list parsing error.\n");
     return false;
   }
+
+  return true;
 }

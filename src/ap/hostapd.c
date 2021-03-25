@@ -43,6 +43,7 @@
 #define PROCESS_RESTART_TIME  5 // In seconds
 
 static char hostapd_proc_name[MAX_OS_PATH_LEN];
+static bool ap_process_started = false;
 
 bool generate_vlan_conf(char *vlan_file, char *interface)
 {
@@ -149,7 +150,7 @@ int check_ctrl_if_exists(char *ctrl_if_path)
   return 0;
 }
 
-int run_ap_process(struct apconf *hconf, char *ctrl_if_path)
+char* run_ap_process(struct apconf *hconf, char *ctrl_if_path)
 {
   int ret;
   char *process_argv[5] = {NULL, NULL, NULL, NULL, NULL};
@@ -162,13 +163,13 @@ int run_ap_process(struct apconf *hconf, char *ctrl_if_path)
   // Kill any running hostapd process
   if (!kill_process(hostapd_proc_name)) {
     log_trace("kill_process fail");
-    return -1;
+    return NULL;
   }
 
   log_trace("Resetting wifi interface %s", hconf->interface);
   if (!reset_interface(hconf->interface)) {
     log_debug("reset_interface fail");
-    return -1;
+    return NULL;
   }
 
   while((ret = run_process(process_argv)) > 0) {
@@ -176,7 +177,7 @@ int run_ap_process(struct apconf *hconf, char *ctrl_if_path)
     // Kill any running hostapd process
     if (!kill_process(hostapd_proc_name)) {
       log_trace("kill_process fail");
-      return -1;
+      return NULL;
     }
     log_trace("Restarting process in %d seconds", PROCESS_RESTART_TIME);
     sleep(PROCESS_RESTART_TIME);
@@ -184,21 +185,27 @@ int run_ap_process(struct apconf *hconf, char *ctrl_if_path)
 
   if (ret < 0) {
     log_trace("run_process fail");
-    return -1;
+    return NULL;
   }
 
   if (check_ctrl_if_exists(ctrl_if_path) != -1) {
     log_trace("hostapd unix domain control path %s", ctrl_if_path);
   } else {
     log_trace("hostapd unix domain control path fail");
-    return -1;    
+    return NULL;
   }
 
-  return 0;
+  ap_process_started = true;
+  return hostapd_proc_name;
 }
 
 bool kill_ap_process(void)
 {
-  // Kill any running dnsmasq process
-  return kill_process(hostapd_proc_name);
+  // Kill any running hostapd process
+  if (ap_process_started) {
+    ap_process_started = false;
+    return kill_process(hostapd_proc_name);
+  }
+
+  return true;
 }

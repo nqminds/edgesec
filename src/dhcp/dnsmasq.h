@@ -67,9 +67,9 @@ bool generate_dhcp_configs(struct dhcp_conf *dconf, char *interface, UT_array *d
  * 
  * @param dhcp_bin_path The DHCP server binary path
  * @param dhcp_conf_path The DHCP server config path
- * @return int 0 on success, -1 on error
+ * @return char* The pointer to the statically allocated process name, NULL on failure
  */
-int run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path);
+char* run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path);
 
 /**
  * @brief Terminate the DHCP server

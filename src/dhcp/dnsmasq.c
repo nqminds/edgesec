@@ -48,6 +48,7 @@
 #define DNSMASQ_CONF_FILE_OPTION      "--conf-file="
 
 static char dnsmasq_proc_name[MAX_OS_PATH_LEN];
+static bool dns_process_started = false;
 
 bool generate_dnsmasq_conf(struct dhcp_conf *dconf, char *interface, UT_array *dns_server_array)
 {
@@ -157,7 +158,7 @@ char* get_dnsmasq_args(char *dnsmasq_bin_path, char *dnsmasq_conf_path, char *ar
   argv[3] = conf_arg;
 }
 
-int run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path)
+char* run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path)
 {
   int ret;
   char *process_argv[5] = {NULL, NULL, NULL, NULL, NULL};
@@ -168,14 +169,14 @@ int run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path)
   // Kill any running hostapd process
   if (!kill_process(dnsmasq_proc_name)) {
     log_trace("kill_process fail");
-    return -1;
+    return NULL;
   }
 
   char *conf_arg = get_dnsmasq_args(dhcp_bin_path, dhcp_conf_path, process_argv);
 
   if (conf_arg == NULL) {
     log_trace("get_dnsmasq_args fail");
-    return -1;
+    return NULL;
   }
 
   while((ret = run_process(process_argv)) > 0) {
@@ -184,7 +185,7 @@ int run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path)
     if (!kill_process(dnsmasq_proc_name)) {
       log_trace("kill_process fail");
       os_free(conf_arg);
-      return -1;
+      return NULL;
     }
     log_trace("Restarting process in %d seconds", PROCESS_RESTART_TIME);
     sleep(PROCESS_RESTART_TIME);
@@ -193,15 +194,20 @@ int run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path)
   if (ret < 0) {
     log_trace("run_process fail");
     os_free(conf_arg);
-    return -1;
+    return NULL;
   }
 
+  dns_process_started = true;
   os_free(conf_arg);
-  return 0;
+  return dnsmasq_proc_name;
 }
 
 bool kill_dhcp_process(void)
 {
-  // Kill any running dnsmasq process
-  return kill_process(dnsmasq_proc_name);
+  if (dns_process_started) {
+    dns_process_started = false;
+    return kill_process(dnsmasq_proc_name);
+  }
+
+  return true;
 }

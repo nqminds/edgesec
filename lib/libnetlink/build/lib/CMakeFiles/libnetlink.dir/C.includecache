@@ -130,7 +130,7 @@ asm/types.h
 linux/posix_types.h
 -
 
-/home/alexandru/Projects/EDGESec/lib/libmnl-1.0.4/include/libmnl/libmnl.h
+/home/alex/Projects/EDGESec/lib/libmnl-1.0.4/include/libmnl/libmnl.h
 stdbool.h
 -
 stdio.h
@@ -144,7 +144,7 @@ sys/socket.h
 linux/netlink.h
 -
 
-/home/alexandru/Projects/EDGESec/lib/libnetlink/lib/libnetlink.c
+/home/alex/Projects/EDGESec/lib/libnetlink/lib/libnetlink.c
 stdio.h
 -
 stdlib.h
@@ -178,7 +178,7 @@ linux/if_bridge.h
 linux/nexthop.h
 -
 libnetlink.h
-/home/alexandru/Projects/EDGESec/lib/libnetlink/lib/libnetlink.h
+/home/alex/Projects/EDGESec/lib/libnetlink/lib/libnetlink.h
 libmnl/libmnl.h
 -
 

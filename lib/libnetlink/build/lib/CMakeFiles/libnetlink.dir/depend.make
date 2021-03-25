@@ -21,6 +21,6 @@ lib/CMakeFiles/libnetlink.dir/libnetlink.c.o: ../include/uapi/linux/socket.h
 lib/CMakeFiles/libnetlink.dir/libnetlink.c.o: ../include/uapi/linux/stddef.h
 lib/CMakeFiles/libnetlink.dir/libnetlink.c.o: ../include/uapi/linux/sysinfo.h
 lib/CMakeFiles/libnetlink.dir/libnetlink.c.o: ../include/uapi/linux/types.h
-lib/CMakeFiles/libnetlink.dir/libnetlink.c.o: /home/alexandru/Projects/EDGESec/lib/libmnl-1.0.4/include/libmnl/libmnl.h
+lib/CMakeFiles/libnetlink.dir/libnetlink.c.o: /home/alex/Projects/EDGESec/lib/libmnl-1.0.4/include/libmnl/libmnl.h
 lib/CMakeFiles/libnetlink.dir/libnetlink.c.o: ../lib/libnetlink.c
 

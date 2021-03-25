@@ -188,7 +188,7 @@ rtm_map.h
 json_print.h
 ../include/json_print.h
 
-/home/alexandru/Projects/EDGESec/lib/libnetlink/lib/ll_addr.c
+/home/alex/Projects/EDGESec/lib/libnetlink/lib/ll_addr.c
 stdio.h
 -
 stdlib.h
@@ -214,7 +214,7 @@ linux/if_arp.h
 linux/sockios.h
 -
 rt_names.h
-/home/alexandru/Projects/EDGESec/lib/libnetlink/lib/rt_names.h
+/home/alex/Projects/EDGESec/lib/libnetlink/lib/rt_names.h
 utils.h
-/home/alexandru/Projects/EDGESec/lib/libnetlink/lib/utils.h
+/home/alex/Projects/EDGESec/lib/libnetlink/lib/utils.h
 

@@ -24,4 +24,4 @@ lib/CMakeFiles/color.dir/color.c.o
  ../include/uapi/linux/sysinfo.h
  ../include/uapi/linux/types.h
  ../include/utils.h
- /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/color.c
+ /home/alex/Projects/EDGESec/lib/libnetlink/lib/color.c

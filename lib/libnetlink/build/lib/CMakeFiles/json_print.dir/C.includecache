@@ -140,13 +140,13 @@ rtm_map.h
 json_print.h
 ../include/json_print.h
 
-/home/alexandru/Projects/EDGESec/lib/libnetlink/lib/json_print.c
+/home/alex/Projects/EDGESec/lib/libnetlink/lib/json_print.c
 stdarg.h
 -
 stdio.h
 -
 utils.h
-/home/alexandru/Projects/EDGESec/lib/libnetlink/lib/utils.h
+/home/alex/Projects/EDGESec/lib/libnetlink/lib/utils.h
 json_print.h
-/home/alexandru/Projects/EDGESec/lib/libnetlink/lib/json_print.h
+/home/alex/Projects/EDGESec/lib/libnetlink/lib/json_print.h
 

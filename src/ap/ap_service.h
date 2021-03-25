@@ -41,9 +41,9 @@
  * @param hconf The AP configuration structure
  * @param rconf The radius configuration structure
  * @param ctrl_if_path The path of the AP control interface
- * @return int 0 on success, -1 on error
+ * @return char* The pointer to the statically allocated process name, NULL on failure
  */
-int run_ap(struct apconf *hconf, struct radius_conf *rconf, char *ctrl_if_path);
+char* run_ap(struct apconf *hconf, struct radius_conf *rconf, char *ctrl_if_path);
 
 /**
  * @brief Closes (terminates) AP process

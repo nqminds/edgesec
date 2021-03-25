@@ -203,7 +203,10 @@ int main(int argc, char *argv[])
   
   if (optind <= 1) show_app_help(argv[0]);
 
-  load_app_config(filename, &config);
+  if (!load_app_config(filename, &config)) {
+    fprintf(stderr, "load_app_config fail\n");
+    exit(1);
+  }
 
   // Kill all edgesec processes if running
   if (config.kill_running_proc) {

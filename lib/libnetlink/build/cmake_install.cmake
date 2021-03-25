@@ -1,4 +1,4 @@
-# Install script for directory: /home/alexandru/Projects/EDGESec/lib/libnetlink
+# Install script for directory: /home/alex/Projects/EDGESec/lib/libnetlink
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,7 +39,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib/cmake_install.cmake")
+  include("/home/alex/Projects/EDGESec/lib/libnetlink/build/lib/cmake_install.cmake")
 
 endif()
 
@@ -51,5 +51,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/alexandru/Projects/EDGESec/lib/libnetlink/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/alex/Projects/EDGESec/lib/libnetlink/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

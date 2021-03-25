@@ -4,7 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_C
-  "/home/alexandru/Projects/EDGESec/lib/libnetlink/lib/ll_proto.c" "/home/alexandru/Projects/EDGESec/lib/libnetlink/build/lib/CMakeFiles/ll_proto.dir/ll_proto.c.o"
+  "/home/alex/Projects/EDGESec/lib/libnetlink/lib/ll_proto.c" "/home/alex/Projects/EDGESec/lib/libnetlink/build/lib/CMakeFiles/ll_proto.dir/ll_proto.c.o"
   )
 set(CMAKE_C_COMPILER_ID "GNU")
 
@@ -17,7 +17,7 @@ set(CMAKE_TARGET_DEFINITIONS_C
 set(CMAKE_C_TARGET_INCLUDE_PATH
   "../include"
   "../include/uapi"
-  "/home/alexandru/Projects/EDGESec/lib/libmnl-1.0.4/include"
+  "/home/alex/Projects/EDGESec/lib/libmnl-1.0.4/include"
   )
 
 # Targets to which this target links.

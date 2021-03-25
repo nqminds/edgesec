@@ -3,4 +3,4 @@
 
 lib/CMakeFiles/json_writer.dir/json_writer.c.o
  ../include/json_writer.h
- /home/alexandru/Projects/EDGESec/lib/libnetlink/lib/json_writer.c
+ /home/alex/Projects/EDGESec/lib/libnetlink/lib/json_writer.c
