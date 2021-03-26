@@ -67,7 +67,7 @@ message("Found ll_types library: ${LL_TYPES_LIB}")
 find_library(LL_PROTO_LIB NAMES ll_proto PATHS "${CMAKE_HOME_DIRECTORY}/lib/libnetlink/build/lib")
 message("Found ll_types library: ${LL_PROTO_LIB}")
 
-# Compilelinmicrohttpd-0.9.72
+# Compile libmicrohttpd-0.9.72
 find_library(LIBMICROHTTPD_LIB NAMES microhttpd PATHS "${CMAKE_HOME_DIRECTORY}/lib/libmicrohttpd-0.9.72/build/lib")
 set(LIBMICROHTTPD_INCLUDE_DIR "${CMAKE_HOME_DIRECTORY}/lib/libmicrohttpd-0.9.72/build/include")
 if (LIBMICROHTTPD_LIB)
@@ -77,30 +77,15 @@ ELSE (LIBMICROHTTPD_LIB)
   find_library(LIBMICROHTTPD_LIB NAMES microhttpd PATHS "${CMAKE_HOME_DIRECTORY}/lib/libmicrohttpd-0.9.72/build/lib")
 endif (LIBMICROHTTPD_LIB)
 
-
-# C compiler options
-set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wunused-variable")
-
-# Set the color for terminal logging
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLOG_USE_COLOR")
-# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_LIBNL")
-
-
-# configure a header file to pass some of the CMake settings
-# to the source code
-configure_file(
-  "version.h.in"
-  "${PROJECT_BINARY_DIR}/version.h"
-)
-
-# Copy the default configuration file to the build folder
-configure_file(
-  "config.ini.in"
-  "${PROJECT_BINARY_DIR}/config.ini"
-)
-
-message("Searching for Linux netlink library")
+# Compile libgrpc
+find_library(LIBGRPC_LIB NAMES libgrpc HINTS "${CMAKE_HOME_DIRECTORY}/lib/grpc/cmake/build/lib")
+set(LIBGRPC_INCLUDE_DIR "${CMAKE_HOME_DIRECTORY}/lib/grpc/cmake/build/include")
+if (LIBGRPC_LIB)
+  message("Found libgrpc library: ${LIBGRPC_LIB}")
+ELSE (LIBGRPC_LIB)
+  execute_process(COMMAND bash "${CMAKE_HOME_DIRECTORY}/lib/compile_grpc.sh")
+  find_library(LIBGRPC_LIB NAMES grpc PATHS "${CMAKE_HOME_DIRECTORY}/lib/grpc/cmake/build/lib")
+endif (LIBGRPC_LIB)
 
 find_path(LibNL_INCLUDE_DIR netlink/netlink.h
 	/usr/include
@@ -149,6 +134,27 @@ ELSE (LIBSQLITE3_LIB)
   message(FATAL_ERROR "Could not find libsqlite3 library.")
 endif (LIBSQLITE3_LIB)
 
+# C compiler options
+set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wunused-variable")
+
+# Set the color for terminal logging
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLOG_USE_COLOR")
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_LIBNL")
+
+
+# configure a header file to pass some of the CMake settings
+# to the source code
+configure_file(
+  "version.h.in"
+  "${PROJECT_BINARY_DIR}/version.h"
+)
+
+# Copy the default configuration file to the build folder
+configure_file(
+  "config.ini.in"
+  "${PROJECT_BINARY_DIR}/config.ini"
+)
 
 # check if Doxygen is installed
 find_package(Doxygen)
