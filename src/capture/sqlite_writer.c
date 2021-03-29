@@ -682,6 +682,16 @@ void free_sqlite_db(struct sqlite_context *ctx)
   }
 }
 
+int sqlite_trace_callback(unsigned int uMask, void* ctx, void* stm, void* X)
+{
+  sqlite3_stmt *statement = (sqlite3_stmt *)stm;
+  char *sqlite_str = sqlite3_expanded_sql(statement);
+  log_info("Statement running=%s", sqlite_str);
+
+  sqlite3_free(sqlite_str);
+  return 0;
+}
+
 struct sqlite_context* open_sqlite_db(char *db_path)
 {
   sqlite3 *db;
@@ -693,6 +703,8 @@ struct sqlite_context* open_sqlite_db(char *db_path)
     sqlite3_close(db);
     return ctx;
   }
+  log_trace("Register sqlite trace callback");
+  sqlite3_trace_v2(db, SQLITE_TRACE_STMT, sqlite_trace_callback, NULL);
 
   log_debug("sqlite autocommit mode=%d", sqlite3_get_autocommit(db));
 

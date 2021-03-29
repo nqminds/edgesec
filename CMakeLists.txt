@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(EDGESEC)
+project(EDGESEC C CXX)
 
 include(CTest)
 
@@ -24,27 +24,27 @@ enable_testing()
 find_program(HOSTAPD NAMES hostapd PATHS "${CMAKE_HOME_DIRECTORY}/build")
 if (HOSTAPD)
   message("Found hostapd program: ${HOSTAPD}")
-ELSE (HOSTAPD)
+ELSE ()
   execute_process(COMMAND bash "${CMAKE_HOME_DIRECTORY}/lib/compile_hostap.sh")
-endif (HOSTAPD)
+endif ()
 
 # Compile the cmocka library
 set(CMOCKA_INCLUDE_DIR "${CMAKE_HOME_DIRECTORY}/lib/cmocka-1.1.5/include")
 find_library(CMOCKA_LIB NAMES cmocka PATHS "${CMAKE_HOME_DIRECTORY}/lib/cmocka-1.1.5/build/src")
 if (CMOCKA_LIB)
   message("Found cmocka library: ${CMOCKA_LIB}")
-ELSE (CMOCKA_LIB)
+ELSE ()
   execute_process(COMMAND bash "${CMAKE_HOME_DIRECTORY}/lib/compile_cmocka.sh")
   find_library(CMOCKA_LIB NAMES cmocka PATHS "${CMAKE_HOME_DIRECTORY}/lib/cmocka-1.1.5/build/src")
-endif (CMOCKA_LIB)
+endif ()
 
 # Compile libmnl library used for libnetlink
 find_library(LIBMNL_LIB NAMES mnl PATHS "${CMAKE_HOME_DIRECTORY}/lib/libmnl-1.0.4/build/lib")
 if (LIBMNL_LIB)
   message("Found libmnl library: ${LIBMNL_LIB}")
-ELSE (LIBMNL_LIB)
+ELSE ()
   execute_process(COMMAND bash "${CMAKE_HOME_DIRECTORY}/lib/compile_libmnl.sh")
-endif (LIBMNL_LIB)
+endif ()
 
 # Compile library libnetlink
 set(LIBNETLINK_INCLUDE_DIR "${CMAKE_HOME_DIRECTORY}/lib/libnetlink/include")
@@ -52,10 +52,10 @@ set(LIBNETLINK_UAPI_INCLUDE_DIR "${CMAKE_HOME_DIRECTORY}/lib/libnetlink/include/
 find_library(LIBNETLINK_LIB NAMES libnetlink PATHS "${CMAKE_HOME_DIRECTORY}/lib/libnetlink/build/lib")
 if (LIBNETLINK_LIB)
   message("Found libnetlink library: ${LIBNETLINK_LIB}")
-ELSE (LIBNETLINK_LIB)
+ELSE ()
   execute_process(COMMAND bash "${CMAKE_HOME_DIRECTORY}/lib/compile_libnetlink.sh")
   find_library(LIBNETLINK_LIB NAMES libnetlink PATHS "${CMAKE_HOME_DIRECTORY}/lib/libnetlink/build/lib")
-endif (LIBNETLINK_LIB)
+endif ()
 find_library(LL_MAP_LIB NAMES ll_map PATHS "${CMAKE_HOME_DIRECTORY}/lib/libnetlink/build/lib")
 message("Found ll_map library: ${LL_MAP_LIB}")
 find_library(UTILS_LIB NAMES utils PATHS "${CMAKE_HOME_DIRECTORY}/lib/libnetlink/build/lib")
@@ -72,20 +72,10 @@ find_library(LIBMICROHTTPD_LIB NAMES microhttpd PATHS "${CMAKE_HOME_DIRECTORY}/l
 set(LIBMICROHTTPD_INCLUDE_DIR "${CMAKE_HOME_DIRECTORY}/lib/libmicrohttpd-0.9.72/build/include")
 if (LIBMICROHTTPD_LIB)
   message("Found libmicrohttpd library: ${LIBMICROHTTPD_LIB}")
-ELSE (LIBMICROHTTPD_LIB)
+ELSE ()
   execute_process(COMMAND bash "${CMAKE_HOME_DIRECTORY}/lib/compile_libmicrohttpd.sh")
   find_library(LIBMICROHTTPD_LIB NAMES microhttpd PATHS "${CMAKE_HOME_DIRECTORY}/lib/libmicrohttpd-0.9.72/build/lib")
-endif (LIBMICROHTTPD_LIB)
-
-# Compile libgrpc
-find_library(LIBGRPC_LIB NAMES libgrpc HINTS "${CMAKE_HOME_DIRECTORY}/lib/grpc/cmake/build/lib")
-set(LIBGRPC_INCLUDE_DIR "${CMAKE_HOME_DIRECTORY}/lib/grpc/cmake/build/include")
-if (LIBGRPC_LIB)
-  message("Found libgrpc library: ${LIBGRPC_LIB}")
-ELSE (LIBGRPC_LIB)
-  execute_process(COMMAND bash "${CMAKE_HOME_DIRECTORY}/lib/compile_grpc.sh")
-  find_library(LIBGRPC_LIB NAMES grpc PATHS "${CMAKE_HOME_DIRECTORY}/lib/grpc/cmake/build/lib")
-endif (LIBGRPC_LIB)
+endif ()
 
 find_path(LibNL_INCLUDE_DIR netlink/netlink.h
 	/usr/include
@@ -101,7 +91,7 @@ find_library(LibNL_GENL_LIBRARY NAMES nl-genl nl-genl-3)
 
 if (LibNL_INCLUDE_DIR AND LibNL_LIBRARY)
 	set(LibNL_FOUND TRUE)
-endif (LibNL_INCLUDE_DIR AND LibNL_LIBRARY)
+endif ()
 
 if (LibNL_FOUND)
 	if (NOT LibNL_FIND_QUIETLY)
@@ -110,29 +100,55 @@ if (LibNL_FOUND)
     # message("Found netlink netfilter library: ${LibNL_NETFILTER_LIBRARY}")
     message("Found netlink genl library: ${LibNL_GENL_LIBRARY}")
     message("Found netlink includes: ${LibNL_INCLUDE_DIR}")
-	endif (NOT LibNL_FIND_QUIETLY)
-ELSE (LibNL_FOUND)
+	endif ()
+ELSE ()
 	if (LibNL_FIND_REQUIRED)
 		message("Netlink version 3 development packages cannot be found.")
 		message("In Debian/Ubuntu, they may be called:")
 		message("libnl-3-dev libnl-genl-3dev libnl-nf-3-dev libnl-route-3-dev")
 		message(FATAL_ERROR "Could not find netlink library.")
-	endif (LibNL_FIND_REQUIRED)
-endif (LibNL_FOUND)
+	endif ()
+endif ()
 
 find_library(LIBPCAP_LIB NAMES pcap)
 if (LIBPCAP_LIB)
   message("Found libpcap library: ${LIBPCAP_LIB}")
-ELSE (LIBPCAP_LIB)
+ELSE ()
   message(FATAL_ERROR "Could not find pcap library.")
-endif (LIBPCAP_LIB)
+endif ()
 
 find_library(LIBSQLITE3_LIB NAMES sqlite3)
 if (LIBSQLITE3_LIB)
   message("Found libsqlite3 library: ${LIBSQLITE_LIB}")
-ELSE (LIBSQLITE3_LIB)
+ELSE ()
   message(FATAL_ERROR "Could not find libsqlite3 library.")
-endif (LIBSQLITE3_LIB)
+endif ()
+
+# Compile libgrpc
+find_library(LIBGRPC_LIB NAMES grpc PATHS "${CMAKE_SOURCE_DIR}/lib/grpc/cmake/build")
+set(LIBGRPC_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/lib/grpc/cmake/build/include")
+if (LIBGRPC_LIB)
+  message("Found libgrpc library: ${LIBGRPC_LIB}")
+ELSE ()
+  execute_process(COMMAND bash "${CMAKE_SOURCE_DIR}/lib/compile_grpc.sh")
+  find_library(LIBGRPC_LIB NAMES grpc PATHS "${CMAKE_SOURCE_DIR}/lib/grpc/cmake/build")
+endif ()
+
+set(LIBGRPC++_REFLECTION_LIB "${CMAKE_SOURCE_DIR}/lib/grpc/cmake/build/libgrpc++_reflection")
+message("SOURCE ${CMAKE_SOURCE_DIR}/lib/grpc/cmake/build")
+find_library(LIBGRPC++_LIB NAMES grpc++ PATHS "${CMAKE_SOURCE_DIR}/lib/grpc/cmake/build")
+if (LIBGRPC++_LIB)
+  message("Found libgrpc++ library: ${LIBGRPC++_LIB}")
+ELSE ()
+  message(FATAL_ERROR "Could not find libgrpc++ library.")
+endif ()
+
+find_library(LIBPROTOBUF_LIB NAMES libprotobuf)
+if (LIBPROTOBUF_LIB)
+  message("Found libprotobuf library: ${LIBPROTOBUF_LIB}")
+ELSE ()
+  message(FATAL_ERROR "Could not find libprotobuf library.")
+endif ()
 
 # C compiler options
 set(CMAKE_BUILD_TYPE Debug)
@@ -142,6 +158,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wunused-variable")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLOG_USE_COLOR")
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_LIBNL")
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 # configure a header file to pass some of the CMake settings
 # to the source code
@@ -155,6 +172,25 @@ configure_file(
   "config.ini.in"
   "${PROJECT_BINARY_DIR}/config.ini"
 )
+
+#Compile protobufs
+find_program(PROTOC_CMD NAMES protoc)
+find_program(PLUGIN_CHECK_CMD NAMES grpc_cpp_plugin)
+
+if (PROTOC_CMD AND PLUGIN_CHECK_CMD)
+  message("Found protoc binary: ${PROTOC_CMD}")
+  message("Found grpc_cpp_plugin binary: ${PLUGIN_CHECK_CMD}")
+  execute_process(COMMAND protoc --version OUTPUT_VARIABLE PROTOC_CHECK_CMD)
+  if (PROTOC_CHECK_CMD MATCHES "libprotoc.3")
+    message("Found correct version of libprotoc")
+    execute_process(COMMAND protoc -I "${CMAKE_HOME_DIRECTORY}/protos" --grpc_out=${CMAKE_HOME_DIRECTORY}/src/capture --plugin=protoc-gen-grpc=${PLUGIN_CHECK_CMD} ${CMAKE_HOME_DIRECTORY}/protos/sqlite_sync.proto)
+    execute_process(COMMAND protoc -I "${CMAKE_HOME_DIRECTORY}/protos" --cpp_out=${CMAKE_HOME_DIRECTORY}/src/capture ${CMAKE_HOME_DIRECTORY}/protos/sqlite_sync.proto)
+  ELSE ()
+    message(FATAL_ERROR "wrong protoc version, needed >=3")
+  endif ()
+ELSE ()
+  message(FATAL_ERROR "protoc and grpc_cpp_plugin not found")
+endif ()
 
 # check if Doxygen is installed
 find_package(Doxygen)
@@ -177,9 +213,9 @@ if (DOXYGEN_FOUND)
         WORKING_DIRECTORY ${CMAKE_HOME_DIRECTORY}
         COMMENT "Generating API documentation with Doxygen"
         VERBATIM )
-else (DOXYGEN_FOUND)
+else ()
   message(WARNING "Doxygen need to be installed to generate the doxygen documentation")
-endif (DOXYGEN_FOUND)
+endif ()
 
 add_subdirectory(src)
 add_subdirectory(tests)

@@ -16,21 +16,21 @@ echo "Building $MY_PATH"
 cd ${MY_PATH}/grpc
 
 # Install absl
-mkdir -p "third_party/abseil-cpp/cmake/build"
-pushd "third_party/abseil-cpp/cmake/build"
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE ../..
-make -j4 install
-popd
+# mkdir -p "third_party/abseil-cpp/cmake/build"
+# pushd "third_party/abseil-cpp/cmake/build"
+# cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE ../..
+# make -j4 install
+# popd
 
 # Install c-ares
 # If the distribution provides a new-enough version of c-ares,
 # this section can be replaced with:
 # apt-get install -y libc-ares-dev
-mkdir -p "third_party/cares/cares/cmake/build"
-pushd "third_party/cares/cares/cmake/build"
-cmake -DCMAKE_BUILD_TYPE=Release ../..
-make -j4 install
-popd
+# mkdir -p "third_party/cares/cares/cmake/build"
+# pushd "third_party/cares/cares/cmake/build"
+# cmake -DCMAKE_BUILD_TYPE=Release ../..
+# make -j4 install
+# popd
 
 # Install protobuf
 mkdir -p "third_party/protobuf/cmake/build"
@@ -40,15 +40,15 @@ make -j4 install
 popd
 
 # Install re2
-mkdir -p "third_party/re2/cmake/build"
-pushd "third_party/re2/cmake/build"
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE ../..
-make -j4 install
-popd
+# mkdir -p "third_party/re2/cmake/build"
+# pushd "third_party/re2/cmake/build"
+# cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE ../..
+# make -j4 install
+# popd
 
 # Install zlib
-mkdir -p "third_party/zlib/cmake/build"
-pushd "third_party/zlib/cmake/build"
-cmake -DCMAKE_BUILD_TYPE=Release ../..
-make -j4 install
-popd
+# mkdir -p "third_party/zlib/cmake/build"
+# pushd "third_party/zlib/cmake/build"
+# cmake -DCMAKE_BUILD_TYPE=Release ../..
+# make -j4 install
+# popd
