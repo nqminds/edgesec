@@ -85,3 +85,4 @@ lib/libmicrohttpd-0.9.72/libmicrohttpd.pc
 lib/libmicrohttpd-0.9.72/libtool
 lib/libmicrohttpd-0.9.72/MHD_config.h
 lib/libmicrohttpd-0.9.72/stamp-h1
+lib/grpc/cmake/build/**

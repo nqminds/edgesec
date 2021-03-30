@@ -14,42 +14,34 @@
 #include <google/protobuf/wire_format.h>
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
+
+PROTOBUF_PRAGMA_INIT_SEG
 namespace helloworld {
-class HelloRequestDefaultTypeInternal {
- public:
-  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<HelloRequest> _instance;
-} _HelloRequest_default_instance_;
-class HelloReplyDefaultTypeInternal {
- public:
-  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<HelloReply> _instance;
-} _HelloReply_default_instance_;
+constexpr HelloRequest::HelloRequest(
+  ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
+  : name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string){}
+struct HelloRequestDefaultTypeInternal {
+  constexpr HelloRequestDefaultTypeInternal()
+    : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
+  ~HelloRequestDefaultTypeInternal() {}
+  union {
+    HelloRequest _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT HelloRequestDefaultTypeInternal _HelloRequest_default_instance_;
+constexpr HelloReply::HelloReply(
+  ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
+  : message_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string){}
+struct HelloReplyDefaultTypeInternal {
+  constexpr HelloReplyDefaultTypeInternal()
+    : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
+  ~HelloReplyDefaultTypeInternal() {}
+  union {
+    HelloReply _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT HelloReplyDefaultTypeInternal _HelloReply_default_instance_;
 }  // namespace helloworld
-static void InitDefaultsscc_info_HelloReply_sqlite_5fsync_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::helloworld::_HelloReply_default_instance_;
-    new (ptr) ::helloworld::HelloReply();
-    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
-  }
-}
-
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_HelloReply_sqlite_5fsync_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_HelloReply_sqlite_5fsync_2eproto}, {}};
-
-static void InitDefaultsscc_info_HelloRequest_sqlite_5fsync_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::helloworld::_HelloRequest_default_instance_;
-    new (ptr) ::helloworld::HelloRequest();
-    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
-  }
-}
-
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_HelloRequest_sqlite_5fsync_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_HelloRequest_sqlite_5fsync_2eproto}, {}};
-
 static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_sqlite_5fsync_2eproto[2];
 static constexpr ::PROTOBUF_NAMESPACE_ID::EnumDescriptor const** file_level_enum_descriptors_sqlite_5fsync_2eproto = nullptr;
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_sqlite_5fsync_2eproto = nullptr;
@@ -86,22 +78,19 @@ const char descriptor_table_protodef_sqlite_5fsync_2eproto[] PROTOBUF_SECTION_VA
   "Reply\"\000B6\n\033io.grpc.examples.helloworldB\017"
   "HelloWorldProtoP\001\242\002\003HLWb\006proto3"
   ;
-static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_sqlite_5fsync_2eproto_deps[1] = {
-};
-static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_sqlite_5fsync_2eproto_sccs[2] = {
-  &scc_info_HelloReply_sqlite_5fsync_2eproto.base,
-  &scc_info_HelloRequest_sqlite_5fsync_2eproto.base,
-};
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_sqlite_5fsync_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_sqlite_5fsync_2eproto = {
-  false, false, descriptor_table_protodef_sqlite_5fsync_2eproto, "sqlite_sync.proto", 231,
-  &descriptor_table_sqlite_5fsync_2eproto_once, descriptor_table_sqlite_5fsync_2eproto_sccs, descriptor_table_sqlite_5fsync_2eproto_deps, 2, 0,
+  false, false, 231, descriptor_table_protodef_sqlite_5fsync_2eproto, "sqlite_sync.proto", 
+  &descriptor_table_sqlite_5fsync_2eproto_once, nullptr, 0, 2,
   schemas, file_default_instances, TableStruct_sqlite_5fsync_2eproto::offsets,
-  file_level_metadata_sqlite_5fsync_2eproto, 2, file_level_enum_descriptors_sqlite_5fsync_2eproto, file_level_service_descriptors_sqlite_5fsync_2eproto,
+  file_level_metadata_sqlite_5fsync_2eproto, file_level_enum_descriptors_sqlite_5fsync_2eproto, file_level_service_descriptors_sqlite_5fsync_2eproto,
 };
+PROTOBUF_ATTRIBUTE_WEAK const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable* descriptor_table_sqlite_5fsync_2eproto_getter() {
+  return &descriptor_table_sqlite_5fsync_2eproto;
+}
 
 // Force running AddDescriptors() at dynamic initialization time.
-static bool dynamic_init_dummy_sqlite_5fsync_2eproto = (static_cast<void>(::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_sqlite_5fsync_2eproto)), true);
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY static ::PROTOBUF_NAMESPACE_ID::internal::AddDescriptorsRunner dynamic_init_dummy_sqlite_5fsync_2eproto(&descriptor_table_sqlite_5fsync_2eproto);
 namespace helloworld {
 
 // ===================================================================
@@ -128,8 +117,7 @@ HelloRequest::HelloRequest(const HelloRequest& from)
 }
 
 void HelloRequest::SharedCtor() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_HelloRequest_sqlite_5fsync_2eproto.base);
-  name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 HelloRequest::~HelloRequest() {
@@ -152,11 +140,6 @@ void HelloRequest::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
 void HelloRequest::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
-const HelloRequest& HelloRequest::default_instance() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_HelloRequest_sqlite_5fsync_2eproto.base);
-  return *internal_default_instance();
-}
-
 
 void HelloRequest::Clear() {
 // @@protoc_insertion_point(message_clear_start:helloworld.HelloRequest)
@@ -173,7 +156,6 @@ const char* HelloRequest::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_I
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    CHK_(ptr);
     switch (tag >> 3) {
       // string name = 1;
       case 1:
@@ -186,7 +168,8 @@ const char* HelloRequest::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_I
         continue;
       default: {
       handle_unusual:
-        if ((tag & 7) == 4 || tag == 0) {
+        if ((tag == 0) || ((tag & 7) == 4)) {
+          CHK_(ptr);
           ctx->SetLastTag(tag);
           goto success;
         }
@@ -306,9 +289,10 @@ void HelloRequest::InternalSwap(HelloRequest* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata HelloRequest::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_sqlite_5fsync_2eproto_getter, &descriptor_table_sqlite_5fsync_2eproto_once,
+      file_level_metadata_sqlite_5fsync_2eproto[0]);
 }
-
 
 // ===================================================================
 
@@ -334,8 +318,7 @@ HelloReply::HelloReply(const HelloReply& from)
 }
 
 void HelloReply::SharedCtor() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_HelloReply_sqlite_5fsync_2eproto.base);
-  message_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+message_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 HelloReply::~HelloReply() {
@@ -358,11 +341,6 @@ void HelloReply::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
 void HelloReply::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
-const HelloReply& HelloReply::default_instance() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_HelloReply_sqlite_5fsync_2eproto.base);
-  return *internal_default_instance();
-}
-
 
 void HelloReply::Clear() {
 // @@protoc_insertion_point(message_clear_start:helloworld.HelloReply)
@@ -379,7 +357,6 @@ const char* HelloReply::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID:
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    CHK_(ptr);
     switch (tag >> 3) {
       // string message = 1;
       case 1:
@@ -392,7 +369,8 @@ const char* HelloReply::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID:
         continue;
       default: {
       handle_unusual:
-        if ((tag & 7) == 4 || tag == 0) {
+        if ((tag == 0) || ((tag & 7) == 4)) {
+          CHK_(ptr);
           ctx->SetLastTag(tag);
           goto success;
         }
@@ -512,9 +490,10 @@ void HelloReply::InternalSwap(HelloReply* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata HelloReply::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_sqlite_5fsync_2eproto_getter, &descriptor_table_sqlite_5fsync_2eproto_once,
+      file_level_metadata_sqlite_5fsync_2eproto[1]);
 }
-
 
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace helloworld
