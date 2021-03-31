@@ -12,12 +12,14 @@ execRadius = true
 execDhcp = true
 
 [capture]
-captureInterface = "wls1"
+captureInterface = "wlan3"
 promiscuous = false
 bufferTimeout = 10
 processInterval = 10
 immediate = false
 db = "./pcap.sqlite"
+syncAddress = ""
+syncPort = 0
 
 [supervisor]
 domainServerPath = "/tmp/edgesec-domain-server"

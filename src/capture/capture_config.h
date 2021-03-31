@@ -42,6 +42,8 @@ struct capture_conf {
   uint16_t buffer_timeout;                                    /**< Specifies the packet buffer timeout, as a non-negative value, in milliseconds. (See pcap(3PCAP) for an explanation of the packet buffer timeout.) */
   uint16_t process_interval;                                  /**< Specifies the packet process interval, in milliseconds */ 
   char db[MAX_OS_PATH_LEN];                                   /**< Specifies the path to the sqlite3 db */ 
+  char sync_address[MAX_WEB_PATH_LEN];                        /**< Specifies the web address for sqlite syncing */
+  uint16_t sync_port;                                         /**< Specifies the port of the web address for sqlite syncing */
 };
 
 #endif

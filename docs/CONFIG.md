@@ -16,7 +16,14 @@ execRadius = true
 execDhcp = true
 
 [capture]
-captureInterface = "any"
+captureInterface = "wls1"
+promiscuous = false
+bufferTimeout = 10
+processInterval = 10
+immediate = false
+db = "./pcap.sqlite"
+syncAddress = ""
+syncPort = 0
 
 [supervisor]
 domainServerPath = /tmp/edgesec-domain-server
@@ -171,6 +178,12 @@ The interval in milliseconds to process a packet from the queue. The default val
 
 ### db (string)
 Absolute path to the sqlite3 db.
+
+### syncAddress (string)
+The web address for sqlite syncing
+
+### syncPort (number)
+The port of the web address for sqlite syncing
 
 ## [supervisor] group
 The supervisor group defines the parameters to run the supervisor service.

@@ -528,7 +528,7 @@ bool load_dhcp_conf(const char *filename, struct app_config *config)
 
 bool load_capture_config(const char *filename, struct capture_conf *config)
 {
-  char *value = os_malloc(INI_BUFFERSIZE);
+  char *value = os_zalloc(INI_BUFFERSIZE);
 
   // Load dhpc config file path
   int ret = ini_gets("capture", "captureInterface", "", value, INI_BUFFERSIZE, filename);
@@ -538,7 +538,7 @@ bool load_capture_config(const char *filename, struct capture_conf *config)
     return false;
   }
 
-  strncpy(config->capture_interface, value, MAX_OS_PATH_LEN);
+  strncpy(config->capture_interface, value, IFNAMSIZ);
   os_free(value);
 
   // Load promiscuous param
@@ -553,7 +553,8 @@ bool load_capture_config(const char *filename, struct capture_conf *config)
   // Load processInterval param
   config->process_interval = (uint16_t) ini_getl("capture", "processInterval", 10, filename);
 
-  value = os_malloc(INI_BUFFERSIZE);
+  // Load db param
+  value = os_zalloc(INI_BUFFERSIZE);
   ret = ini_gets("capture", "db", "", value, INI_BUFFERSIZE, filename);
   if (!ret) {
     fprintf(stderr, "capture db was not specified\n");
@@ -563,6 +564,15 @@ bool load_capture_config(const char *filename, struct capture_conf *config)
 
   strncpy(config->db, value, MAX_OS_PATH_LEN);
   os_free(value);
+
+  // Load syncAddress param
+  value = os_zalloc(INI_BUFFERSIZE);
+  ini_gets("capture", "syncAddress", "", value, INI_BUFFERSIZE, filename);
+  strncpy(config->sync_address, value, MAX_WEB_PATH_LEN);
+  os_free(value);
+
+  // Load syncPort param
+  config->sync_port = (uint16_t) ini_getl("capture", "syncPort", 0, filename);
 
   return true;
 }

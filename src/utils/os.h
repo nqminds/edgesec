@@ -37,10 +37,10 @@
 #include "utarray.h"
 
 /* Common costant defintions */
-#define MAX_OS_PATH_LEN	255
-#define IP_LEN 			20
-// #define ETH_ALEN 		6
-#define LINK_TYPE_LEN 	64
+#define MAX_OS_PATH_LEN		255
+#define MAX_WEB_PATH_LEN	2048
+#define IP_LEN 						20
+#define LINK_TYPE_LEN 		64
 
 #ifdef __GNUC__
 #define STRUCT_PACKED __attribute__ ((packed))

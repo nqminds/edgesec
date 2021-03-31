@@ -126,6 +126,7 @@ ELSE ()
 endif ()
 
 # Fetch and Compile libgrpc
+set(RE2_BUILD_TESTING OFF)
 FetchContent_Declare(
   gRPC
   GIT_REPOSITORY https://github.com/grpc/grpc
