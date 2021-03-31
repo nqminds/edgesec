@@ -178,6 +178,9 @@ int hexstr2bin(const char *hex, uint8_t *buf, size_t len);
  */
 int hwaddr_aton2(const char *txt, uint8_t *addr);
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 /**
  * @brief Check if a string is a number
  * 
@@ -185,6 +188,9 @@ int hwaddr_aton2(const char *txt, uint8_t *addr);
  * @return true if numer, false otherwise
  */
 bool is_number(const char *ptr);
+#ifdef __cplusplus
+}
+#endif
 
 /**
  * @brief Copy a string with size bound and NUL-termination

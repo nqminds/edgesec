@@ -15,5 +15,5 @@ target_link_libraries(packet_decoder hash if log os hashmap ${LIBPCAP_LIB})
 add_library(capture_service capture_service.c)
 target_link_libraries(capture_service sqlite_writer packet_queue packet_decoder eloop if log os hashmap ${LIBPCAP_LIB})
 
-add_executable(sqlite_sync sqlite_sync.cc)
-target_link_libraries(sqlite_sync sqlite_grpc_proto ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF})
+add_executable(sync_client sync_client.cc)
+target_link_libraries(sync_client sqlite_grpc_proto ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF})

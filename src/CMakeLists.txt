@@ -28,3 +28,6 @@ target_link_libraries(restsrv config minIni os hashmap cmd_processor ${LIBMICROH
 
 add_executable(capsrv capsrv.c)
 target_link_libraries(capsrv capture_service config minIni os hashmap ${LIBPCAP_LIB})
+
+add_executable(sqlsyncsrv sqlsyncsrv.cc)
+target_link_libraries(sqlsyncsrv os sqlite_grpc_proto ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF})

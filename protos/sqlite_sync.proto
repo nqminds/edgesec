@@ -14,25 +14,31 @@
 
 syntax = "proto3";
 
-option java_multiple_files = true;
-option java_package = "io.grpc.examples.helloworld";
-option java_outer_classname = "HelloWorldProto";
-option objc_class_prefix = "HLW";
+package sqlite_sync;
 
-package helloworld;
+// The synchroniser service definition.
+service Synchroniser {
+  // Registers a db
+  rpc RegisterDb (RegisterDbRequest) returns (RegisterDbReply) {}
 
-// The greeting service definition.
-service Greeter {
-  // Sends a greeting
-  rpc SayHello (HelloRequest) returns (HelloReply) {}
+  // Synchronise db statement
+  rpc SyncDbStatement (SyncDbStatementRequest) returns (SyncDbStatementReply) {}
 }
 
-// The request message containing the user's name.
-message HelloRequest {
+// The request message containing the db name and other params.
+message RegisterDbRequest {
   string name = 1;
 }
 
-// The response message containing the greetings
-message HelloReply {
+// The response message containing the registration status
+message RegisterDbReply {
   string message = 1;
+}
+
+message SyncDbStatementRequest {
+  repeated string statement = 1;
+}
+
+message SyncDbStatementReply {
+  string message = 1;  
 }

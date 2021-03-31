@@ -5,7 +5,8 @@
         "bridge_list.h": "c",
         "inet.h": "c",
         "if_arp.h": "c",
-        "tcp.h": "c"
+        "tcp.h": "c",
+        "*.inc": "cpp"
     },
     "cmake.configureOnOpen": true
 }

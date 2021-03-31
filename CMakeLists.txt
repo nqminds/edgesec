@@ -21,6 +21,11 @@ set(CAPTURE_VERSION_MAJOR 0)
 set(CAPTURE_VERSION_MINOR 1)
 set(CAPTURE_VERSION_PATCH 0)
 
+# The sqlite sync server version number.
+set(SQLSYNCSRV_VERSION_MAJOR 0)
+set(SQLSYNCSRV_VERSION_MINOR 1)
+set(SQLSYNCSRV_VERSION_PATCH 0)
+
 # Find the hostapd program
 find_program(HOSTAPD NAMES hostapd PATHS "${CMAKE_SOURCE_DIR}/build")
 if (HOSTAPD)
