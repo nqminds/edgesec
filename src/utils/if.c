@@ -1096,30 +1096,35 @@ bool validate_ipv4_string(char *ip)
   char proc_ip[IP_LEN];
   char *netmask_sep = strchr(ip, '/');
   int netmask_char_size;
+	size_t ip_len = strlen(ip) - strlen(netmask_sep);
 
-  memset(proc_ip, '\0', IP_LEN);
+  os_memset(proc_ip, 0, IP_LEN);
   if (netmask_sep) {
-	strncpy(proc_ip, ip, strlen(ip) - strlen(netmask_sep));
-	netmask_char_size = strlen(netmask_sep + 1);
-	if (netmask_char_size > 2 || netmask_char_size < 1) {
-	  log_trace("Invalid netmask");
-	  return false;
-	}
-	if (!is_number(netmask_sep + 1)) {
-	  log_trace("Invalid netmask");
-	  return false;
-	}
-	if (strtol(netmask_sep + 1, (char **)NULL, 10) > 32) {
-	  log_trace("Invalid netmask");
-	  return false;
-	}
-  } else
-    strcpy(proc_ip, ip);
+		memcpy(proc_ip, ip, ip_len);
+		proc_ip[ip_len] = '\0';
+
+		netmask_char_size = strlen(netmask_sep + 1);
+		if (netmask_char_size > 2 || netmask_char_size < 1) {
+		  log_trace("Invalid netmask");
+		  return false;
+		}
+
+		if (!is_number(netmask_sep + 1)) {
+		  log_trace("Invalid netmask");
+		  return false;
+		}
+
+		if (strtol(netmask_sep + 1, (char **)NULL, 10) > 32) {
+		  log_trace("Invalid netmask");
+		  return false;
+		}
+  } else strncpy(proc_ip, ip, IP_LEN);
 
   int ret = inet_pton(AF_INET, proc_ip, &(sa.sin_addr));
   if (ret == -1) {
-	log_err("inet_pton");
-	return false;
+		log_err("inet_pton");
+		return false;
   }
+
   return ret > 0;
 }

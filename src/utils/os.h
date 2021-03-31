@@ -37,7 +37,7 @@
 #include "utarray.h"
 
 /* Common costant defintions */
-#define MAX_OS_PATH_LEN		255
+#define MAX_OS_PATH_LEN		4096
 #define MAX_WEB_PATH_LEN	2048
 #define IP_LEN 						20
 #define LINK_TYPE_LEN 		64

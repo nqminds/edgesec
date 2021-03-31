@@ -546,10 +546,12 @@ int list_dir(char *dirpath, list_dir_fn fun, void *args)
 
     /* Print directory + filename */
     char *path = construct_path(dirpath, dp->d_name);
-    if (!fun(path, args)) {
-      log_trace("list_dir callback fail");
-      os_free(path);
-      goto exit_list_dir;
+    if (fun != NULL) {
+      if (!fun(path, args)) {
+        log_trace("list_dir callback fail");
+        os_free(path);
+        goto exit_list_dir;
+      }
     }
 
     os_free(path);
@@ -597,18 +599,20 @@ long is_proc_app(char *path, char *proc_name)
 {
   char exe_path[MAX_OS_PATH_LEN];
   char cmdline_path[MAX_OS_PATH_LEN];
-  char resolved_path[MAX_OS_PATH_LEN];
+  char *resolved_path;
 
   unsigned long pid = strtoul(basename(path), NULL, 10);
 
   if (errno != ERANGE && pid != 0L) {
     snprintf(exe_path, MAX_OS_PATH_LEN - 1, "%s/exe", path);
     snprintf(cmdline_path, MAX_OS_PATH_LEN - 1, "%s/cmdline", path);
-    if (realpath(exe_path, resolved_path) != NULL) {
+    if ((resolved_path = realpath(exe_path, NULL)) != NULL) {
       bool in_file = is_string_in_cmdline_file(cmdline_path, proc_name);
       if (strcmp(basename(resolved_path), proc_name) == 0 || in_file) {
+        os_free(resolved_path);
         return pid;
       }
+      os_free(resolved_path);
     }
   }
 
