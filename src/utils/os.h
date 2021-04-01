@@ -404,6 +404,10 @@ char *construct_path(char *path_left, char *path_right);
  */
 char* get_secure_path(UT_array *bin_path_arr, char *filename, char *filehash);
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef bool(*list_dir_fn)(char *, void *args);
 
 /**
@@ -415,7 +419,9 @@ typedef bool(*list_dir_fn)(char *, void *args);
  * @return int 
  */
 int list_dir(char *dirpath, list_dir_fn fun, void *args);
-
+#ifdef __cplusplus
+}
+#endif
 
 /**
  * @brief Check if a process path from /proc folder contains the process name

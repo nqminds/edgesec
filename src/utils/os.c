@@ -527,9 +527,10 @@ int list_dir(char *dirpath, list_dir_fn fun, void *args)
   struct dirent *dp;
 
   /* Open the directory - on failure print an error and return */
+  errno = 0;
   dirp = opendir(dirpath);
   if (dirp == NULL) {
-    log_trace("opendir failed on '%s'", dirpath);
+    log_err("opendir");
     return -1;
   }
 

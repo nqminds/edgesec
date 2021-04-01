@@ -27,10 +27,11 @@
 #include "sqlite_sync.grpc.pb.h"
 
 #include "utils/os.h"
+#include "utils/log.h"
 #include "version.h"
 
-#define OPT_STRING    ":p:dvh"
-#define USAGE_STRING  "\t%s [-p port] [-d] [-h] [-v]\n"
+#define OPT_STRING    ":f:p:dvh"
+#define USAGE_STRING  "\t%s [-f path] [-p port] [-d] [-h] [-v]"
 
 using grpc::Server;
 using grpc::ServerBuilder;
@@ -73,9 +74,9 @@ char *get_static_version_string(uint8_t major, uint8_t minor, uint8_t patch)
 
 void show_app_version(void)
 {
-  fprintf(stdout, "restsrv app version %s\n",
+  fprintf(stdout, "sqlsyncsrv app version %s\n",
     get_static_version_string(SQLSYNCSRV_VERSION_MAJOR, SQLSYNCSRV_VERSION_MINOR,
-                              SQLSYNCSRV_VERSION_PATCH));
+    SQLSYNCSRV_VERSION_PATCH));
 }
 
 void show_app_help(char *app_name)
@@ -84,6 +85,7 @@ void show_app_help(char *app_name)
   fprintf(stdout, "Usage:\n");
   fprintf(stdout, USAGE_STRING, basename(app_name));
   fprintf(stdout, "\nOptions:\n");
+  fprintf(stdout, "\t-f folder\t\t Folder where to save teh databases\n");
   fprintf(stdout, "\t-p port\t\t Server port\n");
   fprintf(stdout, "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n");
   fprintf(stdout, "\t-h\t\t Show help\n");
@@ -116,8 +118,7 @@ int get_port(char *port_str)
   return strtol(port_str, NULL, 10);
 }
 
-void process_app_options(int argc, char *argv[], char *spath, char *apath,
-  int *port, uint8_t *verbosity)
+void process_app_options(int argc, char *argv[], int *port, char *path, uint8_t *verbosity)
 {
   int opt;
   int p;
@@ -140,6 +141,9 @@ void process_app_options(int argc, char *argv[], char *spath, char *apath,
       }
       *port = p;
       break;
+    case 'f':
+      memcpy(path, optarg, strlen(optarg) + 1);
+      break;
     case ':':
       log_cmdline_error("Missing argument for -%c\n", optopt);
       exit(EXIT_FAILURE);
@@ -151,8 +155,9 @@ void process_app_options(int argc, char *argv[], char *spath, char *apath,
   }
 }
 
-void RunServer() {
-  std::string server_address("0.0.0.0:50051");
+int run_grpc_server(char *path, uint16_t port) {
+  std::string server_address("0.0.0.0:");
+  server_address += std::to_string(port);
   SynchroniserServiceImpl service;
 
   grpc::EnableDefaultHealthCheckService(true);
@@ -170,14 +175,54 @@ void RunServer() {
   // Wait for the server to shutdown. Note that some other thread must be
   // responsible for shutting down the server for this call to ever return.
   server->Wait();
+
+  return 0;
 }
 
 int main(int argc, char** argv) {
   uint8_t verbosity = 0;
   uint8_t level = 0;
   int port = -1;
+  char path[MAX_OS_PATH_LEN];
 
-  RunServer();
+  os_memset(path, 0, MAX_OS_PATH_LEN);
+
+  process_app_options(argc, argv, &port, path, &verbosity); 
+
+  if (optind <= 1) show_app_help(argv[0]);
+
+  if (verbosity > MAX_LOG_LEVELS) {
+    level = 0;
+  } else if (!verbosity) {
+    level = MAX_LOG_LEVELS - 1;
+  } else {
+    level = MAX_LOG_LEVELS - verbosity;
+  }
+
+  // Set the log level
+  log_set_level(level);
+
+  if (port <=0 || port > 65535) {
+    log_cmdline_error("Unrecognized port value -%d\n", port);
+    exit(EXIT_FAILURE);
+  }
+
+  // Check if directory can be read
+  if (strlen(path)) {
+    if (list_dir(path, NULL, NULL) == -1) {
+      fprintf(stderr, "Can not rad folder %s", path);
+      exit(EXIT_FAILURE); 
+    }
+  }
+
+  fprintf(stdout, "Starting server with:\n");
+  fprintf(stdout, "Port --> %d\n", port);
+  fprintf(stdout, "DB save path --> %s\n", path);
+
+  if (run_grpc_server(path, port) == -1) {
+    fprintf(stderr, "run_grpc_server fail");
+    exit(EXIT_FAILURE);
+  } 
 
   return 0;
 }

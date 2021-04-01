@@ -55,6 +55,10 @@ enum {
 #define PRINTF_FORMAT(a,b)
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static inline int snprintf_error(size_t size, int res)
 {
 	return res < 0 || (unsigned int) res >= size;
@@ -82,4 +86,8 @@ void log_error_exit_proc(uint8_t level, const char *file, uint32_t line, const c
 
 void printf_encode(char *txt, size_t maxlen, const uint8_t *data, size_t len);
 int printf_hex(char *buf, size_t buf_size, const uint8_t *data, size_t len, int uppercase);
+#ifdef __cplusplus
+}
+#endif
+
 #endif
