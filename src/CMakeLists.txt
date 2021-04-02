@@ -30,4 +30,4 @@ add_executable(capsrv capsrv.c)
 target_link_libraries(capsrv capture_service config minIni os hashmap ${LIBPCAP_LIB})
 
 add_executable(sqlsyncsrv sqlsyncsrv.cc)
-target_link_libraries(sqlsyncsrv os sqlite_grpc_proto ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF})
+target_link_libraries(sqlsyncsrv os sqlite_grpc_proto ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF} ${LIBSQLITE3_LIB})

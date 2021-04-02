@@ -385,6 +385,9 @@ char *concat_paths(char *path_left, char *path_right);
  */
 char *get_valid_path(char *path);
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 /**
  * @brief Constrict a valuid path from two paths
  * 
@@ -393,6 +396,9 @@ char *get_valid_path(char *path);
  * @return char* output valid path
  */
 char *construct_path(char *path_left, char *path_right);
+#ifdef __cplusplus
+}
+#endif
 
 /**
  * @brief Get the secure path string of a binary

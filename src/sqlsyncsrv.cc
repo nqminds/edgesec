@@ -19,6 +19,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <sqlite3.h>
 
 #include <grpcpp/ext/proto_server_reflection_plugin.h>
 #include <grpcpp/grpcpp.h>
@@ -44,21 +45,6 @@ using sqlite_sync::SyncDbStatementRequest;
 using sqlite_sync::SyncDbStatementReply;
 
 static __thread char version_buf[10];
-
-// Logic and data behind the server's behavior.
-class SynchroniserServiceImpl final : public Synchroniser::Service {
-  Status RegisterDb(ServerContext* context, const RegisterDbRequest* request, RegisterDbReply* reply) override {
-    std::string prefix("Hello ");
-    reply->set_message(prefix + request->name());
-    return Status::OK;
-  }
-
-  Status SyncDbStatement(ServerContext* context, const SyncDbStatementRequest* request, SyncDbStatementReply* reply) override {
-    std::cout << "Statement size: " << request->statement_size() << std::endl;
-    reply->set_message("OK");
-    return Status::OK;
-  }
-};
 
 char *get_static_version_string(uint8_t major, uint8_t minor, uint8_t patch)
 {
@@ -155,25 +141,121 @@ void process_app_options(int argc, char *argv[], int *port, char *path, uint8_t 
   }
 }
 
+sqlite3* open_sqlite_db(char *db_path)
+{
+  sqlite3 *db;
+  if (sqlite3_open(db_path, &db) != SQLITE_OK) {     
+    log_debug("Cannot open database: %s", sqlite3_errmsg(db));
+    sqlite3_close(db);
+    return NULL;
+  }
+
+  return db;
+}
+
+int create_sqlite_db(char *db_path)
+{
+  sqlite3 *db;
+  if ((db = open_sqlite_db(db_path)) == NULL) {
+    log_debug("open_sqlite_db fail");
+    return -1;
+  }
+
+  sqlite3_close(db);
+  return 0;
+}
+
+int execute_sqlite_statement(char *db_path, char *statement)
+{
+  sqlite3 *db;
+  char *err = NULL;
+  if ((db = open_sqlite_db(db_path)) == NULL) {
+    log_debug("open_sqlite_db fail");
+    return -1;
+  }
+
+  if (sqlite3_exec(db, statement, NULL, NULL, &err) != SQLITE_OK) {
+    log_debug("sqlite3_exec fail %s", err);
+    sqlite3_free(err);
+    sqlite3_close(db);
+    return -1;
+  }
+
+  sqlite3_close(db);
+
+  return 0;
+}
+
+// Logic and data behind the server's behavior.
+class SynchroniserServiceImpl final : public Synchroniser::Service {
+ public:
+  explicit SynchroniserServiceImpl(const std::string& path) : path_(path) {}
+  
+  Status RegisterDb(ServerContext* context, const RegisterDbRequest* request, RegisterDbReply* reply) override {
+    if (request->name().length()) {
+      const char *db_name = request->name().c_str();
+      std::string db_path = GetDbPath((char *)db_name);
+
+      if (create_sqlite_db((char *)db_path.c_str()) == -1) {
+        log_debug("Could not registered db=%s", db_name);
+        reply->set_status(0);
+      } else {
+        log_debug("Registered db=%s at=%s", db_name, (char *)db_path.c_str());
+        reply->set_status(1);
+      }
+    } else {
+      log_debug("db name empty");
+      reply->set_status(0);
+    }
+    return Status::OK;
+  }
+
+  Status SyncDbStatement(ServerContext* context, const SyncDbStatementRequest* request, SyncDbStatementReply* reply) override {
+    if (request->name().length() && request->statement().length()) {
+      std::string db_path = GetDbPath((char *)request->name().c_str());
+      if (execute_sqlite_statement((char *)db_path.c_str(), (char *)request->statement().c_str()) == -1) {
+        log_debug("execute_sqlite_statement fail");
+        reply->set_status(0);
+      } else {
+        log_debug("Executed Statement with length=%d", request->statement().length());
+        reply->set_status(1);
+      }
+    } else {
+      log_debug("name or statement are empty");
+      reply->set_status(0);
+    }
+
+    return Status::OK;
+  }
+
+  std::string GetDbPath(char *db_name) {
+    std::string db_path;
+    char *dpath = construct_path((char *) path_.c_str(), db_name);
+    db_path = dpath;
+    os_free(dpath);
+    return db_path;
+  }
+
+  private:
+    std::string path_;
+};
+
 int run_grpc_server(char *path, uint16_t port) {
+  SynchroniserServiceImpl service(path);
   std::string server_address("0.0.0.0:");
   server_address += std::to_string(port);
-  SynchroniserServiceImpl service;
 
   grpc::EnableDefaultHealthCheckService(true);
   grpc::reflection::InitProtoReflectionServerBuilderPlugin();
   ServerBuilder builder;
-  // Listen on the given address without any authentication mechanism.
-  builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
-  // Register "service" as the instance through which we'll communicate with
-  // clients. In this case it corresponds to an *synchronous* service.
-  builder.RegisterService(&service);
-  // Finally assemble the server.
-  std::unique_ptr<Server> server(builder.BuildAndStart());
-  std::cout << "Server listening on " << server_address << std::endl;
 
-  // Wait for the server to shutdown. Note that some other thread must be
-  // responsible for shutting down the server for this call to ever return.
+  builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
+
+  builder.RegisterService(&service);
+
+  std::unique_ptr<Server> server(builder.BuildAndStart());
+  fprintf(stdout, "Server listening on %s\n", server_address.c_str());
+
   server->Wait();
 
   return 0;
@@ -210,9 +292,11 @@ int main(int argc, char** argv) {
   // Check if directory can be read
   if (strlen(path)) {
     if (list_dir(path, NULL, NULL) == -1) {
-      fprintf(stderr, "Can not rad folder %s", path);
+      fprintf(stderr, "Can not read folder %s", path);
       exit(EXIT_FAILURE); 
     }
+  } else {
+    strcpy(path, "./");
   }
 
   fprintf(stdout, "Starting server with:\n");

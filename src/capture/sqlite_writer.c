@@ -1,4 +1,4 @@
-    /****************************************************************************
+/****************************************************************************
  * Copyright (C) 2021 by NQMCyber Ltd                                       *
  *                                                                          *
  * This file is part of EDGESec.                                            *
@@ -42,6 +42,7 @@
 
 #include "sqlite_writer.h"
 #include "packet_decoder.h"
+
 #include "../utils/os.h"
 #include "../utils/if.h"
 #include "../utils/log.h"
@@ -51,6 +52,9 @@
             term.timestamp = tp->mp.timestamp;  \
             term.caplen = tp->mp.caplen;        \
             term.length = tp->mp.length;
+
+uint32_t run_register_db(char *address, char *name);
+uint32_t run_sync_db_statement(char *address, char *name, char *statement);
 
 bool extract_meta_params(sqlite3_stmt *res, struct meta_packet *mp)
 {
@@ -684,15 +688,21 @@ void free_sqlite_db(struct sqlite_context *ctx)
 
 int sqlite_trace_callback(unsigned int uMask, void* ctx, void* stm, void* X)
 {
+  struct sqlite_context *sql_ctx = (struct sqlite_context *)ctx;
   sqlite3_stmt *statement = (sqlite3_stmt *)stm;
   char *sqlite_str = sqlite3_expanded_sql(statement);
-  log_info("Statement running=%s", sqlite_str);
 
+  // if (!run_sync_db_statement(sql_ctx->grpc_srv_addr, sql_ctx->db_name, sqlite_str)) {
+  //   log_trace("run_sync_db_statement fail");
+  // }
+
+  log_info("Statement running=%s", sqlite_str);
   sqlite3_free(sqlite_str);
+
   return 0;
 }
 
-struct sqlite_context* open_sqlite_db(char *db_path)
+struct sqlite_context* open_sqlite_db(char *db_path, char *db_name, char *grpc_srv_addr)
 {
   sqlite3 *db;
   struct sqlite_context *ctx = NULL;
@@ -704,13 +714,19 @@ struct sqlite_context* open_sqlite_db(char *db_path)
     return ctx;
   }
   log_trace("Register sqlite trace callback");
-  sqlite3_trace_v2(db, SQLITE_TRACE_STMT, sqlite_trace_callback, NULL);
+  sqlite3_trace_v2(db, SQLITE_TRACE_STMT, sqlite_trace_callback, (void *)ctx);
 
   log_debug("sqlite autocommit mode=%d", sqlite3_get_autocommit(db));
 
-  ctx = os_malloc(sizeof(struct sqlite_context));
+  ctx = os_zalloc(sizeof(struct sqlite_context));
   ctx->db = db;
-  
+  strncpy(ctx->db_name, db_name, MAX_DB_NAME);
+  strncpy(ctx->grpc_srv_addr, grpc_srv_addr, MAX_WEB_PATH_LEN);
+
+  if (!run_register_db(ctx->grpc_srv_addr, ctx->db_name)) {
+    log_trace("run_register_db fail");
+  }
+
   rc = check_table_exists(ctx, "eth");
 
   if (rc == 0) {

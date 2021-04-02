@@ -32,13 +32,14 @@ message RegisterDbRequest {
 
 // The response message containing the registration status
 message RegisterDbReply {
-  string message = 1;
+  uint32 status = 1;
 }
 
 message SyncDbStatementRequest {
-  repeated string statement = 1;
+  string name = 1;
+  string statement = 2;
 }
 
 message SyncDbStatementReply {
-  string message = 1;  
+  uint32 status = 1;
 }

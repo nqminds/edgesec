@@ -1,19 +1,26 @@
-/*
- *
- * Copyright 2015 gRPC authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
+/****************************************************************************
+ * Copyright (C) 2021 by NQMCyber Ltd                                       *
+ *                                                                          *
+ * This file is part of EDGESec.                                            *
+ *                                                                          *
+ *   EDGESec is free software: you can redistribute it and/or modify it     *
+ *   under the terms of the GNU Lesser General Public License as published  *
+ *   by the Free Software Foundation, either version 3 of the License, or   *
+ *   (at your option) any later version.                                    *
+ *                                                                          *
+ *   EDGESec is distributed in the hope that it will be useful,             *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of         *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
+ *   GNU Lesser General Public License for more details.                    *
+ *                                                                          *
+ *   You should have received a copy of the GNU Lesser General Public       *
+ *   License along with EDGESec. If not, see <http://www.gnu.org/licenses/>.*
+ ****************************************************************************/
+
+/**
+ * @file sync_client.cc
+ * @author Alexandru Mereacre 
+ * @brief File containing the implementation of the sqlite db syncing utils.
  */
 
 #include <iostream>
@@ -25,6 +32,8 @@
 
 #include "sqlite_sync.grpc.pb.h"
 
+#include "../utils/log.h"
+
 using grpc::Channel;
 using grpc::ClientContext;
 using grpc::Status;
@@ -34,15 +43,18 @@ using sqlite_sync::RegisterDbReply;
 using sqlite_sync::SyncDbStatementRequest;
 using sqlite_sync::SyncDbStatementReply;
 
+extern "C" uint32_t run_register_db(char *address, char *name);
+extern "C" uint32_t run_sync_db_statement(char *address, char *name, char *statement);
+
 class SynchroniserClient {
  public:
   SynchroniserClient(std::shared_ptr<Channel> channel)
       : stub_(Synchroniser::NewStub(channel)) {}
 
-  std::string RegisterDb(const std::string& user) {
+  uint32_t RegisterDb(const std::string& name) {
     // Data we are sending to the server.
     RegisterDbRequest request;
-    request.set_name(user);
+    request.set_name(name);
 
     // Container for the data we expect from the server.
     RegisterDbReply reply;
@@ -56,34 +68,32 @@ class SynchroniserClient {
 
     // Act upon its status.
     if (status.ok()) {
-      return reply.message();
+      return reply.status();
     } else {
       std::cout << status.error_code() << ": " << status.error_message()
                 << std::endl;
-      return "RPC failed";
+      return 0;
     }
   }
 
-  std::string SyncDbStatement(const std::vector<std::string>& statement_list) {
+  uint32_t SyncDbStatement(const std::string& name, const std::string& statement) {
     SyncDbStatementRequest request;
-    for (int idx = 0; idx < statement_list.size(); idx ++)
-      request.add_statement(statement_list[idx]);
-
-    // Container for the data we expect from the server.
     SyncDbStatementReply reply;
-
     ClientContext context;
+
+    request.set_name(name);
+    request.set_statement(statement);
 
     // The actual RPC.
     Status status = stub_->SyncDbStatement(&context, request, &reply);
 
     // Act upon its status.
     if (status.ok()) {
-      return reply.message();
+      return reply.status();
     } else {
       std::cout << status.error_code() << ": " << status.error_message()
                 << std::endl;
-      return "RPC failed";
+      return 0;
     }
 
   }
@@ -91,14 +101,35 @@ class SynchroniserClient {
   std::unique_ptr<Synchroniser::Stub> stub_;
 };
 
-int main(int argc, char** argv) {
-  std::vector<std::string> colour {"Blue", "Red", "Orange"};
-  SynchroniserClient syncroniser(
-      grpc::CreateChannel("localhost:50051", grpc::InsecureChannelCredentials()));
-  std::string user("world");
-  std::string reply = syncroniser.RegisterDb(user);
-  std::cout << "Synchroniser received: " << reply << std::endl;
-  reply = syncroniser.SyncDbStatement(colour);
-  std::cout << "Synchroniser received: " << reply << std::endl;
-  return 0;
+// extern "C" 
+uint32_t run_register_db(char *address, char *name)
+{
+  SynchroniserClient syncroniser(grpc::CreateChannel(address, grpc::InsecureChannelCredentials()));
+  log_trace("RegisterDb with name=%s and address=%s", name, address);
+  return syncroniser.RegisterDb(name);
 }
+
+// extern "C"
+uint32_t run_sync_db_statement(char *address, char *name, char *statement)
+{
+  SynchroniserClient syncroniser(grpc::CreateChannel(address, grpc::InsecureChannelCredentials()));
+  log_trace("SyncDbStatement with name=%s and address=%s", name, address);
+  return syncroniser.SyncDbStatement(name, statement);
+}
+
+// int main(int argc, char** argv) {
+//   char *address = "localhost:12345";
+//   char *name = "world-db";
+//   char *statement =
+//     "CREATE TABLE test (id INTEGER PRIMARY KEY, name TEXT NOT NULL);"
+//     "INSERT INTO test VALUES(1, \"test1\");"
+//     "INSERT INTO test VALUES(2, \"test2\");"
+//     "INSERT INTO test VALUES(3, \"test3\");"
+//     "INSERT INTO test VALUES(4, \"test4\");";
+
+//   uint32_t status = run_register_db(address, name);
+//   std::cout << "RegisterDb received: " << status << std::endl;
+//   status = run_sync_db_statement(address, name,statement);
+//   std::cout << "SyncDbStatement received: " << status << std::endl;
+//   return 0;
+// }

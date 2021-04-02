@@ -31,6 +31,10 @@
 
 #include "packet_decoder.h"
 
+#include "../utils/os.h"
+
+#define MAX_DB_NAME           100
+
 #define MAX_SCHEMA_STR_LENGTH 100
 #define ETH_CREATE_TABLE "CREATE TABLE eth (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, "\
                          "caplen INTEGER, length INTEGER, " \
@@ -314,6 +318,8 @@ struct dhcp_schema {
 
 struct sqlite_context {
   sqlite3 *db;
+  char grpc_srv_addr[MAX_WEB_PATH_LEN];
+  char db_name[MAX_DB_NAME];
 };
 
 void extract_statements(struct sqlite_context *ctx, struct tuple_packet *tp);
@@ -322,9 +328,11 @@ void extract_statements(struct sqlite_context *ctx, struct tuple_packet *tp);
  * @brief Opens the sqlite3 database
  * 
  * @param db_path The path to sqlite3 db
+ * @param db_name The name of the db
+ * @param grpc_srv_addr The address of the grpc server for syncing
  * @return struct sqlite_context* pointer to the sqlite context, NULL on failure
  */
-struct sqlite_context* open_sqlite_db(char *db_path);
+struct sqlite_context* open_sqlite_db(char *db_path, char *db_name, char *grpc_srv_addr);
 
 /**
  * @brief Closes the sqlite db and frees the context

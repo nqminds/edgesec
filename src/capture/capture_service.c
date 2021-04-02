@@ -148,6 +148,13 @@ int run_capture(struct capture_conf *config)
   bpf_u_int32 mask, net;
   char ip_str[INET_ADDRSTRLEN], mask_str[INET_ADDRSTRLEN];
   struct capture_context context;
+  char grpc_srv_addr[MAX_WEB_PATH_LEN];
+
+  os_memset(grpc_srv_addr, 0, MAX_WEB_PATH_LEN);
+
+  if (strlen(config->sync_address)) {
+    snprintf(grpc_srv_addr, MAX_WEB_PATH_LEN, "%s:%u", config->sync_address, config->sync_port);
+  }
 
   log_info("Capturing interface %s", config->capture_interface);
   log_info("Promiscuous mode=%d", config->promiscuous);
@@ -155,6 +162,7 @@ int run_capture(struct capture_conf *config)
   log_info("Buffer timeout=%d", config->buffer_timeout);
   log_info("Process interval=%d (milliseconds)", config->process_interval);
   log_info("DB path=%s", config->db);
+  log_info("GRPC Server address=%s", grpc_srv_addr);
 
   // Transform to microseconds
   context.process_interval = config->process_interval * 1000;
@@ -248,7 +256,7 @@ int run_capture(struct capture_conf *config)
 
   log_info("Non-blocking state %d", pcap_getnonblock(context.pd, err));
 
-  context.sctx = open_sqlite_db(config->db);
+  context.sctx = open_sqlite_db(config->db, "capture.pcap.sqlite", grpc_srv_addr);
 
   if (context.sctx == NULL) {
     log_debug("open_sqlite_db fail");

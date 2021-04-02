@@ -18,8 +18,8 @@ bufferTimeout = 10
 processInterval = 10
 immediate = false
 db = "./pcap.sqlite"
-syncAddress = ""
-syncPort = 0
+syncAddress = "localhost"
+syncPort = 12345
 
 [supervisor]
 domainServerPath = "/tmp/edgesec-domain-server"
