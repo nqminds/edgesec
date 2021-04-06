@@ -130,6 +130,13 @@ ELSE ()
   message(FATAL_ERROR "Could not find libsqlite3 library.")
 endif ()
 
+find_library(LIBUUID_LIB NAMES uuid libuuid)
+if (LIBUUID_LIB)
+  message("Found libuuid library: ${LIBUUID_LIB}")
+ELSE ()
+  message(FATAL_ERROR "Could not find libuuid library.")
+endif ()
+
 # Fetch and Compile libgrpc
 set(RE2_BUILD_TESTING OFF)
 FetchContent_Declare(

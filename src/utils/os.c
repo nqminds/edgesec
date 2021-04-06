@@ -28,6 +28,7 @@
 #include <dirent.h>
 #include <ctype.h>
 #include <fcntl.h>
+#include <uuid/uuid.h>
 #include "utarray.h"
 #include "os.h"
 #include "log.h"
@@ -798,4 +799,11 @@ void replace_string_char(char *s, char in, char out)
 uint64_t os_get_timestamp(struct timeval ts)
 {
   return (uint64_t)(1000000 * ts.tv_sec + ts.tv_usec);
+}
+
+void generate_radom_uuid(char *rid)
+{
+  uuid_t id;
+  uuid_generate(id);
+  uuid_unparse_lower(id, rid);
 }

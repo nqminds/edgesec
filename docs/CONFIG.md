@@ -176,8 +176,8 @@ The timeout in milliseconds to read a packet. The default value is 10.
 ### processInterval (number)
 The interval in milliseconds to process a packet from the queue. The default value is 10.
 
-### db (string)
-Absolute path to the sqlite3 db.
+### dbPath (string)
+Absolute path to the sqlite3 dbs.
 
 ### syncAddress (string)
 The web address for sqlite syncing

@@ -470,4 +470,11 @@ int make_file_exec_fd(int fd);
  * @return char* The pointer to the source string
  */
 char *rtrim(char *str, const char *seps);
+
+/**
+ * @brief Generates a random UUID string of 36 characters long not including '\0'
+ * 
+ * @param rid The output string of 37 bytes
+ */
+void generate_radom_uuid(char *rid);
 #endif /* OS_H */

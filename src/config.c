@@ -555,14 +555,14 @@ bool load_capture_config(const char *filename, struct capture_conf *config)
 
   // Load db param
   value = os_zalloc(INI_BUFFERSIZE);
-  ret = ini_gets("capture", "db", "", value, INI_BUFFERSIZE, filename);
+  ret = ini_gets("capture", "dbPath", "./", value, INI_BUFFERSIZE, filename);
   if (!ret) {
-    fprintf(stderr, "capture db was not specified\n");
+    fprintf(stderr, "capture db path was not specified\n");
     os_free(value);
     return false;
   }
 
-  strncpy(config->db, value, MAX_OS_PATH_LEN);
+  strncpy(config->db_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
   // Load syncAddress param

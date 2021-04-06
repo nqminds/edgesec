@@ -692,11 +692,11 @@ int sqlite_trace_callback(unsigned int uMask, void* ctx, void* stm, void* X)
   sqlite3_stmt *statement = (sqlite3_stmt *)stm;
   char *sqlite_str = sqlite3_expanded_sql(statement);
 
-  // if (!run_sync_db_statement(sql_ctx->grpc_srv_addr, sql_ctx->db_name, sqlite_str)) {
-  //   log_trace("run_sync_db_statement fail");
-  // }
+  if (!run_sync_db_statement(sql_ctx->grpc_srv_addr, sql_ctx->db_name, sqlite_str)) {
+    log_trace("run_sync_db_statement fail");
+  }
 
-  log_info("Statement running=%s", sqlite_str);
+  // log_info("Statement running=%s", sqlite_str);
   sqlite3_free(sqlite_str);
 
   return 0;
@@ -713,15 +713,16 @@ struct sqlite_context* open_sqlite_db(char *db_path, char *db_name, char *grpc_s
     sqlite3_close(db);
     return ctx;
   }
-  log_trace("Register sqlite trace callback");
-  sqlite3_trace_v2(db, SQLITE_TRACE_STMT, sqlite_trace_callback, (void *)ctx);
-
-  log_debug("sqlite autocommit mode=%d", sqlite3_get_autocommit(db));
 
   ctx = os_zalloc(sizeof(struct sqlite_context));
   ctx->db = db;
   strncpy(ctx->db_name, db_name, MAX_DB_NAME);
   strncpy(ctx->grpc_srv_addr, grpc_srv_addr, MAX_WEB_PATH_LEN);
+
+  log_trace("Register sqlite trace callback");
+  sqlite3_trace_v2(db, SQLITE_TRACE_STMT, sqlite_trace_callback, (void *)ctx);
+
+  log_debug("sqlite autocommit mode=%d", sqlite3_get_autocommit(db));
 
   if (!run_register_db(ctx->grpc_srv_addr, ctx->db_name)) {
     log_trace("run_register_db fail");

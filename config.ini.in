@@ -17,7 +17,7 @@ promiscuous = false
 bufferTimeout = 10
 processInterval = 10
 immediate = false
-db = "./pcap.sqlite"
+dbPath = "./"
 syncAddress = "localhost"
 syncPort = 12345
 

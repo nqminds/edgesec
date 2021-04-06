@@ -6,7 +6,7 @@ include_directories(
 add_library(log log.c)
 
 add_library(os os.c)
-target_link_libraries(os log)
+target_link_libraries(os log ${LIBUUID_LIB})
 
 add_library(iptables iptables.c)
 target_link_libraries(iptables os log)
