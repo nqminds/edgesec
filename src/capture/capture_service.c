@@ -53,7 +53,7 @@
 struct capture_context {
   uint32_t process_interval;
   pcap_t *pd;
-  struct packet_queue *queue;
+  struct packet_queue *pqueue;
   struct sqlite_context *sctx;
 };
 
@@ -108,7 +108,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
   
 
   if ((count = extract_packets(header, packet, &tp_array)) > 0) {
-    add_packet_queue(tp_array, count, context->queue);
+    add_packet_queue(tp_array, count, context->pqueue);
   }
 
   utarray_free(tp_array);
@@ -129,13 +129,17 @@ void eloop_tout_handler(void *eloop_ctx, void *user_ctx)
   ssize_t count = 0;
 
   // Process all packets in the queue
-  while(get_packet_queue_length(context->queue)) {
-    if ((el = pop_packet_queue(context->queue)) != NULL) {
+  while(get_packet_queue_length(context->pqueue)) {
+    if ((el = pop_packet_queue(context->pqueue)) != NULL) {
       extract_statements(context->sctx, &(el->tp));
       // Process packet
       free_packet_queue_el(el);
       count ++;
     }
+  }
+
+  if (sqlite_sync_statements(context->sctx) == -1) {
+    log_trace("sqlite_sync_statements fail");
   }
 
   if (eloop_register_timeout(0, context->process_interval, eloop_tout_handler, (void *)NULL, (void *)context) == -1) {
@@ -180,9 +184,9 @@ int run_capture(struct capture_conf *config)
   // Transform to microseconds
   context.process_interval = config->process_interval * 1000;
 
-  context.queue = init_packet_queue();
+  context.pqueue = init_packet_queue();
 
-  if (context.queue == NULL) {
+  if (context.pqueue == NULL) {
     log_debug("init_packet_queue fail");
     os_free(db_path);
     return -1;
@@ -190,7 +194,7 @@ int run_capture(struct capture_conf *config)
 
   if (!find_device(config->capture_interface, &net, &mask)) {
     log_debug("find_interfaces fail");
-    free_packet_queue(context.queue);
+    free_packet_queue(context.pqueue);
     os_free(db_path);
     return -1;
   }
@@ -201,7 +205,7 @@ int run_capture(struct capture_conf *config)
 
 	if ((context.pd = pcap_create(config->capture_interface, err)) == NULL) {
 	  log_debug("Couldn't open device %s: %s", config->capture_interface, err);
-    free_packet_queue(context.queue);
+    free_packet_queue(context.pqueue);
     os_free(db_path);
 	  return -1;
 	}
@@ -209,7 +213,7 @@ int run_capture(struct capture_conf *config)
   if (pcap_set_snaplen(context.pd, PCAP_SNAPSHOT_LENGTH) < 0) {
     log_debug("pcap_set_snaplen fail %d", ret);
     pcap_close(context.pd);
-    free_packet_queue(context.queue);
+    free_packet_queue(context.pqueue);
     os_free(db_path);
     return -1;
   }
@@ -217,7 +221,7 @@ int run_capture(struct capture_conf *config)
   if ((ret = pcap_set_immediate_mode(context.pd, 0)) < 0) {
     log_debug("pcap_set_immediate_mode fail %d", ret);
     pcap_close(context.pd);
-    free_packet_queue(context.queue);
+    free_packet_queue(context.pqueue);
     os_free(db_path);
     return -1;
   }
@@ -225,7 +229,7 @@ int run_capture(struct capture_conf *config)
   if ((ret = pcap_set_promisc(context.pd, config->promiscuous)) < 0) {
     log_debug("pcap_set_promisc fail: %d", ret);
     pcap_close(context.pd);
-    free_packet_queue(context.queue);
+    free_packet_queue(context.pqueue);
     os_free(db_path);
     return -1;
   }
@@ -233,7 +237,7 @@ int run_capture(struct capture_conf *config)
   if ((ret = pcap_set_timeout(context.pd, (int)config->buffer_timeout)) < 0) {
     log_debug("pcap_set_timeout fail: %d", ret);
     pcap_close(context.pd);
-    free_packet_queue(context.queue);
+    free_packet_queue(context.pqueue);
     os_free(db_path);
     return -1;
   }
@@ -241,7 +245,7 @@ int run_capture(struct capture_conf *config)
   if ((ret = pcap_set_buffer_size(context.pd, PCAP_BUFFER_SIZE)) < 0) {
     log_debug("pcap_set_buffer_size fail: %d", ret);
     pcap_close(context.pd);
-    free_packet_queue(context.queue);
+    free_packet_queue(context.pqueue);
     os_free(db_path);
     return -1;
   }
@@ -251,7 +255,7 @@ int run_capture(struct capture_conf *config)
   if(ret < 0) {
     log_debug("pcap_activate fail: %d", ret);
     pcap_close(context.pd);
-    free_packet_queue(context.queue);
+    free_packet_queue(context.pqueue);
     os_free(db_path);
     return -1;
   } else if (ret > 0) {
@@ -262,7 +266,7 @@ int run_capture(struct capture_conf *config)
     log_debug("pcap device doesn't support file descriptors");
 	  /* And close the session */
 	  pcap_close(context.pd);
-    free_packet_queue(context.queue);
+    free_packet_queue(context.pqueue);
     os_free(db_path);
     return -1;
   }
@@ -273,7 +277,7 @@ int run_capture(struct capture_conf *config)
   if (pcap_setnonblock(context.pd, 1, err) < 0) {
     log_debug("pcap_setnonblock fail: %s", err);
     pcap_close(context.pd);
-    free_packet_queue(context.queue);
+    free_packet_queue(context.pqueue);
     os_free(db_path);
     return -1;
   }
@@ -285,7 +289,7 @@ int run_capture(struct capture_conf *config)
   if (context.sctx == NULL) {
     log_debug("open_sqlite_db fail");
     pcap_close(context.pd);
-    free_packet_queue(context.queue);
+    free_packet_queue(context.pqueue);
     os_free(db_path);
     return -1;
   }
@@ -293,7 +297,7 @@ int run_capture(struct capture_conf *config)
   if (eloop_init()) {
 		log_debug("Failed to initialize event loop");
 		pcap_close(context.pd);
-    free_packet_queue(context.queue);
+    free_packet_queue(context.pqueue);
     os_free(db_path);
     return -1;
 	}
@@ -314,7 +318,7 @@ int run_capture(struct capture_conf *config)
 	/* And close the session */
 	pcap_close(context.pd);
   eloop_destroy();
-  free_packet_queue(context.queue);
+  free_packet_queue(context.pqueue);
   free_sqlite_db(context.sctx);
   os_free(db_path);
   return 0;
@@ -322,7 +326,7 @@ int run_capture(struct capture_conf *config)
 fail:
 	pcap_close(context.pd);
   eloop_destroy();
-  free_packet_queue(context.queue);
+  free_packet_queue(context.pqueue);
   free_sqlite_db(context.sctx);
   os_free(db_path);
   return -1;

@@ -32,6 +32,7 @@
 #include "packet_decoder.h"
 
 #include "../utils/os.h"
+#include "../utils/squeue.h"
 
 #define MAX_DB_NAME           100
 
@@ -90,7 +91,7 @@
                           "op INTEGER, htype INTEGER, hlen INTEGER, hops INTEGER, xid INTEGER, secs INTEGER, flags INTEGER, " \
                           "ciaddr TEXT, yiaddr TEXT, siaddr TEXT, giaddr TEXT, PRIMARY KEY (hash, timestamp, ethh_hash));"
 
-#define ETH_INSERT_INTO "INSERT INTO eth VALUES(@hash, @timestamp, @ethh_hash, @caplen, @length, @ether_dhost, @ether_shost, @ether_type)"
+#define ETH_INSERT_INTO "INSERT INTO eth VALUES(@hash, @timestamp, @ethh_hash, @caplen, @length, @ether_dhost, @ether_shost, @ether_type);"
 #define ARP_INSERT_INTO "INSERT INTO arp VALUES(@hash, @timestamp, @ethh_hash, @caplen, @length, " \
                         "@arp_hrd, @arp_pro, @arp_hln, @arp_pln, @arp_op, @arp_sha, @arp_spa, " \
                         "@arp_tha, @arp_tpa);"
@@ -320,9 +321,18 @@ struct sqlite_context {
   sqlite3 *db;
   char grpc_srv_addr[MAX_WEB_PATH_LEN];
   char db_name[MAX_DB_NAME];
+  struct string_queue *squeue;
 };
 
 void extract_statements(struct sqlite_context *ctx, struct tuple_packet *tp);
+
+/**
+ * @brief Synchronises the sqlite statements with the cloud db
+ * 
+ * @param ctx The sqlite context structure
+ * @return int 0 on success, -1 on failure
+ */
+int sqlite_sync_statements(struct sqlite_context *ctx);
 
 /**
  * @brief Opens the sqlite3 database

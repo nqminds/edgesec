@@ -18,73 +18,73 @@
  ****************************************************************************/
 
 /**
- * @file packet_queue.h 
+ * @file squeue.h 
  * @author Alexandru Mereacre 
- * @brief File containing the definition of the packet queue utilities.
+ * @brief File containing the definition of the string queue utilities.
  */
 
-#ifndef PACKET_QUEUE_H
-#define PACKET_QUEUE_H
+#ifndef SQUEUE_H
+#define SQUEUE_H
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "packet_decoder.h"
-#include "../utils/list.h"
+#include "squeue.h"
+#include "list.h"
 
 /**
- * @brief Packet queueu structure definition
+ * @brief String queue structure definition
  * 
  */
-struct packet_queue {
-  struct tuple_packet tp;       /**< Packet address and metadata */
+struct string_queue {
+  char *str;                    /**< String value */
   struct dl_list list;          /**< List defintion */
 };
 
 /**
- * @brief Initialises and empty packet queue
+ * @brief Initialises and empty string queue
  * 
- * @return struct packet_queue* Returned initialised empty packet queue
+ * @return struct string_queue* Returned initialised empty string queue
  */
-struct packet_queue* init_packet_queue(void);
+struct string_queue* init_string_queue(void);
 
 /**
- * @brief Pushes a packet in the packet queue
+ * @brief Pushes a string in the string queue
  * 
- * @param queue The packet queue
- * @param tp The packet tuple
- * @return struct packet_queue* Returned the packet queue element
+ * @param queue The string queue
+ * @param str The string value
+ * @return struct string_queue* Returned added string queue element
  */
-struct packet_queue* push_packet_queue(struct packet_queue* queue, struct tuple_packet tp);
+struct string_queue* push_string_queue(struct string_queue* queue, char *str);
 
 /**
- * @brief Extract the first packet from the packet queueu
+ * @brief Extract the first string from the string queueu
  * 
- * @param queue The packet queue
- * @return struct packet_queue* The returned packet (NULL if queue is empty)
+ * @param queue The string queue
+ * @return struct string_queue* The returned string (NULL if queue is empty)
  */
-struct packet_queue* pop_packet_queue(struct packet_queue* queue);
+struct string_queue* pop_string_queue(struct string_queue* queue);
 
 /**
- * @brief Delete a packet entry
+ * @brief Delete a string entry
  * 
- * @param el The packet queue entry
+ * @param el The string queue entry
  */
-void free_packet_queue_el(struct packet_queue* el);
+void free_string_queue_el(struct string_queue* el);
 
 /**
- * @brief Returns the packet queue length
+ * @brief Returns the string queue length
  * 
- * @param el The pointer to the packet queue
- * @return ssize_t The packet queue length
+ * @param el The pointer to the string queue
+ * @return ssize_t The string queue length
  */
-ssize_t get_packet_queue_length(struct packet_queue* queue);
+ssize_t get_string_queue_length(struct string_queue* queue);
 
 /**
- * @brief Frees the packet queue
+ * @brief Frees the string queue
  * 
- * @param queue The pointer to the packet queue
+ * @param queue The pointer to the string queue
  */
-void free_packet_queue(struct packet_queue* queue);
+void free_string_queue(struct string_queue* queue);
 #endif

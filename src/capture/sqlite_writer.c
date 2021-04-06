@@ -43,6 +43,7 @@
 #include "sqlite_writer.h"
 #include "packet_decoder.h"
 
+#include "../utils/squeue.h"
 #include "../utils/os.h"
 #include "../utils/if.h"
 #include "../utils/log.h"
@@ -655,7 +656,7 @@ int execute_sqlite_query(struct sqlite_context *ctx, char *statement)
 int check_table_exists(struct sqlite_context *ctx, char *table_name)
 {
   sqlite3_stmt *res;
-  char *sql = "SELECT name FROM sqlite_master WHERE type='table' AND name=?";
+  char *sql = "SELECT name FROM sqlite_master WHERE type='table' AND name=?;";
   int rc = sqlite3_prepare_v2(ctx->db, sql, -1, &res, 0);
 
 
@@ -681,6 +682,7 @@ int check_table_exists(struct sqlite_context *ctx, char *table_name)
 void free_sqlite_db(struct sqlite_context *ctx)
 {
   if (ctx != NULL) {
+    free_string_queue(ctx->squeue);
     sqlite3_close(ctx->db);
     os_free(ctx);
   }
@@ -692,13 +694,49 @@ int sqlite_trace_callback(unsigned int uMask, void* ctx, void* stm, void* X)
   sqlite3_stmt *statement = (sqlite3_stmt *)stm;
   char *sqlite_str = sqlite3_expanded_sql(statement);
 
-  if (!run_sync_db_statement(sql_ctx->grpc_srv_addr, sql_ctx->db_name, sqlite_str)) {
+  if (push_string_queue(sql_ctx->squeue, sqlite_str) == NULL) {
+    log_trace("push_string_queue fail");
+  }
+
+  log_info("Statement running=%s", sqlite_str);
+  sqlite3_free(sqlite_str);
+
+  return 0;
+}
+
+int sqlite_sync_statements(struct sqlite_context *ctx)
+{
+  ssize_t count = 0;
+  struct string_queue *el;
+  char *sql_str = NULL;
+  ssize_t size = 1;
+
+  // Process all strings in the queue
+  while(get_string_queue_length(ctx->squeue)) {
+    if ((el = pop_string_queue(ctx->squeue)) != NULL) {
+      size += strlen(el->str);
+      if (sql_str == NULL) {
+        sql_str = os_zalloc(size);
+      } else sql_str = os_realloc(sql_str, size);
+
+      if (sql_str == NULL) {
+        log_err("os_malloc");
+        return -1;  
+      }
+
+      strcpy(sql_str, el->str);
+
+      // Process string element
+      free_string_queue_el(el);
+      count ++;
+    }
+  }
+
+  if (!run_sync_db_statement(ctx->grpc_srv_addr, ctx->db_name, sql_str)) {
     log_trace("run_sync_db_statement fail");
   }
 
-  // log_info("Statement running=%s", sqlite_str);
-  sqlite3_free(sqlite_str);
-
+  os_free(sql_str);
   return 0;
 }
 
@@ -711,10 +749,17 @@ struct sqlite_context* open_sqlite_db(char *db_path, char *db_name, char *grpc_s
   if (rc != SQLITE_OK) {     
     log_debug("Cannot open database: %s", sqlite3_errmsg(db));
     sqlite3_close(db);
-    return ctx;
+    return NULL;
   }
 
   ctx = os_zalloc(sizeof(struct sqlite_context));
+  ctx->squeue = init_string_queue();
+  if (ctx->squeue == NULL) {
+    log_debug("init_string_queue fail");
+    sqlite3_close(db);
+    return NULL;
+  }
+
   ctx->db = db;
   strncpy(ctx->db_name, db_name, MAX_DB_NAME);
   strncpy(ctx->grpc_srv_addr, grpc_srv_addr, MAX_WEB_PATH_LEN);

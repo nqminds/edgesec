@@ -27,3 +27,6 @@ target_link_libraries(eloop log os)
 
 add_library(hash hash.c)
 target_link_libraries(hash os)
+
+add_library(squeue squeue.c)
+target_link_libraries(squeue log os)

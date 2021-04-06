@@ -18,23 +18,22 @@
  ****************************************************************************/
 
 /**
- * @file packet_queue.c
+ * @file squeue.c
  * @author Alexandru Mereacre 
- * @brief File containing the implementation of the packet queue utilities.
+ * @brief File containing the implementation of the string queue utilities.
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "packet_queue.h"
-#include "packet_decoder.h"
-#include "../utils/os.h"
-#include "../utils/log.h"
+#include "squeue.h"
+#include "os.h"
+#include "log.h"
 
-struct packet_queue* init_packet_queue(void)
+struct string_queue* init_string_queue(void)
 {
-  struct packet_queue *queue;
+  struct string_queue *queue;
   queue = os_zalloc(sizeof(*queue));
 
   if (queue == NULL) {
@@ -47,54 +46,61 @@ struct packet_queue* init_packet_queue(void)
   return queue;
 }
 
-struct packet_queue* push_packet_queue(struct packet_queue* queue, struct tuple_packet tp)
+struct string_queue* push_string_queue(struct string_queue* queue, char *str)
 {
-  struct packet_queue* el;
+  struct string_queue* el;
+
+  if (str == NULL) {
+    log_debug("str param is NULL");
+    return NULL;
+  }
 
   if (queue == NULL) {
     log_debug("queue param is NULL");
     return NULL;
   }
   
-  if ((el = init_packet_queue()) == NULL) {
-    log_debug("init_packet_queue fail");
+  if ((el = init_string_queue()) == NULL) {
+    log_debug("init_string_queue fail");
     return NULL;
   }
 
-  el->tp = tp;
+  el->str = (char*) os_malloc(strlen(str));
+  strcpy(el->str, str);
+
   dl_list_add_tail(&queue->list, &el->list);
 
   return el;
 }
 
-struct packet_queue* pop_packet_queue(struct packet_queue* queue)
+struct string_queue* pop_string_queue(struct string_queue* queue)
 {
   if (queue == NULL)
     return NULL;
 
-  return dl_list_first(&queue->list, struct packet_queue, list);
+  return dl_list_first(&queue->list, struct string_queue, list);
 }
 
-void free_packet_queue_el(struct packet_queue* el)
+void free_string_queue_el(struct string_queue* el)
 {
   if (el) {
     dl_list_del(&el->list);
-    free_packet_tuple(&el->tp);
+    os_free(el->str);
 	  os_free(el);
   }
 }
 
-void free_packet_queue(struct packet_queue* queue)
+void free_string_queue(struct string_queue* queue)
 {
-  struct packet_queue* el;
+  struct string_queue* el;
 
-  while ((el = pop_packet_queue(queue)) != NULL)
-    free_packet_queue_el(el);
+  while ((el = pop_string_queue(queue)) != NULL)
+    free_string_queue_el(el);
 
-  free_packet_queue_el(queue);
+  free_string_queue_el(queue);
 }
 
-ssize_t get_packet_queue_length(struct packet_queue* queue)
+ssize_t get_string_queue_length(struct string_queue* queue)
 {
   return (queue != NULL) ? dl_list_len(&queue->list) : 0;
 }

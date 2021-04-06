@@ -16,4 +16,4 @@ add_library(sync_client sync_client.cc)
 target_link_libraries(sync_client log sqlite_grpc_proto ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF})
 
 add_library(sqlite_writer sqlite_writer.c)
-target_link_libraries(sqlite_writer sync_client log os ${LIBSQLITE3_LIB})
+target_link_libraries(sqlite_writer sync_client squeue log os ${LIBSQLITE3_LIB})
