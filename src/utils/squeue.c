@@ -65,7 +65,7 @@ struct string_queue* push_string_queue(struct string_queue* queue, char *str)
     return NULL;
   }
 
-  el->str = (char*) os_malloc(strlen(str));
+  el->str = (char*) os_zalloc(strlen(str) + 1);
   strcpy(el->str, str);
 
   dl_list_add_tail(&queue->list, &el->list);

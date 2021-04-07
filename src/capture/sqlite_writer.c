@@ -698,7 +698,7 @@ int sqlite_trace_callback(unsigned int uMask, void* ctx, void* stm, void* X)
     log_trace("push_string_queue fail");
   }
 
-  log_info("Statement running=%s", sqlite_str);
+  // log_info("Statement running=%s", sqlite_str);
   sqlite3_free(sqlite_str);
 
   return 0;
@@ -724,7 +724,7 @@ int sqlite_sync_statements(struct sqlite_context *ctx)
         return -1;  
       }
 
-      strcpy(sql_str, el->str);
+      strcat(sql_str, el->str);
 
       // Process string element
       free_string_queue_el(el);
@@ -732,11 +732,12 @@ int sqlite_sync_statements(struct sqlite_context *ctx)
     }
   }
 
-  if (!run_sync_db_statement(ctx->grpc_srv_addr, ctx->db_name, sql_str)) {
-    log_trace("run_sync_db_statement fail");
+  if (sql_str != NULL) {
+    if (!run_sync_db_statement(ctx->grpc_srv_addr, ctx->db_name, sql_str)) {
+      log_trace("run_sync_db_statement fail");
+    }
+    os_free(sql_str);
   }
-
-  os_free(sql_str);
   return 0;
 }
 
