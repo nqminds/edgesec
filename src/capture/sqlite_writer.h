@@ -324,7 +324,13 @@ struct sqlite_context {
   struct string_queue *squeue;
 };
 
-void extract_statements(struct sqlite_context *ctx, struct tuple_packet *tp);
+/**
+ * @brief Save packets to sqlite db
+ * 
+ * @param ctx The sqlite context structure
+ * @param tp The packet tuple structure
+ */
+void save_packet_statement(struct sqlite_context *ctx, struct tuple_packet *tp);
 
 /**
  * @brief Synchronises the sqlite statements with the cloud db

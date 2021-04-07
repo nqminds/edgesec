@@ -1096,12 +1096,12 @@ bool validate_ipv4_string(char *ip)
   char proc_ip[IP_LEN];
   char *netmask_sep = strchr(ip, '/');
   int netmask_char_size;
-	size_t ip_len = strlen(ip) - strlen(netmask_sep);
+	size_t ip_len;
 
   os_memset(proc_ip, 0, IP_LEN);
   if (netmask_sep) {
-		memcpy(proc_ip, ip, ip_len);
-		proc_ip[ip_len] = '\0';
+		ip_len = strlen(ip) - strlen(netmask_sep);
+		strncpy(proc_ip, ip, ip_len);
 
 		netmask_char_size = strlen(netmask_sep + 1);
 		if (netmask_char_size > 2 || netmask_char_size < 1) {

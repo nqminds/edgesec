@@ -599,7 +599,7 @@ void extract_dhcp_statement(struct sqlite_context *ctx, struct tuple_packet *tp)
   }
 }
 
-void extract_statements(struct sqlite_context *ctx, struct tuple_packet *tp)
+void save_packet_statement(struct sqlite_context *ctx, struct tuple_packet *tp)
 {
   switch (tp->mp.type) {
     case PACKET_ETHERNET:

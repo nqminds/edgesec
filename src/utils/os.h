@@ -369,7 +369,7 @@ ssize_t split_string_array(const char *str, char sep, UT_array *arr);
 char *allocate_string(char *src);
 
 /**
- * @brief Concated to strign paths
+ * @brief Concatenate two string paths
  * 
  * @param path_left First string path
  * @param path_right Second string path
@@ -389,7 +389,7 @@ char *get_valid_path(char *path);
 extern "C" {
 #endif
 /**
- * @brief Constrict a valuid path from two paths
+ * @brief Construct a valid path from two paths
  * 
  * @param path_left First path
  * @param path_right Second path

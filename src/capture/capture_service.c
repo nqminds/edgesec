@@ -55,6 +55,8 @@ struct capture_context {
   pcap_t *pd;
   struct packet_queue *pqueue;
   struct sqlite_context *sctx;
+  bool db_write;
+  bool db_sync;
 };
 
 bool find_device(char *ifname, bpf_u_int32 *net, bpf_u_int32 *mask)
@@ -131,15 +133,18 @@ void eloop_tout_handler(void *eloop_ctx, void *user_ctx)
   // Process all packets in the queue
   while(get_packet_queue_length(context->pqueue)) {
     if ((el = pop_packet_queue(context->pqueue)) != NULL) {
-      extract_statements(context->sctx, &(el->tp));
+      if (context->db_write)
+        save_packet_statement(context->sctx, &(el->tp));
       // Process packet
       free_packet_queue_el(el);
       count ++;
     }
   }
 
-  if (sqlite_sync_statements(context->sctx) == -1) {
-    log_trace("sqlite_sync_statements fail");
+  if (context->db_sync) {
+    if (sqlite_sync_statements(context->sctx) == -1) {
+      log_trace("sqlite_sync_statements fail");
+    }
   }
 
   if (eloop_register_timeout(0, context->process_interval, eloop_tout_handler, (void *)NULL, (void *)context) == -1) {
@@ -168,8 +173,8 @@ int run_capture(struct capture_conf *config)
     return -1;
   }
 
-  if (strlen(config->sync_address)) {
-    snprintf(grpc_srv_addr, MAX_WEB_PATH_LEN, "%s:%u", config->sync_address, config->sync_port);
+  if (strlen(config->db_sync_address)) {
+    snprintf(grpc_srv_addr, MAX_WEB_PATH_LEN, "%s:%d", config->db_sync_address, config->db_sync_port);
   }
 
   log_info("Capturing interface %s", config->capture_interface);
@@ -177,13 +182,16 @@ int run_capture(struct capture_conf *config)
   log_info("Immediate mode=%d", config->immediate);
   log_info("Buffer timeout=%d", config->buffer_timeout);
   log_info("Process interval=%d (milliseconds)", config->process_interval);
+  log_info("DB write=%d", config->db_write);
+  log_info("DB sync=%d", config->db_sync);
   log_info("DB name=%s", db_name);
   log_info("DB path=%s", db_path);
   log_info("GRPC Server address=%s", grpc_srv_addr);
 
   // Transform to microseconds
   context.process_interval = config->process_interval * 1000;
-
+  context.db_write = config->db_write;
+  context.db_sync = config->db_sync;
   context.pqueue = init_packet_queue();
 
   if (context.pqueue == NULL) {
@@ -284,14 +292,16 @@ int run_capture(struct capture_conf *config)
 
   log_info("Non-blocking state %d", pcap_getnonblock(context.pd, err));
 
-  context.sctx = open_sqlite_db(db_path, db_name, grpc_srv_addr);
+  if (config->db_write) {
+    context.sctx = open_sqlite_db(db_path, db_name, grpc_srv_addr);
 
-  if (context.sctx == NULL) {
-    log_debug("open_sqlite_db fail");
-    pcap_close(context.pd);
-    free_packet_queue(context.pqueue);
-    os_free(db_path);
-    return -1;
+    if (context.sctx == NULL) {
+      log_debug("open_sqlite_db fail");
+      pcap_close(context.pd);
+      free_packet_queue(context.pqueue);
+      os_free(db_path);
+      return -1;
+    }
   }
 
   if (eloop_init()) {
@@ -319,7 +329,8 @@ int run_capture(struct capture_conf *config)
 	pcap_close(context.pd);
   eloop_destroy();
   free_packet_queue(context.pqueue);
-  free_sqlite_db(context.sctx);
+  if (config->db_write)
+    free_sqlite_db(context.sctx);
   os_free(db_path);
   return 0;
 
@@ -327,7 +338,8 @@ fail:
 	pcap_close(context.pd);
   eloop_destroy();
   free_packet_queue(context.pqueue);
-  free_sqlite_db(context.sctx);
+  if (config->db_write)
+    free_sqlite_db(context.sctx);
   os_free(db_path);
   return -1;
 }

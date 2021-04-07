@@ -391,12 +391,11 @@ char *concat_paths(char *path_left, char *path_right)
   else
    concat_len = strlen(path_left) + strlen(path_right) + 2;
 
-  char *concat = os_malloc(concat_len);
+  char *concat = os_zalloc(concat_len);
 
   if (concat == NULL)
-    log_err_ex("os_malloc");
+    log_err_ex("os_zalloc");
 
-  memset(concat, '\0', concat_len);
   if (path_left != NULL)
     strcat(concat, path_left);
 

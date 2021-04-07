@@ -176,13 +176,19 @@ The timeout in milliseconds to read a packet. The default value is 10.
 ### processInterval (number)
 The interval in milliseconds to process a packet from the queue. The default value is 10.
 
+### dbWrite (boolean)
+If set to true the capture service will store the packet into an sqlite db
+
+### dbSync (boolean)
+If set to true the sqlite packets db will be synced
+
 ### dbPath (string)
 Absolute path to the sqlite3 dbs.
 
-### syncAddress (string)
+### dbSyncAddress (string)
 The web address for sqlite syncing
 
-### syncPort (number)
+### dbSyncPort (number)
 The port of the web address for sqlite syncing
 
 ## [supervisor] group

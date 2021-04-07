@@ -565,14 +565,20 @@ bool load_capture_config(const char *filename, struct capture_conf *config)
   strncpy(config->db_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
+  // Load dbWrite param
+  config->db_write = (int) ini_getbool("capture", "dbWrite", 0, filename);
+
+  // Load dbSync param
+  config->db_sync = (int) ini_getbool("capture", "dbSync", 0, filename);
+
   // Load syncAddress param
   value = os_zalloc(INI_BUFFERSIZE);
-  ini_gets("capture", "syncAddress", "", value, INI_BUFFERSIZE, filename);
-  strncpy(config->sync_address, value, MAX_WEB_PATH_LEN);
+  ini_gets("capture", "dbSyncAddress", "", value, INI_BUFFERSIZE, filename);
+  strncpy(config->db_sync_address, value, MAX_WEB_PATH_LEN);
   os_free(value);
 
   // Load syncPort param
-  config->sync_port = (uint16_t) ini_getl("capture", "syncPort", 0, filename);
+  config->db_sync_port = (uint16_t) ini_getl("capture", "dbSyncPort", 0, filename);
 
   return true;
 }

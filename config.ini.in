@@ -17,9 +17,11 @@ promiscuous = false
 bufferTimeout = 10
 processInterval = 10
 immediate = false
+dbWrite = true
+dbSync = true
 dbPath = "./"
-syncAddress = "localhost"
-syncPort = 12345
+dbSyncAddress = "localhost"
+dbSyncPort = 12345
 
 [supervisor]
 domainServerPath = "/tmp/edgesec-domain-server"

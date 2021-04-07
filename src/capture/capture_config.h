@@ -37,13 +37,15 @@
  */
 struct capture_conf {
   char capture_interface[IFNAMSIZ];                           /**< The capture interface name (any - to capture on all interfaces) */
-  int promiscuous;                                            /**< Specifies whether the interface is to be put into promiscuous mode. If promiscuous param is non-zero, promiscuous mode will be set, otherwise it will not be set */
-  int immediate;                                              /**< sets whether immediate mode should be set on a capture handle when the handle is activated. If immediate param is non-zero, immediate mode will be set, otherwise it will not be set. */
+  bool promiscuous;                                           /**< Specifies whether the interface is to be put into promiscuous mode. If promiscuous param is non-zero, promiscuous mode will be set, otherwise it will not be set */
+  bool immediate;                                             /**< Sets whether immediate mode should be set on a capture handle when the handle is activated. If immediate param is non-zero, immediate mode will be set, otherwise it will not be set. */
   uint16_t buffer_timeout;                                    /**< Specifies the packet buffer timeout, as a non-negative value, in milliseconds. (See pcap(3PCAP) for an explanation of the packet buffer timeout.) */
   uint16_t process_interval;                                  /**< Specifies the packet process interval, in milliseconds */ 
+  bool db_write;                                              /**< Specifies wether the packets should be saved in a sqlite db. */
+  bool db_sync;                                               /**< Specifies wether the packets db should be synced. */
   char db_path[MAX_OS_PATH_LEN];                              /**< Specifies the path to the sqlite3 dbs */ 
-  char sync_address[MAX_WEB_PATH_LEN];                        /**< Specifies the web address for sqlite syncing */
-  uint16_t sync_port;                                         /**< Specifies the port of the web address for sqlite syncing */
+  char db_sync_address[MAX_WEB_PATH_LEN];                     /**< Specifies the web address for sqlite syncing */
+  uint16_t db_sync_port;                                      /**< Specifies the port of the web address for sqlite syncing */
 };
 
 #endif
