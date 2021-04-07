@@ -526,18 +526,12 @@ bool load_dhcp_conf(const char *filename, struct app_config *config)
   return true;
 }
 
-bool load_capture_config(const char *filename, struct capture_conf *config)
+void load_capture_config(const char *filename, struct capture_conf *config)
 {
   char *value = os_zalloc(INI_BUFFERSIZE);
 
   // Load dhpc config file path
   int ret = ini_gets("capture", "captureInterface", "", value, INI_BUFFERSIZE, filename);
-  if (!ret) {
-    fprintf(stderr, "captureInterface was not specified\n");
-    os_free(value);
-    return false;
-  }
-
   strncpy(config->capture_interface, value, IFNAMSIZ);
   os_free(value);
 
@@ -556,12 +550,6 @@ bool load_capture_config(const char *filename, struct capture_conf *config)
   // Load db param
   value = os_zalloc(INI_BUFFERSIZE);
   ret = ini_gets("capture", "dbPath", "./", value, INI_BUFFERSIZE, filename);
-  if (!ret) {
-    fprintf(stderr, "capture db path was not specified\n");
-    os_free(value);
-    return false;
-  }
-
   strncpy(config->db_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
@@ -579,8 +567,6 @@ bool load_capture_config(const char *filename, struct capture_conf *config)
 
   // Load syncPort param
   config->db_sync_port = (uint16_t) ini_getl("capture", "dbSyncPort", 0, filename);
-
-  return true;
 }
 
 bool load_app_config(const char *filename, struct app_config *config)

@@ -74,7 +74,6 @@ bool load_app_config(const char *filename, struct app_config *config);
  * 
  * @param filename The app configuration file
  * @param config The configuration structure
- * @return true on success, false otherwise
  */
-bool load_capture_config(const char *filename, struct capture_conf *config);
+void load_capture_config(const char *filename, struct capture_conf *config);
 #endif

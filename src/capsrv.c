@@ -45,7 +45,9 @@
 #include "utils/minIni.h"
 
 #define OPT_STRING    ":c:dvh"
-#define USAGE_STRING  "\t%s [-c config] [-d] [-h] [-v]\n"
+#define USAGE_STRING  "\t%s [-c config] [-d] [-h] [-v] " \
+                      "[-i interface] [-m] [-t timeout] [-n interval] " \
+                      "[-e] [-w] [-s] [-p path] [-a address] [-o port]\n"
 
 static __thread char version_buf[10];
 
@@ -74,6 +76,16 @@ void show_app_help(char *app_name)
   fprintf(stdout, USAGE_STRING, basename(app_name));
   fprintf(stdout, "\nOptions:\n");
   fprintf(stdout, "\t-c config\t Path to the config file name\n");
+  fprintf(stdout, "\t-i interface\t The capture interface name\n");
+  fprintf(stdout, "\t-m\t\t Promiscuous mode\n");
+  fprintf(stdout, "\t-t timeout\t The buffer timeout (milliseconds)\n");
+  fprintf(stdout, "\t-n interval\t The process intereval (milliseconds)\n");
+  fprintf(stdout, "\t-e\t\t Immediate mode\n");
+  fprintf(stdout, "\t-w\t\t Write to db\n");
+  fprintf(stdout, "\t-s\t\t Sync the db\n");
+  fprintf(stdout, "\t-p path\t\t The db path\n");
+  fprintf(stdout, "\t-a address\t The db sync address\n");
+  fprintf(stdout, "\t-o port\t\t The db sync port\n");
   fprintf(stdout, "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n");
   fprintf(stdout, "\t-h\t\t Show help\n");
   fprintf(stdout, "\t-v\t\t Show app version\n\n");
@@ -161,11 +173,7 @@ int main(int argc, char *argv[])
 
   // Set the log level
   log_set_level(level);
-
-  if (!load_capture_config(filename, &config)) {
-    fprintf(stderr, "load_capture_config fail\n");
-    exit(EXIT_FAILURE);
-  }
+  load_capture_config(filename, &config);
 
   if (run_capture(&config) == -1) {
     fprintf(stderr, "run_capture fail\n");
