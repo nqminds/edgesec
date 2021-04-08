@@ -44,7 +44,7 @@
 #include "utils/os.h"
 #include "utils/minIni.h"
 
-#define OPT_STRING    ":c:dvh"
+#define OPT_STRING    ":c:i:t:n:p:a:o:dvhmews"
 #define USAGE_STRING  "\t%s [-c config] [-d] [-h] [-v] " \
                       "[-i interface] [-m] [-t timeout] [-n interval] " \
                       "[-e] [-w] [-s] [-p path] [-a address] [-o port]\n"
@@ -109,7 +109,7 @@ void log_cmdline_error(const char *format, ...)
     exit(EXIT_FAILURE);
 }
 
-int get_port(char *port_str)
+long get_arg_num(char *port_str)
 {
   if (!is_number(port_str))
     return -1;
@@ -118,12 +118,15 @@ int get_port(char *port_str)
 }
 
 void process_app_options(int argc, char *argv[], uint8_t *verbosity,
-                          const char **config_filename)
+                          const char **filename, struct capture_conf *config)
 {
   int opt;
 
   while ((opt = getopt(argc, argv, OPT_STRING)) != -1) {
     switch (opt) {
+    case 'd':
+      (*verbosity)++;
+      break;
     case 'h':
       show_app_help(argv[0]);
       break;
@@ -131,10 +134,49 @@ void process_app_options(int argc, char *argv[], uint8_t *verbosity,
       show_app_version();
       break;
     case 'c':
-      *config_filename = optarg;
+      *filename = optarg;
       break;
-    case 'd':
-      (*verbosity)++;
+    case 'i':
+      strncpy(config->capture_interface, optarg, IFNAMSIZ);
+      break;
+    case 'm':
+      config->promiscuous = true;
+      break;
+    case 't':
+      config->buffer_timeout = get_arg_num(optarg);
+      if (config->buffer_timeout < 0) {
+        log_cmdline_error("Wrong buffer timeout\n");
+        exit(EXIT_FAILURE);
+      }
+      break;
+    case 'n':
+      config->process_interval = get_arg_num(optarg);
+      if (config->process_interval < 0) {
+        log_cmdline_error("Wrong process interval\n");
+        exit(EXIT_FAILURE);
+      }
+      break;
+    case 'e':
+      config->immediate = true;
+      break;
+    case 'w':
+      config->db_write = true;
+      break;
+    case 's':
+      config->db_sync = true;
+      break;
+    case 'p':
+      strncpy(config->db_path, optarg, MAX_OS_PATH_LEN);
+      break;
+    case 'a':
+      strncpy(config->db_sync_address, optarg, MAX_WEB_PATH_LEN);
+      break;
+    case 'o':
+      config->db_sync_port = get_arg_num(optarg);
+      if (config->db_sync_port <= 0 || config->db_sync_port > 65535) {
+        log_cmdline_error("Unrecognized port value\n");
+        exit(EXIT_FAILURE);
+      }
       break;
     case ':':
       log_cmdline_error("Missing argument for -%c\n", optopt);
@@ -159,7 +201,7 @@ int main(int argc, char *argv[])
   // Init the capture config struct
   memset(&config, 0, sizeof(struct capture_conf));
 
-  process_app_options(argc, argv, &verbosity, &filename);
+  process_app_options(argc, argv, &verbosity, &filename, &config);
 
   if (optind <= 1) show_app_help(argv[0]);
 
@@ -173,7 +215,9 @@ int main(int argc, char *argv[])
 
   // Set the log level
   log_set_level(level);
-  load_capture_config(filename, &config);
+  if (filename != NULL) {
+    load_capture_config(filename, &config);
+  }
 
   if (run_capture(&config) == -1) {
     fprintf(stderr, "run_capture fail\n");

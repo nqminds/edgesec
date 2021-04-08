@@ -177,7 +177,7 @@ int run_capture(struct capture_conf *config)
     snprintf(grpc_srv_addr, MAX_WEB_PATH_LEN, "%s:%d", config->db_sync_address, config->db_sync_port);
   }
 
-  log_info("Capturing interface %s", config->capture_interface);
+  log_info("Capturing interface=%s", config->capture_interface);
   log_info("Promiscuous mode=%d", config->promiscuous);
   log_info("Immediate mode=%d", config->immediate);
   log_info("Buffer timeout=%d", config->buffer_timeout);
