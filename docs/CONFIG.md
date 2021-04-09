@@ -179,6 +179,9 @@ The timeout in milliseconds to read a packet. The default value is 10.
 ### processInterval (number)
 The interval in milliseconds to process a packet from the queue. The default value is 10.
 
+### fileWrite (boolean)
+Write the packet data to file(s).
+
 ### dbWrite (boolean)
 If set to true the capture service will store the packet into an sqlite db
 

@@ -561,6 +561,9 @@ void load_capture_config(const char *filename, struct capture_conf *config)
   strncpy(config->db_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
+  // Load fileWrite param
+  config->file_write = (int) ini_getbool("capture", "fileWrite", 0, filename);
+
   // Load dbWrite param
   config->db_write = (int) ini_getbool("capture", "dbWrite", 0, filename);
 

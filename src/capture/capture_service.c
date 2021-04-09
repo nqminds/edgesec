@@ -48,7 +48,7 @@
 #define PCAP_SNAPSHOT_LENGTH  1500
 #define PCAP_BUFFER_SIZE      64*1024
 
-#define MAX_DB_NAME_LENGTH    37
+#define MAX_DB_NAME_LENGTH    44
 
 struct capture_context {
   uint32_t process_interval;
@@ -152,6 +152,12 @@ void eloop_tout_handler(void *eloop_ctx, void *user_ctx)
   }
 }
 
+void construct_db_name(char *db_name)
+{
+  generate_radom_uuid(db_name);
+  strcat(db_name, ".sqlite");
+}
+
 int run_capture(struct capture_conf *config)
 {
 	int ret, fd;
@@ -166,7 +172,7 @@ int run_capture(struct capture_conf *config)
 
   os_memset(grpc_srv_addr, 0, MAX_WEB_PATH_LEN);
 
-  generate_radom_uuid(db_name);
+  construct_db_name(db_name);
   db_path = construct_path(config->db_path, db_name);
 
   if (db_path == NULL) {

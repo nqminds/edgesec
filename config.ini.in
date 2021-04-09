@@ -18,6 +18,7 @@ promiscuous = false
 bufferTimeout = 10
 processInterval = 10
 immediate = false
+fileWrite = false
 dbWrite = true
 dbSync = true
 dbPath = "./"

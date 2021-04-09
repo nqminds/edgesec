@@ -44,10 +44,10 @@
 #include "utils/os.h"
 #include "utils/minIni.h"
 
-#define OPT_STRING    ":c:i:f:t:n:p:a:o:dvhmews"
+#define OPT_STRING    ":c:i:f:t:n:p:a:o:dvhmewus"
 #define USAGE_STRING  "\t%s [-c config] [-d] [-h] [-v] [-i interface] " \
                       "[-f filter] [-m] [-t timeout] [-n interval] " \
-                      "[-e] [-w] [-s] [-p path] [-a address] [-o port]\n"
+                      "[-e] [-w] [-u] [-s] [-p path] [-a address] [-o port]\n"
 
 #define DEFAULT_BUFFER_TIMEOUT 10
 #define DEFAULT_PROCESS_INTERVAL 10
@@ -85,6 +85,7 @@ void show_app_help(char *app_name)
   fprintf(stdout, "\t-t timeout\t The buffer timeout (milliseconds)\n");
   fprintf(stdout, "\t-n interval\t The process intereval (milliseconds)\n");
   fprintf(stdout, "\t-e\t\t Immediate mode\n");
+  fprintf(stdout, "\t-u\t\t Write to file\n");
   fprintf(stdout, "\t-w\t\t Write to db\n");
   fprintf(stdout, "\t-s\t\t Sync the db\n");
   fprintf(stdout, "\t-p path\t\t The db path\n");
@@ -166,6 +167,9 @@ void process_app_options(int argc, char *argv[], uint8_t *verbosity,
       break;
     case 'e':
       config->immediate = true;
+      break;
+    case 'u':
+      config->file_write = true;
       break;
     case 'w':
       config->db_write = true;
