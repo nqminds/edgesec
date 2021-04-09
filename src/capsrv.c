@@ -44,10 +44,13 @@
 #include "utils/os.h"
 #include "utils/minIni.h"
 
-#define OPT_STRING    ":c:i:t:n:p:a:o:dvhmews"
-#define USAGE_STRING  "\t%s [-c config] [-d] [-h] [-v] " \
-                      "[-i interface] [-m] [-t timeout] [-n interval] " \
+#define OPT_STRING    ":c:i:f:t:n:p:a:o:dvhmews"
+#define USAGE_STRING  "\t%s [-c config] [-d] [-h] [-v] [-i interface] " \
+                      "[-f filter] [-m] [-t timeout] [-n interval] " \
                       "[-e] [-w] [-s] [-p path] [-a address] [-o port]\n"
+
+#define DEFAULT_BUFFER_TIMEOUT 10
+#define DEFAULT_PROCESS_INTERVAL 10
 
 static __thread char version_buf[10];
 
@@ -77,6 +80,7 @@ void show_app_help(char *app_name)
   fprintf(stdout, "\nOptions:\n");
   fprintf(stdout, "\t-c config\t Path to the config file name\n");
   fprintf(stdout, "\t-i interface\t The capture interface name\n");
+  fprintf(stdout, "\t-f filter\t The capture filter expression\n");
   fprintf(stdout, "\t-m\t\t Promiscuous mode\n");
   fprintf(stdout, "\t-t timeout\t The buffer timeout (milliseconds)\n");
   fprintf(stdout, "\t-n interval\t The process intereval (milliseconds)\n");
@@ -139,6 +143,10 @@ void process_app_options(int argc, char *argv[], uint8_t *verbosity,
     case 'i':
       strncpy(config->capture_interface, optarg, IFNAMSIZ);
       break;
+    case 'f':
+      config->filter = os_malloc(strlen(optarg) + 1);
+      strncpy(config->filter, optarg, IFNAMSIZ);
+      break;
     case 'm':
       config->promiscuous = true;
       break;
@@ -200,7 +208,8 @@ int main(int argc, char *argv[])
 
   // Init the capture config struct
   memset(&config, 0, sizeof(struct capture_conf));
-
+  config.buffer_timeout = DEFAULT_BUFFER_TIMEOUT;
+  config.process_interval = DEFAULT_PROCESS_INTERVAL;
   process_app_options(argc, argv, &verbosity, &filename, &config);
 
   if (optind <= 1) show_app_help(argv[0]);

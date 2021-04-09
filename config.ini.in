@@ -13,6 +13,7 @@ execDhcp = true
 
 [capture]
 captureInterface = "wlan3"
+filter = "" 
 promiscuous = false
 bufferTimeout = 10
 processInterval = 10

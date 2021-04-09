@@ -46,6 +46,7 @@ struct capture_conf {
   char db_path[MAX_OS_PATH_LEN];                              /**< Specifies the path to the sqlite3 dbs */ 
   char db_sync_address[MAX_WEB_PATH_LEN];                     /**< Specifies the web address for sqlite syncing */
   uint16_t db_sync_port;                                      /**< Specifies the port of the web address for sqlite syncing */
+  char *filter;                                               /**< Specifies the filter expression or pcap lib */
 };
 
 #endif

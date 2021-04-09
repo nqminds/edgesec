@@ -156,6 +156,7 @@ int run_capture(struct capture_conf *config)
 {
 	int ret, fd;
   char err[PCAP_ERRBUF_SIZE];
+  struct bpf_program fp;
   bpf_u_int32 mask, net;
   char ip_str[INET_ADDRSTRLEN], mask_str[INET_ADDRSTRLEN];
   struct capture_context context;
@@ -259,6 +260,30 @@ int run_capture(struct capture_conf *config)
   }
 
   ret = pcap_activate(context.pd);
+
+  /* Compile and apply the filter */
+  if (config->filter != NULL) {
+    if (strlen(config->filter)) {
+	    if (pcap_compile(context.pd, &fp, config->filter, 0, mask) == -1) {
+	    	log_debug("Couldn't parse filter %s: %s\n", config->filter, pcap_geterr(context.pd));
+        pcap_close(context.pd);
+        free_packet_queue(context.pqueue);
+        os_free(db_path);
+        return -1;
+	    }
+
+      log_info("Setting filter to=%s", config->filter);
+		  if (pcap_setfilter(context.pd, &fp) == -1) {
+		  	log_debug("Couldn't install filter %s: %s\n", config->filter, pcap_geterr(context.pd));
+        pcap_freecode(&fp);
+        pcap_close(context.pd);
+        free_packet_queue(context.pqueue);
+        os_free(db_path);
+        return -1;
+		  }
+      pcap_freecode(&fp);
+    }
+  }
 
   if(ret < 0) {
     log_debug("pcap_activate fail: %d", ret);

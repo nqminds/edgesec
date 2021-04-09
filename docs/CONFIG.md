@@ -164,6 +164,9 @@ The capture group contains all the parameters that are reponsible to configure t
 ### captureInterface (string)
 The name of the capture interface. If set to "any" the service will traffic from all interfaces.
 
+### filter (string)
+The pcap lib capture filter.
+
 ### promiscuous (boolean)
 If set to ```true``` the capture interface is set to promiscuous mode. The default value is ```false```.
 
