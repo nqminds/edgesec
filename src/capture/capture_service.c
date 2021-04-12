@@ -107,7 +107,6 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
   UT_array *tp_array;
   int count;
   struct capture_context *context = (struct capture_context *) args;
-  
 
   if ((count = extract_packets(header, packet, &tp_array)) > 0) {
     add_packet_queue(tp_array, count, context->pqueue);
@@ -189,6 +188,7 @@ int run_capture(struct capture_conf *config)
   log_info("Immediate mode=%d", config->immediate);
   log_info("Buffer timeout=%d", config->buffer_timeout);
   log_info("Process interval=%d (milliseconds)", config->process_interval);
+  log_info("File write=%d", config->file_write);
   log_info("DB write=%d", config->db_write);
   log_info("DB sync=%d", config->db_sync);
   log_info("DB name=%s", db_name);

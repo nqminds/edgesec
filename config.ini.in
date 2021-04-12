@@ -12,7 +12,7 @@ execRadius = true
 execDhcp = true
 
 [capture]
-captureInterface = "wlan3"
+captureInterface = "wls1"
 filter = "" 
 promiscuous = false
 bufferTimeout = 10
@@ -20,8 +20,8 @@ processInterval = 10
 immediate = false
 fileWrite = false
 dbWrite = true
-dbSync = true
-dbPath = "./"
+dbSync = false
+dbPath = "./db"
 dbSyncAddress = "localhost"
 dbSyncPort = 12345
 
