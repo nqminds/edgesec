@@ -116,20 +116,3 @@ uint32_t run_sync_db_statement(char *address, char *name, char *statement)
   log_trace("SyncDbStatement with name=%s and address=%s", name, address);
   return syncroniser.SyncDbStatement(name, statement);
 }
-
-// int main(int argc, char** argv) {
-//   char *address = "localhost:12345";
-//   char *name = "world-db";
-//   char *statement =
-//     "CREATE TABLE test (id INTEGER PRIMARY KEY, name TEXT NOT NULL);"
-//     "INSERT INTO test VALUES(1, \"test1\");"
-//     "INSERT INTO test VALUES(2, \"test2\");"
-//     "INSERT INTO test VALUES(3, \"test3\");"
-//     "INSERT INTO test VALUES(4, \"test4\");";
-
-//   uint32_t status = run_register_db(address, name);
-//   std::cout << "RegisterDb received: " << status << std::endl;
-//   status = run_sync_db_statement(address, name,statement);
-//   std::cout << "SyncDbStatement received: " << status << std::endl;
-//   return 0;
-// }

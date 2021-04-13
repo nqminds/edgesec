@@ -87,4 +87,12 @@ ssize_t get_string_queue_length(struct string_queue* queue);
  * @param queue The pointer to the string queue
  */
 void free_string_queue(struct string_queue* queue);
+
+/**
+ * @brief Concat all the string ain the queue
+ * 
+ * @param The pointer to the string queue
+ * @return char* The pointer to the concatenated string, NULL for failure or empty queue
+ */
+char* concat_string_queue(struct string_queue *queue);
 #endif

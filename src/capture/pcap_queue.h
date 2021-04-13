@@ -38,53 +38,55 @@
  * 
  */
 struct pcap_queue {
-  struct pcap_pkthdr header;        /**< pcap header */
-  struct dl_list list;              /**< List defintion */
+  struct pcap_pkthdr header;            /**< pcap header */
+  uint8_t *packet;                      /**< pointer to the packet data */
+  struct dl_list list;                  /**< List defintion */
 };
 
 /**
- * @brief Initialises and empty packet queue
+ * @brief Initialises and empty pcap queue
  * 
- * @return struct packet_queue* Returned initialised empty packet queue
+ * @return struct pcap_queue* Returned initialised empty pcap queue
  */
-struct packet_queue* init_packet_queue(void);
+struct pcap_queue* init_pcap_queue(void);
 
 /**
- * @brief Pushes a packet in the packet queue
+ * @brief Pushes a packet in the pcap queue
  * 
- * @param queue The packet queue
- * @param tp The packet tuple
- * @return struct packet_queue* Returned the packet queue element
+ * @param queue The pcap queue
+ * @param header The pcap header
+ * @param packet The pcap packet
+ * @return struct pcap_queue* Returned the pcap queue element
  */
-struct packet_queue* push_packet_queue(struct packet_queue* queue, struct tuple_packet tp);
+struct pcap_queue* push_pcap_queue(struct pcap_queue* queue, struct pcap_pkthdr *header, uint8_t *packet);
 
 /**
- * @brief Extract the first packet from the packet queueu
+ * @brief Extract the first pcap element from the pcap queueu
  * 
- * @param queue The packet queue
- * @return struct packet_queue* The returned packet (NULL if queue is empty)
+ * @param queue The pcap queue
+ * @return struct pcap_queue* The returned pcap (NULL if queue is empty)
  */
-struct packet_queue* pop_packet_queue(struct packet_queue* queue);
+struct pcap_queue* pop_pcap_queue(struct pcap_queue* queue);
 
 /**
- * @brief Delete a packet entry
+ * @brief Delete a pcap entry
  * 
- * @param el The packet queue entry
+ * @param el The pcap queue entry
  */
-void free_packet_queue_el(struct packet_queue* el);
+void free_pcap_queue_el(struct pcap_queue* el);
 
 /**
- * @brief Returns the packet queue length
+ * @brief Returns the pcap queue length
  * 
- * @param el The pointer to the packet queue
- * @return ssize_t The packet queue length
+ * @param el The pointer to the pcap queue
+ * @return ssize_t The pcap queue length
  */
-ssize_t get_packet_queue_length(struct packet_queue* queue);
+ssize_t get_pcap_queue_length(struct pcap_queue* queue);
 
 /**
- * @brief Frees the packet queue
+ * @brief Frees the pcap queue
  * 
- * @param queue The pointer to the packet queue
+ * @param queue The pointer to the pcap queue
  */
-void free_packet_queue(struct packet_queue* queue);
+void free_pcap_queue(struct pcap_queue* queue);
 #endif

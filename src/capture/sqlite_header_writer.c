@@ -18,9 +18,9 @@
  ****************************************************************************/
 
 /**
- * @file sqlite_writer.c
+ * @file sqlite_header_writer.c
  * @author Alexandru Mereacre 
- * @brief File containing the implementation of the sqlite writer utilities.
+ * @brief File containing the implementation of the sqlite header writer utilities.
  */
 
 #include <stdio.h>
@@ -40,10 +40,9 @@
 #include <arpa/inet.h>
 #include <sqlite3.h>
 
-#include "sqlite_writer.h"
+#include "sqlite_header_writer.h"
 #include "packet_decoder.h"
 
-#include "../utils/squeue.h"
 #include "../utils/os.h"
 #include "../utils/if.h"
 #include "../utils/log.h"
@@ -54,8 +53,10 @@
             term.caplen = tp->mp.caplen;        \
             term.length = tp->mp.length;
 
-uint32_t run_register_db(char *address, char *name);
-uint32_t run_sync_db_statement(char *address, char *name, char *statement);
+struct header_context {
+  trace_callback_fn trace_fn;
+  uint8_t *trace_ctx;
+};
 
 bool extract_meta_params(sqlite3_stmt *res, struct meta_packet *mp)
 {
@@ -85,7 +86,7 @@ bool extract_meta_params(sqlite3_stmt *res, struct meta_packet *mp)
   return true;
 }
 
-void extract_eth_statement(struct sqlite_context *ctx, struct tuple_packet *tp)
+void extract_eth_statement(sqlite3 *db, struct tuple_packet *tp)
 {
   struct ether_header *ethh = (struct ether_header *)tp->packet;
   sqlite3_stmt *res = NULL;
@@ -93,7 +94,7 @@ void extract_eth_statement(struct sqlite_context *ctx, struct tuple_packet *tp)
   char ether_dhost[MAX_SCHEMA_STR_LENGTH];
   char ether_shost[MAX_SCHEMA_STR_LENGTH];
 
-  int rc = sqlite3_prepare_v2(ctx->db, ETH_INSERT_INTO, -1, &res, 0);
+  int rc = sqlite3_prepare_v2(db, ETH_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
     if (!extract_meta_params(res, &tp->mp)) {
@@ -118,11 +119,11 @@ void extract_eth_statement(struct sqlite_context *ctx, struct tuple_packet *tp)
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {
-    log_trace("Failed to prepare statement: %s", sqlite3_errmsg(ctx->db));
+    log_trace("Failed to prepare statement: %s", sqlite3_errmsg(db));
   }
 }
 
-void extract_arp_statement(struct sqlite_context *ctx, struct tuple_packet *tp)
+void extract_arp_statement(sqlite3 *db, struct tuple_packet *tp)
 {
   struct ether_arp *arph = (struct ether_arp *)tp->packet;
   int column_idx;
@@ -131,7 +132,7 @@ void extract_arp_statement(struct sqlite_context *ctx, struct tuple_packet *tp)
   char arp_tha[MAX_SCHEMA_STR_LENGTH];
   char arp_tpa[MAX_SCHEMA_STR_LENGTH];
   sqlite3_stmt *res = NULL;
-  int rc = sqlite3_prepare_v2(ctx->db, ARP_INSERT_INTO, -1, &res, 0);
+  int rc = sqlite3_prepare_v2(db, ARP_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
     if (!extract_meta_params(res, &tp->mp)) {
@@ -176,18 +177,18 @@ void extract_arp_statement(struct sqlite_context *ctx, struct tuple_packet *tp)
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {
-    log_trace("Failed to prepare statement: %s", sqlite3_errmsg(ctx->db));
+    log_trace("Failed to prepare statement: %s", sqlite3_errmsg(db));
   }
 }
 
-void extract_ip4_statement(struct sqlite_context *ctx, struct tuple_packet *tp)
+void extract_ip4_statement(sqlite3 *db, struct tuple_packet *tp)
 {
   struct ip *ip4h = (struct ip *)tp->packet;
   int column_idx;
   char ip_src[MAX_SCHEMA_STR_LENGTH];
   char ip_dst[MAX_SCHEMA_STR_LENGTH];
   sqlite3_stmt *res = NULL;
-  int rc = sqlite3_prepare_v2(ctx->db, IP4_INSERT_INTO, -1, &res, 0);
+  int rc = sqlite3_prepare_v2(db, IP4_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
     if (!extract_meta_params(res, &tp->mp)) {
@@ -235,11 +236,11 @@ void extract_ip4_statement(struct sqlite_context *ctx, struct tuple_packet *tp)
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {
-    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(ctx->db));
+    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(db));
   }
 }
 
-void extract_ip6_statement(struct sqlite_context *ctx, struct tuple_packet *tp)
+void extract_ip6_statement(sqlite3 *db, struct tuple_packet *tp)
 {
   struct ip6_hdr *ip6h = (struct ip6_hdr *)tp->packet;
   int column_idx;
@@ -247,7 +248,7 @@ void extract_ip6_statement(struct sqlite_context *ctx, struct tuple_packet *tp)
   char ip6_dst[MAX_SCHEMA_STR_LENGTH];
 
   sqlite3_stmt *res = NULL;
-  int rc = sqlite3_prepare_v2(ctx->db, IP6_INSERT_INTO, -1, &res, 0);
+  int rc = sqlite3_prepare_v2(db, IP6_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
     if (!extract_meta_params(res, &tp->mp)) {
@@ -283,16 +284,16 @@ void extract_ip6_statement(struct sqlite_context *ctx, struct tuple_packet *tp)
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {
-    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(ctx->db));
+    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(db));
   }
 }
 
-void extract_tcp_statement(struct sqlite_context *ctx, struct tuple_packet *tp)
+void extract_tcp_statement(sqlite3 *db, struct tuple_packet *tp)
 {
   struct tcphdr *tcph = (struct tcphdr *)tp->packet;
   int column_idx;
   sqlite3_stmt *res = NULL;
-  int rc = sqlite3_prepare_v2(ctx->db, TCP_INSERT_INTO, -1, &res, 0);
+  int rc = sqlite3_prepare_v2(db, TCP_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
     if (!extract_meta_params(res, &tp->mp)) {
@@ -350,16 +351,16 @@ void extract_tcp_statement(struct sqlite_context *ctx, struct tuple_packet *tp)
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {
-    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(ctx->db));
+    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(db));
   }
 }
 
-void extract_udp_statement(struct sqlite_context *ctx, struct tuple_packet *tp)
+void extract_udp_statement(sqlite3 *db, struct tuple_packet *tp)
 {
   struct udphdr *udph = (struct udphdr *)tp->packet;
   int column_idx;
   sqlite3_stmt *res = NULL;
-  int rc = sqlite3_prepare_v2(ctx->db, UDP_INSERT_INTO, -1, &res, 0);
+  int rc = sqlite3_prepare_v2(db, UDP_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
     if (!extract_meta_params(res, &tp->mp)) {
@@ -384,16 +385,16 @@ void extract_udp_statement(struct sqlite_context *ctx, struct tuple_packet *tp)
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {
-    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(ctx->db));
+    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(db));
   }
 }
 
-void extract_icmp4_statement(struct sqlite_context *ctx, struct tuple_packet *tp)
+void extract_icmp4_statement(sqlite3 *db, struct tuple_packet *tp)
 {
   struct icmphdr *icmp4h = (struct icmphdr *)tp->packet;
   int column_idx;
   sqlite3_stmt *res = NULL;
-  int rc = sqlite3_prepare_v2(ctx->db, ICMP4_INSERT_INTO, -1, &res, 0);
+  int rc = sqlite3_prepare_v2(db, ICMP4_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
     if (!extract_meta_params(res, &tp->mp)) {
@@ -418,16 +419,16 @@ void extract_icmp4_statement(struct sqlite_context *ctx, struct tuple_packet *tp
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {
-    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(ctx->db));
+    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(db));
   }
 }
 
-void extract_icmp6_statement(struct sqlite_context *ctx, struct tuple_packet *tp)
+void extract_icmp6_statement(sqlite3 *db, struct tuple_packet *tp)
 {
   struct icmp6_hdr *icmp6h = (struct icmp6_hdr *)tp->packet;
   int column_idx;
   sqlite3_stmt *res = NULL;
-  int rc = sqlite3_prepare_v2(ctx->db, ICMP6_INSERT_INTO, -1, &res, 0);
+  int rc = sqlite3_prepare_v2(db, ICMP6_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
     if (!extract_meta_params(res, &tp->mp)) {
@@ -452,16 +453,16 @@ void extract_icmp6_statement(struct sqlite_context *ctx, struct tuple_packet *tp
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {
-    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(ctx->db));
+    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(db));
   }
 }
 
-void extract_dns_statement(struct sqlite_context *ctx, struct tuple_packet *tp)
+void extract_dns_statement(sqlite3 *db, struct tuple_packet *tp)
 {
   struct dns_header *dnsh = (struct dns_header *)tp->packet;
   int column_idx;
   sqlite3_stmt *res = NULL;
-  int rc = sqlite3_prepare_v2(ctx->db, DNS_INSERT_INTO, -1, &res, 0);
+  int rc = sqlite3_prepare_v2(db, DNS_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
     if (!extract_meta_params(res, &tp->mp)) {
@@ -492,16 +493,16 @@ void extract_dns_statement(struct sqlite_context *ctx, struct tuple_packet *tp)
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {
-    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(ctx->db));
+    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(db));
   }
 }
 
-void extract_mdsn_statement(struct sqlite_context *ctx, struct tuple_packet *tp)
+void extract_mdsn_statement(sqlite3 *db, struct tuple_packet *tp)
 {
   struct mdns_header *mdnsh = (struct mdns_header *)tp->packet;
   int column_idx;
   sqlite3_stmt *res = NULL;
-  int rc = sqlite3_prepare_v2(ctx->db, MDNS_INSERT_INTO, -1, &res, 0);
+  int rc = sqlite3_prepare_v2(db, MDNS_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
     if (!extract_meta_params(res, &tp->mp)) {
@@ -532,11 +533,11 @@ void extract_mdsn_statement(struct sqlite_context *ctx, struct tuple_packet *tp)
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {
-    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(ctx->db));
+    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(db));
   }
 }
 
-void extract_dhcp_statement(struct sqlite_context *ctx, struct tuple_packet *tp)
+void extract_dhcp_statement(sqlite3 *db, struct tuple_packet *tp)
 {
   struct dhcp_header *dhcph = (struct dhcp_header *)tp->packet;
   char ciaddr[MAX_SCHEMA_STR_LENGTH];
@@ -545,7 +546,7 @@ void extract_dhcp_statement(struct sqlite_context *ctx, struct tuple_packet *tp)
   char giaddr[MAX_SCHEMA_STR_LENGTH];
   int column_idx;
   sqlite3_stmt *res = NULL;
-  int rc = sqlite3_prepare_v2(ctx->db, DHCP_INSERT_INTO, -1, &res, 0);
+  int rc = sqlite3_prepare_v2(db, DHCP_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
     if (!extract_meta_params(res, &tp->mp)) {
@@ -595,53 +596,53 @@ void extract_dhcp_statement(struct sqlite_context *ctx, struct tuple_packet *tp)
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {
-    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(ctx->db));
+    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(db));
   }
 }
 
-void save_packet_statement(struct sqlite_context *ctx, struct tuple_packet *tp)
+void save_packet_statement(sqlite3 *db, struct tuple_packet *tp)
 {
   switch (tp->mp.type) {
     case PACKET_ETHERNET:
-      extract_eth_statement(ctx, tp);
+      extract_eth_statement(db, tp);
       return;
     case PACKET_ARP:
-      extract_arp_statement(ctx, tp);
+      extract_arp_statement(db, tp);
       return;
     case PACKET_IP4:
-      extract_ip4_statement(ctx, tp);
+      extract_ip4_statement(db, tp);
       return;
     case PACKET_IP6:
-      extract_ip6_statement(ctx, tp);
+      extract_ip6_statement(db, tp);
       return;
     case PACKET_TCP:
-      extract_tcp_statement(ctx, tp);
+      extract_tcp_statement(db, tp);
       return;
     case PACKET_UDP:
-      extract_udp_statement(ctx, tp);
+      extract_udp_statement(db, tp);
       return;
     case PACKET_ICMP4:
-      extract_icmp4_statement(ctx, tp);
+      extract_icmp4_statement(db, tp);
       return;
     case PACKET_ICMP6:
-      extract_icmp6_statement(ctx, tp);
+      extract_icmp6_statement(db, tp);
       return;
     case PACKET_DNS:
-      extract_dns_statement(ctx, tp);
+      extract_dns_statement(db, tp);
       return;
     case PACKET_MDNS:
-      extract_mdsn_statement(ctx, tp);
+      extract_mdsn_statement(db, tp);
       return;
     case PACKET_DHCP:
-      extract_dhcp_statement(ctx, tp);
+      extract_dhcp_statement(db, tp);
       return;
   }
 }
 
-int execute_sqlite_query(struct sqlite_context *ctx, char *statement)
+int execute_sqlite_query(sqlite3 *db, char *statement)
 {
   char *err = NULL;
-  int rc = sqlite3_exec(ctx->db, statement, 0, 0, &err);
+  int rc = sqlite3_exec(db, statement, 0, 0, &err);
 
   if (rc != SQLITE_OK ) {
     log_debug("Failed to execute statement %s", err);
@@ -653,17 +654,17 @@ int execute_sqlite_query(struct sqlite_context *ctx, char *statement)
   return 0;
 }
 
-int check_table_exists(struct sqlite_context *ctx, char *table_name)
+int check_table_exists(sqlite3 *db, char *table_name)
 {
   sqlite3_stmt *res;
   char *sql = "SELECT name FROM sqlite_master WHERE type='table' AND name=?;";
-  int rc = sqlite3_prepare_v2(ctx->db, sql, -1, &res, 0);
+  int rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
 
 
   if (rc == SQLITE_OK)
     sqlite3_bind_text(res, 1, table_name, -1, NULL);
   else {
-    log_debug("Failed to execute statement: %s", sqlite3_errmsg(ctx->db));
+    log_debug("Failed to execute statement: %s", sqlite3_errmsg(db));
     return -1;
   }
 
@@ -679,72 +680,32 @@ int check_table_exists(struct sqlite_context *ctx, char *table_name)
   return 0;
 }
 
-void free_sqlite_db(struct sqlite_context *ctx)
+void free_sqlite_header_db(sqlite3 *db)
 {
-  if (ctx != NULL) {
-    free_string_queue(ctx->squeue);
-    sqlite3_close(ctx->db);
-    os_free(ctx);
+  if (db != NULL) {
+    sqlite3_close(db);
   }
 }
 
 int sqlite_trace_callback(unsigned int uMask, void* ctx, void* stm, void* X)
 {
-  struct sqlite_context *sql_ctx = (struct sqlite_context *)ctx;
+  struct header_context *sql_ctx = (struct header_context *)ctx;
   sqlite3_stmt *statement = (sqlite3_stmt *)stm;
-  char *sqlite_str = sqlite3_expanded_sql(statement);
+  char *sqlite_str;
 
-  if (push_string_queue(sql_ctx->squeue, sqlite_str) == NULL) {
-    log_trace("push_string_queue fail");
+  if (sql_ctx->trace_fn != NULL) {
+    sqlite_str = sqlite3_expanded_sql(statement);
+    sql_ctx->trace_fn(sqlite_str, sql_ctx->trace_ctx);
+    sqlite3_free(sqlite_str);  
   }
-
-  // log_info("Statement running=%s", sqlite_str);
-  sqlite3_free(sqlite_str);
 
   return 0;
 }
 
-int sqlite_sync_statements(struct sqlite_context *ctx)
-{
-  ssize_t count = 0;
-  struct string_queue *el;
-  char *sql_str = NULL;
-  ssize_t size = 1;
-
-  // Process all strings in the queue
-  while(get_string_queue_length(ctx->squeue)) {
-    if ((el = pop_string_queue(ctx->squeue)) != NULL) {
-      size += strlen(el->str);
-      if (sql_str == NULL) {
-        sql_str = os_zalloc(size);
-      } else sql_str = os_realloc(sql_str, size);
-
-      if (sql_str == NULL) {
-        log_err("os_malloc");
-        return -1;  
-      }
-
-      strcat(sql_str, el->str);
-
-      // Process string element
-      free_string_queue_el(el);
-      count ++;
-    }
-  }
-
-  if (sql_str != NULL) {
-    if (!run_sync_db_statement(ctx->grpc_srv_addr, ctx->db_name, sql_str)) {
-      log_trace("run_sync_db_statement fail");
-    }
-    os_free(sql_str);
-  }
-  return 0;
-}
-
-struct sqlite_context* open_sqlite_db(char *db_path, char *db_name, char *grpc_srv_addr)
+sqlite3* open_sqlite_header_db(char *db_path, trace_callback_fn fn, void *trace_ctx)
 {
   sqlite3 *db;
-  struct sqlite_context *ctx = NULL;
+  struct header_context *ctx = NULL;
 
   int rc = sqlite3_open(db_path, &db);
   if (rc != SQLITE_OK) {     
@@ -753,191 +714,181 @@ struct sqlite_context* open_sqlite_db(char *db_path, char *db_name, char *grpc_s
     return NULL;
   }
 
-  ctx = os_zalloc(sizeof(struct sqlite_context));
-  ctx->squeue = init_string_queue();
-  if (ctx->squeue == NULL) {
-    log_debug("init_string_queue fail");
-    sqlite3_close(db);
-    return NULL;
+  ctx = os_zalloc(sizeof(struct header_context));
+  ctx->trace_fn = fn;
+  ctx->trace_ctx = trace_ctx;
+
+  if (ctx->trace_fn != NULL) {
+    log_trace("Register sqlite trace callback");
+    sqlite3_trace_v2(db, SQLITE_TRACE_STMT, sqlite_trace_callback, (void *)ctx);
   }
-
-  ctx->db = db;
-  strncpy(ctx->db_name, db_name, MAX_DB_NAME);
-  strncpy(ctx->grpc_srv_addr, grpc_srv_addr, MAX_WEB_PATH_LEN);
-
-  log_trace("Register sqlite trace callback");
-  sqlite3_trace_v2(db, SQLITE_TRACE_STMT, sqlite_trace_callback, (void *)ctx);
 
   log_debug("sqlite autocommit mode=%d", sqlite3_get_autocommit(db));
 
-  if (!run_register_db(ctx->grpc_srv_addr, ctx->db_name)) {
-    log_trace("run_register_db fail");
-  }
-
-  rc = check_table_exists(ctx, "eth");
+  rc = check_table_exists(db, "eth");
 
   if (rc == 0) {
     log_debug("eth table doesn't exist creating...");
-    if (execute_sqlite_query(ctx, ETH_CREATE_TABLE) < 0) {
+    if (execute_sqlite_query(db, ETH_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
-      free_sqlite_db(ctx);
+      free_sqlite_header_db(db);
       return NULL;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
-    free_sqlite_db(ctx);
+    free_sqlite_header_db(db);
     return NULL;
   }
 
-  rc = check_table_exists(ctx, "arp");
+  rc = check_table_exists(db, "arp");
 
   if (rc == 0) {
     log_debug("arp table doesn't exist creating...");
-    if (execute_sqlite_query(ctx, ARP_CREATE_TABLE) < 0) {
+    if (execute_sqlite_query(db, ARP_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
-      free_sqlite_db(ctx);
+      free_sqlite_header_db(db);
       return NULL;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
-    free_sqlite_db(ctx);
+    free_sqlite_header_db(db);
     return NULL;
   }
 
-  rc = check_table_exists(ctx, "ip4");
+  rc = check_table_exists(db, "ip4");
 
   if (rc == 0) {
     log_debug("ip4 table doesn't exist creating...");
-    if (execute_sqlite_query(ctx, IP4_CREATE_TABLE) < 0) {
+    if (execute_sqlite_query(db, IP4_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
-      free_sqlite_db(ctx);
+      free_sqlite_header_db(db);
       return NULL;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
-    free_sqlite_db(ctx);
+    free_sqlite_header_db(db);
     return NULL;
   }
 
-  rc = check_table_exists(ctx, "ip6");
+  rc = check_table_exists(db, "ip6");
 
   if (rc == 0) {
     log_debug("ip6 table doesn't exist creating...");
-    if (execute_sqlite_query(ctx, IP6_CREATE_TABLE) < 0) {
+    if (execute_sqlite_query(db, IP6_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
-      free_sqlite_db(ctx);
+      free_sqlite_header_db(db);
       return NULL;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
-    free_sqlite_db(ctx);
+    free_sqlite_header_db(db);
     return NULL;
   }
 
-  rc = check_table_exists(ctx, "tcp");
+  rc = check_table_exists(db, "tcp");
 
   if (rc == 0) {
     log_debug("tcp table doesn't exist creating...");
-    if (execute_sqlite_query(ctx, TCP_CREATE_TABLE) < 0) {
+    if (execute_sqlite_query(db, TCP_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
-      free_sqlite_db(ctx);
+      free_sqlite_header_db(db);
       return NULL;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
-    free_sqlite_db(ctx);
+    free_sqlite_header_db(db);
     return NULL;
   }
 
-  rc = check_table_exists(ctx, "udp");
+  rc = check_table_exists(db, "udp");
 
   if (rc == 0) {
     log_debug("udp table doesn't exist creating...");
-    if (execute_sqlite_query(ctx, UDP_CREATE_TABLE) < 0) {
+    if (execute_sqlite_query(db, UDP_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
-      free_sqlite_db(ctx);
+      free_sqlite_header_db(db);
       return NULL;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
-    free_sqlite_db(ctx);
+    free_sqlite_header_db(db);
     return NULL;
   }
 
-  rc = check_table_exists(ctx, "icmp4");
+  rc = check_table_exists(db, "icmp4");
 
   if (rc == 0) {
     log_debug("icmp4 table doesn't exist creating...");
-    if (execute_sqlite_query(ctx, ICMP4_CREATE_TABLE) < 0) {
+    if (execute_sqlite_query(db, ICMP4_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
-      free_sqlite_db(ctx);
+      free_sqlite_header_db(db);
       return NULL;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
-    free_sqlite_db(ctx);
+    free_sqlite_header_db(db);
     return NULL;
   }
 
-  rc = check_table_exists(ctx, "icmp6");
+  rc = check_table_exists(db, "icmp6");
 
   if (rc == 0) {
     log_debug("icmp6 table doesn't exist creating...");
-    if (execute_sqlite_query(ctx, ICMP6_CREATE_TABLE) < 0) {
+    if (execute_sqlite_query(db, ICMP6_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
-      free_sqlite_db(ctx);
+      free_sqlite_header_db(db);
       return NULL;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
-    free_sqlite_db(ctx);
+    free_sqlite_header_db(db);
     return NULL;
   }
 
-  rc = check_table_exists(ctx, "dns");
+  rc = check_table_exists(db, "dns");
 
   if (rc == 0) {
     log_debug("dns table doesn't exist creating...");
-    if (execute_sqlite_query(ctx, DNS_CREATE_TABLE) < 0) {
+    if (execute_sqlite_query(db, DNS_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
-      free_sqlite_db(ctx);
+      free_sqlite_header_db(db);
       return NULL;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
-    free_sqlite_db(ctx);
+    free_sqlite_header_db(db);
     return NULL;
   }
 
-  rc = check_table_exists(ctx, "mdns");
+  rc = check_table_exists(db, "mdns");
 
   if (rc == 0) {
     log_debug("mdns table doesn't exist creating...");
-    if (execute_sqlite_query(ctx, MDNS_CREATE_TABLE) < 0) {
+    if (execute_sqlite_query(db, MDNS_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
-      free_sqlite_db(ctx);
+      free_sqlite_header_db(db);
       return NULL;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
-    free_sqlite_db(ctx);
+    free_sqlite_header_db(db);
     return NULL;
   }
 
-  rc = check_table_exists(ctx, "dhcp");
+  rc = check_table_exists(db, "dhcp");
 
   if (rc == 0) {
     log_debug("dhcp table doesn't exist creating...");
-    if (execute_sqlite_query(ctx, DHCP_CREATE_TABLE) < 0) {
+    if (execute_sqlite_query(db, DHCP_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
-      free_sqlite_db(ctx);
+      free_sqlite_header_db(db);
       return NULL;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
-    free_sqlite_db(ctx);
+    free_sqlite_header_db(db);
     return NULL;
   }
 
-  return ctx;
+  return db;
 }

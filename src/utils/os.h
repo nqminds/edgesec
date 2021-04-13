@@ -39,8 +39,10 @@
 /* Common costant defintions */
 #define MAX_OS_PATH_LEN		4096
 #define MAX_WEB_PATH_LEN	2048
-#define IP_LEN 						20
+#define IP_LEN 				20
 #define LINK_TYPE_LEN 		64
+
+#define MAX_RANDOM_UUID_LEN	37
 
 #ifdef __GNUC__
 #define STRUCT_PACKED __attribute__ ((packed))
@@ -472,9 +474,9 @@ int make_file_exec_fd(int fd);
 char *rtrim(char *str, const char *seps);
 
 /**
- * @brief Generates a random UUID string of 36 characters long not including '\0'
+ * @brief Generates a random UUID string of MAX_RANDOM_UUID_LEN - 1 characters long not including '\0'
  * 
- * @param rid The output string of 37 bytes
+ * @param rid The output string of MAX_RANDOM_UUID_LEN bytes
  */
 void generate_radom_uuid(char *rid);
 #endif /* OS_H */

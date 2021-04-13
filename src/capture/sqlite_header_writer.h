@@ -18,13 +18,13 @@
  ****************************************************************************/
 
 /**
- * @file sqlite_writer.h 
+ * @file sqlite_header_writer.h 
  * @author Alexandru Mereacre 
- * @brief File containing the definition of the sqlite writer utilities.
+ * @brief File containing the definition of the sqlite header writer utilities.
  */
 
-#ifndef SQLITE_WRITER_H
-#define SQLITE_WRITER_H
+#ifndef SQLITE_HEADER_WRITER_H
+#define SQLITE_HEADER_WRITER_H
 
 #include <stdint.h>
 #include <sqlite3.h>
@@ -32,11 +32,11 @@
 #include "packet_decoder.h"
 
 #include "../utils/os.h"
-#include "../utils/squeue.h"
 
 #define MAX_DB_NAME           100
 
 #define MAX_SCHEMA_STR_LENGTH 100
+
 #define ETH_CREATE_TABLE "CREATE TABLE eth (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, "\
                          "caplen INTEGER, length INTEGER, " \
                          "ether_dhost TEXT, ether_shost TEXT, ether_type INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash));"
@@ -317,43 +317,30 @@ struct dhcp_schema {
   char giaddr[MAX_SCHEMA_STR_LENGTH];                 /**< Packet IP address of DHCP relay */
 };
 
-struct sqlite_context {
-  sqlite3 *db;
-  char grpc_srv_addr[MAX_WEB_PATH_LEN];
-  char db_name[MAX_DB_NAME];
-  struct string_queue *squeue;
-};
+typedef void (*trace_callback_fn)(char *sqlite_statement, void *trace_ctx);
 
 /**
  * @brief Save packets to sqlite db
  * 
- * @param ctx The sqlite context structure
+ * @param db The sqlite db
  * @param tp The packet tuple structure
  */
-void save_packet_statement(struct sqlite_context *ctx, struct tuple_packet *tp);
+void save_packet_statement(sqlite3 *db, struct tuple_packet *tp);
 
 /**
- * @brief Synchronises the sqlite statements with the cloud db
- * 
- * @param ctx The sqlite context structure
- * @return int 0 on success, -1 on failure
- */
-int sqlite_sync_statements(struct sqlite_context *ctx);
-
-/**
- * @brief Opens the sqlite3 database
+ * @brief Opens the sqlite3 header database
  * 
  * @param db_path The path to sqlite3 db
- * @param db_name The name of the db
- * @param grpc_srv_addr The address of the grpc server for syncing
- * @return struct sqlite_context* pointer to the sqlite context, NULL on failure
+ * @param trace_fn The callback to the trace callback function
+ * @paran trace_ctx The context for trace callback
+ * @return sqlite3* pointer to the sqlite db
  */
-struct sqlite_context* open_sqlite_db(char *db_path, char *db_name, char *grpc_srv_addr);
+sqlite3 * open_sqlite_header_db(char *db_path, trace_callback_fn trace_fn, void *trace_ctx);
 
 /**
- * @brief Closes the sqlite db and frees the context
+ * @brief Closes the sqlite db
  * 
- * @param ctx The sqlite context structure
+ * @param ctx The sqlite db
  */
-void free_sqlite_db(struct sqlite_context *ctx);
+void free_sqlite_header_db(sqlite3 *db);
 #endif
