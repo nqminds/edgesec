@@ -101,7 +101,7 @@ void show_app_help(char *app_name)
   fprintf(stdout, "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n");
   fprintf(stdout, "\t-h\t\t Show help\n");
   fprintf(stdout, "\t-v\t\t Show app version\n\n");
-  fprintf(stdout, "Copyright Nquirignminds Ltd\n\n");
+  fprintf(stdout, "Copyright NQMCyber Ltd\n\n");
   exit(EXIT_SUCCESS);
 }
 
@@ -134,6 +134,7 @@ void process_app_options(int argc, char *argv[], uint8_t *verbosity,
       break;
     case 'v':
       show_app_version();
+      exit(EXIT_SUCCESS);
       break;
     case 'c':
       *config_filename = optarg;

@@ -18,38 +18,35 @@
  ****************************************************************************/
 
 /**
- * @file sqlsyncsrv.cc 
+ * @file revclient.cc 
  * @author Alexandru Mereacre 
- * @brief File containing the implementation of the sync server.
+ * @brief File containing the implementation of the reverse client.
  */
 
 #include <iostream>
 #include <memory>
 #include <string>
-#include <sqlite3.h>
 
-#include <grpcpp/ext/proto_server_reflection_plugin.h>
 #include <grpcpp/grpcpp.h>
-#include <grpcpp/health_check_service_interface.h>
 
-#include "sqlite_sync.grpc.pb.h"
+#include "reverse_access.grpc.pb.h"
 
 #include "utils/os.h"
 #include "utils/log.h"
 #include "version.h"
 
-#define OPT_STRING    ":f:p:dvh"
-#define USAGE_STRING  "\t%s [-f path] [-p port] [-d] [-h] [-v]"
+#define OPT_STRING    ":f:a:p:dvh"
+#define USAGE_STRING  "\t%s [-f path] [-a address] [-p port] [-d] [-h] [-v]"
 
 using grpc::Server;
 using grpc::ServerBuilder;
 using grpc::ServerContext;
 using grpc::Status;
-using sqlite_sync::Synchroniser;
-using sqlite_sync::RegisterDbRequest;
-using sqlite_sync::RegisterDbReply;
-using sqlite_sync::SyncDbStatementRequest;
-using sqlite_sync::SyncDbStatementReply;
+using reverse_access::Reverser;
+using reverse_access::CommandRequest;
+using reverse_access::CommandReply;
+using reverse_access::ResourceRequest;
+using reverse_access::ResourceReply;
 
 static __thread char version_buf[10];
 
@@ -67,9 +64,9 @@ char *get_static_version_string(uint8_t major, uint8_t minor, uint8_t patch)
 
 void show_app_version(void)
 {
-  fprintf(stdout, "sqlsyncsrv app version %s\n",
-    get_static_version_string(SQLSYNCSRV_VERSION_MAJOR, SQLSYNCSRV_VERSION_MINOR,
-    SQLSYNCSRV_VERSION_PATCH));
+  fprintf(stdout, "revclient app version %s\n",
+    get_static_version_string(REVCLIENT_VERSION_MAJOR, REVCLIENT_VERSION_MINOR,
+    REVCLIENT_VERSION_PATCH));
 }
 
 void show_app_help(char *app_name)
@@ -78,7 +75,8 @@ void show_app_help(char *app_name)
   fprintf(stdout, "Usage:\n");
   fprintf(stdout, USAGE_STRING, basename(app_name));
   fprintf(stdout, "\nOptions:\n");
-  fprintf(stdout, "\t-f folder\t\t Folder where to save teh databases\n");
+  fprintf(stdout, "\t-f folder\t Folder to sync\n");
+  fprintf(stdout, "\t-a address\t Server address\n");
   fprintf(stdout, "\t-p port\t\t Server port\n");
   fprintf(stdout, "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n");
   fprintf(stdout, "\t-h\t\t Show help\n");
@@ -111,7 +109,8 @@ int get_port(char *port_str)
   return strtol(port_str, NULL, 10);
 }
 
-void process_app_options(int argc, char *argv[], int *port, char *path, uint8_t *verbosity)
+void process_app_options(int argc, char *argv[], int *port,
+                        char *path, char *address, uint8_t *verbosity)
 {
   int opt;
   int p;
@@ -127,6 +126,9 @@ void process_app_options(int argc, char *argv[], int *port, char *path, uint8_t 
     case 'v':
       show_app_version();
       exit(EXIT_SUCCESS);
+      break;
+    case 'a':
+      strncpy(address, optarg, MAX_WEB_PATH_LEN);
       break;
     case 'p':
       if ((p = get_port(optarg)) < 0) {
@@ -149,124 +151,23 @@ void process_app_options(int argc, char *argv[], int *port, char *path, uint8_t 
   }
 }
 
-sqlite3* open_sqlite_db(char *db_path)
-{
-  sqlite3 *db;
-  if (sqlite3_open(db_path, &db) != SQLITE_OK) {     
-    log_debug("Cannot open database: %s", sqlite3_errmsg(db));
-    sqlite3_close(db);
-    return NULL;
-  }
-
-  return db;
-}
-
-int create_sqlite_db(char *db_path)
-{
-  sqlite3 *db;
-  if ((db = open_sqlite_db(db_path)) == NULL) {
-    log_debug("open_sqlite_db fail");
-    return -1;
-  }
-
-  sqlite3_close(db);
-  return 0;
-}
-
-int execute_sqlite_statement(char *db_path, char *statement)
-{
-  sqlite3 *db;
-  char *err = NULL;
-  if ((db = open_sqlite_db(db_path)) == NULL) {
-    log_debug("open_sqlite_db fail");
-    return -1;
-  }
-
-  if (sqlite3_exec(db, statement, NULL, NULL, &err) != SQLITE_OK) {
-    log_debug("sqlite3_exec fail %s", err);
-    sqlite3_free(err);
-    sqlite3_close(db);
-    return -1;
-  }
-
-  sqlite3_close(db);
-
-  return 0;
-}
-
-// Logic and data behind the server's behavior.
-class SynchroniserServiceImpl final : public Synchroniser::Service {
- public:
-  explicit SynchroniserServiceImpl(const std::string& path) : path_(path) {}
+// // Logic and data behind the server's behavior.
+// class SynchroniserServiceImpl final : public Synchroniser::Service {
+//  public:
+//   explicit SynchroniserServiceImpl(const std::string& path) : path_(path) {}
   
-  Status RegisterDb(ServerContext* context, const RegisterDbRequest* request, RegisterDbReply* reply) override {
-    if (request->name().length()) {
-      const char *db_name = request->name().c_str();
-      std::string db_path = GetDbPath((char *)db_name);
+//   Status RegisterDb(ServerContext* context, const RegisterDbRequest* request, RegisterDbReply* reply) override {
+//     return Status::OK;
+//   }
 
-      if (create_sqlite_db((char *)db_path.c_str()) == -1) {
-        log_debug("Could not registered db=%s", db_name);
-        reply->set_status(0);
-      } else {
-        log_debug("Registered db=%s at=%s", db_name, (char *)db_path.c_str());
-        reply->set_status(1);
-      }
-    } else {
-      log_debug("db name empty");
-      reply->set_status(0);
-    }
-    return Status::OK;
-  }
+//   Status SyncDbStatement(ServerContext* context, const SyncDbStatementRequest* request, SyncDbStatementReply* reply) override {
+//     return Status::OK;
+//   }
+// };
 
-  Status SyncDbStatement(ServerContext* context, const SyncDbStatementRequest* request, SyncDbStatementReply* reply) override {
-    if (request->name().length() && request->statement().length()) {
-      std::string db_path = GetDbPath((char *)request->name().c_str());
-      if (execute_sqlite_statement((char *)db_path.c_str(), (char *)request->statement().c_str()) == -1) {
-        log_debug("execute_sqlite_statement fail");
-        reply->set_status(0);
-      } else {
-        log_debug("Executed Statement with length=%d", request->statement().length());
-        reply->set_status(1);
-      }
-    } else {
-      log_debug("name or statement are empty");
-      reply->set_status(0);
-    }
-
-    return Status::OK;
-  }
-
-  std::string GetDbPath(char *db_name) {
-    std::string db_path;
-    char *dpath = construct_path((char *) path_.c_str(), db_name);
-    db_path = dpath;
-    os_free(dpath);
-    return db_path;
-  }
-
-  private:
-    std::string path_;
-};
-
-int run_grpc_server(char *path, uint16_t port) {
-  SynchroniserServiceImpl service(path);
-  std::string server_address("0.0.0.0:");
-  server_address += std::to_string(port);
-
-  grpc::EnableDefaultHealthCheckService(true);
-  grpc::reflection::InitProtoReflectionServerBuilderPlugin();
-  ServerBuilder builder;
-
-  builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
-
-  builder.RegisterService(&service);
-
-  std::unique_ptr<Server> server(builder.BuildAndStart());
-  fprintf(stdout, "Server listening on %s\n", server_address.c_str());
-
-  server->Wait();
-
-  return 0;
+int run_grpc_client(char *path, int port, char *address)
+{
+  return -1;
 }
 
 int main(int argc, char** argv) {
@@ -274,10 +175,11 @@ int main(int argc, char** argv) {
   uint8_t level = 0;
   int port = -1;
   char path[MAX_OS_PATH_LEN];
+  char address[MAX_WEB_PATH_LEN];
 
   os_memset(path, 0, MAX_OS_PATH_LEN);
 
-  process_app_options(argc, argv, &port, path, &verbosity); 
+  process_app_options(argc, argv, &port, path, address, &verbosity); 
 
   if (optind <= 1) show_app_help(argv[0]);
 
@@ -307,11 +209,12 @@ int main(int argc, char** argv) {
     strcpy(path, "./");
   }
 
-  fprintf(stdout, "Starting server with:\n");
+  fprintf(stdout, "Starting reverse client with:\n");
+  fprintf(stdout, "Address --> %s\n", address);
   fprintf(stdout, "Port --> %d\n", port);
   fprintf(stdout, "DB save path --> %s\n", path);
 
-  if (run_grpc_server(path, port) == -1) {
+  if (run_grpc_client(path, port, address) == -1) {
     fprintf(stderr, "run_grpc_server fail");
     exit(EXIT_FAILURE);
   } 

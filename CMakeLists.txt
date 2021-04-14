@@ -8,7 +8,7 @@ set(CMAKE_BUILD_TYPE Release)
 
 # The edgesec version number.
 set(EDGESEC_VERSION_MAJOR 0)
-set(EDGESEC_VERSION_MINOR 1)
+set(EDGESEC_VERSION_MINOR 3)
 set(EDGESEC_VERSION_PATCH 0)
 
 # The restsrv version number.
@@ -25,6 +25,16 @@ set(CAPTURE_VERSION_PATCH 0)
 set(SQLSYNCSRV_VERSION_MAJOR 0)
 set(SQLSYNCSRV_VERSION_MINOR 1)
 set(SQLSYNCSRV_VERSION_PATCH 0)
+
+# The reverse client version number.
+set(REVCLIENT_VERSION_MAJOR 0)
+set(REVCLIENT_VERSION_MINOR 1)
+set(REVCLIENT_VERSION_PATCH 0)
+
+# The reverse server version number.
+set(REVSRV_VERSION_MAJOR 0)
+set(REVSRV_VERSION_MINOR 1)
+set(REVSRV_VERSION_PATCH 0)
 
 # Find the hostapd program
 find_program(HOSTAPD NAMES hostapd PATHS "${CMAKE_SOURCE_DIR}/build")
@@ -167,10 +177,10 @@ set(sqlite_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/sqlite_sync.pb.h")
 set(sqlite_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/sqlite_sync.grpc.pb.cc")
 set(sqlite_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/sqlite_sync.grpc.pb.h")
 
-set(reverse_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/reverse.pb.cc")
-set(reverse_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/reverse.pb.h")
-set(reverse_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/reverse.grpc.pb.cc")
-set(reverse_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/reverse.grpc.pb.h")
+set(reverse_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/reverse_access.pb.cc")
+set(reverse_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/reverse_access.pb.h")
+set(reverse_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/reverse_access.grpc.pb.cc")
+set(reverse_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/reverse_access.grpc.pb.h")
 
 # Generate grpc probuf sources
 add_custom_command(

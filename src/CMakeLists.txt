@@ -31,3 +31,8 @@ target_link_libraries(capsrv capture_service config minIni os hashmap ${LIBPCAP_
 
 add_executable(sqlsyncsrv sqlsyncsrv.cc)
 target_link_libraries(sqlsyncsrv os sqlite_grpc_proto ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF} ${LIBSQLITE3_LIB})
+
+add_executable(revclient revclient.cc)
+target_link_libraries(revclient os log reverse_grpc_proto ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF})
+add_executable(revsrv revsrv.cc)
+target_link_libraries(revsrv os log reverse_grpc_proto ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF})
