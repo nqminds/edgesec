@@ -158,11 +158,19 @@ set(_GRPC_CPP_PLUGIN_EXECUTABLE $<TARGET_FILE:grpc_cpp_plugin>)
 get_filename_component(sqlite_proto "protos/sqlite_sync.proto" ABSOLUTE)
 get_filename_component(sqlite_proto_path "${sqlite_proto}" PATH)
 
+get_filename_component(reverse_proto "protos/reverse_access.proto" ABSOLUTE)
+get_filename_component(reverse_proto_path "${reverse_proto}" PATH)
+
 # Define protobuf generated sources paths
 set(sqlite_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/sqlite_sync.pb.cc")
 set(sqlite_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/sqlite_sync.pb.h")
 set(sqlite_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/sqlite_sync.grpc.pb.cc")
 set(sqlite_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/sqlite_sync.grpc.pb.h")
+
+set(reverse_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/reverse.pb.cc")
+set(reverse_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/reverse.pb.h")
+set(reverse_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/reverse.grpc.pb.cc")
+set(reverse_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/reverse.grpc.pb.h")
 
 # Generate grpc probuf sources
 add_custom_command(
@@ -175,12 +183,24 @@ add_custom_command(
     "${sqlite_proto}"
   DEPENDS "${sqlite_proto}")
 
+add_custom_command(
+  OUTPUT "${reverse_proto_srcs}" "${reverse_proto_hdrs}" "${reverse_grpc_srcs}" "${reverse_grpc_hdrs}"
+  COMMAND ${_PROTOBUF_PROTOC}
+  ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}"
+    --cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
+    -I "${reverse_proto_path}"
+    --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
+    "${reverse_proto}"
+  DEPENDS "${reverse_proto}")
+
 # Include generated *.pb.h files
 # include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 # Compile grpc protobuf sources
 add_library(sqlite_grpc_proto ${sqlite_grpc_srcs} ${sqlite_grpc_hdrs} ${sqlite_proto_srcs} ${sqlite_proto_hdrs})
 target_link_libraries(sqlite_grpc_proto ${_GRPC_GRPCPP})
+add_library(reverse_grpc_proto ${reverse_grpc_srcs} ${reverse_grpc_hdrs} ${reverse_proto_srcs} ${reverse_proto_hdrs})
+target_link_libraries(reverse_grpc_proto ${_GRPC_GRPCPP})
 
 # C compiler options
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wunused-variable")
