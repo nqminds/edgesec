@@ -46,6 +46,7 @@
 #include "../utils/os.h"
 #include "../utils/if.h"
 #include "../utils/log.h"
+#include "../utils/sqliteu.h"
 
 #define EXTRACT_META_PACKET(term, tp)           \
             term.hash = tp->mp.hash;            \
@@ -637,47 +638,6 @@ void save_packet_statement(sqlite3 *db, struct tuple_packet *tp)
       extract_dhcp_statement(db, tp);
       return;
   }
-}
-
-int execute_sqlite_query(sqlite3 *db, char *statement)
-{
-  char *err = NULL;
-  int rc = sqlite3_exec(db, statement, 0, 0, &err);
-
-  if (rc != SQLITE_OK ) {
-    log_debug("Failed to execute statement %s", err);
-    sqlite3_free(err);
-    
-    return -1;
-  }
-
-  return 0;
-}
-
-int check_table_exists(sqlite3 *db, char *table_name)
-{
-  sqlite3_stmt *res;
-  char *sql = "SELECT name FROM sqlite_master WHERE type='table' AND name=?;";
-  int rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
-
-
-  if (rc == SQLITE_OK)
-    sqlite3_bind_text(res, 1, table_name, -1, NULL);
-  else {
-    log_debug("Failed to execute statement: %s", sqlite3_errmsg(db));
-    return -1;
-  }
-
-  log_trace("%s", sql);
-  rc = sqlite3_step(res);
-
-  if (rc == SQLITE_ROW) {
-    log_trace("Found table %s", sqlite3_column_text(res, 0));
-    sqlite3_finalize(res);
-    return 1;
-  }
-
-  return 0;
 }
 
 void free_sqlite_header_db(sqlite3 *db)

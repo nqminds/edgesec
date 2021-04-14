@@ -6,7 +6,8 @@
         "inet.h": "c",
         "if_arp.h": "c",
         "tcp.h": "c",
-        "*.inc": "cpp"
+        "*.inc": "cpp",
+        "libgen.h": "c"
     },
     "cmake.configureOnOpen": true
 }

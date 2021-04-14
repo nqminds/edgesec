@@ -30,3 +30,6 @@ target_link_libraries(hash os)
 
 add_library(squeue squeue.c)
 target_link_libraries(squeue log os)
+
+add_library(sqliteu sqliteu.c)
+target_link_libraries(sqliteu log os ${LIBSQLITE3_LIB})
