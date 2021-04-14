@@ -29,7 +29,7 @@
 #include <sys/types.h>
 #include <stdbool.h>
 
-typedef void (*capture_callback_fn)(const struct pcap_pkthdr *header, const uint8_t *packet, const void *ctx);
+typedef void (*capture_callback_fn)(struct pcap_pkthdr *header, uint8_t *packet, const void *ctx);
 
 /**
  * @brief Pcap context structure definition
@@ -64,6 +64,17 @@ struct pcap_context* run_pcap(char *interface, bool immediate, bool promiscuous,
  * @return int 0 on success, -1 otherwise
  */
 int capture_pcap(struct pcap_context *ctx);
+
+/**
+ * @brief Saves a packet packet into file
+ * 
+ * @param ctx The pcap context
+ * @param file_path The file path to save the packet
+ * @param header The packet header
+ * @param packet The packet data
+ * @return int 0 on success, -1 on failure
+ */
+int dump_file_pcap(struct pcap_context *ctx, char *file_path, struct pcap_pkthdr *header, uint8_t *packet);
 
 /**
  * @brief Closes the pcap service

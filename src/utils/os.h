@@ -75,6 +75,8 @@
 #define BIT(x) (1U << (x))
 #endif
 
+#define STRLEN(s) (sizeof(s)/sizeof(s[0]))
+
 typedef long os_time_t;
 
 struct os_time {

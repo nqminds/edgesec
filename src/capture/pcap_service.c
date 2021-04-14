@@ -72,7 +72,7 @@ void receive_pcap_packet(u_char *args, const struct pcap_pkthdr *header, const u
   struct pcap_context *ctx = (struct pcap_context *) args;
 
   if (ctx->pcap_fn != NULL) {
-    ctx->pcap_fn(header, packet, ctx->fn_ctx);
+    ctx->pcap_fn((struct pcap_pkthdr *) header, (uint8_t *) packet, ctx->fn_ctx);
   }
 }
 
@@ -192,4 +192,16 @@ struct pcap_context* run_pcap(char *interface, bool immediate, bool promiscuous,
   log_debug("Non-blocking state %d", pcap_getnonblock(ctx->pd, err));
 
   return ctx;
+}
+
+int dump_file_pcap(struct pcap_context *ctx, char *file_path, struct pcap_pkthdr *header, uint8_t *packet)
+{
+  pcap_dumper_t *dumper;
+  if ((dumper = pcap_dump_open(ctx->pd, file_path)) == NULL) {
+    log_trace("pcap_dump_open fail");
+    return -1;
+  }
+  pcap_dump((u_char*)dumper, header, packet);
+  pcap_dump_close(dumper);
+  return 0;
 }

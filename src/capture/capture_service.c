@@ -49,8 +49,11 @@
 #include "../utils/eloop.h"
 #include "../utils/list.h"
 
-#define MAX_DB_NAME_LENGTH    MAX_RANDOM_UUID_LEN + 7
-#define META_DB_NAME          "pcap-meta.sqlite"
+#define SQLITE_EXTENSION              ".sqlite"
+#define PCAP_EXTENSION                ".pcap"
+#define MAX_DB_NAME_LENGTH            MAX_RANDOM_UUID_LEN + STRLEN(SQLITE_EXTENSION)
+#define MAX_PCAP_FILE_NAME_LENGTH     MAX_RANDOM_UUID_LEN + STRLEN(PCAP_EXTENSION)
+#define META_DB_NAME                  "pcap-meta.sqlite"
 
 struct capture_context {
   uint32_t process_interval;
@@ -64,11 +67,27 @@ struct capture_context {
   bool db_write;
   bool db_sync;
   char grpc_srv_addr[MAX_WEB_PATH_LEN];
-  char db_name[MAX_DB_NAME];
+  char db_name[MAX_DB_NAME_LENGTH];
+  char *db_path;
+  char *interface;
+  char *filter;
+  char cap_id[MAX_RANDOM_UUID_LEN];
 };
 
 uint32_t run_register_db(char *address, char *name);
 uint32_t run_sync_db_statement(char *address, char *name, char *statement);
+
+void construct_header_db_name(char *db_name)
+{
+  generate_radom_uuid(db_name);
+  strcat(db_name, SQLITE_EXTENSION);
+}
+
+void construct_pcap_file_name(char *file_name)
+{
+  generate_radom_uuid(file_name);
+  strcat(file_name, PCAP_EXTENSION);
+}
 
 void add_packet_queue(UT_array *tp_array, int count, struct packet_queue *queue)
 {
@@ -81,7 +100,7 @@ void add_packet_queue(UT_array *tp_array, int count, struct packet_queue *queue)
   }
 }
 
-void pcap_callback(const struct pcap_pkthdr *header, const uint8_t *packet, const void *ctx)
+void pcap_callback(struct pcap_pkthdr *header, uint8_t *packet, const void *ctx)
 {
   struct capture_context *context = (struct capture_context *)ctx;
   UT_array *tp_array;
@@ -91,8 +110,16 @@ void pcap_callback(const struct pcap_pkthdr *header, const uint8_t *packet, cons
     if ((count = extract_packets(header, packet, &tp_array)) > 0) {
       add_packet_queue(tp_array, count, context->pqueue);
     }
-  
+
     utarray_free(tp_array);
+  }
+
+  if (context->file_write) {
+    if (push_pcap_queue(context->cqueue, header, packet) == NULL) {
+      log_trace("push_pcap_queue fail");
+    } else {
+      log_trace("Pushed packet size=%d", header->caplen);
+    }
   }
 }
 
@@ -104,21 +131,57 @@ void eloop_read_fd_handler(int sock, void *eloop_ctx, void *sock_ctx)
   }
 }
 
+int save_pcap_file_data(struct pcap_pkthdr *header, uint8_t *packet, struct capture_context *context)
+{
+  char *path = NULL;
+  char file_name[MAX_PCAP_FILE_NAME_LENGTH];
+
+  construct_pcap_file_name(file_name);
+
+  path = construct_path(context->db_path, file_name);
+  if (dump_file_pcap(context->pc, path, header, packet) < 0) {
+    log_trace("dump_file_pcap fail");
+    os_free(path);
+    return -1;
+  }
+
+  os_free(path);
+
+  if (save_sqlite_meta_entry(context->meta_db, context->cap_id, file_name, os_get_timestamp(header->ts),
+        header->caplen, header->len, context->interface, context->filter) < 0) {
+    log_trace("save_sqlite_meta_entry fail");
+    return -1;
+  }
+
+  return 0;
+}
+
 void eloop_tout_handler(void *eloop_ctx, void *user_ctx)
 {
   struct capture_context *context = (struct capture_context *) user_ctx;
-  struct packet_queue *el;
-  ssize_t count = 0;
+  struct packet_queue *el_packet;
+  struct pcap_queue *el_pcap;
   char *traces = NULL;
 
   // Process all packets in the queue
   if (context->db_write) {
     while(get_packet_queue_length(context->pqueue)) {
-      if ((el = pop_packet_queue(context->pqueue)) != NULL) {
-        save_packet_statement(context->header_db, &(el->tp));
+      if ((el_packet = pop_packet_queue(context->pqueue)) != NULL) {
+        save_packet_statement(context->header_db, &(el_packet->tp));
         // Process packet
-        free_packet_queue_el(el);
-        count ++;
+        free_packet_queue_el(el_packet);
+      }
+    }
+  }
+
+  if (context->file_write) {
+    while(get_pcap_queue_length(context->cqueue)) {
+      if ((el_pcap = pop_pcap_queue(context->cqueue)) != NULL) {
+        if (save_pcap_file_data(&(el_pcap->header), el_pcap->packet, context) < 0) {
+          log_trace("save_pcap_file_data fail");
+        }
+
+        free_pcap_queue_el(el_pcap);
       }
     }
   }
@@ -137,12 +200,6 @@ void eloop_tout_handler(void *eloop_ctx, void *user_ctx)
   }
 }
 
-void construct_header_db_name(char *db_name)
-{
-  generate_radom_uuid(db_name);
-  strcat(db_name, ".sqlite");
-}
-
 void trace_callback(char *sqlite_statement, void *ctx)
 {
   struct string_queue *squeue = (struct string_queue *)ctx;
@@ -159,39 +216,46 @@ int run_capture(struct capture_conf *config)
   char *meta_db_path = NULL;
 
   os_memset(&context, 0, sizeof(context));
+  generate_radom_uuid(context.cap_id);
+
+  // Transform to microseconds
+  context.interface = config->capture_interface;
+  context.filter = config->filter;
+  context.process_interval = config->process_interval * 1000;
+  context.file_write = config->file_write;
+  context.db_write = config->db_write;
+  context.db_sync = config->db_sync;
+  context.db_path = config->db_path;
+
   if (strlen(config->db_sync_address)) {
     snprintf(context.grpc_srv_addr, MAX_WEB_PATH_LEN, "%s:%d", config->db_sync_address, config->db_sync_port);
   }
 
   construct_header_db_name(context.db_name);
-  header_db_path = construct_path(config->db_path, context.db_name);
+  header_db_path = construct_path(context.db_path, context.db_name);
 
   if (header_db_path == NULL) {
     log_debug("construct_path fail");
     return -1;
   }
 
-  meta_db_path = construct_path(config->db_path, META_DB_NAME);
+  meta_db_path = construct_path(context.db_path, META_DB_NAME);
   if (meta_db_path == NULL) {
     log_debug("construct_path fail");
     os_free(header_db_path);
     return -1;
   }
-
-  // Transform to microseconds
-  context.process_interval = config->process_interval * 1000;
-  context.file_write = config->file_write;
-  context.db_write = config->db_write;
-  context.db_sync = config->db_sync;
-
-  log_info("Capturing interface=%s", config->capture_interface);
+  
+  log_info("Capturing id=%s", context.cap_id);
+  log_info("Capturing interface=%s", context.interface);
+  log_info("Capturing filter=%s", context.filter);
   log_info("Promiscuous mode=%d", config->promiscuous);
   log_info("Immediate mode=%d", config->immediate);
   log_info("Buffer timeout=%d", config->buffer_timeout);
   log_info("Process interval=%d (milliseconds)", config->process_interval);
-  log_info("File write=%d", config->file_write);
-  log_info("DB write=%d", config->db_write);
-  log_info("DB sync=%d", config->db_sync);
+  log_info("File write=%d", context.file_write);
+  log_info("DB write=%d", context.db_write);
+  log_info("DB sync=%d", context.db_sync);
   log_info("DB name=%s", context.db_name);
   log_info("DB path=%s", header_db_path);
   log_info("GRPC Server address=%s", context.grpc_srv_addr);
@@ -258,9 +322,9 @@ int run_capture(struct capture_conf *config)
     }
   }
 
-  if ((context.pc = run_pcap(config->capture_interface, config->immediate,
+  if ((context.pc = run_pcap(context.interface, config->immediate,
                             config->promiscuous, (int)config->buffer_timeout,
-                            config->filter, pcap_callback, (void *)&context)) < 0) {
+                            context.filter, pcap_callback, (void *)&context)) < 0) {
     log_debug("run_pcap fail");
     free_packet_queue(context.pqueue);
     free_pcap_queue(context.cqueue);

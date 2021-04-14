@@ -34,15 +34,106 @@
 #include "../utils/os.h"
 #include "../utils/if.h"
 #include "../utils/log.h"
-
-sqlite3* open_sqlite_meta_db(char *db_path)
-{
-  return NULL;
-}
+#include "../utils/sqliteu.h"
 
 void free_sqlite_meta_db(sqlite3 *db)
 {
   if (db != NULL) {
     sqlite3_close(db);
   }
+}
+
+sqlite3* open_sqlite_meta_db(char *db_path)
+{
+  sqlite3 *db;
+  int rc;
+
+  if ((rc = sqlite3_open(db_path, &db)) != SQLITE_OK) {     
+    log_debug("Cannot open database: %s", sqlite3_errmsg(db));
+    sqlite3_close(db);
+    return NULL;
+  }
+
+  rc = check_table_exists(db, "meta");
+
+  if (rc == 0) {
+    log_debug("meta table doesn't exist creating...");
+    if (execute_sqlite_query(db, META_CREATE_TABLE) < 0) {
+      log_debug("execute_sqlite_query fail");
+      free_sqlite_meta_db(db);
+      return NULL;
+    }
+  } else if (rc < 0) {
+    log_debug("check_table_exists fail");
+    free_sqlite_meta_db(db);
+    return NULL;
+  }
+
+  return db;
+}
+
+int save_sqlite_meta_entry(sqlite3 *db, char *id, char *name, uint64_t timestamp, uint32_t caplen, uint32_t length,
+                           char *interface, char *filter)
+{
+  sqlite3_stmt *res = NULL;
+  int column_idx;
+
+  if (sqlite3_prepare_v2(db, META_INSERT_INTO, -1, &res, 0) != SQLITE_OK) {
+    log_trace("Failed to prepare statement: %s", sqlite3_errmsg(db));
+    return -1;
+  }
+
+  column_idx = sqlite3_bind_parameter_index(res, "@timestamp");
+  if(sqlite3_bind_int64(res, column_idx, timestamp) != SQLITE_OK) {
+    log_trace("sqlite3_bind_int64 fail");
+    sqlite3_finalize(res);
+    return -1;
+  }
+
+  column_idx = sqlite3_bind_parameter_index(res, "@caplen");
+  if (sqlite3_bind_int64(res, column_idx, caplen) != SQLITE_OK) {
+    log_trace("sqlite3_bind_int64 fail");
+    sqlite3_finalize(res);
+    return -1;
+  }
+
+  column_idx = sqlite3_bind_parameter_index(res, "@length");
+  if (sqlite3_bind_int64(res, column_idx, length) != SQLITE_OK) {
+    log_trace("sqlite3_bind_int64 fail");
+    sqlite3_finalize(res);
+    return -1;
+  }
+
+  column_idx = sqlite3_bind_parameter_index(res, "@id");
+  if (sqlite3_bind_text(res, column_idx, id, -1, NULL) != SQLITE_OK) {
+    log_trace("sqlite3_bind_text fail");
+    sqlite3_finalize(res);
+    return -1;
+  }
+
+  column_idx = sqlite3_bind_parameter_index(res, "@name");
+  if (sqlite3_bind_text(res, column_idx, name, -1, NULL) != SQLITE_OK) {
+    log_trace("sqlite3_bind_text fail");
+    sqlite3_finalize(res);
+    return -1;
+  }
+
+  column_idx = sqlite3_bind_parameter_index(res, "@interface");
+  if (sqlite3_bind_text(res, column_idx, interface, -1, NULL) != SQLITE_OK) {
+    log_trace("sqlite3_bind_text fail");
+    sqlite3_finalize(res);
+    return -1;
+  }
+
+  column_idx = sqlite3_bind_parameter_index(res, "@filter");
+  if (sqlite3_bind_text(res, column_idx, filter, -1, NULL) != SQLITE_OK) {
+    log_trace("sqlite3_bind_text fail");
+    sqlite3_finalize(res);
+    return -1;
+  }
+
+  sqlite3_step(res);
+  sqlite3_finalize(res);
+
+  return 0;
 }
