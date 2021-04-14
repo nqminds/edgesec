@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package reverse_access;
+
+// The reverse access service definition.
+service Reverser {
+  // Subscribe server to a client resource
+  rpc SubscribeResource (stream ResourceRequest) returns (ResourceReply) {}
+
+  // Subscribe client to server commands
+  rpc SubscribeCommand (CommandRequest) returns (stream CommandReply) {}
+}
+
+message CommandRequest {
+  string id = 1;
+}
+
+message CommandReply {
+  string command = 1;
+  string id = 2;
+}
+
+message ResourceRequest {
+  uint32 type = 1;
+  string meta = 2;
+  bytes data = 3;
+}
+
+message ResourceReply {
+  uint32 status = 1;
+}
+
