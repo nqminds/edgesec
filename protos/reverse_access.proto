@@ -4,10 +4,10 @@ package reverse_access;
 
 // The reverse access service definition.
 service Reverser {
-  // Subscribe server to a client resource
-  rpc SubscribeResource (stream ResourceRequest) returns (ResourceReply) {}
+  // Send client resource to server 
+  rpc SendResource (ResourceRequest) returns (ResourceReply) {}
 
-  // Subscribe client to server commands
+  // Subscribe to client to server commands
   rpc SubscribeCommand (CommandRequest) returns (stream CommandReply) {}
 }
 

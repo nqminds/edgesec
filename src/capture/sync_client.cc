@@ -52,21 +52,12 @@ class SynchroniserClient {
       : stub_(Synchroniser::NewStub(channel)) {}
 
   uint32_t RegisterDb(const std::string& name) {
-    // Data we are sending to the server.
     RegisterDbRequest request;
-    request.set_name(name);
-
-    // Container for the data we expect from the server.
     RegisterDbReply reply;
-
-    // Context for the client. It could be used to convey extra information to
-    // the server and/or tweak certain RPC behaviors.
     ClientContext context;
-
-    // The actual RPC.
+    request.set_name(name);
     Status status = stub_->RegisterDb(&context, request, &reply);
 
-    // Act upon its status.
     if (status.ok()) {
       return reply.status();
     } else {

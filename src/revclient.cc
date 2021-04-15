@@ -23,11 +23,15 @@
  * @brief File containing the implementation of the reverse client.
  */
 
+#include <chrono>
 #include <iostream>
 #include <memory>
+#include <random>
 #include <string>
+#include <thread>
 
 #include <grpcpp/grpcpp.h>
+#include <thread>
 
 #include "reverse_access.grpc.pb.h"
 
@@ -38,9 +42,11 @@
 #define OPT_STRING    ":f:a:p:dvh"
 #define USAGE_STRING  "\t%s [-f path] [-a address] [-p port] [-d] [-h] [-v]"
 
-using grpc::Server;
-using grpc::ServerBuilder;
-using grpc::ServerContext;
+using grpc::Channel;
+using grpc::ClientContext;
+using grpc::ClientReader;
+using grpc::ClientReaderWriter;
+using grpc::ClientWriter;
 using grpc::Status;
 using reverse_access::Reverser;
 using reverse_access::CommandRequest;
@@ -151,23 +157,70 @@ void process_app_options(int argc, char *argv[], int *port,
   }
 }
 
-// // Logic and data behind the server's behavior.
-// class SynchroniserServiceImpl final : public Synchroniser::Service {
-//  public:
-//   explicit SynchroniserServiceImpl(const std::string& path) : path_(path) {}
-  
-//   Status RegisterDb(ServerContext* context, const RegisterDbRequest* request, RegisterDbReply* reply) override {
-//     return Status::OK;
-//   }
+class ReverseClient {
+ public:
+  ReverseClient(std::shared_ptr<Channel> channel)
+      : stub_(Reverser::NewStub(channel)) {}
 
-//   Status SyncDbStatement(ServerContext* context, const SyncDbStatementRequest* request, SyncDbStatementReply* reply) override {
-//     return Status::OK;
-//   }
-// };
+  int SendResource(const std::string& meta) {
+    ResourceRequest request;
+    ResourceReply reply;
+    ClientContext context;
+
+    request.set_meta(meta);
+    Status status = stub_->SendResource(&context, request, &reply);
+
+    if (status.ok()) {
+      std::cout << reply.status() << std::endl;
+      return 0;
+    } else {
+      std::cout << status.error_code() << ": " << status.error_message() << std::endl;
+      return -1;
+    }
+  }
+  int SubscribeCommand(const std::string& id) {
+    CommandRequest request;
+    ClientContext context;
+
+    request.set_id(id);
+
+    std::unique_ptr<ClientReader<CommandReply>> reader(stub_->SubscribeCommand(&context, request));
+    std::thread reader_thread([&]() {
+      CommandReply reply;
+      while (reader->Read(&reply)) {
+        // Here process the reply
+        std::cout << "Received." << std::endl;
+        SendResource("Files for meta");
+      }
+    });
+
+    reader_thread.join();
+    Status status = reader->Finish();
+
+    if (!status.ok())
+      return -1;
+
+    return 0;
+  }
+
+ private:
+
+  std::unique_ptr<Reverser::Stub> stub_;
+};
 
 int run_grpc_client(char *path, int port, char *address)
 {
-  return -1;
+  char grpc_address[MAX_WEB_PATH_LEN];
+  snprintf(grpc_address, MAX_WEB_PATH_LEN, "%s:%d", address, port);
+
+  fprintf(stdout,"Connecting to %s...\n", grpc_address);
+  ReverseClient reverser(grpc::CreateChannel(grpc_address, grpc::InsecureChannelCredentials())); 
+  if (reverser.SubscribeCommand("12345") < 0) {
+    fprintf(stderr,"grpc SubscribeCommand failed\n");
+    return -1;
+  }
+
+  return 0;
 }
 
 int main(int argc, char** argv) {
@@ -215,7 +268,7 @@ int main(int argc, char** argv) {
   fprintf(stdout, "DB save path --> %s\n", path);
 
   if (run_grpc_client(path, port, address) == -1) {
-    fprintf(stderr, "run_grpc_server fail");
+    fprintf(stderr, "run_grpc_server fail\n");
     exit(EXIT_FAILURE);
   } 
 

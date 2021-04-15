@@ -7,7 +7,8 @@
         "if_arp.h": "c",
         "tcp.h": "c",
         "*.inc": "cpp",
-        "libgen.h": "c"
+        "libgen.h": "c",
+        "system_error": "cpp"
     },
     "cmake.configureOnOpen": true
 }

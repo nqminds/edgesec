@@ -26,6 +26,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <thread>
 
 #include <grpcpp/grpcpp.h>
 
@@ -41,6 +42,9 @@
 using grpc::Server;
 using grpc::ServerBuilder;
 using grpc::ServerContext;
+using grpc::ServerReader;
+using grpc::ServerReaderWriter;
+using grpc::ServerWriter;
 using grpc::Status;
 using reverse_access::Reverser;
 using reverse_access::CommandRequest;
@@ -108,8 +112,7 @@ int get_port(char *port_str)
   return strtol(port_str, NULL, 10);
 }
 
-void process_app_options(int argc, char *argv[], int *port,
-                        char *path, uint8_t *verbosity)
+void process_app_options(int argc, char *argv[], int *port, uint8_t *verbosity)
 {
   int opt;
   int p;
@@ -133,9 +136,6 @@ void process_app_options(int argc, char *argv[], int *port,
       }
       *port = p;
       break;
-    case 'f':
-      memcpy(path, optarg, strlen(optarg) + 1);
-      break;
     case ':':
       log_cmdline_error("Missing argument for -%c\n", optopt);
       exit(EXIT_FAILURE);
@@ -147,35 +147,54 @@ void process_app_options(int argc, char *argv[], int *port,
   }
 }
 
-// // Logic and data behind the server's behavior.
-// class SynchroniserServiceImpl final : public Synchroniser::Service {
-//  public:
-//   explicit SynchroniserServiceImpl(const std::string& path) : path_(path) {}
-  
-//   Status RegisterDb(ServerContext* context, const RegisterDbRequest* request, RegisterDbReply* reply) override {
-//     return Status::OK;
-//   }
+class ReverserServiceImpl final : public Reverser::Service {
+ public:
+  explicit ReverserServiceImpl() {}
 
-//   Status SyncDbStatement(ServerContext* context, const SyncDbStatementRequest* request, SyncDbStatementReply* reply) override {
-//     return Status::OK;
-//   }
-// };
+  Status SubscribeCommand(ServerContext* context, const CommandRequest* request, ServerWriter<CommandReply>* writer) override {
+    while(true) {
+      CommandReply reply;
+      writer->Write(reply);
+      std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
-int run_grpc_server(char *path, int port)
+    }
+    return Status::OK;
+  }
+
+  Status SendResource(ServerContext* context, const ResourceRequest* request, ResourceReply* reply) override {
+    std::cout << request->meta() << std::endl;
+    reply->set_status(0);
+    return Status::OK;
+  }
+};
+
+int run_grpc_server(int port)
 {
-  return -1;
+  ReverserServiceImpl reverser;
+  std::string server_address("0.0.0.0:");
+  server_address += std::to_string(port);
+
+  grpc::EnableDefaultHealthCheckService(true);
+  ServerBuilder builder;
+
+  builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
+
+  builder.RegisterService(&reverser);
+
+  std::unique_ptr<Server> server(builder.BuildAndStart());
+  fprintf(stdout, "Server listening on %s\n", server_address.c_str());
+
+  server->Wait();
+
+  return 0;
 }
 
 int main(int argc, char** argv) {
   uint8_t verbosity = 0;
   uint8_t level = 0;
   int port = -1;
-  char path[MAX_OS_PATH_LEN];
-  char address[MAX_WEB_PATH_LEN];
 
-  os_memset(path, 0, MAX_OS_PATH_LEN);
-
-  process_app_options(argc, argv, &port, path, &verbosity); 
+  process_app_options(argc, argv, &port, &verbosity); 
 
   if (optind <= 1) show_app_help(argv[0]);
 
@@ -195,21 +214,10 @@ int main(int argc, char** argv) {
     exit(EXIT_FAILURE);
   }
 
-  // Check if directory can be read
-  if (strlen(path)) {
-    if (list_dir(path, NULL, NULL) == -1) {
-      fprintf(stderr, "Can not read folder %s", path);
-      exit(EXIT_FAILURE); 
-    }
-  } else {
-    strcpy(path, "./");
-  }
-
   fprintf(stdout, "Starting reverse client with:\n");
   fprintf(stdout, "Port --> %d\n", port);
-  fprintf(stdout, "DB save path --> %s\n", path);
 
-  if (run_grpc_server(path, port) == -1) {
+  if (run_grpc_server(port) == -1) {
     fprintf(stderr, "run_grpc_server fail");
     exit(EXIT_FAILURE);
   } 
