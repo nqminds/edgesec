@@ -154,18 +154,28 @@ class ReverserServiceImpl final : public Reverser::Service {
   Status SubscribeCommand(ServerContext* context, const CommandRequest* request, ServerWriter<CommandReply>* writer) override {
     while(true) {
       CommandReply reply;
+      reply.set_command("list");
       writer->Write(reply);
       std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-
+      std::lock_guard<std::mutex> l(mtx_);
+      reply.set_command("get pcap-meta.sqlite");
+      writer->Write(reply);
+      std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     }
     return Status::OK;
   }
 
   Status SendResource(ServerContext* context, const ResourceRequest* request, ResourceReply* reply) override {
-    std::cout << request->meta() << std::endl;
+    std::lock_guard<std::mutex> l(mtx_);
+    meta_ = request->meta();
+    std::cout << "Received meta" << std::endl;
     reply->set_status(0);
     return Status::OK;
   }
+
+  private:
+    std::string meta_;
+    mutable std::mutex mtx_;
 };
 
 int run_grpc_server(int port)

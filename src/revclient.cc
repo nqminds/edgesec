@@ -171,7 +171,6 @@ class ReverseClient {
     Status status = stub_->SendResource(&context, request, &reply);
 
     if (status.ok()) {
-      std::cout << reply.status() << std::endl;
       return 0;
     } else {
       std::cout << status.error_code() << ": " << status.error_message() << std::endl;
@@ -189,7 +188,7 @@ class ReverseClient {
       CommandReply reply;
       while (reader->Read(&reply)) {
         // Here process the reply
-        std::cout << "Received." << std::endl;
+        std::cout << "Received: " << reply.command() << std::endl;
         SendResource("Files for meta");
       }
     });
