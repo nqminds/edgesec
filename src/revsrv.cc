@@ -24,6 +24,7 @@
  */
 
 #include <iostream>
+#include <sstream>
 #include <memory>
 #include <string>
 #include <thread>
@@ -147,6 +148,18 @@ void process_app_options(int argc, char *argv[], int *port, uint8_t *verbosity)
   }
 }
 
+std::size_t split_string(std::vector<std::string> &string_list, std::string &str, char delim)
+{
+  std::stringstream str_stream(str);
+  std::string out;
+
+  while (std::getline(str_stream, out, delim)) {
+    string_list.push_back(out);
+  }
+
+  return string_list.size();
+}
+
 class ReverserServiceImpl final : public Reverser::Service {
  public:
   explicit ReverserServiceImpl() {}
@@ -167,8 +180,9 @@ class ReverserServiceImpl final : public Reverser::Service {
 
   Status SendResource(ServerContext* context, const ResourceRequest* request, ResourceReply* reply) override {
     std::lock_guard<std::mutex> l(mtx_);
-    meta_ = request->meta();
-    std::cout << "Received meta" << std::endl;
+    if (request->type() == 2) {
+      log_trace("%s", request->meta().c_str());
+    }
     reply->set_status(0);
     return Status::OK;
   }
@@ -192,7 +206,7 @@ int run_grpc_server(int port)
   builder.RegisterService(&reverser);
 
   std::unique_ptr<Server> server(builder.BuildAndStart());
-  fprintf(stdout, "Server listening on %s\n", server_address.c_str());
+  log_info("Server listening on %s", server_address.c_str());
 
   server->Wait();
 

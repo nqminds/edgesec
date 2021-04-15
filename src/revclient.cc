@@ -23,6 +23,8 @@
  * @brief File containing the implementation of the reverse client.
  */
 
+#include <sys/types.h>
+#include <dirent.h>
 #include <chrono>
 #include <iostream>
 #include <memory>
@@ -157,26 +159,76 @@ void process_app_options(int argc, char *argv[], int *port,
   }
 }
 
+int get_folder_list(std::string path, std::vector<std::string> &folder_list) {
+  DIR *dirp;
+  struct dirent *dp;
+
+  /* Open the directory - on failure print an error and return */
+  errno = 0;
+  dirp = opendir(path.c_str());
+  if (dirp == NULL) {
+    log_err("opendir");
+    return -1;
+  }
+
+  /* Look at each of the entries in this directory */
+  for (;;) {
+    errno = 0;              /* To distinguish error from end-of-directory */
+    dp = readdir(dirp);
+
+    if (dp == NULL)
+      break;
+
+    /* Skip . and .. */
+    if (strcmp(dp->d_name, ".") == 0 || strcmp(dp->d_name, "..") == 0)
+      continue;
+
+    folder_list.push_back(dp->d_name);
+  }
+
+  if (errno != 0) {
+    log_err("readdir");
+    return -1;
+  }
+
+  if (closedir(dirp) == -1) {
+    log_err("closedir");
+    return -1;
+  }
+
+  return 0;
+}
+
+std::string accumulate_string(std::vector<std::string> &string_list)
+{
+  std::string acc;
+  for (const auto &el : string_list) acc += el + "|";
+  return acc;
+}
+
 class ReverseClient {
  public:
-  ReverseClient(std::shared_ptr<Channel> channel)
-      : stub_(Reverser::NewStub(channel)) {}
+  ReverseClient(std::shared_ptr<Channel> channel, std::string path)
+      : stub_(Reverser::NewStub(channel)), path_(path) {}
 
-  int SendResource(const std::string& meta) {
+  int SendResource(const uint32_t type, const std::string& meta, const std::string& data) {
     ResourceRequest request;
     ResourceReply reply;
     ClientContext context;
 
+    request.set_type(type);
     request.set_meta(meta);
+    request.set_data(data);
     Status status = stub_->SendResource(&context, request, &reply);
 
     if (status.ok()) {
       return 0;
     } else {
-      std::cout << status.error_code() << ": " << status.error_message() << std::endl;
+      log_debug("Error code=%d, %s", (int)status.error_code(), status.error_message().c_str());
       return -1;
     }
   }
+
   int SubscribeCommand(const std::string& id) {
     CommandRequest request;
     ClientContext context;
@@ -184,12 +236,18 @@ class ReverseClient {
     request.set_id(id);
 
     std::unique_ptr<ClientReader<CommandReply>> reader(stub_->SubscribeCommand(&context, request));
+
     std::thread reader_thread([&]() {
       CommandReply reply;
       while (reader->Read(&reply)) {
-        // Here process the reply
-        std::cout << "Received: " << reply.command() << std::endl;
-        SendResource("Files for meta");
+        // Process the reply
+        if (reply.command() == "list") {
+          std::vector<std::string> folder_list;
+          if (get_folder_list(path_, folder_list) != -1) {
+            std::string acc = accumulate_string(folder_list);
+            SendResource(2, acc, "");
+          } else SendResource(0, "", "");
+        } else SendResource(1, "", "");
       }
     });
 
@@ -205,6 +263,8 @@ class ReverseClient {
  private:
 
   std::unique_ptr<Reverser::Stub> stub_;
+  std::string path_;
+
 };
 
 int run_grpc_client(char *path, int port, char *address)
@@ -212,10 +272,10 @@ int run_grpc_client(char *path, int port, char *address)
   char grpc_address[MAX_WEB_PATH_LEN];
   snprintf(grpc_address, MAX_WEB_PATH_LEN, "%s:%d", address, port);
 
-  fprintf(stdout,"Connecting to %s...\n", grpc_address);
-  ReverseClient reverser(grpc::CreateChannel(grpc_address, grpc::InsecureChannelCredentials())); 
+  log_info("Connecting to %s...", grpc_address);
+  ReverseClient reverser(grpc::CreateChannel(grpc_address, grpc::InsecureChannelCredentials()), path); 
   if (reverser.SubscribeCommand("12345") < 0) {
-    fprintf(stderr,"grpc SubscribeCommand failed\n");
+    log_debug("grpc SubscribeCommand failed");
     return -1;
   }
 
