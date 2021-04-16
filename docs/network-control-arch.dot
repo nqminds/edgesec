@@ -1,0 +1,91 @@
+digraph D {
+
+  node [shape=plaintext fontname="Sans serif" fontsize="8"];
+
+  edgesec [ label=<
+   <table border="1" cellborder="0" cellspacing="1">
+     <tr><td align="left"><b>Edgesec tool</b></td></tr>
+     <tr><td align="left"><i>edgesec.c</i></td></tr>
+     <tr><td align="left">Read the configuration file and executes the engine</td></tr>
+     <tr><td align="left"><font color="darkgreen">config.ini</font></td></tr>
+   </table>>];
+
+  engine [ label=<
+   <table border="1" cellborder="0" cellspacing="1">
+     <tr><td align="left"><b>Engine service</b></td></tr>
+     <tr><td align="left"><i>engine.c</i></td></tr>
+     <tr><td align="left">Runs all the network control services</td></tr>
+     <tr><td align="left"><font color="darkgreen">struct app_config</font></td></tr>
+   </table>>];
+
+  subnet_service [ label=<
+   <table border="1" cellborder="0" cellspacing="1">
+     <tr><td align="left"><b>Subnet service</b></td></tr>
+     <tr><td align="left"><i>if_service.c</i></td></tr>
+     <tr><td align="left">Creates the subnet interfaces</td></tr>
+     <tr><td align="left"><font color="darkgreen">struct config_ifinfo_t</font></td></tr>
+   </table>>];
+
+  supervisor [ label=<
+   <table border="1" cellborder="0" cellspacing="1">
+     <tr><td align="left"><b>Supervisor service</b></td></tr>
+     <tr><td align="left"><i>supervisor.c</i></td></tr>
+     <tr><td align="left">Creates the UNIX domain socket and</td></tr>
+     <tr><td align="left">processes commands</td></tr>
+     <tr><td align="left"><font color="darkgreen">struct supervisor_context</font></td></tr>
+   </table>>];
+
+  radius [ label=<
+   <table border="1" cellborder="0" cellspacing="1">
+     <tr><td align="left"><b>Radius server</b></td></tr>
+     <tr><td align="left"><i>radius_server.c</i></td></tr>
+     <tr><td align="left">Creates the RADIUS server and</td></tr>
+     <tr><td align="left">configures the RADIUS client</td></tr>
+     <tr><td align="left"><font color="darkgreen">struct radius_client</font></td></tr>
+   </table>>];
+
+  ap [ label=<
+   <table border="1" cellborder="0" cellspacing="1">
+     <tr><td align="left"><b>AP service</b></td></tr>
+     <tr><td align="left"><i>ap_service.c</i></td></tr>
+     <tr><td align="left">Runs the ap service, which creates and</td></tr>
+     <tr><td align="left">manages the software AP</td></tr>
+     <tr><td align="left"><font color="darkgreen">struct apconf</font></td></tr>
+   </table>>];
+
+  state [ label=<
+   <table border="1" cellborder="0" cellspacing="1">
+     <tr><td align="left"><b>State machine service</b></td></tr>
+     <tr><td align="left"><i>WIP</i></td></tr>
+     <tr><td align="left">Runs the state machine service,</td></tr>
+     <tr><td align="left">which manages the WiFi connected devices</td></tr>
+     <tr><td align="left"><font color="darkgreen">WIP</font></td></tr>
+   </table>>];
+
+  capture [ label=<
+   <table border="1" cellborder="0" cellspacing="1">
+     <tr><td align="left"><b>Capture service</b></td></tr>
+     <tr><td align="left"><i>capture_service.c</i></td></tr>
+     <tr><td align="left">Runs the capture service,</td></tr>
+     <tr><td align="left">which monitors network traffic</td></tr>
+     <tr><td align="left"><font color="darkgreen">struct capture_conf</font></td></tr>
+   </table>>];
+
+  dhcp [ label=<
+   <table border="1" cellborder="0" cellspacing="1">
+     <tr><td align="left"><b>DHCP service</b></td></tr>
+     <tr><td align="left"><i>dhcp_service.c</i></td></tr>
+     <tr><td align="left">Runs the dhcp service,</td></tr>
+     <tr><td align="left">which assigns IP addresses to connected devices</td></tr>
+     <tr><td align="left"><font color="darkgreen">struct config_dhcpinfo_t</font></td></tr>
+   </table>>];
+
+  edgesec -> engine;
+  engine -> subnet_service;
+  engine -> supervisor;
+  engine -> radius;
+  engine -> ap;
+  engine -> state;
+  engine -> capture;
+  engine -> dhcp;
+}

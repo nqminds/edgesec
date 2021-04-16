@@ -144,10 +144,18 @@ char* get_dnsmasq_args(char *dnsmasq_bin_path, char *dnsmasq_conf_path, char *ar
   // argv = {"dnsmasq", "--bind-interfaces", "--no-daemon", "--log-queries", "--conf-file=/tmp/dnsmasq.conf", NULL};
   // argv = {"dnsmasq", "--bind-interfaces", "--no-daemon", "--conf-file=/tmp/dnsmasq.conf", NULL};
 
-  if (strlen(dnsmasq_conf_path) > MAX_OS_PATH_LEN)
+  if (strlen(dnsmasq_conf_path) > MAX_OS_PATH_LEN) {
+    log_trace("dnsmasq_conf_path exceeds MAX length");
     return NULL;
+  }
 
   char *conf_arg = os_malloc(sizeof(char)*(MAX_OS_PATH_LEN + strlen(DNSMASQ_CONF_FILE_OPTION) + 1));
+
+  if (conf_arg == NULL) {
+    log_err("os_malloc");
+    return NULL;
+  }
+
   conf_arg[0] = '\0';
   strcat(conf_arg, DNSMASQ_CONF_FILE_OPTION);
   strcat(conf_arg, dnsmasq_conf_path);
@@ -156,6 +164,8 @@ char* get_dnsmasq_args(char *dnsmasq_bin_path, char *dnsmasq_conf_path, char *ar
   argv[1] = DNSMASQ_BIND_INTERFACE_OPTION;
   argv[2] = DNSMASQ_NO_DAEMON_OPTION;
   argv[3] = conf_arg;
+
+  return conf_arg;
 }
 
 char* run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path)

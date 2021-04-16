@@ -1,0 +1,52 @@
+digraph D {
+
+  node [shape=plaintext fontname="Sans serif" fontsize="8"];
+
+  supervisor [ label=<
+   <table border="1" cellborder="0" cellspacing="1">
+     <tr><td align="left"><b>Supervisor service</b></td></tr>
+     <tr><td align="left"><i>supervisor.c</i></td></tr>
+     <tr><td align="left">Creates the UNIX domain socket and</td></tr>
+     <tr><td align="left">processes commands</td></tr>
+     <tr><td align="left"><font color="darkgreen">struct supervisor_context</font></td></tr>
+   </table>>];
+
+  radius [ label=<
+   <table border="1" cellborder="0" cellspacing="1">
+     <tr><td align="left"><b>Radius server</b></td></tr>
+     <tr><td align="left"><i>radius_server.c</i></td></tr>
+     <tr><td align="left">Creates the RADIUS server and</td></tr>
+     <tr><td align="left">configures the RADIUS client</td></tr>
+     <tr><td align="left"><font color="darkgreen">struct radius_client</font></td></tr>
+   </table>>];
+
+  dhcp [ label=<
+   <table border="1" cellborder="0" cellspacing="1">
+     <tr><td align="left"><b>DHCP service</b></td></tr>
+     <tr><td align="left"><i>dhcp_service.c</i></td></tr>
+     <tr><td align="left">Runs the dhcp service,</td></tr>
+     <tr><td align="left">which assigns IP addresses to connected devices</td></tr>
+     <tr><td align="left"><font color="darkgreen">struct config_dhcpinfo_t</font></td></tr>
+   </table>>];
+
+  domain [ label=<
+   <table border="1" cellborder="0" cellspacing="1">
+     <tr><td align="left"><b>Control interface</b></td></tr>
+     <tr><td align="left"><i>domain_server.c</i></td></tr>
+     <tr><td align="left">The UNIX domain socket</td></tr>
+   </table>>];
+
+  iptables [ label=<
+   <table border="1" cellborder="0" cellspacing="1">
+     <tr><td align="left"><b>iptables service</b></td></tr>
+     <tr><td align="left"><i>iptables.c</i></td></tr>
+     <tr><td align="left">Manages the iptables structure</td></tr>
+   </table>>];
+
+  supervisor -> radius;
+  radius -> supervisor;
+  dhcp -> domain;
+  supervisor -> domain;
+  supervisor -> iptables;
+  domain -> supervisor;
+}

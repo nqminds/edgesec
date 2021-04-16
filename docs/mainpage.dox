@@ -1,6 +1,8 @@
 /**
 \mainpage Documentation for EDGESec
 
+\tableofcontents
+
 EDGESec will define a new architecture for local (edge based) routers addressing fundamental security weaknesses that impact current IP and IOT router implementations.
 
 \section decsription Description
@@ -32,7 +34,7 @@ We plan to integrate all of the above strategies into a single opensource codeba
 \section approach Technical approach
 
 We plan to tackle the mentioned IoT gateway solutions as follows:
-1. [\ref networksegmentation] The network isolation technique will be implemented at the WiFi level protocol. We plan to use the VLAN mechanism to segment the network of connected IoT devices. We will also implement techniques to detect the device manufacturer/type based on the device MAC address and traffic monitoring. The result of the detection algorithm will be used by the IoT gateway to allocate the IoT device to a given subnet.
+1. [\ref networkcontrol] The network isolation technique will be implemented at the WiFi level protocol. We plan to use the VLAN mechanism to segment the network of connected IoT devices. We will also implement techniques to detect the device manufacturer/type based on the device MAC address and traffic monitoring. The result of the detection algorithm will be used by the IoT gateway to allocate the IoT device to a given subnet.
 2. [\ref securediscovery] For secure discovery and connectivity between IoT devices and IoT gateway we plan to use the efficient gRPC protocol.
 3. [\ref securestorage] To store the encryption keys and to implement IoT gateway attestation we plan to leverage the existing hardware implementations of Trusted execution and secure memory storage. We will consider verified u-boot, UEFI, HAB secure boot technology from NXP and similar.
 4. [\ref trafficmonitoring] To monitor the IoT device traffic we will use packet sniffers and advanced ML algorithms to detect compromised IoT devices.
