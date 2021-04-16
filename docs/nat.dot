@@ -30,19 +30,16 @@ digraph D {
      <tr><td align="left"><font color="darkgreen">10.0.0.2</font></td></tr>
    </table>>];
 
-  device5 [ label=<
+  wan [ label=<
    <table border="1" cellborder="0" cellspacing="1">
-     <tr><td align="left"><b>Device 5</b></td></tr>
-     <tr><td align="left"><font color="darkgreen">A0:B0:C0:D0:E0:F0</font></td></tr>
-     <tr><td align="left"><font color="darkgreen">10.0.7.98</font></td></tr>
+     <tr><td align="left"><b>WAN</b></td></tr>
+     <tr><td align="left"><font color="darkgreen">75.77.131.134</font></td></tr>
    </table>>];
 
-  device1 -> device2;
-  device2 -> device1;
-  device2 -> device3;
-  device3 -> device2;
-  device3 -> device1;
-  device1 -> device3;
-  device4 -> device5;
-  device5 -> device4;
+  device1 -> wan;
+  wan -> device1;
+  device2 -> wan;
+  wan -> device2;
+  device3 -> wan;
+  wan -> device3;
 }

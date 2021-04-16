@@ -9,7 +9,7 @@ The network architecture of the EDGESec tool consist of several services that cr
 \li Software AP service
 \li DHCP service
 \li State machine service
-\li Capture service
+\li Network Capture service
 
 \dotfile network-control-arch.dot
 
@@ -65,4 +65,53 @@ The supervisor allows connecting two network devices into a bridge. Below is a d
 It important to note that the connection is not transitive. The control interface allows any application to list, add and remove bridge connections. When a connection is being added or removed the corresponding mapping in the supervisor context and the iptables entries are modified.
 
 \subsection nat NAT
+
+The supervisor can allow or deny network access to a network device. The below picture depicts an example of NAT connection for several devices.
+
+\dotfile nat.dot
+
+As for bridges when a NAT connection is added or removed the iptables is modified accordinlgy.
+
+\section softwap Software AP service
+
+The software AP service creates a WiFi access points for network device connection. Currently the edgesec tool uses the hostap software AP service. The configuration structure for the AP service is depicted below:
+
+\code{.c}
+struct apconf {
+  char ap_bin_path[MAX_OS_PATH_LEN];
+  char ap_file_path[MAX_OS_PATH_LEN];
+  char ap_log_path[MAX_OS_PATH_LEN];
+  char interface[IFNAMSIZ];
+  char ssid[AP_NAME_LEN];
+  char wpa_passphrase[AP_SECRET_LEN];
+  char bridge[IFNAMSIZ];
+  char driver[AP_DRIVE_LEN];
+  char hw_mode[AP_HWMODE_LEN];
+  int channel;
+  int wmm_enabled;
+  int auth_algs;
+  int wpa;
+  char wpa_key_mgmt[AP_WPA_KEY_MGMT_LEN];
+  char rsn_pairwise[AP_RSN_PAIRWISE_LEN];
+  char ctrl_interface[MAX_OS_PATH_LEN];
+  int macaddr_acl;
+  int dynamic_vlan;
+  char vlan_bridge[IFNAMSIZ];
+  char vlan_file[MAX_OS_PATH_LEN];
+  int logger_stdout;
+  int logger_stdout_level;
+  int logger_syslog;
+  int logger_syslog_level;
+  int ignore_broadcast_ssid;
+  int wpa_psk_radius;
+};
+\endcode
+
+The main components of the structure are \b interface, \b ssid, \b wpa_passphrase and \b ctrl_interface. The \b interface parameters sets the network interface of the AP. The \b ssid denotes the visible name of the access point to which network devices can connect to. The \b wpa_passphrase denotes the network credentials to join the AP abd the \b ctrl_interface is the UNIX domain socket to manage the AP. 
+
+Below is a diagram depicting the connection between the AP and other network services:
+
+\dotfile ap.dot
+
+The software AP, which in this case is implemented by hostapd, creates a RADIUS client. The RADIUS client equires for network credentials from RADIUS server. Subsequently the RADIUS server returns the access/deny and credentials packet. The access list and credentials are obtained from the supervisor service. 
 */

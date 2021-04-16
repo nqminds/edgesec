@@ -1,0 +1,44 @@
+digraph D {
+
+  node [shape=plaintext fontname="Sans serif" fontsize="8"];
+
+  supervisor [ label=<
+   <table border="1" cellborder="0" cellspacing="1">
+     <tr><td align="left"><b>Supervisor service</b></td></tr>
+     <tr><td align="left"><i>supervisor.c</i></td></tr>
+     <tr><td align="left">Creates the UNIX domain socket and</td></tr>
+     <tr><td align="left">processes commands</td></tr>
+     <tr><td align="left"><font color="darkgreen">struct supervisor_context</font></td></tr>
+   </table>>];
+
+  radius [ label=<
+   <table border="1" cellborder="0" cellspacing="1">
+     <tr><td align="left"><b>Radius server</b></td></tr>
+     <tr><td align="left"><i>radius_server.c</i></td></tr>
+     <tr><td align="left">Creates the RADIUS server and</td></tr>
+     <tr><td align="left">configures the RADIUS client</td></tr>
+     <tr><td align="left"><font color="darkgreen">struct radius_client</font></td></tr>
+   </table>>];
+
+  radiusc [ label=<
+   <table border="1" cellborder="0" cellspacing="1">
+     <tr><td align="left"><b>Radius client</b></td></tr>
+     <tr><td align="left"><i>hostapd.c</i></td></tr>
+     <tr><td align="left">Creates the RADIUS client</td></tr>
+   </table>>];
+
+  ap [ label=<
+   <table border="1" cellborder="0" cellspacing="1">
+     <tr><td align="left"><b>AP service</b></td></tr>
+     <tr><td align="left"><i>ap_service.c</i></td></tr>
+     <tr><td align="left">Runs the software AP service</td></tr>
+     <tr><td align="left"><font color="darkgreen">struct apconf</font></td></tr>
+   </table>>];
+
+  supervisor -> radius;
+  radius -> supervisor;
+  radius -> radiusc;
+  radiusc -> radius;
+  ap -> radiusc;
+  radiusc -> ap;
+}
