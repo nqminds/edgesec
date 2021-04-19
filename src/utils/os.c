@@ -587,12 +587,14 @@ bool is_string_in_cmdline_file(char *filename, char *str)
   while ((nread = getdelim(&line, &len, '\0', fp)) != -1) {
     if (strstr(line, str)) {
       free(line);
+      fclose(fp);
       return true;
     }
     free(line);
     line = NULL;
   }
 
+  fclose(fp);
   return false;
 }
 

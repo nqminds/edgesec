@@ -216,15 +216,26 @@ class ReverserServiceImpl final : public Reverser::Service {
   explicit ReverserServiceImpl() {}
 
   Status SubscribeCommand(ServerContext* context, const CommandRequest* request, ServerWriter<CommandReply>* writer) override {
+    char rid[MAX_RANDOM_UUID_LEN];
+
+    log_trace("Subscribed client with id=%s", request->id().c_str());
+
     while(true) {
       CommandReply reply;
+      generate_radom_uuid(rid);
+
       std::unique_lock<std::mutex> lk(command_lock);
       command_v.wait(lk, []{return control_command != REVERSE_CMD_UNKNOWN;});
+
+      reply.set_id(rid);
       reply.set_command(control_command);
       reply.set_args(command_args);
+
       writer->Write(reply);
+
       control_command = REVERSE_CMD_UNKNOWN;
       command_args.clear();
+
       lk.unlock();
       command_v.notify_one();
     }
@@ -232,7 +243,6 @@ class ReverserServiceImpl final : public Reverser::Service {
   }
 
   Status SendResource(ServerContext* context, const ResourceRequest* request, ResourceReply* reply) override {
-    fprintf(stdout, "%s", request->data().c_str());
     wait_reverse_response(request->data());
     reply->set_status(0);
     return Status::OK;

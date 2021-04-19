@@ -288,7 +288,7 @@ class ReverseClient {
         char *file_path;
         char *file_data = NULL;
         ssize_t file_size;
-        log_trace("Processing command=%d", reply.command());
+        log_trace("Processing command=%d with id=%s", reply.command(), reply.id().c_str());
         switch(reply.command()) {
           case REVERSE_CMD_LIST:
             if (get_folder_list(path_, folder_list) != -1) {
@@ -338,10 +338,12 @@ class ReverseClient {
 int run_grpc_client(char *path, int port, char *address)
 {
   char grpc_address[MAX_WEB_PATH_LEN];
+  char rid[MAX_RANDOM_UUID_LEN];
+  generate_radom_uuid(rid);
+  std::string id(rid);
   snprintf(grpc_address, MAX_WEB_PATH_LEN, "%s:%d", address, port);
-  std::string id("12345");
 
-  log_info("Connecting to %s...", grpc_address);
+  log_info("Connecting to %s... with id=%s", grpc_address, rid);
   ReverseClient reverser(grpc::CreateChannel(grpc_address, grpc::InsecureChannelCredentials()), path, id); 
   if (reverser.SubscribeCommand(id) < 0) {
     log_debug("grpc SubscribeCommand failed");

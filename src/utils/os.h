@@ -490,10 +490,18 @@ char *rtrim(char *str, const char *seps);
 }
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Generates a random UUID string of MAX_RANDOM_UUID_LEN - 1 characters long not including '\0'
  * 
  * @param rid The output string of MAX_RANDOM_UUID_LEN bytes
  */
 void generate_radom_uuid(char *rid);
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* OS_H */
