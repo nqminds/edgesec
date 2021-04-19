@@ -208,6 +208,10 @@ bool is_number(const char *ptr);
  */
 size_t os_strlcpy(char *dest, const char *src, size_t siz);
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Allocate and zero memory
  * 
@@ -217,6 +221,10 @@ size_t os_strlcpy(char *dest, const char *src, size_t siz);
  * @return void* Pointer to allocated and zeroed memory or %NULL on failure
  */
 void * os_zalloc(size_t size);
+#ifdef __cplusplus
+}
+#endif
+
 
 /**
  * @brief Allocate and zero memory for an array
@@ -466,6 +474,10 @@ int run_process(char *argv[]);
  */
 int make_file_exec_fd(int fd);
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Right trim the string
  * 
@@ -474,6 +486,9 @@ int make_file_exec_fd(int fd);
  * @return char* The pointer to the source string
  */
 char *rtrim(char *str, const char *seps);
+#ifdef __cplusplus
+}
+#endif
 
 /**
  * @brief Generates a random UUID string of MAX_RANDOM_UUID_LEN - 1 characters long not including '\0'

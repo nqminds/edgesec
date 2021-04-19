@@ -3,5 +3,181 @@
 
 \section captureh The Network Capture architecture
 
-The network capture has the purpose of 
+The network capture has the purpose of monitoring network traffic for each connected device. The resulting traffic analytics is sent to the network controller for device management. The network capture contains the following services:
+
+\li Packet decoder
+\li Packet capture
+\li SQLite header storer
+\li Raw packet storer
+\li GRPC Synchroniser
+\li DPI analytics
+
+The capture service is implemented as a standalone executable that can be run on demand by the network controller. The configuration of the capture service is depicted below:
+
+\code{.c}
+struct capture_conf {
+  char capture_interface[IFNAMSIZ];
+  bool promiscuous;
+  bool immediate;
+  uint16_t buffer_timeout;
+  uint16_t process_interval;
+  bool file_write;
+  bool db_write;
+  bool db_sync;
+  char db_path[MAX_OS_PATH_LEN];
+  char db_sync_address[MAX_WEB_PATH_LEN];
+  uint16_t db_sync_port;
+  char *filter;
+};
+\endcode
+
+The capture service can be run on a given network interface with a given filter. The capture also has the ability to store the processed packet in SQLite databases or raw format. The databases can be synchronised with the cloud for remote access.
+
+\section packetdecoder Packet decoder
+The packet decoder extract the metadata from captured packet. The below structure represents all the protocols that are currently being decoded:
+
+\code{.c}
+struct capture_packet {
+  struct ether_header *ethh;
+  struct ether_arp *arph;
+  struct ip *ip4h;
+  struct ip6_hdr *ip6h;
+  struct tcphdr *tcph;
+  struct udphdr *udph;
+  struct icmphdr *icmp4h;
+  struct icmp6_hdr *icmp6h;
+  struct dns_header *dnsh;
+  struct mdns_header *mdnsh;
+  struct dhcp_header *dhcph;
+  uint64_t timestamp;
+  uint32_t caplen;
+  uint32_t length;
+  uint32_t ethh_hash;
+  uint32_t arph_hash;
+  uint32_t ip4h_hash;
+  uint32_t ip6h_hash;
+  uint32_t tcph_hash;
+  uint32_t udph_hash;
+  uint32_t icmp4h_hash;
+  uint32_t icmp6h_hash;
+  uint32_t dnsh_hash;
+  uint32_t mdnsh_hash;
+  uint32_t dhcph_hash;
+  int count;
+};
+\endcode
+
+For each decoded packet the service stores the hash of the header as well as the timestamp.
+
+\section packetcapture Packet capture 
+
+The packet capture implements the actual network sniffing process. Currently it uses pcap library. But it also allow interfacing with PF_RING module that implements zero-copy technique.
+
+\section sqlitestorer SQLite storer
+
+The SQLite storer implements the storage process for packet metadata into sqlite databases. Below is the list of schemas created by the SQLite storer that can be used by any application to query the packets:
+
+\verbatim
+CREATE TABLE eth (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, caplen INTEGER, length INTEGER, ether_dhost TEXT, ether_shost TEXT, ether_type INTEGER,PRIMARY KEY (hash, timestamp, ethh_hash))
+CREATE TABLE arp (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, caplen INTEGER, length INTEGER, arp_hrd INTEGER, arp_pro INTEGER, arp_hln INTEGER, arp_pln INTEGER, arp_op INTEGER, arp_sha TEXT, arp_spa TEXT, arp_tha TEXT, arp_tpa TEXT, PRIMARY KEY (hash, timestamp, ethh_hash))
+CREATE TABLE ip4 (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, caplen INTEGER, length INTEGER, ip_hl INTEGER, ip_v INTEGER, ip_tos INTEGER, ip_len INTEGER, ip_id INTEGER, ip_off INTEGER, ip_ttl INTEGER, ip_p INTEGER, ip_sum INTEGER, ip_src TEXT, ip_dst TEXT, PRIMARY KEY (hash, timestamp, ethh_hash))
+CREATE TABLE ip6 (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, caplen INTEGER, length INTEGER, ip6_un1_flow INTEGER, ip6_un1_plen INTEGER, ip6_un1_nxt INTEGER, cip6_un1_hlim INTEGER, ip6_un2_vfc INTEGER, ip6_src TEXT, ip6_dst TEXT, PRIMARY KEY (hash, timestamp, ethh_hash))
+CREATE TABLE tcp (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, caplen INTEGER, length INTEGER, source INTEGER, dest INTEGER, seq INTEGER, ack_seq INTEGER, res1 INTEGER, doff INTEGER, fin INTEGER, syn INTEGER, rst INTEGER, psh INTEGER, ack INTEGER, urg INTEGER, window INTEGER, check_p INTEGER, urg_ptr INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash))
+CREATE TABLE udp (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, caplen INTEGER, length INTEGER, source INTEGER, dest INTEGER, len INTEGER, check_p INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash))
+CREATE TABLE icmp4 (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, caplen INTEGER, length INTEGER, type INTEGER, code INTEGER, checksum INTEGER, gateway INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash))
+CREATE TABLE icmp6 (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, caplen INTEGER, length INTEGER, icmp6_type INTEGER, icmp6_code INTEGER, icmp6_cksum INTEGER, icmp6_un_data32 INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash))
+CREATE TABLE dns (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, caplen INTEGER, length INTEGER, tid INTEGER, flags INTEGER, nqueries INTEGER, nanswers INTEGER, nauth INTEGER, nother INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash))
+CREATE TABLE mdns (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, caplen INTEGER, length INTEGER, tid INTEGER, flags INTEGER, nqueries INTEGER, nanswers INTEGER, nauth INTEGER, nother INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash))
+CREATE TABLE dhcp (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, caplen INTEGER, length INTEGER, op INTEGER, htype INTEGER, hlen INTEGER, hops INTEGER, xid INTEGER, secs INTEGER, flags INTEGER, ciaddr TEXT, yiaddr TEXT, siaddr TEXT, giaddr TEXT, PRIMARY KEY (hash, timestamp, ethh_hash))
+\endverbatim
+
+Ever column in the respective table contains the hash of the Ethernet protocol that encapsulated the upper layers of the internet protocol suite as well as the capture timestamp.
+
+\section rawstorer Raw packet storer
+
+The raw packet storer stores the raw packet into pcap files and the metadata for each file is stored in a SQLite database. The file name for each packet is randomly generate and subsequently the name is stored in a SQLite database together with the timestamp and packet length. The schema for the SQLite database is depicted below:
+\verbatim
+CREATE TABLE meta (id TEXT, timestamp INTEGER NOT NULL, name TEXT, interface TEXT, filter TEXT, caplen INTEGER, length INTEGER, PRIMARY KEY (id, timestamp, interface))
+\endverbatim
+
+\section grpcsync GRPC Synchroniser
+
+The GRPC syncroniser service implements the syncronisation process to the cloud for stored packet data as well as other tool data. The syncroniser can function in two ways:
+\li Forward - the syncroniser pushes the tool data to a cloud endpoint
+\li Reverse - the syncroniser connects to a cloud endpoint, which subsequently makes a reverse connection to the syncroniser service
+
+The syncronisation process is based on gRPC protocol, where the syncroniser service acts as a client and the cloud endpoint as a server. The connection can be made secure (using TLS) by providing a server certificate.
+
+The gRPC protocol uses procol buffers to define the remote execution function. The forward service is implemented by the below protocol buffer:
+\verbatim
+syntax = "proto3";
+
+package sqlite_sync;
+
+// The synchroniser service definition.
+service Synchroniser {
+  // Registers a db
+  rpc RegisterDb (RegisterDbRequest) returns (RegisterDbReply) {}
+
+  // Synchronise db statement
+  rpc SyncDbStatement (SyncDbStatementRequest) returns (SyncDbStatementReply) {}
+}
+
+// The request message containing the db name and other params.
+message RegisterDbRequest {
+  string name = 1;
+}
+
+// The response message containing the registration status
+message RegisterDbReply {
+  uint32 status = 1;
+}
+
+message SyncDbStatementRequest {
+  string name = 1;
+  string statement = 2;
+}
+
+message SyncDbStatementReply {
+  uint32 status = 1;
+}
+\endverbatim
+The forward synchroniser is used for cases when one needs to syncronise only the metadata to the cloud. It is implemented as a queue that pushes the packets at given intervals of time.
+
+The reverse service is implemented by the below protocol buffer:
+\verbatim
+syntax = "proto3";
+
+package reverse_access;
+
+// The reverse access service definition.
+service Reverser {
+  // Send client resource to server 
+  rpc SendResource (ResourceRequest) returns (ResourceReply) {}
+
+  // Subscribe to client to server commands
+  rpc SubscribeCommand (CommandRequest) returns (stream CommandReply) {}
+}
+
+message CommandRequest {
+  string id = 1;
+}
+
+message CommandReply {
+  string command = 1;
+  string id = 2;
+}
+
+message ResourceRequest {
+  uint32 type = 1;
+  string meta = 2;
+  bytes data = 3;
+}
+
+message ResourceReply {
+  uint32 status = 1;
+}
+\endverbatim
+The reverse service is used for transferring large amounts of data or for intermittent access to the tool data. As the reverse name suggests the syncroniser connects to the cloud endpoint and executes a SubscribeCommand gRPC function that puts the synchroniser into the listening mode. Subsequently the cloud endpoint can send commands to the client. If a command involves accessing a resource then the SendResource function is used with the corresponding parameters. 
+
 */

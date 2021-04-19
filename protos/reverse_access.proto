@@ -16,13 +16,14 @@ message CommandRequest {
 }
 
 message CommandReply {
-  string command = 1;
-  string id = 2;
+  string id = 1;
+  uint32 command = 2;
+  string args = 3;
 }
 
 message ResourceRequest {
-  uint32 type = 1;
-  string meta = 2;
+  string id = 1;
+  uint32 command = 2;
   bytes data = 3;
 }
 

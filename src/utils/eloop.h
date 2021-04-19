@@ -73,6 +73,10 @@ typedef void (*eloop_timeout_handler)(void *eloop_ctx, void *user_ctx);
  */
 typedef void (*eloop_signal_handler)(int sig, void *signal_ctx);
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * eloop_init() - Initialize global event loop data
  * Returns: 0 on success, -1 on failure
@@ -371,5 +375,9 @@ int eloop_terminated(void);
  * Do a blocking wait for a single read socket.
  */
 void eloop_wait_for_read_sock(int sock);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ELOOP_H */

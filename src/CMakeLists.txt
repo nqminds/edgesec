@@ -34,5 +34,6 @@ target_link_libraries(sqlsyncsrv os sqlite_grpc_proto ${_REFLECTION} ${_GRPC_GRP
 
 add_executable(revclient revclient.cc)
 target_link_libraries(revclient os log reverse_grpc_proto ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF})
+
 add_executable(revsrv revsrv.cc)
-target_link_libraries(revsrv os log reverse_grpc_proto ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF})
+target_link_libraries(revsrv os log eloop domain_server reverse_grpc_proto ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF})

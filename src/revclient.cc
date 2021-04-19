@@ -40,6 +40,7 @@
 #include "utils/os.h"
 #include "utils/log.h"
 #include "version.h"
+#include "revcmd.h"
 
 #define OPT_STRING    ":f:a:p:dvh"
 #define USAGE_STRING  "\t%s [-f path] [-a address] [-p port] [-d] [-h] [-v]"
@@ -202,23 +203,64 @@ int get_folder_list(std::string path, std::vector<std::string> &folder_list) {
 std::string accumulate_string(std::vector<std::string> &string_list)
 {
   std::string acc;
-  for (const auto &el : string_list) acc += el + "|";
+  for (const auto &el : string_list) acc += el + "\n";
   return acc;
+}
+
+ssize_t read_file(const char *name, char **data)
+{
+  ssize_t file_size = 0;
+  *data = NULL;
+
+  if (name == NULL)
+    return 0;
+
+  FILE *fp = fopen(name, "r");
+  if (fp == NULL) {
+    log_err("fopen");
+    return 0;
+  }
+
+  fseek(fp, 0 , SEEK_END);
+  file_size = ftell(fp);
+  rewind(fp);
+  *data = (char*) os_malloc(file_size);
+
+  return fread(*data, 1, file_size, fp);
+  fclose(fp);
 }
 
 class ReverseClient {
  public:
-  ReverseClient(std::shared_ptr<Channel> channel, std::string path)
-      : stub_(Reverser::NewStub(channel)), path_(path) {}
+  ReverseClient(std::shared_ptr<Channel> channel, std::string path, std::string id)
+      : stub_(Reverser::NewStub(channel)), path_(path), id_(id) {}
 
-  int SendResource(const uint32_t type, const std::string& meta, const std::string& data) {
+  int SendStringResource(const uint32_t command, const std::string& data) {
     ResourceRequest request;
     ResourceReply reply;
     ClientContext context;
 
-    request.set_type(type);
-    request.set_meta(meta);
+    request.set_command(command);
+    request.set_id(id_);
     request.set_data(data);
+    Status status = stub_->SendResource(&context, request, &reply);
+
+    if (status.ok()) {
+      return 0;
+    } else {
+      log_debug("Error code=%d, %s", (int)status.error_code(), status.error_message().c_str());
+      return -1;
+    }
+  }
+
+  int SendBinaryResource(const uint32_t command, const char *data, ssize_t len) {
+    ResourceRequest request;
+    ResourceReply reply;
+    ClientContext context;
+
+    request.set_command(command);
+    request.set_id(id_);
+    request.set_data(data, len);
     Status status = stub_->SendResource(&context, request, &reply);
 
     if (status.ok()) {
@@ -241,13 +283,38 @@ class ReverseClient {
       CommandReply reply;
       while (reader->Read(&reply)) {
         // Process the reply
-        if (reply.command() == "list") {
-          std::vector<std::string> folder_list;
-          if (get_folder_list(path_, folder_list) != -1) {
-            std::string acc = accumulate_string(folder_list);
-            SendResource(2, acc, "");
-          } else SendResource(0, "", "");
-        } else SendResource(1, "", "");
+        // List command
+        std::vector<std::string> folder_list;
+        char *file_path;
+        char *file_data = NULL;
+        ssize_t file_size;
+        log_trace("Processing command=%d", reply.command());
+        switch(reply.command()) {
+          case REVERSE_CMD_LIST:
+            if (get_folder_list(path_, folder_list) != -1) {
+              std::string acc = accumulate_string(folder_list);
+              SendStringResource(REVERSE_CMD_LIST, acc);
+            } else SendStringResource(0, "\n");
+            break;
+          case REVERSE_CMD_GET:
+            log_trace("Received args=%s", reply.args().c_str());
+            file_path = construct_path((char *)path_.c_str(), (char *)reply.args().c_str());
+            if (file_path == NULL) {
+              log_trace("construct_path fail");
+              SendStringResource(REVERSE_CMD_GET, "\n");
+            } else {
+              file_size = read_file(file_path, &file_data);
+              os_free(file_path);
+              if (file_data != NULL) {
+                SendBinaryResource(REVERSE_CMD_GET, file_data, file_size);
+                os_free(file_data);
+              } else
+                SendStringResource(REVERSE_CMD_GET, "\n");
+            }
+            break;
+          default:
+            log_trace("Unknown command");
+        }
       }
     });
 
@@ -264,6 +331,7 @@ class ReverseClient {
 
   std::unique_ptr<Reverser::Stub> stub_;
   std::string path_;
+  std::string id_;
 
 };
 
@@ -271,10 +339,11 @@ int run_grpc_client(char *path, int port, char *address)
 {
   char grpc_address[MAX_WEB_PATH_LEN];
   snprintf(grpc_address, MAX_WEB_PATH_LEN, "%s:%d", address, port);
+  std::string id("12345");
 
   log_info("Connecting to %s...", grpc_address);
-  ReverseClient reverser(grpc::CreateChannel(grpc_address, grpc::InsecureChannelCredentials()), path); 
-  if (reverser.SubscribeCommand("12345") < 0) {
+  ReverseClient reverser(grpc::CreateChannel(grpc_address, grpc::InsecureChannelCredentials()), path, id); 
+  if (reverser.SubscribeCommand(id) < 0) {
     log_debug("grpc SubscribeCommand failed");
     return -1;
   }

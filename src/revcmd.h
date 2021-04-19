@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (C) 2020 by NQMCyber Ltd                                       *
+ * Copyright (C) 2021 by NQMCyber Ltd                                       *
  *                                                                          *
  * This file is part of EDGESec.                                            *
  *                                                                          *
@@ -18,54 +18,21 @@
  ****************************************************************************/
 
 /**
- * @file domain_server.h 
+ * @file revcmd.h 
  * @author Alexandru Mereacre 
- * @brief File containing the definition of the domain server service.
+ * @brief File containing the definitions of the reverse commands.
  */
 
-#ifndef DOMAIN_SERVER_H
-#define DOMAIN_SERVER_H
+#ifndef REVCMD_H
+#define REVCMD_H
 
-#include <sys/types.h>
+enum REVERSE_COMMANDS {
+  REVERSE_CMD_UNKNOWN = 0,
+  REVERSE_CMD_LIST,
+  REVERSE_CMD_GET
+};
 
-#define MAX_DOMAIN_RECEIVE_DATA 1024
-
-#ifdef __cplusplus
-extern "C" {
+#define REVERSE_CMD_STR_LIST    "LIST"
+#define REVERSE_CMD_STR_GET     "GET"
 #endif
 
-/**
- * @brief Create a domain server object
- * 
- * @param server_path Server UNIX domain socket path
- * @return int Domain server socket
- */
-int create_domain_server(char *server_path);
-
-/**
- * @brief Read data from the domain server socket
- * 
- * @param sock Domain Server socket
- * @param data Data buffer
- * @param data_len Data buffer length
- * @param addr Sender address
- * @return ssize_t Size of read data
- */
-ssize_t read_domain_data(int sock, char *data, size_t data_len, char *addr);
-
-/**
- * @brief Write data to the domain server socket
- * 
- * @param sock Domain server socket
- * @param data Data buffer
- * @param data_len Data buffer length
- * @param addr Client address
- * @return ssize_t Size of written data
- */
-ssize_t write_domain_data(int sock, char *data, size_t data_len, char *addr);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif
