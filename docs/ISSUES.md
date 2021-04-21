@@ -95,3 +95,13 @@ iptables -L POSTROUTING -t nat --line-numbers -n -v
 iptables -I POSTROUTING 1 -t nat --src 10.0.8.191 --dst 0.0.0.0/0 -o wlan3 -j MASQUERADE
 ```
 
+# References
+1. [Google TSPI](https://github.com/google/go-tspi)
+2. [Trusted Grub](https://github.com/Rohde-Schwarz/TrustedGRUB2)
+3. [TrouSerS](http://trousers.sourceforge.net/)
+4. [IBM SW TPM2](https://sourceforge.net/projects/ibmswtpm2/)
+5. [Software TPM](https://github.com/stefanberger/swtpm)
+6. [Kernel INtegrity System](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/managing_monitoring_and_updating_the_kernel/enhancing-security-with-the-kernel-integrity-subsystem_managing-monitoring-and-updating-the-kernel)
+7. [Kernel Key Retention](https://www.kernel.org/doc/html/v4.18/security/keys/core.html)
+8. [Linux Integrity Measurement Architecture](https://wiki.gentoo.org/wiki/Integrity_Measurement_Architecture)
+9. [IMA](https://sourceforge.net/p/linux-ima/wiki/Home/)
