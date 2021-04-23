@@ -29,6 +29,8 @@
 #include <string>
 #include <thread>
 #include <mutex>
+#include <map>
+#include <string_view>
 #include <condition_variable>
 #include <sys/un.h>
 #include <sys/socket.h>
@@ -46,10 +48,11 @@
 #include "version.h"
 #include "revcmd.h"
 
-#define OPT_STRING    ":f:p:dvh"
-#define USAGE_STRING  "\t%s [-f path] [-p port] [-d] [-h] [-v]"
+#define OPT_STRING              ":f:p:dvh"
+#define USAGE_STRING            "\t%s [-f path] [-p port] [-d] [-h] [-v]"
 #define CONTROL_INTERFACE_NAME  "revcontrol"
 #define COMMAND_SEPARATOR       0x20
+#define FAIL_RESPONSE           "FAIL"
 
 using grpc::Server;
 using grpc::ServerBuilder;
@@ -65,9 +68,16 @@ using reverse_access::ResourceRequest;
 using reverse_access::ResourceReply;
 
 static __thread char version_buf[10];
+
+// Lock control variables
+std::map<std::string, bool> client_mapper;
 static REVERSE_COMMANDS control_command;
+std::string command_id;
 std::string command_args;
 std::string control_response;
+
+// Lock and conditional variables
+std::mutex client_map_lock;
 
 std::mutex command_lock;
 std::condition_variable command_v;
@@ -180,11 +190,12 @@ std::size_t split_string(std::vector<std::string> &string_list, std::string &str
   return string_list.size();
 }
 
-void wait_reverse_command(REVERSE_COMMANDS cmd, std::string &args)
+void wait_reverse_command(REVERSE_COMMANDS cmd, std::string id, std::string args)
 {
   {
     std::lock_guard<std::mutex> lk(command_lock);
     control_command = cmd;
+    command_id = id;
     command_args = args;
   }
 
@@ -219,6 +230,10 @@ class ReverserServiceImpl final : public Reverser::Service {
     char rid[MAX_RANDOM_UUID_LEN];
 
     log_trace("Subscribed client with id=%s", request->id().c_str());
+    {
+      const std::lock_guard<std::mutex> lock(client_map_lock);
+      client_mapper[request->id()] = true;
+    }
 
     while(true) {
       CommandReply reply;
@@ -269,34 +284,39 @@ char * process_cmd_str(char *buf, ssize_t len)
   return cmd_line;
 }
 
-ssize_t process_command(std::vector<std::string> &cmd_list, char **response_buf)
+ssize_t get_client_list_buf(char **response_buf)
 {
   ssize_t buf_size = 0;
-  std::string args;
-  *response_buf = NULL;
 
-  if (cmd_list.size()) {
-    std::string cmd = cmd_list.front();
-    if (cmd_list.size() > 1)
-      args = cmd_list.at(1);
+  std::string ret;
+  const std::lock_guard<std::mutex> lock(client_map_lock);
 
-    if (strcmp(cmd.c_str(), REVERSE_CMD_STR_LIST) == 0) {
-      log_trace("Processing command %s", REVERSE_CMD_STR_LIST);
-      wait_reverse_command(REVERSE_CMD_LIST, args);
-      log_trace("Finished processing");
-    } else if (strcmp(cmd.c_str(), REVERSE_CMD_STR_GET) == 0) {
-      log_trace("Processing command %s", REVERSE_CMD_STR_GET);
-      wait_reverse_command(REVERSE_CMD_GET, args);
-      log_trace("Finished processing");
-    } else {
-      log_trace("Unknown command %s", cmd.c_str());
-    }
+  for (auto it = client_mapper.begin(); it != client_mapper.end(); ++it) {
+    ret += it->first;
+    ret += "\n";
   }
+
+  buf_size = ret.size() + 1;
+  *response_buf = (char *)os_zalloc(buf_size);
+  if (*response_buf == NULL) {
+    log_err("os_zalloc");
+    return 0;
+  }
+
+  os_memcpy(*response_buf, ret.data(), ret.size());  
+
+  return buf_size;
+}
+
+ssize_t process_grpc_response(char **response_buf)
+{
+  ssize_t buf_size = 0;
 
   std::unique_lock<std::mutex> lk(response_lock);
   response_v.wait(lk, []{return control_response.size();});
 
   log_trace("Received gRPC response");
+
   buf_size = control_response.size() + 1;
   *response_buf = (char *)os_zalloc(buf_size);
   if (*response_buf == NULL) {
@@ -312,6 +332,50 @@ ssize_t process_command(std::vector<std::string> &cmd_list, char **response_buf)
 
   lk.unlock();
   response_v.notify_one();
+
+  return buf_size;
+}
+
+ssize_t get_fail_response(char **response_buf)
+{
+  ssize_t buf_size = STRLEN(FAIL_RESPONSE) + 1;
+  *response_buf = (char *)os_zalloc(buf_size);
+
+  if (*response_buf == NULL) {
+    log_err("os_zalloc");
+
+    return 0;
+  }
+  strcpy(*response_buf, FAIL_RESPONSE);
+
+  return buf_size;
+
+}
+
+ssize_t process_command(std::vector<std::string> &cmd_list, char **response_buf)
+{
+  ssize_t buf_size = 0;
+  *response_buf = NULL;
+
+  if (cmd_list.size()) {
+    std::string cmd = cmd_list.front();
+
+     log_trace("Processing command %s", cmd.c_str());
+
+    if (strcmp(cmd.c_str(), REVERSE_CMD_STR_LIST) == 0  && cmd_list.size() > 1) {
+      wait_reverse_command(REVERSE_CMD_LIST, cmd_list.at(1), std::string(""));
+      buf_size = process_grpc_response(response_buf);
+    } else if (strcmp(cmd.c_str(), REVERSE_CMD_STR_GET) == 0 && cmd_list.size() > 2) {
+      wait_reverse_command(REVERSE_CMD_GET, cmd_list.at(1), cmd_list.at(2));
+      buf_size = process_grpc_response(response_buf);
+    } else if (strcmp(cmd.c_str(), REVERSE_CMD_STR_LIST_CLIENTS) == 0) {
+      buf_size = get_client_list_buf(response_buf);
+    } else {
+      log_trace("Unknown command %s", cmd.c_str());
+      buf_size = get_fail_response(response_buf);
+    }
+  }
+  log_trace("Finished processing");
 
   return buf_size;
 }
