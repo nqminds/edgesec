@@ -192,6 +192,7 @@ std::size_t split_string(std::vector<std::string> &string_list, std::string &str
 
 void wait_reverse_command(REVERSE_COMMANDS cmd, std::string id, std::string args)
 {
+  log_trace("Storing reverse command.");
   {
     std::lock_guard<std::mutex> lk(command_lock);
     control_command = cmd;
@@ -201,14 +202,18 @@ void wait_reverse_command(REVERSE_COMMANDS cmd, std::string id, std::string args
 
   command_v.notify_one();
 
+  log_trace("Wait reverse command...");
+
   {
     std::unique_lock<std::mutex> lk(command_lock);
     command_v.wait(lk, []{return control_command == REVERSE_CMD_UNKNOWN;});
   }
+  log_trace("Processed reverse command.");
 }
 
 void wait_reverse_response(std::string response)
 {
+  log_trace("Storing reverse response.");
   {
     std::lock_guard<std::mutex> lk(response_lock);
     control_response = response;
@@ -216,10 +221,24 @@ void wait_reverse_response(std::string response)
 
   response_v.notify_one();
 
+  log_trace("Wait reverse response...");
   {
     std::unique_lock<std::mutex> lk(response_lock);
     response_v.wait(lk, []{return !control_response.size();});
   }
+  log_trace("Processed reverse response.");
+}
+
+void save_client_id(std:: string id)
+{
+  const std::lock_guard<std::mutex> lock(client_map_lock);
+  client_mapper[id] = true;
+}
+
+void clear_client_id(std:: string id)
+{
+  const std::lock_guard<std::mutex> lock(client_map_lock);
+  client_mapper[id] = false;
 }
 
 class ReverserServiceImpl final : public Reverser::Service {
@@ -230,17 +249,29 @@ class ReverserServiceImpl final : public Reverser::Service {
     char rid[MAX_RANDOM_UUID_LEN];
 
     log_trace("Subscribed client with id=%s", request->id().c_str());
-    {
-      const std::lock_guard<std::mutex> lock(client_map_lock);
-      client_mapper[request->id()] = true;
-    }
+    save_client_id(request->id());
 
     while(true) {
       CommandReply reply;
       generate_radom_uuid(rid);
 
       std::unique_lock<std::mutex> lk(command_lock);
-      command_v.wait(lk, []{return control_command != REVERSE_CMD_UNKNOWN;});
+      command_v.wait(lk, [context]{return (control_command != REVERSE_CMD_UNKNOWN);});
+
+      if (context->IsCancelled()) {
+        log_trace("Client closed");
+
+        // To remove
+        control_command = REVERSE_CMD_UNKNOWN;
+        command_args.clear();
+
+        lk.unlock();
+        command_v.notify_one();
+
+        clear_client_id(request->id());
+
+        return Status::CANCELLED;
+      }
 
       reply.set_id(rid);
       reply.set_command(control_command);
@@ -292,8 +323,10 @@ ssize_t get_client_list_buf(char **response_buf)
   const std::lock_guard<std::mutex> lock(client_map_lock);
 
   for (auto it = client_mapper.begin(); it != client_mapper.end(); ++it) {
-    ret += it->first;
-    ret += "\n";
+    if (it->second) {
+      ret += it->first;
+      ret += "\n";
+    }
   }
 
   buf_size = ret.size() + 1;
@@ -408,7 +441,6 @@ void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
   }
 
   os_free(client_addr);
-  return;
 }
 
 void run_control_socket(std::string &name)
