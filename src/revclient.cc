@@ -59,6 +59,8 @@ using reverse_access::ResourceReply;
 
 static __thread char version_buf[10];
 
+const std::string METADATA_KEY = "client-id";
+
 char *get_static_version_string(uint8_t major, uint8_t minor, uint8_t patch)
 {
   int ret = snprintf(version_buf, 10, "%d.%d.%d", major, minor, patch);
@@ -240,6 +242,7 @@ class ReverseClient {
     ResourceReply reply;
     ClientContext context;
 
+    context.AddMetadata(METADATA_KEY, id_);
     request.set_command(command);
     request.set_id(id_);
     request.set_data(data);
@@ -258,6 +261,8 @@ class ReverseClient {
     ResourceReply reply;
     ClientContext context;
 
+     context.AddMetadata(METADATA_KEY, id_);
+
     request.set_command(command);
     request.set_id(id_);
     request.set_data(data, len);
@@ -271,11 +276,12 @@ class ReverseClient {
     }
   }
 
-  int SubscribeCommand(const std::string& id) {
+  int SubscribeCommand(void) {
     CommandRequest request;
     ClientContext context;
 
-    request.set_id(id);
+    context.AddMetadata(METADATA_KEY, id_);
+    request.set_id(id_);
 
     std::unique_ptr<ClientReader<CommandReply>> reader(stub_->SubscribeCommand(&context, request));
 
@@ -345,7 +351,7 @@ int run_grpc_client(char *path, int port, char *address)
 
   log_info("Connecting to %s... with id=%s", grpc_address, rid);
   ReverseClient reverser(grpc::CreateChannel(grpc_address, grpc::InsecureChannelCredentials()), path, id); 
-  if (reverser.SubscribeCommand(id) < 0) {
+  if (reverser.SubscribeCommand() < 0) {
     log_debug("grpc SubscribeCommand failed");
     return -1;
   }

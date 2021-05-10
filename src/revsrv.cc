@@ -72,7 +72,7 @@ static __thread char version_buf[10];
 // Lock control variables
 std::map<std::string, bool> client_mapper;
 static REVERSE_COMMANDS control_command;
-std::string command_id;
+std::string command_client_id;
 std::string command_args;
 std::string control_response;
 
@@ -190,23 +190,25 @@ std::size_t split_string(std::vector<std::string> &string_list, std::string &str
   return string_list.size();
 }
 
-void wait_reverse_command(REVERSE_COMMANDS cmd, std::string id, std::string args)
+void wait_reverse_command(REVERSE_COMMANDS cmd, std::string client_id, std::string args)
 {
   log_trace("Storing reverse command.");
   {
     std::lock_guard<std::mutex> lk(command_lock);
     control_command = cmd;
-    command_id = id;
+    command_client_id = client_id;
     command_args = args;
   }
 
-  command_v.notify_one();
+  command_v.notify_all();
 
   log_trace("Wait reverse command...");
 
   {
     std::unique_lock<std::mutex> lk(command_lock);
-    command_v.wait(lk, []{return control_command == REVERSE_CMD_UNKNOWN;});
+    command_v.wait(lk, []{
+      return ((control_command == REVERSE_CMD_UNKNOWN) && (command_client_id == ""));
+    });
   }
   log_trace("Processed reverse command.");
 }
@@ -256,7 +258,9 @@ class ReverserServiceImpl final : public Reverser::Service {
       generate_radom_uuid(rid);
 
       std::unique_lock<std::mutex> lk(command_lock);
-      command_v.wait(lk, [context]{return (control_command != REVERSE_CMD_UNKNOWN);});
+      command_v.wait(lk, [request]{
+        return ((control_command != REVERSE_CMD_UNKNOWN) && (request->id() == command_client_id));
+      });
 
       if (context->IsCancelled()) {
         log_trace("Client closed");
@@ -266,7 +270,7 @@ class ReverserServiceImpl final : public Reverser::Service {
         command_args.clear();
 
         lk.unlock();
-        command_v.notify_one();
+        command_v.notify_all();
 
         clear_client_id(request->id());
 
@@ -280,16 +284,18 @@ class ReverserServiceImpl final : public Reverser::Service {
       writer->Write(reply);
 
       control_command = REVERSE_CMD_UNKNOWN;
+      command_client_id = "";
       command_args.clear();
 
       lk.unlock();
-      command_v.notify_one();
+      command_v.notify_all();
     }
     return Status::OK;
   }
 
   Status SendResource(ServerContext* context, const ResourceRequest* request, ResourceReply* reply) override {
     wait_reverse_response(request->data());
+    log_trace("Received ID=%s", request->id().c_str());
     reply->set_status(0);
     return Status::OK;
   }
