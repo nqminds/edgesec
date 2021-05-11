@@ -11,9 +11,7 @@ service Reverser {
   rpc SubscribeCommand (CommandRequest) returns (stream CommandReply) {}
 }
 
-message CommandRequest {
-  string id = 1;
-}
+message CommandRequest {}
 
 message CommandReply {
   string id = 1;

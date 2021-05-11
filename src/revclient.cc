@@ -281,7 +281,6 @@ class ReverseClient {
     ClientContext context;
 
     context.AddMetadata(METADATA_KEY, id_);
-    request.set_id(id_);
 
     std::unique_ptr<ClientReader<CommandReply>> reader(stub_->SubscribeCommand(&context, request));
 

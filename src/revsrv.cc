@@ -54,6 +54,8 @@
 #define COMMAND_SEPARATOR       0x20
 #define FAIL_RESPONSE           "FAIL"
 
+const std::string METADATA_KEY = "client-id";
+
 using grpc::Server;
 using grpc::ServerBuilder;
 using grpc::ServerContext;
@@ -69,14 +71,22 @@ using reverse_access::ResourceReply;
 
 static __thread char version_buf[10];
 
+struct client_context {
+  std::string client_address;
+  int sock;
+};
+
 // Lock control variables
-std::map<std::string, bool> client_mapper;
+std::map<std::string, struct client_context> command_mapper;
+
+std::map<std::string, uint64_t> client_mapper;
 static REVERSE_COMMANDS control_command;
-std::string command_client_id;
+uint64_t command_client_timestamp;
 std::string command_args;
 std::string control_response;
 
 // Lock and conditional variables
+std::mutex command_map_lock;
 std::mutex client_map_lock;
 
 std::mutex command_lock;
@@ -84,6 +94,16 @@ std::condition_variable command_v;
 
 std::mutex response_lock;
 std::condition_variable response_v;
+
+// Lock for logging
+std::mutex log_lock;
+
+void lock_fn(bool lock) {
+  if (lock)
+    log_lock.lock();
+  else
+    log_lock.unlock();
+}
 
 char *get_static_version_string(uint8_t major, uint8_t minor, uint8_t patch)
 {
@@ -190,13 +210,13 @@ std::size_t split_string(std::vector<std::string> &string_list, std::string &str
   return string_list.size();
 }
 
-void wait_reverse_command(REVERSE_COMMANDS cmd, std::string client_id, std::string args)
+void wait_reverse_command(REVERSE_COMMANDS cmd, uint64_t client_timestamp, std::string args)
 {
   log_trace("Storing reverse command.");
   {
     std::lock_guard<std::mutex> lk(command_lock);
     control_command = cmd;
-    command_client_id = client_id;
+    command_client_timestamp = client_timestamp;
     command_args = args;
   }
 
@@ -207,7 +227,7 @@ void wait_reverse_command(REVERSE_COMMANDS cmd, std::string client_id, std::stri
   {
     std::unique_lock<std::mutex> lk(command_lock);
     command_v.wait(lk, []{
-      return ((control_command == REVERSE_CMD_UNKNOWN) && (command_client_id == ""));
+      return ((control_command == REVERSE_CMD_UNKNOWN) && (!command_client_timestamp));
     });
   }
   log_trace("Processed reverse command.");
@@ -231,16 +251,76 @@ void wait_reverse_response(std::string response)
   log_trace("Processed reverse response.");
 }
 
-void save_client_id(std:: string id)
+uint64_t save_client_id(std:: string id)
 {
   const std::lock_guard<std::mutex> lock(client_map_lock);
-  client_mapper[id] = true;
+  client_mapper[id] = os_get_timestamp();
+
+  return client_mapper[id];
 }
 
 void clear_client_id(std:: string id)
 {
   const std::lock_guard<std::mutex> lock(client_map_lock);
-  client_mapper[id] = false;
+  client_mapper.erase(id);
+}
+
+uint64_t get_client_timestamp(std::string id)
+{
+  const std::lock_guard<std::mutex> lock(client_map_lock);
+  auto found = client_mapper.find(id);
+  if (found != client_mapper.end())
+    return client_mapper[id];
+
+  return 0;
+}
+std::string find_key_val(const std::multimap<grpc::string_ref, grpc::string_ref> &mapper, std::string key)
+{
+  for (auto iter = mapper.begin(); iter != mapper.end(); ++iter) {
+    const std::string found_key = std::string(iter->first.begin(), iter->first.end());
+    if (found_key == key) {
+      return std::string(iter->second.begin(), iter->second.end());
+    }
+  }
+
+  return "";
+}
+
+std::string save_client_context(int sock, std::string client_address)
+{
+  struct client_context ctx;
+  char rid[MAX_RANDOM_UUID_LEN];
+  generate_radom_uuid(rid);
+  std::string id(rid);
+
+  const std::lock_guard<std::mutex> lock(command_map_lock);
+  ctx.sock =  sock;
+  ctx.client_address = client_address;
+  command_mapper[id] = ctx;
+
+  return id;
+}
+
+void clear_client_context(std::string id)
+{
+  const std::lock_guard<std::mutex> lock(command_map_lock);
+  command_mapper.erase(id);
+}
+
+struct client_context get_client_context(std::string id)
+{
+  struct client_context ctx;
+  const std::lock_guard<std::mutex> lock(command_map_lock);
+  ctx.sock = -1;
+
+  for (auto iter = command_mapper.begin(); iter != command_mapper.end(); ++iter) {
+    const std::string found_key = std::string(iter->first.begin(), iter->first.end());
+    if (found_key == id) {
+      return iter->second;
+    }
+  }
+
+  return ctx;
 }
 
 class ReverserServiceImpl final : public Reverser::Service {
@@ -250,16 +330,20 @@ class ReverserServiceImpl final : public Reverser::Service {
   Status SubscribeCommand(ServerContext* context, const CommandRequest* request, ServerWriter<CommandReply>* writer) override {
     char rid[MAX_RANDOM_UUID_LEN];
 
-    log_trace("Subscribed client with id=%s", request->id().c_str());
-    save_client_id(request->id());
+    const std::multimap<grpc::string_ref, grpc::string_ref> metadata =
+      context->client_metadata();
+
+    const std::string id = find_key_val(metadata, METADATA_KEY);
+    uint64_t client_timestamp = save_client_id(id);
+    log_trace("Subscribed client with id=%s and timestamp=%llu", id.c_str(), client_timestamp);
 
     while(true) {
       CommandReply reply;
       generate_radom_uuid(rid);
 
       std::unique_lock<std::mutex> lk(command_lock);
-      command_v.wait(lk, [request]{
-        return ((control_command != REVERSE_CMD_UNKNOWN) && (request->id() == command_client_id));
+      command_v.wait(lk, [client_timestamp]{
+        return ((control_command != REVERSE_CMD_UNKNOWN) && (client_timestamp == command_client_timestamp));
       });
 
       if (context->IsCancelled()) {
@@ -267,12 +351,13 @@ class ReverserServiceImpl final : public Reverser::Service {
 
         // To remove
         control_command = REVERSE_CMD_UNKNOWN;
+        command_client_timestamp = 0;
         command_args.clear();
 
         lk.unlock();
         command_v.notify_all();
 
-        clear_client_id(request->id());
+        clear_client_id(id);
 
         return Status::CANCELLED;
       }
@@ -284,7 +369,7 @@ class ReverserServiceImpl final : public Reverser::Service {
       writer->Write(reply);
 
       control_command = REVERSE_CMD_UNKNOWN;
-      command_client_id = "";
+      command_client_timestamp = 0;
       command_args.clear();
 
       lk.unlock();
@@ -294,6 +379,11 @@ class ReverserServiceImpl final : public Reverser::Service {
   }
 
   Status SendResource(ServerContext* context, const ResourceRequest* request, ResourceReply* reply) override {
+    const std::multimap<grpc::string_ref, grpc::string_ref> metadata =
+      context->client_metadata();
+
+    const std::string id = find_key_val(metadata, METADATA_KEY);
+
     wait_reverse_response(request->data());
     log_trace("Received ID=%s", request->id().c_str());
     reply->set_status(0);
@@ -390,33 +480,62 @@ ssize_t get_fail_response(char **response_buf)
   return buf_size;
 
 }
+int write_command_data(std::string id, char *buf, ssize_t buf_size)
+{
+  struct client_context ctx = get_client_context(id);
+  if (ctx.sock>= 0) {
+    log_trace("Writing command with id=%s", id.c_str());
+    return write_domain_data(ctx.sock, buf, buf_size, (char *)(ctx.client_address).c_str());
+  }
 
-ssize_t process_command(std::vector<std::string> &cmd_list, char **response_buf)
+  return -1;
+}
+
+void process_command(std::vector<std::string> &cmd_list, int sock, std::string client_address)
 {
   ssize_t buf_size = 0;
-  *response_buf = NULL;
+  uint64_t client_timestamp = 0;
+  std::string args;
+  char *response_buf = NULL;
 
   if (cmd_list.size()) {
     std::string cmd = cmd_list.front();
+    std::string id = save_client_context(sock, client_address);
 
-     log_trace("Processing command %s", cmd.c_str());
+    log_trace("Processing command %s with id=%s", cmd.c_str(), id.c_str());
 
-    if (strcmp(cmd.c_str(), REVERSE_CMD_STR_LIST) == 0  && cmd_list.size() > 1) {
-      wait_reverse_command(REVERSE_CMD_LIST, cmd_list.at(1), std::string(""));
-      buf_size = process_grpc_response(response_buf);
-    } else if (strcmp(cmd.c_str(), REVERSE_CMD_STR_GET) == 0 && cmd_list.size() > 2) {
-      wait_reverse_command(REVERSE_CMD_GET, cmd_list.at(1), cmd_list.at(2));
-      buf_size = process_grpc_response(response_buf);
+    if (cmd_list.size() > 1) {
+      client_timestamp = get_client_timestamp(cmd_list.at(1));
+    }
+
+    if (cmd_list.size() > 2) {
+      args = cmd_list.at(2);
+    }
+
+    if (strcmp(cmd.c_str(), REVERSE_CMD_STR_LIST) == 0 && client_timestamp) {
+      wait_reverse_command(REVERSE_CMD_LIST, client_timestamp, args);
+      buf_size = process_grpc_response(&response_buf);
+    } else if (strcmp(cmd.c_str(), REVERSE_CMD_STR_GET) == 0 && client_timestamp) {
+      wait_reverse_command(REVERSE_CMD_GET, client_timestamp, args);
+      buf_size = process_grpc_response(&response_buf);
     } else if (strcmp(cmd.c_str(), REVERSE_CMD_STR_LIST_CLIENTS) == 0) {
-      buf_size = get_client_list_buf(response_buf);
+      buf_size = get_client_list_buf(&response_buf);
     } else {
       log_trace("Unknown command %s", cmd.c_str());
-      buf_size = get_fail_response(response_buf);
+      buf_size = get_fail_response(&response_buf);
+    }
+
+    if (response_buf) {
+      log_trace("Sending command");
+      if (write_command_data(id, response_buf, buf_size) < 0) {
+        log_trace("write_command_data error");
+      }
+      os_free(response_buf);
+      clear_client_context(id);
     }
   }
-  log_trace("Finished processing");
 
-  return buf_size;
+  log_trace("Finished processing");
 }
 
 void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
@@ -439,12 +558,7 @@ void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
   std::vector<std::string> cmd_list;
 
   split_string(cmd_list, cmd_str, COMMAND_SEPARATOR);
-  char *response_buf = NULL;
-  ssize_t buf_size = process_command(cmd_list, &response_buf);
-  if (response_buf != NULL) {
-    write_domain_data(sock, response_buf, buf_size, client_addr);
-    os_free(response_buf);
-  }
+  process_command(cmd_list, sock, client_addr);
 
   os_free(client_addr);
 }
@@ -519,6 +633,7 @@ int main(int argc, char** argv) {
 
   // Set the log level
   log_set_level(level);
+  log_set_lock(lock_fn);
 
   if (port <=0 || port > 65535) {
     log_cmdline_error("Unrecognized port value -%d\n", port);

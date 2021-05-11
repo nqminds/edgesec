@@ -249,7 +249,7 @@ struct capture_packet decode_packet(const struct pcap_pkthdr *header, const uint
   memset(&cpac, 0, sizeof(struct capture_packet));
 
   cpac.ethh = (struct ether_header*) packet;
-  cpac.timestamp = os_get_timestamp(header->ts);
+  cpac.timestamp = os_to_timestamp(header->ts);
   cpac.caplen = header->caplen;
   cpac.length = header->len;
   cpac.ethh_hash = md_hash((const char*) cpac.ethh, sizeof(struct ether_header));

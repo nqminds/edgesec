@@ -147,7 +147,7 @@ int save_pcap_file_data(struct pcap_pkthdr *header, uint8_t *packet, struct capt
 
   os_free(path);
 
-  if (save_sqlite_meta_entry(context->meta_db, context->cap_id, file_name, os_get_timestamp(header->ts),
+  if (save_sqlite_meta_entry(context->meta_db, context->cap_id, file_name, os_to_timestamp(header->ts),
         header->caplen, header->len, context->interface, context->filter) < 0) {
     log_trace("save_sqlite_meta_entry fail");
     return -1;

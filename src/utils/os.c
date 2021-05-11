@@ -797,9 +797,17 @@ void replace_string_char(char *s, char in, char out)
   }
 }
 
-uint64_t os_get_timestamp(struct timeval ts)
+uint64_t os_to_timestamp(struct timeval ts)
 {
   return (uint64_t)(1000000 * ts.tv_sec + ts.tv_usec);
+}
+
+uint64_t os_get_timestamp(void)
+{
+	struct timeval ts;
+	int res = gettimeofday(&ts, NULL);
+
+  return (res == 0) ? os_to_timestamp(ts) : 0;
 }
 
 void generate_radom_uuid(char *rid)
