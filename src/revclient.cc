@@ -237,14 +237,14 @@ class ReverseClient {
   ReverseClient(std::shared_ptr<Channel> channel, std::string path, std::string id)
       : stub_(Reverser::NewStub(channel)), path_(path), id_(id) {}
 
-  int SendStringResource(const uint32_t command, const std::string& data) {
+  int SendStringResource(std::string command_id, const uint32_t command, const std::string& data) {
     ResourceRequest request;
     ResourceReply reply;
     ClientContext context;
 
     context.AddMetadata(METADATA_KEY, id_);
     request.set_command(command);
-    request.set_id(id_);
+    request.set_id(command_id);
     request.set_data(data);
     Status status = stub_->SendResource(&context, request, &reply);
 
@@ -256,16 +256,16 @@ class ReverseClient {
     }
   }
 
-  int SendBinaryResource(const uint32_t command, const char *data, ssize_t len) {
+  int SendBinaryResource(std::string command_id, const uint32_t command, const char *data, ssize_t len) {
     ResourceRequest request;
     ResourceReply reply;
     ClientContext context;
 
-     context.AddMetadata(METADATA_KEY, id_);
-
+    context.AddMetadata(METADATA_KEY, id_);
     request.set_command(command);
-    request.set_id(id_);
+    request.set_id(command_id);
     request.set_data(data, len);
+
     Status status = stub_->SendResource(&context, request, &reply);
 
     if (status.ok()) {
@@ -298,23 +298,23 @@ class ReverseClient {
           case REVERSE_CMD_LIST:
             if (get_folder_list(path_, folder_list) != -1) {
               std::string acc = accumulate_string(folder_list);
-              SendStringResource(REVERSE_CMD_LIST, acc);
-            } else SendStringResource(0, "\n");
+              SendStringResource(reply.id(), REVERSE_CMD_LIST, acc);
+            } else SendStringResource(reply.id(), 0, "\n");
             break;
           case REVERSE_CMD_GET:
             log_trace("Received args=%s", reply.args().c_str());
             file_path = construct_path((char *)path_.c_str(), (char *)reply.args().c_str());
             if (file_path == NULL) {
               log_trace("construct_path fail");
-              SendStringResource(REVERSE_CMD_GET, "\n");
+              SendStringResource(reply.id(), REVERSE_CMD_GET, "\n");
             } else {
               file_size = read_file(file_path, &file_data);
               os_free(file_path);
               if (file_data != NULL) {
-                SendBinaryResource(REVERSE_CMD_GET, file_data, file_size);
+                SendBinaryResource(reply.id(), REVERSE_CMD_GET, file_data, file_size);
                 os_free(file_data);
               } else
-                SendStringResource(REVERSE_CMD_GET, "\n");
+                SendStringResource(reply.id(), REVERSE_CMD_GET, "\n");
             }
             break;
           default:
