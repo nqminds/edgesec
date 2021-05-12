@@ -662,16 +662,19 @@ int sqlite_trace_callback(unsigned int uMask, void* ctx, void* stm, void* X)
   return 0;
 }
 
-sqlite3* open_sqlite_header_db(char *db_path, trace_callback_fn fn, void *trace_ctx)
+int open_sqlite_header_db(char *db_path, trace_callback_fn fn,
+                               void *trace_ctx, sqlite3 **sql)
 {
   sqlite3 *db;
   struct header_context *ctx = NULL;
 
   int rc = sqlite3_open(db_path, &db);
-  if (rc != SQLITE_OK) {     
+  *sql = db;
+
+  if (rc != SQLITE_OK) {
     log_debug("Cannot open database: %s", sqlite3_errmsg(db));
     sqlite3_close(db);
-    return NULL;
+    return -1;
   }
 
   ctx = os_zalloc(sizeof(struct header_context));
@@ -692,12 +695,12 @@ sqlite3* open_sqlite_header_db(char *db_path, trace_callback_fn fn, void *trace_
     if (execute_sqlite_query(db, ETH_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
       free_sqlite_header_db(db);
-      return NULL;
+      return -1;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
     free_sqlite_header_db(db);
-    return NULL;
+    return -1;
   }
 
   rc = check_table_exists(db, "arp");
@@ -707,12 +710,12 @@ sqlite3* open_sqlite_header_db(char *db_path, trace_callback_fn fn, void *trace_
     if (execute_sqlite_query(db, ARP_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
       free_sqlite_header_db(db);
-      return NULL;
+      return -1;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
     free_sqlite_header_db(db);
-    return NULL;
+    return -1;
   }
 
   rc = check_table_exists(db, "ip4");
@@ -722,12 +725,12 @@ sqlite3* open_sqlite_header_db(char *db_path, trace_callback_fn fn, void *trace_
     if (execute_sqlite_query(db, IP4_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
       free_sqlite_header_db(db);
-      return NULL;
+      return -1;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
     free_sqlite_header_db(db);
-    return NULL;
+    return -1;
   }
 
   rc = check_table_exists(db, "ip6");
@@ -737,12 +740,12 @@ sqlite3* open_sqlite_header_db(char *db_path, trace_callback_fn fn, void *trace_
     if (execute_sqlite_query(db, IP6_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
       free_sqlite_header_db(db);
-      return NULL;
+      return -1;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
     free_sqlite_header_db(db);
-    return NULL;
+    return -1;
   }
 
   rc = check_table_exists(db, "tcp");
@@ -752,12 +755,12 @@ sqlite3* open_sqlite_header_db(char *db_path, trace_callback_fn fn, void *trace_
     if (execute_sqlite_query(db, TCP_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
       free_sqlite_header_db(db);
-      return NULL;
+      return -1;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
     free_sqlite_header_db(db);
-    return NULL;
+    return -1;
   }
 
   rc = check_table_exists(db, "udp");
@@ -767,12 +770,12 @@ sqlite3* open_sqlite_header_db(char *db_path, trace_callback_fn fn, void *trace_
     if (execute_sqlite_query(db, UDP_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
       free_sqlite_header_db(db);
-      return NULL;
+      return -1;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
     free_sqlite_header_db(db);
-    return NULL;
+    return -1;
   }
 
   rc = check_table_exists(db, "icmp4");
@@ -782,12 +785,12 @@ sqlite3* open_sqlite_header_db(char *db_path, trace_callback_fn fn, void *trace_
     if (execute_sqlite_query(db, ICMP4_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
       free_sqlite_header_db(db);
-      return NULL;
+      return -1;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
     free_sqlite_header_db(db);
-    return NULL;
+    return -1;
   }
 
   rc = check_table_exists(db, "icmp6");
@@ -797,12 +800,12 @@ sqlite3* open_sqlite_header_db(char *db_path, trace_callback_fn fn, void *trace_
     if (execute_sqlite_query(db, ICMP6_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
       free_sqlite_header_db(db);
-      return NULL;
+      return -1;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
     free_sqlite_header_db(db);
-    return NULL;
+    return -1;
   }
 
   rc = check_table_exists(db, "dns");
@@ -812,12 +815,12 @@ sqlite3* open_sqlite_header_db(char *db_path, trace_callback_fn fn, void *trace_
     if (execute_sqlite_query(db, DNS_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
       free_sqlite_header_db(db);
-      return NULL;
+      return -1;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
     free_sqlite_header_db(db);
-    return NULL;
+    return -1;
   }
 
   rc = check_table_exists(db, "mdns");
@@ -827,12 +830,12 @@ sqlite3* open_sqlite_header_db(char *db_path, trace_callback_fn fn, void *trace_
     if (execute_sqlite_query(db, MDNS_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
       free_sqlite_header_db(db);
-      return NULL;
+      return -1;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
     free_sqlite_header_db(db);
-    return NULL;
+    return -1;
   }
 
   rc = check_table_exists(db, "dhcp");
@@ -842,13 +845,13 @@ sqlite3* open_sqlite_header_db(char *db_path, trace_callback_fn fn, void *trace_
     if (execute_sqlite_query(db, DHCP_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
       free_sqlite_header_db(db);
-      return NULL;
+      return -1;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
     free_sqlite_header_db(db);
-    return NULL;
+    return -1;
   }
 
-  return db;
+  return 0;
 }

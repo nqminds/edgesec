@@ -18,13 +18,13 @@
  ****************************************************************************/
 
 /**
- * @file sqlite_meta_writer.h 
+ * @file sqlite_pcap_writer.h 
  * @author Alexandru Mereacre 
- * @brief File containing the definition of the sqlite meta writer utilities.
+ * @brief File containing the definition of the sqlite pcap writer utilities.
  */
 
-#ifndef SQLITE_META_WRITER_H
-#define SQLITE_META_WRITER_H
+#ifndef SQLITE_PCAP_WRITER_H
+#define SQLITE_PCAP_WRITER_H
 
 #include <stdint.h>
 #include <sqlite3.h>
@@ -32,28 +32,29 @@
 #include "../utils/os.h"
 #include "../utils/squeue.h"
 
-#define META_CREATE_TABLE "CREATE TABLE meta (id TEXT, timestamp INTEGER NOT NULL, name TEXT, interface TEXT, filter TEXT, caplen INTEGER, length INTEGER, " \
+#define PCAP_TABLE_NAME "pcap"
+#define PCAP_CREATE_TABLE "CREATE TABLE " PCAP_TABLE_NAME " (id TEXT, timestamp INTEGER NOT NULL, name TEXT, interface TEXT, filter TEXT, caplen INTEGER, length INTEGER, " \
                          "PRIMARY KEY (id, timestamp, interface));"
-
-#define META_INSERT_INTO "INSERT INTO meta VALUES(@id, @timestamp, @name, @interface, @filter, @caplen, @length);"
+#define PCAP_INSERT_INTO "INSERT INTO " PCAP_TABLE_NAME " VALUES(@id, @timestamp, @name, @interface, @filter, @caplen, @length);"
 
 /**
- * @brief Opens the sqlite meta db
+ * @brief Opens the sqlite pcap db
  * 
  * @param db_path The sqlite db path
- * @return sqlite3* The sqlite structure pointer, or NULL on failure
+ * @param sql The returned sqlite db structure pointer
+ * @return 0 on success, -1 on failure
  */
-sqlite3* open_sqlite_meta_db(char *db_path);
+int open_sqlite_pcap_db(char *db_path, sqlite3** sql);
 
 /**
  * @brief Closes the sqlite db
  * 
  * @param ctx The sqlite db structure pointer
  */
-void free_sqlite_meta_db(sqlite3 *db);
+void free_sqlite_pcap_db(sqlite3 *db);
 
 /**
- * @brief Save a meta entry into the sqlite db
+ * @brief Save a pcap entry into the sqlite db
  * 
  * @param db The sqlite db structure pointer
  * @param id The capturing id string
@@ -65,6 +66,6 @@ void free_sqlite_meta_db(sqlite3 *db);
  * @param filter The filter string
  * @return int 0 on success, -1 on failure
  */
-int save_sqlite_meta_entry(sqlite3 *db, char *id, char *name, uint64_t timestamp,
+int save_sqlite_pcap_entry(sqlite3 *db, char *id, char *name, uint64_t timestamp,
                             uint32_t caplen, uint32_t length, char *interface, char *filter);
 #endif

@@ -18,9 +18,9 @@
  ****************************************************************************/
 
 /**
- * @file sqlite_writer.c
+ * @file sqlite_pcap_writer.c
  * @author Alexandru Mereacre 
- * @brief File containing the implementation of the sqlite writer utilities.
+ * @brief File containing the implementation of the sqlite pcap writer utilities.
  */
 
 #include <stdio.h>
@@ -29,56 +29,58 @@
 #include <stdint.h>
 #include <sqlite3.h>
 
-#include "sqlite_meta_writer.h"
+#include "sqlite_pcap_writer.h"
 
 #include "../utils/os.h"
 #include "../utils/if.h"
 #include "../utils/log.h"
 #include "../utils/sqliteu.h"
 
-void free_sqlite_meta_db(sqlite3 *db)
+void free_sqlite_pcap_db(sqlite3 *db)
 {
   if (db != NULL) {
     sqlite3_close(db);
   }
 }
 
-sqlite3* open_sqlite_meta_db(char *db_path)
+int open_sqlite_pcap_db(char *db_path, sqlite3** sql)
 {
-  sqlite3 *db;
+  sqlite3 *db = NULL;
   int rc;
 
   if ((rc = sqlite3_open(db_path, &db)) != SQLITE_OK) {     
     log_debug("Cannot open database: %s", sqlite3_errmsg(db));
     sqlite3_close(db);
-    return NULL;
+    return -1;
   }
 
-  rc = check_table_exists(db, "meta");
+  *sql = db;
+
+  rc = check_table_exists(db, PCAP_TABLE_NAME);
 
   if (rc == 0) {
-    log_debug("meta table doesn't exist creating...");
-    if (execute_sqlite_query(db, META_CREATE_TABLE) < 0) {
+    log_debug("pcap table doesn't exist creating...");
+    if (execute_sqlite_query(db, PCAP_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
-      free_sqlite_meta_db(db);
-      return NULL;
+      free_sqlite_pcap_db(db);
+      return -1;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
-    free_sqlite_meta_db(db);
-    return NULL;
+    free_sqlite_pcap_db(db);
+    return -1;
   }
 
-  return db;
+  return 0;
 }
 
-int save_sqlite_meta_entry(sqlite3 *db, char *id, char *name, uint64_t timestamp, uint32_t caplen, uint32_t length,
+int save_sqlite_pcap_entry(sqlite3 *db, char *id, char *name, uint64_t timestamp, uint32_t caplen, uint32_t length,
                            char *interface, char *filter)
 {
   sqlite3_stmt *res = NULL;
   int column_idx;
 
-  if (sqlite3_prepare_v2(db, META_INSERT_INTO, -1, &res, 0) != SQLITE_OK) {
+  if (sqlite3_prepare_v2(db, PCAP_INSERT_INTO, -1, &res, 0) != SQLITE_OK) {
     log_trace("Failed to prepare statement: %s", sqlite3_errmsg(db));
     return -1;
   }

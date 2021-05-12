@@ -52,10 +52,12 @@ struct pcap_context {
  * @param filter The capture filter string
  * @param pcap_fn The pcap capture callback
  * @param fn_ctx The context for callback function
- * @return struct pcap_context* pointer to a newly allocated pcap context, NULL on failure
+ * @param pctx The returned pcap context
+ * @return 0 on success, -1 on failure
  */
-struct pcap_context* run_pcap(char *interface, bool immediate, bool promiscuous,
-                              int timeout, char *filter, capture_callback_fn pcap_fn, void *fn_ctx);
+int run_pcap(char *interface, bool immediate, bool promiscuous,
+             int timeout, char *filter, capture_callback_fn pcap_fn,
+             void *fn_ctx, struct pcap_context** pctx);
 
 /**
  * @brief Captures a pcap packet

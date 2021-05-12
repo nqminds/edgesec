@@ -21,8 +21,8 @@ target_link_libraries(sync_client log sqlite_grpc_proto ${_REFLECTION} ${_GRPC_G
 add_library(sqlite_header_writer sqlite_header_writer.c)
 target_link_libraries(sqlite_header_writer sqliteu squeue log os ${LIBSQLITE3_LIB})
 
-add_library(sqlite_meta_writer sqlite_meta_writer.c)
-target_link_libraries(sqlite_meta_writer sqliteu log os ${LIBSQLITE3_LIB})
+add_library(sqlite_pcap_writer sqlite_pcap_writer.c)
+target_link_libraries(sqlite_pcap_writer sqliteu log os ${LIBSQLITE3_LIB})
 
 add_library(capture_service capture_service.c)
-target_link_libraries(capture_service pcap_service sync_client sqlite_header_writer sqlite_meta_writer pcap_queue packet_queue packet_decoder eloop if log os hashmap)
+target_link_libraries(capture_service pcap_service sync_client sqlite_header_writer sqlite_pcap_writer pcap_queue packet_queue packet_decoder eloop if log os hashmap)

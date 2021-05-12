@@ -4,6 +4,12 @@ project(EDGESEC C CXX)
 include(CTest)
 include(FetchContent)
 
+option(BUILD_CAPTURE_SERVICE "Build Capture server" ON)
+option(BUILD_REST_SERVER "Build Rest server" ON)
+option(BUILD_GRPC_LIB "Build gRPC library" ON)
+option(BUILD_SQLSYNC_SERVICE "Build sqlsync service" ON)
+option(BUILD_REVERSE_SERVICE "Build Reverse service" ON)
+
 set(CMAKE_BUILD_TYPE Release)
 
 # The edgesec version number.
@@ -148,69 +154,75 @@ ELSE ()
 endif ()
 
 # Fetch and Compile libgrpc
-set(RE2_BUILD_TESTING OFF)
-FetchContent_Declare(
-  gRPC
-  GIT_REPOSITORY https://github.com/grpc/grpc
-  GIT_TAG        v1.36.4
-)
-set(FETCHCONTENT_QUIET OFF)
-FetchContent_MakeAvailable(gRPC)
-FetchContent_GetProperties(gRPC SOURCE_DIR GRPC_SOURCE_DIR)
-message("${GRPC_SOURCE_DIR}/third_party/re2")
+if (BUILD_GRPC_LIB)
+  set(RE2_BUILD_TESTING OFF)
+  FetchContent_Declare(
+    gRPC
+    GIT_REPOSITORY https://github.com/grpc/grpc
+    GIT_TAG        v1.36.4
+  )
+  set(FETCHCONTENT_QUIET OFF)
+  FetchContent_MakeAvailable(gRPC)
+  FetchContent_GetProperties(gRPC SOURCE_DIR GRPC_SOURCE_DIR)
+  message("${GRPC_SOURCE_DIR}/third_party/re2")
+  set(_PROTOBUF_LIBPROTOBUF libprotobuf)
+  set(_REFLECTION grpc++_reflection)
+  set(_PROTOBUF_PROTOC $<TARGET_FILE:protoc>)
+  set(_GRPC_GRPCPP grpc++)
+  set(_GRPC_CPP_PLUGIN_EXECUTABLE $<TARGET_FILE:grpc_cpp_plugin>)  
+endif ()
 
-set(_PROTOBUF_LIBPROTOBUF libprotobuf)
-set(_REFLECTION grpc++_reflection)
-set(_PROTOBUF_PROTOC $<TARGET_FILE:protoc>)
-set(_GRPC_GRPCPP grpc++)
-set(_GRPC_CPP_PLUGIN_EXECUTABLE $<TARGET_FILE:grpc_cpp_plugin>)
+if (BUILD_SQLSYNC_SERVICE)
+  # Generate grpc probuf sources
+  get_filename_component(sqlite_proto "protos/sqlite_sync.proto" ABSOLUTE)
+  get_filename_component(sqlite_proto_path "${sqlite_proto}" PATH)
 
-get_filename_component(sqlite_proto "protos/sqlite_sync.proto" ABSOLUTE)
-get_filename_component(sqlite_proto_path "${sqlite_proto}" PATH)
+  # Define protobuf generated sources paths
+  set(sqlite_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/sqlite_sync.pb.cc")
+  set(sqlite_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/sqlite_sync.pb.h")
+  set(sqlite_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/sqlite_sync.grpc.pb.cc")
+  set(sqlite_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/sqlite_sync.grpc.pb.h")
 
-get_filename_component(reverse_proto "protos/reverse_access.proto" ABSOLUTE)
-get_filename_component(reverse_proto_path "${reverse_proto}" PATH)
+  add_custom_command(
+    OUTPUT "${sqlite_proto_srcs}" "${sqlite_proto_hdrs}" "${sqlite_grpc_srcs}" "${sqlite_grpc_hdrs}"
+    COMMAND ${_PROTOBUF_PROTOC}
+    ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}"
+      --cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
+      -I "${sqlite_proto_path}"
+      --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
+      "${sqlite_proto}"
+    DEPENDS "${sqlite_proto}")
 
-# Define protobuf generated sources paths
-set(sqlite_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/sqlite_sync.pb.cc")
-set(sqlite_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/sqlite_sync.pb.h")
-set(sqlite_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/sqlite_sync.grpc.pb.cc")
-set(sqlite_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/sqlite_sync.grpc.pb.h")
+  add_library(sqlite_grpc_proto ${sqlite_grpc_srcs} ${sqlite_grpc_hdrs} ${sqlite_proto_srcs} ${sqlite_proto_hdrs})
+  target_link_libraries(sqlite_grpc_proto ${_GRPC_GRPCPP})
+endif ()
 
-set(reverse_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/reverse_access.pb.cc")
-set(reverse_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/reverse_access.pb.h")
-set(reverse_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/reverse_access.grpc.pb.cc")
-set(reverse_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/reverse_access.grpc.pb.h")
+if (BUILD_REVERSE_SERVICE)
+  get_filename_component(reverse_proto "protos/reverse_access.proto" ABSOLUTE)
+  get_filename_component(reverse_proto_path "${reverse_proto}" PATH)
 
-# Generate grpc probuf sources
-add_custom_command(
-  OUTPUT "${sqlite_proto_srcs}" "${sqlite_proto_hdrs}" "${sqlite_grpc_srcs}" "${sqlite_grpc_hdrs}"
-  COMMAND ${_PROTOBUF_PROTOC}
-  ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}"
-    --cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
-    -I "${sqlite_proto_path}"
-    --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
-    "${sqlite_proto}"
-  DEPENDS "${sqlite_proto}")
+  set(reverse_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/reverse_access.pb.cc")
+  set(reverse_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/reverse_access.pb.h")
+  set(reverse_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/reverse_access.grpc.pb.cc")
+  set(reverse_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/reverse_access.grpc.pb.h")
 
-add_custom_command(
-  OUTPUT "${reverse_proto_srcs}" "${reverse_proto_hdrs}" "${reverse_grpc_srcs}" "${reverse_grpc_hdrs}"
-  COMMAND ${_PROTOBUF_PROTOC}
-  ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}"
-    --cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
-    -I "${reverse_proto_path}"
-    --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
-    "${reverse_proto}"
-  DEPENDS "${reverse_proto}")
+  add_custom_command(
+    OUTPUT "${reverse_proto_srcs}" "${reverse_proto_hdrs}" "${reverse_grpc_srcs}" "${reverse_grpc_hdrs}"
+    COMMAND ${_PROTOBUF_PROTOC}
+    ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}"
+      --cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
+      -I "${reverse_proto_path}"
+      --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
+      "${reverse_proto}"
+    DEPENDS "${reverse_proto}")
 
-# Include generated *.pb.h files
-# include_directories("${CMAKE_CURRENT_BINARY_DIR}")
+  # Include generated *.pb.h files
+  # include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
-# Compile grpc protobuf sources
-add_library(sqlite_grpc_proto ${sqlite_grpc_srcs} ${sqlite_grpc_hdrs} ${sqlite_proto_srcs} ${sqlite_proto_hdrs})
-target_link_libraries(sqlite_grpc_proto ${_GRPC_GRPCPP})
-add_library(reverse_grpc_proto ${reverse_grpc_srcs} ${reverse_grpc_hdrs} ${reverse_proto_srcs} ${reverse_proto_hdrs})
-target_link_libraries(reverse_grpc_proto ${_GRPC_GRPCPP})
+  # Compile grpc protobuf sources
+  add_library(reverse_grpc_proto ${reverse_grpc_srcs} ${reverse_grpc_hdrs} ${reverse_proto_srcs} ${reverse_proto_hdrs})
+  target_link_libraries(reverse_grpc_proto ${_GRPC_GRPCPP})
+endif ()
 
 # C compiler options
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wunused-variable")

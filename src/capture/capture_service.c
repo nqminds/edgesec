@@ -42,7 +42,7 @@
 #include "pcap_queue.h"
 #include "pcap_service.h"
 #include "sqlite_header_writer.h"
-#include "sqlite_meta_writer.h"
+#include "sqlite_pcap_writer.h"
 
 #include "../utils/if.h"
 #include "../utils/log.h"
@@ -53,7 +53,7 @@
 #define PCAP_EXTENSION                ".pcap"
 #define MAX_DB_NAME_LENGTH            MAX_RANDOM_UUID_LEN + STRLEN(SQLITE_EXTENSION)
 #define MAX_PCAP_FILE_NAME_LENGTH     MAX_RANDOM_UUID_LEN + STRLEN(PCAP_EXTENSION)
-#define META_DB_NAME                  "pcap-meta.sqlite"
+#define PCAP_DB_NAME                  "pcap-meta.sqlite"
 
 struct capture_context {
   uint32_t process_interval;
@@ -62,7 +62,7 @@ struct capture_context {
   struct pcap_queue *cqueue;
   struct string_queue *squeue;
   sqlite3 *header_db;
-  sqlite3 *meta_db;
+  sqlite3 *pcap_db;
   bool file_write;
   bool db_write;
   bool db_sync;
@@ -147,9 +147,9 @@ int save_pcap_file_data(struct pcap_pkthdr *header, uint8_t *packet, struct capt
 
   os_free(path);
 
-  if (save_sqlite_meta_entry(context->meta_db, context->cap_id, file_name, os_to_timestamp(header->ts),
+  if (save_sqlite_pcap_entry(context->pcap_db, context->cap_id, file_name, os_to_timestamp(header->ts),
         header->caplen, header->len, context->interface, context->filter) < 0) {
-    log_trace("save_sqlite_meta_entry fail");
+    log_trace("save_sqlite_pcap_entry fail");
     return -1;
   }
 
@@ -211,9 +211,10 @@ void trace_callback(char *sqlite_statement, void *ctx)
 
 int run_capture(struct capture_conf *config)
 {
+  int ret = -1;
   struct capture_context context;
   char *header_db_path = NULL;
-  char *meta_db_path = NULL;
+  char *pcap_db_path = NULL;
 
   os_memset(&context, 0, sizeof(context));
   generate_radom_uuid(context.cap_id);
@@ -239,8 +240,8 @@ int run_capture(struct capture_conf *config)
     return -1;
   }
 
-  meta_db_path = construct_path(context.db_path, META_DB_NAME);
-  if (meta_db_path == NULL) {
+  pcap_db_path = construct_path(context.db_path, PCAP_DB_NAME);
+  if (pcap_db_path == NULL) {
     log_debug("construct_path fail");
     os_free(header_db_path);
     return -1;
@@ -265,7 +266,7 @@ int run_capture(struct capture_conf *config)
   if (context.pqueue == NULL) {
     log_debug("init_packet_queue fail");
     os_free(header_db_path);
-    os_free(meta_db_path);
+    os_free(pcap_db_path);
     return -1;
   }
 
@@ -274,7 +275,7 @@ int run_capture(struct capture_conf *config)
   if (context.cqueue == NULL) {
     log_debug("init_pcap_queue fail");
     os_free(header_db_path);
-    os_free(meta_db_path);
+    os_free(pcap_db_path);
     free_packet_queue(context.pqueue);
     return -1;
   }
@@ -293,46 +294,49 @@ int run_capture(struct capture_conf *config)
         log_trace("run_register_db fail");
       }
 
-      context.header_db = open_sqlite_header_db(header_db_path, trace_callback, (void*)context.squeue);
-    } else context.header_db = open_sqlite_header_db(header_db_path, NULL, NULL);
+      ret = open_sqlite_header_db(header_db_path, trace_callback, (void*)context.squeue,
+                                  (sqlite3 **)&context.header_db);
+    } else {
+      ret = open_sqlite_header_db(header_db_path, NULL, NULL,
+                                                     (sqlite3 **)&context.header_db);
+    }
 
-    if (context.header_db == NULL) {
+    if (ret < 0) {
       log_debug("open_sqlite_header_db fail");
       free_packet_queue(context.pqueue);
       free_pcap_queue(context.cqueue);
       free_string_queue(context.squeue);
       os_free(header_db_path);
-      os_free(meta_db_path);
+      os_free(pcap_db_path);
       return -1;
     }
   }
 
   if (config->file_write) {
-    context.meta_db = open_sqlite_meta_db(meta_db_path);
-
-    if (context.meta_db == NULL) {
-      log_debug("open_sqlite_meta_db fail");
+    if (open_sqlite_pcap_db(pcap_db_path, (sqlite3**)&context.pcap_db) < 0) {
+      log_debug("open_sqlite_pcap_db fail");
       free_packet_queue(context.pqueue);
       free_pcap_queue(context.cqueue);
       free_string_queue(context.squeue);
       os_free(header_db_path);
-      os_free(meta_db_path);
+      os_free(pcap_db_path);
       free_sqlite_header_db(context.header_db);
       return -1;
     }
   }
 
-  if ((context.pc = run_pcap(context.interface, config->immediate,
-                            config->promiscuous, (int)config->buffer_timeout,
-                            context.filter, pcap_callback, (void *)&context)) < 0) {
+  if (run_pcap(context.interface, config->immediate,
+               config->promiscuous, (int)config->buffer_timeout,
+               context.filter, pcap_callback, (void *)&context,
+               (struct pcap_context**)&(context.pc)) < 0) {
     log_debug("run_pcap fail");
     free_packet_queue(context.pqueue);
     free_pcap_queue(context.cqueue);
     free_string_queue(context.squeue);
     os_free(header_db_path);
-    os_free(meta_db_path);
+    os_free(pcap_db_path);
     free_sqlite_header_db(context.header_db);
-    free_sqlite_meta_db(context.meta_db);
+    free_sqlite_pcap_db(context.pcap_db);
     return -1;    
   }
 
@@ -343,9 +347,9 @@ int run_capture(struct capture_conf *config)
     free_pcap_queue(context.cqueue);
     free_string_queue(context.squeue);
     os_free(header_db_path);
-    os_free(meta_db_path);
+    os_free(pcap_db_path);
     free_sqlite_header_db(context.header_db);
-    free_sqlite_meta_db(context.meta_db);
+    free_sqlite_pcap_db(context.pcap_db);
     return -1;
 	}
 
@@ -369,9 +373,9 @@ int run_capture(struct capture_conf *config)
   free_pcap_queue(context.cqueue);
   free_string_queue(context.squeue);
   free_sqlite_header_db(context.header_db);
-  free_sqlite_meta_db(context.meta_db);
+  free_sqlite_pcap_db(context.pcap_db);
   os_free(header_db_path);
-  os_free(meta_db_path);
+  os_free(pcap_db_path);
   return 0;
 
 fail:
@@ -381,8 +385,8 @@ fail:
   free_pcap_queue(context.cqueue);
   free_string_queue(context.squeue);
   free_sqlite_header_db(context.header_db);
-  free_sqlite_meta_db(context.meta_db);
+  free_sqlite_pcap_db(context.pcap_db);
   os_free(header_db_path);
-  os_free(meta_db_path);
+  os_free(pcap_db_path);
   return -1;
 }

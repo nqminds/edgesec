@@ -332,10 +332,12 @@ void save_packet_statement(sqlite3 *db, struct tuple_packet *tp);
  * 
  * @param db_path The path to sqlite3 db
  * @param trace_fn The callback to the trace callback function
- * @paran trace_ctx The context for trace callback
- * @return sqlite3* pointer to the sqlite db
+ * @param trace_ctx The context for trace callback
+ * @param sql The returned sqlite db structure pointer
+ * @return 0 on success, -1 on failure
  */
-sqlite3 * open_sqlite_header_db(char *db_path, trace_callback_fn trace_fn, void *trace_ctx);
+int open_sqlite_header_db(char *db_path, trace_callback_fn trace_fn,
+                                void *trace_ctx, sqlite3 **sql);
 
 /**
  * @brief Closes the sqlite db
