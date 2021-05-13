@@ -47,7 +47,7 @@ struct radius_ctx {
 	struct in_addr own_ip_addr;
 };
 
-struct mac_conn_info get_mac_conn(uint8_t mac_addr[])
+struct mac_conn_info get_mac_conn(uint8_t mac_addr[], void *mac_conn_arg)
 {
 	struct mac_conn_info info = {.vlanid = 0};
 	log_trace("RADIUS requested mac=%02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(mac_addr));
@@ -138,7 +138,7 @@ static void test_radius_server_init(void **state)
 	conf.radius_client_mask = 32;
 	strcpy(conf.radius_secret, "radius");
 
-  struct radius_client *client = init_radius_client(&conf, get_mac_conn);
+  	struct radius_client *client = init_radius_client(&conf, get_mac_conn, NULL);
 	struct radius_server_data *radius_srv;
 
 	log_set_level(0);

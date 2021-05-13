@@ -40,10 +40,9 @@
 #include "utils/log.h"
 #include "radius_server.h"
 
-static struct supervisor_context *context = NULL;
-
-struct mac_conn_info get_mac_conn(uint8_t mac_addr[])
+struct mac_conn_info get_mac_conn(uint8_t mac_addr[], void *mac_conn_arg)
 {
+  struct supervisor_context *context = (struct supervisor_context *) mac_conn_arg;
   struct mac_conn_info info;
 
   log_trace("RADIUS requested vland id for mac=" MACSTR, MAC2STR(mac_addr));
@@ -74,8 +73,7 @@ struct mac_conn_info get_mac_conn(uint8_t mac_addr[])
 
 struct radius_server_data *run_radius(struct radius_conf *rconf, struct supervisor_context *pcontext)
 {
-  context = pcontext;
-  struct radius_client *client = init_radius_client(rconf, get_mac_conn);
+  struct radius_client *client = init_radius_client(rconf, get_mac_conn, (void *)pcontext);
 
   return radius_server_init(rconf->radius_port, client);
 }

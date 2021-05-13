@@ -50,8 +50,6 @@
 #include "utils/iw.h"
 #include "config.h"
 
-static struct supervisor_context context;
-
 bool construct_hostapd_ctrlif(char *ctrl_interface, char *interface, char *hostapd_ctrl_if_path)
 {
   char *ctrl_if_path = construct_path(ctrl_interface, interface);
@@ -134,6 +132,8 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
 
 bool run_engine(struct app_config *app_config, uint8_t log_level)
 {
+  struct supervisor_context context;
+
   struct radius_server_data *radius_srv = NULL;
   int domain_sock = -1;
   char *commands[] = {"ip", "iw", "iptables", "dnsmasq", NULL};
