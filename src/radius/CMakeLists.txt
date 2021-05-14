@@ -18,4 +18,4 @@ add_library(radius_server radius_server.c)
 target_link_libraries(radius_server radius wpabuf log os eloop)
 
 add_library(radius_service radius_service.c)
-target_link_libraries(radius_service mac_mapper radius_server log os)
+target_link_libraries(radius_service radius_server)

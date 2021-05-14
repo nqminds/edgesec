@@ -33,10 +33,12 @@
  * @brief Runs the radius service
  * 
  * @param rconf The radius config
- * @param pcontext The supervisor context
+ * @param radius_callback_fn The radius callback function
+ * @param radius_callback_args The Radius callback arguments
  * @return Pointer to private RADIUS server context or NULL on failure
  */
-struct radius_server_data *run_radius(struct radius_conf *rconf, struct supervisor_context *pcontext);
+struct radius_server_data *run_radius(struct radius_conf *rconf,
+  void *radius_callback_fn, void *radius_callback_args);
 
 /**
  * @brief Closes the radius service

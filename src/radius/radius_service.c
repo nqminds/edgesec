@@ -33,53 +33,19 @@
 #include <libgen.h>
 #include <fcntl.h>
 
-#include "supervisor/mac_mapper.h"
-#include "supervisor/supervisor.h"
-
-#include "utils/os.h"
-#include "utils/log.h"
 #include "radius_server.h"
 
-struct mac_conn_info get_mac_conn(uint8_t mac_addr[], void *mac_conn_arg)
+struct radius_server_data *run_radius(struct radius_conf *rconf,
+  void *radius_callback_fn, void *radius_callback_args)
 {
-  struct supervisor_context *context = (struct supervisor_context *) mac_conn_arg;
-  struct mac_conn_info info;
-
-  log_trace("RADIUS requested vland id for mac=" MACSTR, MAC2STR(mac_addr));
-
-  int find_mac = get_mac_mapper(&context->mac_mapper, mac_addr, &info);
-
-  if (context->allow_all_connections) {
-    log_trace("RADIUS allowing mac=" MACSTR " on default vlanid=%d", MAC2STR(mac_addr), context->default_open_vlanid);
-    info.vlanid = context->default_open_vlanid;
-    info.pass_len = context->wpa_passphrase_len;
-    memcpy(info.pass, context->wpa_passphrase, info.pass_len);
-    return info;
-  }
-  
-  if (find_mac == 1 && info.allow_connection) {
-    log_trace("RADIUS allowing mac=" MACSTR " on vlanid=%d", MAC2STR(mac_addr), info.vlanid);
-    return info;
-  } else if (find_mac == -1) {
-    log_trace("get_mac_mapper fail");
-  } else if (find_mac == 0) {
-    log_trace("mac=" MACSTR " not found", MAC2STR(mac_addr));
-  }
-
-  log_trace("RADIUS rejecting mac=" MACSTR, MAC2STR(mac_addr));
-  info.vlanid = -1;
-  return info;
-}
-
-struct radius_server_data *run_radius(struct radius_conf *rconf, struct supervisor_context *pcontext)
-{
-  struct radius_client *client = init_radius_client(rconf, get_mac_conn, (void *)pcontext);
+  struct radius_client *client = init_radius_client(rconf, radius_callback_fn, radius_callback_args);
 
   return radius_server_init(rconf->radius_port, client);
 }
 
 void close_radius(struct radius_server_data *srv)
 {
-  if (srv)
+  if (srv != NULL) {
     radius_server_deinit(srv);
+  }
 }

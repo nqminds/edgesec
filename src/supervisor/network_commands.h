@@ -30,15 +30,101 @@
 #include <stdbool.h>
 
 /**
- * @brief Processes the REMOVE_BRIDGE command
+ * @brief Initialises the default mac_conn_info structure
  * 
- * @param sock The domain server socket
- * @param client_addr The client address for replies
- * @param context The supervisor structure instance
- * @param cmd_arr The array of received commands
- * @return ssize_t Size of reply written data
+ * @param info The mac_conn_info structure
+ * @param default_open_vlanid The default open VLAN ID
  */
-ssize_t remove_bridge_cmd(struct supervisor_context *context, UT_array *cmd_arr);
+void init_default_mac_info(struct mac_conn_info *info, int default_open_vlanid);
 
+/**
+ * @brief Return a mac_conn_info for a given MAC address
+ * 
+ * @param mac_addr The input MAC adderss
+ * @param mac_conn_arg The supervisor_context pointer
+ * @return struct mac_conn_info 
+ */
+struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg);
+
+/**
+ * @brief ACCEPT_MAC command
+ * 
+ * @param context The supervisor structure instance
+ * @param mac_addr The MAC address
+ * @param vlanid The VLAN ID
+ * @return int 0 on success, -1 on failure
+ */
+int accept_mac_cmd(struct supervisor_context *context, uint8_t *mac_addr, int vlanid);
+
+/**
+ * @brief DENY_MAC command
+ * 
+ * @param context The supervisor structure instance
+ * @param mac_addr The MAC address
+ * @return int 0 on success, -1 on failure
+ */
+int deny_mac_cmd(struct supervisor_context *context, uint8_t *mac_addr);
+
+/**
+ * @brief ADD_NAT command
+ * 
+ * @param context The supervisor structure instance
+ * @param mac_addr The MAC address
+ * @return int 0 on success, -1 on failure
+ */
+int add_nat_cmd(struct supervisor_context *context, uint8_t *mac_addr);
+
+/**
+ * @brief REMOVE_NAT command
+ * 
+ * @param context The supervisor structure instance
+ * @param mac_addr The MAC address
+ * @return int 0 on success, -1 on failure
+ */
+int remove_nat_cmd(struct supervisor_context *context, uint8_t *mac_addr);
+
+/**
+ * @brief ASSIGN_PSK command
+ * 
+ * @param context The supervisor structure instance
+ * @param mac_addr The MAC address
+ * @param pass The password
+ * @param pass_len The password length
+ * @return int 0 on success, -1 on failure
+ */
+int assign_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr,
+  char *pass, int pass_len);
+
+/**
+ * @brief SET_IP command
+ * 
+ * @param context The supervisor structure instance
+ * @param mac_addr The MAC address
+ * @param ip_addr The IP address
+ * @param add if add = true then add IP to MAC entry, otherwise remove
+ * @return int 0 on success, -1 on failure
+ */
+int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
+  char *ip_addr, bool add);
+
+/**
+ * @brief ADD_BRIDGE command
+ * 
+ * @param context The supervisor structure instance
+ * @param left_mac_addr The left MAC address
+ * @param right_mac_addr The right MAC address
+ * @return int 0 on success, -1 on failure
+ */
+int add_bridge_cmd(struct supervisor_context *context, uint8_t *left_mac_addr, uint8_t *right_mac_addr);
+
+/**
+ * @brief REMOVE_BRIDGE command
+ * 
+ * @param context The supervisor structure instance
+ * @param left_mac_addr The left MAC address
+ * @param right_mac_addr The right MAC address
+ * @return int 0 on success, -1 on failure
+ */
+int remove_bridge_cmd(struct supervisor_context *context, uint8_t *left_mac_addr, uint8_t *right_mac_addr);
 
 #endif

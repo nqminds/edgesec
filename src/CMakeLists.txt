@@ -18,7 +18,7 @@ if (BUILD_CAPTURE_SERVICE)
 endif ()
 
 add_library(engine engine.c)
-target_link_libraries(engine log if os subnet_service system_checks eloop supervisor radius_service mac_mapper ap_service iptables dhcp_service)
+target_link_libraries(engine log if os subnet_service system_checks eloop supervisor network_commands radius_service mac_mapper ap_service iptables dhcp_service)
 
 add_library(config config.c)
 target_link_libraries(config minIni)

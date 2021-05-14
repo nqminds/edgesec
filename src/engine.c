@@ -40,6 +40,7 @@
 #include "utils/iptables.h"
 
 #include "supervisor/supervisor.h"
+#include "supervisor/network_commands.h"
 #include "radius/radius_service.h"
 #include "ap/ap_service.h"
 #include "dhcp/dhcp_service.h"
@@ -225,7 +226,7 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
     log_info("Creating the radius server on port %d with client ip %s",
       app_config->rconfig.radius_port, app_config->rconfig.radius_client_ip);
 
-    radius_srv = run_radius(&app_config->rconfig, &context);
+    radius_srv = run_radius(&app_config->rconfig, (void*) get_mac_conn_cmd, &context);
     if (radius_srv == NULL) {
       log_debug("run_radius fail");
       goto run_engine_fail;

@@ -77,6 +77,7 @@ struct radius_session {
 	struct hostapd_radius_attr *accept_attr;
 };
 
+typedef struct mac_conn_info (*mac_conn_fn)(uint8_t mac_addr[], void *mac_conn_arg);
 /**
  * struct radius_client - Internal RADIUS server data for a client
  */
@@ -89,7 +90,7 @@ struct radius_client {
 	struct radius_session *sessions;
 	struct radius_server_counters counters;
 
-	struct mac_conn_info (*get_mac_conn)(uint8_t mac_addr[], void *mac_conn_arg);
+	mac_conn_fn conn_fn;
 	void *mac_conn_arg;
 	// int (*get_vlan_id)(uint8_t mac_addr[]);
 	struct hostapd_tunnel_pass (*get_tunnel_pass)(uint8_t mac_addr[]);
@@ -149,7 +150,6 @@ struct radius_server_data *radius_server_init(int auth_port, struct radius_clien
 void radius_server_deinit(struct radius_server_data *data);
 int radius_server_get_mib(struct radius_server_data *data, char *buf, size_t buflen);
 struct radius_client *init_radius_client(struct radius_conf *conf,
-		struct mac_conn_info (*get_mac_conn)(uint8_t mac_addr[], void *mac_conn_arg),
-		void *mac_conn_arg);
+  void *mac_conn_fn, void *mac_conn_arg);
 void radius_server_free_clients(struct radius_server_data *data, struct radius_client *clients);
 #endif /* RADIUS_SERVER_H */

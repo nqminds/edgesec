@@ -385,7 +385,14 @@ radius_server_macacl(struct radius_server_data *data,
 	size_t pw_len;
 	struct hostapd_radius_attr *attr = NULL, *pass_attr = NULL;
 	struct radius_hdr *hdr = radius_msg_get_hdr(request);
-	struct mac_conn_info mac_conn = client->get_mac_conn(sess->mac_addr, client->mac_conn_arg);
+	struct mac_conn_info mac_conn;
+
+	if (client->conn_fn == NULL) {
+	  log_trace("conn_fn is NULL");
+	  return NULL;
+	}
+
+	mac_conn = client->conn_fn(sess->mac_addr, client->mac_conn_arg);
 
 	if (mac_conn.vlanid >= 0) {
 		attr = get_vlan_attribute(mac_conn.vlanid);
@@ -790,8 +797,7 @@ void radius_server_free_clients(struct radius_server_data *data,
 }
 
 struct radius_client *init_radius_client(struct radius_conf *conf,
-	struct mac_conn_info (*get_mac_conn)(uint8_t mac_addr[], void *mac_conn_arg),
-	void *mac_conn_arg)
+	void *mac_conn_fn, void *mac_conn_arg)
 {
 	struct radius_client *entry;
 	struct in_addr addr;
@@ -821,7 +827,7 @@ struct radius_client *init_radius_client(struct radius_conf *conf,
 		val |= 1U << (31 - i);
 	entry->mask.s_addr = htonl(val);
 
-	entry->get_mac_conn = get_mac_conn;
+	entry->conn_fn = mac_conn_fn;
 	entry->mac_conn_arg = mac_conn_arg;
 	return entry;
 }
