@@ -71,6 +71,7 @@ struct apconf {
   int logger_syslog_level;                            /**< The hostapd @c logger_syslog_level param @see https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf */
   int ignore_broadcast_ssid;                          /**< The hostapd @c ignore_broadcast_ssid param @see https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf */
   int wpa_psk_radius;                                 /**< The hostapd @c wpa_psk_radius param @see https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf */
+  char vlan_tagged_interface[MAX_OS_PATH_LEN];        /**< The hostapd @c vlan_tagged_interface param @see https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf */
 };
 
 #endif

@@ -278,37 +278,6 @@ bool load_radius_conf(const char *filename, struct app_config *config)
 {
   char *value = os_malloc(INI_BUFFERSIZE);
 
-  // Load AP name
-  value = os_malloc(INI_BUFFERSIZE);
-  int ret = ini_gets("ap", "ssid", "", value, INI_BUFFERSIZE, filename);
-  if (!ret) {
-    fprintf(stderr, "ap ssid was not specified\n");
-    os_free(value);
-    return false;
-  }
-
-  strncpy(config->hconfig.ssid, value, AP_NAME_LEN);
-  os_free(value);
-
-  // Load AP password
-  value = os_malloc(INI_BUFFERSIZE);
-  ini_gets("ap", "wpaPassphrase", "", value, INI_BUFFERSIZE, filename);
-
-  strncpy(config->hconfig.wpa_passphrase, value, AP_SECRET_LEN);
-  os_free(value);
-
-  // Load AP interface
-  value = os_malloc(INI_BUFFERSIZE);
-  ret = ini_gets("ap", "interface", "", value, INI_BUFFERSIZE, filename);
-  if (!ret) {
-    fprintf(stderr, "AP interface was not specified\n");
-    os_free(value);
-    return false;
-  }
-
-  strncpy(config->hconfig.interface, value, IFNAMSIZ);
-  os_free(value);
-
   // Load radius port
   config->rconfig.radius_port = (int) ini_getl("radius", "port", 1812, filename);
 
@@ -384,6 +353,43 @@ bool load_ap_conf(const char *filename, struct app_config *config)
   }
 
   strncpy(config->hconfig.bridge, value, IFNAMSIZ);
+  os_free(value);
+
+  // Load AP name
+  value = os_malloc(INI_BUFFERSIZE);
+  ret = ini_gets("ap", "ssid", "", value, INI_BUFFERSIZE, filename);
+  if (!ret) {
+    fprintf(stderr, "ap ssid was not specified\n");
+    os_free(value);
+    return false;
+  }
+
+  strncpy(config->hconfig.ssid, value, AP_NAME_LEN);
+  os_free(value);
+
+  // Load AP password
+  value = os_malloc(INI_BUFFERSIZE);
+  ini_gets("ap", "wpaPassphrase", "", value, INI_BUFFERSIZE, filename);
+
+  strncpy(config->hconfig.wpa_passphrase, value, AP_SECRET_LEN);
+  os_free(value);
+
+  // Load AP interface
+  value = os_malloc(INI_BUFFERSIZE);
+  ret = ini_gets("ap", "interface", "", value, INI_BUFFERSIZE, filename);
+  if (!ret) {
+    fprintf(stderr, "AP interface was not specified\n");
+    os_free(value);
+    return false;
+  }
+
+  strncpy(config->hconfig.interface, value, IFNAMSIZ);
+  os_free(value);
+
+  // Load vlan_tagged_interface
+  value = os_malloc(INI_BUFFERSIZE);
+  ini_gets("ap", "vlanTaggedInterface", "", value, INI_BUFFERSIZE, filename);
+  strncpy(config->hconfig.vlan_tagged_interface, value, IFNAMSIZ);
   os_free(value);
 
   // Load ap driver
