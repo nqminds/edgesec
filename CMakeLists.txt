@@ -7,9 +7,9 @@ include(ExternalProject)
 
 option(BUILD_CAPTURE_SERVICE "Build Capture server" ON)
 option(BUILD_REST_SERVER "Build Rest server" ON)
-option(BUILD_GRPC_LIB "Build gRPC library" ON)
-option(BUILD_SQLSYNC_SERVICE "Build sqlsync service" ON)
-option(BUILD_REVERSE_SERVICE "Build Reverse service" ON)
+option(BUILD_GRPC_LIB "Build gRPC library" OFF)
+option(BUILD_SQLSYNC_SERVICE "Build sqlsync service" OFF)
+option(BUILD_REVERSE_SERVICE "Build Reverse service" OFF)
 
 set(CMAKE_BUILD_TYPE Release)
 
@@ -154,13 +154,22 @@ ELSE ()
   message(FATAL_ERROR "Could not find libuuid library.")
 endif ()
 
-ExternalProject_Add(ndpi
+set(LIBNDPI_PATH ${CMAKE_CURRENT_BINARY_DIR}/lib/ndpi)
+set(LIBNDPI_INCLUDE_PATH ${LIBNDPI_PATH}/include)
+find_library(LIBNDPI_LIB_PATH NAMES ndpi libndpi PATHS "${LIBNDPI_PATH}/lib")
+if (LIBNDPI_LIB_PATH)
+  message("Found libndpi library: ${LIBNDPI_LIB_PATH}")
+ELSE ()
+  ExternalProject_Add(ndpi
     GIT_REPOSITORY  https://github.com/ntop/nDPI
-    # GIT_TAG         v3.4
-    DOWNLOAD_DIR    ${CMAKE_SOURCE_DIR}/lib
-    SOURCE_DIR      ${CMAKE_SOURCE_DIR}/lib
-    CONFIGURE_COMMAND "sh test"
-)
+    GIT_TAG         64929a75e0a7a60d864bd25a9fd97fdf9ac892a2
+    GIT_PROGRESS    true
+    CONFIGURE_COMMAND ./autogen.sh
+    COMMAND           ./configure --prefix=${LIBNDPI_PATH}
+    BUILD_IN_SOURCE     1
+    BUILD_COMMAND       make  
+  )
+endif ()
 
 # Fetch and Compile libgrpc
 if (BUILD_GRPC_LIB)

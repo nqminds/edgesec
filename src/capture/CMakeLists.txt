@@ -15,8 +15,10 @@ target_link_libraries(pcap_queue log os)
 add_library(packet_decoder packet_decoder.c)
 target_link_libraries(packet_decoder hash if log os hashmap ${LIBPCAP_LIB})
 
-add_library(sync_client sync_client.cc)
-target_link_libraries(sync_client log sqlite_grpc_proto ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF})
+if (BUILD_SQLSYNC_SERVICE)
+  add_library(sync_client sync_client.cc)
+  target_link_libraries(sync_client log sqlite_grpc_proto ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF})
+endif ()
 
 add_library(sqlite_header_writer sqlite_header_writer.c)
 target_link_libraries(sqlite_header_writer sqliteu squeue log os ${LIBSQLITE3_LIB})
