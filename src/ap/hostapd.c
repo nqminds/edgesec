@@ -117,7 +117,7 @@ bool generate_hostapd_conf(struct apconf *hconf, struct radius_conf *rconf)
   fprintf(fp, "wpa_psk_radius=%d\n", hconf->wpa_psk_radius);
   if (strlen(hconf->vlan_tagged_interface)) {
     fprintf(fp, "vlan_naming=1\n");
-    fprintf(fp, "vlan_tagged_interface=land0\n");
+    fprintf(fp, "vlan_tagged_interface=%s\n", hconf->vlan_tagged_interface);
   }
   fclose(fp);
   return true;

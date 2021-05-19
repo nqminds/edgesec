@@ -3,6 +3,7 @@ project(EDGESEC C CXX)
 
 include(CTest)
 include(FetchContent)
+include(ExternalProject)
 
 option(BUILD_CAPTURE_SERVICE "Build Capture server" ON)
 option(BUILD_REST_SERVER "Build Rest server" ON)
@@ -152,6 +153,14 @@ if (LIBUUID_LIB)
 ELSE ()
   message(FATAL_ERROR "Could not find libuuid library.")
 endif ()
+
+ExternalProject_Add(ndpi
+    GIT_REPOSITORY  https://github.com/ntop/nDPI
+    # GIT_TAG         v3.4
+    DOWNLOAD_DIR    ${CMAKE_SOURCE_DIR}/lib
+    SOURCE_DIR      ${CMAKE_SOURCE_DIR}/lib
+    CONFIGURE_COMMAND "sh test"
+)
 
 # Fetch and Compile libgrpc
 if (BUILD_GRPC_LIB)
