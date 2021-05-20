@@ -1,6 +1,7 @@
 include_directories (
   "${EDGESEC_SOURCE_DIR}/src"
   "${CMAKE_CURRENT_BINARY_DIR}"
+  "${LIBNDPI_INCLUDE_PATH}"
 )
 
 add_library(packet_queue packet_queue.c)
@@ -27,4 +28,11 @@ add_library(sqlite_pcap_writer sqlite_pcap_writer.c)
 target_link_libraries(sqlite_pcap_writer sqliteu log os ${LIBSQLITE3_LIB})
 
 add_library(capture_service capture_service.c)
-target_link_libraries(capture_service pcap_service sync_client sqlite_header_writer sqlite_pcap_writer pcap_queue packet_queue packet_decoder eloop if log os hashmap)
+if (BUILD_SQLSYNC_SERVICE)
+  target_link_libraries(capture_service pcap_service sync_client sqlite_header_writer sqlite_pcap_writer pcap_queue packet_queue packet_decoder eloop if log os hashmap)
+else ()
+  target_link_libraries(capture_service pcap_service sqlite_header_writer sqlite_pcap_writer pcap_queue packet_queue packet_decoder eloop if log os hashmap)
+endif ()
+
+add_executable(ndpi ndpi.c)
+target_link_libraries(ndpi ${LIBNDPI_LIB_PATH} ${LIBPCAP_LIB} ${LIBPTHREAD_LIB} ${LIBM_LIB})

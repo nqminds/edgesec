@@ -74,8 +74,10 @@ struct capture_context {
   char cap_id[MAX_RANDOM_UUID_LEN];
 };
 
+#ifdef WITH_SQLSYNC_SERVICE
 uint32_t run_register_db(char *address, char *name);
 uint32_t run_sync_db_statement(char *address, char *name, char *statement);
+#endif
 
 void construct_header_db_name(char *db_name)
 {
@@ -188,9 +190,11 @@ void eloop_tout_handler(void *eloop_ctx, void *user_ctx)
 
   if (context->db_sync) {
     if ((traces = concat_string_queue(context->squeue)) != NULL) {
+#ifdef WITH_SQLSYNC_SERVICE
       if (!run_sync_db_statement(context-> grpc_srv_addr, context->db_name, traces)) {
         log_trace("run_sync_db_statement fail");
       }
+#endif
       os_free(traces);
     }
   }
@@ -290,12 +294,17 @@ int run_capture(struct capture_conf *config)
 
   if (config->db_write) {
     if (config->db_sync) {
+#ifdef WITH_SQLSYNC_SERVICE
       if (!run_register_db(context.grpc_srv_addr, context.db_name)) {
         log_trace("run_register_db fail");
       }
 
       ret = open_sqlite_header_db(header_db_path, trace_callback, (void*)context.squeue,
                                   (sqlite3 **)&context.header_db);
+#else
+      ret = open_sqlite_header_db(header_db_path, NULL, NULL,
+                                                     (sqlite3 **)&context.header_db);
+#endif
     } else {
       ret = open_sqlite_header_db(header_db_path, NULL, NULL,
                                                      (sqlite3 **)&context.header_db);

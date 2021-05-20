@@ -154,8 +154,23 @@ ELSE ()
   message(FATAL_ERROR "Could not find libuuid library.")
 endif ()
 
+find_library(LIBPTHREAD_LIB NAMES pthread libpthread)
+if (LIBPTHREAD_LIB)
+  message("Found libpthread library: ${LIBPTHREAD_LIB}")
+ELSE ()
+  message(FATAL_ERROR "Could not find libpthread library.")
+endif ()
+
+find_library(LIBM_LIB NAMES m libm)
+if (LIBM_LIB)
+  message("Found libm library: ${LIBM_LIB}")
+ELSE ()
+  message(FATAL_ERROR "Could not find libm library.")
+endif ()
+
+
 set(LIBNDPI_PATH ${CMAKE_CURRENT_BINARY_DIR}/lib/ndpi)
-set(LIBNDPI_INCLUDE_PATH ${LIBNDPI_PATH}/include)
+set(LIBNDPI_INCLUDE_PATH ${LIBNDPI_PATH}/include/ndpi)
 find_library(LIBNDPI_LIB_PATH NAMES ndpi libndpi PATHS "${LIBNDPI_PATH}/lib")
 if (LIBNDPI_LIB_PATH)
   message("Found libndpi library: ${LIBNDPI_LIB_PATH}")
@@ -191,6 +206,8 @@ if (BUILD_GRPC_LIB)
 endif ()
 
 if (BUILD_SQLSYNC_SERVICE)
+  add_compile_definitions(WITH_SQLSYNC_SERVICE)
+
   # Generate grpc probuf sources
   get_filename_component(sqlite_proto "protos/sqlite_sync.proto" ABSOLUTE)
   get_filename_component(sqlite_proto_path "${sqlite_proto}" PATH)

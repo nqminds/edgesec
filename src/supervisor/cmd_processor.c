@@ -409,6 +409,32 @@ ssize_t process_get_bridges_cmd(int sock, char *client_addr, struct supervisor_c
   return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
+ssize_t process_set_device_cat_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
+{
+  char **ptr = (char**) utarray_next(cmd_arr, NULL);
+  uint8_t addr[ETH_ALEN];
+  char op[1];
+  ptr = (char**) utarray_next(cmd_arr, ptr);
+  if (ptr != NULL && *ptr != NULL) {
+    if (hwaddr_aton2(*ptr, addr) != -1) {
+      // operation
+      ptr = (char**) utarray_next(cmd_arr, ptr);
+      if (ptr != NULL && *ptr != NULL) {
+        if (strlen(op) == 1) {
+          strcpy(op, *ptr);
+          // Category
+          ptr = (char**) utarray_next(cmd_arr, ptr);
+          if (ptr != NULL && *ptr != NULL) {
+            // Here process the category
+          }
+        }
+      }
+    }
+  }
+
+  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+}
+
 process_cmd_fn get_command_function(char *cmd)
 {
   if (!strcmp(cmd, CMD_PING)) {
@@ -437,6 +463,8 @@ process_cmd_fn get_command_function(char *cmd)
     return process_remove_bridge_cmd;
   } else if (!strcmp(cmd, CMD_GET_BRIDGES)) {
     return process_get_bridges_cmd;
+  } else if (!strcmp(cmd, CMD_SET_DEVICE_CAT)) {
+    return process_set_device_cat_cmd;
   } else {
     log_debug("unknown command");
   }
