@@ -31,6 +31,11 @@
 #include <stdbool.h>
 
 #include "../utils/os.h"
+
+typedef enum {
+  PACKET_ANALYSER_DEFAULT = 0,
+  PACKET_ANALYSER_NDPI = 1,
+} PACKET_ANALYSER_ENGINE;
 /**
  * @brief The capture configuration structure
  * 
@@ -40,7 +45,8 @@ struct capture_conf {
   bool promiscuous;                                           /**< Specifies whether the interface is to be put into promiscuous mode. If promiscuous param is non-zero, promiscuous mode will be set, otherwise it will not be set */
   bool immediate;                                             /**< Sets whether immediate mode should be set on a capture handle when the handle is activated. If immediate param is non-zero, immediate mode will be set, otherwise it will not be set. */
   uint16_t buffer_timeout;                                    /**< Specifies the packet buffer timeout, as a non-negative value, in milliseconds. (See pcap(3PCAP) for an explanation of the packet buffer timeout.) */
-  uint16_t process_interval;                                  /**< Specifies the packet process interval, in milliseconds */ 
+  uint16_t process_interval;                                  /**< Specifies the packet process interval, in milliseconds. */ 
+  PACKET_ANALYSER_ENGINE analyser;                            /**< Specifies the packet analyser engine. */ 
   bool file_write;                                            /**< Specifies wether the packets should be saved to file(s). */
   bool db_write;                                              /**< Specifies wether the packets should be saved in a sqlite db. */
   bool db_sync;                                               /**< Specifies wether the packets db should be synced. */

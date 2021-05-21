@@ -44,15 +44,26 @@
 #include "utils/os.h"
 #include "utils/minIni.h"
 
-#define OPT_STRING    ":c:i:f:t:n:p:a:o:dvhmewus"
+#define OPT_STRING    ":c:i:f:t:n:p:y:a:o:dvhmewus"
 #define USAGE_STRING  "\t%s [-c config] [-d] [-h] [-v] [-i interface] " \
                       "[-f filter] [-m] [-t timeout] [-n interval] " \
-                      "[-e] [-w] [-u] [-s] [-p path] [-a address] [-o port]\n"
+                      "[-e] [-y engine][-w] [-u] [-s] [-p path] [-a address] [-o port]\n"
 
 #define DEFAULT_BUFFER_TIMEOUT 10
 #define DEFAULT_PROCESS_INTERVAL 10
 
 static __thread char version_buf[10];
+
+pthread_mutex_t log_lock;
+
+void log_lock_fun(bool lock)
+{
+    if (lock) {
+        pthread_mutex_lock(&log_lock);
+    } else {
+        pthread_mutex_unlock(&log_lock);
+    }
+}
 
 char *get_static_version_string(uint8_t major, uint8_t minor, uint8_t patch)
 {
@@ -66,13 +77,14 @@ char *get_static_version_string(uint8_t major, uint8_t minor, uint8_t patch)
   return version_buf;
 }
 
-void show_app_version(void)
+int show_app_version(void)
 {
   fprintf(stdout, "capture app version %s\n",
     get_static_version_string(CAPTURE_VERSION_MAJOR,CAPTURE_VERSION_MINOR,CAPTURE_VERSION_PATCH));
+  return 1;
 }
 
-void show_app_help(char *app_name)
+int show_app_help(char *app_name)
 {
   show_app_version();
   fprintf(stdout, "Usage:\n");
@@ -85,6 +97,7 @@ void show_app_help(char *app_name)
   fprintf(stdout, "\t-t timeout\t The buffer timeout (milliseconds)\n");
   fprintf(stdout, "\t-n interval\t The process intereval (milliseconds)\n");
   fprintf(stdout, "\t-e\t\t Immediate mode\n");
+  fprintf(stdout, "\t-y\t\t Analyser\n");
   fprintf(stdout, "\t-u\t\t Write to file\n");
   fprintf(stdout, "\t-w\t\t Write to db\n");
   fprintf(stdout, "\t-s\t\t Sync the db\n");
@@ -95,11 +108,11 @@ void show_app_help(char *app_name)
   fprintf(stdout, "\t-h\t\t Show help\n");
   fprintf(stdout, "\t-v\t\t Show app version\n\n");
   fprintf(stdout, "Copyright NQMCyber Ltd\n\n");
-  exit(EXIT_SUCCESS);
+  return 1;
 }
 
 /* Diagnose an error in command-line arguments and terminate the process */
-void log_cmdline_error(const char *format, ...)
+int log_cmdline_error(const char *format, ...)
 {
     va_list argList;
 
@@ -111,7 +124,7 @@ void log_cmdline_error(const char *format, ...)
     va_end(argList);
 
     fflush(stderr);           /* In case stderr is not line-buffered */
-    exit(EXIT_FAILURE);
+    return -1;
 }
 
 long get_arg_num(char *port_str)
@@ -122,7 +135,7 @@ long get_arg_num(char *port_str)
   return strtol(port_str, NULL, 10);
 }
 
-void process_app_options(int argc, char *argv[], uint8_t *verbosity,
+int process_app_options(int argc, char *argv[], uint8_t *verbosity,
                           const char **filename, struct capture_conf *config)
 {
   int opt;
@@ -133,12 +146,9 @@ void process_app_options(int argc, char *argv[], uint8_t *verbosity,
       (*verbosity)++;
       break;
     case 'h':
-      show_app_help(argv[0]);
-      break;
+      return show_app_help(argv[0]);
     case 'v':
-      show_app_version();
-      exit(EXIT_SUCCESS);
-      break;
+      return show_app_version();
     case 'c':
       *filename = optarg;
       break;
@@ -155,15 +165,19 @@ void process_app_options(int argc, char *argv[], uint8_t *verbosity,
     case 't':
       config->buffer_timeout = get_arg_num(optarg);
       if (config->buffer_timeout < 0) {
-        log_cmdline_error("Wrong buffer timeout\n");
-        exit(EXIT_FAILURE);
+        return log_cmdline_error("Wrong buffer timeout\n");
       }
       break;
     case 'n':
       config->process_interval = get_arg_num(optarg);
       if (config->process_interval < 0) {
-        log_cmdline_error("Wrong process interval\n");
-        exit(EXIT_FAILURE);
+        return log_cmdline_error("Wrong process interval\n");
+      }
+      break;
+    case 'y':
+      config->analyser = get_arg_num(optarg);
+      if (config->analyser < 0) {
+        return log_cmdline_error("Wrong analyser engine value\n");
       }
       break;
     case 'e':
@@ -187,25 +201,23 @@ void process_app_options(int argc, char *argv[], uint8_t *verbosity,
     case 'o':
       config->db_sync_port = get_arg_num(optarg);
       if (config->db_sync_port <= 0 || config->db_sync_port > 65535) {
-        log_cmdline_error("Unrecognized port value\n");
-        exit(EXIT_FAILURE);
+        return log_cmdline_error("Unrecognized port value\n");
       }
       break;
     case ':':
-      log_cmdline_error("Missing argument for -%c\n", optopt);
-      exit(EXIT_FAILURE);
-      break;
+      return log_cmdline_error("Missing argument for -%c\n", optopt);
     case '?':
-      log_cmdline_error("Unrecognized option -%c\n", optopt);
-      exit(EXIT_FAILURE);
-      break;
-    default: show_app_help(argv[0]);
+      return log_cmdline_error("Unrecognized option -%c\n", optopt);
+    default: return show_app_help(argv[0]);
     }
   }
+
+  return 0;
 }
 
 int main(int argc, char *argv[])
 {
+  int ret;
   uint8_t verbosity = 0;
   uint8_t level = 0;
   const char *filename = NULL;
@@ -215,9 +227,18 @@ int main(int argc, char *argv[])
   memset(&config, 0, sizeof(struct capture_conf));
   config.buffer_timeout = DEFAULT_BUFFER_TIMEOUT;
   config.process_interval = DEFAULT_PROCESS_INTERVAL;
-  process_app_options(argc, argv, &verbosity, &filename, &config);
+  ret = process_app_options(argc, argv, &verbosity, &filename, &config);
+  if (ret < 0) {
+    fprintf(stderr, "process_app_options fail");
+    return EXIT_FAILURE;
+  } else if (ret > 0) {
+    return EXIT_SUCCESS;
+  }
 
-  if (optind <= 1) show_app_help(argv[0]);
+  if (optind <= 1) {
+    show_app_help(argv[0]);
+    return EXIT_SUCCESS;
+  }
 
   if (verbosity > MAX_LOG_LEVELS) {
     level = 0;
@@ -227,16 +248,25 @@ int main(int argc, char *argv[])
     level = MAX_LOG_LEVELS - verbosity;
   }
 
+  if (pthread_mutex_init(&log_lock, NULL) != 0) {
+      fprintf(stderr, "mutex init has failed\n");
+      return EXIT_FAILURE;
+  }
+
+  log_set_lock(log_lock_fun);
+
   // Set the log level
   log_set_level(level);
   if (filename != NULL) {
     load_capture_config(filename, &config);
   }
 
-  if (run_capture(&config) == -1) {
+  if (run_capture(&config) < 0) {
     fprintf(stderr, "run_capture fail\n");
-    exit(EXIT_FAILURE);
+    pthread_mutex_destroy(&log_lock);
+    return EXIT_FAILURE;
   }
 
-  exit(EXIT_SUCCESS);
+  pthread_mutex_destroy(&log_lock);
+  return EXIT_SUCCESS;
 }

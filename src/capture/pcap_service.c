@@ -31,7 +31,7 @@
 #include "../utils/os.h"
 #include "../utils/log.h"
 
-#define PCAP_SNAPSHOT_LENGTH  1500
+#define PCAP_SNAPSHOT_LENGTH  65535
 #define PCAP_BUFFER_SIZE      64*1024
 
 bool find_device(char *ifname, bpf_u_int32 *net, bpf_u_int32 *mask)

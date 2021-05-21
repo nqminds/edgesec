@@ -18,32 +18,22 @@
  ****************************************************************************/
 
 /**
- * @file capture_service.c
+ * @file default_analyser.h 
  * @author Alexandru Mereacre 
- * @brief File containing the implementation of the capture service.
+ * @brief File containing the definition of the default analyser service.
  */
 
-#ifdef WITH_NDPI_SERVICE
-#include "ndpi_analyser.h"
-#endif
+#ifndef NDPI_ANALYSER_H
+#define NDPI_ANALYSER_H
 
-#include "default_analyser.h"
 #include "capture_config.h"
 
-#include "../utils/log.h"
+/**
+ * @brief Starts the ndpi analyser engine
+ * 
+ * @param config The capture config structure
+ * @return int 0 on success, -1 on failure
+ */
+int start_ndpi_analyser(struct capture_conf *config);
 
-int run_capture(struct capture_conf *config)
-{
-  switch(config->analyser) {
-    case PACKET_ANALYSER_DEFAULT:
-      log_info("Running default_analyser_engine");
-      return start_default_analyser(config);
-#ifdef WITH_NDPI_SERVICE
-    case PACKET_ANALYSER_NDPI:
-      log_info("Running ndpi_analyser_engine");
-      return start_ndpi_analyser(config);
 #endif
-  }
-
-  return start_default_analyser(config);
-}

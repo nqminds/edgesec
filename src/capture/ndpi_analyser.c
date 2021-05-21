@@ -12,7 +12,10 @@
 #include <string.h>
 #include <unistd.h>
 
-#define VERBOSE
+#include "capture_config.h"
+#include "pcap_service.h"
+
+#include "../utils/log.h"
 
 #define MAX_FLOW_ROOTS_PER_THREAD 2048
 #define MAX_IDLE_FLOWS_PER_THREAD 64
@@ -79,6 +82,7 @@ struct nDPI_flow_info {
 };
 
 struct nDPI_workflow {
+    struct pcap_context *pctx;
     pcap_t * pcap_handle;
 
     uint8_t error_or_eof:1;
@@ -112,14 +116,28 @@ struct nDPI_reader_thread {
     int array_index;
 };
 
-pthread_mutex_t lock;
+struct nDPI_context {
+    struct nDPI_reader_thread *reader_threads;
+    int reader_thread_count;
+    uint32_t flow_id;
+    char *interface;
+    bool promiscuous;
+    bool immediate;
+    uint16_t buffer_timeout;
+    uint16_t process_interval;
+    char *filter;
+};
 
-static int reader_thread_count = MAX_READER_THREADS;
-static uint32_t flow_id = 0;
+struct nDPI_thread_arg {
+    struct nDPI_context *context;
+    int thread_index;
+};
+
+pthread_mutex_t lock;
 
 static void free_workflow(struct nDPI_workflow ** const workflow);
 
-static struct nDPI_workflow * init_workflow(char const * const file_or_device)
+static struct nDPI_workflow * init_workflow(struct nDPI_context *context)
 {
     char pcap_error_buffer[PCAP_ERRBUF_SIZE];
     struct nDPI_workflow * workflow = (struct nDPI_workflow *)ndpi_calloc(1, sizeof(*workflow));
@@ -128,15 +146,11 @@ static struct nDPI_workflow * init_workflow(char const * const file_or_device)
         return NULL;
     }
 
-    if (access(file_or_device, R_OK) != 0 && errno == ENOENT) {
-        workflow->pcap_handle = pcap_open_live(file_or_device, /* 1536 */ 65535, 1, 250, pcap_error_buffer);
-    } else {
-        workflow->pcap_handle = pcap_open_offline_with_tstamp_precision(file_or_device, PCAP_TSTAMP_PRECISION_MICRO,
-                                                                        pcap_error_buffer);
-    }
+
+    workflow->pcap_handle = pcap_open_live(context->interface, /* 1536 */ 65535, context->promiscuous, context->buffer_timeout, pcap_error_buffer);
 
     if (workflow->pcap_handle == NULL) {
-        fprintf(stderr, "pcap_open_live / pcap_open_offline_with_tstamp_precision: %.*s\n",
+        log_debug("pcap_open_live / pcap_open_offline_with_tstamp_precision: %.*s",
                 (int) PCAP_ERRBUF_SIZE, pcap_error_buffer);
         free_workflow(&workflow);
         return NULL;
@@ -224,42 +238,6 @@ static char * get_default_pcapdev(char *errbuf)
     return ifname;
 }
 
-static int setup_reader_threads(char const * const file_or_device, 
-                                struct nDPI_reader_thread *reader_threads)
-{
-    char * file_or_default_device;
-    char pcap_error_buffer[PCAP_ERRBUF_SIZE];
-
-    if (reader_thread_count > MAX_READER_THREADS) {
-        return 1;
-    }
-
-    if (file_or_device == NULL) {
-        file_or_default_device = get_default_pcapdev(pcap_error_buffer);
-        if (file_or_default_device == NULL) {
-            fprintf(stderr, "pcap_findalldevs: %.*s\n", (int) PCAP_ERRBUF_SIZE, pcap_error_buffer);
-            return 1;
-        }
-    } else {
-        file_or_default_device = strdup(file_or_device);
-        if (file_or_default_device == NULL) {
-            return 1;
-        }
-    }
-
-    for (int i = 0; i < reader_thread_count; ++i) {
-        reader_threads[i].workflow = init_workflow(file_or_default_device);
-        if (reader_threads[i].workflow == NULL)
-        {
-            free(file_or_default_device);
-            return 1;
-        }
-    }
-
-    free(file_or_default_device);
-    return 0;
-}
-
 static int ip_tuple_to_string(struct nDPI_flow_info const * const flow,
                               char * const src_addr_str, size_t src_addr_len,
                               char * const dst_addr_str, size_t dst_addr_len)
@@ -280,7 +258,6 @@ static int ip_tuple_to_string(struct nDPI_flow_info const * const flow,
     return 0;
 }
 
-#ifdef VERBOSE
 static void print_packet_info(struct nDPI_reader_thread const * const reader_thread,
                               struct pcap_pkthdr const * const header,
                               uint32_t l4_data_len,
@@ -334,9 +311,8 @@ static void print_packet_info(struct nDPI_reader_thread const * const reader_thr
         used += ret;
     }
 
-    printf("%.*s\n", used, buf);
+    log_trace("%.*s", used, buf);
 }
-#endif
 
 static int ip_tuples_equal(struct nDPI_flow_info const * const A,
                            struct nDPI_flow_info const * const B)
@@ -460,9 +436,9 @@ static void check_for_idle_flows(struct nDPI_workflow * const workflow)
                 struct nDPI_flow_info * const f =
                     (struct nDPI_flow_info *)workflow->ndpi_flows_idle[--workflow->cur_idle_flows];
                 if (f->flow_fin_ack_seen == 1) {
-                    printf("Free fin flow with id %u\n", f->flow_id);
+                    log_debug("Free fin flow with id %u", f->flow_id);
                 } else {
-                    printf("Free idle flow with id %u\n", f->flow_id);
+                    log_debug("Free idle flow with id %u", f->flow_id);
                 }
                 ndpi_tdelete(f, &workflow->ndpi_flows_active[idle_scan_index],
                              ndpi_workflow_node_cmp);
@@ -479,8 +455,11 @@ static void ndpi_process_packet(uint8_t * const args,
                                 struct pcap_pkthdr const * const header,
                                 uint8_t const * const packet)
 {
-    struct nDPI_reader_thread * const reader_thread =
-        (struct nDPI_reader_thread *)args;
+    struct nDPI_thread_arg *targs = (struct nDPI_thread_arg *)args;
+    struct nDPI_context *context = targs->context;
+    struct nDPI_reader_thread *reader_thread = (struct nDPI_reader_thread *)
+        (&context->reader_threads[targs->thread_index]);
+
     struct nDPI_workflow * workflow;
     struct nDPI_flow_info flow = {};
 
@@ -534,7 +513,7 @@ static void ndpi_process_packet(uint8_t * const args,
             break;
         case DLT_EN10MB:
             if (header->len < sizeof(struct ndpi_ethhdr)) {
-                fprintf(stderr, "[%8llu, %d] Ethernet packet too short - skipping\n",
+                log_debug("[%8llu, %d] Ethernet packet too short - skipping",
                         workflow->packets_captured, reader_thread->array_index);
                 return;
             }
@@ -544,14 +523,14 @@ static void ndpi_process_packet(uint8_t * const args,
             switch (type) {
                 case ETH_P_IP: /* IPv4 */
                     if (header->len < sizeof(struct ndpi_ethhdr) + sizeof(struct ndpi_iphdr)) {
-                        fprintf(stderr, "[%8llu, %d] IP packet too short - skipping\n",
+                        log_debug("[%8llu, %d] IP packet too short - skipping",
                                 workflow->packets_captured, reader_thread->array_index);
                         return;
                     }
                     break;
                 case ETH_P_IPV6: /* IPV6 */
                     if (header->len < sizeof(struct ndpi_ethhdr) + sizeof(struct ndpi_ipv6hdr)) {
-                        fprintf(stderr, "[%8llu, %d] IP6 packet too short - skipping\n",
+                        log_debug("[%8llu, %d] IP6 packet too short - skipping",
                                 workflow->packets_captured, reader_thread->array_index);
                         return;
                     }
@@ -559,13 +538,13 @@ static void ndpi_process_packet(uint8_t * const args,
                 case ETH_P_ARP: /* ARP */
                     return;
                 default:
-                    fprintf(stderr, "[%8llu, %d] Unknown Ethernet packet with type 0x%X - skipping\n",
+                    log_debug("[%8llu, %d] Unknown Ethernet packet with type 0x%X - skipping",
                             workflow->packets_captured, reader_thread->array_index, type);
                     return;
             }
             break;
         default:
-            fprintf(stderr, "[%8llu, %d] Captured non IP/Ethernet packet with datalink type 0x%X - skipping\n",
+            log_debug("[%8llu, %d] Captured non IP/Ethernet packet with datalink type 0x%X - skipping",
                     workflow->packets_captured, reader_thread->array_index, pcap_datalink(workflow->pcap_handle));
             return;
     }
@@ -577,7 +556,7 @@ static void ndpi_process_packet(uint8_t * const args,
         ip = NULL;
         ip6 = (struct ndpi_ipv6hdr *)&packet[ip_offset];
     } else {
-        fprintf(stderr, "[%8llu, %d] Captured non IPv4/IPv6 packet with type 0x%X - skipping\n",
+        log_debug("[%8llu, %d] Captured non IPv4/IPv6 packet with type 0x%X - skipping",
                 workflow->packets_captured, reader_thread->array_index, type);
         return;
     }
@@ -585,7 +564,7 @@ static void ndpi_process_packet(uint8_t * const args,
 
     if (type == ETH_P_IP && header->len >= ip_offset) {
         if (header->caplen < header->len) {
-            fprintf(stderr, "[%8llu, %d] Captured packet size is smaller than packet size: %u < %u\n",
+            log_debug("[%8llu, %d] Captured packet size is smaller than packet size: %u < %u",
                     workflow->packets_captured, reader_thread->array_index, header->caplen, header->len);
         }
     }
@@ -593,7 +572,7 @@ static void ndpi_process_packet(uint8_t * const args,
     /* process layer3 e.g. IPv4 / IPv6 */
     if (ip != NULL && ip->version == 4) {
         if (ip_size < sizeof(*ip)) {
-            fprintf(stderr, "[%8llu, %d] Packet smaller than IP4 header length: %u < %zu\n",
+            log_debug("[%8llu, %d] Packet smaller than IP4 header length: %u < %zu",
                     workflow->packets_captured, reader_thread->array_index, ip_size, sizeof(*ip));
             return;
         }
@@ -602,7 +581,7 @@ static void ndpi_process_packet(uint8_t * const args,
         if (ndpi_detection_get_l4((uint8_t*)ip, ip_size, &l4_ptr, &l4_len,
                                   &flow.l4_protocol, NDPI_DETECTION_ONLY_IPV4) != 0)
         {
-            fprintf(stderr, "[%8llu, %d] nDPI IPv4/L4 payload detection failed, L4 length: %zu\n",
+            log_debug("[%8llu, %d] nDPI IPv4/L4 payload detection failed, L4 length: %zu",
                     workflow->packets_captured, reader_thread->array_index, ip_size - sizeof(*ip));
             return;
         }
@@ -614,7 +593,7 @@ static void ndpi_process_packet(uint8_t * const args,
         thread_index = min_addr + ip->protocol;
     } else if (ip6 != NULL) {
         if (ip_size < sizeof(ip6->ip6_hdr)) {
-            fprintf(stderr, "[%8llu, %d] Packet smaller than IP6 header length: %u < %zu\n",
+            log_debug("[%8llu, %d] Packet smaller than IP6 header length: %u < %zu",
                     workflow->packets_captured, reader_thread->array_index, ip_size, sizeof(ip6->ip6_hdr));
             return;
         }
@@ -623,7 +602,7 @@ static void ndpi_process_packet(uint8_t * const args,
         if (ndpi_detection_get_l4((uint8_t*)ip6, ip_size, &l4_ptr, &l4_len,
                                   &flow.l4_protocol, NDPI_DETECTION_ONLY_IPV6) != 0)
         {
-            fprintf(stderr, "[%8llu, %d] nDPI IPv6/L4 payload detection failed, L4 length: %zu\n",
+            log_debug("[%8llu, %d] nDPI IPv6/L4 payload detection failed, L4 length: %zu",
                     workflow->packets_captured, reader_thread->array_index, ip_size - sizeof(*ip6));
             return;
         }
@@ -644,7 +623,7 @@ static void ndpi_process_packet(uint8_t * const args,
         }
         thread_index = min_addr[0] + min_addr[1] + ip6->ip6_hdr.ip6_un1_nxt;
     } else {
-        fprintf(stderr, "[%8llu, %d] Non IP/IPv6 protocol detected: 0x%X\n",
+        log_debug("[%8llu, %d] Non IP/IPv6 protocol detected: 0x%X",
                 workflow->packets_captured, reader_thread->array_index, type);
         return;
     }
@@ -654,7 +633,7 @@ static void ndpi_process_packet(uint8_t * const args,
         const struct ndpi_tcphdr * tcp;
 
         if (header->len < (l4_ptr - packet) + sizeof(struct ndpi_tcphdr)) {
-            fprintf(stderr, "[%8llu, %d] Malformed TCP packet, packet size smaller than expected: %u < %zu\n",
+            log_debug("[%8llu, %d] Malformed TCP packet, packet size smaller than expected: %u < %zu",
                     workflow->packets_captured, reader_thread->array_index,
                     header->len, (l4_ptr - packet) + sizeof(struct ndpi_tcphdr));
             return;
@@ -669,7 +648,7 @@ static void ndpi_process_packet(uint8_t * const args,
         const struct ndpi_udphdr * udp;
 
         if (header->len < (l4_ptr - packet) + sizeof(struct ndpi_udphdr)) {
-            fprintf(stderr, "[%8llu, %d] Malformed UDP packet, packet size smaller than expected: %u < %zu\n",
+            log_debug("[%8llu, %d] Malformed UDP packet, packet size smaller than expected: %u < %zu",
                     workflow->packets_captured, reader_thread->array_index,
                     header->len, (l4_ptr - packet) + sizeof(struct ndpi_udphdr));
             return;
@@ -681,7 +660,7 @@ static void ndpi_process_packet(uint8_t * const args,
 
     /* distribute flows to threads while keeping stability (same flow goes always to same thread) */
     thread_index += (flow.src_port < flow.dst_port ? flow.dst_port : flow.src_port);
-    thread_index %= reader_thread_count;
+    thread_index %= context->reader_thread_count;
     if (thread_index != reader_thread->array_index) {
         return;
     }
@@ -739,7 +718,7 @@ static void ndpi_process_packet(uint8_t * const args,
     if (tree_result == NULL) {
         /* flow still not found, must be new */
         if (workflow->cur_active_flows == workflow->max_active_flows) {
-            fprintf(stderr, "[%8llu, %d] max flows to track reached: %llu, idle: %llu\n",
+            log_debug("[%8llu, %d] max flows to track reached: %llu, idle: %llu",
                     workflow->packets_captured, reader_thread->array_index,
                     workflow->max_active_flows, workflow->cur_idle_flows);
             return;
@@ -747,7 +726,7 @@ static void ndpi_process_packet(uint8_t * const args,
 
         flow_to_process = (struct nDPI_flow_info *)ndpi_malloc(sizeof(*flow_to_process));
         if (flow_to_process == NULL) {
-            fprintf(stderr, "[%8llu, %d] Not enough memory for flow info\n",
+            log_debug("[%8llu, %d] Not enough memory for flow info",
                     workflow->packets_captured, reader_thread->array_index);
             return;
         }
@@ -757,12 +736,12 @@ static void ndpi_process_packet(uint8_t * const args,
         memcpy(flow_to_process, &flow, sizeof(*flow_to_process));
 
         pthread_mutex_lock(&lock);
-        flow_to_process->flow_id = flow_id++;
+        flow_to_process->flow_id = context->flow_id++;
         pthread_mutex_unlock(&lock);
 
         flow_to_process->ndpi_flow = (struct ndpi_flow_struct *)ndpi_flow_malloc(SIZEOF_FLOW_STRUCT);
         if (flow_to_process->ndpi_flow == NULL) {
-            fprintf(stderr, "[%8llu, %d, %4u] Not enough memory for flow struct\n",
+            log_debug("[%8llu, %d, %4u] Not enough memory for flow struct",
                     workflow->packets_captured, reader_thread->array_index, flow_to_process->flow_id);
             return;
         }
@@ -770,19 +749,19 @@ static void ndpi_process_packet(uint8_t * const args,
 
         flow_to_process->ndpi_src = (struct ndpi_id_struct *)ndpi_calloc(1, SIZEOF_ID_STRUCT);
         if (flow_to_process->ndpi_src == NULL) {
-            fprintf(stderr, "[%8llu, %d, %4u] Not enough memory for src id struct\n",
+            log_debug("[%8llu, %d, %4u] Not enough memory for src id struct",
                     workflow->packets_captured, reader_thread->array_index, flow_to_process->flow_id);
             return;
         }
 
         flow_to_process->ndpi_dst = (struct ndpi_id_struct *)ndpi_calloc(1, SIZEOF_ID_STRUCT);
         if (flow_to_process->ndpi_dst == NULL) {
-            fprintf(stderr, "[%8llu, %d, %4u] Not enough memory for dst id struct\n",
+            log_debug("[%8llu, %d, %4u] Not enough memory for dst id struct",
                     workflow->packets_captured, reader_thread->array_index, flow_to_process->flow_id);
             return;
         }
 
-        printf("[%8llu, %d, %4u] new %sflow\n", workflow->packets_captured, thread_index,
+        log_debug("[%8llu, %d, %4u] new %sflow", workflow->packets_captured, thread_index,
                flow_to_process->flow_id,
                (flow_to_process->is_midstream_flow != 0 ? "midstream-" : ""));
         if (ndpi_tsearch(flow_to_process, &workflow->ndpi_flows_active[hashed_index], ndpi_workflow_node_cmp) == NULL) {
@@ -817,11 +796,9 @@ static void ndpi_process_packet(uint8_t * const args,
     /* TCP-FIN: indicates that at least one side wants to end the connection */
     if (flow.flow_fin_ack_seen != 0 && flow_to_process->flow_fin_ack_seen == 0) {
         flow_to_process->flow_fin_ack_seen = 1;
-        printf("[%8llu, %d, %4u] end of flow\n",  workflow->packets_captured, thread_index,
+        log_debug("[%8llu, %d, %4u] end of flow",  workflow->packets_captured, thread_index,
                 flow_to_process->flow_id);
-#ifdef VERBOSE
         print_packet_info(reader_thread, header, l4_len, /*&flow*/flow_to_process);
-#endif
         return;
     }
 
@@ -830,9 +807,7 @@ static void ndpi_process_packet(uint8_t * const args,
      * for uint8: 0xFF
      */
     if (flow_to_process->ndpi_flow->num_processed_pkts == 0xFF) {
-#ifdef VERBOSE
         print_packet_info(reader_thread, header, l4_len, /*&flow*/flow_to_process);
-#endif
         return;
     } else if (flow_to_process->ndpi_flow->num_processed_pkts == 0xFE) {
         /* last chance to guess something, better then nothing */
@@ -842,7 +817,7 @@ static void ndpi_process_packet(uint8_t * const args,
                                   flow_to_process->ndpi_flow,
                                   1, &protocol_was_guessed);
         if (protocol_was_guessed != 0) {
-            printf("[%8llu, %d, %4d][GUESSED] protocol: %s | app protocol: %s | category: %s\n",
+            log_debug("[%8llu, %d, %4d][GUESSED] protocol: %s | app protocol: %s | category: %s",
                     workflow->packets_captured,
                     reader_thread->array_index,
                     flow_to_process->flow_id,
@@ -850,7 +825,7 @@ static void ndpi_process_packet(uint8_t * const args,
                     ndpi_get_proto_name(workflow->ndpi_struct, flow_to_process->guessed_protocol.app_protocol),
                     ndpi_category_get_name(workflow->ndpi_struct, flow_to_process->guessed_protocol.category));
         } else {
-            printf("[%8llu, %d, %4d][FLOW NOT CLASSIFIED]\n",
+            log_debug("[%8llu, %d, %4d][FLOW NOT CLASSIFIED]",
                     workflow->packets_captured, reader_thread->array_index, flow_to_process->flow_id);
         }
     }
@@ -868,7 +843,7 @@ static void ndpi_process_packet(uint8_t * const args,
             flow_to_process->detected_l7_protocol.app_protocol != NDPI_PROTOCOL_UNKNOWN) {
             flow_to_process->detection_completed = 1;
             workflow->detected_flow_protocols++;
-            printf("[%8llu, %d, %4d][DETECTED] protocol: %s | app protocol: %s | category: %s\n",
+            log_debug("[%8llu, %d, %4d][DETECTED] protocol: %s | app protocol: %s | category: %s",
                     workflow->packets_captured,
                     reader_thread->array_index,
                     flow_to_process->flow_id,
@@ -900,7 +875,7 @@ static void ndpi_process_packet(uint8_t * const args,
                 flow_to_process->ndpi_flow->l4.tcp.tls.hello_processed != 0)
             {
                 uint8_t unknown_tls_version = 0;
-                printf("[%8llu, %d, %4d][TLS-CLIENT-HELLO] version: %s | sni: %s | alpn: %s\n",
+                log_debug("[%8llu, %d, %4d][TLS-CLIENT-HELLO] version: %s | sni: %s | alpn: %s",
                         workflow->packets_captured,
                         reader_thread->array_index,
                         flow_to_process->flow_id,
@@ -916,8 +891,8 @@ static void ndpi_process_packet(uint8_t * const args,
                 flow_to_process->ndpi_flow->l4.tcp.tls.certificate_processed != 0)
             {
                 uint8_t unknown_tls_version = 0;
-                printf("[%8llu, %d, %4d][TLS-SERVER-HELLO] version: %s | common-name(s): %.*s | "
-                                                           "issuer: %s | subject: %s\n",
+                log_debug("[%8llu, %d, %4d][TLS-SERVER-HELLO] version: %s | common-name(s): %.*s | "
+                                                           "issuer: %s | subject: %s",
                         workflow->packets_captured,
                         reader_thread->array_index,
                         flow_to_process->flow_id,
@@ -934,20 +909,21 @@ static void ndpi_process_packet(uint8_t * const args,
             }
         }
     }
-#ifdef VERBOSE
     print_packet_info(reader_thread, header, l4_len, /*&flow*/flow_to_process);
-#endif
 }
 
-static void run_pcap_loop(struct nDPI_reader_thread const * const reader_thread)
+static void run_pcap_loop(struct nDPI_thread_arg *targs)
 {
+    int thread_index = targs->thread_index;
+    struct nDPI_reader_thread *reader_thread = (struct nDPI_reader_thread *)(&(targs->context)->reader_threads[thread_index]);
+
     if (reader_thread->workflow != NULL &&
         reader_thread->workflow->pcap_handle != NULL) {
 
         if (pcap_loop(reader_thread->workflow->pcap_handle, -1,
-            &ndpi_process_packet, (uint8_t *)reader_thread) == PCAP_ERROR) {
+            &ndpi_process_packet, (uint8_t *)targs) == PCAP_ERROR) {
 
-            fprintf(stderr, "Error while reading pcap file: '%s'\n",
+            log_debug("Error while reading pcap file: '%s'",
                     pcap_geterr(reader_thread->workflow->pcap_handle));
             reader_thread->workflow->error_or_eof = 1;
         }
@@ -963,64 +939,80 @@ static void break_pcap_loop(struct nDPI_reader_thread * const reader_thread)
     }
 }
 
-static void * processing_thread(void * const ndpi_thread_arg)
+static void * processing_thread(void *args)
 {
-    struct nDPI_reader_thread const * const reader_thread =
-        (struct nDPI_reader_thread *)ndpi_thread_arg;
-
-    printf("Starting ThreadID %d\n", reader_thread->array_index);
-    run_pcap_loop(reader_thread);
+    struct nDPI_thread_arg *targs = (struct nDPI_thread_arg *)args;
+    int thread_index = targs->thread_index;
+    struct nDPI_reader_thread *reader_threads = targs->context->reader_threads;
+    struct nDPI_reader_thread *reader_thread = &reader_threads[thread_index];
+    run_pcap_loop(targs);
     reader_thread->workflow->error_or_eof = 1;
+
     return NULL;
 }
 
-static int processing_threads_error_or_eof(struct nDPI_reader_thread *reader_threads)
+static int processing_threads_error_or_eof(struct nDPI_context *context)
 {
-    for (int i = 0; i < reader_thread_count; ++i) {
-        if (reader_threads[i].workflow->error_or_eof == 0) {
+    for (int i = 0; i < context->reader_thread_count; ++i) {
+        if (context->reader_threads[i].workflow->error_or_eof == 0) {
             return 0;
         }
     }
     return 1;
 }
 
-static int start_reader_threads(struct nDPI_reader_thread *reader_threads)
+static int setup_reader_threads(struct nDPI_context *context)
 {
+    log_debug("Setting up %d threads", context->reader_thread_count);
+    for (int i = 0; i < context->reader_thread_count; ++i) {
+        if ((context->reader_threads[i].workflow = init_workflow(context)) == NULL) {
+          log_debug("init_workflow fail");
+          return -1;
+        }
+    }
+
+    return 0;
+}
+
+static int start_reader_threads(struct nDPI_thread_arg *targs)
+{
+    struct nDPI_reader_thread *reader_threads = targs[0].context->reader_threads;
+    int reader_thread_count = targs[0].context->reader_thread_count;
+
     sigset_t thread_signal_set, old_signal_set;
 
     sigfillset(&thread_signal_set);
     sigdelset(&thread_signal_set, SIGINT);
     sigdelset(&thread_signal_set, SIGTERM);
     if (pthread_sigmask(SIG_BLOCK, &thread_signal_set, &old_signal_set) != 0) {
-        fprintf(stderr, "pthread_sigmask: %s\n", strerror(errno));
-        return 1;
+        log_debug("pthread_sigmask: %s", strerror(errno));
+        return -1;
     }
 
     for (int i = 0; i < reader_thread_count; ++i) {
         reader_threads[i].array_index = i;
+        targs[i].thread_index = i;
 
         if (reader_threads[i].workflow == NULL) {
             /* no more threads should be started */
             break;
         }
-
-        if (pthread_create(&reader_threads[i].thread_id, NULL,
-            processing_thread, &reader_threads[i]) != 0)
+        if (pthread_create(&reader_threads[i].thread_id, NULL, processing_thread, (void*)&targs[i]) != 0)
         {
-            fprintf(stderr, "pthread_create: %s\n", strerror(errno));
-            return 1;
+            log_debug("pthread_create: %s", strerror(errno));
+            return -1;
         }
     }
 
     if (pthread_sigmask(SIG_BLOCK, &old_signal_set, NULL) != 0) {
-        fprintf(stderr, "pthread_sigmask: %s\n", strerror(errno));
-        return 1;
+        log_debug("pthread_sigmask: %s", strerror(errno));
+        return -1;
     }
 
     return 0;
 }
 
-static int stop_reader_threads(struct nDPI_reader_thread *reader_threads)
+static int stop_reader_threads(struct nDPI_context *context)
 {
     unsigned long long int total_packets_processed = 0;
     unsigned long long int total_l4_data_len = 0;
@@ -1028,95 +1020,106 @@ static int stop_reader_threads(struct nDPI_reader_thread *reader_threads)
     unsigned long long int total_flows_idle = 0;
     unsigned long long int total_flows_detected = 0;
 
-    for (int i = 0; i < reader_thread_count; ++i) {
-        break_pcap_loop(&reader_threads[i]);
+    for (int i = 0; i < context->reader_thread_count; ++i) {
+        break_pcap_loop(&context->reader_threads[i]);
     }
 
-    printf("------------------------------------ Stopping reader threads\n");
+    log_info("------------------------------------ Stopping reader threads");
 
-    for (int i = 0; i < reader_thread_count; ++i) {
-        if (reader_threads[i].workflow == NULL) {
+    for (int i = 0; i < context->reader_thread_count; ++i) {
+        if (context->reader_threads[i].workflow == NULL) {
             continue;
         }
 
-        total_packets_processed += reader_threads[i].workflow->packets_processed;
-        total_l4_data_len += reader_threads[i].workflow->total_l4_data_len;
-        total_flows_captured += reader_threads[i].workflow->total_active_flows;
-        total_flows_idle += reader_threads[i].workflow->total_idle_flows;
-        total_flows_detected += reader_threads[i].workflow->detected_flow_protocols;
+        total_packets_processed += context->reader_threads[i].workflow->packets_processed;
+        total_l4_data_len += context->reader_threads[i].workflow->total_l4_data_len;
+        total_flows_captured += context->reader_threads[i].workflow->total_active_flows;
+        total_flows_idle += context->reader_threads[i].workflow->total_idle_flows;
+        total_flows_detected += context->reader_threads[i].workflow->detected_flow_protocols;
 
-        printf("Stopping Thread %d, processed %10llu packets, %12llu bytes, total flows: %8llu, "
-                                                     "idle flows: %8llu, detected flows: %8llu\n",
-               reader_threads[i].array_index, reader_threads[i].workflow->packets_processed,
-               reader_threads[i].workflow->total_l4_data_len, reader_threads[i].workflow->total_active_flows,
-               reader_threads[i].workflow->total_idle_flows, reader_threads[i].workflow->detected_flow_protocols);
+        log_info("Stopping Thread %d, processed %10llu packets, %12llu bytes, total flows: %8llu, "
+                                                     "idle flows: %8llu, detected flows: %8llu",
+               context->reader_threads[i].array_index, context->reader_threads[i].workflow->packets_processed,
+               context->reader_threads[i].workflow->total_l4_data_len, context->reader_threads[i].workflow->total_active_flows,
+               context->reader_threads[i].workflow->total_idle_flows, context->reader_threads[i].workflow->detected_flow_protocols);
     }
     /* total packets captured: same value for all threads as packet2thread distribution happens later */
-    printf("Total packets captured.: %llu\n",
-           reader_threads[0].workflow->packets_captured);
-    printf("Total packets processed: %llu\n", total_packets_processed);
-    printf("Total layer4 data size.: %llu\n", total_l4_data_len);
-    printf("Total flows captured...: %llu\n", total_flows_captured);
-    printf("Total flows timed out..: %llu\n", total_flows_idle);
-    printf("Total flows detected...: %llu\n", total_flows_detected);
+    log_info("Total packets captured.: %llu",
+           context->reader_threads[0].workflow->packets_captured);
+    log_info("Total packets processed: %llu", total_packets_processed);
+    log_info("Total layer4 data size.: %llu", total_l4_data_len);
+    log_info("Total flows captured...: %llu", total_flows_captured);
+    log_info("Total flows timed out..: %llu", total_flows_idle);
+    log_info("Total flows detected...: %llu", total_flows_detected);
 
-    for (int i = 0; i < reader_thread_count; ++i) {
-        if (reader_threads[i].workflow == NULL) {
+    for (int i = 0; i < context->reader_thread_count; ++i) {
+        if (context->reader_threads[i].workflow == NULL) {
             continue;
         }
 
-        if (pthread_join(reader_threads[i].thread_id, NULL) != 0) {
-            fprintf(stderr, "pthread_join: %s\n", strerror(errno));
+        if (pthread_join(context->reader_threads[i].thread_id, NULL) != 0) {
+            log_debug("pthread_join: %s", strerror(errno));
         }
 
-        free_workflow(&reader_threads[i].workflow);
+        free_workflow(&context->reader_threads[i].workflow);
     }
 
     return 0;
 }
 
-int main(int argc, char ** argv)
+int start_ndpi_analyser(struct capture_conf *config)
 {
-    struct nDPI_reader_thread reader_threads[MAX_READER_THREADS];
-    int main_thread_shutdown = 0;
-    memset(&reader_threads, 0, sizeof(struct nDPI_reader_thread) * MAX_READER_THREADS);
+    struct nDPI_context context = {};
+    struct nDPI_thread_arg *targs;
+    context.interface = config->capture_interface;
+    context.promiscuous = config->promiscuous;
+    context.immediate = config->immediate;
+    context.buffer_timeout = config->buffer_timeout;
+    context.process_interval = config->process_interval;
+    context.filter = config->filter;
+    context.reader_thread_count = MAX_READER_THREADS;
+    size_t reader_size = sizeof(struct nDPI_reader_thread) * context.reader_thread_count;
+    
+    context.reader_threads = ndpi_malloc(reader_size);
+    context.flow_id = 0;
+    memset(context.reader_threads, 0, reader_size);
+    targs = ndpi_malloc(sizeof(struct nDPI_thread_arg) * context.reader_thread_count);
 
-    if (argc == 0) {
-        return 1;
+    for (int idx = 0; idx < context.reader_thread_count; idx++) {
+      targs[idx].context = &context;
     }
 
-    printf("usage: %s [PCAP-FILE-OR-INTERFACE]\n"
-           "----------------------------------\n"
-           "nDPI version: %s\n"
-           " API version: %u\n"
-           "----------------------------------\n",
-           argv[0],
-           ndpi_revision(), ndpi_get_api_version());
+    log_info("nDPI version: %s, API version: %u", ndpi_revision(), ndpi_get_api_version());
 
     if (pthread_mutex_init(&lock, NULL) != 0) {
-        fprintf(stderr, "mutex init has failed\n");
-        return 1;
+      log_debug("mutex init has failed");
+      return -1;
     }
 
-    if (setup_reader_threads((argc >= 2 ? argv[1] : NULL), &reader_threads[0]) != 0) {
-        fprintf(stderr, "%s: setup_reader_threads failed\n", argv[0]);
-        return 1;
+    if (setup_reader_threads(&context) < 0) {
+      log_debug("setup_reader_threads failed");
+      return -1;
     }
 
-    if (start_reader_threads(&reader_threads[0]) != 0) {
-        fprintf(stderr, "%s: start_reader_threads\n", argv[0]);
-        return 1;
+    if (start_reader_threads(&targs[0]) < 0) {
+      log_debug("start_reader_threads");
+      return -1;
     }
 
-    while (main_thread_shutdown == 0 && processing_threads_error_or_eof(&reader_threads[0]) == 0) {
-        sleep(1);
+    while (processing_threads_error_or_eof(&context) == 0) {
+      sleep(1);
     }
 
-    if (main_thread_shutdown == 0 && stop_reader_threads(&reader_threads[0]) != 0) {
-        fprintf(stderr, "%s: stop_reader_threads\n", argv[0]);
-        return 1;
+    if (stop_reader_threads(&context) != 0) {
+      log_debug("stop_reader_threads");
+      pthread_mutex_destroy(&lock);
+      ndpi_free(context.reader_threads);
+      ndpi_free(targs);
+      return -1;
     }
 
     pthread_mutex_destroy(&lock);
+    ndpi_free(context.reader_threads);
+    ndpi_free(targs);
     return 0;
 }

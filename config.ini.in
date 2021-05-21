@@ -18,6 +18,7 @@ promiscuous = false
 bufferTimeout = 10
 processInterval = 10
 immediate = false
+analyser = 1
 fileWrite = true
 dbWrite = false
 dbSync = false

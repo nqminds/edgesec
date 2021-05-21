@@ -561,6 +561,9 @@ void load_capture_config(const char *filename, struct capture_conf *config)
   // Load processInterval param
   config->process_interval = (uint16_t) ini_getl("capture", "processInterval", 10, filename);
 
+  // Load processInterval param
+  config->analyser = (PACKET_ANALYSER_ENGINE) ini_getl("capture", "analyser", 0, filename);
+
   // Load db param
   value = os_zalloc(INI_BUFFERSIZE);
   ret = ini_gets("capture", "dbPath", "./", value, INI_BUFFERSIZE, filename);
