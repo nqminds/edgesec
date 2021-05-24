@@ -101,7 +101,7 @@ void add_packet_queue(UT_array *tp_array, int count, struct packet_queue *queue)
   }
 }
 
-void pcap_callback(struct pcap_pkthdr *header, uint8_t *packet, const void *ctx)
+void pcap_callback(const void *ctx, struct pcap_pkthdr *header, uint8_t *packet)
 {
   struct capture_context *context = (struct capture_context *)ctx;
   UT_array *tp_array;
@@ -127,8 +127,8 @@ void pcap_callback(struct pcap_pkthdr *header, uint8_t *packet, const void *ctx)
 void eloop_read_fd_handler(int sock, void *eloop_ctx, void *sock_ctx)
 {
   struct capture_context *context = (struct capture_context *) sock_ctx;
-  if (capture_pcap(context->pc) < 0) {
-    log_trace("capture_pcap fail");
+  if (capture_pcap_packet(context->pc) < 0) {
+    log_trace("capture_pcap_packet fail");
   }
 }
 
@@ -335,7 +335,7 @@ int start_default_analyser(struct capture_conf *config)
 
   if (run_pcap(context.interface, config->immediate,
                config->promiscuous, (int)config->buffer_timeout,
-               context.filter, pcap_callback, (void *)&context,
+               context.filter, true, pcap_callback, (void *)&context,
                (struct pcap_context**)&(context.pc)) < 0) {
     log_debug("run_pcap fail");
     free_packet_queue(context.pqueue);

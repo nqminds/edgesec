@@ -72,11 +72,11 @@ void receive_pcap_packet(u_char *args, const struct pcap_pkthdr *header, const u
   struct pcap_context *ctx = (struct pcap_context *) args;
 
   if (ctx->pcap_fn != NULL) {
-    ctx->pcap_fn((struct pcap_pkthdr *) header, (uint8_t *) packet, ctx->fn_ctx);
+    ctx->pcap_fn(ctx->fn_ctx, (struct pcap_pkthdr *) header, (uint8_t *) packet);
   }
 }
 
-int capture_pcap(struct pcap_context *ctx)
+int capture_pcap_packet(struct pcap_context *ctx)
 {
   return pcap_dispatch(ctx->pd, -1, receive_pcap_packet, (u_char *) ctx);
 }
@@ -90,8 +90,35 @@ void close_pcap(struct pcap_context *ctx)
   }
 }
 
+int capture_pcap_start(struct pcap_context *ctx)
+{
+  if (ctx != NULL)
+    return pcap_loop(ctx->pd, -1, receive_pcap_packet, (u_char *) ctx);
+  else {
+    log_trace("ctx is NULL");
+    return -1;
+  }
+}
+
+void capture_pcap_stop(struct pcap_context *ctx)
+{
+  if (ctx != NULL) {
+    pcap_breakloop(ctx->pd);
+  }
+}
+
+int get_pcap_datalink(struct pcap_context *ctx)
+{
+  if (ctx != NULL) {
+    return pcap_datalink(ctx->pd);
+  } else {
+    log_trace("ctx is NULL");
+    return -1;
+  }
+}
+
 int run_pcap(char *interface, bool immediate, bool promiscuous,
-             int timeout, char *filter, capture_callback_fn pcap_fn,
+             int timeout, char *filter, bool nonblock, capture_callback_fn pcap_fn,
              void *fn_ctx, struct pcap_context** pctx)
 {
   int ret;
@@ -187,10 +214,13 @@ int run_pcap(char *interface, bool immediate, bool promiscuous,
   log_debug("Capture started on %s with link_type=%s", interface,
             pcap_datalink_val_to_name(pcap_datalink(ctx->pd)));
 
-  if (pcap_setnonblock(ctx->pd, 1, err) < 0) {
-    log_trace("pcap_setnonblock fail: %s", err);
-    close_pcap(ctx);
-    return -1;
+  if (nonblock) {
+    log_debug("Setting nonblock mode");
+    if (pcap_setnonblock(ctx->pd, 1, err) < 0) {
+      log_trace("pcap_setnonblock fail: %s", err);
+      close_pcap(ctx);
+      return -1;
+    }
   }
 
   log_debug("Non-blocking state %d", pcap_getnonblock(ctx->pd, err));

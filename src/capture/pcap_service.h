@@ -29,7 +29,7 @@
 #include <sys/types.h>
 #include <stdbool.h>
 
-typedef void (*capture_callback_fn)(struct pcap_pkthdr *header, uint8_t *packet, const void *ctx);
+typedef void (*capture_callback_fn)(const void *ctx, struct pcap_pkthdr *header, uint8_t *packet);
 
 /**
  * @brief Pcap context structure definition
@@ -43,6 +43,29 @@ struct pcap_context {
 };
 
 /**
+ * @brief Starts the blocking pcap loop
+ * 
+ * @param ctx The pcap context
+ * @return int 0 on success, -1 on error, -2 if the loop terminated
+ */
+int capture_pcap_start(struct pcap_context *ctx);
+
+/**
+ * @brief Stops the blocking pcap loop
+ * 
+ * @param ctx The pcap context
+ */
+void capture_pcap_stop(struct pcap_context *ctx);
+
+/**
+ * @brief Get the pcap config datalink value
+ * 
+ * @param ctx The pcap context
+ * @return int teh config value
+ */
+int get_pcap_datalink(struct pcap_context *ctx);
+
+/**
  * @brief Executes the libpcap service
  * 
  * @param interface The capture interface
@@ -50,13 +73,14 @@ struct pcap_context {
  * @param promiscuous The promiscuous mode flag
  * @param timeout The timeout (in milliseconds)
  * @param filter The capture filter string
+ * @param nonblock  Sets the capture to nonblocking mode
  * @param pcap_fn The pcap capture callback
  * @param fn_ctx The context for callback function
  * @param pctx The returned pcap context
  * @return 0 on success, -1 on failure
  */
 int run_pcap(char *interface, bool immediate, bool promiscuous,
-             int timeout, char *filter, capture_callback_fn pcap_fn,
+             int timeout, char *filter, bool nonblock, capture_callback_fn pcap_fn,
              void *fn_ctx, struct pcap_context** pctx);
 
 /**
@@ -65,7 +89,7 @@ int run_pcap(char *interface, bool immediate, bool promiscuous,
  * @param ctx The pcap context structure
  * @return int 0 on success, -1 otherwise
  */
-int capture_pcap(struct pcap_context *ctx);
+int capture_pcap_packet(struct pcap_context *ctx);
 
 /**
  * @brief Saves a packet packet into file
