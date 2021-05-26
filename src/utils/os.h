@@ -53,12 +53,13 @@
 #ifndef MAC2STR
 #define MAC2STR(a) (a)[0], (a)[1], (a)[2], (a)[3], (a)[4], (a)[5]
 #define MACSTR "%02x:%02x:%02x:%02x:%02x:%02x"
-
+#define MACSTR_LEN	17
 /*
  * Compact form for string representation of MAC address
  * To be used, e.g., for constructing dbus paths for P2P Devices
  */
 #define COMPACT_MACSTR "%02x%02x%02x%02x%02x%02x"
+#define COMPACT_MACSTR_LEN	12
 #endif
 
 #ifndef IP2STR

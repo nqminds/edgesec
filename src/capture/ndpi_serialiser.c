@@ -30,6 +30,7 @@
 #include "ndpi_serialiser.h"
 
 #include "../utils/log.h"
+#include "../utils/os.h"
 int ndpi_serialise_sat(struct ndpi_detection_module_struct *ndpi_struct,
 		  struct nDPI_flow_info * flow_info)
 {
@@ -107,7 +108,9 @@ int ndpi_serialise_sat(struct ndpi_detection_module_struct *ndpi_struct,
     case NDPI_PROTOCOL_TLS:
       if(flow->protos.stun_ssl.ssl.ssl_version) {
         char notBefore[32], notAfter[32];
+        char certificate_fingerprint[64];
         struct tm a, b, *before = NULL, *after = NULL;
+        uint16_t i, off;
         uint8_t unknown_tls_version;
 
         char *version = ndpi_ssl_version2str(flow, flow->protos.stun_ssl.ssl.ssl_version, &unknown_tls_version);
@@ -172,6 +175,16 @@ int ndpi_serialise_sat(struct ndpi_detection_module_struct *ndpi_struct,
           log_trace("tls_supported_versions=%s", tls_supported_versions);
           log_trace("hello_processed=%d", flow->l4.tcp.tls.hello_processed);
           log_trace("certificate_processed=%d", flow->l4.tcp.tls.certificate_processed);
+          log_trace("fingerprint_set=%d", flow->l4.tcp.tls.fingerprint_set);
+          if (flow->l4.tcp.tls.sha1_certificate_fingerprint[0] != '\0') {
+	          for(i=0, off=0; i<20; i++) {
+	            int rc = snprintf(&certificate_fingerprint[off], sizeof(certificate_fingerprint) - off, "%s%02X", (i > 0) ? ":" : "",
+		        	      flow->l4.tcp.tls.sha1_certificate_fingerprint[i] & 0xFF);
+
+	            if(rc <= 0) break; else off += rc;
+	          }
+            log_trace("certificate_fingerprint=%s", certificate_fingerprint);
+          }
         }
       }
       break;
@@ -180,5 +193,6 @@ int ndpi_serialise_sat(struct ndpi_detection_module_struct *ndpi_struct,
   log_trace("proto=%s", proto_name);
   log_trace("breed=%s", breed_name);
   log_trace("category=%s", category_name);
+  log_trace("source=" MACSTR " dest=" MACSTR, MAC2STR(flow_info->h_source), MAC2STR(flow_info->h_dest));
   return 0;
 }

@@ -31,6 +31,12 @@
 #include <ndpi_main.h>
 #include <ndpi_typedefs.h>
 
+#include "../utils/os.h"
+#include "../utils/hash.h"
+
+#define MAX_PROTOCOL_NAME_LEN 50
+#define META_HASH_SIZE  SHA256_HASH_LEN * 2 + 1
+
 enum nDPI_l3_type {
   L3_IP, L3_IP6
 };
@@ -76,6 +82,13 @@ struct nDPI_flow_info {
   struct ndpi_flow_struct * ndpi_flow;
   struct ndpi_id_struct * ndpi_src;
   struct ndpi_id_struct * ndpi_dst;
+};
+
+struct nDPI_flow_meta {
+  char src_mac_addr[MACSTR_LEN + 1];
+  char dst_mac_addr[MACSTR_LEN + 1];
+  char protocol[MAX_PROTOCOL_NAME_LEN];
+  char hash[SHA256_HASH_LEN];
 };
 
 int ndpi_serialise_sat(struct ndpi_detection_module_struct *ndpi_struct,
