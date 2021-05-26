@@ -344,6 +344,12 @@ static void check_for_idle_flows(struct nDPI_workflow * const workflow)
   }
 }
 
+bool is_tls_protocol(struct ndpi_proto *proto)
+{
+  return (proto->master_protocol != NDPI_PROTOCOL_TLS &&
+    proto->app_protocol != NDPI_PROTOCOL_TLS);
+}
+
 static void ndpi_process_packet(const void *ctx, struct pcap_pkthdr *header, uint8_t *packet)
 {
   struct nDPI_thread_arg *targs = (struct nDPI_thread_arg *)ctx;
@@ -755,51 +761,51 @@ static void ndpi_process_packet(const void *ctx, struct pcap_pkthdr *header, uin
           ndpi_get_proto_name(workflow->ndpi_struct, flow_to_process->detected_l7_protocol.master_protocol),
           ndpi_get_proto_name(workflow->ndpi_struct, flow_to_process->detected_l7_protocol.app_protocol),
           ndpi_category_get_name(workflow->ndpi_struct, flow_to_process->detected_l7_protocol.category));
-        if (flow_to_process->detected_l7_protocol.master_protocol != NDPI_PROTOCOL_TLS &&
-          flow_to_process->detected_l7_protocol.app_protocol != NDPI_PROTOCOL_TLS) {
-          ndpi_serialise_sat(workflow->ndpi_struct, flow_to_process);
-        }
+      if (!is_tls_protocol(&flow_to_process->detected_l7_protocol)) {
+        ndpi_serialise_sat(workflow->ndpi_struct, flow_to_process);
+      }
     }
   }
 
       if (flow_to_process->ndpi_flow->num_extra_packets_checked <= flow_to_process->ndpi_flow->max_extra_packets_to_check) {
-        if (flow_to_process->detected_l7_protocol.master_protocol == NDPI_PROTOCOL_TLS ||
-          flow_to_process->detected_l7_protocol.app_protocol == NDPI_PROTOCOL_TLS)
+        if (!is_tls_protocol(&flow_to_process->detected_l7_protocol))
         {
           if (flow_to_process->tls_client_hello_seen == 0 &&
             flow_to_process->ndpi_flow->l4.tcp.tls.hello_processed != 0)
           {
-            uint8_t unknown_tls_version = 0;
-            log_debug("[%8llu, %d, %4d][TLS-CLIENT-HELLO] version: %s | sni: %s | alpn: %s",
-                workflow->packets_captured,
-                reader_thread->array_index,
-                flow_to_process->flow_id,
-                ndpi_ssl_version2str(flow_to_process->ndpi_flow,
-                           flow_to_process->ndpi_flow->protos.stun_ssl.ssl.ssl_version,
-                           &unknown_tls_version),
-                flow_to_process->ndpi_flow->protos.stun_ssl.ssl.client_requested_server_name,
-                (flow_to_process->ndpi_flow->protos.stun_ssl.ssl.alpn != NULL ?
-                 flow_to_process->ndpi_flow->protos.stun_ssl.ssl.alpn : "-"));
+            // uint8_t unknown_tls_version = 0;
+            // log_debug("[%8llu, %d, %4d][TLS-CLIENT-HELLO] version: %s | sni: %s | alpn: %s",
+            //     workflow->packets_captured,
+            //     reader_thread->array_index,
+            //     flow_to_process->flow_id,
+            //     ndpi_ssl_version2str(flow_to_process->ndpi_flow,
+            //                flow_to_process->ndpi_flow->protos.stun_ssl.ssl.ssl_version,
+            //                &unknown_tls_version),
+            //     flow_to_process->ndpi_flow->protos.stun_ssl.ssl.client_requested_server_name,
+            //     (flow_to_process->ndpi_flow->protos.stun_ssl.ssl.alpn != NULL ?
+            //      flow_to_process->ndpi_flow->protos.stun_ssl.ssl.alpn : "-"));
+            ndpi_serialise_sat(workflow->ndpi_struct, flow_to_process);
             flow_to_process->tls_client_hello_seen = 1;
           }
           if (flow_to_process->tls_server_hello_seen == 0 &&
             flow_to_process->ndpi_flow->l4.tcp.tls.certificate_processed != 0)
           {
-            uint8_t unknown_tls_version = 0;
-            log_debug("[%8llu, %d, %4d][TLS-SERVER-HELLO] version: %s | common-name(s): %.*s | "
-                                   "issuer: %s | subject: %s",
-                workflow->packets_captured,
-                reader_thread->array_index,
-                flow_to_process->flow_id,
-                ndpi_ssl_version2str(flow_to_process->ndpi_flow,
-                           flow_to_process->ndpi_flow->protos.stun_ssl.ssl.ssl_version,
-                           &unknown_tls_version),
-                flow_to_process->ndpi_flow->protos.stun_ssl.ssl.server_names_len,
-                flow_to_process->ndpi_flow->protos.stun_ssl.ssl.server_names,
-                (flow_to_process->ndpi_flow->protos.stun_ssl.ssl.issuerDN != NULL ?
-                 flow_to_process->ndpi_flow->protos.stun_ssl.ssl.issuerDN : "-"),
-                (flow_to_process->ndpi_flow->protos.stun_ssl.ssl.subjectDN != NULL ?
-                 flow_to_process->ndpi_flow->protos.stun_ssl.ssl.subjectDN : "-"));
+            // uint8_t unknown_tls_version = 0;
+            // log_debug("[%8llu, %d, %4d][TLS-SERVER-HELLO] version: %s | common-name(s): %.*s | "
+            //                        "issuer: %s | subject: %s",
+            //     workflow->packets_captured,
+            //     reader_thread->array_index,
+            //     flow_to_process->flow_id,
+            //     ndpi_ssl_version2str(flow_to_process->ndpi_flow,
+            //                flow_to_process->ndpi_flow->protos.stun_ssl.ssl.ssl_version,
+            //                &unknown_tls_version),
+            //     flow_to_process->ndpi_flow->protos.stun_ssl.ssl.server_names_len,
+            //     flow_to_process->ndpi_flow->protos.stun_ssl.ssl.server_names,
+            //     (flow_to_process->ndpi_flow->protos.stun_ssl.ssl.issuerDN != NULL ?
+            //      flow_to_process->ndpi_flow->protos.stun_ssl.ssl.issuerDN : "-"),
+            //     (flow_to_process->ndpi_flow->protos.stun_ssl.ssl.subjectDN != NULL ?
+            //      flow_to_process->ndpi_flow->protos.stun_ssl.ssl.subjectDN : "-"));
+            ndpi_serialise_sat(workflow->ndpi_struct, flow_to_process);
             flow_to_process->tls_server_hello_seen = 1;
           }
         }
