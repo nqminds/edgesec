@@ -34,7 +34,7 @@
 #include "../utils/os.h"
 #include "../utils/hash.h"
 
-#define MAX_PROTOCOL_NAME_LEN 50
+#define MAX_PROTOCOL_NAME_LEN 64
 #define META_HASH_SIZE  SHA256_HASH_LEN * 2 + 1
 
 enum nDPI_l3_type {
@@ -91,7 +91,7 @@ struct nDPI_flow_meta {
   char hash[SHA256_HASH_LEN];
 };
 
-int ndpi_serialise_sat(struct ndpi_detection_module_struct *ndpi_struct,
-		  struct nDPI_flow_info * flow_info);
+int ndpi_serialise_meta(struct ndpi_detection_module_struct *ndpi_struct,
+		  struct nDPI_flow_info * flow_info, struct nDPI_flow_meta *meta);
 
 #endif

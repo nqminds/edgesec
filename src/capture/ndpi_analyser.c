@@ -384,6 +384,7 @@ static void ndpi_process_packet(const void *ctx, struct pcap_pkthdr *header, uin
   int thread_index = INITIAL_THREAD_HASH; // generated with `dd if=/dev/random bs=1024 count=1 |& hd'
   uint8_t protocol_was_guessed = 0;
 
+  struct nDPI_flow_meta meta;
   if (reader_thread == NULL) {
     log_trace("reader_thread is NULL");
     return;
@@ -762,7 +763,7 @@ static void ndpi_process_packet(const void *ctx, struct pcap_pkthdr *header, uin
           ndpi_get_proto_name(workflow->ndpi_struct, flow_to_process->detected_l7_protocol.app_protocol),
           ndpi_category_get_name(workflow->ndpi_struct, flow_to_process->detected_l7_protocol.category));
       if (!is_tls_protocol(&flow_to_process->detected_l7_protocol)) {
-        ndpi_serialise_sat(workflow->ndpi_struct, flow_to_process);
+        ndpi_serialise_meta(workflow->ndpi_struct, flow_to_process, &meta);
       }
     }
   }
@@ -773,13 +774,13 @@ static void ndpi_process_packet(const void *ctx, struct pcap_pkthdr *header, uin
           if (flow_to_process->tls_client_hello_seen == 0 &&
             flow_to_process->ndpi_flow->l4.tcp.tls.hello_processed != 0)
           {
-            ndpi_serialise_sat(workflow->ndpi_struct, flow_to_process);
+            ndpi_serialise_meta(workflow->ndpi_struct, flow_to_process, &meta);
             flow_to_process->tls_client_hello_seen = 1;
           }
           if (flow_to_process->tls_server_hello_seen == 0 &&
             flow_to_process->ndpi_flow->l4.tcp.tls.certificate_processed != 0)
           {
-            ndpi_serialise_sat(workflow->ndpi_struct, flow_to_process);
+            ndpi_serialise_meta(workflow->ndpi_struct, flow_to_process, &meta);
             flow_to_process->tls_server_hello_seen = 1;
           }
         }

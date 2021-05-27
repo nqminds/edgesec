@@ -223,6 +223,15 @@ bool is_number(const char *ptr);
  */
 size_t os_strlcpy(char *dest, const char *src, size_t siz);
 
+/**
+ * @brief Returns the size of string with a give max lenght
+ * 
+ * @param str The string pointer
+ * @param max_len The string max length
+ * @return size_t Total length of the string
+ */
+size_t os_strnlen_s(char *str, size_t max_len);
+
 #ifdef __cplusplus
 extern "C" {
 #endif

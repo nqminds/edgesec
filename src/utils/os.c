@@ -816,3 +816,13 @@ void generate_radom_uuid(char *rid)
   uuid_generate(id);
   uuid_unparse_lower(id, rid);
 }
+
+size_t os_strnlen_s(char *str, size_t max_len)
+{
+  char * end = (char *)memchr(str, '\0', max_len);
+
+  if (end == NULL)
+    return max_len;
+  
+  return end - str;
+}

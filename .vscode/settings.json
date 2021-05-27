@@ -1,6 +1,12 @@
 {
     "files.associations": {
         "*.inc": "c",
-        "if_ether.h": "c"
+        "if_ether.h": "c",
+        "chrono": "cpp",
+        "condition_variable": "cpp",
+        "ctime": "cpp",
+        "mutex": "cpp",
+        "shared_mutex": "cpp",
+        "thread": "cpp"
     }
 }
