@@ -41,7 +41,7 @@
 
 #include "reverse_access.grpc.pb.h"
 
-#include "supervisor/domain_server.h"
+#include "utils/domain.h"
 #include "utils/eloop.h"
 #include "utils/os.h"
 #include "utils/log.h"

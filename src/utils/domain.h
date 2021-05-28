@@ -18,13 +18,13 @@
  ****************************************************************************/
 
 /**
- * @file domain_server.h 
+ * @file domain.h 
  * @author Alexandru Mereacre 
- * @brief File containing the definition of the domain server service.
+ * @brief File containing the definition of the domain utilities.
  */
 
-#ifndef DOMAIN_SERVER_H
-#define DOMAIN_SERVER_H
+#ifndef DOMAIN_H
+#define DOMAIN_H
 
 #include <sys/types.h>
 
@@ -33,6 +33,14 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Create a domain client object
+ * 
+ * @param socket_name The returned client address
+ * @return int Client socket
+ */
+int create_domain_client(char *socket_name);
 
 /**
  * @brief Create a domain server object

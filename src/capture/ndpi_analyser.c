@@ -75,6 +75,7 @@ struct nDPI_reader_thread {
 };
 
 struct nDPI_context {
+  char *domain_server_path;
   struct nDPI_reader_thread *reader_threads;
 
   int reader_thread_count;
@@ -653,7 +654,7 @@ static void ndpi_process_packet(const void *ctx, struct pcap_pkthdr *header, uin
 
     flow_to_process->ndpi_flow = (struct ndpi_flow_struct *)ndpi_flow_malloc(SIZEOF_FLOW_STRUCT);
     if (flow_to_process->ndpi_flow == NULL) {
-      log_debug("[%8llu, %d, %4u] Not enough memory for flow struct",
+      log_trace("[%8llu, %d, %4u] Not enough memory for flow struct",
           workflow->packets_captured, reader_thread->array_index, flow_to_process->flow_id);
       return;
     }
@@ -673,7 +674,7 @@ static void ndpi_process_packet(const void *ctx, struct pcap_pkthdr *header, uin
       return;
     }
 
-    log_debug("[%8llu, %d, %4u] new %sflow source=" MACSTR " dest=" MACSTR, workflow->packets_captured, thread_index,
+    log_trace("[%8llu, %d, %4u] new %sflow source=" MACSTR " dest=" MACSTR, workflow->packets_captured, thread_index,
          flow_to_process->flow_id,
          (flow_to_process->is_midstream_flow != 0 ? "midstream-" : ""), MAC2STR(flow_to_process->h_source), MAC2STR(flow_to_process->h_dest));
 
@@ -709,7 +710,7 @@ static void ndpi_process_packet(const void *ctx, struct pcap_pkthdr *header, uin
   /* TCP-FIN: indicates that at least one side wants to end the connection */
   if (flow.flow_fin_ack_seen != 0 && flow_to_process->flow_fin_ack_seen == 0) {
     flow_to_process->flow_fin_ack_seen = 1;
-    log_debug("[%8llu, %d, %4u] end of flow",  workflow->packets_captured, thread_index,
+    log_trace("[%8llu, %d, %4u] end of flow",  workflow->packets_captured, thread_index,
         flow_to_process->flow_id);
     // print_packet_info(reader_thread, header, l4_len, flow_to_process);
     return;
@@ -720,7 +721,7 @@ static void ndpi_process_packet(const void *ctx, struct pcap_pkthdr *header, uin
    * for uint8: 0xFF
    */
   if (flow_to_process->ndpi_flow->num_processed_pkts == 0xFF) {
-    log_debug("[%8llu, %d, %4u] Max packets reached to detect",
+    log_trace("[%8llu, %d, %4u] Max packets reached to detect",
       workflow->packets_captured, thread_index, flow_to_process->flow_id);
     return;
   } else if (flow_to_process->ndpi_flow->num_processed_pkts == 0xFE) {
@@ -730,7 +731,7 @@ static void ndpi_process_packet(const void *ctx, struct pcap_pkthdr *header, uin
                   flow_to_process->ndpi_flow,
                   1, &protocol_was_guessed);
       if (protocol_was_guessed != 0) {
-        log_debug("[%8llu, %d, %4d][GUESSED] protocol: %s | app protocol: %s | category: %s",
+        log_trace("[%8llu, %d, %4d][GUESSED] protocol: %s | app protocol: %s | category: %s",
             workflow->packets_captured,
             reader_thread->array_index,
             flow_to_process->flow_id,
@@ -738,7 +739,7 @@ static void ndpi_process_packet(const void *ctx, struct pcap_pkthdr *header, uin
             ndpi_get_proto_name(workflow->ndpi_struct, flow_to_process->guessed_protocol.app_protocol),
             ndpi_category_get_name(workflow->ndpi_struct, flow_to_process->guessed_protocol.category));
       } else {
-        log_debug("[%8llu, %d, %4d][FLOW NOT CLASSIFIED]",
+        log_trace("[%8llu, %d, %4d][FLOW NOT CLASSIFIED]",
             workflow->packets_captured, reader_thread->array_index, flow_to_process->flow_id);
       }
   } 
@@ -755,7 +756,7 @@ static void ndpi_process_packet(const void *ctx, struct pcap_pkthdr *header, uin
       flow_to_process->detected_l7_protocol.app_protocol != NDPI_PROTOCOL_UNKNOWN) {
       flow_to_process->detection_completed = 1;
       workflow->detected_flow_protocols++;
-      log_debug("[%8llu, %d, %4d][DETECTED] protocol: %s | app protocol: %s | category: %s",
+      log_trace("[%8llu, %d, %4d][DETECTED] protocol: %s | app protocol: %s | category: %s",
           workflow->packets_captured,
           reader_thread->array_index,
           flow_to_process->flow_id,
@@ -959,6 +960,7 @@ int start_ndpi_analyser(struct capture_conf *config)
 {
   struct nDPI_context context = {};
   struct nDPI_thread_arg *targs;
+  context.domain_server_path = config->domain_server_path;
   context.interface = config->capture_interface;
   context.promiscuous = config->promiscuous;
   context.immediate = config->immediate;

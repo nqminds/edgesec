@@ -18,9 +18,9 @@
  ****************************************************************************/
 
 /**
- * @file domain_server.c 
+ * @file domain.c 
  * @author Alexandru Mereacre 
- * @brief File containing the implementation of the domain server service.
+ * @brief File containing the implementation of the domain utils.
  */
 
 #include <stdio.h>
@@ -29,14 +29,51 @@
 #include <ctype.h>
 #include <errno.h>
 
-#include "utils/os.h"
-#include "utils/log.h"
+#include "os.h"
+#include "log.h"
 
 void init_domain_addr(struct sockaddr_un *unaddr, char *addr)
 {
   os_memset(unaddr, 0, sizeof(struct sockaddr_un));
   unaddr->sun_family = AF_UNIX;
   strncpy(unaddr->sun_path, addr, sizeof(unaddr->sun_path) - 1);
+}
+
+char* generate_random_name(char *buf)
+{
+  unsigned char crypto_rand[4];
+  if (os_get_random(crypto_rand, 4) == -1) {
+    log_trace("os_get_random fail");
+    return NULL;
+  }
+  sprintf(buf, "%x%x%x%x", crypto_rand[0], crypto_rand[1], crypto_rand[2], crypto_rand[3]);
+  return buf;
+}
+
+int create_domain_client(char *socket_name)
+{
+  struct sockaddr_un claddr;
+  int sock;
+
+  sock = socket(AF_UNIX, SOCK_DGRAM, 0);
+  if (sock == -1) {
+    log_err("socket");
+    return -1;
+  }
+
+  if (generate_random_name(socket_name) == NULL) {
+    log_trace("generate_random_name fail");
+    return -1;
+  }
+
+  init_domain_addr(&claddr, socket_name);
+
+  if (bind(sock, (struct sockaddr *) &claddr, sizeof(struct sockaddr_un)) == -1) {
+    log_err("bind");
+    return -1;
+  }
+
+  return sock;
 }
 
 int create_domain_server(char *server_path)

@@ -33,8 +33,8 @@
 #include "utils/os.h"
 #include "utils/eloop.h"
 #include "utils/utarray.h"
+#include "utils/domain.h"
 
-#include "domain_server.h"
 #include "cmd_processor.h"
 
 void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)

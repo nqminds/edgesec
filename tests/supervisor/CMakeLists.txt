@@ -7,7 +7,7 @@ add_executable(test_bridge_list test_bridge_list.c)
 target_link_libraries(test_bridge_list bridge_list log ${CMOCKA_LIB})
 
 add_executable(test_domain_server test_domain_server.c)
-target_link_libraries(test_domain_server domain_server log ${CMOCKA_LIB})
+target_link_libraries(test_domain_server domain log ${CMOCKA_LIB})
 
 add_executable(test_cmd_processor test_cmd_processor.c)
 target_link_libraries(test_cmd_processor cmd_processor log engine ${CMOCKA_LIB})

@@ -33,3 +33,6 @@ target_link_libraries(squeue log os)
 
 add_library(sqliteu sqliteu.c)
 target_link_libraries(sqliteu log os ${LIBSQLITE3_LIB})
+
+add_library(domain domain.c)
+target_link_libraries(domain log os)

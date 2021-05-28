@@ -31,7 +31,6 @@
 #include <errno.h>
 
 #include "cmd_processor.h"
-#include "domain_server.h"
 #include "mac_mapper.h"
 #include "network_commands.h"
 
@@ -39,7 +38,7 @@
 #include "utils/log.h"
 #include "utils/utarray.h"
 #include "utils/iptables.h"
-
+#include "utils/domain.h"
 
 bool process_domain_buffer(char *domain_buffer, size_t domain_buffer_len, UT_array *cmd_arr, char sep)
 {

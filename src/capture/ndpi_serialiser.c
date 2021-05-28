@@ -79,6 +79,73 @@ int ndpi_serialise_mdns(struct ndpi_flow_struct *flow, struct nDPI_flow_meta *me
   }
 }
 
+int ndpi_serialise_tls(struct ndpi_flow_struct *flow, struct nDPI_flow_meta *meta)
+{
+  uint8_t unknown_tls_version;
+  char *client_requested_server_name = NULL;
+  char *ja3 = NULL;
+  char *ja3s = NULL;
+  char *buf;
+  size_t str_len;
+  size_t server_name_size = sizeof(flow->protos.stun_ssl.ssl.client_requested_server_name);
+  size_t ja3_client_size = sizeof(flow->protos.stun_ssl.ssl.ja3_client);
+  size_t ja3_server_size = sizeof(flow->protos.stun_ssl.ssl.ja3_server);
+
+  if(flow->protos.stun_ssl.ssl.ssl_version) {
+    char *version = ndpi_ssl_version2str(flow, flow->protos.stun_ssl.ssl.ssl_version, &unknown_tls_version);
+    if(!unknown_tls_version) {
+      client_requested_server_name = flow->protos.stun_ssl.ssl.client_requested_server_name;
+
+      ja3 = flow->protos.stun_ssl.ssl.ja3_client;
+      ja3s = flow->protos.stun_ssl.ssl.ja3_server;
+      log_trace("version=%s", version);
+      log_trace("hello_processed=%d", flow->l4.tcp.tls.hello_processed);
+      log_trace("certificate_processed=%d", flow->l4.tcp.tls.certificate_processed);
+
+      if (flow->l4.tcp.tls.hello_processed) {
+        str_len = os_strnlen_s(client_requested_server_name, server_name_size);
+        if (str_len > 0 && str_len < server_name_size) {
+          str_len = os_strnlen_s(flow->protos.stun_ssl.ssl.ja3_client, ja3_client_size);
+          if (str_len > 0 && str_len < ja3_client_size) {
+            str_len = os_strnlen_s(flow->protos.stun_ssl.ssl.ja3_server, ja3_server_size);
+            if (str_len > 0 && str_len < ja3_server_size) {
+              log_trace("client_requested_server_name=%s", client_requested_server_name);
+              log_trace("ja3=%s", ja3);
+              log_trace("ja3s=%s", ja3s);
+              str_len = server_name_size + ja3_client_size + ja3_server_size;
+              buf = os_zalloc(str_len + 1);
+              strcat(buf, client_requested_server_name);
+              strcat(buf, ja3);
+              strcat(buf, ja3s);
+              sha256_hash(meta->hash, buf, str_len);
+              os_free(buf);
+              return 0;
+            } else {
+              log_trace("Malformed ja3_server");
+              return -1;
+            }
+          } else {
+            log_trace("Malformed ja3_client");
+            return -1;
+          }
+        } else {
+          log_trace("Malformed client_requested_server_name");
+          return -1;
+        }
+      } else {
+        log_trace("TLS not processed");
+        return -1;
+      }
+    } else {
+      log_trace("Unknown TLS version");
+      return -1;
+    }
+  } else {
+    log_trace("TLS version not assigned");
+    return -1;
+  }
+}
+
 int ndpi_serialise_meta(struct ndpi_detection_module_struct *ndpi_struct,
 		  struct nDPI_flow_info * flow_info, struct nDPI_flow_meta *meta)
 {
@@ -139,94 +206,7 @@ int ndpi_serialise_meta(struct ndpi_detection_module_struct *ndpi_struct,
     case NDPI_PROTOCOL_SSH:
       break;
     case NDPI_PROTOCOL_TLS:
-      if(flow->protos.stun_ssl.ssl.ssl_version) {
-        char notBefore[32], notAfter[32];
-        char certificate_fingerprint[64];
-        struct tm a, b, *before = NULL, *after = NULL;
-        uint16_t i, off;
-        uint8_t unknown_tls_version;
-
-        os_memset(notBefore, 0, 32);
-        os_memset(notAfter, 0, 32);
-        char *version = ndpi_ssl_version2str(flow, flow->protos.stun_ssl.ssl.ssl_version, &unknown_tls_version);
-        char *client_requested_server_name = NULL;
-        char *server_names = NULL;
-        char *ja3 = NULL;
-        char *ja3s = NULL;
-        char *cipher = NULL;
-        char *issuerDN = NULL;
-        char *subjectDN = NULL;
-        char *alpn = NULL;
-        char *tls_supported_versions = NULL;
-        uint32_t unsafe_cipher;
-
-        if(flow->protos.stun_ssl.ssl.notBefore) {
-          before = gmtime_r((const time_t *)&flow->protos.stun_ssl.ssl.notBefore, &a);
-        }
-
-        if(flow->protos.stun_ssl.ssl.notAfter) {
-          after  = gmtime_r((const time_t *)&flow->protos.stun_ssl.ssl.notAfter, &b);
-        }
-
-        if(!unknown_tls_version) {
-	        client_requested_server_name = flow->protos.stun_ssl.ssl.client_requested_server_name;
-	        if(flow->protos.stun_ssl.ssl.server_names)
-	          server_names = flow->protos.stun_ssl.ssl.server_names;
-
-	        if(before) {
-            strftime(notBefore, sizeof(notBefore), "%Y-%m-%d %H:%M:%S", before);
-          }
-
-	        if(after) {
-	          strftime(notAfter, sizeof(notAfter), "%Y-%m-%d %H:%M:%S", after);
-          }
-
-	        ja3 = flow->protos.stun_ssl.ssl.ja3_client;
-	        ja3s = flow->protos.stun_ssl.ssl.ja3_server;
-	        unsafe_cipher = flow->protos.stun_ssl.ssl.server_unsafe_cipher;
-	        cipher = (char *)ndpi_cipher2str(flow->protos.stun_ssl.ssl.server_cipher);
-
-	        if(flow->protos.stun_ssl.ssl.issuerDN)
-	          issuerDN = flow->protos.stun_ssl.ssl.issuerDN;
-
-	        if(flow->protos.stun_ssl.ssl.subjectDN)
-	          subjectDN = flow->protos.stun_ssl.ssl.subjectDN;
-
-	        if(flow->protos.stun_ssl.ssl.alpn)
-	          alpn = flow->protos.stun_ssl.ssl.alpn;
-
-	        if(flow->protos.stun_ssl.ssl.tls_supported_versions)
-	          tls_supported_versions = flow->protos.stun_ssl.ssl.tls_supported_versions;
-
-          log_trace("version=%s", version);
-          log_trace("client_requested_server_name=%s", client_requested_server_name);
-          log_trace("server_names=%s", server_names);
-          log_trace("notBefore=%s", notBefore);
-          log_trace("notAfter=%s", notAfter);
-          log_trace("ja3=%s", ja3);
-          log_trace("ja3s=%s", ja3s);
-          log_trace("unsafe_cipher=%u", unsafe_cipher);
-          log_trace("cipher=%s", cipher);
-          log_trace("esni=%s", flow->protos.stun_ssl.ssl.encrypted_sni.esni);
-          log_trace("issuerDN=%s", issuerDN);
-          log_trace("subjectDN=%s", subjectDN);
-          log_trace("alpn=%s", alpn);
-          log_trace("tls_supported_versions=%s", tls_supported_versions);
-          log_trace("hello_processed=%d", flow->l4.tcp.tls.hello_processed);
-          log_trace("certificate_processed=%d", flow->l4.tcp.tls.certificate_processed);
-          log_trace("fingerprint_set=%d", flow->l4.tcp.tls.fingerprint_set);
-          if (flow->l4.tcp.tls.sha1_certificate_fingerprint[0] != '\0') {
-	          for(i=0, off=0; i<20; i++) {
-	            int rc = snprintf(&certificate_fingerprint[off], sizeof(certificate_fingerprint) - off, "%s%02X", (i > 0) ? ":" : "",
-		        	      flow->l4.tcp.tls.sha1_certificate_fingerprint[i] & 0xFF);
-
-	            if(rc <= 0) break; else off += rc;
-	          }
-            log_trace("certificate_fingerprint=%s", certificate_fingerprint);
-          }
-        }
-      }
-      break;
+      return ndpi_serialise_tls(flow, meta);
   }
 
   return 1;

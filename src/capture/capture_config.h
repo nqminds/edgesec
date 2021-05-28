@@ -41,6 +41,7 @@ typedef enum {
  * 
  */
 struct capture_conf {
+  char domain_server_path[MAX_OS_PATH_LEN];                   /**< Specifies the path to the UNIX domain socket server*/ 
   char capture_interface[IFNAMSIZ];                           /**< The capture interface name (any - to capture on all interfaces) */
   bool promiscuous;                                           /**< Specifies whether the interface is to be put into promiscuous mode. If promiscuous param is non-zero, promiscuous mode will be set, otherwise it will not be set */
   bool immediate;                                             /**< Sets whether immediate mode should be set on a capture handle when the handle is activated. If immediate param is non-zero, immediate mode will be set, otherwise it will not be set. */

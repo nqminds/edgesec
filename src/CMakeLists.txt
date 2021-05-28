@@ -46,5 +46,5 @@ if (BUILD_REVERSE_SERVICE)
   target_link_libraries(revclient os log reverse_grpc_proto ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF})
 
   add_executable(revsrv revsrv.cc)
-  target_link_libraries(revsrv os log eloop domain_server reverse_grpc_proto ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF})
+  target_link_libraries(revsrv os log eloop domain reverse_grpc_proto ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF})
 endif ()

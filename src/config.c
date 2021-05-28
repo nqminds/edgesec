@@ -536,6 +536,12 @@ void load_capture_config(const char *filename, struct capture_conf *config)
 {
   char *value = os_zalloc(INI_BUFFERSIZE);
 
+  // Load domainServerPath
+  value = os_malloc(INI_BUFFERSIZE);
+  ini_gets("supervisor", "domainServerPath", "", value, INI_BUFFERSIZE, filename);
+  strncpy(config->domain_server_path, value, MAX_OS_PATH_LEN);
+  os_free(value);
+
   // Load dhpc config file path
   int ret = ini_gets("capture", "captureInterface", "", value, INI_BUFFERSIZE, filename);
   strncpy(config->capture_interface, value, IFNAMSIZ);

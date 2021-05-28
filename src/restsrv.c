@@ -43,12 +43,12 @@
 #include <inttypes.h>
 
 #include "supervisor/cmd_processor.h"
-#include "supervisor/domain_server.h"
 #include "microhttpd.h"
 #include "version.h"
 #include "utils/os.h"
 #include "utils/log.h"
 #include "utils/minIni.h"
+#include "utils/domain.h"
 
 #define OPT_STRING    ":a:s:p:dvh"
 #define USAGE_STRING  "\t%s [-s address] [-a address] [-p port] [-d] [-h] [-v]\n"
@@ -167,46 +167,6 @@ void process_app_options(int argc, char *argv[], char *spath, char *apath,
   }
 }
 
-char* generate_random_name(char *buf)
-{
-  unsigned char crypto_rand[4];
-  if (os_get_random(crypto_rand, 4) == -1) {
-    log_debug("os_get_random fail");
-    return NULL;
-  }
-  sprintf(buf, "%x%x%x%x", crypto_rand[0], crypto_rand[1], crypto_rand[2], crypto_rand[3]);
-  return buf;
-}
-
-int create_domain_socket(char *socket_name)
-{
-  struct sockaddr_un claddr;
-  int sock;
-
-  sock = socket(AF_UNIX, SOCK_DGRAM, 0);
-  if (sock == -1) {
-    log_err("socket");
-    return -1;
-  }
-
-  if (generate_random_name(socket_name) == NULL) {
-    log_debug("generate_random_name fail");
-    return -1;
-  }
-
-  log_debug("Using socket name=%s", socket_name);
-
-  os_memset(&claddr, 0, sizeof(struct sockaddr_un));
-  claddr.sun_family = AF_UNIX;
-  strncpy((char *)&claddr.sun_path, socket_name, strlen(socket_name));
-
-  if (bind(sock, (struct sockaddr *) &claddr, sizeof(struct sockaddr_un)) == -1) {
-    log_err("bind");
-    return -1;
-  }
-
-  return sock;
-}
 
 int print_out_key (void *cls, enum MHD_ValueKind kind, 
                    const char *key, const char *value)
@@ -273,8 +233,8 @@ int forward_command(char *cmd_str, char *socket_path, char **sresponse)
   timeout.tv_sec = MESSAGE_REPLY_TIMEOUT;
   timeout.tv_usec = 0;
 
-  if ((sfd = create_domain_socket(socket_name)) == -1) {
-    log_debug("create_domain_socket fail");
+  if ((sfd = create_domain_client(socket_name)) == -1) {
+    log_debug("create_domain_client fail");
     return -1;
   }
 

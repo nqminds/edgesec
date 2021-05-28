@@ -15,8 +15,7 @@
 #include <sys/socket.h>
 #include <ctype.h>
 
-#include "supervisor/domain_server.h"
-
+#include "utils/domain.h"
 #include "utils/hashmap.h"
 #include "utils/utarray.h"
 #include "utils/log.h"
