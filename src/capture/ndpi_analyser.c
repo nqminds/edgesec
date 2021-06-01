@@ -72,6 +72,8 @@ struct nDPI_reader_thread {
   struct nDPI_workflow * workflow;
   pthread_t thread_id;
   int array_index;
+  int sfd;
+  char socket_name[9];
 };
 
 struct nDPI_context {
@@ -879,7 +881,8 @@ static int start_reader_threads(struct nDPI_thread_arg *targs)
   for (int i = 0; i < reader_thread_count; ++i) {
     reader_threads[i].array_index = i;
     targs[i].thread_index = i;
-
+    reader_threads[i].sfd = create_domain_client(reader_threads[i].socket_name);
+    
     if ((reader_threads[i].workflow = init_workflow(&targs[i])) == NULL) {
       log_debug("init_workflow fail");
       return -1;
