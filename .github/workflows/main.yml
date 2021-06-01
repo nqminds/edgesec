@@ -23,7 +23,7 @@ jobs:
     - uses: actions/checkout@v2
     
     - name: Install package
-      run: sudo apt install -y doxygen libnl-genl-3-dev libnl-route-3-dev graphviz
+      run: sudo apt install -y doxygen libnl-genl-3-dev libnl-route-3-dev graphviz libpcap-dev libsqlite3-dev libtool texinfo jq libssl-dev protobuf-compiler uuid-dev
 
     - name: Reconfigure aclocal
       run: cd lib/libmnl-1.0.4 && autoreconf -f -i
