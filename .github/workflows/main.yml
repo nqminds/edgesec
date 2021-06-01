@@ -31,11 +31,11 @@ jobs:
     - name: configure
       run: mkdir build && cd build && cmake ../
 
-    - name: build
-      run: cd build && make
+    # - name: build
+    #   run: cd build && make
 
-    - name: test
-      run: cd build && make test
+    # - name: test
+    #   run: cd build && make test
     
     - name: builds docs
       run: cd build && make docs
