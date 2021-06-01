@@ -434,6 +434,11 @@ ssize_t process_set_device_cat_cmd(int sock, char *client_addr, struct superviso
   return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
+ssize_t process_set_fingerprint_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
+{
+  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+}
+
 process_cmd_fn get_command_function(char *cmd)
 {
   if (!strcmp(cmd, CMD_PING)) {
@@ -462,8 +467,8 @@ process_cmd_fn get_command_function(char *cmd)
     return process_remove_bridge_cmd;
   } else if (!strcmp(cmd, CMD_GET_BRIDGES)) {
     return process_get_bridges_cmd;
-  } else if (!strcmp(cmd, CMD_SET_DEVICE_CAT)) {
-    return process_set_device_cat_cmd;
+  } else if (!strcmp(cmd, CMD_SET_FINGERPRINT)) {
+    return process_set_fingerprint_cmd;
   } else {
     log_debug("unknown command");
   }

@@ -49,6 +49,7 @@ struct supervisor_context {
   int             default_open_vlanid;                        /**< @c default_open_vlanid from @c struct app_config */
   UT_array        *config_ifinfo_array;                       /**< @c config_ifinfo_array from @c struct app_config */
   struct bridge_mac_list *bridge_list;                        /**< List of assigned bridges */
+  char            domain_delim;                               /**< Cntrol server command delimiter */
 };
 
 #endif

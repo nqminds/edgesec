@@ -157,8 +157,8 @@ int ndpi_serialise_meta(struct ndpi_detection_module_struct *ndpi_struct,
 
   ndpi_protocol2name(ndpi_struct, l7_protocol, meta->protocol, sizeof(meta->protocol));
 
-  os_memcpy(meta->src_mac_addr, flow_info->h_source, ETH_ALEN);
-  os_memcpy(meta->dst_mac_addr, flow_info->h_dest, ETH_ALEN);
+  sprintf(meta->src_mac_addr, MACSTR, MAC2STR(flow_info->h_source));
+  sprintf(meta->dst_mac_addr, MACSTR, MAC2STR(flow_info->h_dest));
 
   ndpi_protocol_breed_t breed = ndpi_get_proto_breed(ndpi_struct,
                            (l7_protocol.app_protocol != NDPI_PROTOCOL_UNKNOWN ? l7_protocol.app_protocol : l7_protocol.master_protocol));
@@ -209,5 +209,6 @@ int ndpi_serialise_meta(struct ndpi_detection_module_struct *ndpi_struct,
       return ndpi_serialise_tls(flow, meta);
   }
 
-  return 1;
+  // For unknown protocols
+  return -1;
 }

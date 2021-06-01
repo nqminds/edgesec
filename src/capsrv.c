@@ -44,7 +44,7 @@
 #include "utils/os.h"
 #include "utils/minIni.h"
 
-#define OPT_STRING    ":c:i:q:f:t:n:p:y:a:o:dvhmewus"
+#define OPT_STRING    ":c:i:q:f:t:n:p:y:a:o:x:z:dvhmewus"
 #define USAGE_STRING  "\t%s [-c config] [-d] [-h] [-v] [-i interface] [-q domain]" \
                       "[-f filter] [-m] [-t timeout] [-n interval] " \
                       "[-e] [-y engine][-w] [-u] [-s] [-p path] [-a address] [-o port]\n"
@@ -92,6 +92,8 @@ int show_app_help(char *app_name)
   fprintf(stdout, "\nOptions:\n");
   fprintf(stdout, "\t-c config\t Path to the config file name\n");
   fprintf(stdout, "\t-q domain\t The UNIX domain path\n");
+  fprintf(stdout, "\t-x command\t The UNIX domain command\n");
+  fprintf(stdout, "\t-z delimiter\t The UNIX domain command delimiter\n");
   fprintf(stdout, "\t-i interface\t The capture interface name\n");
   fprintf(stdout, "\t-f filter\t The capture filter expression\n");
   fprintf(stdout, "\t-m\t\t Promiscuous mode\n");
@@ -195,6 +197,12 @@ int process_app_options(int argc, char *argv[], uint8_t *verbosity,
       break;
     case 'q':
       strncpy(config->domain_server_path, optarg, MAX_OS_PATH_LEN);
+      break;
+    case 'x':
+      strncpy(config->domain_command, optarg, 64);
+      break;
+    case 'z':
+      config->domain_delim = optarg[0];
       break;
     case 'p':
       strncpy(config->db_path, optarg, MAX_OS_PATH_LEN);

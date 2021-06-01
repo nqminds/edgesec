@@ -33,8 +33,6 @@
 
 #include "supervisor_config.h"
 
-#define CMD_DELIMITER   		0x20
-
 #define CMD_PING        		"PING_SUPERVISOR"
 #define CMD_HOSTAPD_CTRLIF      "HOSTAPD_IF"
 #define CMD_ACCEPT_MAC			"ACCEPT_MAC"
@@ -49,7 +47,7 @@
 #define CMD_ADD_BRIDGE			"ADD_BRIDGE"
 #define CMD_REMOVE_BRIDGE		"REMOVE_BRIDGE"
 #define CMD_GET_BRIDGES		    "GET_BRIDGES"
-#define CMD_SET_DEVICE_CAT		"SET_DEVICE_CAT"
+#define CMD_SET_FINGERPRINT		"SET_FINGERPRINT"
 
 #define OK_REPLY                "OK"
 #define FAIL_REPLY              "FAIL"
@@ -212,7 +210,7 @@ ssize_t process_get_bridges_cmd(int sock, char *client_addr, struct supervisor_c
 
 
 /**
- * @brief Processes the SET_DEVICE_CAT command
+ * @brief Processes the SET_FINGERPRINT command
  * 
  * @param sock The domain server socket
  * @param client_addr The client address for replies
@@ -220,7 +218,7 @@ ssize_t process_get_bridges_cmd(int sock, char *client_addr, struct supervisor_c
  * @param cmd_arr The array of received commands
  * @return ssize_t Size of reply written data
  */
-ssize_t process_set_device_cat_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+ssize_t process_set_fingerprint_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Get the command function pointer

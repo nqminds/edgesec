@@ -94,6 +94,7 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
     return false;
   }
 
+  ctx->domain_delim = app_config->domain_delim;
   ctx->allow_all_connections = app_config->allow_all_connections;
   ctx->default_open_vlanid = app_config->default_open_vlanid;
   ctx->config_ifinfo_array = app_config->config_ifinfo_array;

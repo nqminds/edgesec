@@ -19,6 +19,8 @@
 #include "utils/log.h"
 #include "engine.h"
 
+#define CMD_DELIMITER 0x20
+
 typedef enum TEST_COMMANDS {
   TEST_PROCESS_ADD_BRIDGE_CMD_ONE = 0,
   TEST_PROCESS_REMOVE_BRIDGE_CMD_ONE,

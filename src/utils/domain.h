@@ -29,6 +29,7 @@
 #include <sys/types.h>
 
 #define MAX_DOMAIN_RECEIVE_DATA 1024
+#define DOMAIN_SOCKET_NAME_SIZE 14
 
 #ifdef __cplusplus
 extern "C" {
@@ -72,6 +73,13 @@ ssize_t read_domain_data(int sock, char *data, size_t data_len, char *addr);
  */
 ssize_t write_domain_data(int sock, char *data, size_t data_len, char *addr);
 
+/**
+ * @brief Closes teh domain socket
+ * 
+ * @param sfd The domain socket
+ * @return int 0 on success, -1 on failure
+ */
+int close_domain(int sfd);
 #ifdef __cplusplus
 }
 #endif

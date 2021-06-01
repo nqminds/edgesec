@@ -55,7 +55,7 @@ void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
   }
 
   log_trace("Supervisor received %ld bytes from %s", (long) num_bytes, client_addr);
-  if (process_domain_buffer(buf, num_bytes, cmd_arr, CMD_DELIMITER) == false) {
+  if (process_domain_buffer(buf, num_bytes, cmd_arr, context->domain_delim) == false) {
     log_trace("process_domain_buffer fail");
     goto end;
   }

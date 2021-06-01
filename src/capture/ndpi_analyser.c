@@ -19,6 +19,8 @@
 
 #include "../utils/log.h"
 #include "../utils/os.h"
+#include "../utils/domain.h"
+#include "../utils/base64.h"
 
 #define MAX_FLOW_ROOTS_PER_THREAD 2048
 #define MAX_IDLE_FLOWS_PER_THREAD 64
@@ -73,11 +75,16 @@ struct nDPI_reader_thread {
   pthread_t thread_id;
   int array_index;
   int sfd;
-  char socket_name[9];
+  char socket_name[DOMAIN_SOCKET_NAME_SIZE];
+  char *domain_server_path;
+  char *domain_command;
+  char domain_delim;
 };
 
 struct nDPI_context {
   char *domain_server_path;
+  char *domain_command;
+  char domain_delim;
   struct nDPI_reader_thread *reader_threads;
 
   int reader_thread_count;
@@ -353,6 +360,31 @@ bool is_tls_protocol(struct ndpi_proto *proto)
     proto->app_protocol == NDPI_PROTOCOL_TLS);
 }
 
+int send_flow_meta(struct nDPI_reader_thread *reader_thread, struct nDPI_flow_meta *meta)
+{
+  if (reader_thread->sfd && strlen(reader_thread->domain_command) &&
+      strlen(reader_thread->domain_server_path))
+  {
+    char buf[255];
+    char *base64_encoding = NULL;
+    size_t out_len = 0;
+    char delim = reader_thread->domain_delim;
+
+    base64_encoding = base64_encode(meta->hash, SHA256_HASH_LEN, &out_len);
+    if (base64_encoding == NULL) {
+      log_trace("base64_url_decode fail");
+      return -1;
+    }
+
+    sprintf(buf, "%s%c%s%c%s%c%s%c%s", reader_thread->domain_command, delim, meta->src_mac_addr,
+            delim, meta->dst_mac_addr, delim, meta->protocol, delim, base64_encoding);
+    log_trace("%s", buf);
+    os_free(base64_encoding);
+  }
+
+  return 0;
+}
+
 static void ndpi_process_packet(const void *ctx, struct pcap_pkthdr *header, uint8_t *packet)
 {
   struct nDPI_thread_arg *targs = (struct nDPI_thread_arg *)ctx;
@@ -388,6 +420,8 @@ static void ndpi_process_packet(const void *ctx, struct pcap_pkthdr *header, uin
   uint8_t protocol_was_guessed = 0;
 
   struct nDPI_flow_meta meta;
+  os_memset(&meta, 0, sizeof(meta));
+
   if (reader_thread == NULL) {
     log_trace("reader_thread is NULL");
     return;
@@ -766,28 +800,40 @@ static void ndpi_process_packet(const void *ctx, struct pcap_pkthdr *header, uin
           ndpi_get_proto_name(workflow->ndpi_struct, flow_to_process->detected_l7_protocol.app_protocol),
           ndpi_category_get_name(workflow->ndpi_struct, flow_to_process->detected_l7_protocol.category));
       if (!is_tls_protocol(&flow_to_process->detected_l7_protocol)) {
-        ndpi_serialise_meta(workflow->ndpi_struct, flow_to_process, &meta);
+        if (ndpi_serialise_meta(workflow->ndpi_struct, flow_to_process, &meta) > -1) {
+          if (send_flow_meta(reader_thread, &meta) < 0) {
+            log_trace("send_flow_meta fail");
+          }
+        }
       }
     }
   }
 
-      if (flow_to_process->ndpi_flow->num_extra_packets_checked <= flow_to_process->ndpi_flow->max_extra_packets_to_check) {
-        if (is_tls_protocol(&flow_to_process->detected_l7_protocol))
-        {
-          if (flow_to_process->tls_client_hello_seen == 0 &&
-            flow_to_process->ndpi_flow->l4.tcp.tls.hello_processed != 0)
-          {
-            ndpi_serialise_meta(workflow->ndpi_struct, flow_to_process, &meta);
-            flow_to_process->tls_client_hello_seen = 1;
-          }
-          if (flow_to_process->tls_server_hello_seen == 0 &&
-            flow_to_process->ndpi_flow->l4.tcp.tls.certificate_processed != 0)
-          {
-            ndpi_serialise_meta(workflow->ndpi_struct, flow_to_process, &meta);
-            flow_to_process->tls_server_hello_seen = 1;
+  if (flow_to_process->ndpi_flow->num_extra_packets_checked <= flow_to_process->ndpi_flow->max_extra_packets_to_check) {
+    if (is_tls_protocol(&flow_to_process->detected_l7_protocol))
+    {
+      if (flow_to_process->tls_client_hello_seen == 0 &&
+        flow_to_process->ndpi_flow->l4.tcp.tls.hello_processed != 0)
+      {
+        if (ndpi_serialise_meta(workflow->ndpi_struct, flow_to_process, &meta) > -1) {
+          if (send_flow_meta(reader_thread, &meta) < 0) {
+            log_trace("send_flow_meta fail");
           }
         }
+        flow_to_process->tls_client_hello_seen = 1;
       }
+      if (flow_to_process->tls_server_hello_seen == 0 &&
+        flow_to_process->ndpi_flow->l4.tcp.tls.certificate_processed != 0)
+      {
+        if (ndpi_serialise_meta(workflow->ndpi_struct, flow_to_process, &meta) > -1) {
+          if (send_flow_meta(reader_thread, &meta) < 0) {
+            log_trace("send_flow_meta fail");
+          }
+        }
+        flow_to_process->tls_server_hello_seen = 1;
+      }
+    }
+  }
 
   // print_packet_info(reader_thread, header, l4_len, /*&flow*/flow_to_process);
 }
@@ -882,7 +928,10 @@ static int start_reader_threads(struct nDPI_thread_arg *targs)
     reader_threads[i].array_index = i;
     targs[i].thread_index = i;
     reader_threads[i].sfd = create_domain_client(reader_threads[i].socket_name);
-    
+    reader_threads[i].domain_server_path = context->domain_server_path;
+    reader_threads[i].domain_command = context->domain_command;
+    reader_threads[i].domain_delim = context->domain_delim;
+
     if ((reader_threads[i].workflow = init_workflow(&targs[i])) == NULL) {
       log_debug("init_workflow fail");
       return -1;
@@ -953,6 +1002,7 @@ static int stop_reader_threads(struct nDPI_context *context)
       log_debug("pthread_join: %s", strerror(errno));
     }
 
+    close_domain(context->reader_threads[i].sfd);
     free_workflow(&context->reader_threads[i].workflow);
   }
 
@@ -963,7 +1013,10 @@ int start_ndpi_analyser(struct capture_conf *config)
 {
   struct nDPI_context context = {};
   struct nDPI_thread_arg *targs;
+
   context.domain_server_path = config->domain_server_path;
+  context.domain_command = config->domain_command;
+  context.domain_delim = config->domain_delim;
   context.interface = config->capture_interface;
   context.promiscuous = config->promiscuous;
   context.immediate = config->immediate;
@@ -972,7 +1025,7 @@ int start_ndpi_analyser(struct capture_conf *config)
   context.filter = config->filter;
   context.reader_thread_count = MAX_READER_THREADS;
   size_t reader_size = sizeof(struct nDPI_reader_thread) * context.reader_thread_count;
-  
+
   context.reader_threads = ndpi_malloc(reader_size);
   context.flow_id = 0;
   memset(context.reader_threads, 0, reader_size);

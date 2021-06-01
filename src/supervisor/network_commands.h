@@ -127,4 +127,16 @@ int add_bridge_cmd(struct supervisor_context *context, uint8_t *left_mac_addr, u
  */
 int remove_bridge_cmd(struct supervisor_context *context, uint8_t *left_mac_addr, uint8_t *right_mac_addr);
 
+/**
+ * @brief SET_FINGERPRINT command
+ * 
+ * @param context The supervisor structure instance
+ * @param mac_addr The MAC address
+ * @param protocol The protocol string
+ * @param fingerprint The fingerprint string
+ * @return int 0 on success, -1 on failure
+ */
+int set_fingerprint_cmd(struct supervisor_context *context, uint8_t *mac_addr, char *protocol,
+                        char *fingerprint);
+
 #endif

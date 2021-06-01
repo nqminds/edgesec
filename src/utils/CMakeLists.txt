@@ -5,6 +5,9 @@ include_directories(
 
 add_library(log log.c)
 
+add_library(base64 base64.c)
+target_link_libraries(base64 os log)
+
 add_library(os os.c)
 target_link_libraries(os log ${LIBUUID_LIB})
 

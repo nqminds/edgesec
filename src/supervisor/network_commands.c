@@ -355,3 +355,9 @@ int remove_bridge_cmd(struct supervisor_context *context, uint8_t *left_mac_addr
 
   return 0;
 }
+
+int set_fingerprint_cmd(struct supervisor_context *context, uint8_t *mac_addr, char *protocol,
+                        char *fingerprint)
+{
+  return 0;
+}

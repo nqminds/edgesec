@@ -537,14 +537,26 @@ void load_capture_config(const char *filename, struct capture_conf *config)
   char *value = os_zalloc(INI_BUFFERSIZE);
 
   // Load domainServerPath
-  value = os_malloc(INI_BUFFERSIZE);
   ini_gets("supervisor", "domainServerPath", "", value, INI_BUFFERSIZE, filename);
   strncpy(config->domain_server_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
+  // Load the domain command delimiter
+  value = os_zalloc(INI_BUFFERSIZE);
+  ini_gets("supervisor", "delim", ",", value, INI_BUFFERSIZE, filename);
+  config->domain_delim = value[0];
+  os_free(value);
+
   // Load dhpc config file path
+  value = os_zalloc(INI_BUFFERSIZE);
   int ret = ini_gets("capture", "captureInterface", "", value, INI_BUFFERSIZE, filename);
   strncpy(config->capture_interface, value, IFNAMSIZ);
+  os_free(value);
+
+  // Load the domain command value
+  value = os_zalloc(INI_BUFFERSIZE);
+  ret = ini_gets("capture", "command", "", value, INI_BUFFERSIZE, filename);
+  strncpy(config->domain_command, value, IFNAMSIZ);
   os_free(value);
 
   // Load filter param
@@ -648,6 +660,11 @@ bool load_app_config(const char *filename, struct app_config *config)
   }
 
   strncpy(config->domain_server_path, value, MAX_OS_PATH_LEN);
+  os_free(value);
+
+  value = os_malloc(INI_BUFFERSIZE);
+  ini_gets("supervisor", "delim", " ", value, INI_BUFFERSIZE, filename);
+  config->domain_delim = value[0];
   os_free(value);
 
   // Load allow all connection flag

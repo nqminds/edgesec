@@ -39,14 +39,14 @@ void init_domain_addr(struct sockaddr_un *unaddr, char *addr)
   strncpy(unaddr->sun_path, addr, sizeof(unaddr->sun_path) - 1);
 }
 
-char* generate_random_name(char *buf)
+char* generate_socket_name(char *buf)
 {
   unsigned char crypto_rand[4];
   if (os_get_random(crypto_rand, 4) == -1) {
     log_trace("os_get_random fail");
     return NULL;
   }
-  sprintf(buf, "%x%x%x%x", crypto_rand[0], crypto_rand[1], crypto_rand[2], crypto_rand[3]);
+  sprintf(buf, "%x%x%x%x.sock", crypto_rand[0], crypto_rand[1], crypto_rand[2], crypto_rand[3]);
   return buf;
 }
 
@@ -61,7 +61,7 @@ int create_domain_client(char *socket_name)
     return -1;
   }
 
-  if (generate_random_name(socket_name) == NULL) {
+  if (generate_socket_name(socket_name) == NULL) {
     log_trace("generate_random_name fail");
     return -1;
   }
@@ -158,4 +158,13 @@ ssize_t write_domain_data(int sock, char *data, size_t data_len, char *addr)
   }
 
   return num_bytes;
+}
+
+int close_domain(int sfd)
+{
+  if (sfd) {
+    return close(sfd);
+  }
+
+  return 0;
 }

@@ -50,20 +50,21 @@
 #include "utils/minIni.h"
 #include "utils/domain.h"
 
-#define OPT_STRING    ":a:s:p:dvh"
+#define OPT_STRING    ":a:s:p:z:dvh"
 #define USAGE_STRING  "\t%s [-s address] [-a address] [-p port] [-d] [-h] [-v]\n"
 
 #define JSON_RESPONSE_OK "{\"cmd\":\"%s\",\"response\":[%s]}"
 #define JSON_RESPONSE_FAIL "{\"error\":\"invalid get request\"}"
 
 #define MESSAGE_REPLY_TIMEOUT 10  // In seceonds
-char *socket_path = "\0hidden";
+// char *socket_path = "\0hidden";
 
 static __thread char version_buf[10];
 
 struct socket_address {
   char apath[MAX_OS_PATH_LEN];
   char spath[MAX_OS_PATH_LEN];
+  char delim;
 };
 
 char *get_static_version_string(uint8_t major, uint8_t minor, uint8_t patch)
@@ -94,6 +95,7 @@ void show_app_help(char *app_name)
   fprintf(stdout, "\t-s address\t Path to supervisor socket\n");
   fprintf(stdout, "\t-a address\t Path to AP socket\n");
   fprintf(stdout, "\t-p port\t\t Server port\n");
+  fprintf(stdout, "\t-z delim\t\t Command delimiter\n");
   fprintf(stdout, "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n");
   fprintf(stdout, "\t-h\t\t Show help\n");
   fprintf(stdout, "\t-v\t\t Show app version\n\n");
@@ -126,7 +128,7 @@ int get_port(char *port_str)
 }
 
 void process_app_options(int argc, char *argv[], char *spath, char *apath,
-  int *port, uint8_t *verbosity)
+  int *port, char *delim, uint8_t *verbosity)
 {
   int opt;
   int p;
@@ -148,6 +150,9 @@ void process_app_options(int argc, char *argv[], char *spath, char *apath,
       break;
     case 'a':
       memcpy(apath, optarg, strlen(optarg) + 1);
+      break;
+    case 'z':
+      *delim = optarg[0];
       break;
     case 'p':
       if ((p = get_port(optarg)) < 0) {
@@ -175,7 +180,7 @@ int print_out_key (void *cls, enum MHD_ValueKind kind,
   return MHD_YES;
 }
 
-char* create_command_string(char *cmd, char *args, char *cmd_str)
+char* create_command_string(char *cmd, char *args, char *cmd_str, char delim)
 {
   char *cmd_tmp;
   if (cmd == NULL || cmd_str == NULL)
@@ -188,7 +193,7 @@ char* create_command_string(char *cmd, char *args, char *cmd_str)
       sprintf(cmd_str, "%s", cmd_tmp);
     else
       sprintf(cmd_str, "%s %s", cmd_tmp, args);
-    replace_string_char(cmd_str, ',', CMD_DELIMITER);
+    replace_string_char(cmd_str, ',', delim);
     os_free(cmd_tmp);
 
     return cmd_str;
@@ -224,11 +229,10 @@ enum MHD_Result create_connection_response(char *data, struct MHD_Connection *co
 int forward_command(char *cmd_str, char *socket_path, char **sresponse)
 {
   int sfd;
-  struct sockaddr_un svaddr;
   ssize_t send_count, rec_bytes;
   struct timeval timeout;
   fd_set readfds, masterfds;
-  char socket_name[9];
+  char socket_name[DOMAIN_SOCKET_NAME_SIZE];
   char *rec_data = NULL;
   timeout.tv_sec = MESSAGE_REPLY_TIMEOUT;
   timeout.tv_usec = 0;
@@ -242,14 +246,11 @@ int forward_command(char *cmd_str, char *socket_path, char **sresponse)
   FD_SET(sfd, &masterfds);
   os_memcpy(&readfds, &masterfds, sizeof(fd_set));
 
-  os_memset(&svaddr, 0, sizeof(struct sockaddr_un));
-  svaddr.sun_family = AF_UNIX;
-  strncpy(svaddr.sun_path, socket_path, strlen(socket_path));
-
-  if ((send_count = sendto(sfd, cmd_str, strlen(cmd_str), 0, (struct sockaddr *)&svaddr, sizeof(struct sockaddr_un))) != strlen(cmd_str)) {
+  if (send_count = write_domain_data(sfd, cmd_str, strlen(cmd_str), socket_path) != strlen(cmd_str)) {
     log_err("sendto");
     goto fail;
   }
+
   log_debug("Sent %d bytes to %s", send_count, socket_path);
 
   if (select(sfd + 1, &readfds, NULL, NULL, &timeout) < 0) {
@@ -345,7 +346,7 @@ static enum MHD_Result mhd_reply(void *cls, struct MHD_Connection *connection, c
   log_info("URL --> %s %s", method, url);
   log_info("PARAMS --> cmd=%s args=%s", cmd, args);
 
-  if (create_command_string(cmd, args, cmd_str) == NULL) {
+  if (create_command_string(cmd, args, cmd_str, sad->delim) == NULL) {
     log_debug("create_command_string fail");
     sprintf(fail_response_buf, JSON_RESPONSE_FAIL);
     return create_connection_response(fail_response_buf, connection);
@@ -393,8 +394,9 @@ int main(int argc, char *argv[])
   uint8_t level = 0;
   struct socket_address sad;
   int port = -1;
+  sad.delim = 0x0;
 
-  process_app_options(argc, argv, sad.spath, sad.apath, &port, &verbosity); 
+  process_app_options(argc, argv, sad.spath, sad.apath, &port, &sad.delim, &verbosity); 
 
   if (optind <= 1) show_app_help(argv[0]);
 
@@ -414,10 +416,15 @@ int main(int argc, char *argv[])
     exit(EXIT_FAILURE); 
   }
 
+  if (sad.delim == 0x0) {
+    sad.delim = 0x20;
+  }
+
   fprintf(stdout, "Starting server with:\n");
   fprintf(stdout, "Supervisor address --> %s\n", sad.apath);
   fprintf(stdout, "AP address --> %s\n", sad.spath);
   fprintf(stdout, "Port --> %d\n", port);
+  fprintf(stdout, "Command delimiter --> %c\n", sad.delim);
 
   d = MHD_start_daemon (MHD_USE_THREAD_PER_CONNECTION, (uint16_t) port,
                         NULL, NULL, &mhd_reply, (void*)&sad, MHD_OPTION_END);

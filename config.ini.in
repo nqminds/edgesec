@@ -12,7 +12,7 @@ execRadius = true
 execDhcp = true
 
 [capture]
-captureInterface = "wls1"
+captureInterface = "enp2s0"
 filter = "" 
 promiscuous = false
 bufferTimeout = 10
@@ -25,9 +25,12 @@ dbSync = false
 dbPath = "./db"
 dbSyncAddress = "localhost"
 dbSyncPort = 12345
+command = "SET_FINGERPRINT"
+
 
 [supervisor]
 domainServerPath = "/tmp/edgesec-domain-server"
+delim = " "
 
 [ap]
 apBinPath = "./hostapd"
