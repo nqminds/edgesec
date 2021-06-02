@@ -34,7 +34,6 @@
 #include "../utils/os.h"
 #include "../utils/hash.h"
 
-#define MAX_PROTOCOL_NAME_LEN 64
 #define META_HASH_SIZE  SHA256_HASH_LEN * 2 + 1
 
 enum nDPI_l3_type {

@@ -45,6 +45,7 @@ struct app_config {
   bool                exec_ap;                              /**< Flag to execute the ap service. */
   bool                exec_radius;                          /**< Flag to execute the radius service. */
   bool                exec_dhcp;                            /**< Flag to execute the dhcp service. */
+  bool                exec_capture;                         /**< Flag to execute the capture service. */
   char                nat_interface[IFNAMSIZ];              /**< The NAT interface string. */
   bool                create_interfaces;                    /**< Flag to create the WiFi subnet interfaces. */
   bool                ignore_if_error;                      /**< Flag if set ignores the errors if subnet already exists. */
@@ -59,6 +60,7 @@ struct app_config {
   struct apconf       hconfig;                              /**< AP service configuration. */
   struct dns_conf     dns_config;                           /**< DNS service configuration. */
   struct dhcp_conf    dhcp_config;                          /**< DHCP service configuration. */
+  struct capture_conf capture_config;                       /**< Capture service configuration. */
 };
 
 /**

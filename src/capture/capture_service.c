@@ -34,14 +34,13 @@
 
 int run_capture(struct capture_conf *config)
 {
-  switch(config->analyser) {
-    case PACKET_ANALYSER_DEFAULT:
-      log_info("Running default_analyser_engine");
-      return start_default_analyser(config);
+  if (strcmp(config->analyser, PACKET_ANALYSER_DEFAULT) == 0) {
+    log_info("Running default_analyser_engine");
+    return start_default_analyser(config);
+  } else if (strcmp(config->analyser, PACKET_ANALYSER_NDPI) == 0) {
 #ifdef WITH_NDPI_SERVICE
-    case PACKET_ANALYSER_NDPI:
-      log_info("Running ndpi_analyser_engine");
-      return start_ndpi_analyser(config);
+    log_info("Running ndpi_analyser_engine");
+    return start_ndpi_analyser(config);
 #endif
   }
 

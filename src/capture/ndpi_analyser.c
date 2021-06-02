@@ -380,6 +380,7 @@ int send_flow_meta(struct nDPI_reader_thread *reader_thread, struct nDPI_flow_me
             delim, meta->dst_mac_addr, delim, meta->protocol, delim, base64_encoding);
     log_trace("%s", buf);
     os_free(base64_encoding);
+    return write_domain_data(reader_thread->sfd, buf, strlen(buf), reader_thread->domain_server_path);
   }
 
   return 0;

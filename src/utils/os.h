@@ -42,6 +42,8 @@
 #define IP_LEN 				20
 #define LINK_TYPE_LEN 		64
 
+#define MAX_PROTOCOL_NAME_LEN 64
+
 #define MAX_RANDOM_UUID_LEN	37
 
 #ifdef __GNUC__

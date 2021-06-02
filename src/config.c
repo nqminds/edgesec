@@ -547,9 +547,15 @@ void load_capture_config(const char *filename, struct capture_conf *config)
   config->domain_delim = value[0];
   os_free(value);
 
+  // Load capture bin path
+  value = os_zalloc(INI_BUFFERSIZE);
+  int ret = ini_gets("capture", "captureBinPath", "", value, INI_BUFFERSIZE, filename);
+  strncpy(config->capture_bin_path, value, MAX_OS_PATH_LEN);
+  os_free(value);
+
   // Load dhpc config file path
   value = os_zalloc(INI_BUFFERSIZE);
-  int ret = ini_gets("capture", "captureInterface", "", value, INI_BUFFERSIZE, filename);
+  ret = ini_gets("capture", "captureInterface", "", value, INI_BUFFERSIZE, filename);
   strncpy(config->capture_interface, value, IFNAMSIZ);
   os_free(value);
 
@@ -579,8 +585,11 @@ void load_capture_config(const char *filename, struct capture_conf *config)
   // Load processInterval param
   config->process_interval = (uint16_t) ini_getl("capture", "processInterval", 10, filename);
 
-  // Load processInterval param
-  config->analyser = (PACKET_ANALYSER_ENGINE) ini_getl("capture", "analyser", 0, filename);
+  // Load analyser param
+  value = os_zalloc(INI_BUFFERSIZE);
+  ret = ini_gets("capture", "analyser", PACKET_ANALYSER_DEFAULT, value, INI_BUFFERSIZE, filename);
+  strncpy(config->analyser, value, MAX_ANALYSER_NAME_SIZE - 1);
+  os_free(value);
 
   // Load db param
   value = os_zalloc(INI_BUFFERSIZE);
@@ -640,6 +649,9 @@ bool load_app_config(const char *filename, struct app_config *config)
 
   // Load the exec dhcp flag
   config->exec_dhcp = ini_getbool("system", "execDhcp", 0, filename);
+
+  // Load the exec capture flag
+  config->exec_capture = ini_getbool("system", "execCapture", 1, filename);
 
   // Load the default open vlanid
   config->default_open_vlanid = (int) ini_getl("system", "defaultOpenVlanId", 0, filename);
@@ -709,5 +721,7 @@ bool load_app_config(const char *filename, struct app_config *config)
     return false;
   }
 
+  // Load the capture config
+  load_capture_config(filename, &config->capture_config);
   return true;
 }

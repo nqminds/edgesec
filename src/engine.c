@@ -94,6 +94,7 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
     return false;
   }
 
+  ctx->exec_capture = app_config->exec_capture;
   ctx->domain_delim = app_config->domain_delim;
   ctx->allow_all_connections = app_config->allow_all_connections;
   ctx->default_open_vlanid = app_config->default_open_vlanid;
@@ -103,6 +104,8 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
   memcpy(ctx->wpa_passphrase, app_config->hconfig.wpa_passphrase, ctx->wpa_passphrase_len);
   
   strncpy(ctx->nat_interface, app_config->nat_interface, IFNAMSIZ);
+
+  memcpy(&ctx->capture_config, &app_config->capture_config, sizeof(ctx->capture_config));
 
   log_info("Creating subnet to interface mapper...");
   if (!create_if_mapper(app_config->config_ifinfo_array, &ctx->if_mapper)) {

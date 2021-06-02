@@ -10,15 +10,17 @@ killRunningProcess = true
 execAp = true
 execRadius = true
 execDhcp = true
+execCapture = true
 
 [capture]
+captureBinPath = "./capsrv"
 captureInterface = "enp2s0"
 filter = "" 
 promiscuous = false
 bufferTimeout = 10
 processInterval = 10
 immediate = false
-analyser = 1
+analyser = "ndpi"
 fileWrite = true
 dbWrite = false
 dbSync = false

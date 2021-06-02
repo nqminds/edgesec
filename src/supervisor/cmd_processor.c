@@ -408,34 +408,38 @@ ssize_t process_get_bridges_cmd(int sock, char *client_addr, struct supervisor_c
   return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
-ssize_t process_set_device_cat_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
+ssize_t process_set_fingerprint_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
 {
   char **ptr = (char**) utarray_next(cmd_arr, NULL);
-  uint8_t addr[ETH_ALEN];
-  char op[1];
+  char src_mac_addr[MACSTR_LEN + 1];
+  char dst_mac_addr[MACSTR_LEN + 1];
+  char protocol[MAX_PROTOCOL_NAME_LEN];
+
+  // MAC address source
   ptr = (char**) utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
-    if (hwaddr_aton2(*ptr, addr) != -1) {
-      // operation
+    strncpy(src_mac_addr, *ptr, MACSTR_LEN);
+    // MAC address destination
+    ptr = (char**) utarray_next(cmd_arr, ptr);
+    if (ptr != NULL && *ptr != NULL) {
+      strncpy(dst_mac_addr, *ptr, MACSTR_LEN);
       ptr = (char**) utarray_next(cmd_arr, ptr);
+      // Protocol
       if (ptr != NULL && *ptr != NULL) {
-        if (strlen(op) == 1) {
-          strcpy(op, *ptr);
-          // Category
-          ptr = (char**) utarray_next(cmd_arr, ptr);
-          if (ptr != NULL && *ptr != NULL) {
-            // Here process the category
+        strncpy(protocol, *ptr, MAX_PROTOCOL_NAME_LEN - 1);
+        ptr = (char**) utarray_next(cmd_arr, ptr);
+        // Fingerprint
+        if (ptr != NULL && *ptr != NULL) {
+          if ((set_fingerprint_cmd(context, src_mac_addr, protocol, *ptr) >= 0) &&
+              (set_fingerprint_cmd(context, dst_mac_addr, protocol, *ptr) >= 0))
+          {
+            return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
           }
         }
       }
     }
   }
 
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
-}
-
-ssize_t process_set_fingerprint_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
-{
   return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 

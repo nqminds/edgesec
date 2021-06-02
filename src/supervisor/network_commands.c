@@ -41,6 +41,11 @@ void init_default_mac_info(struct mac_conn_info *info, int default_open_vlanid)
   os_memset(info->ifname, 0, IFNAMSIZ);
 }
 
+int execute_capture(void)
+{
+  return 0;
+}
+
 struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg)
 {
   struct supervisor_context *context = (struct supervisor_context *) mac_conn_arg;
@@ -68,17 +73,17 @@ struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg)
     info.pass_len = context->wpa_passphrase_len;
     memcpy(info.pass, context->wpa_passphrase, info.pass_len);
     return info;
+  } else {
+    if (find_mac == 1 && info.allow_connection) {
+      log_trace("ALLOWING mac=" MACSTR " on vlanid=%d", MAC2STR(mac_addr), info.vlanid);
+      return info;
+    } else if (find_mac == -1) {
+      log_trace("get_mac_mapper fail");
+    } else if (find_mac == 0) {
+      log_trace("mac=" MACSTR " not found", MAC2STR(mac_addr));
+    }
   }
   
-  if (find_mac == 1 && info.allow_connection) {
-    log_trace("ALLOWING mac=" MACSTR " on vlanid=%d", MAC2STR(mac_addr), info.vlanid);
-    return info;
-  } else if (find_mac == -1) {
-    log_trace("get_mac_mapper fail");
-  } else if (find_mac == 0) {
-    log_trace("mac=" MACSTR " not found", MAC2STR(mac_addr));
-  }
-
   log_trace("REJECTING mac=" MACSTR, MAC2STR(mac_addr));
   info.vlanid = -1;
   return info;
@@ -356,8 +361,9 @@ int remove_bridge_cmd(struct supervisor_context *context, uint8_t *left_mac_addr
   return 0;
 }
 
-int set_fingerprint_cmd(struct supervisor_context *context, uint8_t *mac_addr, char *protocol,
+int set_fingerprint_cmd(struct supervisor_context *context, char *mac_addr, char *protocol,
                         char *fingerprint)
 {
+  log_trace("Setting fingerprint for mac=%s, protocol=%s", mac_addr, protocol);
   return 0;
 }

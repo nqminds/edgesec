@@ -30,6 +30,7 @@
 
 #include "../ap/ap_config.h"
 #include "../utils/if.h"
+#include "../capture/capture_config.h"
 
 #include "mac_mapper.h"
 
@@ -42,6 +43,7 @@ struct supervisor_context {
   hmap_if_conn    *if_mapper;                                 /**< WiFi subnet to interface mapper */
   hmap_vlan_conn  *vlan_mapper;                               /**< WiFi VLAN to interface mapper */
   bool            allow_all_connections;                      /**< @c allow_all_connections Flag from @c struct app_config */
+  bool            exec_capture;                               /**< @c execute_capture from @c struct app_config */  
   char            hostapd_ctrl_if_path[MAX_OS_PATH_LEN];      /**< @c ctrl_interface param from @c struct hostapd_conf */
   uint8_t         wpa_passphrase[AP_SECRET_LEN];      /**< @c wpa_passphrase from @c struct hostapd_conf */
   ssize_t         wpa_passphrase_len;                         /**< the length of @c wpa_passphrase*/
@@ -50,6 +52,7 @@ struct supervisor_context {
   UT_array        *config_ifinfo_array;                       /**< @c config_ifinfo_array from @c struct app_config */
   struct bridge_mac_list *bridge_list;                        /**< List of assigned bridges */
   char            domain_delim;                               /**< Cntrol server command delimiter */
+  struct capture_conf capture_config;                         /**< Capture service configuration. */
 };
 
 #endif

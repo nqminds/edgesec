@@ -96,17 +96,17 @@ int show_app_help(char *app_name)
   fprintf(stdout, "\t-z delimiter\t The UNIX domain command delimiter\n");
   fprintf(stdout, "\t-i interface\t The capture interface name\n");
   fprintf(stdout, "\t-f filter\t The capture filter expression\n");
-  fprintf(stdout, "\t-m\t\t Promiscuous mode\n");
   fprintf(stdout, "\t-t timeout\t The buffer timeout (milliseconds)\n");
   fprintf(stdout, "\t-n interval\t The process intereval (milliseconds)\n");
-  fprintf(stdout, "\t-e\t\t Immediate mode\n");
-  fprintf(stdout, "\t-y\t\t Analyser\n");
-  fprintf(stdout, "\t-u\t\t Write to file\n");
-  fprintf(stdout, "\t-w\t\t Write to db\n");
-  fprintf(stdout, "\t-s\t\t Sync the db\n");
+  fprintf(stdout, "\t-y analyser\t Analyser\n");
   fprintf(stdout, "\t-p path\t\t The db path\n");
   fprintf(stdout, "\t-a address\t The db sync address\n");
   fprintf(stdout, "\t-o port\t\t The db sync port\n");
+  fprintf(stdout, "\t-m\t\t Promiscuous mode\n");
+  fprintf(stdout, "\t-e\t\t Immediate mode\n");
+  fprintf(stdout, "\t-u\t\t Write to file\n");
+  fprintf(stdout, "\t-w\t\t Write to db\n");
+  fprintf(stdout, "\t-s\t\t Sync the db\n");
   fprintf(stdout, "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n");
   fprintf(stdout, "\t-h\t\t Show help\n");
   fprintf(stdout, "\t-v\t\t Show app version\n\n");
@@ -178,8 +178,8 @@ int process_app_options(int argc, char *argv[], uint8_t *verbosity,
       }
       break;
     case 'y':
-      config->analyser = get_arg_num(optarg);
-      if (config->analyser < 0) {
+      strncpy(config->analyser, optarg, MAX_ANALYSER_NAME_SIZE - 1);
+      if (!strlen(config->analyser)) {
         return log_cmdline_error("Wrong analyser engine value\n");
       }
       break;
