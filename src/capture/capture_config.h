@@ -37,6 +37,9 @@
 #define PACKET_ANALYSER_DEFAULT     "default"
 #define PACKET_ANALYSER_NDPI        "ndpi"
 
+#define DEFAULT_CAPTURE_TIMEOUT     10
+#define DEFAULT_CAPTURE_INTERVAL    10
+
 /**
  * @brief The capture configuration structure
  * 

@@ -532,7 +532,12 @@ bool load_dhcp_conf(const char *filename, struct app_config *config)
   return true;
 }
 
-void load_capture_config(const char *filename, struct capture_conf *config)
+char load_delim(const char *filename)
+{
+  return (char)ini_getl("supervisor", "delim", 32, filename);
+}
+
+bool load_capture_config(const char *filename, struct capture_conf *config)
 {
   char *value = os_zalloc(INI_BUFFERSIZE);
 
@@ -542,10 +547,10 @@ void load_capture_config(const char *filename, struct capture_conf *config)
   os_free(value);
 
   // Load the domain command delimiter
-  value = os_zalloc(INI_BUFFERSIZE);
-  ini_gets("supervisor", "delim", ",", value, INI_BUFFERSIZE, filename);
-  config->domain_delim = value[0];
-  os_free(value);
+  if ((config->domain_delim = load_delim(filename)) == 0) {
+    fprintf(stderr, "delim parsing error");
+    return false;
+  }
 
   // Load capture bin path
   value = os_zalloc(INI_BUFFERSIZE);
@@ -614,6 +619,8 @@ void load_capture_config(const char *filename, struct capture_conf *config)
 
   // Load syncPort param
   config->db_sync_port = (uint16_t) ini_getl("capture", "dbSyncPort", 0, filename);
+
+  return true;
 }
 
 bool load_app_config(const char *filename, struct app_config *config)
@@ -674,10 +681,10 @@ bool load_app_config(const char *filename, struct app_config *config)
   strncpy(config->domain_server_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
-  value = os_malloc(INI_BUFFERSIZE);
-  ini_gets("supervisor", "delim", " ", value, INI_BUFFERSIZE, filename);
-  config->domain_delim = value[0];
-  os_free(value);
+  if ((config->domain_delim = load_delim(filename)) == 0) {
+    fprintf(stderr, "delim parsing error");
+    return false;
+  }
 
   // Load allow all connection flag
   config->allow_all_connections = ini_getbool("system", "allowAllConnections", 0, filename);
@@ -722,6 +729,9 @@ bool load_app_config(const char *filename, struct app_config *config)
   }
 
   // Load the capture config
-  load_capture_config(filename, &config->capture_config);
+  if (!load_capture_config(filename, &config->capture_config)) {
+    fprintf(stderr, "Capture parsing error.\n");
+    return false;
+  }
   return true;
 }

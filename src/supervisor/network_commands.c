@@ -25,6 +25,7 @@
 
 #include "mac_mapper.h"
 #include "supervisor.h"
+#include "run_analyser.h"
 
 #include "../utils/os.h"
 #include "../utils/log.h"
@@ -41,9 +42,9 @@ void init_default_mac_info(struct mac_conn_info *info, int default_open_vlanid)
   os_memset(info->ifname, 0, IFNAMSIZ);
 }
 
-int execute_capture(void)
+int execute_capture(struct supervisor_context *context)
 {
-  return 0;
+  return run_analyser(&context->capture_config);
 }
 
 struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg)
@@ -69,6 +70,9 @@ struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg)
 
   if (context->allow_all_connections) {
     log_trace("ALLOWING mac=" MACSTR " on default vlanid=%d", MAC2STR(mac_addr), context->default_open_vlanid);
+    if (execute_capture(context) < 0) {
+      log_trace("execute_capture fail");
+    }
     info.vlanid = context->default_open_vlanid;
     info.pass_len = context->wpa_passphrase_len;
     memcpy(info.pass, context->wpa_passphrase, info.pass_len);
@@ -76,6 +80,9 @@ struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg)
   } else {
     if (find_mac == 1 && info.allow_connection) {
       log_trace("ALLOWING mac=" MACSTR " on vlanid=%d", MAC2STR(mac_addr), info.vlanid);
+      if (execute_capture(context) < 0) {
+        log_trace("execute_capture fail");
+      }
       return info;
     } else if (find_mac == -1) {
       log_trace("get_mac_mapper fail");

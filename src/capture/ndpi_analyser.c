@@ -1037,6 +1037,16 @@ int start_ndpi_analyser(struct capture_conf *config)
   }
 
   log_info("nDPI version: %s, API version: %u", ndpi_revision(), ndpi_get_api_version());
+  log_info("domain_server_path=%s", context.domain_server_path);
+  log_info("domain_command=%s", context.domain_command);
+  log_info("domain_delim=%c", context.domain_delim);
+  log_info("interface=%s", context.interface);
+  log_info("promiscuous=%d", context.promiscuous);
+  log_info("immediate=%d", context.immediate);
+  log_info("buffer_timeout=%u", context.buffer_timeout);
+  log_info("process_interval=%u", context.process_interval);
+  log_info("filter=%s", context.filter);
+  log_info("reader_thread_count=%d", context.reader_thread_count);
 
   if (pthread_mutex_init(&lock, NULL) != 0) {
     log_debug("mutex init has failed");

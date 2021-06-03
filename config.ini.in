@@ -13,7 +13,7 @@ execDhcp = true
 execCapture = true
 
 [capture]
-captureBinPath = "./capsrv"
+captureBinPath = "./src/capsrv"
 captureInterface = "enp2s0"
 filter = "" 
 promiscuous = false
@@ -32,7 +32,7 @@ command = "SET_FINGERPRINT"
 
 [supervisor]
 domainServerPath = "/tmp/edgesec-domain-server"
-delim = " "
+delim = 32
 
 [ap]
 apBinPath = "./hostapd"
