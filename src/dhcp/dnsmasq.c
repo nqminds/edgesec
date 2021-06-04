@@ -170,6 +170,7 @@ char* get_dnsmasq_args(char *dnsmasq_bin_path, char *dnsmasq_conf_path, char *ar
 
 char* run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path)
 {
+  pid_t child_pid;
   int ret;
   char *process_argv[5] = {NULL, NULL, NULL, NULL, NULL};
 
@@ -188,8 +189,9 @@ char* run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path)
     log_trace("get_dnsmasq_args fail");
     return NULL;
   }
+  struct find_dir_type dir_args = {.proc_running = 0, .proc_name = basename(process_argv[0])};
 
-  while((ret = run_process(process_argv)) > 0) {
+  while((ret = run_process(process_argv, &child_pid)) < 0) {
     log_trace("Killing dhcp process");
     // Kill any running hostapd process
     if (!kill_process(dnsmasq_proc_name)) {
@@ -201,11 +203,25 @@ char* run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path)
     sleep(PROCESS_RESTART_TIME);
   }
 
-  if (ret < 0) {
-    log_trace("run_process fail");
+  if (ret > 0) {
+    log_trace("dnsmasq process exited with status=%d", ret);
     os_free(conf_arg);
     return NULL;
   }
+
+  if (list_dir("/proc", find_dir_proc_fn, (void *)&dir_args) == -1) {
+    log_trace("list_dir fail");
+    os_free(conf_arg);
+    return NULL;
+  }
+
+  if (!dir_args.proc_running) {
+    log_trace("dnsmasq not running");
+    os_free(conf_arg);
+    return NULL;
+  }
+
+  log_trace("Found %s running with pid=%d", dir_args.proc_name, child_pid);
 
   dns_process_started = true;
   os_free(conf_arg);

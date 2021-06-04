@@ -35,11 +35,6 @@
 
 #define MAX_64BIT_DIGITS 19
 
-struct find_dir_type {
-  int proc_running;
-  char *proc_name;
-};
-
 bool is_number(const char *ptr)
 {
   if (ptr == NULL)
@@ -622,19 +617,6 @@ long is_proc_app(char *path, char *proc_name)
   return 0;
 }
 
-bool find_dir_proc_fn(char *path, void *args)
-{
-  unsigned long pid;
-  struct find_dir_type *dir_args = (struct find_dir_type *)args;
-
-  if ((pid = is_proc_app(path, dir_args->proc_name)) != 0)
-    dir_args->proc_running = 1;
-  else
-    dir_args->proc_running = 0;
-
-  return true;
-}
-
 bool kill_dir_fn(char *path, void *args)
 {
   unsigned long pid;
@@ -666,18 +648,16 @@ bool kill_process(char *proc_name)
   return true;
 }
 
-int run_process(char *argv[])
+int run_process(char *argv[], pid_t *child_pid)
 {
-  pid_t child_pid, ret;
-  int status, check_count = 0;
+  pid_t ret;
+  int status;
   int arg_idx = 0;
-
-  struct find_dir_type dir_args = {.proc_running = 0, .proc_name = basename(argv[0])};
 
   log_trace("Running process %s with params:", argv[0]);
   while(argv[++arg_idx]) log_trace("\t %s", argv[arg_idx]);
 
-  switch (child_pid = fork()) {
+  switch (*child_pid = fork()) {
   case -1:            /* fork() failed */
     log_err("fork");
     return -1;
@@ -701,32 +681,18 @@ int run_process(char *argv[])
     log_err("execv");
     return -1;       /* We could not exec the command */
   default:
-    log_trace("process child created with id=%d", child_pid);
+    log_trace("process child created with id=%d", *child_pid);
     log_trace("Checking process execution status...");
-    while ((ret = waitpid(child_pid, &status, WNOHANG)) == 0 && check_count < 7) {
-      check_count ++;
-      sleep(2);
 
-      if (list_dir("/proc", find_dir_proc_fn, (void *)&dir_args) == -1) {
-        log_trace("list_dir fail");
+    ret = waitpid(*child_pid, &status, WNOHANG);
+    if (ret == -1) {
+        log_err("waitpid");
         return -1;
-      }
-
-      if (dir_args.proc_running) {
-        log_trace("Found %s running", dir_args.proc_name);
-        return 0;
-      }
-
-      log_trace("\ttry: %d exit status %d", check_count, WIFEXITED(status));
-    }
-
-    if (ret > 0) {
-      if (WIFEXITED(status)) {
-        log_trace("excve status %d", WEXITSTATUS(status));
-        return 1;
-      }
-    } else if (ret == -1) {
-      return -1;
+    } else if (ret > 0 && WIFEXITED(status)) {
+      log_trace("process with id=%d exited", *child_pid);
+      return WEXITSTATUS(status);
+    } else {
+      log_trace("Process state with id=%d not changed", *child_pid);
     }
   }
 
@@ -825,4 +791,17 @@ size_t os_strnlen_s(char *str, size_t max_len)
     return max_len;
   
   return end - str;
+}
+
+bool find_dir_proc_fn(char *path, void *args)
+{
+  unsigned long pid;
+  struct find_dir_type *dir_args = (struct find_dir_type *)args;
+
+  if ((pid = is_proc_app(path, dir_args->proc_name)) != 0)
+    dir_args->proc_running = 1;
+  else
+    dir_args->proc_running = 0;
+
+  return true;
 }

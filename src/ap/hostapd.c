@@ -36,6 +36,7 @@
 
 #include "ap_config.h"
 #include "utils/log.h"
+#include "utils/os.h"
 #include "utils/if.h"
 
 #define HOSTAPD_LOG_FILE_OPTION "-f"
@@ -155,13 +156,15 @@ int check_ctrl_if_exists(char *ctrl_if_path)
 
 char* run_ap_process(struct apconf *hconf, char *ctrl_if_path)
 {
-  int ret;
+  pid_t child_pid;
+  int ret, check_count = 0;
   char *process_argv[5] = {NULL, NULL, NULL, NULL, NULL};
 
   memset(hostapd_proc_name, '\0', MAX_OS_PATH_LEN);
   strcpy(hostapd_proc_name, basename(hconf->ap_bin_path));
 
   get_hostapd_args(hconf->ap_bin_path, hconf->ap_file_path, hconf->ap_log_path, process_argv);
+  struct find_dir_type dir_args = {.proc_running = 0, .proc_name = basename(process_argv[0])};
 
   // Kill any running hostapd process
   if (!kill_process(hostapd_proc_name)) {
@@ -175,7 +178,7 @@ char* run_ap_process(struct apconf *hconf, char *ctrl_if_path)
     return NULL;
   }
 
-  while((ret = run_process(process_argv)) > 0) {
+  while((ret = run_process(process_argv, &child_pid)) < 0) {
     log_trace("Killing hostapd process");
     // Kill any running hostapd process
     if (!kill_process(hostapd_proc_name)) {
@@ -186,14 +189,34 @@ char* run_ap_process(struct apconf *hconf, char *ctrl_if_path)
     sleep(PROCESS_RESTART_TIME);
   }
 
-  if (ret < 0) {
-    log_trace("run_process fail");
+  if (ret > 0) {
+    log_trace("hostapd process exited with status=%d", ret);
     return NULL;
   }
 
-  if (check_ctrl_if_exists(ctrl_if_path) != -1) {
-    log_trace("hostapd unix domain control path %s", ctrl_if_path);
-  } else {
+  if (list_dir("/proc", find_dir_proc_fn, (void *)&dir_args) == -1) {
+    log_trace("list_dir fail");
+    return NULL;
+  }
+
+  if (!dir_args.proc_running) {
+    log_trace("hostapd not running");
+    return NULL;
+  }
+
+  log_trace("Found %s running with pid=%d", dir_args.proc_name, child_pid);
+
+  while (check_count++ < 7) {
+    if (check_ctrl_if_exists(ctrl_if_path) != -1) {
+      log_trace("hostapd unix domain control path %s", ctrl_if_path);
+      break;
+    } else {
+      log_trace("hostapd unix domain control path check try=%d", check_count);
+    }
+    sleep(2);
+  }
+
+  if (check_count >= 7) {
     log_trace("hostapd unix domain control path fail");
     return NULL;
   }

@@ -80,6 +80,11 @@
 
 #define STRLEN(s) (sizeof(s)/sizeof(s[0]))
 
+struct find_dir_type {
+  int proc_running;
+  char *proc_name;
+};
+
 typedef long os_time_t;
 
 struct os_time {
@@ -488,9 +493,10 @@ bool kill_process(char *proc_name);
  * @brief Executes a process with an array of strign arguments
  * 
  * @param argv The array of string arguments terminated with NULL and the first argument is the absolute path of the process.
+ * @param child_pid The returned child pid
  * @return int 1 if process started, 0 if the child specified by pid exist, but have not yet changed state, -1 on error
  */
-int run_process(char *argv[]);
+int run_process(char *argv[], pid_t *child_pid);
 
 /**
  * @brief Makes a file given by descriptor executable
@@ -530,4 +536,12 @@ void generate_radom_uuid(char *rid);
 }
 #endif
 
+/**
+ * @brief Callback function for list_dir function to check if process running
+ * 
+ * @param path The process path
+ * @param args The callback arguments of type struct find_dir_type
+ * @return bool true if process running, false otherwise
+ */
+bool find_dir_proc_fn(char *path, void *args);
 #endif /* OS_H */

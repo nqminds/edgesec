@@ -39,6 +39,7 @@
 
 int run_analyser(struct capture_conf *config)
 {
+  pid_t child_pid;
   char **process_argv = capture_config2opt(config);
   int ret;
   if (process_argv == NULL) {
@@ -46,7 +47,7 @@ int run_analyser(struct capture_conf *config)
     return -1;
   }
 
-  ret = run_process(process_argv);
+  ret = run_process(process_argv, &child_pid);
   capture_freeopt(process_argv);
 
   return ret;
