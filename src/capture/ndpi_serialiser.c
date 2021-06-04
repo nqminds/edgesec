@@ -174,7 +174,7 @@ int ndpi_serialise_meta(struct ndpi_detection_module_struct *ndpi_struct,
 
   switch(l7_protocol.master_protocol ? l7_protocol.master_protocol : l7_protocol.app_protocol) {
     case NDPI_PROTOCOL_DHCP:
-      return ndpi_serialise_dhcp(flow, meta);
+      break;
 
     case NDPI_PROTOCOL_BITTORRENT:
       break;
