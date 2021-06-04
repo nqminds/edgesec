@@ -146,6 +146,10 @@ bool get_connection_info(char *info, struct mac_conn *el)
 
   char **p = NULL;
 
+  // reset to default PID
+  el->info.pid = 0;
+  os_memset(el->info.ifname, 0, IFNAMSIZ);
+
   p = (char**) utarray_next(info_arr, p);
   if (*p != NULL) {
     if (strcmp(*p, "a") == 0)
@@ -670,9 +674,15 @@ bool load_app_config(const char *filename, struct app_config *config)
   strncpy(config->nat_interface, value, IFNAMSIZ);
   os_free(value);
 
+  // Load db param
+  value = os_zalloc(INI_BUFFERSIZE);
+  int ret = ini_gets("system", "dbPath", "./", value, INI_BUFFERSIZE, filename);
+  strncpy(config->db_path, value, MAX_OS_PATH_LEN);
+  os_free(value);
+
   // Load domainServerPath
   value = os_malloc(INI_BUFFERSIZE);
-  int ret = ini_gets("supervisor", "domainServerPath", "", value, INI_BUFFERSIZE, filename);
+  ret = ini_gets("supervisor", "domainServerPath", "", value, INI_BUFFERSIZE, filename);
   if (!ret) {
     fprintf(stderr, "Domain server path was not specified\n");
     return false;
@@ -688,6 +698,9 @@ bool load_app_config(const char *filename, struct app_config *config)
 
   // Load allow all connection flag
   config->allow_all_connections = ini_getbool("system", "allowAllConnections", 0, filename);
+
+  // Load allow all nat connection flag
+  config->allow_all_nat = ini_getbool("system", "allowAllNat", 0, filename);
 
   // Load killRunningProcess flag
   config->kill_running_proc = ini_getbool("system", "killRunningProcess", 0, filename);

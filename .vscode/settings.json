@@ -8,6 +8,7 @@
         "mutex": "cpp",
         "shared_mutex": "cpp",
         "thread": "cpp",
-        "base64.h": "c"
+        "base64.h": "c",
+        "sqlite_fingerprint_writer.h": "c"
     }
 }

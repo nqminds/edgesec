@@ -51,7 +51,7 @@ int capture_opt2config(char key, char *value, struct capture_conf *config)
       break;
     case 'f':
       config->filter = os_malloc(strlen(value) + 1);
-      strncpy(config->filter, value, IFNAMSIZ);
+      strcpy(config->filter, value);
       break;
     case 'm':
       config->promiscuous = true;

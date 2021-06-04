@@ -28,6 +28,7 @@
 #include <sys/un.h>
 #include <sys/socket.h>
 
+#include "sqlite_fingerprint_writer.h"
 
 #include "utils/log.h"
 #include "utils/os.h"
@@ -36,6 +37,8 @@
 #include "utils/domain.h"
 
 #include "cmd_processor.h"
+
+#define FINGERPRINT_DB_NAME "fingerprint.sqlite"
 
 void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
 {
@@ -89,6 +92,21 @@ bool close_supervisor(int sock)
 int run_supervisor(char *server_path, struct supervisor_context *context)
 {
   int sock;
+  char *db_path = NULL;
+
+  db_path = construct_path(context->db_path, FINGERPRINT_DB_NAME);
+  if (db_path == NULL) {
+    log_debug("construct_path fail");
+    return -1;
+  }
+
+  if (open_sqlite_fingerprint_db(db_path, &context->fingeprint_db) < 0) {
+    log_trace("open_sqlite_fingerprint_db fail");
+    os_free(db_path);
+    return -1;
+  }
+
+  os_free(db_path);
 
   if ((sock = create_domain_server(server_path)) == -1) {
     log_trace("create_domain_server fail");

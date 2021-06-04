@@ -4,6 +4,7 @@ hashIpCommand = ""
 createInterfaces = true
 ignoreErrorOnIfCreate = true
 allowAllConnections = true
+allowAllNat = true
 apDetect = false
 defaultOpenVlanId = 0
 killRunningProcess = true
@@ -11,6 +12,7 @@ execAp = true
 execRadius = true
 execDhcp = true
 execCapture = true
+dbPath = "./db"
 
 [capture]
 captureBinPath = "./src/capsrv"
@@ -95,13 +97,6 @@ dhcpRange10 = "10,10.0.10.2,10.0.10.254,255.255.255.0,24h"
 
 [connections]
 con1 = "d,04:f0:21:5a:f4:c4,0,1,1234554321"
-con2 = "d,30:52:cb:e9:00:8f,1,1,1234554321"
-con3 = "d,40:b4:cd:f1:18:bc,2,1,1234554321"
-con4 = "d,60:70:c0:0a:23:ba,3,1,1234554321"
-con5 = "d,00:0f:00:70:62:88,4,1,1234554321"
-con6 = "d,9c:ef:d5:fd:db:56,5,1,1234554321"
-con7 = "d,c0:ee:fb:d5:5a:ec,6,1,1234554321"
-con8 = "a,00:0f:00:70:62:88,7,1,1234554321"
 
 [interfaces]
 if0 = "0,10.0.0.1,10.0.0.255,255.255.255.0"

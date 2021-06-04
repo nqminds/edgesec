@@ -145,43 +145,38 @@ int run_pcap(char *interface, bool immediate, bool promiscuous,
   if ((ctx->pd = pcap_create(interface, err)) == NULL) {
     log_trace("Couldn't open device %s: %s", interface, err);
     os_free(ctx);
+    *pctx = NULL;
     return -1;
   }
 
   if (pcap_set_snaplen(ctx->pd, PCAP_SNAPSHOT_LENGTH) < 0) {
     log_trace("pcap_set_snaplen fail %d", ret);
-    close_pcap(ctx);
-    return -1;
+    goto fail;
   }
 
   if ((ret = pcap_set_immediate_mode(ctx->pd, immediate)) < 0) {
     log_trace("pcap_set_immediate_mode fail %d", ret);
-    close_pcap(ctx);
-    return -1;
+    goto fail;
   }
 
   if ((ret = pcap_set_promisc(ctx->pd, promiscuous)) < 0) {
     log_trace("pcap_set_promisc fail: %d", ret);
-    close_pcap(ctx);
-    return -1;
+    goto fail;
   }
 
   if ((ret = pcap_set_timeout(ctx->pd, timeout)) < 0) {
     log_trace("pcap_set_timeout fail: %d", ret);
-    close_pcap(ctx);
-    return -1;
+    goto fail;
   }
 
   if ((ret = pcap_set_buffer_size(ctx->pd, PCAP_BUFFER_SIZE)) < 0) {
     log_trace("pcap_set_buffer_size fail: %d", ret);
-    close_pcap(ctx);
-    return -1;
+    goto fail;
   }
 
   if ((ret = pcap_activate(ctx->pd)) < 0) {
     log_trace("pcap_activate fail: %d", ret);
-    close_pcap(ctx);
-    return -1;
+    goto fail;
   }
 
   /* Compile and apply the filter */
@@ -189,17 +184,15 @@ int run_pcap(char *interface, bool immediate, bool promiscuous,
     if (strlen(filter)) {
 	    if (pcap_compile(ctx->pd, &fp, filter, 0, mask) == -1) {
 	      log_trace("Couldn't parse filter %s: %s\n", filter, pcap_geterr(ctx->pd));
-          pcap_close(ctx->pd);
-          return -1;
-	    }
+        goto fail;
+      }
 
-        log_debug("Setting filter to=%s", filter);
-        if (pcap_setfilter(ctx->pd, &fp) == -1) {
+      log_debug("Setting filter to=%s", filter);
+      if (pcap_setfilter(ctx->pd, &fp) == -1) {
 	      log_trace("Couldn't set filter %s: %s\n", filter, pcap_geterr(ctx->pd));
-          pcap_freecode(&fp);
-          close_pcap(ctx);
-          return -1;
-	    }
+        pcap_freecode(&fp);
+        goto fail;
+      }
 
       pcap_freecode(&fp);
     }
@@ -207,8 +200,7 @@ int run_pcap(char *interface, bool immediate, bool promiscuous,
 
   if ((ctx->pcap_fd = pcap_get_selectable_fd(ctx->pd)) == -1) {
     log_debug("pcap device doesn't support file descriptors");
-	  close_pcap(ctx);
-    return -1;
+    goto fail;
   }
 
   log_debug("Capture started on %s with link_type=%s", interface,
@@ -218,14 +210,18 @@ int run_pcap(char *interface, bool immediate, bool promiscuous,
     log_debug("Setting nonblock mode");
     if (pcap_setnonblock(ctx->pd, 1, err) < 0) {
       log_trace("pcap_setnonblock fail: %s", err);
-      close_pcap(ctx);
-      return -1;
+      goto fail;
     }
   }
 
   log_debug("Non-blocking state %d", pcap_getnonblock(ctx->pd, err));
 
   return 0;
+
+fail:
+  close_pcap(ctx);
+  *pctx = NULL;
+  return -1;
 }
 
 int dump_file_pcap(struct pcap_context *ctx, char *file_path, struct pcap_pkthdr *header, uint8_t *packet)

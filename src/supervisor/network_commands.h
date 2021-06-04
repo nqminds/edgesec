@@ -30,14 +30,6 @@
 #include <stdbool.h>
 
 /**
- * @brief Initialises the default mac_conn_info structure
- * 
- * @param info The mac_conn_info structure
- * @param default_open_vlanid The default open VLAN ID
- */
-void init_default_mac_info(struct mac_conn_info *info, int default_open_vlanid);
-
-/**
  * @brief Return a mac_conn_info for a given MAC address
  * 
  * @param mac_addr The input MAC adderss

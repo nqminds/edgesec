@@ -52,8 +52,10 @@ struct app_config {
   int                 default_open_vlanid;                  /**< Sets the default vlan index for open connections or if MAC is not in the list of connections. */
   UT_array            *config_ifinfo_array;                 /**< Interface list mapping bridge interface name and IP address range. */
   char                domain_server_path[MAX_OS_PATH_LEN];  /**< Path to the control server. */
+  char                db_path[MAX_OS_PATH_LEN];             /**< Specifies the path to the sqlite3 dbs */ 
   char                domain_delim;                         /**< Control server command delimiter. */
   bool                allow_all_connections;                /**< Flag to allow all connections. */
+  bool                allow_all_nat;                        /**< Flag to allow all nat connections. */
   bool                kill_running_proc;                    /**< Flag to terminate running app processes. */
   UT_array            *connections;                         /**< MAC mapper to @c struct mac_conn. */
   struct radius_conf  rconfig;                              /**< Radius service configuration. */

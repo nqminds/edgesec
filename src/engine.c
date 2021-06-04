@@ -94,16 +94,19 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
     return false;
   }
 
+  ctx->fingeprint_db = NULL;
   ctx->exec_capture = app_config->exec_capture;
   ctx->domain_delim = app_config->domain_delim;
   ctx->allow_all_connections = app_config->allow_all_connections;
+  ctx->allow_all_nat = app_config->allow_all_nat;
   ctx->default_open_vlanid = app_config->default_open_vlanid;
   ctx->config_ifinfo_array = app_config->config_ifinfo_array;
 
   ctx->wpa_passphrase_len = strlen(app_config->hconfig.wpa_passphrase);
   memcpy(ctx->wpa_passphrase, app_config->hconfig.wpa_passphrase, ctx->wpa_passphrase_len);
   
-  strncpy(ctx->nat_interface, app_config->nat_interface, IFNAMSIZ);
+  memcpy(ctx->nat_interface, app_config->nat_interface, IFNAMSIZ);
+  memcpy(ctx->db_path, app_config->db_path, MAX_OS_PATH_LEN);
 
   memcpy(&ctx->capture_config, &app_config->capture_config, sizeof(ctx->capture_config));
 
@@ -260,7 +263,9 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
     }
   }
 
+  log_info("++++++++++++++++++");
   log_info("Running event loop");
+  log_info("++++++++++++++++++");
   eloop_run();
 
   close_supervisor(domain_sock);
@@ -275,6 +280,7 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
   free_if_mapper(&context.if_mapper);
   free_vlan_mapper(&context.vlan_mapper);
   free_bridge_list(context.bridge_list);
+  free_sqlite_fingerprint_db(context.fingeprint_db);
   return true;
 
 run_engine_fail:
@@ -290,5 +296,6 @@ run_engine_fail:
   free_if_mapper(&context.if_mapper);
   free_vlan_mapper(&context.vlan_mapper);
   free_bridge_list(context.bridge_list);
+  free_sqlite_fingerprint_db(context.fingeprint_db);
   return false;
 }

@@ -22,35 +22,84 @@
  * @author Alexandru Mereacre 
  * @brief File containing the implementation of the network commands.
  */
+#include <libgen.h>
 
 #include "mac_mapper.h"
 #include "supervisor.h"
-#include "run_analyser.h"
+#include "sqlite_fingerprint_writer.h"
 
+#include "../capture/capture_service.h"
 #include "../utils/os.h"
 #include "../utils/log.h"
 #include "utils/iptables.h"
 
-void init_default_mac_info(struct mac_conn_info *info, int default_open_vlanid)
+#define ANALYSER_FILTER_FORMAT "\"ether dst " MACSTR " or ether src " MACSTR"\""
+
+void init_default_mac_info(struct mac_conn_info *info, int default_open_vlanid,
+                            bool allow_all_nat)
 {
+  info->pid = 0;
   info->vlanid = default_open_vlanid;
   info->allow_connection = false;
-  info->nat = false;
+  info->nat = allow_all_nat;
   info->pass_len = 0;
   os_memset(info->pass, 0, AP_SECRET_LEN);
   os_memset(info->ip_addr, 0, IP_LEN);
   os_memset(info->ifname, 0, IFNAMSIZ);
 }
 
-int execute_capture(struct supervisor_context *context)
+int run_analyser(struct capture_conf *config, pid_t *child_pid)
 {
-  return run_analyser(&context->capture_config);
+  int ret;
+  char **process_argv = capture_config2opt(config);
+
+  if (process_argv == NULL) {
+    log_trace("capture_config2opt fail");
+    return -1;
+  }
+  struct find_dir_type dir_args = {.proc_running = 0, .proc_name = basename(process_argv[0])};
+
+  ret = run_process(process_argv, child_pid);
+  capture_freeopt(process_argv);
+
+  if (list_dir("/proc", find_dir_proc_fn, (void *)&dir_args) == -1) {
+    log_trace("list_dir fail");
+    return -1;
+  }
+
+  if (!dir_args.proc_running) {
+    log_trace("analyser not running");
+    return -1;
+  }
+
+  log_trace("Found %s running with pid=%d", dir_args.proc_name, *child_pid);
+
+  return ret;
+}
+
+int schedule_analyser(struct supervisor_context *context, uint8_t mac_addr[], char *ifname)
+{
+  pid_t child_pid;
+  struct capture_conf config;
+  
+  memcpy(&config, &context->capture_config, sizeof(config));
+
+  log_trace("Starting analyser for mac=" MACSTR " on if=%s", MAC2STR(mac_addr), ifname);
+  memcpy(config.capture_interface, ifname, IFNAMSIZ);
+
+  if (run_analyser(&config, &child_pid) != 0) {
+    log_trace("run_analyser fail");
+    return -1;
+  }
+
+  return 0;
 }
 
 struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg)
 {
   struct supervisor_context *context = (struct supervisor_context *) mac_conn_arg;
   struct mac_conn_info info;
+  init_default_mac_info(&info, context->default_open_vlanid, context->allow_all_nat);
 
   log_trace("REQUESTED vland id for mac=" MACSTR, MAC2STR(mac_addr));
 
@@ -69,20 +118,33 @@ struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg)
   int find_mac = get_mac_mapper(&context->mac_mapper, mac_addr, &info);
 
   if (context->allow_all_connections) {
-    log_trace("ALLOWING mac=" MACSTR " on default vlanid=%d", MAC2STR(mac_addr), context->default_open_vlanid);
-    if (execute_capture(context) < 0) {
-      log_trace("execute_capture fail");
+    if (get_vlan_mapper(&context->vlan_mapper, context->default_open_vlanid, info.ifname) <= 0) {
+      log_trace("ifname not found for vlanid=%d", context->default_open_vlanid);
+      log_trace("REJECTING mac=" MACSTR, MAC2STR(mac_addr));
+      info.vlanid = -1;
+      return info;
     }
-    info.vlanid = context->default_open_vlanid;
+
     info.pass_len = context->wpa_passphrase_len;
     memcpy(info.pass, context->wpa_passphrase, info.pass_len);
+
+    if (context->exec_capture) {
+      if (schedule_analyser(context, mac_addr, info.ifname) < 0) {
+        log_trace("execute_capture fail");
+      }
+    }
+
+    log_trace("ALLOWING mac=" MACSTR " on default vlanid=%d", MAC2STR(mac_addr), context->default_open_vlanid);
     return info;
   } else {
     if (find_mac == 1 && info.allow_connection) {
       log_trace("ALLOWING mac=" MACSTR " on vlanid=%d", MAC2STR(mac_addr), info.vlanid);
-      if (execute_capture(context) < 0) {
-        log_trace("execute_capture fail");
+      if (context->exec_capture) {
+        if (schedule_analyser(context, mac_addr, info.ifname) < 0) {
+          log_trace("execute_capture fail");
+        }
       }
+
       return info;
     } else if (find_mac == -1) {
       log_trace("get_mac_mapper fail");
@@ -100,7 +162,7 @@ int accept_mac_cmd(struct supervisor_context *context, uint8_t *mac_addr, int vl
 {
   struct mac_conn conn;
   struct mac_conn_info info;
-  init_default_mac_info(&info, context->default_open_vlanid);
+  init_default_mac_info(&info, context->default_open_vlanid, context->allow_all_nat);
 
   log_trace("ACCEPT_MAC mac=" MACSTR " with vlanid=%d", MAC2STR(mac_addr), vlanid);
 
@@ -131,7 +193,7 @@ int deny_mac_cmd(struct supervisor_context *context, uint8_t *mac_addr)
 {
   struct mac_conn conn;
   struct mac_conn_info info;
-  init_default_mac_info(&info, context->default_open_vlanid);
+  init_default_mac_info(&info, context->default_open_vlanid, context->allow_all_nat);
 
   log_trace("DENY_MAC mac=" MACSTR, MAC2STR(mac_addr));
   get_mac_mapper(&context->mac_mapper, mac_addr, &info);
@@ -151,7 +213,7 @@ int add_nat_cmd(struct supervisor_context *context, uint8_t *mac_addr)
   char ifname[IFNAMSIZ];
   struct mac_conn conn;
   struct mac_conn_info info;
-  init_default_mac_info(&info, context->default_open_vlanid);
+  init_default_mac_info(&info, context->default_open_vlanid, context->allow_all_nat);
 
   log_trace("ADD_NAT mac=" MACSTR, MAC2STR(mac_addr));
   if (get_mac_mapper(&context->mac_mapper, mac_addr, &info) < 0) {
@@ -187,7 +249,7 @@ int remove_nat_cmd(struct supervisor_context *context, uint8_t *mac_addr)
   char ifname[IFNAMSIZ];
   struct mac_conn conn;
   struct mac_conn_info info;
-  init_default_mac_info(&info, context->default_open_vlanid);
+  init_default_mac_info(&info, context->default_open_vlanid, context->allow_all_nat);
 
   log_trace("REMOVE_NAT mac=" MACSTR, MAC2STR(mac_addr));
   if (get_mac_mapper(&context->mac_mapper, mac_addr, &info) < 0) {
@@ -223,7 +285,7 @@ int assign_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr,
 {
   struct mac_conn conn;
   struct mac_conn_info info;
-  init_default_mac_info(&info, context->default_open_vlanid);
+  init_default_mac_info(&info, context->default_open_vlanid, context->allow_all_nat);
 
   log_trace("ASSIGN_PSK mac=" MACSTR ", pass_len=%d", MAC2STR(mac_addr), pass_len);
 
@@ -249,7 +311,7 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
   char ifname[IFNAMSIZ];
   struct mac_conn conn;
   struct mac_conn_info right_info, info;
-  init_default_mac_info(&info, context->default_open_vlanid);
+  init_default_mac_info(&info, context->default_open_vlanid, context->allow_all_nat);
 
   if (!get_ifname_from_ip(&context->if_mapper, context->config_ifinfo_array, ip_addr, ifname)) {
     log_trace("get_ifname_from_ip fail");
@@ -372,5 +434,10 @@ int set_fingerprint_cmd(struct supervisor_context *context, char *mac_addr, char
                         char *fingerprint)
 {
   log_trace("Setting fingerprint for mac=%s, protocol=%s", mac_addr, protocol);
+  if (save_sqlite_fingerprint_entry(context->fingeprint_db, mac_addr, protocol, fingerprint) < 0) {
+    log_trace("save_sqlite_fingerprint_entry fail");
+    return -1;
+  }
+
   return 0;
 }

@@ -648,14 +648,37 @@ bool kill_process(char *proc_name)
   return true;
 }
 
+size_t string_array2string(char buf[], const size_t size, char *strings[])
+{
+  int idx;
+  size_t total = 0;
+  size_t len = 0;
+
+  buf[0] = '\0';
+
+  if (strings == NULL || buf == NULL || !size)
+    return 0;
+
+  while (strings[idx] != NULL && total <= size && len >= 0) {
+    len = snprintf(&buf[total], size - total, "%s ", strings[idx]);
+    if (len > 0) total += len;
+    idx ++;
+  }
+
+  return total;
+}
+
 int run_process(char *argv[], pid_t *child_pid)
 {
   pid_t ret;
   int status;
   int arg_idx = 0;
+  char buf[255];
 
   log_trace("Running process %s with params:", argv[0]);
-  while(argv[++arg_idx]) log_trace("\t %s", argv[arg_idx]);
+  string_array2string(buf, 254, argv);
+  log_trace("\t %s", buf);
+  // while(argv[++arg_idx]) log_trace("\t %s", argv[arg_idx]);
 
   switch (*child_pid = fork()) {
   case -1:            /* fork() failed */

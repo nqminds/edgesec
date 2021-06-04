@@ -122,13 +122,14 @@ static void free_workflow(struct nDPI_workflow ** const workflow)
   struct nDPI_workflow * const w = *workflow;
 
   if (w == NULL) {
-  return;
+    return;
   }
 
   if (w->pctx != NULL) {
     close_pcap(w->pctx);
     w->pctx = NULL;
   }
+
   if (w->ndpi_struct != NULL) {
     ndpi_exit_detection_module(w->ndpi_struct);
   }
@@ -1054,7 +1055,7 @@ int start_ndpi_analyser(struct capture_conf *config)
   }
 
   if (start_reader_threads(&targs[0]) < 0) {
-    log_debug("start_reader_threads");
+    log_debug("start_reader_threads fail");
     return -1;
   }
 

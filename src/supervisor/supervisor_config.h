@@ -27,6 +27,7 @@
 #define SUPERVISOR_CONFIG_H
 
 #include <stdbool.h>
+#include <sqlite3.h>
 
 #include "../ap/ap_config.h"
 #include "../utils/if.h"
@@ -43,16 +44,19 @@ struct supervisor_context {
   hmap_if_conn    *if_mapper;                                 /**< WiFi subnet to interface mapper */
   hmap_vlan_conn  *vlan_mapper;                               /**< WiFi VLAN to interface mapper */
   bool            allow_all_connections;                      /**< @c allow_all_connections Flag from @c struct app_config */
+  bool            allow_all_nat;                              /**< @c allow_all_nat Flag from @c struct app_config */
   bool            exec_capture;                               /**< @c execute_capture from @c struct app_config */  
   char            hostapd_ctrl_if_path[MAX_OS_PATH_LEN];      /**< @c ctrl_interface param from @c struct hostapd_conf */
   uint8_t         wpa_passphrase[AP_SECRET_LEN];      /**< @c wpa_passphrase from @c struct hostapd_conf */
   ssize_t         wpa_passphrase_len;                         /**< the length of @c wpa_passphrase*/
   char            nat_interface[IFNAMSIZ];                    /**< @c nat_interface param from @c struct app_config */
   int             default_open_vlanid;                        /**< @c default_open_vlanid from @c struct app_config */
+  char            db_path[MAX_OS_PATH_LEN];                   /**< @c db_path from @c struct app_config */
   UT_array        *config_ifinfo_array;                       /**< @c config_ifinfo_array from @c struct app_config */
   struct bridge_mac_list *bridge_list;                        /**< List of assigned bridges */
   char            domain_delim;                               /**< Cntrol server command delimiter */
   struct capture_conf capture_config;                         /**< Capture service configuration. */
+  sqlite3         *fingeprint_db;                             /**< The fingerprint sqlite db structure. */
 };
 
 #endif
