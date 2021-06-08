@@ -41,6 +41,7 @@
 
 #include "supervisor/supervisor.h"
 #include "supervisor/network_commands.h"
+#include "supervisor/sqlite_fingerprint_writer.h"
 #include "radius/radius_service.h"
 #include "ap/ap_service.h"
 #include "dhcp/dhcp_service.h"
@@ -68,10 +69,12 @@ bool construct_hostapd_ctrlif(char *ctrl_interface, char *interface, char *hosta
 bool init_mac_mapper_ifnames(UT_array *connections, hmap_vlan_conn **vlan_mapper)
 {
   struct mac_conn *p = NULL;
+  struct vlan_conn vlan_conn;
 
   if (connections != NULL) {
     while(p = (struct mac_conn *) utarray_next(connections, p)) {
-      int ret = get_vlan_mapper(vlan_mapper, p->info.vlanid, p->info.ifname);
+      int ret = get_vlan_mapper(vlan_mapper, p->info.vlanid, &vlan_conn);
+      memcpy(p->info.ifname, vlan_conn.ifname, IFNAMSIZ);
       if (ret < 0) {
         log_trace("get_vlan_mapper fail");
         return false;

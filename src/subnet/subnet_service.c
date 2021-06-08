@@ -163,11 +163,14 @@ bool create_if_mapper(UT_array *config_ifinfo_array, hmap_if_conn **hmap)
 bool create_vlan_mapper(UT_array *config_ifinfo_array, hmap_vlan_conn **hmap)
 {
   config_ifinfo_t *p = NULL;
-
+  struct vlan_conn vlan_conn;
   if (config_ifinfo_array != NULL) {
     while(p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) {
       log_trace("Adding vlanid=%d and ifname=%s to mapper", p->vlanid, p->ifname);
-      if (!put_vlan_mapper(hmap, p->vlanid, p->ifname)) {
+      vlan_conn.vlanid = p->vlanid;
+      memcpy(vlan_conn.ifname, p->ifname, IFNAMSIZ);
+      vlan_conn.analyser_pid = 0;
+      if (!put_vlan_mapper(hmap, &vlan_conn)) {
         log_trace("put_if_mapper fail");
         free_vlan_mapper(hmap);
         return false;

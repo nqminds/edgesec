@@ -919,7 +919,7 @@ void free_if_mapper(hmap_if_conn **hmap)
   }
 }
 
-int get_vlan_mapper(hmap_vlan_conn **hmap, int vlanid, char *ifname)
+int get_vlan_mapper(hmap_vlan_conn **hmap, int vlanid, struct vlan_conn	*conn)
 {
   hmap_vlan_conn *s;
 
@@ -928,22 +928,22 @@ int get_vlan_mapper(hmap_vlan_conn **hmap, int vlanid, char *ifname)
 	return -1;
   }
 
-  if(ifname == NULL) {
-	log_trace("ifname param is NULL");
+  if(conn == NULL) {
+	log_trace("conn param is NULL");
 	return -1;
   }
 
   HASH_FIND(hh, *hmap, &vlanid, sizeof(int), s); /* id already in the hash? */
 
   if (s != NULL) {
-	memcpy(ifname, s->value, IFNAMSIZ);
+	*conn = s->value;
 	return 1;
   }
  
   return 0;
 }
 
-bool put_vlan_mapper(hmap_vlan_conn **hmap, int vlanid, char *ifname)
+bool put_vlan_mapper(hmap_vlan_conn **hmap, struct vlan_conn *conn)
 {
   hmap_vlan_conn *s;
 
@@ -952,12 +952,12 @@ bool put_vlan_mapper(hmap_vlan_conn **hmap, int vlanid, char *ifname)
 	return false;
   }
 
-  if (ifname == NULL) {
-	log_trace("ifname param is NULL");
+  if (conn == NULL) {
+	log_trace("conn param is NULL");
 	return false;
   }
 
-  HASH_FIND(hh, *hmap, &vlanid, sizeof(int), s); /* id already in the hash? */
+  HASH_FIND(hh, *hmap, &conn->vlanid, sizeof(int), s); /* id already in the hash? */
 
   if (s == NULL) {
     s = (hmap_vlan_conn *) os_malloc(sizeof(hmap_vlan_conn));
@@ -967,13 +967,13 @@ bool put_vlan_mapper(hmap_vlan_conn **hmap, int vlanid, char *ifname)
 	}
 
 	// Copy the key and value
-	s->key = vlanid;
-    memcpy(s->value, ifname, IFNAMSIZ);
+	s->key = conn->vlanid;
+    memcpy(&s->value, conn, sizeof(struct vlan_conn));
 
     HASH_ADD(hh, *hmap, key, sizeof(int), s);
   } else {
 	// Copy the value
-    memcpy(s->value, ifname, IFNAMSIZ);
+    memcpy(&s->value, conn, sizeof(struct vlan_conn));
   }
 
   return true;	

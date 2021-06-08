@@ -93,12 +93,22 @@ typedef struct hashmap_if_conn {
 } hmap_if_conn;
 
 /**
+ * @brief MAC connection structure
+ * 
+ */
+struct vlan_conn {
+  int 	vlanid;								/**< the VLAN ID */
+  char 	ifname[IFNAMSIZ];					/**< the interface name */
+  pid_t analyser_pid;                				/**< Analyser process descriptor */
+};
+
+/**
  * @brief VLAN to interface connection mapper
  * 
  */
 typedef struct hashmap_vlan_conn {
     int 						key;               		/**< VLAN id as subnet */
-    char 						value[IFNAMSIZ];		/**< value as the interface name */
+	struct vlan_conn			value;					/**< value as the vlan_conn structure */
     UT_hash_handle 				hh;         		    /**< makes this structure hashable */
 } hmap_vlan_conn;
 
@@ -167,24 +177,23 @@ bool put_if_mapper(hmap_if_conn **hmap, in_addr_t subnet, char *ifname);
 void free_if_mapper(hmap_if_conn **hmap);
 
 /**
- * @brief Get the interface name corresponding to a VLAN ID
+ * @brief Get the vlan connection structure corresponding to a VLAN ID
  * 
- * @param hmap The VLAN ID to interface connection mapper object
+ * @param hmap The VLAN ID to vlan connection mapper object
  * @param vlanid The VLAN ID
- * @param ifname The returned interface name 
+ * @param conn The returned VLAN connection structure
  * @return int 1 if found, 0 not found, -1 on error
  */
-int get_vlan_mapper(hmap_vlan_conn **hmap, int vlanid, char *ifname);
+int get_vlan_mapper(hmap_vlan_conn **hmap, int vlanid, struct vlan_conn	*conn);
 
 /**
- * @brief Insertes an interface and VLAN ID value into the interface connection mapper
+ * @brief Inserts a vlan connection structure and VLAN ID value into the interface connection mapper
  * 
  * @param hmap The VLAN ID to interface connection mapper object
- * @param vlanid The VLAN ID
- * @param ifname The interface name
+ * @param conn The VLAN connection structure
  * @return true on success, false otherwise
  */
-bool put_vlan_mapper(hmap_vlan_conn **hmap, int vlanid, char *ifname);
+bool put_vlan_mapper(hmap_vlan_conn **hmap, struct vlan_conn *conn);
 
 /**
  * @brief Frees the VLAN ID to interface connection mapper object
