@@ -672,7 +672,6 @@ int run_process(char *argv[], pid_t *child_pid)
 {
   pid_t ret;
   int status;
-  int arg_idx = 0;
   char buf[255];
 
   log_trace("Running process %s with params:", argv[0]);

@@ -200,11 +200,10 @@ char* run_ap_process(struct apconf *hconf, char *ctrl_if_path)
   }
 
   if (!dir_args.proc_running) {
-    log_trace("hostapd not running");
-    return NULL;
+    log_trace("hostapd proc not found");
   }
 
-  log_trace("Found %s running with pid=%d", dir_args.proc_name, child_pid);
+  log_trace("hostapd running with pid=%d", child_pid);
 
   while (check_count++ < 7) {
     if (check_ctrl_if_exists(ctrl_if_path) != -1) {

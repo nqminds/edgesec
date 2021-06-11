@@ -216,12 +216,10 @@ char* run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path)
   }
 
   if (!dir_args.proc_running) {
-    log_trace("dnsmasq not running");
-    os_free(conf_arg);
-    return NULL;
+    log_trace("dnsmasq proc not found");
   }
 
-  log_trace("Found %s running with pid=%d", dir_args.proc_name, child_pid);
+  log_trace("dnsmasq running with pid=%d", child_pid);
 
   dns_process_started = true;
   os_free(conf_arg);

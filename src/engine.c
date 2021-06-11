@@ -232,6 +232,14 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
     goto run_engine_fail;
   }
 
+  if (app_config->exec_ap) {
+    log_info("Running the ap service...");
+    if (run_ap(&app_config->hconfig, &app_config->rconfig, context.hostapd_ctrl_if_path) == NULL) {
+      log_debug("run_ap fail");
+      goto run_engine_fail;
+    }
+  }
+
   if (app_config->exec_radius) {
     log_info("Creating the radius server on port %d with client ip %s",
       app_config->rconfig.radius_port, app_config->rconfig.radius_client_ip);
@@ -239,14 +247,6 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
     radius_srv = run_radius(&app_config->rconfig, (void*) get_mac_conn_cmd, &context);
     if (radius_srv == NULL) {
       log_debug("run_radius fail");
-      goto run_engine_fail;
-    }
-  }
-
-  if (app_config->exec_ap) {
-    log_info("Running the ap service...");
-    if (run_ap(&app_config->hconfig, &app_config->rconfig, context.hostapd_ctrl_if_path) == NULL) {
-      log_debug("run_ap fail");
       goto run_engine_fail;
     }
   }

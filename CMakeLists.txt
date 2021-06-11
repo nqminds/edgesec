@@ -24,6 +24,11 @@ option(BUILD_SQLSYNC_SERVICE "Build sqlsync service" OFF)
 option(BUILD_REVERSE_SERVICE "Build Reverse service" OFF)
 
 set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_SYSTEM_NAME Linux)
+# set(CMAKE_SYSTEM_PROCESSOR arm)
+# set(tools /usr/local/arm-linux-musleabihf)
+# set(CMAKE_C_COMPILER /usr/local/bin/arm-linux-musleabihf-gcc)
+# set(CMAKE_CXX_COMPILER /usr/local/bin/arm-linux-musleabihf-g++)
 
 # The edgesec version number.
 set(EDGESEC_VERSION_MAJOR 0)
