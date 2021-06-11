@@ -205,7 +205,7 @@ if (USE_M_LIB AND NOT (BUILD_ONLY_DOCS))
   endif ()
 endif ()
 
-if (BUILD_NDPI_LIB AND NOT (BUILD_ONLY_DOCS))
+if (BUILD_NDPI_LIB)
   add_compile_definitions(WITH_NDPI_SERVICE)
   set(LIBNDPI_PATH ${CMAKE_CURRENT_BINARY_DIR}/lib/ndpi)
   set(LIBNDPI_INCLUDE_PATH ${LIBNDPI_PATH}/include/ndpi)
@@ -213,15 +213,32 @@ if (BUILD_NDPI_LIB AND NOT (BUILD_ONLY_DOCS))
   if (LIBNDPI_LIB_PATH)
     message("Found libndpi library: ${LIBNDPI_LIB_PATH}")
   ELSE ()
-    ExternalProject_Add(ndpi
-      GIT_REPOSITORY  https://github.com/ntop/nDPI
-      GIT_TAG         64929a75e0a7a60d864bd25a9fd97fdf9ac892a2
-      GIT_PROGRESS    true
-      CONFIGURE_COMMAND ./autogen.sh
-      COMMAND           ./configure --prefix=${LIBNDPI_PATH}
-      BUILD_IN_SOURCE     1
-      BUILD_COMMAND       make  
-    )
+    FetchContent_Declare(
+        ndpi
+        GIT_REPOSITORY https://github.com/ntop/nDPI
+        GIT_TAG        3.4
+      )
+      set(FETCHCONTENT_QUIET OFF)
+      FetchContent_MakeAvailable(ndpi)
+      FetchContent_GetProperties(ndpi SOURCE_DIR NDPI_SOURCE_DIR)
+      message("Source dir: ${NDPI_SOURCE_DIR}")
+      execute_process(
+        COMMAND ./autogen.sh
+        WORKING_DIRECTORY "${NDPI_SOURCE_DIR}"
+      )
+      execute_process(
+        COMMAND ./configure --prefix=${LIBNDPI_PATH}
+        WORKING_DIRECTORY "${NDPI_SOURCE_DIR}"
+      )
+      execute_process(
+        COMMAND make
+        WORKING_DIRECTORY "${NDPI_SOURCE_DIR}"
+      )
+      execute_process(
+        COMMAND make install
+        WORKING_DIRECTORY "${NDPI_SOURCE_DIR}"
+      )
+    find_library(LIBNDPI_LIB_PATH NAMES ndpi libndpi PATHS "${LIBNDPI_PATH}/lib")
   endif ()
 endif ()
 
