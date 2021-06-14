@@ -57,6 +57,7 @@ struct supervisor_context {
   char            domain_delim;                               /**< Cntrol server command delimiter */
   struct capture_conf capture_config;                         /**< Capture service configuration. */
   sqlite3         *fingeprint_db;                             /**< The fingerprint sqlite db structure. */
+  struct iptables_context *iptables_ctx;                      /**< The iptables context. */
 };
 
 #endif

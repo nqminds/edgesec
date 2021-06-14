@@ -28,61 +28,79 @@
 
 #include <inttypes.h>
 #include <stdbool.h>
+
+#include "os.h"
+
+/**
+ * @brief iptables context structure definition
+ * 
+ */
+struct iptables_context {
+  char iptables_path[MAX_OS_PATH_LEN];      /**< The iptables executable path */
+  UT_array *rule_list;                      /**< Current iptables rules */  
+  bool  exec_iptables;                      /**< flag to execute iptables command */
+};
+
 /**
  * @brief Initialises the iptables rules list
  * 
  * @param path The iptables binary path
  * @param ifinfo_array Array of interface configuration info structure
- * @return true on success, false on error
+ * @return struct iptables_context*, pointer to newly created iptables context, NULL on failure
  */
-bool init_iptables(char *path, UT_array *ifinfo_array);
+struct iptables_context* init_iptables(char *path, UT_array *ifinfo_array);
 
 /**
- * @brief Free the iptables rules list
+ * @brief Free the iptables context
  * 
+ * @param ctx The iptables context
  */
-void free_iptables(void);
+void free_iptables(struct iptables_context* ctx);
 
 /**
  * @brief Add a bridge rule to the list of rules
  * 
+ * @param ctx The iptables context
  * @param sip Source IP string
  * @param sif Source interface name string
  * @param dip Destination IP string
  * @param dif Destination interface name string
  * @return true on sucess, false on error
  */
-bool add_bridge_rules(char *sip, char *sif, char *dip, char *dif);
+bool add_bridge_rules(struct iptables_context* ctx, char *sip, char *sif, char *dip, char *dif);
 
 /**
  * @brief Delete a bridge rule
  * 
+ * @param ctx The iptables context
  * @param sip Source IP string
  * @param sif Source interface name string
  * @param dip Destination IP string
  * @param dif Destination interface name string
  * @return true on sucess, false on error
  */
-bool delete_bridge_rules(char *sip, char *sif, char *dip, char *dif);
+bool delete_bridge_rules(struct iptables_context* ctx, char *sip, char *sif, char *dip, char *dif);
 
 /**
  * @brief Add a NAT rule
  * 
+ * @param ctx The iptables context
  * @param sip Source IP string
  * @param sif Source interface name string
  * @param nif NAT interface name string
  * @return true on sucess, false on error
  */
-bool add_nat_rules(char *sip, char *sif, char *nif);
+bool add_nat_rules(struct iptables_context* ctx, char *sip, char *sif, char *nif);
 
 /**
  * @brief Delete a NAT rule
  * 
+ * @param ctx The iptables context
  * @param sip Source IP string
  * @param sif Source interface name string
  * @param nif NAT interface name string
  * @return true on sucess, false on error
  */
-bool delete_nat_rules(char *sip, char *sif, char *nif);
+bool delete_nat_rules(struct iptables_context* ctx, char *sip, char *sif, char *nif);
 
 #endif

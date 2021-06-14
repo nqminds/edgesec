@@ -16,7 +16,7 @@
 #include "utils/os.h"
 #include "utils/utarray.h"
 
-static void command_out_fn(void *buf, size_t count)
+static void command_out_fn(void *ctx, void *buf, size_t count)
 {
   if (strncmp("Linux\n", buf, count) != 0 ) {
     fail();
@@ -30,26 +30,26 @@ static void test_run_command(void **state)
   char *argv[3] = {"/bin/uname", "-s", NULL};
 
   /* Testing run_command with /bin/uname -s */
-  int status = run_command(argv, NULL, NULL);
+  int status = run_command(argv, NULL, NULL, NULL);
   assert_int_equal(status, 0);
 
   char *argv1[3] = {"/bin/chuppauname", "-s", NULL};
 
   /* Testing run_command with /bin/chuppauname -s */
-  status = run_command(argv1, NULL, NULL);
+  status = run_command(argv1, NULL, NULL, NULL);
   assert_int_not_equal(status, 0);
 
   /* Testing run_command with NULL */
-  status = run_command(NULL, NULL, NULL);
+  status = run_command(NULL, NULL, NULL, NULL);
   assert_int_not_equal(status, 0);
 
   char *argv2[1] = {NULL};
   /* Testing run_command with {NULL} */
-  status = run_command(argv2, NULL, NULL);
+  status = run_command(argv2, NULL, NULL, NULL);
   assert_int_not_equal(status, 0);
 
   /* Testing run_command with /bin/uname -s and callback */
-  status = run_command(argv, NULL, command_out_fn);
+  status = run_command(argv, NULL, command_out_fn, NULL);
   assert_int_equal(status, 0);
 }
 

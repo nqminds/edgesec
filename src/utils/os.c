@@ -207,7 +207,7 @@ void * __hide_aliasing_typecast(void *foo)
 	return foo;
 }
 
-int read_command_output(int fd, process_callback_fn fn)
+int read_command_output(int fd, process_callback_fn fn, void *ctx)
 {
   ssize_t read_bytes, count = 0;
   char *buf = os_malloc(PIPE_BUF);
@@ -221,7 +221,7 @@ int read_command_output(int fd, process_callback_fn fn)
     } else if (read_bytes != -1) {
       count += read_bytes;
       if (fn != NULL)
-        fn(buf, read_bytes);
+        fn(ctx, buf, read_bytes);
     }
   }
 
@@ -229,7 +229,7 @@ int read_command_output(int fd, process_callback_fn fn)
   return count;
 }
 
-int run_command(char *const argv[], char *const envp[], process_callback_fn fn)
+int run_command(char *const argv[], char *const envp[], process_callback_fn fn, void *ctx)
 {
   pid_t childPid;
   int status;
@@ -278,7 +278,7 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn fn)
     if (close(pfd[1]) == -1)   /* Write end is unused */
       log_err_ex("close");
 
-    read_command_output(pfd[0], fn);
+    read_command_output(pfd[0], fn, ctx);
 
     /* We must use waitpid() for this task; using wait() could inadvertently
        collect the status of one of the caller's other children */
