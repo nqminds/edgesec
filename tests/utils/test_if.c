@@ -14,7 +14,7 @@
 #include <cmocka.h>
 
 #include "utils/log.h"
-#include "../src/utils/if.h"
+#include "utils/if.h"
 #include "utils/utarray.h"
 
 static const UT_icd config_ifinfo_icd = {sizeof(config_ifinfo_t), NULL, NULL, NULL};
