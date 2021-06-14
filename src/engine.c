@@ -177,8 +177,8 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
     goto run_engine_fail;
   }
 
-  if ((context.iptables_ctx = init_iptables(iptables_path, app_config->config_ifinfo_array)) == NULL) {
-    log_debug("init_iptables fail");
+  if ((context.iptables_ctx = iptables_init(iptables_path, app_config->config_ifinfo_array, app_config->exec_iptables)) == NULL) {
+    log_debug("iptables_init fail");
     goto run_engine_fail;
   }
 
@@ -279,7 +279,7 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
   eloop_destroy();
   free(nat_ip);
   hmap_str_keychar_free(&hmap_bin_paths);
-  free_iptables(context.iptables_ctx);
+  iptables_free(context.iptables_ctx);
   free_mac_mapper(&context.mac_mapper);
   free_if_mapper(&context.if_mapper);
   free_vlan_mapper(&context.vlan_mapper);
@@ -295,7 +295,7 @@ run_engine_fail:
   eloop_destroy();
   free(nat_ip);
   hmap_str_keychar_free(&hmap_bin_paths);
-  free_iptables(context.iptables_ctx);
+  iptables_free(context.iptables_ctx);
   free_mac_mapper(&context.mac_mapper);
   free_if_mapper(&context.if_mapper);
   free_vlan_mapper(&context.vlan_mapper);

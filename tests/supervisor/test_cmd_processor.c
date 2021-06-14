@@ -17,6 +17,7 @@
 #include "utils/hashmap.h"
 #include "utils/utarray.h"
 #include "utils/log.h"
+#include "utils/iptables.h"
 #include "engine.h"
 
 #define CMD_DELIMITER 0x20
@@ -48,10 +49,10 @@ static char add_nat_mock_buf[255];
 static char delete_nat_mock_buf[255];
 
 ssize_t __wrap_write_domain_data(int sock, char *data, size_t data_len, char *addr);
-bool __wrap_add_bridge_rules(char *sip, char *sif, char *dip, char *dif);
-bool __wrap_delete_bridge_rules(char *sip, char *sif, char *dip, char *dif);
-bool __wrap_add_nat_rules(char *sip, char *sif, char *nif);
-bool __wrap_delete_nat_rules(char *sip, char *sif, char *nif);
+bool __wrap_iptables_add_bridge(struct iptables_context *ctx, char *sip, char *sif, char *dip, char *dif);
+bool __wrap_iptables_delete_bridge(struct iptables_context *ctx, char *sip, char *sif, char *dip, char *dif);
+bool __wrap_iptables_add_nat(struct iptables_context *ctx, char *sip, char *sif, char *nif);
+bool __wrap_iptables_delete_nat(struct iptables_context *ctx, char *sip, char *sif, char *nif);
 
 ssize_t __wrap_write_domain_data(int sock, char *data, size_t data_len, char *addr)
 {
@@ -90,7 +91,7 @@ ssize_t __wrap_write_domain_data(int sock, char *data, size_t data_len, char *ad
   return 0;
 }
 
-bool __wrap_add_bridge_rules(char *sip, char *sif, char *dip, char *dif)
+bool __wrap_iptables_add_bridge(struct iptables_context *ctx, char *sip, char *sif, char *dip, char *dif)
 {
   memset(add_bridge_mock_buf, 0, 255);
   strcpy(add_bridge_mock_buf, sip);
@@ -101,7 +102,7 @@ bool __wrap_add_bridge_rules(char *sip, char *sif, char *dip, char *dif)
   return true;
 }
 
-bool __wrap_delete_bridge_rules(char *sip, char *sif, char *dip, char *dif)
+bool __wrap_iptables_delete_bridge(struct iptables_context *ctx, char *sip, char *sif, char *dip, char *dif)
 {
   memset(delete_bridge_mock_buf, 0, 255);
   strcpy(delete_bridge_mock_buf, sip);
@@ -112,7 +113,7 @@ bool __wrap_delete_bridge_rules(char *sip, char *sif, char *dip, char *dif)
   return true;
 }
 
-bool __wrap_add_nat_rules(char *sip, char *sif, char *nif)
+bool __wrap_iptables_add_nat(struct iptables_context *ctx, char *sip, char *sif, char *nif)
 {
   memset(add_nat_mock_buf, 0, 255);
   strcpy(add_nat_mock_buf, sip);
@@ -122,7 +123,7 @@ bool __wrap_add_nat_rules(char *sip, char *sif, char *nif)
   return true;
 }
 
-bool __wrap_delete_nat_rules(char *sip, char *sif, char *nif)
+bool __wrap_iptables_delete_nat(struct iptables_context *ctx, char *sip, char *sif, char *nif)
 {
   memset(delete_nat_mock_buf, 0, 255);
   strcpy(delete_nat_mock_buf, sip);
@@ -177,6 +178,7 @@ void init_test_context(struct supervisor_context *context)
   strcpy(config.nat_interface, "natif");
 
   init_context(&config, context);
+  context->iptables_ctx = iptables_init("./", config.config_ifinfo_array, false);
 }
 
 void free_test_context(struct supervisor_context *context)
@@ -185,6 +187,7 @@ void free_test_context(struct supervisor_context *context)
   free_mac_mapper(&context->mac_mapper);
   free_if_mapper(&context->if_mapper);
   free_bridge_list(context->bridge_list);
+  iptables_free(context->iptables_ctx);
 }
 
 static void test_process_domain_buffer(void **state)
@@ -240,7 +243,6 @@ static void test_process_add_bridge_cmd(void **state)
   hwaddr_aton2("aa:bb:cc:dd:ee:ff", mac_addr_right);
 
   init_test_context(&context);
-  context.iptables_ctx = NULL;
 
   assert_int_not_equal(split_string_array("ACCEPT_MAC 11:22:33:44:55:66 1", CMD_DELIMITER, cmd_arr), -1);  
   ssize_t ret = process_accept_mac_cmd(TEST_PROCESS_ADD_BRIDGE_CMD_ONE, client_addr, &context, cmd_arr);
@@ -266,7 +268,7 @@ static void test_process_add_bridge_cmd(void **state)
 
   utarray_clear(cmd_arr);
 
-  assert_int_not_equal(split_string_array("ADD_BRIDGE 11:22:33:44:55:66 aa:bb:cc:dd:ee:ff", CMD_DELIMITER, cmd_arr), -1);  
+  assert_int_not_equal(split_string_array("ADD_BRIDGE 11:22:33:44:55:66 aa:bb:cc:dd:ee:ff", CMD_DELIMITER, cmd_arr), -1);
   ret = process_add_bridge_cmd(TEST_PROCESS_ADD_BRIDGE_CMD_ONE, client_addr, &context, cmd_arr);
   assert_int_equal(ret, strlen(OK_REPLY));
 
@@ -829,18 +831,18 @@ int main(int argc, char *argv[])
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
-    // cmocka_unit_test(test_process_domain_buffer),
-    cmocka_unit_test(test_process_add_bridge_cmd)
-    // cmocka_unit_test(test_process_remove_bridge_cmd),
-    // cmocka_unit_test(test_process_set_ip_cmd),
-    // cmocka_unit_test(test_process_get_all_cmd),
-    // cmocka_unit_test(test_process_get_map_cmd),
-    // cmocka_unit_test(test_process_assign_psk_cmd),
-    // cmocka_unit_test(test_process_remove_nat_cmd),
-    // cmocka_unit_test(test_process_add_nat_cmd),
-    // cmocka_unit_test(test_process_deny_mac_cmd),
-    // cmocka_unit_test(test_process_accept_mac_cmd),
-    // cmocka_unit_test(test_process_get_bridges_cmd)
+    cmocka_unit_test(test_process_domain_buffer),
+    cmocka_unit_test(test_process_add_bridge_cmd),
+    cmocka_unit_test(test_process_remove_bridge_cmd),
+    cmocka_unit_test(test_process_set_ip_cmd),
+    cmocka_unit_test(test_process_get_all_cmd),
+    cmocka_unit_test(test_process_get_map_cmd),
+    cmocka_unit_test(test_process_assign_psk_cmd),
+    cmocka_unit_test(test_process_remove_nat_cmd),
+    cmocka_unit_test(test_process_add_nat_cmd),
+    cmocka_unit_test(test_process_deny_mac_cmd),
+    cmocka_unit_test(test_process_accept_mac_cmd),
+    cmocka_unit_test(test_process_get_bridges_cmd)
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

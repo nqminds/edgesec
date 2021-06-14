@@ -258,8 +258,8 @@ int add_nat_cmd(struct supervisor_context *context, uint8_t *mac_addr)
       log_trace("get_ifname_from_ip fail");
       return -1;
     }
-    if (!add_nat_rules(context->iptables_ctx, info.ip_addr, ifname, context->nat_interface)) {
-      log_trace("add_nat_rules fail");
+    if (!iptables_add_nat(context->iptables_ctx, info.ip_addr, ifname, context->nat_interface)) {
+      log_trace("iptables_add_nat fail");
       return -1;
     }
   }
@@ -294,8 +294,8 @@ int remove_nat_cmd(struct supervisor_context *context, uint8_t *mac_addr)
       log_trace("get_ifname_from_ip fail");
       return -1;
     }
-    if (!delete_nat_rules(context->iptables_ctx, info.ip_addr, ifname, context->nat_interface)) {
-      log_trace("delete_nat_rules fail");
+    if (!iptables_delete_nat(context->iptables_ctx, info.ip_addr, ifname, context->nat_interface)) {
+      log_trace("iptables_delete_nat fail");
       return -1;
     }
   }
@@ -366,14 +366,14 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
   // Change the NAT iptables rules
   if (add && info.nat) {
     log_trace("Adding NAT rule");
-    if (!add_nat_rules(context->iptables_ctx, ip_addr, ifname, context->nat_interface)) {
-      log_trace("add_nat_rules fail");
+    if (!iptables_add_nat(context->iptables_ctx, ip_addr, ifname, context->nat_interface)) {
+      log_trace("iptables_add_nat fail");
       return -1;
     }
   } else if (!add && info.nat){
     log_trace("Deleting NAT rule");
-    if (!delete_nat_rules(context->iptables_ctx, ip_addr, ifname, context->nat_interface)) {
-      log_trace("delete_nat_rules fail");
+    if (!iptables_delete_nat(context->iptables_ctx, ip_addr, ifname, context->nat_interface)) {
+      log_trace("iptables_delete_nat fail");
       return -1;
     }
   }
@@ -386,14 +386,14 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
         if (validate_ipv4_string(right_info.ip_addr)) {
           if (add) {
             log_trace("Adding iptable rule for sip=%s sif=%s dip=%s dif=%s", conn.info.ip_addr, conn.info.ifname, right_info.ip_addr, right_info.ifname);
-            if (!add_bridge_rules(context->iptables_ctx, conn.info.ip_addr, conn.info.ifname, right_info.ip_addr, right_info.ifname)) {
-              log_trace("add_bridge_rules fail");
+            if (!iptables_add_bridge(context->iptables_ctx, conn.info.ip_addr, conn.info.ifname, right_info.ip_addr, right_info.ifname)) {
+              log_trace("iptables_add_bridge fail");
               utarray_free(mac_list_arr);
               return -1;
             }
           } else {
             log_trace("Removing iptable rule for sip=%s sif=%s dip=%s dif=%s", info.ip_addr, info.ifname, right_info.ip_addr, right_info.ifname);
-            if (!delete_bridge_rules(context->iptables_ctx, info.ip_addr, info.ifname, right_info.ip_addr, right_info.ifname)) {
+            if (!iptables_delete_bridge(context->iptables_ctx, info.ip_addr, info.ifname, right_info.ip_addr, right_info.ifname)) {
               log_trace("remove_bridge_rules fail");
               utarray_free(mac_list_arr);
               return -1;
@@ -419,11 +419,10 @@ int add_bridge_cmd(struct supervisor_context *context, uint8_t *left_mac_addr, u
     ) {
       if (validate_ipv4_string(left_info.ip_addr) && validate_ipv4_string(right_info.ip_addr)) {
         log_trace("Adding iptable rule for sip=%s sif=%s dip=%s dif=%s", left_info.ip_addr, left_info.ifname, right_info.ip_addr, right_info.ifname);
-        add_bridge_rules(context->iptables_ctx, left_info.ip_addr, left_info.ifname, right_info.ip_addr, right_info.ifname);
-        // if (!add_bridge_rules(context->iptables_ctx, left_info.ip_addr, left_info.ifname, right_info.ip_addr, right_info.ifname)) {
-        //   log_trace("add_bridge_rules fail");
-        //   return -1;
-        // }
+        if (!iptables_add_bridge(context->iptables_ctx, left_info.ip_addr, left_info.ifname, right_info.ip_addr, right_info.ifname)) {
+          log_trace("iptables_add_bridge fail");
+          return -1;
+        }
       }
     }
   } else {
@@ -445,8 +444,8 @@ int remove_bridge_cmd(struct supervisor_context *context, uint8_t *left_mac_addr
     ) {
       if (validate_ipv4_string(left_info.ip_addr) && validate_ipv4_string(right_info.ip_addr)) {
         log_trace("Removing iptable rule for sip=%s sif=%s dip=%s dif=%s", left_info.ip_addr, left_info.ifname, right_info.ip_addr, right_info.ifname);
-        if (!delete_bridge_rules(context->iptables_ctx, left_info.ip_addr, left_info.ifname, right_info.ip_addr, right_info.ifname)) {
-          log_trace("delete_bridge_rules fail");
+        if (!iptables_delete_bridge(context->iptables_ctx, left_info.ip_addr, left_info.ifname, right_info.ip_addr, right_info.ifname)) {
+          log_trace("iptables_delete_bridge fail");
           return -1;
         }
       }

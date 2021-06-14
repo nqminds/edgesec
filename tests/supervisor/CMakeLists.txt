@@ -10,11 +10,11 @@ add_executable(test_domain_server test_domain_server.c)
 target_link_libraries(test_domain_server domain log ${CMOCKA_LIB})
 
 add_executable(test_cmd_processor test_cmd_processor.c)
-target_link_libraries(test_cmd_processor cmd_processor log engine ${CMOCKA_LIB})
+target_link_libraries(test_cmd_processor cmd_processor iptables log engine ${CMOCKA_LIB})
 
 set_target_properties(test_cmd_processor
         PROPERTIES
-        LINK_FLAGS  "-Wl,--wrap=write_domain_data -Wl,--wrap=add_bridge_rules -Wl,--wrap=delete_bridge_rules -Wl,--wrap=add_nat_rules -Wl,--wrap=delete_nat_rules"
+        LINK_FLAGS  "-Wl,--wrap=write_domain_data -Wl,--wrap=iptables_add_bridge -Wl,--wrap=iptables_delete_bridge -Wl,--wrap=iptables_add_nat -Wl,--wrap=iptables_delete_nat"
 )
 
 add_executable(test_mac_mapper test_mac_mapper.c)

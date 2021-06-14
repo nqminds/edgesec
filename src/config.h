@@ -46,6 +46,7 @@ struct app_config {
   bool                exec_radius;                          /**< Flag to execute the radius service. */
   bool                exec_dhcp;                            /**< Flag to execute the dhcp service. */
   bool                exec_capture;                         /**< Flag to execute the capture service. */
+  bool                exec_iptables;                        /**< Flag to execute the iptables command. */
   char                nat_interface[IFNAMSIZ];              /**< The NAT interface string. */
   bool                create_interfaces;                    /**< Flag to create the WiFi subnet interfaces. */
   bool                ignore_if_error;                      /**< Flag if set ignores the errors if subnet already exists. */

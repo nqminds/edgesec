@@ -12,6 +12,7 @@ execAp = true
 execRadius = true
 execDhcp = true
 execCapture = true
+execIptables = true
 dbPath = "./db"
 
 [capture]
