@@ -32,7 +32,7 @@
 #include "sqlite_pcap_writer.h"
 
 #include "../utils/os.h"
-#include "../utils/if.h"
+//#include "../utils/if.h"
 #include "../utils/log.h"
 #include "../utils/sqliteu.h"
 

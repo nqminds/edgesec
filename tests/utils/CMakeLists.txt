@@ -3,8 +3,8 @@ include_directories(
   "${CMOCKA_INCLUDE_DIR}"
 )
 
-add_executable(test_if test_if.c)
-target_link_libraries(test_if if ${CMOCKA_LIB})
+#add_executable(test_if test_if.c)
+#target_link_libraries(test_if if ${CMOCKA_LIB})
 
 add_executable(test_os test_os.c)
 target_link_libraries(test_os os ${CMOCKA_LIB})
@@ -27,10 +27,10 @@ target_link_libraries(test_log_level PRIVATE log)
 add_executable(test_log_err test_log_err.c)
 target_link_libraries(test_log_err PRIVATE log)
 
-add_test(NAME test_if COMMAND test_if)
-set_tests_properties(test_if
-  PROPERTIES
-  WILL_FAIL FALSE)
+#add_test(NAME test_if COMMAND test_if)
+#set_tests_properties(test_if
+#  PROPERTIES
+#  WILL_FAIL FALSE)
 
 add_test(NAME test_os COMMAND test_os)
 set_tests_properties(test_os

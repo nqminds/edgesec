@@ -28,6 +28,7 @@
 
 #include <sys/types.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 typedef void (*capture_callback_fn)(const void *ctx, struct pcap_pkthdr *header, uint8_t *packet);
 
