@@ -150,6 +150,7 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
   int domain_sock = -1;
   char *commands[] = {"ip", "iw", "iptables", "dnsmasq", NULL};
   char *nat_ip = NULL;
+  int ret;
 
   // Set the log level
   log_set_level(log_level);
@@ -184,9 +185,12 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
 
   log_info("Checking wifi interface...");
   if (!app_config->ap_detect) {
-    if(!is_iw_vlan(app_config->hconfig.interface)) {
-      log_debug("is_iw_vlan fail");
+    ret = is_iw_vlan(app_config->hconfig.interface);
+    if(ret > 0) {
+      log_debug("interface %s not VLAN capable", app_config->hconfig.interface);
       goto run_engine_fail;
+    } else if (ret < 0) {
+      log_debug("is_iw_vlan fail");
     }
   } else {
     if(get_valid_iw(app_config->hconfig.interface) == NULL) {

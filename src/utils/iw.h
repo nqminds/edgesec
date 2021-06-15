@@ -76,9 +76,9 @@ UT_array *get_netiw_info(void);
  * @brief Check if interface has the VLAN capability
  * 
  * @param ap_interface Interface name string
- * @return true if VLAN capable, false otherwise
+ * @return int 0 if VLAN capable, -1 on error and 1 if not VLAN capable
  */
-bool is_iw_vlan(const char *ap_interface);
+int is_iw_vlan(const char *ap_interface);
 
 /**
  * @brief Returns an exisiting WiFi interface name that supports VLAN
