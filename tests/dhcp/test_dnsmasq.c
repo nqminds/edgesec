@@ -47,13 +47,16 @@ bool get_config_dhcpinfo(char *info, config_dhcpinfo_t *el)
   UT_array *info_arr;
   utarray_new(info_arr, &ut_str_icd);
 
-  split_string_array(info, ',', info_arr);
+  ssize_t count = split_string_array(info, ',', info_arr);
+	
+  log_trace("Number of substrings=%d", count);
 
   if (!utarray_len(info_arr))
     goto err;
 
   char **p = NULL;
   p = (char**) utarray_next(info_arr, p);
+  log_trace("vlanid=%s", *p);
   if (*p != NULL) {
     el->vlanid = (int) strtol(*p, NULL, 10);
     if (errno == EINVAL)
@@ -62,24 +65,28 @@ bool get_config_dhcpinfo(char *info, config_dhcpinfo_t *el)
     goto err;
 
   p = (char**) utarray_next(info_arr, p);
+  log_trace("ip_addr_low=%s", *p);
   if (*p != NULL) {
     strcpy(el->ip_addr_low, *p);
   } else
     goto err;
 
   p = (char**) utarray_next(info_arr, p);
+  log_trace("ip_addr_upp=%s", *p);
   if (*p != NULL)
     strcpy(el->ip_addr_upp, *p);
   else
     goto err;
 
   p = (char**) utarray_next(info_arr, p);
+  log_trace("subnet_mask=%s", *p);
   if (*p != NULL)
     strcpy(el->subnet_mask, *p);
   else
     goto err;
 
   p = (char**) utarray_next(info_arr, p);
+  log_trace("lease_time=%s", *p);
   if (*p != NULL)
     strcpy(el->lease_time, *p);
   else
@@ -106,13 +113,13 @@ static void test_generate_dhcp_conf(void **state)
   strcpy(dconf.dhcp_conf_path, test_dhcp_conf_path);
   strcpy(dconf.dhcp_script_path, test_dhcp_script_path);
 
-  get_config_dhcpinfo("0,10.0.0.2,10.0.0.254,255.255.255.0,24h", &el);
+  assert_true(get_config_dhcpinfo("0,10.0.0.2,10.0.0.254,255.255.255.0,24h", &el));
   utarray_push_back(dconf.config_dhcpinfo_array, &el);
-  get_config_dhcpinfo("1,10.0.1.2,10.0.1.254,255.255.255.0,24h", &el);
+  assert_true(get_config_dhcpinfo("1,10.0.1.2,10.0.1.254,255.255.255.0,24h", &el));
   utarray_push_back(dconf.config_dhcpinfo_array, &el);
-  get_config_dhcpinfo("2,10.0.2.2,10.0.2.254,255.255.255.0,24h", &el);
+  assert_true(get_config_dhcpinfo("2,10.0.2.2,10.0.2.254,255.255.255.0,24h", &el));
   utarray_push_back(dconf.config_dhcpinfo_array, &el);
-  get_config_dhcpinfo("3,10.0.3.2,10.0.3.254,255.255.255.0,24h", &el);
+  assert_true(get_config_dhcpinfo("3,10.0.3.2,10.0.3.254,255.255.255.0,24h", &el));
   utarray_push_back(dconf.config_dhcpinfo_array, &el);
 
   split_string_array(dns_server, ',', server_arr);
@@ -174,7 +181,7 @@ static void test_generate_script_conf(void **state)
 
 int main(int argc, char *argv[])
 {  
-  log_set_quiet(true);
+  log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_generate_dhcp_conf),
