@@ -26,11 +26,12 @@
 #ifndef IF_H_
 #define IF_H_
 
-#include <linux/if.h>
+//#include <linux/if.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include <netinet/in.h>
 #include <net/ethernet.h>
+#include <net/if.h>
 
 #include "linux/rtnetlink.h"
 #include "utarray.h"
