@@ -144,14 +144,14 @@ static void test_split_string(void **state)
 
   /* Testing split_string on fn_split_string=NULL */
   count = split_string(str_two, ':', NULL, strs);
-  assert_int_equal(count, (ssize_t) -1);
+  assert_int_equal(count * (-1), 1);
 
   utarray_free(strs);
   utarray_new(strs, &ut_str_icd);
 
   /* Testing split_string in input string NULL */
   count = split_string(NULL, ':', fn_split_string, strs);
-  assert_int_equal(count, (ssize_t) -1);
+  assert_int_equal(count * (-1), 1);
 
   utarray_free(strs);
 }
@@ -177,7 +177,7 @@ static void test_split_string_array(void **state)
   assert_string_equal(*p, "abcdef");
 
   count = split_string_array(str, ':', NULL);
-  assert_int_equal(count, (ssize_t) -1);
+  assert_int_equal(count * (-1), 1);
 
   utarray_free(arr);
 }
