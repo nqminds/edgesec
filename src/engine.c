@@ -160,8 +160,14 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
     goto run_engine_fail;
   }
 
+  if (!exist_dir(app_config->db_path)) {
+    log_debug("db path=%s open fail", app_config->db_path);
+    goto run_engine_fail;
+  }
+
   log_info("AP name: %s", app_config->hconfig.ssid);
   log_info("AP interface: %s", app_config->hconfig.interface);
+  log_info("DB path: %s", app_config->db_path);
 
   log_info("Checking system commands...");
   hmap_str_keychar *hmap_bin_paths = check_systems_commands(

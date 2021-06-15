@@ -545,4 +545,12 @@ void generate_radom_uuid(char *rid);
  * @return bool true if process running, false otherwise
  */
 bool find_dir_proc_fn(char *path, void *args);
+
+/**
+ * @brief Check if folder exists
+ * 
+ * @param dirpath The folder path
+ * @return bool true on success, false on failure 
+ */
+bool exist_dir(char *dirpath);
 #endif /* OS_H */

@@ -27,7 +27,6 @@ analyser = "ndpi"
 fileWrite = true
 dbWrite = false
 dbSync = false
-dbPath = "./db"
 dbSyncAddress = "localhost"
 dbSyncPort = 12345
 command = "SET_FINGERPRINT"

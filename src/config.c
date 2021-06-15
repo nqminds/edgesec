@@ -544,8 +544,15 @@ char load_delim(const char *filename)
 bool load_capture_config(const char *filename, struct capture_conf *config)
 {
   char *value = os_zalloc(INI_BUFFERSIZE);
+  int ret;
+
+  // Load db param
+  ini_gets("system", "dbPath", "./", value, INI_BUFFERSIZE, filename);
+  strncpy(config->db_path, value, MAX_OS_PATH_LEN);
+  os_free(value);
 
   // Load domainServerPath
+  value = os_zalloc(INI_BUFFERSIZE);
   ini_gets("supervisor", "domainServerPath", "", value, INI_BUFFERSIZE, filename);
   strncpy(config->domain_server_path, value, MAX_OS_PATH_LEN);
   os_free(value);
@@ -558,7 +565,7 @@ bool load_capture_config(const char *filename, struct capture_conf *config)
 
   // Load capture bin path
   value = os_zalloc(INI_BUFFERSIZE);
-  int ret = ini_gets("capture", "captureBinPath", "", value, INI_BUFFERSIZE, filename);
+  ret = ini_gets("capture", "captureBinPath", "", value, INI_BUFFERSIZE, filename);
   strncpy(config->capture_bin_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
@@ -598,12 +605,6 @@ bool load_capture_config(const char *filename, struct capture_conf *config)
   value = os_zalloc(INI_BUFFERSIZE);
   ret = ini_gets("capture", "analyser", PACKET_ANALYSER_DEFAULT, value, INI_BUFFERSIZE, filename);
   strncpy(config->analyser, value, MAX_ANALYSER_NAME_SIZE - 1);
-  os_free(value);
-
-  // Load db param
-  value = os_zalloc(INI_BUFFERSIZE);
-  ret = ini_gets("capture", "dbPath", "./", value, INI_BUFFERSIZE, filename);
-  strncpy(config->db_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
   // Load fileWrite param

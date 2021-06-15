@@ -827,3 +827,18 @@ bool find_dir_proc_fn(char *path, void *args)
 
   return true;
 }
+
+bool exist_dir(char *dirpath)
+{
+  DIR *dirp;
+
+  /* Open the directory - on failure print an error and return */
+  errno = 0;
+  if ((dirp = opendir(dirpath)) == NULL) {
+    log_err("opendir");
+    return false;
+  }
+
+  closedir(dirp);
+  return true;
+}
