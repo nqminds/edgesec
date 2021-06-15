@@ -51,6 +51,7 @@ bool get_config_dhcpinfo(char *info, config_dhcpinfo_t *el)
   char **p = NULL;
   p = (char**) utarray_next(info_arr, p);
   if (*p != NULL) {
+    errno = 0;
     el->vlanid = (int) strtol(*p, NULL, 10);
     if (errno == EINVAL)
       goto err;
@@ -102,6 +103,7 @@ bool get_config_ifinfo(char *info, config_ifinfo_t *el)
   char **p = NULL;
   p = (char**) utarray_next(info_arr, p);
   if (*p != NULL) {
+    errno = 0;
     el->vlanid = (int) strtol(*p, NULL, 10);
     if (errno == EINVAL)
       goto err;
@@ -171,6 +173,7 @@ bool get_connection_info(char *info, struct mac_conn *el)
 
   p = (char**) utarray_next(info_arr, p);
   if (*p != NULL) {
+    errno = 0;
     el->info.vlanid = (int) strtol(*p, NULL, 10);
     if (errno == EINVAL)
       goto err;
@@ -179,6 +182,7 @@ bool get_connection_info(char *info, struct mac_conn *el)
 
   p = (char**) utarray_next(info_arr, p);
   if (*p != NULL) {
+    errno = 0;
     el->info.nat = (bool) strtol(*p, NULL, 10);
     if (errno == EINVAL)
       goto err;    

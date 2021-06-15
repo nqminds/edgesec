@@ -58,6 +58,7 @@ bool get_config_dhcpinfo(char *info, config_dhcpinfo_t *el)
   p = (char**) utarray_next(info_arr, p);
   log_trace("vlanid=%s", *p);
   if (*p != NULL) {
+    errno = 0;
     el->vlanid = (int) strtol(*p, NULL, 10);
     if (errno == EINVAL)
       goto err;

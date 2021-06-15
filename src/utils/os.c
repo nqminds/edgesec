@@ -212,10 +212,12 @@ int read_command_output(int fd, process_callback_fn fn, void *ctx)
   ssize_t read_bytes, count = 0;
   char *buf = os_malloc(PIPE_BUF);
 
+  errno = 0;
   while((read_bytes = read(fd, buf, PIPE_BUF)) != 0) {
-    if (read_bytes == -1 && errno == EAGAIN)
+    if (read_bytes == -1 && errno == EAGAIN) {
+      errno = 0;
       continue;
-    else if (read_bytes == -1 && errno != EAGAIN) {
+    } else if (read_bytes == -1 && errno != EAGAIN) {
       os_free(buf);
       return -1;
     } else if (read_bytes != -1) {
