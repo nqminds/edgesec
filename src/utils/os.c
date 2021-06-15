@@ -360,22 +360,22 @@ ssize_t split_string_array(const char *str, char sep, UT_array *arr)
   return split_string(str, sep, fn_split_string_array, (void *)arr);
 }
 
-char *allocate_string(char *src)
+char * os_strdup(const char *s)
 {
 	char *dest = NULL;
-	if (src) {
-  	dest = (char *) os_malloc(strlen(src));
+	if (s) {
+  	dest = (char *) os_malloc(strlen(s));
 		if (dest == NULL) {
 			log_err_ex("os_malloc");
 		}
 
-		strcpy(dest, src);
+		strcpy(dest, s);
 	}
 
 	return dest;
 }
 
-char *concat_paths(char *path_left, char *path_right)
+char *  concat_paths(char *path_left, char *path_right)
 {
   size_t concat_len;
 
@@ -412,17 +412,28 @@ char *get_valid_path(char *path)
   if (path == NULL)
     return NULL;
 
-  char *dup_dir = strdup(path);
+  log_trace(">>4 %s", path);
+  char *dup_dir = os_strdup(path);
+  log_trace(">>5 %s", dup_dir);
   if (dup_dir == NULL && path != NULL)
     log_err_ex("strdup");
   
-  char *dup_base = strdup(path);
+  char *dup_base = os_strdup(path);
+  log_trace(">>6 %s", dup_base);
   if (dup_base == NULL && path != NULL)
     log_err_ex("strdup");
 
   char *path_dirname = dirname(dup_dir);
-  char *path_basename = basename(dup_base);
+  char *copy_path_dirname = os_strdup(path_dirname);
+  os_free(dup_dir);
+  log_trace(">>7 dup_dir");
 
+  char *path_basename = basename(dup_base);
+  char *copy_path_basename = os_strdup(path_basename);
+  os_free(dup_base);
+  log_trace(">>8 dup_base");
+
+  log_trace(">>9 %s %s", copy_path_dirname, copy_path_basename);
   char *concat;
   if (!strlen(path))
     concat = concat_paths(path_dirname, NULL);
@@ -433,11 +444,11 @@ char *get_valid_path(char *path)
            strcmp(path, "//") == 0))
     concat = concat_paths(path, NULL);
   else
-    concat = concat_paths(path_dirname, path_basename);
+    concat = concat_paths(copy_path_dirname, path_basename);
 
-  os_free(dup_dir);
-  os_free(dup_base);
-
+  log_trace(">>10 %s", concat);
+  os_free(copy_path_dirname);
+  os_free(copy_path_basename);
   return concat;
 }
 
@@ -454,6 +465,7 @@ char *construct_path(char *path_left, char *path_right)
     return get_valid_path("");
 
   char *valid_left = get_valid_path(path_left);
+  log_trace(">>3 %s", valid_left);
   char *valid_right = get_valid_path(path_right);
   char *beg_right = valid_right;
   
@@ -543,7 +555,9 @@ int list_dir(char *dirpath, list_dir_fn fun, void *args)
       continue;
 
     /* Print directory + filename */
+    log_trace(">>1 %s %s", dirpath, dp->d_name);
     char *path = construct_path(dirpath, dp->d_name);
+    log_trace(">>2 %s %s %s", dirpath, dp->d_name, path);
     if (fun != NULL) {
       if (!fun(path, args)) {
         log_trace("list_dir callback fail");

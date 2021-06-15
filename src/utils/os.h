@@ -239,6 +239,14 @@ size_t os_strlcpy(char *dest, const char *src, size_t siz);
  */
 size_t os_strnlen_s(char *str, size_t max_len);
 
+/**
+ * @brief Returns a pointer to a new string which is a duplicate of the string s
+ * 
+ * @param s The input string
+ * @return char* The dublicate string pointer, NULL on error
+ */
+char * os_strdup(const char *s);
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -403,14 +411,6 @@ ssize_t split_string(const char *str, char sep, split_string_fn fun, void *data)
  * @return ssize_t number of stubstrings
  */
 ssize_t split_string_array(const char *str, char sep, UT_array *arr);
-
-/**
- * @brief Allocate a string (copies the source)
- * 
- * @param src Sources string
- * @return char* Allocated string
- */
-char *allocate_string(char *src);
 
 /**
  * @brief Concatenate two string paths

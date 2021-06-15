@@ -187,7 +187,7 @@ static void test_allocate_string(void **state)
   (void) state; /* unused */
 
   /* Testing allocate_string on 1234567890qwerty */
-  char *test = allocate_string("1234567890qwerty");
+  char *test = os_strdup("1234567890qwerty");
 
   assert_string_equal(test, "1234567890qwerty");
 
@@ -467,7 +467,7 @@ static void test_list_dir(void **state)
 
 int main(int argc, char *argv[])
 {  
-  log_set_quiet(true);
+  log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_run_command),

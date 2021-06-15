@@ -187,7 +187,7 @@ char* create_command_string(char *cmd, char *args, char *cmd_str, char delim)
     return NULL;
 
   if (strlen(cmd)) {
-    cmd_tmp = allocate_string(cmd);
+    cmd_tmp = os_strdup(cmd);
     upper_string(cmd_tmp);
     if (args ==  NULL)
       sprintf(cmd_str, "%s", cmd_tmp);

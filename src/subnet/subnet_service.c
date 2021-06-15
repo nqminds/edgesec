@@ -122,7 +122,7 @@ bool get_nat_if_ip(const char *nat_interface, char **ip_buf)
   }
 
   if (el->ifa_family == AF_INET) {
-    *ip_buf = allocate_string(el->ip_addr);
+    *ip_buf = os_strdup(el->ip_addr);
   }
 
   utarray_free(netip_list);

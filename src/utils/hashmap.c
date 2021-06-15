@@ -78,13 +78,13 @@ bool hmap_str_keychar_put(hmap_str_keychar **hmap, char *keyptr, char *value)
 
 		// Copy the key
 		strcpy(s->key, keyptr);
-		s->value = allocate_string(value);
+		s->value = os_strdup(value);
 
 		HASH_ADD_STR(*hmap, key, s);
   } else {
-		// Copy the value
-		os_free(s->value);
-    s->value = allocate_string(value);
+	  // Copy the value
+	  os_free(s->value);
+      s->value = os_strdup(value);
 	}
 
 	return true;
