@@ -74,14 +74,14 @@ static void test_split_string(void **state)
 
   /* Testing split_string on input: \":\" */
   size_t count = split_string(str_one, ':', fn_split_string, strs);
-  assert_int_equal(count, 2);
+  assert_int_equal(count, (size_t) 2);
 
   char **p = NULL;
   p = (char**)utarray_next(strs, p);
-  assert_int_equal(strlen(*p), 0);
+  assert_int_equal(strlen(*p), (size_t) 0);
 
   p = (char**)utarray_next(strs, p);
-  assert_int_equal(strlen(*p), 0);
+  assert_int_equal(strlen(*p), (size_t) 0);
 
   utarray_free(strs);
   utarray_new(strs,&ut_str_icd);
@@ -90,13 +90,13 @@ static void test_split_string(void **state)
 
   /* Testing split_string on input: \"12345\" */
   count = split_string(str_two, ':', fn_split_string, strs);
-  assert_int_equal(count, 2);
+  assert_int_equal(count, (ssize_t) 2);
 
   p = (char**)utarray_next(strs,p);
   assert_string_equal(*p, "12345");
 
   p = (char**)utarray_next(strs, p);
-  assert_int_equal(strlen(*p), 0);
+  assert_int_equal(strlen(*p), (size_t) 0);
 
   utarray_free(strs);
   utarray_new(strs,&ut_str_icd);
@@ -106,10 +106,10 @@ static void test_split_string(void **state)
 
   /* Testing split_string on input: \":12345\" */
   count = split_string(str_three, ':', fn_split_string, strs);
-  assert_int_equal(count, 2);
+  assert_int_equal(count, (ssize_t) 2);
 
   p = (char**)utarray_next(strs, p);
-  assert_int_equal(strlen(*p), 0);
+  assert_int_equal(strlen(*p), (size_t) 0);
 
   p = (char**)utarray_next(strs, p);
   assert_string_equal(*p, "12345");
@@ -122,7 +122,7 @@ static void test_split_string(void **state)
   
   /* Testing split_string on input: \"12345\" */
   count = split_string(str_four, ':', fn_split_string, strs);
-  assert_int_equal(count, 1);
+  assert_int_equal(count, (ssize_t) 1);
 
   p = (char**)utarray_next(strs, p);
   assert_string_equal(*p, "12345");
@@ -134,24 +134,24 @@ static void test_split_string(void **state)
   p = NULL;
   /* Testing split_string on input: "" */
   count = split_string(str_five, ':', fn_split_string, strs);
-  assert_int_equal(count, 1);
+  assert_int_equal(count, (ssize_t) 1);
 
   p = (char**)utarray_next(strs,p);
-  assert_int_equal(strlen(*p), 0);
+  assert_int_equal(strlen(*p), (ssize_t) 0);
 
   utarray_free(strs);
   utarray_new(strs, &ut_str_icd);
 
   /* Testing split_string on fn_split_string=NULL */
   count = split_string(str_two, ':', NULL, strs);
-  assert_int_equal(count, -1);
+  assert_int_equal(count, (ssize_t) -1);
 
   utarray_free(strs);
   utarray_new(strs, &ut_str_icd);
 
   /* Testing split_string in input string NULL */
   count = split_string(NULL, ':', fn_split_string, strs);
-  assert_int_equal(count, -1);
+  assert_int_equal(count, (ssize_t) -1);
 
   utarray_free(strs);
 }
@@ -177,7 +177,7 @@ static void test_split_string_array(void **state)
   assert_string_equal(*p, "abcdef");
 
   count = split_string_array(str, ':', NULL);
-  assert_int_equal(count, -1);
+  assert_int_equal(count, (ssize_t) -1);
 
   utarray_free(arr);
 }

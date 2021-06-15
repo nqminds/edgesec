@@ -103,8 +103,6 @@ bool get_nat_if_ip(const char *nat_interface, char **ip_buf)
   UT_array *netip_list = NULL;
   unsigned int if_idx = if_nametoindex(nat_interface);
 
-  log_debug("Testing get_interface for %s", nat_interface);
-
   if (!if_idx) {
     log_err("if_nametoindex");
     goto err;
