@@ -59,8 +59,13 @@ bool hmap_str_keychar_put(hmap_str_keychar **hmap, char *keyptr, char *value)
 	hmap_str_keychar *s;
 
 	if (keyptr == NULL) {
-		log_trace("keyptr is NULL");
-		return false;
+	  log_trace("keyptr is NULL");
+	  return false;
+	}
+
+	if (value == NULL) {
+	  log_trace("value is NULL");
+	  return false;
 	}
 
 	if (strlen(keyptr) > HASH_KEY_CHAR_SIZE - 1) {

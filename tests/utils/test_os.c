@@ -231,9 +231,15 @@ static void test_get_valid_path(void **state)
 {
   (void) state; /* unused */
 
-  /* Testing get_valid_path function on /test/// */
+  char *path = NULL;
 
-  char *path = get_valid_path("/test///");
+  path = get_valid_path("systemd-machine-id-setup");
+  assert_non_null(path);
+  assert_string_equal(path, "./systemd-machine-id-setup");
+  free(path);
+
+  /* Testing get_valid_path function on /test/// */
+  path = get_valid_path("/test///");
   assert_string_equal(path, "/test");
 
   free(path);

@@ -9,7 +9,7 @@
 *  Copyright (C) 2020 NQMCyber Ltd - http://www.nqmcyber.com/
 *************************************************************************************************/
 
-#define _GNU_SOURCE
+// #define _GNU_SOURCE
 #include <stdint.h>
 #include <time.h>
 #include <stdlib.h>
@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <limits.h>
 #include <libgen.h>
-#include <string.h>
+// #include <string.h>
 #include <stdbool.h>
 #include <dirent.h>
 #include <ctype.h>
@@ -363,8 +363,10 @@ ssize_t split_string_array(const char *str, char sep, UT_array *arr)
 char * os_strdup(const char *s)
 {
 	char *dest = NULL;
-	if (s) {
-  	dest = (char *) os_malloc(strlen(s));
+  size_t len = strlen(s) + 1;
+
+	if (s != NULL) {
+  	dest = (char *) os_malloc(len);
 		if (dest == NULL) {
 			log_err_ex("os_malloc");
 		}
@@ -409,32 +411,22 @@ char *  concat_paths(char *path_left, char *path_right)
 
 char *get_valid_path(char *path)
 {
+  char *concat = NULL;
+
   if (path == NULL)
     return NULL;
 
-  log_trace(">>4 %s", path);
-  char *dup_dir = os_strdup(path);
-  log_trace(">>5 %s", dup_dir);
-  if (dup_dir == NULL && path != NULL)
+  char *dir = os_strdup(path);
+  if (dir == NULL && path != NULL)
     log_err_ex("strdup");
   
-  char *dup_base = os_strdup(path);
-  log_trace(">>6 %s", dup_base);
-  if (dup_base == NULL && path != NULL)
+  char *base = os_strdup(path);
+  if (base == NULL && path != NULL)
     log_err_ex("strdup");
 
-  char *path_dirname = dirname(dup_dir);
-  char *copy_path_dirname = os_strdup(path_dirname);
-  os_free(dup_dir);
-  log_trace(">>7 dup_dir");
+  char *path_dirname = dirname(dir);
+  char *path_basename = basename(base);
 
-  char *path_basename = basename(dup_base);
-  char *copy_path_basename = os_strdup(path_basename);
-  os_free(dup_base);
-  log_trace(">>8 dup_base");
-
-  log_trace(">>9 %s %s", copy_path_dirname, copy_path_basename);
-  char *concat;
   if (!strlen(path))
     concat = concat_paths(path_dirname, NULL);
   else if (strlen(path) &&
@@ -444,11 +436,10 @@ char *get_valid_path(char *path)
            strcmp(path, "//") == 0))
     concat = concat_paths(path, NULL);
   else
-    concat = concat_paths(copy_path_dirname, path_basename);
+    concat = concat_paths(path_dirname, path_basename);
 
-  log_trace(">>10 %s", concat);
-  os_free(copy_path_dirname);
-  os_free(copy_path_basename);
+  os_free(dir);
+  os_free(base);
   return concat;
 }
 
@@ -465,7 +456,6 @@ char *construct_path(char *path_left, char *path_right)
     return get_valid_path("");
 
   char *valid_left = get_valid_path(path_left);
-  log_trace(">>3 %s", valid_left);
   char *valid_right = get_valid_path(path_right);
   char *beg_right = valid_right;
   
@@ -534,6 +524,7 @@ int list_dir(char *dirpath, list_dir_fn fun, void *args)
 {
   DIR *dirp;
   struct dirent *dp;
+  char *path;
 
   /* Open the directory - on failure print an error and return */
   errno = 0;
@@ -555,9 +546,7 @@ int list_dir(char *dirpath, list_dir_fn fun, void *args)
       continue;
 
     /* Print directory + filename */
-    log_trace(">>1 %s %s", dirpath, dp->d_name);
-    char *path = construct_path(dirpath, dp->d_name);
-    log_trace(">>2 %s %s %s", dirpath, dp->d_name, path);
+    path = construct_path(dirpath, dp->d_name);
     if (fun != NULL) {
       if (!fun(path, args)) {
         log_trace("list_dir callback fail");

@@ -4,6 +4,7 @@ project(EDGESEC C CXX)
 include(CTest)
 include(FetchContent)
 include(ExternalProject)
+include(glibc.cmake)
 
 option(BUILD_ONLY_DOCS "Build only docs" OFF)
 option(BUILD_CAPTURE_SERVICE "Build Capture server" ON)
@@ -59,6 +60,8 @@ set(REVCLIENT_VERSION_PATCH 0)
 set(REVSRV_VERSION_MAJOR 0)
 set(REVSRV_VERSION_MINOR 1)
 set(REVSRV_VERSION_PATCH 0)
+
+CHECK_GLIBC_VERSION()
 
 # Find the hostapd program
 if (BUILD_HOSTAPD AND NOT (BUILD_ONLY_DOCS))
