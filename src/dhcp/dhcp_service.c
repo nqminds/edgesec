@@ -36,7 +36,7 @@ int run_dhcp(char *dhcp_bin_path, struct dhcp_conf *dconf,
     return -1;
   }
 
-  return run_dhcp_process(dhcp_bin_path, dconf->dhcp_conf_path);
+  return (run_dhcp_process(dhcp_bin_path, dconf->dhcp_conf_path) == NULL) ? -1 : 0;
 }
 
 bool close_dhcp(void)

@@ -319,9 +319,6 @@ void * os_memdup(const void *src, size_t len);
 #ifndef os_memcmp
 #define os_memcmp(s1, s2, n) memcmp((s1), (s2), (n))
 #endif
-#ifndef os_strdup
-#define os_strdup(s) strdup(s)
-#endif
 
 static inline void * os_realloc_array(void *ptr, size_t nmemb, size_t size)
 {
