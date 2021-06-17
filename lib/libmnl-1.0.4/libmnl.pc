@@ -1,6 +1,6 @@
 # libmnl pkg-config file
 
-prefix=/home/alex/Projects/EDGESec/lib/libmnl-1.0.4/build
+prefix=/home/alexandru/Projects/EDGESec/build/lib/mnl
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include

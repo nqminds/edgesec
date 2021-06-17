@@ -5,6 +5,8 @@ include(CTest)
 include(FetchContent)
 include(ExternalProject)
 include(glibc.cmake)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/lib")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/docs")
 
 option(BUILD_ONLY_DOCS "Build only docs" OFF)
 option(BUILD_CAPTURE_SERVICE "Build Capture server" ON)
@@ -21,7 +23,7 @@ option(USE_UUID_LIB "Use uuid library" ON)
 option(USE_PTHREAD_LIB "Use pthread library" ON)
 option(USE_M_LIB "Use m library" ON)
 option(USE_OW_DNSMASQ "Use the OpenWrt dnsmasq service" OFF)
-option(BUILD_NDPI_LIB "Build nDPI library" ON)
+option(BUILD_NDPI_LIB "Build nDPI library" OFF)
 option(BUILD_GRPC_LIB "Build gRPC library" OFF)
 option(BUILD_SQLSYNC_SERVICE "Build sqlsync service" OFF)
 option(BUILD_REVERSE_SERVICE "Build Reverse service" OFF)
@@ -65,121 +67,15 @@ set(REVSRV_VERSION_PATCH 0)
 
 CHECK_GLIBC_VERSION()
 
-if (USE_OW_DNSMASQ)
-  add_compile_definitions(WITH_OW_DNSMASQ_SERVICE)
-endif ()
-
-# Find the hostapd program
-if (BUILD_HOSTAPD AND NOT (BUILD_ONLY_DOCS))
-  find_program(HOSTAPD NAMES hostapd PATHS "${CMAKE_SOURCE_DIR}/build")
-  if (HOSTAPD)
-    message("Found hostapd program: ${HOSTAPD}")
-  ELSE ()
-    execute_process(COMMAND bash "${CMAKE_SOURCE_DIR}/lib/compile_hostap.sh")
-  endif ()
-endif ()
-
-# Compile the cmocka library
-if (BUILD_CMOCKA_LIB AND NOT (BUILD_ONLY_DOCS))
-  set(CMOCKA_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/lib/cmocka-1.1.5/include")
-  find_library(CMOCKA_LIB NAMES cmocka PATHS "${CMAKE_SOURCE_DIR}/lib/cmocka-1.1.5/build/src")
-  if (CMOCKA_LIB)
-    message("Found cmocka library: ${CMOCKA_LIB}")
-  ELSE ()
-    execute_process(COMMAND bash "${CMAKE_SOURCE_DIR}/lib/compile_cmocka.sh")
-    find_library(CMOCKA_LIB NAMES cmocka PATHS "${CMAKE_SOURCE_DIR}/lib/cmocka-1.1.5/build/src")
-  endif ()
-endif ()
-
-# Compile libmnl library used for libnetlink
-if (BUILD_MNL_LIB AND NOT (BUILD_ONLY_DOCS))
-  find_library(LIBMNL_LIB NAMES mnl PATHS "${CMAKE_SOURCE_DIR}/lib/libmnl-1.0.4/build/lib")
-  if (LIBMNL_LIB)
-    message("Found libmnl library: ${LIBMNL_LIB}")
-  ELSE ()
-    execute_process(COMMAND bash "${CMAKE_SOURCE_DIR}/lib/compile_libmnl.sh")
-  endif ()
-endif ()
-
-# Compile library libnetlink
-if (BUILD_NETLINK_LIB AND NOT (BUILD_ONLY_DOCS))
-  set(LIBNETLINK_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/lib/libnetlink/include")
-  set(LIBNETLINK_UAPI_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/lib/libnetlink/include/uapi")
-  find_library(LIBNETLINK_LIB NAMES libnetlink PATHS "${CMAKE_SOURCE_DIR}/lib/libnetlink/build/lib")
-  if (LIBNETLINK_LIB)
-    message("Found libnetlink library: ${LIBNETLINK_LIB}")
-  ELSE ()
-    execute_process(COMMAND bash "${CMAKE_SOURCE_DIR}/lib/compile_libnetlink.sh")
-    find_library(LIBNETLINK_LIB NAMES libnetlink PATHS "${CMAKE_SOURCE_DIR}/lib/libnetlink/build/lib")
-  endif ()
-  find_library(LL_MAP_LIB NAMES ll_map PATHS "${CMAKE_SOURCE_DIR}/lib/libnetlink/build/lib")
-  message("Found ll_map library: ${LL_MAP_LIB}")
-  find_library(UTILS_LIB NAMES utils PATHS "${CMAKE_SOURCE_DIR}/lib/libnetlink/build/lib")
-  message("Found utils library: ${UTILS_LIB}")
-  find_library(RT_NAMES_LIB NAMES rt_names PATHS "${CMAKE_SOURCE_DIR}/lib/libnetlink/build/lib")
-  message("Found rt_names library: ${RT_NAMES_LIB}")
-  find_library(LL_TYPES_LIB NAMES ll_types PATHS "${CMAKE_SOURCE_DIR}/lib/libnetlink/build/lib")
-  message("Found ll_types library: ${LL_TYPES_LIB}")
-  find_library(LL_PROTO_LIB NAMES ll_proto PATHS "${CMAKE_SOURCE_DIR}/lib/libnetlink/build/lib")
-  message("Found ll_types library: ${LL_PROTO_LIB}")
-
-  find_path(LibNL_INCLUDE_DIR netlink/netlink.h
-  	/usr/include
-  	/usr/include/libnl3
-  	/usr/local/include
-  	/usr/local/include/libnl3
-  )
-
-  find_library(LibNL_LIBRARY NAMES nl nl-3)
-  # find_library(LibNL_ROUTE_LIBRARY NAMES nl-route nl-route-3)
-  # find_library(LibNL_NETFILTER_LIBRARY NAMES nl-nf nl-nf-3)
-  find_library(LibNL_GENL_LIBRARY NAMES nl-genl nl-genl-3)
-
-  if (LibNL_INCLUDE_DIR AND LibNL_LIBRARY)
-  	set(LibNL_FOUND TRUE)
-  endif ()
-
-  if (LibNL_FOUND)
-  	if (NOT LibNL_FIND_QUIETLY)
-      message("Found netlink library: ${LibNL_LIBRARY}")
-      # message("Found netlink route library: ${LibNL_ROUTE_LIBRARY}")
-      # message("Found netlink netfilter library: ${LibNL_NETFILTER_LIBRARY}")
-      message("Found netlink genl library: ${LibNL_GENL_LIBRARY}")
-      message("Found netlink includes: ${LibNL_INCLUDE_DIR}")
-  	endif ()
-  ELSE ()
-  	if (LibNL_FIND_REQUIRED)
-  		message("Netlink version 3 development packages cannot be found.")
-  		message("In Debian/Ubuntu, they may be called:")
-  		message("libnl-3-dev libnl-genl-3dev libnl-nf-3-dev libnl-route-3-dev")
-  		message(FATAL_ERROR "Could not find netlink library.")
-  	endif ()
-  endif ()
-endif ()
-
-# Compile libmicrohttpd-0.9.72
-if (BUILD_MICROHTTPD_LIB AND NOT (BUILD_ONLY_DOCS))
-  find_library(LIBMICROHTTPD_LIB NAMES microhttpd PATHS "${CMAKE_SOURCE_DIR}/lib/libmicrohttpd-0.9.72/build/lib")
-  set(LIBMICROHTTPD_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/lib/libmicrohttpd-0.9.72/build/include")
-  if (LIBMICROHTTPD_LIB)
-    message("Found libmicrohttpd library: ${LIBMICROHTTPD_LIB}")
-  ELSE ()
-    execute_process(COMMAND bash "${CMAKE_SOURCE_DIR}/lib/compile_libmicrohttpd.sh")
-    find_library(LIBMICROHTTPD_LIB NAMES microhttpd PATHS "${CMAKE_SOURCE_DIR}/lib/libmicrohttpd-0.9.72/build/lib")
-  endif ()
-endif ()
-
-# Compile libuuid-1.0.3
-if (BUILD_UUID_LIB AND NOT (BUILD_ONLY_DOCS))
-  find_library(LIBUUID_LIB NAMES uuid libuuid PATHS "${CMAKE_SOURCE_DIR}/lib/libuuid-1.0.3/build/lib")
-  set(LIBUUID_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/lib/libuuid-1.0.3/build/include")
-  if (LIBUUID_LIB)
-    message("Found libuuid library: ${LIBUUID_LIB}")
-  ELSE ()
-    execute_process(COMMAND bash "${CMAKE_SOURCE_DIR}/lib/compile_libuuid.sh")
-    find_library(LIBUUID_LIB NAMES uuid libuuid PATHS "${CMAKE_SOURCE_DIR}/lib/libuuid-1.0.3/build/lib")
-  endif ()
-endif ()
+# Include the libraries
+include(hostapd)
+include(cmocka)
+include(mnl)
+include(netlink)
+include(microhttpd)
+include(uuid)
+include(ndpi)
+include(grpc)
 
 if (USE_PCAP_LIB AND NOT (BUILD_ONLY_DOCS))
   find_library(LIBPCAP_LIB NAMES pcap)
@@ -215,62 +111,6 @@ if (USE_M_LIB AND NOT (BUILD_ONLY_DOCS))
   ELSE ()
     message(FATAL_ERROR "Could not find libm library.")
   endif ()
-endif ()
-
-if (BUILD_NDPI_LIB)
-  add_compile_definitions(WITH_NDPI_SERVICE)
-  set(LIBNDPI_PATH ${CMAKE_CURRENT_BINARY_DIR}/lib/ndpi)
-  set(LIBNDPI_INCLUDE_PATH ${LIBNDPI_PATH}/include/ndpi)
-  find_library(LIBNDPI_LIB_PATH NAMES ndpi libndpi PATHS "${LIBNDPI_PATH}/lib")
-  if (LIBNDPI_LIB_PATH)
-    message("Found libndpi library: ${LIBNDPI_LIB_PATH}")
-  ELSE ()
-    FetchContent_Declare(
-        ndpi
-        GIT_REPOSITORY https://github.com/ntop/nDPI
-        GIT_TAG        3.4
-      )
-      set(FETCHCONTENT_QUIET OFF)
-      FetchContent_MakeAvailable(ndpi)
-      FetchContent_GetProperties(ndpi SOURCE_DIR NDPI_SOURCE_DIR)
-      message("Source dir: ${NDPI_SOURCE_DIR}")
-      execute_process(
-        COMMAND ./autogen.sh
-        WORKING_DIRECTORY "${NDPI_SOURCE_DIR}"
-      )
-      execute_process(
-        COMMAND ./configure --prefix=${LIBNDPI_PATH}
-        WORKING_DIRECTORY "${NDPI_SOURCE_DIR}"
-      )
-      execute_process(
-        COMMAND make
-        WORKING_DIRECTORY "${NDPI_SOURCE_DIR}"
-      )
-      execute_process(
-        COMMAND make install
-        WORKING_DIRECTORY "${NDPI_SOURCE_DIR}"
-      )
-    find_library(LIBNDPI_LIB_PATH NAMES ndpi libndpi PATHS "${LIBNDPI_PATH}/lib")
-  endif ()
-endif ()
-
-# Fetch and Compile libgrpc
-if (BUILD_GRPC_LIB AND NOT (BUILD_ONLY_DOCS))
-  set(RE2_BUILD_TESTING OFF)
-  FetchContent_Declare(
-    gRPC
-    GIT_REPOSITORY https://github.com/grpc/grpc
-    GIT_TAG        v1.36.4
-  )
-  set(FETCHCONTENT_QUIET OFF)
-  FetchContent_MakeAvailable(gRPC)
-  FetchContent_GetProperties(gRPC SOURCE_DIR GRPC_SOURCE_DIR)
-  message("${GRPC_SOURCE_DIR}/third_party/re2")
-  set(_PROTOBUF_LIBPROTOBUF libprotobuf)
-  set(_REFLECTION grpc++_reflection)
-  set(_PROTOBUF_PROTOC $<TARGET_FILE:protoc>)
-  set(_GRPC_GRPCPP grpc++)
-  set(_GRPC_CPP_PLUGIN_EXECUTABLE $<TARGET_FILE:grpc_cpp_plugin>)  
 endif ()
 
 if (BUILD_SQLSYNC_SERVICE AND NOT (BUILD_ONLY_DOCS))
@@ -327,6 +167,11 @@ if (BUILD_REVERSE_SERVICE AND NOT (BUILD_ONLY_DOCS))
   target_link_libraries(reverse_grpc_proto ${_GRPC_GRPCPP})
 endif ()
 
+if (USE_OW_DNSMASQ)
+  add_compile_definitions(WITH_OW_DNSMASQ_SERVICE)
+endif ()
+
+
 # C compiler options
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wunused-variable")
 
@@ -349,30 +194,7 @@ configure_file(
   "${PROJECT_BINARY_DIR}/config.ini"
 )
 
-# check if Doxygen is installed
-find_package(Doxygen)
-
-if (DOXYGEN_FOUND)
-    # set input and output files
-    set(DOXYGEN_IN Doxyfile.in)
-    set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
-    # Doxygen.in file parameters
-    set(DOXYGEN_INPUT "src docs")
-    set(DOXYGEN_IMAGE_PATH docs)
-    set(DOXYGEN_DOTFILE_DIRS docs)
-    set(DOXYGEN_OUTPUT_DIRECTORY docs)
-    # request to configure the file
-    configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
-    message("Doxygen build started")
-
-    # note the option ALL which allows to build the docs together with the application
-    add_custom_target( docs COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        COMMENT "Generating API documentation with Doxygen"
-        VERBATIM )
-else ()
-  message(WARNING "Doxygen need to be installed to generate the doxygen documentation")
-endif ()
+include(doxygen)
 
 if (NOT BUILD_ONLY_DOCS)
   add_subdirectory(src)

@@ -1,8 +1,15 @@
-include_directories (
-  "${EDGESEC_SOURCE_DIR}/src"
-  "${CMAKE_CURRENT_BINARY_DIR}"
-  "${LIBNDPI_INCLUDE_PATH}"
-)
+if (BUILD_NDPI_LIB)
+  include_directories (
+    "${EDGESEC_SOURCE_DIR}/src"
+    "${CMAKE_CURRENT_BINARY_DIR}"
+    "${LIBNDPI_INCLUDE_PATH}"
+  )
+else ()
+  include_directories (
+    "${EDGESEC_SOURCE_DIR}/src"
+    "${CMAKE_CURRENT_BINARY_DIR}"
+  )
+endif ()
 
 add_library(packet_queue packet_queue.c)
 target_link_libraries(packet_queue log os)

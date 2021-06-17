@@ -1,0 +1,13 @@
+# Compile the cmocka library
+if (BUILD_CMOCKA_LIB AND NOT (BUILD_ONLY_DOCS))
+  set(CMOCKA_SOURCE_DIR "${CMAKE_SOURCE_DIR}/lib/cmocka-1.1.5")
+  set(CMOCKA_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/lib/cmocka")
+  set(CMOCKA_INCLUDE_DIR "${CMOCKA_INSTALL_DIR}/include")
+  set(CMOCKA_LIB_DIR "${CMOCKA_INSTALL_DIR}/lib")
+  set(CMOCKA_LIB "${CMOCKA_LIB_DIR}/libcmocka.so")
+  ExternalProject_Add(cmocka
+    PREFIX "${CMOCKA_INSTALL_DIR}"
+    SOURCE_DIR "${CMOCKA_SOURCE_DIR}"
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+  )
+endif ()

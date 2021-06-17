@@ -38,28 +38,28 @@
 #define LT_OBJDIR ".libs/"
 
 /* Name of package */
-#define PACKAGE "libmnl"
+/* #undef PACKAGE */
 
 /* Define to the address where bug reports for this package should be sent. */
-#define PACKAGE_BUGREPORT ""
+/* #undef PACKAGE_BUGREPORT */
 
 /* Define to the full name of this package. */
-#define PACKAGE_NAME "libmnl"
+/* #undef PACKAGE_NAME */
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "libmnl 1.0.4"
+/* #undef PACKAGE_STRING */
 
 /* Define to the one symbol short name of this package. */
-#define PACKAGE_TARNAME "libmnl"
+/* #undef PACKAGE_TARNAME */
 
 /* Define to the home page for this package. */
-#define PACKAGE_URL ""
+/* #undef PACKAGE_URL */
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "1.0.4"
+/* #undef PACKAGE_VERSION */
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define VERSION "1.0.4"
+/* #undef VERSION */
