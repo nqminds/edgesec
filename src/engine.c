@@ -45,6 +45,7 @@
 #include "radius/radius_service.h"
 #include "ap/ap_service.h"
 #include "dhcp/dhcp_service.h"
+#include "crypt/crypt_service.h"
 
 #include "engine.h"
 #include "system/system_checks.h"
@@ -173,6 +174,7 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
   hmap_str_keychar *hmap_bin_paths = check_systems_commands(
     commands, app_config->bin_path_array, NULL
   );
+
   if (hmap_bin_paths == NULL) {
     log_debug("check_systems_commands fail (no bin paths found)");
     goto run_engine_fail;
@@ -186,6 +188,12 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
 
   if ((context.iptables_ctx = iptables_init(iptables_path, app_config->config_ifinfo_array, app_config->exec_iptables)) == NULL) {
     log_debug("iptables_init fail");
+    goto run_engine_fail;
+  }
+
+  log_info("Loading crypt service...");
+  if ((context.crypt_ctx = load_crypt_service(app_config->crypt_db_path)) == NULL) {
+    log_debug("load_crypt_service fail");
     goto run_engine_fail;
   }
 
@@ -295,6 +303,7 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
   free_vlan_mapper(&context.vlan_mapper);
   free_bridge_list(context.bridge_list);
   free_sqlite_fingerprint_db(context.fingeprint_db);
+  free_crypt_service(context.crypt_ctx);
   return true;
 
 run_engine_fail:
@@ -311,5 +320,6 @@ run_engine_fail:
   free_vlan_mapper(&context.vlan_mapper);
   free_bridge_list(context.bridge_list);
   free_sqlite_fingerprint_db(context.fingeprint_db);
+  free_crypt_service(context.crypt_ctx);
   return false;
 }

@@ -12,13 +12,14 @@ add_subdirectory(ap)
 add_subdirectory(dhcp)
 add_subdirectory(subnet)
 add_subdirectory(system)
+add_subdirectory(crypt)
 
 if (BUILD_CAPTURE_SERVICE)
   add_subdirectory(capture)
 endif ()
 
 add_library(engine engine.c)
-target_link_libraries(engine log if os sqlite_fingerprint_writer subnet_service system_checks eloop supervisor network_commands radius_service mac_mapper ap_service iptables dhcp_service)
+target_link_libraries(engine crypt_service log if os sqlite_fingerprint_writer subnet_service system_checks eloop supervisor network_commands radius_service mac_mapper ap_service iptables dhcp_service)
 
 add_library(config config.c)
 target_link_libraries(config minIni)

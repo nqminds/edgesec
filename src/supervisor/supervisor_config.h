@@ -32,6 +32,7 @@
 #include "../ap/ap_config.h"
 #include "../utils/if.h"
 #include "../capture/capture_config.h"
+#include "../crypt/crypt_config.h"
 
 #include "mac_mapper.h"
 
@@ -58,6 +59,7 @@ struct supervisor_context {
   struct capture_conf capture_config;                         /**< Capture service configuration. */
   sqlite3         *fingeprint_db;                             /**< The fingerprint sqlite db structure. */
   struct iptables_context *iptables_ctx;                      /**< The iptables context. */
+  struct crypt_context *crypt_ctx;                            /**< The crypt context. */
 };
 
 #endif

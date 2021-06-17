@@ -14,6 +14,7 @@ execDhcp = true
 execCapture = true
 execIptables = true
 dbPath = "./db"
+cryptDbPath = "./crypt.sqlite"
 
 [capture]
 captureBinPath = "./src/capsrv"
@@ -30,7 +31,6 @@ dbSync = false
 dbSyncAddress = "localhost"
 dbSyncPort = 12345
 command = "SET_FINGERPRINT"
-
 
 [supervisor]
 domainServerPath = "/tmp/edgesec-domain-server"

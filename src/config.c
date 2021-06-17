@@ -537,6 +537,7 @@ bool load_dhcp_conf(const char *filename, struct app_config *config)
     fprintf(stderr, "load_dhcp_list parsing error\n");
     return false;
   }
+
   return true;
 }
 
@@ -678,7 +679,6 @@ bool load_app_config(const char *filename, struct app_config *config)
   // Load NAT interface
   value = os_malloc(INI_BUFFERSIZE);
   ini_gets("nat", "natInterface", "", value, INI_BUFFERSIZE, filename);
-
   strncpy(config->nat_interface, value, IFNAMSIZ);
   os_free(value);
 
@@ -688,11 +688,24 @@ bool load_app_config(const char *filename, struct app_config *config)
   strncpy(config->db_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
+  // Load the crypt db path param
+  value = os_zalloc(INI_BUFFERSIZE);
+  ret = ini_gets("system", "cryptDbPath", "", value, INI_BUFFERSIZE, filename);
+  strncpy(config->crypt_db_path, value, MAX_OS_PATH_LEN);
+  if (!ret) {
+    fprintf(stderr, "Crypt db path was not specified\n");
+    os_free(value);
+    return false;
+  }
+
+  os_free(value);
+
   // Load domainServerPath
   value = os_malloc(INI_BUFFERSIZE);
   ret = ini_gets("supervisor", "domainServerPath", "", value, INI_BUFFERSIZE, filename);
   if (!ret) {
     fprintf(stderr, "Domain server path was not specified\n");
+    os_free(value);
     return false;
   }
 
@@ -701,6 +714,7 @@ bool load_app_config(const char *filename, struct app_config *config)
 
   if ((config->domain_delim = load_delim(filename)) == 0) {
     fprintf(stderr, "delim parsing error");
+    os_free(value);
     return false;
   }
 
