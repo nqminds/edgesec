@@ -86,3 +86,13 @@ lib/libmicrohttpd-0.9.72/libtool
 lib/libmicrohttpd-0.9.72/MHD_config.h
 lib/libmicrohttpd-0.9.72/stamp-h1
 lib/grpc/cmake/build/**
+lib/libuuid-1.0.3/build/**
+lib/libuuid-1.0.3/*.o
+lib/libuuid-1.0.3/*.deps
+lib/libuuid-1.0.3/*.libs
+lib/libuuid-1.0.3/config.status
+lib/libuuid-1.0.3/config.log
+lib/libuuid-1.0.3/uuid.pc
+lib/libuuid-1.0.3/libtool
+lib/libuuid-1.0.3/MHD_config.h
+lib/libuuid-1.0.3/stamp-h1

@@ -1,6 +1,7 @@
 include_directories(
   "${LIBNETLINK_UAPI_INCLUDE_DIR}"
   "${LIBNETLINK_INCLUDE_DIR}"
+  "${LIBUUID_INCLUDE_DIR}"
 )
 
 add_library(log log.c)
