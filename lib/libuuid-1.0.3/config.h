@@ -131,10 +131,10 @@
 /* #undef mode_t */
 
 /* Define to `unsigned int' if <sys/types.h> does not define. */
-#define size_t unsigned int
+/* #undef size_t */
 
 /* Define to `int' if <sys/types.h> does not define. */
-#define ssize_t int
+/* #undef ssize_t */
 
 /* Define to the type of an unsigned integer type of width exactly 16 bits if
    such a type exists and the standard includes do not define it. */

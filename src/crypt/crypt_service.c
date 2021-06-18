@@ -41,6 +41,7 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
                                          uint8_t *user_key, size_t user_key_size)
 {
   struct crypt_context *context;
+  struct secrets_row *row_secret;
 
   if (key_id == NULL) {
     log_trace("key_id param is NULL");
@@ -61,6 +62,10 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
     free_crypt_service(context);
 
     return NULL;
+  }
+
+  if ((row_secret = get_sqlite_secrets_row(context->crypt_db, key_id)) == NULL) {
+    // Create secret 
   }
 
   return context;
