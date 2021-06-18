@@ -114,7 +114,7 @@ struct iptables_columns process_rule_column(char *column)
           break;
         case 3:
           //target column
-          strncpy(row.target, *p, 10);
+          os_strlcpy(row.target, *p, 10);
           state = 4;
           break;
         case 4:
@@ -127,22 +127,22 @@ struct iptables_columns process_rule_column(char *column)
           break;
         case 6:
           // in column
-          strncpy(row.in, *p, IFNAMSIZ);
+          os_strlcpy(row.in, *p, IFNAMSIZ - 1);
           state = 7;
           break;
         case 7:
           // out column
-          strncpy(row.out, *p, IFNAMSIZ);
+          os_strlcpy(row.out, *p, IFNAMSIZ - 1);
           state = 8;
           break;
         case 8:
           // source column
-          strncpy(row.source, *p, IP_LEN);
+          os_strlcpy(row.source, *p, IP_LEN - 1);
           state = 9;
           break;
         case 9:
           // destination column
-          strncpy(row.destination, *p, IP_LEN);
+          os_strlcpy(row.destination, *p, IP_LEN - 1);
           state = 10;
           break;
       }
@@ -301,7 +301,7 @@ struct iptables_context* iptables_init(char *path, UT_array *ifinfo_array, bool 
   ctx = (struct iptables_context*) os_zalloc(sizeof(struct iptables_context));
 
   ctx->exec_iptables =exec_iptables;
-  strncpy(ctx->iptables_path, path, MAX_OS_PATH_LEN);
+  os_strlcpy(ctx->iptables_path, path, MAX_OS_PATH_LEN - 1);
 
   utarray_new(ctx->rule_list, &iptables_icd);
 

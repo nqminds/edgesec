@@ -45,8 +45,8 @@
 #include "engine.h"
 #include "config.h"
 
-#define OPT_STRING    ":c:dvh"
-#define USAGE_STRING  "\t%s [-c filename] [-d] [-h] [-v]\n"
+#define OPT_STRING    ":c:s:dvh"
+#define USAGE_STRING  "\t%s [-c filename] [-s secret] [-d] [-h] [-v]\n"
 
 static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
 
@@ -98,6 +98,7 @@ void show_app_help(char *app_name)
   fprintf(stdout, USAGE_STRING, basename(app_name));
   fprintf(stdout, "\nOptions:\n");
   fprintf(stdout, "\t-c filename\t Path to the config file name\n");
+  fprintf(stdout, "\t-s secret\t Master key\n");
   fprintf(stdout, "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n");
   fprintf(stdout, "\t-h\t\t Show help\n");
   fprintf(stdout, "\t-v\t\t Show app version\n\n");
@@ -123,7 +124,7 @@ void log_cmdline_error(const char *format, ...)
 }
 
 void process_app_options(int argc, char *argv[], uint8_t *verbosity,
-                          const char **config_filename)
+                          char **config_filename, char *secret)
 {
   int opt;
 
@@ -137,7 +138,10 @@ void process_app_options(int argc, char *argv[], uint8_t *verbosity,
       exit(EXIT_SUCCESS);
       break;
     case 'c':
-      *config_filename = optarg;
+      *config_filename = os_strdup(optarg);
+      break;
+    case 's':
+      os_strlcpy(secret, optarg, MAX_USER_SECRET - 1);
       break;
     case 'd':
       (*verbosity)++;
@@ -161,7 +165,7 @@ int main(int argc, char *argv[])
 {
   uint8_t verbosity = 0;
   uint8_t level = 0;
-  const char *filename = NULL;
+  char *filename = NULL;
   UT_array *bin_path_arr;
   UT_array *config_ifinfo_arr;
   UT_array *config_dhcpinfo_arr;
@@ -192,7 +196,7 @@ int main(int argc, char *argv[])
   utarray_new(server_arr, &ut_str_icd);
   config.dns_config.server_array = server_arr;
 
-  process_app_options(argc, argv, &verbosity, &filename);
+  process_app_options(argc, argv, &verbosity, &filename, config.crypt_secret);
 
   if (verbosity > MAX_LOG_LEVELS) {
     level = 0;
@@ -227,5 +231,7 @@ int main(int argc, char *argv[])
   utarray_free(config_dhcpinfo_arr);
   utarray_free(mac_conn_arr);
   utarray_free(server_arr);
+  if (filename != NULL)
+    os_free(filename);
   exit(0);
 }

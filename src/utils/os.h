@@ -231,7 +231,7 @@ bool is_number(const char *ptr);
 size_t os_strlcpy(char *dest, const char *src, size_t siz);
 
 /**
- * @brief Returns the size of string with a give max lenght
+ * @brief Returns the size of string with a give max length
  * 
  * @param str The string pointer
  * @param max_len The string max length

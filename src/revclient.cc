@@ -139,7 +139,7 @@ void process_app_options(int argc, char *argv[], int *port,
       exit(EXIT_SUCCESS);
       break;
     case 'a':
-      strncpy(address, optarg, MAX_WEB_PATH_LEN);
+      os_strlcpy(address, optarg, MAX_WEB_PATH_LEN - 1);
       break;
     case 'p':
       if ((p = get_port(optarg)) < 0) {

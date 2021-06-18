@@ -1101,7 +1101,7 @@ bool validate_ipv4_string(char *ip)
   os_memset(proc_ip, 0, IP_LEN);
   if (netmask_sep) {
 		ip_len = strlen(ip) - strlen(netmask_sep);
-		strncpy(proc_ip, ip, ip_len);
+		os_strlcpy(proc_ip, ip, ip_len - 1);
 
 		netmask_char_size = strlen(netmask_sep + 1);
 		if (netmask_char_size > 2 || netmask_char_size < 1) {
@@ -1118,7 +1118,7 @@ bool validate_ipv4_string(char *ip)
 		  log_trace("Invalid netmask");
 		  return false;
 		}
-  } else strncpy(proc_ip, ip, IP_LEN);
+  } else os_strlcpy(proc_ip, ip, IP_LEN - 1);
 
   int ret = inet_pton(AF_INET, proc_ip, &(sa.sin_addr));
   if (ret == -1) {

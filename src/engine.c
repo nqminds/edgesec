@@ -61,7 +61,7 @@ bool construct_hostapd_ctrlif(char *ctrl_interface, char *interface, char *hosta
     return false;
   }
 
-  strncpy(hostapd_ctrl_if_path, ctrl_if_path, AP_SECRET_LEN);
+  os_strlcpy(hostapd_ctrl_if_path, ctrl_if_path, AP_SECRET_LEN - 1);
   free(ctrl_if_path);
 
   return true;
@@ -192,10 +192,14 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
   }
 
   log_info("Loading crypt service...");
-  if ((context.crypt_ctx = load_crypt_service(app_config->crypt_db_path)) == NULL) {
+  if ((context.crypt_ctx = load_crypt_service(app_config->crypt_db_path, app_config->crypt_key_id,
+                                              app_config->crypt_secret,
+                                              strlen(app_config->crypt_secret))) == NULL) {
     log_debug("load_crypt_service fail");
     goto run_engine_fail;
   }
+
+  // exit(1);
 
   log_info("Checking wifi interface...");
   if (!app_config->ap_detect) {

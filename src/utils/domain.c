@@ -36,7 +36,7 @@ void init_domain_addr(struct sockaddr_un *unaddr, char *addr)
 {
   os_memset(unaddr, 0, sizeof(struct sockaddr_un));
   unaddr->sun_family = AF_UNIX;
-  strncpy(unaddr->sun_path, addr, sizeof(unaddr->sun_path) - 1);
+  os_strlcpy(unaddr->sun_path, addr, sizeof(unaddr->sun_path) - 1);
 }
 
 char* generate_socket_name(char *buf)

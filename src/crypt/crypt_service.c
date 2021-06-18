@@ -37,9 +37,24 @@ void free_crypt_service(struct crypt_context *ctx)
   }
 }
 
-struct crypt_context* load_crypt_service(char *crypt_db_path)
+struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
+                                         uint8_t *user_key, size_t user_key_size)
 {
-  struct crypt_context *context = os_malloc(sizeof(struct crypt_context));
+  struct crypt_context *context;
+
+  if (key_id == NULL) {
+    log_trace("key_id param is NULL");
+    return NULL;
+  }
+
+  // User the hardware secure memory
+  if (!user_key_size) {
+    log_trace("User key is empty, using hardware secure memory.");
+  } else {
+    log_trace("Using user secret key.");
+  }
+
+  context = (struct crypt_context*) os_malloc(sizeof(struct crypt_context));
 
   if (open_sqlite_crypt_db(crypt_db_path, &context->crypt_db) < 0) {
     log_trace("open_sqlite_crypt_db fail");
