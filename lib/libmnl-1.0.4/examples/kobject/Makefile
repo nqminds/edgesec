@@ -12,7 +12,7 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-MAKE=make
+
 
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -172,18 +172,18 @@ CTAGS = ctags
 am__DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/Make_global.am \
 	$(top_srcdir)/build-aux/depcomp
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ACLOCAL = ${SHELL} /home/alexandru/Projects/EDGESec/lib/libmnl-1.0.4/build-aux/missing aclocal-1.16
+ACLOCAL = ${SHELL} /home/alex/Projects/EDGESec/lib/libmnl-1.0.4/build-aux/missing aclocal-1.16
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 0
 AR = ar
-AUTOCONF = ${SHELL} /home/alexandru/Projects/EDGESec/lib/libmnl-1.0.4/build-aux/missing autoconf
-AUTOHEADER = ${SHELL} /home/alexandru/Projects/EDGESec/lib/libmnl-1.0.4/build-aux/missing autoheader
-AUTOMAKE = ${SHELL} /home/alexandru/Projects/EDGESec/lib/libmnl-1.0.4/build-aux/missing automake-1.16
-AWK = mawk
-CC = gcc
+AUTOCONF = ${SHELL} /home/alex/Projects/EDGESec/lib/libmnl-1.0.4/build-aux/missing autoconf
+AUTOHEADER = ${SHELL} /home/alex/Projects/EDGESec/lib/libmnl-1.0.4/build-aux/missing autoheader
+AUTOMAKE = ${SHELL} /home/alex/Projects/EDGESec/lib/libmnl-1.0.4/build-aux/missing automake-1.16
+AWK = gawk
+CC = /usr/bin/cc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -g -O2
-CPP = gcc -E
+CPP = /usr/bin/cc -E
 CPPFLAGS = 
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
@@ -213,7 +213,7 @@ LIPO =
 LN_S = ln -s
 LTLIBOBJS = 
 LT_SYS_LIBRARY_PATH = 
-MAKEINFO = ${SHELL} /home/alexandru/Projects/EDGESec/lib/libmnl-1.0.4/build-aux/missing makeinfo
+MAKEINFO = ${SHELL} /home/alex/Projects/EDGESec/lib/libmnl-1.0.4/build-aux/missing makeinfo
 MANIFEST_TOOL = :
 MKDIR_P = /bin/mkdir -p
 NM = /usr/bin/nm -B
@@ -232,22 +232,22 @@ PACKAGE_VERSION = 1.0.4
 PATH_SEPARATOR = :
 RANLIB = ranlib
 SED = /bin/sed
-SET_MAKE = MAKE=make
+SET_MAKE = 
 SHELL = /bin/bash
 STRIP = strip
 VERSION = 1.0.4
-abs_builddir = /home/alexandru/Projects/EDGESec/lib/libmnl-1.0.4/examples/kobject
-abs_srcdir = /home/alexandru/Projects/EDGESec/lib/libmnl-1.0.4/examples/kobject
-abs_top_builddir = /home/alexandru/Projects/EDGESec/lib/libmnl-1.0.4
-abs_top_srcdir = /home/alexandru/Projects/EDGESec/lib/libmnl-1.0.4
+abs_builddir = /home/alex/Projects/EDGESec/lib/libmnl-1.0.4/examples/kobject
+abs_srcdir = /home/alex/Projects/EDGESec/lib/libmnl-1.0.4/examples/kobject
+abs_top_builddir = /home/alex/Projects/EDGESec/lib/libmnl-1.0.4
+abs_top_srcdir = /home/alex/Projects/EDGESec/lib/libmnl-1.0.4
 ac_ct_AR = ar
-ac_ct_CC = gcc
+ac_ct_CC = /usr/bin/cc
 ac_ct_DUMPBIN = 
 am__include = include
 am__leading_dot = .
 am__quote = 
-am__tar = false
-am__untar = false
+am__tar = tar --format=posix -chf - "$$tardir"
+am__untar = tar -xf -
 bindir = ${exec_prefix}/bin
 build = x86_64-pc-linux-gnu
 build_alias = 
@@ -268,7 +268,7 @@ host_vendor = pc
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/alexandru/Projects/EDGESec/lib/libmnl-1.0.4/build-aux/install-sh
+install_sh = ${SHELL} /home/alex/Projects/EDGESec/lib/libmnl-1.0.4/build-aux/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -277,7 +277,7 @@ mandir = ${datarootdir}/man
 mkdir_p = $(MKDIR_P)
 oldincludedir = /usr/include
 pdfdir = ${docdir}
-prefix = /home/alexandru/Projects/EDGESec/build/lib/mnl
+prefix = /home/alex/Projects/EDGESec/build/lib/mnl
 program_transform_name = s,x,x,
 psdir = ${docdir}
 regular_CFLAGS = -Wall -Waggregate-return -Wmissing-declarations 	-Wmissing-prototypes -Wshadow -Wstrict-prototypes 	-Wformat=2 -pipe
