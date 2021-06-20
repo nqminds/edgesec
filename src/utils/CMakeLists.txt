@@ -2,9 +2,13 @@ include_directories(
   "${LIBNETLINK_UAPI_INCLUDE_DIR}"
   "${LIBNETLINK_INCLUDE_DIR}"
   "${LIBUUID_INCLUDE_DIR}"
+  "${LIBOPENSSL_INCLUDE_PATH}"
 )
 
 add_library(log log.c)
+
+add_library(cryptou cryptou.c)
+target_link_libraries(cryptou base64 os log ${LIBCRYPTO_LIB})
 
 add_library(base64 base64.c)
 target_link_libraries(base64 os log)

@@ -18,37 +18,30 @@
  ****************************************************************************/
 
 /**
- * @file crypt_service.h
+ * @file cryptou.h 
  * @author Alexandru Mereacre 
- * @brief File containing the definition of crypt service configuration utilities.
+ * @brief File containing the definition of the cryptographic utilities.
  */
-#ifndef CRYPT_SERVICE_H
-#define CRYPT_SERVICE_H
 
-#include <sqlite3.h>
+#ifndef CRYPTOU_H
+#define CRYPTOU_H
 
-#include "crypt_config.h"
+#include <stdint.h>
 
-#include "../utils/os.h"
-#include "../utils/utarray.h"
+#define SALT_SIZE           16
+#define AES_KEY_SIZE        32
+#define MAX_KEY_ITERATIONS  1000
 
 /**
- * @brief Load the crypt service
+ * @brief Transforms a secret buf into a key
  * 
- * @param crypt_db_path The crypt db path
- * @param key_id The crypt secrets key id
- * @param user_key The user master key array to decrypt the secrets key
- * @param user_key_size The user master key array size, if zero use the hardware secure mem
- * @return struct crypt_context* The crypt contex, NULL on failure
+ * @param buf The secret buf
+ * @param buf_size The buf size
+ * @param salt The salt buf
+ * @param salt_size The salt buf size
+ * @param key_size The key size
+ * @param key The returned key
+ * @return int 0 on success, -1 on failure
  */
-struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
-                                         uint8_t *user_key, int user_key_size);
-
-/**
- * @brief Frees the crypt context
- * 
- * @param ctx The crypt context
- */
-void free_crypt_service(struct crypt_context *ctx);
-
+int crypto_buf2key(uint8_t *buf, int buf_size, uint8_t *salt, int salt_size, int key_size, uint8_t *key);
 #endif

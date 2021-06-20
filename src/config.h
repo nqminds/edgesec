@@ -36,6 +36,7 @@
 #include "capture/capture_config.h"
 
 #define MAX_USER_SECRET 255
+#define MAX_SALT_STRING_SIZE 255
 
 /**
  * @brief The App configuration structures. Used for configuring the networking services.
@@ -59,6 +60,7 @@ struct app_config {
   char                crypt_db_path[MAX_OS_PATH_LEN];       /**< Specifies the crypt db path to the sqlite3 db */ 
   char                crypt_key_id[MAX_KEY_ID_SIZE];        /**< Specifies the crypt key id */ 
   char                crypt_secret[MAX_USER_SECRET];        /**< Specifies the crypt user master secret */ 
+  char                crypt_salt[MAX_SALT_STRING_SIZE];     /**< Specifies the salt for the user master secret */ 
   char                domain_delim;                         /**< Control server command delimiter. */
   bool                allow_all_connections;                /**< Flag to allow all connections. */
   bool                allow_all_nat;                        /**< Flag to allow all nat connections. */

@@ -28,6 +28,7 @@
 
 #include "../utils/log.h"
 #include "../utils/os.h"
+#include "../utils/cryptou.h"
 
 void free_crypt_service(struct crypt_context *ctx)
 {
@@ -38,10 +39,13 @@ void free_crypt_service(struct crypt_context *ctx)
 }
 
 struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
-                                         uint8_t *user_key, size_t user_key_size)
+                                         uint8_t *user_key, int user_key_size)
 {
   struct crypt_context *context;
   struct secrets_row *row_secret;
+  uint8_t master_key[AES_KEY_SIZE];
+  uint8_t test[1000];
+  uint8_t salt[SALT_SIZE];
 
   if (key_id == NULL) {
     log_trace("key_id param is NULL");
@@ -52,7 +56,13 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
   if (!user_key_size) {
     log_trace("User key is empty, using hardware secure memory.");
   } else {
-    log_trace("Using user secret key.");
+    log_trace("Using user secret key, generating AES key.");
+    if (crypto_buf2key(user_key, user_key_size, salt, SALT_SIZE, AES_KEY_SIZE, master_key) < 0) {
+      log_trace("crypto_buf2key fail");
+      return NULL;
+    }
+    printf_hex(test, 1000, master_key, AES_KEY_SIZE, 1);
+    log_trace("%s", test);
   }
 
   context = (struct crypt_context*) os_malloc(sizeof(struct crypt_context));

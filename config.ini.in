@@ -16,6 +16,7 @@ execIptables = true
 dbPath = "./db"
 cryptDbPath = "./crypt.sqlite"
 cryptKeyId = "master"
+cryptKeyDerivationSalt = "238wCVgcxmIJxqNfrAprBw=="
 
 [capture]
 captureBinPath = "./src/capsrv"

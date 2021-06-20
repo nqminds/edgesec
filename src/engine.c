@@ -199,7 +199,7 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
     goto run_engine_fail;
   }
 
-  // exit(1);
+  exit(1);
 
   log_info("Checking wifi interface...");
   if (!app_config->ap_detect) {

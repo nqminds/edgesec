@@ -18,37 +18,30 @@
  ****************************************************************************/
 
 /**
- * @file crypt_service.h
+ * @file cryptou.c
  * @author Alexandru Mereacre 
- * @brief File containing the definition of crypt service configuration utilities.
+ * @brief File containing the implementation of the cryptographic utilities.
  */
-#ifndef CRYPT_SERVICE_H
-#define CRYPT_SERVICE_H
 
-#include <sqlite3.h>
+#include <stdint.h>
+#include <openssl/evp.h>
+#include <openssl/sha.h>
+#include <openssl/crypto.h>
+#include <openssl/err.h>
+#include <openssl/rand.h>
 
-#include "crypt_config.h"
+#include "cryptou.h"
 
-#include "../utils/os.h"
-#include "../utils/utarray.h"
+#include "../utils/log.h"
+#include "../utils/base64.h"
 
-/**
- * @brief Load the crypt service
- * 
- * @param crypt_db_path The crypt db path
- * @param key_id The crypt secrets key id
- * @param user_key The user master key array to decrypt the secrets key
- * @param user_key_size The user master key array size, if zero use the hardware secure mem
- * @return struct crypt_context* The crypt contex, NULL on failure
- */
-struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
-                                         uint8_t *user_key, int user_key_size);
+int crypto_buf2key(uint8_t *buf, int buf_size, uint8_t *salt, int salt_size, int key_size, uint8_t *key)
+{
+  if (PKCS5_PBKDF2_HMAC(buf, buf_size, salt, SALT_SIZE, MAX_KEY_ITERATIONS,
+                    EVP_sha256(), key_size, key) < 1) {
+    log_trace("PKCS5_PBKDF2_HMAC fail wit code=%d", ERR_get_error());
+    return -1;
+  }
 
-/**
- * @brief Frees the crypt context
- * 
- * @param ctx The crypt context
- */
-void free_crypt_service(struct crypt_context *ctx);
-
-#endif
+  return 0;
+}
