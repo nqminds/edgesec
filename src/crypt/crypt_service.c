@@ -25,6 +25,7 @@
 
 #include "sqlite_crypt_writer.h"
 #include "crypt_config.h"
+#include "crypt_service.h"
 
 #include "../utils/log.h"
 #include "../utils/os.h"
@@ -211,8 +212,6 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
 {
   struct crypt_context *context;
   struct secrets_row *row_secret;
-  // uint8_t dec_crypto_key[AES_KEY_SIZE];
-  // int dec_crypto_key_size;
 
   uint8_t test[1000];
 
@@ -222,6 +221,7 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
   }
 
   context = (struct crypt_context*) os_malloc(sizeof(struct crypt_context));
+  strncpy(context->key_id, key_id, MAX_KEY_ID_SIZE - 1);
 
   if (open_sqlite_crypt_db(crypt_db_path, &context->crypt_db) < 0) {
     log_trace("open_sqlite_crypt_db fail");
@@ -295,4 +295,109 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
 
   free_sqlite_secrets_row(row_secret);
   return context;
+}
+
+struct crypt_pair get_crypt_pair(struct crypt_context *ctx, char *key)
+{
+  struct crypt_pair pair;
+  struct store_row *row;
+  uint8_t *enc_value;
+  uint8_t *iv;
+  size_t iv_size, value_size;
+
+  pair.key = NULL;
+
+  if (key == NULL) {
+    log_trace("key para is NULL");
+    return pair;
+  }
+
+  if (!strlen(key)) {
+    log_trace("key param is empty");
+    return pair;
+  }
+
+  if ((row = get_sqlite_store_row(ctx->crypt_db, key)) == NULL) {
+    log_trace("get_sqlite_store_row fail");
+    return pair;
+  }
+
+  iv = base64_decode(row->iv, strlen(row->iv), &iv_size);
+  enc_value = base64_decode(row->value, strlen(row->value), &value_size);
+  pair.value = os_malloc(value_size);
+  if ((pair.value_size = crypto_decrypt(enc_value, value_size, ctx->crypto_key,
+                                       iv, pair.value)) < 0) {
+    log_trace("crypto_decrypt fail");
+    os_free(iv);
+    os_free(enc_value);
+    os_free(pair.value);
+    free_sqlite_store_row(row);
+    return pair;
+  }
+
+  pair.key = key;
+  os_free(iv);
+  os_free(enc_value);
+  os_free(pair.value);
+  free_sqlite_store_row(row);
+  return pair;
+}
+
+int put_crypt_pair(struct crypt_context *ctx, struct crypt_pair *pair)
+{
+  struct store_row row;
+  uint8_t *enc_value;
+  uint8_t iv[IV_SIZE];
+  int enc_value_size;
+  size_t out_len;
+
+  if (pair == NULL) {
+    log_trace("pair param is NULL");
+    return -1;
+  }
+
+  if (pair->key == NULL) {
+    log_trace("pair key is NULL");
+    return -1;
+  }
+
+  if (!strlen(pair->key)) {
+    log_trace("pair key is empty");
+    return -1;
+  }
+
+  if (!pair->value_size) {
+    log_trace("pair value is empty");
+    return -1;
+  }
+
+  if (!crypto_geniv(iv, IV_SIZE)) {
+    log_trace("crypto_geniv fail");
+    return -1;
+  }
+
+  enc_value = os_malloc(pair->value_size + AES_BLOCK_SIZE);
+
+  if ((enc_value_size = crypto_encrypt(pair->value, pair->value_size, ctx->crypto_key,
+                                       iv, enc_value)) < 0) {
+    log_trace("crypto_encrypt fail");
+    os_free(enc_value);
+    return -1;
+  }
+
+  row.key = pair->key;
+  row.value = base64_encode(enc_value, enc_value_size, &out_len);
+  row.id = ctx->key_id;
+  row.iv = base64_encode(iv, IV_SIZE, &out_len);
+  os_free(enc_value);
+  if (save_sqlite_store_entry(ctx->crypt_db, &row) < 0) {
+    log_trace("save_sqlite_store_entry fail");
+    os_free(row.value);
+    os_free(row.iv);
+    return -1;
+  }
+
+  os_free(row.value);
+  os_free(row.iv);
+  return 0;
 }

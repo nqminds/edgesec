@@ -31,6 +31,10 @@
 
 #define MAX_KEY_ID_SIZE 255
 
+/**
+ * @brief crypt context structure definition
+ * 
+ */
 struct crypt_context {
   sqlite3 *crypt_db;                             /**< The crypt sqlite db structure. */
   char key_id[MAX_KEY_ID_SIZE];                  /**< The crypt secrets key id. */
