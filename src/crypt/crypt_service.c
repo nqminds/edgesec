@@ -38,31 +38,49 @@ void free_crypt_service(struct crypt_context *ctx)
   }
 }
 
+int generate_user_key(uint8_t *user_secret, int user_secret_size,
+                      uint8_t *user_key, int user_key_size,
+                      uint8_t *user_key_salt, int user_key_salt_size)
+{
+  if (crypto_buf2key(user_secret, user_secret_size, user_key_salt, user_key_salt_size, user_key, user_key_size) < 0) {
+    log_trace("crypto_buf2key fail");
+    return -1;
+  }
+
+  return 0;
+}
+
+int encrypt_master_key(uint8_t *key, int key_size, uint8_t *user_key, int user_key_size,
+                       uint8_t *out, int out_size)
+{
+  if (!user_key_size) {
+    // Use secure element key
+    log_trace("Secure element not implemented");
+    return -1;
+  } else {
+    // Use user key
+  }
+
+
+}
+
 struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
-                                         uint8_t *user_key, int user_key_size)
+                                         uint8_t *user_secret, int user_secret_size)
 {
   struct crypt_context *context;
   struct secrets_row *row_secret;
-  uint8_t master_key[AES_KEY_SIZE];
+  uint8_t user_key[AES_KEY_SIZE];
+  uint8_t user_key_salt[SALT_SIZE];
+  uint8_t crypto_key[AES_KEY_SIZE];
+  uint8_t enc_crypto_key[AES_KEY_SIZE + AES_BLOCK_SIZE];
+  uint8_t iv[IV_SIZE];
+  int enc_crypto_key_size;
+
   uint8_t test[1000];
-  uint8_t salt[SALT_SIZE];
 
   if (key_id == NULL) {
     log_trace("key_id param is NULL");
     return NULL;
-  }
-
-  // User the hardware secure memory
-  if (!user_key_size) {
-    log_trace("User key is empty, using hardware secure memory.");
-  } else {
-    log_trace("Using user secret key, generating AES key.");
-    if (crypto_buf2key(user_key, user_key_size, salt, SALT_SIZE, AES_KEY_SIZE, master_key) < 0) {
-      log_trace("crypto_buf2key fail");
-      return NULL;
-    }
-    printf_hex(test, 1000, master_key, AES_KEY_SIZE, 1);
-    log_trace("%s", test);
   }
 
   context = (struct crypt_context*) os_malloc(sizeof(struct crypt_context));
@@ -74,9 +92,73 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
     return NULL;
   }
 
-  if ((row_secret = get_sqlite_secrets_row(context->crypt_db, key_id)) == NULL) {
-    // Create secret 
+  // Retrieve an existing key
+  row_secret = get_sqlite_secrets_row(context->crypt_db, key_id);
+  if (row_secret  == NULL) {
+    log_trace("No secret with key=%s found, generating new one", key_id);
+    // Create encryption key
+    if (!crypto_genkey(crypto_key, AES_KEY_SIZE)) {
+      log_trace("crypto_genkey fail");
+      free_crypt_service(context);
+      return NULL;
+    }
+
+    if (user_secret_size) {
+      log_debug("Using user supplied secret");
+      if (!crypto_gensalt(user_key_salt, SALT_SIZE)) {
+        log_trace("crypto_gensalt fail");
+        free_crypt_service(context);
+        return NULL;        
+      }
+
+      // Generate the enc/dec key using the user supplied key
+      if (generate_user_key(user_secret, user_secret_size, user_key,
+                            AES_KEY_SIZE, user_key_salt, SALT_SIZE) < 0)
+      {
+        log_trace("generate_user_key fail");
+        free_crypt_service(context);
+        return NULL;
+      }
+
+      if (!crypto_geniv(iv, IV_SIZE)) {
+        log_trace("crypto_geniv fail");
+        free_crypt_service(context);
+        return NULL;
+      }
+
+      if ((enc_crypto_key_size =crypto_encrypt(crypto_key, AES_KEY_SIZE, user_key, iv, enc_crypto_key)) < 0) {
+        log_trace("crypto_encrypt fail");
+        free_crypt_service(context);
+        return NULL;
+      }
+
+      printf_hex(test, 1000, user_key, AES_KEY_SIZE, 1);
+      log_trace("%s", test);
+    } else {
+      log_debug("Using hardware secure element");
+      log_trace("Not implemented, yet");
+      free_crypt_service(context);
+      return NULL;      
+    }
+  } else {
+    log_trace("key=%s found", key_id);
   }
+
+  // User the hardware secure memory
+  // if (!user_key_size) {
+  //   log_trace("User key is empty, using hardware secure memory.");
+  // } else {
+  //   log_trace("Using user secret key, generating AES key.");
+
+
+  //   if (crypto_buf2key(user_key, user_key_size, salt, SALT_SIZE, AES_KEY_SIZE, master_key) < 0) {
+  //     log_trace("crypto_buf2key fail");
+  //     free_crypt_service(context);
+  //     return NULL;
+  //   }
+  //   printf_hex(test, 1000, master_key, AES_KEY_SIZE, 1);
+  //   log_trace("%s", test);
+  // }
 
   return context;
 }

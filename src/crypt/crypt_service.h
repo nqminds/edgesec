@@ -37,12 +37,12 @@
  * 
  * @param crypt_db_path The crypt db path
  * @param key_id The crypt secrets key id
- * @param user_key The user master key array to decrypt the secrets key
- * @param user_key_size The user master key array size, if zero use the hardware secure mem
+ * @param user_secret The user secret
+ * @param user_secret_size The user secret size, if zero use the hardware secure element
  * @return struct crypt_context* The crypt contex, NULL on failure
  */
 struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
-                                         uint8_t *user_key, int user_key_size);
+                                         uint8_t *user_secret, int user_secret_size);
 
 /**
  * @brief Frees the crypt context
