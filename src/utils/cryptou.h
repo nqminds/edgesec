@@ -86,5 +86,18 @@ int crypto_buf2key(uint8_t *buf, int buf_size, uint8_t *salt, int salt_size,
  * @return The output size, -1 on error
  */
 int crypto_encrypt(uint8_t *in, int in_size, uint8_t *key,
-            uint8_t *iv, uint8_t *out);
+                   uint8_t *iv, uint8_t *out);
+
+/**
+ * @brief Decrypts a buffer with AES CBC 256
+ * 
+ * @param in The input buffer
+ * @param in_size The input buffer size
+ * @param key The 256 bit key
+ * @param iv The 128 bit key
+ * @param out The output buffer
+ * @return The output size, -1 on error
+ */
+int crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
+                   uint8_t *iv, uint8_t *out);
 #endif

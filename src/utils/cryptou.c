@@ -63,56 +63,114 @@ int crypto_buf2key(uint8_t *buf, int buf_size, uint8_t *salt, int salt_size,
 }
 
 int crypto_encrypt(uint8_t *in, int in_size, uint8_t *key,
-            uint8_t *iv, uint8_t *out)
+                   uint8_t *iv, uint8_t *out)
 {
-    EVP_CIPHER_CTX *ctx;
-    int len;
-    int ciphertext_len;
+  EVP_CIPHER_CTX *ctx;
+  int len;
+  int ciphertext_len;
 
-    /* Create and initialise the context */
-    if(!(ctx = EVP_CIPHER_CTX_new())) {
-      log_trace("EVP_CIPHER_CTX_new fail wit code=%d", ERR_get_error());
-      return -1;
-    }
+  /* Create and initialise the context */
+  if(!(ctx = EVP_CIPHER_CTX_new())) {
+    log_trace("EVP_CIPHER_CTX_new fail with code=%d", ERR_get_error());
+    return -1;
+  }
 
-    /*
-     * Initialise the encryption operation. IMPORTANT - ensure you use a key
-     * and IV size appropriate for your cipher
-     * In this example we are using 256 bit AES (i.e. a 256 bit key). The
-     * IV size for *most* modes is the same as the block size. For AES this
-     * is 128 bits
-     */
-    if(1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv)) {
-      log_trace("EVP_EncryptInit_ex fail wit code=%d", ERR_get_error());
-      EVP_CIPHER_CTX_free(ctx);
-      return -1;
-    }
- 
-    /*
-     * Provide the message to be encrypted, and obtain the encrypted output.
-     * EVP_EncryptUpdate can be called multiple times if necessary
-     */
-    if(1 != EVP_EncryptUpdate(ctx, out, &len, in, in_size)) {
-      log_trace("EVP_EncryptUpdate fail wit code=%d", ERR_get_error());
-      EVP_CIPHER_CTX_free(ctx);
-      return -1;
-    }
-    ciphertext_len = len;
-
-    /*
-     * Finalise the encryption. Further ciphertext bytes may be written at
-     * this stage.
-     */
-    if(1 != EVP_EncryptFinal_ex(ctx, out + len, &len)) {
-      log_trace("EVP_EncryptFinal_ex fail wit code=%d", ERR_get_error());
-      EVP_CIPHER_CTX_free(ctx);
-      return -1;
-    }
-
-    ciphertext_len += len;
-
-    /* Clean up */
+  /*
+   * Initialise the encryption operation. IMPORTANT - ensure you use a key
+   * and IV size appropriate for your cipher
+   * In this example we are using 256 bit AES (i.e. a 256 bit key). The
+   * IV size for *most* modes is the same as the block size. For AES this
+   * is 128 bits
+   */
+  if(1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv)) {
+    log_trace("EVP_EncryptInit_ex fail with code=%d", ERR_get_error());
     EVP_CIPHER_CTX_free(ctx);
+    return -1;
+  }
 
-    return ciphertext_len;
+  /*
+   * Provide the message to be encrypted, and obtain the encrypted output.
+   * EVP_EncryptUpdate can be called multiple times if necessary
+   */
+  if(1 != EVP_EncryptUpdate(ctx, out, &len, in, in_size)) {
+    log_trace("EVP_EncryptUpdate fail with code=%d", ERR_get_error());
+    EVP_CIPHER_CTX_free(ctx);
+    return -1;
+  }
+
+  ciphertext_len = len;
+
+  /*
+   * Finalise the encryption. Further ciphertext bytes may be written at
+   * this stage.
+   */
+  if(1 != EVP_EncryptFinal_ex(ctx, out + len, &len)) {
+    log_trace("EVP_EncryptFinal_ex fail with code=%d", ERR_get_error());
+    EVP_CIPHER_CTX_free(ctx);
+    return -1;
+  }
+
+  ciphertext_len += len;
+
+  /* Clean up */
+  EVP_CIPHER_CTX_free(ctx);
+
+  return ciphertext_len;
+}
+
+int crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
+                   uint8_t *iv, uint8_t *out)
+{
+  EVP_CIPHER_CTX *ctx;
+
+  int len;
+  int plaintext_len;
+
+  /* Create and initialise the context */
+  if(!(ctx = EVP_CIPHER_CTX_new())) {
+    log_trace("EVP_CIPHER_CTX_new fail with code=%d", ERR_get_error());
+    return -1;
+  }
+
+  /*
+   * Initialise the decryption operation. IMPORTANT - ensure you use a key
+   * and IV size appropriate for your cipher
+   * In this example we are using 256 bit AES (i.e. a 256 bit key). The
+   * IV size for *most* modes is the same as the block size. For AES this
+   * is 128 bits
+   */
+  if(1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv)) {
+    log_trace("EVP_DecryptInit_ex fail with code=%d", ERR_get_error());
+    EVP_CIPHER_CTX_free(ctx);
+    return -1;
+  }
+
+  /*
+   * Provide the message to be decrypted, and obtain the plaintext output.
+   * EVP_DecryptUpdate can be called multiple times if necessary.
+   */
+  if(1 != EVP_DecryptUpdate(ctx, out, &len, in, in_size)) {
+    log_trace("EVP_DecryptUpdate fail with code=%d", ERR_get_error());
+    EVP_CIPHER_CTX_free(ctx);
+    return -1;
+  }
+
+  plaintext_len = len;
+
+  /*
+   * Finalise the decryption. Further plaintext bytes may be written at
+   * this stage.
+   */
+  if(1 != EVP_DecryptFinal_ex(ctx, out + len, &len)) {
+    log_trace("EVP_DecryptFinal_ex fail with code=%d", ERR_get_error());
+    EVP_CIPHER_CTX_free(ctx);
+    return -1;
+  }
+
+  plaintext_len += len;
+
+  /* Clean up */
+  EVP_CIPHER_CTX_free(ctx);
+
+  return plaintext_len;
 }

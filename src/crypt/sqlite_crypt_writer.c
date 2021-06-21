@@ -85,10 +85,15 @@ void free_sqlite_crypt_db(sqlite3 *db)
   }
 }
 
-int save_sqlite_store_entry(sqlite3 *db, char *key, char *value, char *id)
+int save_sqlite_store_entry(sqlite3 *db, struct store_row *row)
 {
   sqlite3_stmt *res = NULL;
   int column_idx;
+
+  if (row == NULL) {
+    log_trace("row param is NULL");
+    return -1;
+  }
 
   if (sqlite3_prepare_v2(db, CRYPT_STORE_INSERT_INTO, -1, &res, 0) != SQLITE_OK) {
     log_trace("Failed to prepare statement: %s", sqlite3_errmsg(db));
@@ -96,21 +101,28 @@ int save_sqlite_store_entry(sqlite3 *db, char *key, char *value, char *id)
   }
 
   column_idx = sqlite3_bind_parameter_index(res, "@key");
-  if (sqlite3_bind_text(res, column_idx, key, -1, NULL) != SQLITE_OK) {
+  if (sqlite3_bind_text(res, column_idx, row->key, -1, NULL) != SQLITE_OK) {
     log_trace("sqlite3_bind_text fail");
     sqlite3_finalize(res);
     return -1;
   }
 
   column_idx = sqlite3_bind_parameter_index(res, "@value");
-  if (sqlite3_bind_text(res, column_idx, value, -1, NULL) != SQLITE_OK) {
+  if (sqlite3_bind_text(res, column_idx, row->value, -1, NULL) != SQLITE_OK) {
     log_trace("sqlite3_bind_text fail");
     sqlite3_finalize(res);
     return -1;
   }
 
   column_idx = sqlite3_bind_parameter_index(res, "@id");
-  if (sqlite3_bind_text(res, column_idx, id, -1, NULL) != SQLITE_OK) {
+  if (sqlite3_bind_text(res, column_idx, row->id, -1, NULL) != SQLITE_OK) {
+    log_trace("sqlite3_bind_text fail");
+    sqlite3_finalize(res);
+    return -1;
+  }
+
+  column_idx = sqlite3_bind_parameter_index(res, "@iv");
+  if (sqlite3_bind_text(res, column_idx, row->iv, -1, NULL) != SQLITE_OK) {
     log_trace("sqlite3_bind_text fail");
     sqlite3_finalize(res);
     return -1;
@@ -122,10 +134,15 @@ int save_sqlite_store_entry(sqlite3 *db, char *key, char *value, char *id)
   return 0;
 }
 
-int save_sqlite_secrets_entry(sqlite3 *db, char *id, char *value)
+int save_sqlite_secrets_entry(sqlite3 *db, struct secrets_row *row)
 {
   sqlite3_stmt *res = NULL;
   int column_idx;
+
+  if (row == NULL) {
+    log_trace("row param is NULL");
+    return -1;
+  }
 
   if (sqlite3_prepare_v2(db, CRYPT_SECRETS_INSERT_INTO, -1, &res, 0) != SQLITE_OK) {
     log_trace("Failed to prepare statement: %s", sqlite3_errmsg(db));
@@ -133,14 +150,28 @@ int save_sqlite_secrets_entry(sqlite3 *db, char *id, char *value)
   }
 
   column_idx = sqlite3_bind_parameter_index(res, "@id");
-  if (sqlite3_bind_text(res, column_idx, id, -1, NULL) != SQLITE_OK) {
+  if (sqlite3_bind_text(res, column_idx, row->id, -1, NULL) != SQLITE_OK) {
     log_trace("sqlite3_bind_text fail");
     sqlite3_finalize(res);
     return -1;
   }
 
   column_idx = sqlite3_bind_parameter_index(res, "@value");
-  if (sqlite3_bind_text(res, column_idx, value, -1, NULL) != SQLITE_OK) {
+  if (sqlite3_bind_text(res, column_idx, row->value, -1, NULL) != SQLITE_OK) {
+    log_trace("sqlite3_bind_text fail");
+    sqlite3_finalize(res);
+    return -1;
+  }
+
+  column_idx = sqlite3_bind_parameter_index(res, "@salt");
+  if (sqlite3_bind_text(res, column_idx, row->salt, -1, NULL) != SQLITE_OK) {
+    log_trace("sqlite3_bind_text fail");
+    sqlite3_finalize(res);
+    return -1;
+  }
+
+  column_idx = sqlite3_bind_parameter_index(res, "@iv");
+  if (sqlite3_bind_text(res, column_idx, row->iv, -1, NULL) != SQLITE_OK) {
     log_trace("sqlite3_bind_text fail");
     sqlite3_finalize(res);
     return -1;
@@ -161,6 +192,8 @@ void free_sqlite_store_row(struct store_row *row)
       os_free(row->value);
     if (row->id != NULL)
       os_free(row->id);
+    if (row->iv != NULL)
+      os_free(row->iv);
 
     os_free(row);
   }
@@ -198,6 +231,8 @@ struct store_row* get_sqlite_store_row(sqlite3 *db, char *key)
     row->key = os_strdup(key);
     row->value = os_strdup(sqlite3_column_text(res, 0));
     row->id = os_strdup(sqlite3_column_text(res, 1));
+    row->iv = os_strdup(sqlite3_column_text(res, 2));
+
     sqlite3_finalize(res);
     return row;
   }
@@ -212,6 +247,10 @@ void free_sqlite_secrets_row(struct secrets_row *row)
       os_free(row->id);
     if (row->value != NULL)
       os_free(row->value);
+    if (row->salt != NULL)
+      os_free(row->salt);
+    if (row->iv != NULL)
+      os_free(row->iv);
     os_free(row);
   }
 }
@@ -247,6 +286,9 @@ struct secrets_row* get_sqlite_secrets_row(sqlite3 *db, char *id)
   if (rc == SQLITE_ROW) {
     row->id = os_strdup(id);
     row->value = os_strdup(sqlite3_column_text(res, 0));
+    row->salt = os_strdup(sqlite3_column_text(res, 1));
+    row->iv = os_strdup(sqlite3_column_text(res, 2));
+
     sqlite3_finalize(res);
     return row;
   }
