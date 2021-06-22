@@ -286,7 +286,7 @@ ssize_t process_set_ip_cmd(int sock, char *client_addr,
   // add type
   ptr = (char**) utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
-    os_strlcpy(dhcp_type, *ptr, 4 - 1);
+    os_strlcpy(dhcp_type, *ptr, 4);
     log_trace("Received DHCP request with type=%s", dhcp_type);
     add = (strcmp(dhcp_type, "add") == 0 || strcmp(dhcp_type, "old") == 0);
   } else {
@@ -411,22 +411,22 @@ ssize_t process_get_bridges_cmd(int sock, char *client_addr, struct supervisor_c
 ssize_t process_set_fingerprint_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
 {
   char **ptr = (char**) utarray_next(cmd_arr, NULL);
-  char src_mac_addr[MACSTR_LEN + 1];
-  char dst_mac_addr[MACSTR_LEN + 1];
+  char src_mac_addr[MACSTR_LEN];
+  char dst_mac_addr[MACSTR_LEN];
   char protocol[MAX_PROTOCOL_NAME_LEN];
 
   // MAC address source
   ptr = (char**) utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
-    os_strlcpy(src_mac_addr, *ptr, MACSTR_LEN - 1);
+    os_strlcpy(src_mac_addr, *ptr, MACSTR_LEN);
     // MAC address destination
     ptr = (char**) utarray_next(cmd_arr, ptr);
     if (ptr != NULL && *ptr != NULL) {
-      os_strlcpy(dst_mac_addr, *ptr, MACSTR_LEN - 1);
+      os_strlcpy(dst_mac_addr, *ptr, MACSTR_LEN);
       ptr = (char**) utarray_next(cmd_arr, ptr);
       // Protocol
       if (ptr != NULL && *ptr != NULL) {
-        os_strlcpy(protocol, *ptr, MAX_PROTOCOL_NAME_LEN - 1);
+        os_strlcpy(protocol, *ptr, MAX_PROTOCOL_NAME_LEN);
         ptr = (char**) utarray_next(cmd_arr, ptr);
         // Fingerprint
         if (ptr != NULL && *ptr != NULL) {

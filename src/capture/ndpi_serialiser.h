@@ -84,8 +84,8 @@ struct nDPI_flow_info {
 };
 
 struct nDPI_flow_meta {
-  char src_mac_addr[MACSTR_LEN + 1];
-  char dst_mac_addr[MACSTR_LEN + 1];
+  char src_mac_addr[MACSTR_LEN];
+  char dst_mac_addr[MACSTR_LEN];
   char protocol[MAX_PROTOCOL_NAME_LEN];
   char hash[SHA256_HASH_LEN];
 };

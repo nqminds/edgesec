@@ -38,6 +38,8 @@
 #include "utils/utarray.h"
 #include "config.h"
 
+#include "supervisor/cmd_processor.h"
+
 bool get_config_dhcpinfo(char *info, config_dhcpinfo_t *el)
 {
   UT_array *info_arr;
@@ -191,7 +193,7 @@ bool get_connection_info(char *info, struct mac_conn *el)
 
   p = (char**) utarray_next(info_arr, p);
   if (*p != NULL) {
-    os_strlcpy(el->info.pass, *p, AP_SECRET_LEN - 1);
+    os_strlcpy(el->info.pass, *p, AP_SECRET_LEN);
     el->info.pass_len = strlen(el->info.pass);
   } else
     goto err;
@@ -293,7 +295,7 @@ bool load_radius_conf(const char *filename, struct app_config *config)
   value = os_malloc(INI_BUFFERSIZE);
   ini_gets("radius", "clientIP", "127.0.0.1", value, INI_BUFFERSIZE, filename);
 
-  os_strlcpy(config->rconfig.radius_client_ip, value, IP_LEN - 1);
+  os_strlcpy(config->rconfig.radius_client_ip, value, IP_LEN);
   os_free(value);
 
   // Load radius client mask
@@ -303,7 +305,7 @@ bool load_radius_conf(const char *filename, struct app_config *config)
   value = os_malloc(INI_BUFFERSIZE);
   ini_gets("radius", "serverIP", "127.0.0.1", value, INI_BUFFERSIZE, filename);
 
-  os_strlcpy(config->rconfig.radius_server_ip, value, IP_LEN - 1);
+  os_strlcpy(config->rconfig.radius_server_ip, value, IP_LEN);
   os_free(value);
 
   // Load radius server mask
@@ -312,7 +314,7 @@ bool load_radius_conf(const char *filename, struct app_config *config)
   // Load radius secret
   value = os_malloc(INI_BUFFERSIZE);
   ini_gets("radius", "secret", "", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->rconfig.radius_secret, value, RADIUS_SECRET_LEN - 1);
+  os_strlcpy(config->rconfig.radius_secret, value, RADIUS_SECRET_LEN);
   os_free(value);
 
   return true;
@@ -330,7 +332,7 @@ bool load_ap_conf(const char *filename, struct app_config *config)
     return false;
   }
 
-  os_strlcpy(config->hconfig.ap_file_path, value, MAX_OS_PATH_LEN - 1);
+  os_strlcpy(config->hconfig.ap_file_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
   // Load ap bin path
@@ -342,13 +344,13 @@ bool load_ap_conf(const char *filename, struct app_config *config)
     return false;
   }
 
-  os_strlcpy(config->hconfig.ap_bin_path, value, MAX_OS_PATH_LEN - 1);
+  os_strlcpy(config->hconfig.ap_bin_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
   // Load ap log path
   value = os_malloc(INI_BUFFERSIZE);
   ret = ini_gets("ap", "apLogPath", "", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->hconfig.ap_log_path, value, MAX_OS_PATH_LEN - 1);
+  os_strlcpy(config->hconfig.ap_log_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
   // Load ap bridge
@@ -360,7 +362,7 @@ bool load_ap_conf(const char *filename, struct app_config *config)
     return false;
   }
 
-  os_strlcpy(config->hconfig.bridge, value, IFNAMSIZ - 1);
+  os_strlcpy(config->hconfig.bridge, value, IFNAMSIZ);
   os_free(value);
 
   // Load AP name
@@ -372,14 +374,14 @@ bool load_ap_conf(const char *filename, struct app_config *config)
     return false;
   }
 
-  os_strlcpy(config->hconfig.ssid, value, AP_NAME_LEN - 1);
+  os_strlcpy(config->hconfig.ssid, value, AP_NAME_LEN);
   os_free(value);
 
   // Load AP password
   value = os_malloc(INI_BUFFERSIZE);
   ini_gets("ap", "wpaPassphrase", "", value, INI_BUFFERSIZE, filename);
 
-  os_strlcpy(config->hconfig.wpa_passphrase, value, AP_SECRET_LEN - 1);
+  os_strlcpy(config->hconfig.wpa_passphrase, value, AP_SECRET_LEN);
   os_free(value);
 
   // Load AP interface
@@ -391,25 +393,25 @@ bool load_ap_conf(const char *filename, struct app_config *config)
     return false;
   }
 
-  os_strlcpy(config->hconfig.interface, value, IFNAMSIZ - 1);
+  os_strlcpy(config->hconfig.interface, value, IFNAMSIZ);
   os_free(value);
 
   // Load vlan_tagged_interface
   value = os_malloc(INI_BUFFERSIZE);
   ini_gets("ap", "vlanTaggedInterface", "", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->hconfig.vlan_tagged_interface, value, IFNAMSIZ - 1);
+  os_strlcpy(config->hconfig.vlan_tagged_interface, value, IFNAMSIZ);
   os_free(value);
 
   // Load ap driver
   value = os_malloc(INI_BUFFERSIZE);
   ini_gets("ap", "driver", "nl80211", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->hconfig.driver, value, AP_DRIVE_LEN - 1);
+  os_strlcpy(config->hconfig.driver, value, AP_DRIVE_LEN);
   os_free(value);
 
   // Load ap hw mode
   value = os_malloc(INI_BUFFERSIZE);
   ini_gets("ap", "hwMode", "g", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->hconfig.hw_mode, value, AP_HWMODE_LEN - 1);
+  os_strlcpy(config->hconfig.hw_mode, value, AP_HWMODE_LEN);
   os_free(value);
 
   // Load ap channel
@@ -427,19 +429,19 @@ bool load_ap_conf(const char *filename, struct app_config *config)
   // Load ap wpaKeyMgmt
   value = os_malloc(INI_BUFFERSIZE);
   ini_gets("ap", "wpaKeyMgmt", "WPA-PSK", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->hconfig.wpa_key_mgmt, value, AP_WPA_KEY_MGMT_LEN - 1);
+  os_strlcpy(config->hconfig.wpa_key_mgmt, value, AP_WPA_KEY_MGMT_LEN);
   os_free(value);
 
   // Load ap rsnPairwise
   value = os_malloc(INI_BUFFERSIZE);
   ini_gets("ap", "rsnPairwise", "CCMP", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->hconfig.rsn_pairwise, value, AP_RSN_PAIRWISE_LEN - 1);
+  os_strlcpy(config->hconfig.rsn_pairwise, value, AP_RSN_PAIRWISE_LEN);
   os_free(value);
   
   // Load ap ctrlInterface
   value = os_malloc(INI_BUFFERSIZE);
   ini_gets("ap", "ctrlInterface", "/var/run/hostapd", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->hconfig.ctrl_interface, value, MAX_OS_PATH_LEN - 1);
+  os_strlcpy(config->hconfig.ctrl_interface, value, MAX_OS_PATH_LEN);
   os_free(value);
 
   // Load ap macaddrAcl
@@ -457,7 +459,7 @@ bool load_ap_conf(const char *filename, struct app_config *config)
     return false;
   }
 
-  os_strlcpy(config->hconfig.vlan_bridge, value, IFNAMSIZ - 1);
+  os_strlcpy(config->hconfig.vlan_bridge, value, IFNAMSIZ);
   os_free(value);
 
   // Load ap vlanFile
@@ -469,7 +471,7 @@ bool load_ap_conf(const char *filename, struct app_config *config)
     return false;
   }
 
-  os_strlcpy(config->hconfig.vlan_file, value, MAX_OS_PATH_LEN - 1);
+  os_strlcpy(config->hconfig.vlan_file, value, MAX_OS_PATH_LEN);
   os_free(value);
 
   // Load ap loggerStdout
@@ -517,7 +519,7 @@ bool load_dhcp_conf(const char *filename, struct app_config *config)
     return false;
   }
 
-  os_strlcpy(config->dhcp_config.dhcp_conf_path, value, MAX_OS_PATH_LEN - 1);
+  os_strlcpy(config->dhcp_config.dhcp_conf_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
   // Load dhpc script file path
@@ -529,7 +531,7 @@ bool load_dhcp_conf(const char *filename, struct app_config *config)
     return false;
   }
 
-  os_strlcpy(config->dhcp_config.dhcp_script_path, value, MAX_OS_PATH_LEN - 1);
+  os_strlcpy(config->dhcp_config.dhcp_script_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
   // Load the dhcprange params
@@ -553,13 +555,13 @@ bool load_capture_config(const char *filename, struct capture_conf *config)
 
   // Load db param
   ini_gets("system", "dbPath", "./", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->db_path, value, MAX_OS_PATH_LEN - 1);
+  os_strlcpy(config->db_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
   // Load domainServerPath
   value = os_zalloc(INI_BUFFERSIZE);
   ini_gets("supervisor", "domainServerPath", "", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->domain_server_path, value, MAX_OS_PATH_LEN - 1);
+  os_strlcpy(config->domain_server_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
   // Load the domain command delimiter
@@ -571,19 +573,19 @@ bool load_capture_config(const char *filename, struct capture_conf *config)
   // Load capture bin path
   value = os_zalloc(INI_BUFFERSIZE);
   ret = ini_gets("capture", "captureBinPath", "", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->capture_bin_path, value, MAX_OS_PATH_LEN - 1);
+  os_strlcpy(config->capture_bin_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
   // Load dhpc config file path
   value = os_zalloc(INI_BUFFERSIZE);
   ret = ini_gets("capture", "captureInterface", "", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->capture_interface, value, IFNAMSIZ - 1);
+  os_strlcpy(config->capture_interface, value, IFNAMSIZ);
   os_free(value);
 
   // Load the domain command value
   value = os_zalloc(INI_BUFFERSIZE);
   ret = ini_gets("capture", "command", "", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->domain_command, value, IFNAMSIZ - 1);
+  os_strlcpy(config->domain_command, value, MAX_SUPERVISOR_CMD_SIZE);
   os_free(value);
 
   // Load filter param
@@ -609,7 +611,7 @@ bool load_capture_config(const char *filename, struct capture_conf *config)
   // Load analyser param
   value = os_zalloc(INI_BUFFERSIZE);
   ret = ini_gets("capture", "analyser", PACKET_ANALYSER_DEFAULT, value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->analyser, value, MAX_ANALYSER_NAME_SIZE - 1);
+  os_strlcpy(config->analyser, value, MAX_ANALYSER_NAME_SIZE);
   os_free(value);
 
   // Load fileWrite param
@@ -624,7 +626,7 @@ bool load_capture_config(const char *filename, struct capture_conf *config)
   // Load syncAddress param
   value = os_zalloc(INI_BUFFERSIZE);
   ini_gets("capture", "dbSyncAddress", "", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->db_sync_address, value, MAX_WEB_PATH_LEN - 1);
+  os_strlcpy(config->db_sync_address, value, MAX_WEB_PATH_LEN);
   os_free(value);
 
   // Load syncPort param
@@ -679,19 +681,19 @@ bool load_app_config(const char *filename, struct app_config *config)
   // Load NAT interface
   value = os_malloc(INI_BUFFERSIZE);
   ini_gets("nat", "natInterface", "", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->nat_interface, value, IFNAMSIZ - 1);
+  os_strlcpy(config->nat_interface, value, IFNAMSIZ);
   os_free(value);
 
   // Load db param
   value = os_zalloc(INI_BUFFERSIZE);
   int ret = ini_gets("system", "dbPath", "./", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->db_path, value, MAX_OS_PATH_LEN - 1);
+  os_strlcpy(config->db_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
   // Load the crypt db path param
   value = os_zalloc(INI_BUFFERSIZE);
   ret = ini_gets("system", "cryptDbPath", "", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->crypt_db_path, value, MAX_OS_PATH_LEN - 1);
+  os_strlcpy(config->crypt_db_path, value, MAX_OS_PATH_LEN );
   if (!ret) {
     fprintf(stderr, "Crypt db path was not specified\n");
     os_free(value);
@@ -703,7 +705,7 @@ bool load_app_config(const char *filename, struct app_config *config)
   // Load the crypt key id param
   value = os_zalloc(INI_BUFFERSIZE);
   ret = ini_gets("system", "cryptKeyId", "", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->crypt_key_id, value, MAX_KEY_ID_SIZE - 1);
+  os_strlcpy(config->crypt_key_id, value, MAX_KEY_ID_SIZE);
   if (!ret) {
     fprintf(stderr, "Crypt key id was not specified\n");
     os_free(value);
@@ -721,7 +723,7 @@ bool load_app_config(const char *filename, struct app_config *config)
     return false;
   }
 
-  os_strlcpy(config->domain_server_path, value, MAX_OS_PATH_LEN - 1);
+  os_strlcpy(config->domain_server_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
   if ((config->domain_delim = load_delim(filename)) == 0) {

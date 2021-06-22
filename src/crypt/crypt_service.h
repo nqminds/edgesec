@@ -66,9 +66,9 @@ void free_crypt_service(struct crypt_context *ctx);
  * 
  * @param ctx The crypt context
  * @param key The key string
- * @return struct crypt_pair The returned pair, key == NULL on failure
+ * @return struct crypt_pair* The returned pair, NULL on failure
  */
-struct crypt_pair get_crypt_pair(struct crypt_context *ctx, char *key);
+struct crypt_pair* get_crypt_pair(struct crypt_context *ctx, char *key);
 
 /**
  * @brief Inserts a key/value pair into the crypt
@@ -79,4 +79,10 @@ struct crypt_pair get_crypt_pair(struct crypt_context *ctx, char *key);
  */
 int put_crypt_pair(struct crypt_context *ctx, struct crypt_pair *pair);
 
+/**
+ * @brief Frees the crypt pair
+ * 
+ * @param pair The crypt pair
+ */
+void free_crypt_pair(struct crypt_pair *pair);
 #endif

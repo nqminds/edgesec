@@ -47,7 +47,7 @@ int capture_opt2config(char key, char *value, struct capture_conf *config)
 {
   switch (key) {
     case 'i':
-      os_strlcpy(config->capture_interface, value, IFNAMSIZ - 1);
+      os_strlcpy(config->capture_interface, value, IFNAMSIZ);
       break;
     case 'f':
       config->filter = os_malloc(strlen(value) + 1);
@@ -69,7 +69,7 @@ int capture_opt2config(char key, char *value, struct capture_conf *config)
       }
       break;
     case 'y':
-      os_strlcpy(config->analyser, value, MAX_ANALYSER_NAME_SIZE - 1);
+      os_strlcpy(config->analyser, value, MAX_ANALYSER_NAME_SIZE);
       if (!strlen(config->analyser)) {
         return -1;
       }
@@ -87,7 +87,7 @@ int capture_opt2config(char key, char *value, struct capture_conf *config)
       config->db_sync = true;
       break;
     case 'q':
-      os_strlcpy(config->domain_server_path, value, MAX_OS_PATH_LEN - 1);
+      os_strlcpy(config->domain_server_path, value, MAX_OS_PATH_LEN);
       break;
     case 'x':
       os_strlcpy(config->domain_command, value, 64 - 1);
@@ -99,10 +99,10 @@ int capture_opt2config(char key, char *value, struct capture_conf *config)
         return -1;
       break;
     case 'p':
-      os_strlcpy(config->db_path, value, MAX_OS_PATH_LEN - 1);
+      os_strlcpy(config->db_path, value, MAX_OS_PATH_LEN);
       break;
     case 'a':
-      os_strlcpy(config->db_sync_address, value, MAX_WEB_PATH_LEN - 1);
+      os_strlcpy(config->db_sync_address, value, MAX_WEB_PATH_LEN);
       break;
     case 'o':
       config->db_sync_port = get_opt_num(value);

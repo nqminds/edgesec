@@ -141,7 +141,7 @@ void process_app_options(int argc, char *argv[], uint8_t *verbosity,
       *config_filename = os_strdup(optarg);
       break;
     case 's':
-      os_strlcpy(secret, optarg, MAX_USER_SECRET - 1);
+      os_strlcpy(secret, optarg, MAX_USER_SECRET);
       break;
     case 'd':
       (*verbosity)++;
