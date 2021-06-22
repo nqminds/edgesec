@@ -53,7 +53,7 @@ static void test_run_command(void **state)
   assert_int_equal(status, 0);
 }
 
-void fn_split_string(const char *str, size_t len, void *data)
+int fn_split_string(const char *str, size_t len, void *data)
 {
   UT_array *strs = (UT_array *)data;
   char *dest = (char *)malloc(len + 1);
@@ -61,6 +61,8 @@ void fn_split_string(const char *str, size_t len, void *data)
   strncpy(dest, str, len);
   utarray_push_back(strs, &dest);
   free(dest);
+
+  return 0;
 }
 
 static void test_split_string(void **state)

@@ -354,7 +354,7 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
   memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
   memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
           
-  if (add) strcpy(conn.info.ip_addr, ip_addr);
+  if (add) os_strlcpy(conn.info.ip_addr, ip_addr, IP_LEN);
   else os_memset(conn.info.ip_addr, 0x0, IP_LEN);
 
   log_trace("SET_IP type=%d mac=" MACSTR " ip=%s if=%s", add, MAC2STR(mac_addr), ip_addr, ifname);

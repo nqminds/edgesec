@@ -174,8 +174,7 @@ char* run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path)
   int ret;
   char *process_argv[5] = {NULL, NULL, NULL, NULL, NULL};
 
-  memset(dnsmasq_proc_name, '\0', MAX_OS_PATH_LEN);
-  strcpy(dnsmasq_proc_name, basename(dhcp_bin_path));
+  os_strlcpy(dnsmasq_proc_name, basename(dhcp_bin_path), MAX_OS_PATH_LEN);
 
   // Kill any running hostapd process
   if (!kill_process(dnsmasq_proc_name)) {

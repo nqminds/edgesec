@@ -243,8 +243,11 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn fn, 
     return 1;
   }
 
-  if (pipe(pfd) == -1)             /* Create pipe */
-    log_err_ex("pipe");
+  /* Create pipe */
+  if (pipe(pfd) == -1) {
+    log_err("pipe");
+    return 1;
+  }
 
   char *command = argv[0];
 
@@ -254,8 +257,7 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn fn, 
   switch (childPid = fork()) {
   case -1:            /* fork() failed */
     log_err("fork");
-    exit_code = 1;
-    break;            /* Carry on to reset signal attributes */
+    return 1;
 
   case 0:             /* Child: exec command */
 
@@ -277,26 +279,37 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn fn, 
     _exit(EXIT_FAILURE);       /* We could not exec the command */
 
   default:  /* Parent: wait for our child to terminate */
-    if (close(pfd[1]) == -1)   /* Write end is unused */
-      log_err_ex("close");
+    /* Write end is unused */
+    if (close(pfd[1]) == -1) {
+      log_err("close");
+      return 1;
+    }
 
     read_command_output(pfd[0], fn, ctx);
 
     /* We must use waitpid() for this task; using wait() could inadvertently
        collect the status of one of the caller's other children */
+    errno = 0;
     while (waitpid(childPid, &status, 0) == -1) {
-      if (errno != EINTR) {       /* Error other than EINTR */
+      if (errno != EINTR && errno) {       /* Error other than EINTR */
         exit_code = 1;
 
         break;                    /* So exit loop */
       }
+
+      errno = 0;
     }
 
     break;
   }
 
-  if (close(pfd[0]) == -1)   /* Done with read end */
-    log_err_ex("close");
+  /* Done with read end */
+  if (close(pfd[0]) == -1) {
+    log_err("close");
+    return 1;
+  }
+
+  if (exit_code) return 1;
 
   if (WIFEXITED(status)) {
     log_trace("Command run %s excve status %d", command, WEXITSTATUS(status));
@@ -306,18 +319,20 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn fn, 
   return status;
 }
 
-void fn_split_string_array(const char *str, size_t len, void *data)
+int fn_split_string_array(const char *str, size_t len, void *data)
 {
   UT_array *strs = (UT_array *) data;
   char *dest = (char *) os_malloc(len + 1);
   if (dest == NULL) {
-    log_err_ex("os_malloc");
+    log_err("os_malloc");
+    return -1;
   }
 
   memset(dest, '\0', len + 1);
   strncpy(dest, str, len);
   utarray_push_back(strs, &dest);
   os_free(dest);
+  return 0;
 }
 
 ssize_t split_string(const char *str, char sep, split_string_fn fun, void *data)
@@ -343,9 +358,16 @@ ssize_t split_string(const char *str, char sep, split_string_fn fun, void *data)
   }
 
   if (stop - start < 0) {
-    fun(str + start, 0, data);
-  } else
-    fun(str + start, stop - start, data);
+    if (fun(str + start, 0, data) < 0) {
+      log_trace("fun fail");
+      return -1;
+    }
+  } else {
+    if (fun(str + start, stop - start, data) < 0) {
+      log_trace("fun fail");
+      return -1;
+    }
+  }
 
   return (ssize_t)(count + 1);
 }
@@ -368,7 +390,8 @@ char * os_strdup(const char *s)
 	if (s != NULL) {
   	dest = (char *) os_malloc(len);
 		if (dest == NULL) {
-			log_err_ex("os_malloc");
+			log_err("os_malloc");
+      return NULL;
 		}
 
 		strcpy(dest, s);
@@ -392,8 +415,10 @@ char *  concat_paths(char *path_left, char *path_right)
 
   char *concat = os_zalloc(concat_len);
 
-  if (concat == NULL)
-    log_err_ex("os_zalloc");
+  if (concat == NULL) {
+    log_err("os_zalloc");
+    return NULL;
+  }
 
   if (path_left != NULL)
     strcat(concat, path_left);
@@ -417,12 +442,17 @@ char *get_valid_path(char *path)
     return NULL;
 
   char *dir = os_strdup(path);
-  if (dir == NULL && path != NULL)
-    log_err_ex("strdup");
-  
+  if (dir == NULL && path != NULL) {
+    log_trace("strdup fail");
+    return NULL;
+  } 
+
   char *base = os_strdup(path);
-  if (base == NULL && path != NULL)
-    log_err_ex("strdup");
+  if (base == NULL && path != NULL) {
+    log_trace("strdup fail");
+    os_free(dir);
+    return NULL;
+  }
 
   char *path_dirname = dirname(dir);
   char *path_basename = basename(base);
@@ -653,36 +683,66 @@ bool kill_process(char *proc_name)
   return true;
 }
 
-size_t string_array2string(char buf[], const size_t size, char *strings[])
+char* string_array2string(char *strings[])
 {
-  int idx;
-  size_t total = 0;
+  int idx = 0;
+  ssize_t total = 0;
   size_t len = 0;
 
-  buf[0] = '\0';
+  char *buf = NULL;
 
-  if (strings == NULL || buf == NULL || !size)
-    return 0;
+  if (strings == NULL)
+    return NULL;
 
-  while (strings[idx] != NULL && total <= size && len >= 0) {
-    len = snprintf(&buf[total], size - total, "%s ", strings[idx]);
-    if (len > 0) total += len;
+  while (strings[idx] != NULL && /*total <= size && */len >= 0) {
+    if (buf == NULL) {
+      buf = os_malloc(strlen(strings[idx]) + 2);
+    } else {
+      buf = os_realloc(buf, total + strlen(strings[idx]) + 2);
+    }
+
+    len = sprintf(&buf[total], "%s ", strings[idx]);
+
+    if (len >= 0) {
+      total += len;
+    } else {
+      log_trace("snprintf fail");
+      os_free(buf);
+      return NULL;
+    }
+
     idx ++;
   }
 
-  return total;
+  return buf;//total;
 }
 
 int run_process(char *argv[], pid_t *child_pid)
 {
   pid_t ret;
   int status;
-  char buf[255];
+  char *buf;
+
+  if (argv == NULL) {
+    log_trace("argv is NULL");
+    return -1;
+  }
+
+  if (argv[0] == NULL) {
+    log_trace("argv[0] is NULL");
+    return -1;
+  }
+
+  if (!strlen(argv[0])) {
+    log_trace("process name is empty");
+    return -1;
+  }
 
   log_trace("Running process %s with params:", argv[0]);
-  string_array2string(buf, 254, argv);
-  log_trace("\t %s", buf);
-  // while(argv[++arg_idx]) log_trace("\t %s", argv[arg_idx]);
+  if ((buf = string_array2string(argv)) != NULL) {
+    log_trace("\t %s", buf);
+    os_free(buf);
+  }
 
   switch (*child_pid = fork()) {
   case -1:            /* fork() failed */

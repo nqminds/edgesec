@@ -68,25 +68,26 @@ bool hmap_str_keychar_put(hmap_str_keychar **hmap, char *keyptr, char *value)
 	  return false;
 	}
 
-	if (strlen(keyptr) > HASH_KEY_CHAR_SIZE - 1) {
-		log_trace("strlen(keyptr) is greater than key char size");
-		return false;
+	if (os_strnlen_s(keyptr, HASH_KEY_CHAR_SIZE) > HASH_KEY_CHAR_SIZE - 1) {
+	  log_trace("strlen(keyptr) is greater than key char size");
+	  return false;
 	}
 
 	HASH_FIND_STR(*hmap, keyptr, s); /* id already in the hash? */
 
-  if (s == NULL) {
-    s = (hmap_str_keychar *) os_malloc(sizeof(hmap_str_keychar));
-		if (s == NULL) {
-			log_err_ex("os_malloc");
-		}
+  	if (s == NULL) {
+  	  s = (hmap_str_keychar *) os_malloc(sizeof(hmap_str_keychar));
+	  if (s == NULL) {
+		log_err("os_malloc");
+		return false;
+	  }
 
-		// Copy the key
-		strcpy(s->key, keyptr);
-		s->value = os_strdup(value);
+	  // Copy the key
+	  strcpy(s->key, keyptr);
+	  s->value = os_strdup(value);
 
-		HASH_ADD_STR(*hmap, key, s);
-  } else {
+	  HASH_ADD_STR(*hmap, key, s);
+  	} else {
 	  // Copy the value
 	  os_free(s->value);
       s->value = os_strdup(value);

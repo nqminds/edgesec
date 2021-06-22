@@ -45,10 +45,13 @@ bool get_config_dhcpinfo(char *info, config_dhcpinfo_t *el)
   UT_array *info_arr;
   utarray_new(info_arr, &ut_str_icd);
 
-  split_string_array(info, ',', info_arr);
-
-  if (!utarray_len(info_arr))
+  if (split_string_array(info, ',', info_arr) < 0) {
     goto err;
+  }
+
+  if (!utarray_len(info_arr)) {
+    goto err;
+  }
 
   char **p = NULL;
   p = (char**) utarray_next(info_arr, p);
@@ -62,25 +65,25 @@ bool get_config_dhcpinfo(char *info, config_dhcpinfo_t *el)
 
   p = (char**) utarray_next(info_arr, p);
   if (*p != NULL) {
-    strcpy(el->ip_addr_low, *p);
+    os_strlcpy(el->ip_addr_low, *p, IP_LEN);
   } else
     goto err;
 
   p = (char**) utarray_next(info_arr, p);
   if (*p != NULL)
-    strcpy(el->ip_addr_upp, *p);
+    os_strlcpy(el->ip_addr_upp, *p, IP_LEN);
   else
     goto err;
 
   p = (char**) utarray_next(info_arr, p);
   if (*p != NULL)
-    strcpy(el->subnet_mask, *p);
+    os_strlcpy(el->subnet_mask, *p, IP_LEN);
   else
     goto err;
 
   p = (char**) utarray_next(info_arr, p);
   if (*p != NULL)
-    strcpy(el->lease_time, *p);
+    os_strlcpy(el->lease_time, *p, DHCP_LEASE_TIME_SIZE);
   else
     goto err;
 
@@ -97,10 +100,13 @@ bool get_config_ifinfo(char *info, config_ifinfo_t *el)
   UT_array *info_arr;
   utarray_new(info_arr, &ut_str_icd);
 
-  split_string_array(info, ',', info_arr);
-
-  if (!utarray_len(info_arr))
+  if (split_string_array(info, ',', info_arr) < 0) {
     goto err;
+  }
+
+  if (!utarray_len(info_arr)) {
+    goto err;
+  }
 
   char **p = NULL;
   p = (char**) utarray_next(info_arr, p);
@@ -114,19 +120,19 @@ bool get_config_ifinfo(char *info, config_ifinfo_t *el)
 
   p = (char**) utarray_next(info_arr, p);
   if (*p != NULL) {
-    strcpy(el->ip_addr, *p);
+    os_strlcpy(el->ip_addr, *p, IP_LEN);
   } else
     goto err;
 
   p = (char**) utarray_next(info_arr, p);
   if (*p != NULL)
-    strcpy(el->brd_addr, *p);
+    os_strlcpy(el->brd_addr, *p, IP_LEN);
   else
     goto err;
 
   p = (char**) utarray_next(info_arr, p);
   if (*p != NULL)
-    strcpy(el->subnet_mask, *p);
+    os_strlcpy(el->subnet_mask, *p, IP_LEN);
   else
     goto err;
 
@@ -143,10 +149,13 @@ bool get_connection_info(char *info, struct mac_conn *el)
   UT_array *info_arr;
   utarray_new(info_arr, &ut_str_icd);
 
-  split_string_array(info, ',', info_arr);
-
-  if (!utarray_len(info_arr))
+  if (split_string_array(info, ',', info_arr) < 0) {
     goto err;
+  }
+
+  if (!utarray_len(info_arr)) {
+    goto err;
+  }
 
   char **p = NULL;
 
@@ -501,9 +510,12 @@ bool load_dns_conf(const char *filename, struct app_config *config)
 
   // Load the DNS server addresses
   ini_gets("dns", "servers", "", value, INI_BUFFERSIZE, filename);
-  split_string_array(value, ',', config->dns_config.server_array);
-  os_free(value);
+  if (split_string_array(value, ',', config->dns_config.server_array) < 0) {
+    os_free(value);
+    return false;
+  }
 
+  os_free(value);
   return true;
 }
 
@@ -648,7 +660,11 @@ bool load_app_config(const char *filename, struct app_config *config)
 
   // Load the bin paths array
   ini_gets("system", "binPath", "/bin", value, INI_BUFFERSIZE, filename);
-  split_string_array(value, ':', config->bin_path_array);
+  if (split_string_array(value, ':', config->bin_path_array) < 0) {
+    os_free(value);
+    return false;
+  }
+
   os_free(value);
 
   // Load create interfaces flag

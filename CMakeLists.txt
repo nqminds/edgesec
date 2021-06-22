@@ -1,12 +1,15 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(EDGESEC C CXX)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/lib")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/docs")
+
 include(CTest)
 include(FetchContent)
 include(ExternalProject)
-include(glibc.cmake)
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/lib")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/docs")
+include(CodeCoverage)
+include(glibc)
 
 option(BUILD_ONLY_DOCS "Build only docs" OFF)
 option(BUILD_CAPTURE_SERVICE "Build Capture server" ON)
@@ -29,7 +32,7 @@ option(BUILD_GRPC_LIB "Build gRPC library" OFF)
 option(BUILD_SQLSYNC_SERVICE "Build sqlsync service" OFF)
 option(BUILD_REVERSE_SERVICE "Build Reverse service" OFF)
 
-set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_SYSTEM_NAME Linux)
 # set(CMAKE_SYSTEM_PROCESSOR arm)
 # set(tools /usr/local/arm-linux-musleabihf)
@@ -179,6 +182,9 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wunused-variable")
 
 # Set the color for terminal logging
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLOG_USE_COLOR")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ftest-coverage")
+
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_LIBNL")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -203,4 +209,11 @@ if (NOT BUILD_ONLY_DOCS)
   add_subdirectory(tests)
 endif ()
 
+# setup_target_for_coverage_lcov(
+#   NAME coverage
+#   EXECUTABLE /home/alexandru/Projects/EDGESec/build/src/edgesec -c /home/alexandru/Projects/EDGESec/build/config.ini -dddddddd -s 12345
+#   BASE_DIRECTORY "${PROJECT_BINARY_DIR}"
+# )
+
+#
 # add_subdirectory("${GRPC_SOURCE_DIR}/third_party/re2" EXCLUDE_FROM_ALL)

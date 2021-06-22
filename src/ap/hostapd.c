@@ -160,8 +160,7 @@ char* run_ap_process(struct apconf *hconf, char *ctrl_if_path)
   int ret, check_count = 0;
   char *process_argv[5] = {NULL, NULL, NULL, NULL, NULL};
 
-  memset(hostapd_proc_name, '\0', MAX_OS_PATH_LEN);
-  strcpy(hostapd_proc_name, basename(hconf->ap_bin_path));
+  os_strlcpy(hostapd_proc_name, basename(hconf->ap_bin_path), MAX_OS_PATH_LEN);
 
   get_hostapd_args(hconf->ap_bin_path, hconf->ap_file_path, hconf->ap_log_path, process_argv);
   struct find_dir_type dir_args = {.proc_running = 0, .proc_name = basename(process_argv[0])};

@@ -85,7 +85,11 @@ struct iptables_columns process_rule_column(char *column)
   UT_array *column_arr;
   utarray_new(column_arr, &ut_str_icd);
 
-  split_string_array(column, 0x20, column_arr);
+  if (split_string_array(column, 0x20, column_arr) < 0) {
+    log_trace("split_string_array fail");
+    utarray_free(column_arr);
+    return row;
+  }
 
   while(p = (char **) utarray_next(column_arr, p)) {
     if (strlen(*p)) {
@@ -158,11 +162,16 @@ bool process_rule_lines(struct iptables_context *ctx, char *rule_str)
 {
   char **p = NULL;
   UT_array *line_arr;
+  ssize_t line_count;
   utarray_new(line_arr, &ut_str_icd);
 
-  size_t line_count = split_string_array(rule_str, '\n', line_arr);
+  line_count = split_string_array(rule_str, '\n', line_arr);
 
-  if (line_count > 2) {
+  if (line_count < 0) {
+    log_trace("split_string_array fail");
+    utarray_free(line_arr);
+    return false;
+  } else if (line_count > 2) {
     p = (char **) utarray_next(line_arr, p);
     p = (char **) utarray_next(line_arr, p);
 

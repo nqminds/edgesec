@@ -213,7 +213,7 @@ static int process_iface_handler(struct nl_msg *msg, void *arg)
 	nla_parse(tb_msg, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0), genlmsg_attrlen(gnlh, 0), NULL);
 
 	if (tb_msg[NL80211_ATTR_IFNAME]) {
-		strcpy(element.ifname, nla_get_string(tb_msg[NL80211_ATTR_IFNAME]));
+		os_strlcpy(element.ifname, nla_get_string(tb_msg[NL80211_ATTR_IFNAME]), IFNAMSIZ);
 
 		if (tb_msg[NL80211_ATTR_IFINDEX]) {
 			element.ifindex = nla_get_u32(tb_msg[NL80211_ATTR_IFINDEX]);
@@ -404,7 +404,7 @@ char* get_valid_iw(char *if_buf)
   netiw_info_t *el;
   for (el = (netiw_info_t*) utarray_front(netif_list); el != NULL; el = (netiw_info_t *) utarray_next(netif_list, el)) {
     if (iwace_isvlan(el->wiphy)) {
-      strcpy(if_buf, el->ifname);
+      os_strlcpy(if_buf, el->ifname, IFNAMSIZ);
       utarray_free(netif_list);
       return if_buf;
     }

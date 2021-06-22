@@ -386,7 +386,7 @@ void upper_string(char *s);
  */
 void replace_string_char(char *s, char in, char out);
 
-typedef void(*split_string_fn)(const char *, size_t, void *);
+typedef int(*split_string_fn)(const char *, size_t, void *);
 
 /**
  * @brief Splits a string into substrings (execute callback function)

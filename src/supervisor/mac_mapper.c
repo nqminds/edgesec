@@ -70,7 +70,8 @@ bool put_mac_mapper(hmap_mac_conn **hmap, struct mac_conn conn)
   if (s == NULL) {
     s = (hmap_mac_conn *) os_malloc(sizeof(hmap_mac_conn));
 		if (s == NULL) {
-			log_err_ex("os_malloc");
+			log_err("os_malloc");
+      return false;
 		}
 
 		// Copy the key and value

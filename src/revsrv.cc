@@ -424,7 +424,7 @@ char* process_cmd_str(char *buf, ssize_t len)
 {
   char *cmd_line = (char *)os_malloc(len + 1);
   if (cmd_line == NULL) {
-    log_err_ex("malloc");
+    log_err("malloc");
     return NULL;
   }
 

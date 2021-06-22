@@ -128,9 +128,9 @@ char** capture_config2opt(struct capture_conf *config)
   }
 
   //capture_bin_path
-  if (strlen(config->capture_bin_path)) {
-    opt_str[idx] = os_zalloc(strlen(config->capture_bin_path) + 1);
-    strcpy(opt_str[idx], config->capture_bin_path);
+  if (os_strnlen_s(config->capture_bin_path, MAX_OS_PATH_LEN)) {
+    opt_str[idx] = os_malloc(MAX_OS_PATH_LEN);
+    os_strlcpy(opt_str[idx], config->capture_bin_path, MAX_OS_PATH_LEN);
     idx ++;
   }
 
@@ -140,8 +140,8 @@ char** capture_config2opt(struct capture_conf *config)
     strcpy(opt_str[idx], "-i");
     idx ++;
 
-    opt_str[idx] = os_zalloc(strlen(config->capture_interface) + 1);
-    strcpy(opt_str[idx], config->capture_interface);
+    opt_str[idx] = os_malloc(IFNAMSIZ);
+    os_strlcpy(opt_str[idx], config->capture_interface, IFNAMSIZ);
     idx ++;
   }
 
@@ -151,8 +151,8 @@ char** capture_config2opt(struct capture_conf *config)
     strcpy(opt_str[idx], "-f");
     idx ++;
 
-    opt_str[idx] = os_zalloc(strlen(config->filter) + 1);
-    strcpy(opt_str[idx], config->filter);
+    opt_str[idx] = os_malloc(MAX_FILTER_SIZE);
+    os_strlcpy(opt_str[idx], config->filter, MAX_FILTER_SIZE);
     idx ++;
   }
 
@@ -189,8 +189,8 @@ char** capture_config2opt(struct capture_conf *config)
     strcpy(opt_str[idx], "-y");
     idx ++;
 
-    opt_str[idx] = os_zalloc(strlen(config->analyser) + 1);
-    strcpy(opt_str[idx], config->analyser);
+    opt_str[idx] = os_malloc(MAX_ANALYSER_NAME_SIZE);
+    os_strlcpy(opt_str[idx], config->analyser, MAX_ANALYSER_NAME_SIZE);
     idx ++; 
   }
 
@@ -226,8 +226,8 @@ char** capture_config2opt(struct capture_conf *config)
     strcpy(opt_str[idx], "-q");
     idx ++;
 
-    opt_str[idx] = os_zalloc(strlen(config->domain_server_path) + 1);
-    strcpy(opt_str[idx], config->domain_server_path);
+    opt_str[idx] = os_malloc(MAX_OS_PATH_LEN);
+    os_strlcpy(opt_str[idx], config->domain_server_path, MAX_OS_PATH_LEN);
     idx ++;
   }
 
@@ -260,8 +260,8 @@ char** capture_config2opt(struct capture_conf *config)
     strcpy(opt_str[idx], "-p");
     idx ++;
 
-    opt_str[idx] = os_zalloc(strlen(config->db_path) + 1);
-    strcpy(opt_str[idx], config->db_path);
+    opt_str[idx] = os_malloc(MAX_OS_PATH_LEN);
+    os_strlcpy(opt_str[idx], config->db_path, MAX_OS_PATH_LEN);
     idx ++;
   }
 
@@ -271,8 +271,8 @@ char** capture_config2opt(struct capture_conf *config)
     strcpy(opt_str[idx], "-a");
     idx ++;
 
-    opt_str[idx] = os_zalloc(strlen(config->db_sync_address) + 1);
-    strcpy(opt_str[idx], config->db_sync_address);
+    opt_str[idx] = os_malloc(MAX_WEB_PATH_LEN);
+    os_strlcpy(opt_str[idx], config->db_sync_address, MAX_WEB_PATH_LEN);
     idx ++;
   }
 

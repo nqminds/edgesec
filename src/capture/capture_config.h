@@ -32,7 +32,8 @@
 
 #include "../utils/os.h"
 
-#define MAX_ANALYSER_NAME_SIZE 64
+#define MAX_ANALYSER_NAME_SIZE      64
+#define MAX_FILTER_SIZE             4094
 
 #define PACKET_ANALYSER_DEFAULT     "default"
 #define PACKET_ANALYSER_NDPI        "ndpi"

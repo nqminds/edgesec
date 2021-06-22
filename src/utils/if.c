@@ -242,16 +242,16 @@ int get_addrinfo(struct nlmsghdr *n, netif_info_t *info)
 	}
 
 	if (rta_tb[IFA_LOCAL] && info->ifa_family == AF_INET) {
-		strcpy(info->ip_addr, format_host_rta(ifa->ifa_family, rta_tb[IFA_LOCAL]));
+		os_strlcpy(info->ip_addr, format_host_rta(ifa->ifa_family, rta_tb[IFA_LOCAL]), IP_LEN);
 		log_trace("ifindex=%d ip_addr=%s", info->ifindex, info->ip_addr);
 		if (rta_tb[IFA_ADDRESS] && memcmp(RTA_DATA(rta_tb[IFA_ADDRESS]), RTA_DATA(rta_tb[IFA_LOCAL]), 4)) {
-			strcpy(info->peer_addr, format_host_rta(ifa->ifa_family, rta_tb[IFA_ADDRESS]));
+			os_strlcpy(info->peer_addr, format_host_rta(ifa->ifa_family, rta_tb[IFA_ADDRESS]), IP_LEN);
 			log_trace("ifindex=%d peer_addr=%s", info->ifindex, info->peer_addr);
 		}
 	}
 
 	if (rta_tb[IFA_BROADCAST] && info->ifa_family == AF_INET) {
-		strcpy(info->brd_addr, format_host_rta(ifa->ifa_family, rta_tb[IFA_BROADCAST]));
+		os_strlcpy(info->brd_addr, format_host_rta(ifa->ifa_family, rta_tb[IFA_BROADCAST]), IP_LEN);
 		log_trace("ifindex=%d brd_addr=%s", info->ifindex, info->brd_addr);
 	}
 
@@ -311,7 +311,7 @@ int get_linkinfo(struct nlmsghdr *n, netif_info_t *info)
 		return -1;
 
 	info->ifindex = ifi->ifi_index;
-	strcpy(info->ifname, name);
+	os_strlcpy(info->ifname, name, IFNAMSIZ);
 	log_trace("ifindex=%d if=%s", ifi->ifi_index, info->ifname);
 
 	if (tb[IFLA_OPERSTATE]) {
@@ -320,7 +320,7 @@ int get_linkinfo(struct nlmsghdr *n, netif_info_t *info)
 		info->state = IF_STATE_UNKNOWN;	
 
 	log_trace("ifindex=%d state=%d", ifi->ifi_index, info->state);
-	strcpy(info->link_type, ll_type_n2a(ifi->ifi_type, b1, sizeof(b1)));
+	os_strlcpy(info->link_type, ll_type_n2a(ifi->ifi_type, b1, sizeof(b1)), LINK_TYPE_LEN);
 	log_trace("ifindex=%d link_type=%s", ifi->ifi_index, info->link_type);
 	if (tb[IFLA_ADDRESS]) {
 		if (RTA_PAYLOAD(tb[IFLA_ADDRESS]) == ETH_ALEN) {
