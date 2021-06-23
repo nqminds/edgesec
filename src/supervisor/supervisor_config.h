@@ -37,6 +37,17 @@
 #include "mac_mapper.h"
 
 /**
+ * @brief Authentication ticket structure definition
+ * 
+ */
+struct auth_ticket {
+  uint8_t         passphrase[AP_SECRET_LEN];              /**< the ticket passphrase */
+  ssize_t         passphrase_len;                         /**< the ticket passphrase length */
+  int             vlanid;                                 /**< the ticket associated VLAN ID */
+  bool            active;                                 /**< true if ticket is active */
+};
+
+/**
  * @brief Supervisor structure definition
  * 
  */
@@ -60,6 +71,7 @@ struct supervisor_context {
   sqlite3         *fingeprint_db;                             /**< The fingerprint sqlite db structure. */
   struct iptables_context *iptables_ctx;                      /**< The iptables context. */
   struct crypt_context *crypt_ctx;                            /**< The crypt context. */
+  struct auth_ticket *ticket;                                 /**< The authentication ticket. */  
 };
 
 #endif

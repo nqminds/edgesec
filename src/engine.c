@@ -98,6 +98,7 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
     return false;
   }
 
+  ctx->ticket = NULL;
   ctx->iptables_ctx = NULL;
   ctx->fingeprint_db = NULL;
   ctx->exec_capture = app_config->exec_capture;
