@@ -35,6 +35,11 @@
 
 #define MAX_64BIT_DIGITS 19
 
+struct proc_signal_arg {
+  char *proc_name;
+  int sig;
+};
+
 bool is_number(const char *ptr)
 {
   if (ptr == NULL)
@@ -671,16 +676,55 @@ bool kill_dir_fn(char *path, void *args)
   return true;
 }
 
-bool kill_process(char *proc_name)
+bool signal_dir_fn(char *path, void *args)
 {
-  // Kill a process process if running
-  log_trace("Killing process %s", proc_name);
-  if (list_dir("/proc", kill_dir_fn, proc_name) == -1) {
+  struct proc_signal_arg *sarg = (struct proc_signal_arg *) args;
+
+  unsigned long pid;
+  pid_t current_pid = getpid();
+  pid_t current_pid_group = getpgid(current_pid);
+
+  if ((pid = is_proc_app(path, sarg->proc_name)) != 0) {
+    if (current_pid != pid && pid != current_pid_group) {
+      log_trace("Found process pid=%d current_pid=%d current_pid_group=%d", pid, current_pid, current_pid_group);
+      if (kill(pid, sarg->sig) == -1) {
+        log_err("kill");
+        return false;
+      } else
+        log_trace("signalled %s process with pid=%d and sig=%d", sarg->proc_name, pid, sarg->sig);
+    }
+  }
+
+  return true;
+}
+
+bool signal_process(char *proc_name, int sig)
+{
+  struct proc_signal_arg sarg = {.proc_name = proc_name, .sig = sig};
+
+  if (proc_name == NULL) {
+    log_trace("proc_name is NULL");
+    return false;
+  }
+
+  if (!os_strnlen_s(proc_name, MAX_OS_PATH_LEN)) {
+    log_trace("proc_name is empty");
+    return false;
+  }
+
+  // Signal a process process if running
+  log_trace("Signalling process %s with signal=%d", proc_name, sig);
+  if (list_dir("/proc", signal_dir_fn, &sarg) == -1) {
     log_trace("list_dir fail");
     return false;
   }
 
   return true;
+}
+
+bool kill_process(char *proc_name)
+{
+  return signal_process(proc_name, SIGTERM);
 }
 
 char* string_array2string(char *strings[])

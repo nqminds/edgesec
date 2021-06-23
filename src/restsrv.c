@@ -146,10 +146,10 @@ void process_app_options(int argc, char *argv[], char *spath, char *apath,
       exit(EXIT_SUCCESS);
       break;
     case 's':
-      memcpy(spath, optarg, strlen(optarg) + 1);
+      os_strlcpy(spath, optarg, MAX_OS_PATH_LEN);
       break;
     case 'a':
-      memcpy(apath, optarg, strlen(optarg) + 1);
+      os_strlcpy(apath, optarg, MAX_OS_PATH_LEN);
       break;
     case 'z':
       *delim = optarg[0];
@@ -186,7 +186,7 @@ char* create_command_string(char *cmd, char *args, char *cmd_str, char delim)
   if (cmd == NULL || cmd_str == NULL)
     return NULL;
 
-  if (strlen(cmd)) {
+  if (os_strnlen_s(cmd, MAX_SUPERVISOR_CMD_SIZE)) {
     cmd_tmp = os_strdup(cmd);
     upper_string(cmd_tmp);
     if (args ==  NULL)

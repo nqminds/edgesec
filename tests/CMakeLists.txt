@@ -4,6 +4,7 @@ include_directories (
   "${CMOCKA_INCLUDE_DIR}"
 )
 
+add_subdirectory(capture)
 add_subdirectory(utils)
 add_subdirectory(supervisor)
 add_subdirectory(radius)

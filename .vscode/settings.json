@@ -11,6 +11,7 @@
         "base64.h": "c",
         "sqlite_fingerprint_writer.h": "c",
         "err.h": "c",
-        "rand.h": "c"
+        "rand.h": "c",
+        "log.h": "c"
     }
 }

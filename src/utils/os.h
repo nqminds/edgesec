@@ -37,14 +37,16 @@
 #include "utarray.h"
 
 /* Common costant defintions */
-#define MAX_OS_PATH_LEN		4096
-#define MAX_WEB_PATH_LEN	2048
-#define IP_LEN 				20
-#define LINK_TYPE_LEN 		64
+#define MAX_OS_PATH_LEN			4096
+#define MAX_WEB_PATH_LEN		2048
+#define IP_LEN 					20
+#define LINK_TYPE_LEN 			64
 
-#define MAX_PROTOCOL_NAME_LEN 64
+#define MAX_PROTOCOL_NAME_LEN 	64
 
-#define MAX_RANDOM_UUID_LEN	37
+#define MAX_RANDOM_UUID_LEN		37
+
+#define MAX_SUPERVISOR_CMD_SIZE 40
 
 #ifdef __GNUC__
 #define STRUCT_PACKED __attribute__ ((packed))
@@ -486,6 +488,15 @@ long is_proc_app(char *path, char *proc_name);
  * @return bool true on success, false otherwise 
  */
 bool kill_process(char *proc_name);
+
+/**
+ * @brief Signal a process
+ * 
+ * @param proc_name The process name
+ * @param sig The signal value
+ * @return true on success, false on failure
+ */
+bool signal_process(char *proc_name, int sig);
 
 /**
  * @brief Executes a process with an array of strign arguments

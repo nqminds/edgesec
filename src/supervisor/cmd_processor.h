@@ -52,8 +52,6 @@
 #define OK_REPLY                "OK"
 #define FAIL_REPLY              "FAIL"
 
-#define MAX_SUPERVISOR_CMD_SIZE 40
-
 typedef ssize_t (*process_cmd_fn)(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**

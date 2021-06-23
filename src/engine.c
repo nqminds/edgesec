@@ -107,7 +107,7 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
   ctx->default_open_vlanid = app_config->default_open_vlanid;
   ctx->config_ifinfo_array = app_config->config_ifinfo_array;
 
-  ctx->wpa_passphrase_len = strlen(app_config->hconfig.wpa_passphrase);
+  ctx->wpa_passphrase_len = os_strnlen_s(app_config->hconfig.wpa_passphrase, AP_SECRET_LEN);
   memcpy(ctx->wpa_passphrase, app_config->hconfig.wpa_passphrase, ctx->wpa_passphrase_len);
   
   memcpy(ctx->nat_interface, app_config->nat_interface, IFNAMSIZ);
@@ -194,7 +194,7 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
   log_info("Loading crypt service...");
   if ((context.crypt_ctx = load_crypt_service(app_config->crypt_db_path, app_config->crypt_key_id,
                                               app_config->crypt_secret,
-                                              strlen(app_config->crypt_secret))) == NULL) {
+                                              os_strnlen_s(app_config->crypt_secret, MAX_USER_SECRET))) == NULL) {
     log_debug("load_crypt_service fail");
     goto run_engine_fail;
   }
@@ -221,7 +221,7 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
     goto run_engine_fail;
   }
 
-  if (strlen(app_config->nat_interface)) {
+  if (os_strnlen_s(app_config->nat_interface, IFNAMSIZ)) {
     log_info("Checking nat interface %s", app_config->nat_interface);
     if (!get_nat_if_ip(app_config->nat_interface, &nat_ip)) {
       log_debug("get_nat_if_ip fail");
@@ -253,12 +253,10 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
     goto run_engine_fail;
   }
 
-  if (app_config->exec_ap) {
-    log_info("Running the ap service...");
-    if (run_ap(&app_config->hconfig, &app_config->rconfig, context.hostapd_ctrl_if_path) == NULL) {
-      log_debug("run_ap fail");
-      goto run_engine_fail;
-    }
+  log_info("Running the ap service...");
+  if (run_ap(&app_config->hconfig, &app_config->rconfig, context.hostapd_ctrl_if_path, app_config->exec_ap) < 0) {
+    log_debug("run_ap fail");
+    goto run_engine_fail;
   }
 
   if (app_config->exec_radius) {

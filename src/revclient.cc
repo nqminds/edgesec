@@ -149,7 +149,7 @@ void process_app_options(int argc, char *argv[], int *port,
       *port = p;
       break;
     case 'f':
-      memcpy(path, optarg, strlen(optarg) + 1);
+      os_strlcpy(path, optarg, MAX_OS_PATH_LEN);
       break;
     case ':':
       log_cmdline_error("Missing argument for -%c\n", optopt);
@@ -388,7 +388,7 @@ int main(int argc, char** argv) {
   }
 
   // Check if directory can be read
-  if (strlen(path)) {
+  if (os_strnlen_s(path, MAX_OS_PATH_LEN)) {
     if (list_dir(path, NULL, NULL) == -1) {
       fprintf(stderr, "Can not read folder %s", path);
       exit(EXIT_FAILURE); 

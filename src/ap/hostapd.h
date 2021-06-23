@@ -57,9 +57,17 @@ bool generate_vlan_conf(char *vlan_file, char *interface);
  * 
  * @param hconf The hostapd process config structure
  * @param ctrl_if_path The hostpad control interface
- * @return char* The pointer to the statically allocated process name, NULL on failure
+ * @return int 0 on success, -1 on failure
  */
-char* run_ap_process(struct apconf *hconf, char *ctrl_if_path);
+int run_ap_process(struct apconf *hconf, char *ctrl_if_path);
+
+/**
+ * @brief Signal the AP process to reload the config
+ * 
+ * @param ap_bin_path The AP process binary path
+ * @return int 0 on success, -1 on failure
+ */
+int signal_ap_process(char *ap_bin_path);
 
 /**
  * @brief Terminate the AP service

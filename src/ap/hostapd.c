@@ -154,7 +154,7 @@ int check_ctrl_if_exists(char *ctrl_if_path)
   return 0;
 }
 
-char* run_ap_process(struct apconf *hconf, char *ctrl_if_path)
+int run_ap_process(struct apconf *hconf, char *ctrl_if_path)
 {
   pid_t child_pid;
   int ret, check_count = 0;
@@ -168,13 +168,13 @@ char* run_ap_process(struct apconf *hconf, char *ctrl_if_path)
   // Kill any running hostapd process
   if (!kill_process(hostapd_proc_name)) {
     log_trace("kill_process fail");
-    return NULL;
+    return -1;
   }
 
   log_trace("Resetting wifi interface %s", hconf->interface);
   if (!reset_interface(hconf->interface)) {
     log_debug("reset_interface fail");
-    return NULL;
+    return -1;
   }
 
   while((ret = run_process(process_argv, &child_pid)) < 0) {
@@ -182,7 +182,7 @@ char* run_ap_process(struct apconf *hconf, char *ctrl_if_path)
     // Kill any running hostapd process
     if (!kill_process(hostapd_proc_name)) {
       log_trace("kill_process fail");
-      return NULL;
+      return -1;
     }
     log_trace("Restarting process in %d seconds", PROCESS_RESTART_TIME);
     sleep(PROCESS_RESTART_TIME);
@@ -190,12 +190,12 @@ char* run_ap_process(struct apconf *hconf, char *ctrl_if_path)
 
   if (ret > 0) {
     log_trace("hostapd process exited with status=%d", ret);
-    return NULL;
+    return -1;
   }
 
   if (list_dir("/proc", find_dir_proc_fn, (void *)&dir_args) == -1) {
     log_trace("list_dir fail");
-    return NULL;
+    return -1;
   }
 
   if (!dir_args.proc_running) {
@@ -216,11 +216,11 @@ char* run_ap_process(struct apconf *hconf, char *ctrl_if_path)
 
   if (check_count >= 7) {
     log_trace("hostapd unix domain control path fail");
-    return NULL;
+    return -1;
   }
 
   ap_process_started = true;
-  return hostapd_proc_name;
+  return 0;
 }
 
 bool kill_ap_process(void)
@@ -232,4 +232,17 @@ bool kill_ap_process(void)
   }
 
   return true;
+}
+
+int signal_ap_process(char *ap_bin_path)
+{
+  os_strlcpy(hostapd_proc_name, basename(ap_bin_path), MAX_OS_PATH_LEN);
+
+  // Signal any running hostapd process to reload the config
+  if (!signal_process(hostapd_proc_name, SIGHUP)) {
+    log_trace("signal_process fail");
+    return -1;
+  }
+
+  return 0;
 }

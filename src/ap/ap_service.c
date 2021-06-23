@@ -31,20 +31,24 @@
 #include "utils/if.h"
 #include "utils/log.h"
 
-char* run_ap(struct apconf *hconf, struct radius_conf *rconf, char *ctrl_if_path)
+int run_ap(struct apconf *hconf, struct radius_conf *rconf, char *ctrl_if_path, bool exec_ap)
 {
   if (!generate_vlan_conf(hconf->vlan_file, hconf->interface)) {
     log_trace("generate_vlan_conf fail");
-    return NULL;
+    return -1;
   }
 
   if (!generate_hostapd_conf(hconf, rconf)) {
     unlink(hconf->vlan_file);
     log_trace("generate_hostapd_conf fail");
-    return NULL;
+    return -1;
   }
 
-  return run_ap_process(hconf, ctrl_if_path);
+  if (exec_ap) {
+    return run_ap_process(hconf, ctrl_if_path);
+  } else {
+    return signal_ap_process(hconf->ap_bin_path);
+  }
 }
 
 bool close_ap(void)

@@ -203,7 +203,7 @@ bool get_connection_info(char *info, struct mac_conn *el)
   p = (char**) utarray_next(info_arr, p);
   if (*p != NULL) {
     os_strlcpy(el->info.pass, *p, AP_SECRET_LEN);
-    el->info.pass_len = strlen(el->info.pass);
+    el->info.pass_len = os_strnlen_s(el->info.pass, AP_SECRET_LEN);
   } else
     goto err;
 

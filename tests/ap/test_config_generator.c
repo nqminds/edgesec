@@ -76,7 +76,8 @@ static void test_generate_hostapd_conf(void **state)
   hconf.logger_syslog_level = 0;
   hconf.ignore_broadcast_ssid = 0;
   hconf.wpa_psk_radius = 2;
-
+  strcpy(hconf.vlan_tagged_interface, "");
+  
   struct radius_conf rconf;
   strcpy(rconf.radius_server_ip, "192.168.1.1");
   strcpy(rconf.radius_client_ip, "192.168.1.2");

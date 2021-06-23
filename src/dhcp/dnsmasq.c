@@ -144,8 +144,8 @@ char* get_dnsmasq_args(char *dnsmasq_bin_path, char *dnsmasq_conf_path, char *ar
   // argv = {"dnsmasq", "--bind-interfaces", "--no-daemon", "--log-queries", "--conf-file=/tmp/dnsmasq.conf", NULL};
   // argv = {"dnsmasq", "--bind-interfaces", "--no-daemon", "--conf-file=/tmp/dnsmasq.conf", NULL};
 
-  if (strlen(dnsmasq_conf_path) > MAX_OS_PATH_LEN) {
-    log_trace("dnsmasq_conf_path exceeds MAX length");
+  if (os_strnlen_s(dnsmasq_conf_path, MAX_OS_PATH_LEN) >= MAX_OS_PATH_LEN) {
+    log_trace("dnsmasq_conf_path exceeds/is MAX length");
     return NULL;
   }
 

@@ -48,7 +48,7 @@
 struct capture_conf {
   char capture_bin_path[MAX_OS_PATH_LEN];                     /**< The capture binary path string */
   char domain_server_path[MAX_OS_PATH_LEN];                   /**< Specifies the path to the UNIX domain socket server */
-  char domain_command[64];                                    /**< Specifies the UNIX domain command */
+  char domain_command[MAX_SUPERVISOR_CMD_SIZE];                                    /**< Specifies the UNIX domain command */
   char domain_delim;                                          /**< Specifies the UNIX domain command delimiter */
   char capture_interface[IFNAMSIZ];                           /**< The capture interface name (any - to capture on all interfaces) */
   bool promiscuous;                                           /**< Specifies whether the interface is to be put into promiscuous mode. If promiscuous param is non-zero, promiscuous mode will be set, otherwise it will not be set */
