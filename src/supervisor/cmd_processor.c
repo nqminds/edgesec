@@ -98,6 +98,7 @@ ssize_t process_accept_mac_cmd(int sock, char *client_addr,
       // vlanid
       ptr = (char**) utarray_next(cmd_arr, ptr);
       if (ptr != NULL && *ptr != NULL) {
+        errno = 0;
         vlanid = (int) strtoul(*ptr, NULL, 10);
         if (errno != ERANGE && is_number(*ptr)) {
           if (accept_mac_cmd(context, addr, vlanid) < 0) {
@@ -226,9 +227,8 @@ ssize_t process_get_map_cmd(int sock, char *client_addr,
       int ret = get_mac_mapper(&context->mac_mapper, addr, &info);
 
       if (ret == 1) {
-        int line_size = snprintf(temp, 255, "%s,%02x:%02x:%02x:%02x:%02x:%02x,%s,%d,%d,%.*s\n",
-          (info.allow_connection) ? "a" : "d", MAC2STR(addr), info.ip_addr, info.vlanid, (info.nat) ? 1 : 0,
-          (int) info.pass_len, info.pass);
+        int line_size = snprintf(temp, 255, "%s,%02x:%02x:%02x:%02x:%02x:%02x,%s,%d,%d,%s\n",
+          (info.allow_connection) ? "a" : "d", MAC2STR(addr), info.ip_addr, info.vlanid, (info.nat) ? 1 : 0, info.label);
         return write_domain_data(sock, temp, line_size, client_addr);
       } else if (!ret) {
         return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
@@ -253,9 +253,9 @@ ssize_t process_get_all_cmd(int sock, char *client_addr, struct supervisor_conte
 
   for (int count = 0; count < mac_list_len; count ++) {
     struct mac_conn el = mac_list[count];
-    int line_size = snprintf(temp, 255, "%s,%02x:%02x:%02x:%02x:%02x:%02x,%s,%d,%d,%.*s\n",
+    int line_size = snprintf(temp, 255, "%s,%02x:%02x:%02x:%02x:%02x:%02x,%s,%d,%d,%s\n",
       (el.info.allow_connection) ? "a" : "d", MAC2STR(el.mac_addr), el.info.ip_addr, el.info.vlanid,
-      (el.info.nat) ? 1 : 0, (int) el.info.pass_len, el.info.pass);
+      (el.info.nat) ? 1 : 0, el.info.label);
     total += line_size + 1;
     if (reply_buf == NULL)
       reply_buf = os_zalloc(total);
@@ -446,6 +446,40 @@ ssize_t process_set_fingerprint_cmd(int sock, char *client_addr, struct supervis
 
 ssize_t process_register_ticket_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
 {
+  char **ptr = (char**) utarray_next(cmd_arr, NULL);
+  uint8_t mac_addr[ETH_ALEN];
+  int vlanid;
+  char label[MAX_DEVICE_LABEL_SIZE];
+  char *passphrase;
+
+  // MAC address of issuer
+  ptr = (char**) utarray_next(cmd_arr, ptr);
+  if (ptr != NULL && *ptr != NULL) {
+    if (hwaddr_aton2(*ptr, mac_addr) != -1) {
+      // Device label
+      ptr = (char**) utarray_next(cmd_arr, ptr);
+      if (ptr != NULL && *ptr != NULL) {
+        if (os_strnlen_s(*ptr, MAX_DEVICE_LABEL_SIZE) < MAX_DEVICE_LABEL_SIZE) {
+          os_strlcpy(label, *ptr, MAX_DEVICE_LABEL_SIZE);
+
+          // VLAN ID
+          ptr = (char**) utarray_next(cmd_arr, ptr);
+          errno = 0;
+          vlanid = (int) strtoul(*ptr, NULL, 10);
+          if (errno != ERANGE && is_number(*ptr)) {
+            passphrase = register_ticket_cmd(context, mac_addr, label, vlanid);
+
+            if (passphrase != NULL) {
+              return write_domain_data(sock, passphrase, strlen(passphrase), client_addr);
+            } else {
+              return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);            
+            }
+          }
+        }
+      }
+    }
+  }
+
   return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 

@@ -29,6 +29,9 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
+#define TICKET_PASSPHRASE_SIZE  16
+#define TICKET_TIMEOUT          60  // In seconds
+
 /**
  * @brief Return a mac_conn_info for a given MAC address
  * 
@@ -131,4 +134,15 @@ int remove_bridge_cmd(struct supervisor_context *context, uint8_t *left_mac_addr
 int set_fingerprint_cmd(struct supervisor_context *context, char *mac_addr, char *protocol,
                         char *fingerprint);
 
+/**
+ * @brief REGISTER_TICKET command
+ * 
+ * @param context The supervisor structure instance
+ * @param mac_addr The MAC address string
+ * @param label The label string
+ * @param vlanid The VLAN ID
+ * @return char* passphrase string, NULL on failure
+ */
+uint8_t* register_ticket_cmd(struct supervisor_context *context, uint8_t *mac_addr, char *label,
+                        int vlanid);
 #endif

@@ -43,8 +43,9 @@
 struct auth_ticket {
   uint8_t         passphrase[AP_SECRET_LEN];              /**< the ticket passphrase */
   ssize_t         passphrase_len;                         /**< the ticket passphrase length */
+  char            device_label[MAX_DEVICE_LABEL_SIZE];    /**< the device label */
   int             vlanid;                                 /**< the ticket associated VLAN ID */
-  bool            active;                                 /**< true if ticket is active */
+  uint8_t         issuer_mac_addr[ETH_ALEN];              /**< Issuer MAC */
 };
 
 /**

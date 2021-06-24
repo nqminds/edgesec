@@ -207,6 +207,21 @@ int os_get_random(unsigned char *buf, size_t len)
 	return rc != len ? -1 : 0;
 }
 
+int os_get_random_number_s(unsigned char *buf, size_t len)
+{
+  int idx = 0;
+  if (os_get_random(buf, len) < 0) {
+    log_trace("os_get_random fail");
+    return -1;
+  }
+
+  for (idx = 0; idx < len; idx ++) {
+    buf[idx] = (buf[idx] % 10) + '0';
+  }
+
+  return 0;
+}
+
 void * __hide_aliasing_typecast(void *foo)
 {
 	return foo;

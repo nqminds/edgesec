@@ -35,6 +35,7 @@
 #include <stdbool.h>
 
 #include "utarray.h"
+#include "log.h"
 
 /* Common costant defintions */
 #define MAX_OS_PATH_LEN			4096
@@ -178,6 +179,15 @@ uint64_t os_to_timestamp(struct timeval ts);
  * @return int 0 on success, -1 on failure
  */
 int os_get_random(unsigned char *buf, size_t len);
+
+/**
+ * @brief Get a random number string
+ * 
+ * @param buf Buffer for the random string.
+ * @param len Length of the buffer.
+ * @return int 0 on success, -1 on failure
+ */
+int os_get_random_number_s(unsigned char *buf, size_t len);
 
 /**
  * @brief Hex two char string to byte convertes 

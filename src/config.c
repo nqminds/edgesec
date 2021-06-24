@@ -160,8 +160,8 @@ bool get_connection_info(char *info, struct mac_conn *el)
   char **p = NULL;
 
   // reset to default PID
-  el->info.pid = 0;
   os_memset(el->info.ifname, 0, IFNAMSIZ);
+  os_memset(el->info.label, 0, MAX_DEVICE_LABEL_SIZE);
 
   p = (char**) utarray_next(info_arr, p);
   if (*p != NULL) {

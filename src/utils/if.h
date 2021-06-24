@@ -100,7 +100,7 @@ typedef struct hashmap_if_conn {
 struct vlan_conn {
   int 	vlanid;								/**< the VLAN ID */
   char 	ifname[IFNAMSIZ];					/**< the interface name */
-  pid_t analyser_pid;                				/**< Analyser process descriptor */
+  pid_t analyser_pid;                		/**< Analyser process descriptor */
 };
 
 /**

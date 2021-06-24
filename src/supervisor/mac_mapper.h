@@ -38,13 +38,14 @@
 #include "../utils/uthash.h"
 #include "../utils/hashmap.h"
 
+#define MAX_DEVICE_LABEL_SIZE 255
+
 /**
  * @brief MAC connection info structure
  * 
  * MAC device = Device with a given MAC address
  */
 struct mac_conn_info {
-  pid_t     pid;                            /**< Analyser PID */
   int       vlanid;                         /**< VLAN ID assigned to the MAC device */
   bool      nat;                            /**< Flag if set assigns NAT to the MAC device*/
   bool      allow_connection;               /**< If set allows the MAC device to connect ot the network */ 
@@ -52,6 +53,7 @@ struct mac_conn_info {
 	ssize_t		pass_len;                       /**< WiFi password length assigned to the MAC devices */
   char      ip_addr[IP_LEN];                /**< IP address assigned to the MAC device */
   char      ifname[IFNAMSIZ];               /**< WiFi subnet interface assigned to the MAC device */
+  char      label[MAX_DEVICE_LABEL_SIZE];   /**< The MAC device label */
 };
 
 /**
