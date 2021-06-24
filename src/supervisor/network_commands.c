@@ -37,19 +37,6 @@
 
 #define ANALYSER_FILTER_FORMAT "\"ether dst " MACSTR " or ether src " MACSTR"\""
 
-void init_default_mac_info(struct mac_conn_info *info, int default_open_vlanid,
-                            bool allow_all_nat)
-{
-  info->vlanid = default_open_vlanid;
-  info->allow_connection = true;
-  info->nat = allow_all_nat;
-  info->pass_len = 0;
-  os_memset(info->pass, 0, AP_SECRET_LEN);
-  os_memset(info->ip_addr, 0, IP_LEN);
-  os_memset(info->ifname, 0, IFNAMSIZ);
-  os_memset(info->label, 0, MAX_DEVICE_LABEL_SIZE);
-}
-
 void free_ticket(struct supervisor_context *context)
 {
   struct auth_ticket *ticket = context->ticket;
@@ -155,7 +142,6 @@ struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg)
   }
 
   int find_mac = get_mac_mapper(&context->mac_mapper, mac_addr, &info);
-  log_trace("MAC FOUND=%d for mac=" MACSTR " pass=", find_mac, MAC2STR(mac_addr), info.pass);
 
   if (context->allow_all_connections) {
     info.allow_connection = true;
@@ -567,4 +553,27 @@ uint8_t* register_ticket_cmd(struct supervisor_context *context, uint8_t *mac_ad
   }
 
   return context->ticket->passphrase;
+}
+
+int clear_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr)
+{  
+  struct mac_conn conn;
+  struct mac_conn_info info;
+
+  init_default_mac_info(&info, context->default_open_vlanid, context->allow_all_nat);
+
+  log_trace("CLEAR_PSK for mac=" MACSTR, MAC2STR(mac_addr));
+
+  get_mac_mapper(&context->mac_mapper, mac_addr, &info);
+  os_memset(info.pass, 0, AP_SECRET_LEN);
+  info.pass_len = 0;
+  os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
+  os_memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
+
+  if (!put_mac_mapper(&context->mac_mapper, conn)) {
+    log_trace("put_mac_mapper fail");
+    return -1;
+  }
+
+  return 0;
 }

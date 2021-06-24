@@ -22,7 +22,7 @@ add_library(engine engine.c)
 target_link_libraries(engine crypt_service log if os sqlite_fingerprint_writer subnet_service system_checks eloop supervisor network_commands radius_service mac_mapper ap_service iptables dhcp_service)
 
 add_library(config config.c)
-target_link_libraries(config minIni)
+target_link_libraries(config minIni mac_mapper)
 
 add_executable(edgesec edgesec.c)
 target_link_libraries(edgesec config engine minIni os hashmap)

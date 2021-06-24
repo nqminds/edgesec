@@ -138,3 +138,17 @@ int get_mac_list(hmap_mac_conn **hmap, struct mac_conn **list)
 
   return total_entries;
 }
+
+void init_default_mac_info(struct mac_conn_info *info, int default_open_vlanid,
+                            bool allow_all_nat)
+{
+  info->vlanid = default_open_vlanid;
+  info->allow_connection = true;
+  info->nat = allow_all_nat;
+  info->pass_len = 0;
+  os_memset(info->pass, 0, AP_SECRET_LEN);
+  os_memset(info->ip_addr, 0, IP_LEN);
+  os_memset(info->ifname, 0, IFNAMSIZ);
+  os_memset(info->label, 0, MAX_DEVICE_LABEL_SIZE);
+  generate_radom_uuid(info->id);
+}

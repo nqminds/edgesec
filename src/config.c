@@ -33,6 +33,7 @@
 #include <stdbool.h>
 #include <errno.h>
 
+#include "supervisor/mac_mapper.h"
 #include "utils/os.h"
 #include "utils/minIni.h"
 #include "utils/utarray.h"
@@ -159,9 +160,7 @@ bool get_connection_info(char *info, struct mac_conn *el)
 
   char **p = NULL;
 
-  // reset to default PID
-  os_memset(el->info.ifname, 0, IFNAMSIZ);
-  os_memset(el->info.label, 0, MAX_DEVICE_LABEL_SIZE);
+  init_default_mac_info(&el->info, 0, false);
 
   p = (char**) utarray_next(info_arr, p);
   if (*p != NULL) {
@@ -202,12 +201,9 @@ bool get_connection_info(char *info, struct mac_conn *el)
 
   p = (char**) utarray_next(info_arr, p);
   if (*p != NULL) {
-    os_strlcpy(el->info.pass, *p, AP_SECRET_LEN);
-    el->info.pass_len = os_strnlen_s(el->info.pass, AP_SECRET_LEN);
+    os_strlcpy(el->info.label, *p, MAX_DEVICE_LABEL_SIZE);
   } else
     goto err;
-
-  os_memset(el->info.ip_addr, 0x0, IP_LEN);
   
   utarray_free(info_arr);
   return true;

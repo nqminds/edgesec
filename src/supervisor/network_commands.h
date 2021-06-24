@@ -145,4 +145,13 @@ int set_fingerprint_cmd(struct supervisor_context *context, char *mac_addr, char
  */
 uint8_t* register_ticket_cmd(struct supervisor_context *context, uint8_t *mac_addr, char *label,
                         int vlanid);
+
+/**
+ * @brief CLEAR_PSK command
+ * 
+ * @param context The supervisor structure instance
+ * @param mac_addr The MAC address string
+ * @return 0 on success, -1 on failure
+ */
+int clear_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr);
 #endif

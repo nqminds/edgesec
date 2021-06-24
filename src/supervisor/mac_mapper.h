@@ -54,6 +54,7 @@ struct mac_conn_info {
   char      ip_addr[IP_LEN];                /**< IP address assigned to the MAC device */
   char      ifname[IFNAMSIZ];               /**< WiFi subnet interface assigned to the MAC device */
   char      label[MAX_DEVICE_LABEL_SIZE];   /**< The MAC device label */
+  char      id[MAX_RANDOM_UUID_LEN];        /**< The MAC device ID */  
 };
 
 /**
@@ -120,5 +121,15 @@ void free_mac_mapper(hmap_mac_conn **hmap);
  * @return int
  */
 int get_mac_list(hmap_mac_conn **hmap, struct mac_conn **list);
+
+/**
+ * @brief Generate a default mac info configuration
+ * 
+ * @param info The input mac info structure
+ * @param default_open_vlanid The default VLAN ID
+ * @param allow_all_nat The NAT flag
+ */
+void init_default_mac_info(struct mac_conn_info *info, int default_open_vlanid,
+                            bool allow_all_nat);
 
 #endif
