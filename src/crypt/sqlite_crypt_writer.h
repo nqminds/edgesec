@@ -36,6 +36,7 @@
 #define CRYPT_STORE_CREATE_TABLE "CREATE TABLE " CRYPT_STORE_TABLE_NAME " (key TEXT NOT NULL, value TEXT, id TEXT, iv TEXT, " \
                                  "PRIMARY KEY (key));"
 #define CRYPT_STORE_INSERT_INTO "INSERT INTO " CRYPT_STORE_TABLE_NAME " VALUES(@key, @value, @id, @iv);"
+#define CRYPT_STORE_DELETE_FROM "DELETE FROM " CRYPT_STORE_TABLE_NAME " WHERE key=@key;"
 #define CRYPT_STORE_GET         "SELECT value, id, iv FROM  " CRYPT_STORE_TABLE_NAME " WHERE key=?;"
 
 #define CRYPT_SECRETS_TABLE_NAME "secrets"

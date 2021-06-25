@@ -95,6 +95,21 @@ int save_sqlite_store_entry(sqlite3 *db, struct store_row *row)
     return -1;
   }
 
+  if (sqlite3_prepare_v2(db, CRYPT_STORE_DELETE_FROM, -1, &res, 0) != SQLITE_OK) {
+    log_trace("Failed to prepare statement: %s", sqlite3_errmsg(db));
+    return -1;
+  }
+
+  column_idx = sqlite3_bind_parameter_index(res, "@key");
+  if (sqlite3_bind_text(res, column_idx, row->key, -1, NULL) != SQLITE_OK) {
+    log_trace("sqlite3_bind_text fail");
+    sqlite3_finalize(res);
+    return -1;
+  }
+
+  sqlite3_step(res);
+  sqlite3_finalize(res);
+
   if (sqlite3_prepare_v2(db, CRYPT_STORE_INSERT_INTO, -1, &res, 0) != SQLITE_OK) {
     log_trace("Failed to prepare statement: %s", sqlite3_errmsg(db));
     return -1;
@@ -237,6 +252,7 @@ struct store_row* get_sqlite_store_row(sqlite3 *db, char *key)
     return row;
   }
 
+  sqlite3_finalize(res);
   return NULL;
 }
 
@@ -293,5 +309,7 @@ struct secrets_row* get_sqlite_secrets_row(sqlite3 *db, char *id)
     return row;
   }
 
+  sqlite3_finalize(res);
+  
   return NULL;
 }

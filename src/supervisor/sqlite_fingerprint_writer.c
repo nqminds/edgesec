@@ -58,7 +58,7 @@ int open_sqlite_fingerprint_db(char *db_path, sqlite3** sql)
   rc = check_table_exists(db, FINGERPRINT_TABLE_NAME);
 
   if (rc == 0) {
-    log_debug("pcap table doesn't exist creating...");
+    log_debug("%s table doesn't exist creating...", FINGERPRINT_TABLE_NAME);
     if (execute_sqlite_query(db, FINGERPRINT_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
       free_sqlite_fingerprint_db(db);

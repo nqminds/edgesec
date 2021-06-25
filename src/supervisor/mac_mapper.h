@@ -46,6 +46,7 @@
  * MAC device = Device with a given MAC address
  */
 struct mac_conn_info {
+  int       status;                         /**< The MAC Connection status */
   int       vlanid;                         /**< VLAN ID assigned to the MAC device */
   bool      nat;                            /**< Flag if set assigns NAT to the MAC device*/
   bool      allow_connection;               /**< If set allows the MAC device to connect ot the network */ 
@@ -75,17 +76,6 @@ typedef struct hashmap_mac_conn {           /**< hashmap key */
     struct mac_conn_info value;             /**< MAC connection structure */
     UT_hash_handle hh;         		          /**< hashmap handle */
 } hmap_mac_conn;
-
-/**
- * @brief Create a MAC mapper connection object
- * 
- * @param connections Array of MAC connections
- * @param hmap Output MAC mapper object
- * @return true on success, false otherwise
-
- */
-bool create_mac_mapper(UT_array *connections, hmap_mac_conn **hmap);
-
 
 /**
  * @brief Get the MAC connection info structure for a given MAC address

@@ -47,12 +47,11 @@
 #include "../utils/log.h"
 #include "../utils/eloop.h"
 #include "../utils/list.h"
+#include "../utils/os.h"
 
-#define SQLITE_EXTENSION              ".sqlite"
-#define PCAP_EXTENSION                ".pcap"
 #define MAX_DB_NAME_LENGTH            MAX_RANDOM_UUID_LEN + STRLEN(SQLITE_EXTENSION)
 #define MAX_PCAP_FILE_NAME_LENGTH     MAX_RANDOM_UUID_LEN + STRLEN(PCAP_EXTENSION)
-#define PCAP_DB_NAME                  "pcap-meta.sqlite"
+#define PCAP_DB_NAME                  "pcap-meta" SQLITE_EXTENSION
 
 struct capture_context {
   uint32_t process_interval;

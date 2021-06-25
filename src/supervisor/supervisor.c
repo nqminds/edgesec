@@ -38,7 +38,7 @@
 
 #include "cmd_processor.h"
 
-#define FINGERPRINT_DB_NAME "fingerprint.sqlite"
+#define FINGERPRINT_DB_NAME "fingerprint" SQLITE_EXTENSION
 
 void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
 {

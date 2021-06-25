@@ -51,7 +51,6 @@
 static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
 
 static const UT_icd config_ifinfo_icd = {sizeof(config_ifinfo_t), NULL, NULL, NULL};
-static const UT_icd mac_conn_icd = {sizeof(struct mac_conn), NULL, NULL, NULL};
 static const UT_icd config_dhcpinfo_icd = {sizeof(config_dhcpinfo_t), NULL, NULL, NULL};
 
 static __thread char version_buf[10];
@@ -169,7 +168,6 @@ int main(int argc, char *argv[])
   UT_array *bin_path_arr;
   UT_array *config_ifinfo_arr;
   UT_array *config_dhcpinfo_arr;
-  UT_array *mac_conn_arr;
   UT_array *server_arr;
   struct app_config config;
   
@@ -187,10 +185,6 @@ int main(int argc, char *argv[])
   // Create the dhcp config interface
   utarray_new(config_dhcpinfo_arr, &config_dhcpinfo_icd);
   config.dhcp_config.config_dhcpinfo_array = config_dhcpinfo_arr;
-
-  // Create the connections list
-  utarray_new(mac_conn_arr, &mac_conn_icd);
-  config.connections = mac_conn_arr;
 
   // Create the dns server array
   utarray_new(server_arr, &ut_str_icd);
@@ -229,7 +223,6 @@ int main(int argc, char *argv[])
   utarray_free(bin_path_arr);
   utarray_free(config_ifinfo_arr);
   utarray_free(config_dhcpinfo_arr);
-  utarray_free(mac_conn_arr);
   utarray_free(server_arr);
   if (filename != NULL)
     os_free(filename);

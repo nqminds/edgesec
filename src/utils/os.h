@@ -49,6 +49,9 @@
 
 #define MAX_SUPERVISOR_CMD_SIZE 40
 
+#define SQLITE_EXTENSION              ".sqlite"
+#define PCAP_EXTENSION                ".pcap"
+
 #ifdef __GNUC__
 #define STRUCT_PACKED __attribute__ ((packed))
 #else

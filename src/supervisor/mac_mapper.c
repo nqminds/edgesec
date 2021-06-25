@@ -98,25 +98,6 @@ void free_mac_mapper(hmap_mac_conn **hmap)
   }
 }
 
-bool create_mac_mapper(UT_array *connections, hmap_mac_conn **hmap)
-{
-  struct mac_conn *p = NULL;
-  
-  if (connections != NULL) {
-    while(p = (struct mac_conn *) utarray_next(connections, p)) {
-      log_trace("Adding mac=" MACSTR " with vlanid=%d ifname=%s nat=%d", MAC2STR(p->mac_addr), p->info.vlanid, p->info.ifname, p->info.nat);
-
-      if (!put_mac_mapper(hmap, *p)) {
-        log_trace("put_mac_mapper fail");
-        free_mac_mapper(hmap);
-        return false;
-      }
-    }
-  }
-
-  return true;
-}
-
 int get_mac_list(hmap_mac_conn **hmap, struct mac_conn **list)
 {
  	hmap_mac_conn *current, *tmp;
@@ -142,6 +123,7 @@ int get_mac_list(hmap_mac_conn **hmap, struct mac_conn **list)
 void init_default_mac_info(struct mac_conn_info *info, int default_open_vlanid,
                             bool allow_all_nat)
 {
+  info->status = 0;
   info->vlanid = default_open_vlanid;
   info->allow_connection = true;
   info->nat = allow_all_nat;

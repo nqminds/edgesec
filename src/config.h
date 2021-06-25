@@ -64,7 +64,6 @@ struct app_config {
   bool                allow_all_connections;                /**< Flag to allow all connections. */
   bool                allow_all_nat;                        /**< Flag to allow all nat connections. */
   bool                kill_running_proc;                    /**< Flag to terminate running app processes. */
-  UT_array            *connections;                         /**< MAC mapper to @c struct mac_conn. */
   struct radius_conf  rconfig;                              /**< Radius service configuration. */
   struct apconf       hconfig;                              /**< AP service configuration. */
   struct dns_conf     dns_config;                           /**< DNS service configuration. */

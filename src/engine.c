@@ -42,6 +42,7 @@
 #include "supervisor/supervisor.h"
 #include "supervisor/network_commands.h"
 #include "supervisor/sqlite_fingerprint_writer.h"
+#include "supervisor/sqlite_macconn_writer.h"
 #include "radius/radius_service.h"
 #include "ap/ap_service.h"
 #include "dhcp/dhcp_service.h"
@@ -52,6 +53,10 @@
 #include "subnet/subnet_service.h"
 #include "utils/iw.h"
 #include "config.h"
+
+#define MACCONN_DB_NAME "macconn" SQLITE_EXTENSION
+
+static const UT_icd mac_conn_icd = {sizeof(struct mac_conn), NULL, NULL, NULL};
 
 bool construct_hostapd_ctrlif(char *ctrl_interface, char *interface, char *hostapd_ctrl_if_path)
 {
@@ -89,8 +94,60 @@ bool init_mac_mapper_ifnames(UT_array *connections, hmap_vlan_conn **vlan_mapper
   return true;
 }
 
+bool create_mac_mapper(struct supervisor_context *ctx)
+{
+  struct mac_conn *p = NULL;
+  UT_array *mac_conn_arr;
+  struct crypt_pair *pair;
+
+  // Create the connections list
+  utarray_new(mac_conn_arr, &mac_conn_icd);
+
+  if (get_sqlite_macconn_entries(ctx->macconn_db, mac_conn_arr) < 0) {
+    log_trace("get_sqlite_macconn_entries fail");
+    utarray_free(mac_conn_arr);
+    return false;
+  }
+
+  if (!init_mac_mapper_ifnames(mac_conn_arr, &ctx->vlan_mapper)) {
+    log_debug("init_mac_mapper_ifnames fail");
+    utarray_free(mac_conn_arr);
+    return false;
+  }
+  
+  if (mac_conn_arr != NULL) {
+    while(p = (struct mac_conn *) utarray_next(mac_conn_arr, p)) {
+      log_trace("Adding mac=" MACSTR " with id=%s vlanid=%d ifname=%s nat=%d allow=%d label=%s status=%d",
+                MAC2STR(p->mac_addr), p->info.id, p->info.vlanid, p->info.ifname, p->info.nat,
+                p->info.allow_connection, p->info.label, p->info.status);
+      pair = get_crypt_pair(ctx->crypt_ctx, p->info.id);
+      if (pair != NULL) {
+        if (pair->value_size <= AP_SECRET_LEN) {
+          p->info.pass_len = pair->value_size;
+          os_memcpy(p->info.pass, pair->value, p->info.pass_len);
+          log_trace("pass=%s", p->info.pass);
+        } else
+          log_trace("Unknown passphrase for id=%s", p->info.id);
+
+        free_crypt_pair(pair);
+      }
+
+      if (!put_mac_mapper(&ctx->mac_mapper, *p)) {
+        log_trace("put_mac_mapper fail");
+        free_mac_mapper(&ctx->mac_mapper);
+        return false;
+      }
+    }
+  }
+
+  utarray_free(mac_conn_arr);
+  return true;
+}
+
 bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
 {
+  char *db_path = NULL;
+
   os_memset(ctx, 0, sizeof(struct supervisor_context));
 
   if (!init_ifbridge_names(app_config->config_ifinfo_array, app_config->hconfig.vlan_bridge)) {
@@ -116,6 +173,18 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
 
   os_memcpy(&ctx->capture_config, &app_config->capture_config, sizeof(ctx->capture_config));
 
+  db_path = construct_path(ctx->db_path, MACCONN_DB_NAME);
+  if (db_path == NULL) {
+    log_debug("construct_path fail");
+    return -1;
+  }
+
+  log_info("Opening the macconn db...");
+  if (open_sqlite_macconn_db(db_path, &ctx->macconn_db) < 0) {
+    log_debug("open_sqlite_macconn_db fail");
+    return false;
+  }
+
   log_info("Creating subnet to interface mapper...");
   if (!create_if_mapper(app_config->config_ifinfo_array, &ctx->if_mapper)) {
     log_debug("create_if_mapper fail");
@@ -128,19 +197,9 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
     return false;
   }
 
-  if (!init_mac_mapper_ifnames(app_config->connections, &ctx->vlan_mapper)) {
-    log_debug("init_mac_mapper_ifnames fail");
-    return false;
-  }
-
-  log_info("Adding default mac mappers...");
-  if (!create_mac_mapper(app_config->connections, &ctx->mac_mapper)) {
-    log_debug("create_mac_mapper fail");
-    return false;
-  }
-
   // Init the list of bridges
   ctx->bridge_list = init_bridge_list();
+
   return true;
 }
 
@@ -199,6 +258,14 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
     log_debug("load_crypt_service fail");
     goto run_engine_fail;
   }
+
+  log_info("Adding default mac mappers...");
+  if (!create_mac_mapper(&context)) {
+    log_debug("create_mac_mapper fail");
+    return false;
+  }
+
+  exit(1);
 
   log_info("Checking wifi interface...");
   if (!app_config->ap_detect) {
@@ -304,6 +371,7 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
   free_vlan_mapper(&context.vlan_mapper);
   free_bridge_list(context.bridge_list);
   free_sqlite_fingerprint_db(context.fingeprint_db);
+  free_sqlite_macconn_db(context.macconn_db);
   free_crypt_service(context.crypt_ctx);
   return true;
 
@@ -321,6 +389,7 @@ run_engine_fail:
   free_vlan_mapper(&context.vlan_mapper);
   free_bridge_list(context.bridge_list);
   free_sqlite_fingerprint_db(context.fingeprint_db);
+  free_sqlite_macconn_db(context.macconn_db);
   free_crypt_service(context.crypt_ctx);
   return false;
 }

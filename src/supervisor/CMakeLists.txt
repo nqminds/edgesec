@@ -11,8 +11,11 @@ target_link_libraries(mac_mapper bridge_list log os)
 add_library(sqlite_fingerprint_writer sqlite_fingerprint_writer.c)
 target_link_libraries(sqlite_fingerprint_writer sqliteu squeue log os ${LIBSQLITE3_LIB})
 
+add_library(sqlite_macconn_writer sqlite_macconn_writer.c)
+target_link_libraries(sqlite_macconn_writer sqliteu squeue log os ${LIBSQLITE3_LIB})
+
 add_library(network_commands network_commands.c)
-target_link_libraries(network_commands capture_service mac_mapper eloop iptables log os)
+target_link_libraries(network_commands crypt_service capture_service sqlite_macconn_writer mac_mapper eloop iptables log os)
 
 add_library(cmd_processor cmd_processor.c)
 target_link_libraries(cmd_processor network_commands sqlite_fingerprint_writer mac_mapper domain log os iptables if)

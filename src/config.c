@@ -145,74 +145,6 @@ err:
   return false;
 }
 
-bool get_connection_info(char *info, struct mac_conn *el)
-{
-  UT_array *info_arr;
-  utarray_new(info_arr, &ut_str_icd);
-
-  if (split_string_array(info, ',', info_arr) < 0) {
-    goto err;
-  }
-
-  if (!utarray_len(info_arr)) {
-    goto err;
-  }
-
-  char **p = NULL;
-
-  init_default_mac_info(&el->info, 0, false);
-
-  p = (char**) utarray_next(info_arr, p);
-  if (*p != NULL) {
-    if (strcmp(*p, "a") == 0)
-      el->info.allow_connection = true;
-    else if (strcmp(*p, "d") == 0)
-      el->info.allow_connection = false;
-    else
-      goto err;
-  } else
-    goto err;
-
-  p = (char**) utarray_next(info_arr, p);
-  if (*p != NULL) {
-    if (hwaddr_aton2(*p, el->mac_addr) == -1) {
-      goto err;
-    }
-  } else
-    goto err;
-
-  p = (char**) utarray_next(info_arr, p);
-  if (*p != NULL) {
-    errno = 0;
-    el->info.vlanid = (int) strtol(*p, NULL, 10);
-    if (errno == EINVAL)
-      goto err;
-  } else
-    goto err;
-
-  p = (char**) utarray_next(info_arr, p);
-  if (*p != NULL) {
-    errno = 0;
-    el->info.nat = (bool) strtol(*p, NULL, 10);
-    if (errno == EINVAL)
-      goto err;    
-  } else
-    goto err;
-
-  p = (char**) utarray_next(info_arr, p);
-  if (*p != NULL) {
-    os_strlcpy(el->info.label, *p, MAX_DEVICE_LABEL_SIZE);
-  } else
-    goto err;
-  
-  utarray_free(info_arr);
-  return true;
-
-err:
-  utarray_free(info_arr);
-  return false;
-}
-
 bool load_interface_list(const char *filename, struct app_config *config)
 {
   char *key = os_malloc(INI_BUFFERSIZE);
@@ -263,32 +195,6 @@ bool load_dhcp_list(const char *filename, struct app_config *config)
   return true;
 }
 
-bool load_connection_list(const char *filename, struct app_config *config)
-{
-  char *key = os_malloc(INI_BUFFERSIZE);
-  int idx = 0;
-  while(ini_getkey("connections", idx++, key, INI_BUFFERSIZE, filename) > 0) {
-    char *value = os_malloc(INI_BUFFERSIZE);
-    int count = ini_gets("connections", key, "", value, INI_BUFFERSIZE, filename);
-    if (count) {
-      struct mac_conn el;
-      if(!get_connection_info(value, &el)) {
-        os_free(value);
-        os_free(key);
-        return false;
-      }
-
-      utarray_push_back(config->connections, &el);
-    }
-
-    os_free(value);
-    os_free(key);
-    key = os_malloc(INI_BUFFERSIZE);
-  }
-
-  os_free(key);
-  return true;
-}
 bool load_radius_conf(const char *filename, struct app_config *config)
 {
   char *value = os_malloc(INI_BUFFERSIZE);
@@ -774,12 +680,6 @@ bool load_app_config(const char *filename, struct app_config *config)
   // Load the DHCP server configuration
   if(!load_dhcp_conf(filename, config)) {
     fprintf(stderr, "dhcp config parsing error.\n");
-    return false;
-  }
-
-  // Load the list of connections
-  if(!load_connection_list(filename, config)) {
-    fprintf(stderr, "Connection list parsing error.\n");
     return false;
   }
 
