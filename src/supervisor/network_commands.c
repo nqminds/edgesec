@@ -99,10 +99,10 @@ int schedule_analyser(struct supervisor_context *context, int vlanid)
   }
 
   if (!vlan_conn.analyser_pid) {
-    memcpy(&config, &context->capture_config, sizeof(config));
+    os_memcpy(&config, &context->capture_config, sizeof(config));
 
     log_trace("Starting analyser on if=%s", vlan_conn.ifname);
-    memcpy(config.capture_interface, vlan_conn.ifname, IFNAMSIZ);
+    os_memcpy(config.capture_interface, vlan_conn.ifname, IFNAMSIZ);
 
     if (run_analyser(&config, &child_pid) != 0) {
       log_trace("run_analyser fail");
@@ -117,6 +117,18 @@ int schedule_analyser(struct supervisor_context *context, int vlanid)
   }
 
   return 0;
+}
+
+void configure_mac_info(struct mac_conn_info *info, bool allow_connection,
+                        int vlanid, ssize_t pass_len, uint8_t *pass, char *label)
+{
+  info->allow_connection = allow_connection;
+  info->vlanid = vlanid;
+  info->pass_len = pass_len;
+  os_memcpy(info->pass, pass, info->pass_len);
+  if (label != NULL) {
+    os_memcpy(info->label, label, MAX_DEVICE_LABEL_SIZE);
+  }
 }
 
 struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg)
@@ -144,10 +156,8 @@ struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg)
   int find_mac = get_mac_mapper(&context->mac_mapper, mac_addr, &info);
 
   if (context->allow_all_connections) {
-    info.allow_connection = true;
-    info.vlanid = context->default_open_vlanid;
-    info.pass_len = context->wpa_passphrase_len;
-    memcpy(info.pass, context->wpa_passphrase, info.pass_len);
+    configure_mac_info(&info, true, context->default_open_vlanid,
+                       context->wpa_passphrase_len, context->wpa_passphrase, NULL);
 
     if (context->exec_capture) {
       if (schedule_analyser(context, info.vlanid) < 0) {
@@ -159,7 +169,7 @@ struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg)
     }
 
     log_trace("ALLOWING mac=" MACSTR " on default vlanid=%d", MAC2STR(mac_addr), info.vlanid);
-    memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
+    os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
     conn.info = info;
     if (!put_mac_mapper(&context->mac_mapper, conn)) {
       log_trace("put_mac_mapper fail");
@@ -242,17 +252,17 @@ int accept_mac_cmd(struct supervisor_context *context, uint8_t *mac_addr, int vl
     return -1;
   }
 
-  memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
+  os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
   info.allow_connection = true;
   info.vlanid = vlanid;
-  memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
+  os_memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
 
   if (get_vlan_mapper(&context->vlan_mapper, conn.info.vlanid, &vlan_conn) <= 0) {
     log_trace("get_vlan_mapper fail");
     return -1;
   }
 
-  memcpy(conn.info.ifname, vlan_conn.ifname, IFNAMSIZ);
+  os_memcpy(conn.info.ifname, vlan_conn.ifname, IFNAMSIZ);
   if (!put_mac_mapper(&context->mac_mapper, conn)) {
     log_trace("put_mac_mapper fail");
     return -1;
@@ -269,9 +279,9 @@ int deny_mac_cmd(struct supervisor_context *context, uint8_t *mac_addr)
 
   log_trace("DENY_MAC mac=" MACSTR, MAC2STR(mac_addr));
   get_mac_mapper(&context->mac_mapper, mac_addr, &info);
-  memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
+  os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
   info.allow_connection = false;
-  memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
+  os_memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
   if (!put_mac_mapper(&context->mac_mapper, conn)) {
     log_trace("put_mac_mapper fail");
     return -1;
@@ -293,9 +303,9 @@ int add_nat_cmd(struct supervisor_context *context, uint8_t *mac_addr)
     return -1;
   }
 
-  memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
+  os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
   info.nat = true;
-  memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
+  os_memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
 
   if (validate_ipv4_string(info.ip_addr)) {
     if (!get_ifname_from_ip(&context->if_mapper, context->config_ifinfo_array, info.ip_addr, ifname)) {
@@ -329,9 +339,9 @@ int remove_nat_cmd(struct supervisor_context *context, uint8_t *mac_addr)
     return -1;
   }
 
-  memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
+  os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
   info.nat = false;
-  memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
+  os_memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
 
   if (validate_ipv4_string(info.ip_addr)) {
     if (!get_ifname_from_ip(&context->if_mapper, context->config_ifinfo_array, info.ip_addr, ifname)) {
@@ -362,10 +372,10 @@ int assign_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr,
   log_trace("ASSIGN_PSK mac=" MACSTR ", pass_len=%d", MAC2STR(mac_addr), pass_len);
 
   get_mac_mapper(&context->mac_mapper, mac_addr, &info);
-  memcpy(info.pass, pass, pass_len);
+  os_memcpy(info.pass, pass, pass_len);
   info.pass_len = pass_len;
-  memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
-  memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
+  os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
+  os_memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
 
   if (!put_mac_mapper(&context->mac_mapper, conn)) {
     log_trace("put_mac_mapper fail");
@@ -398,9 +408,9 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
     return -1;
   }
 
-  memcpy(info.ifname, ifname, IFNAMSIZ);
-  memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
-  memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
+  os_memcpy(info.ifname, ifname, IFNAMSIZ);
+  os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
+  os_memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
           
   if (add) os_strlcpy(conn.info.ip_addr, ip_addr, IP_LEN);
   else os_memset(conn.info.ip_addr, 0x0, IP_LEN);

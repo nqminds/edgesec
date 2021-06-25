@@ -87,7 +87,7 @@ static void test_read_domain_data(void **state)
   ssize_t ret = sendto(client_sock, send_buf, buf_len, 0, (struct sockaddr *) &svaddr, sizeof(struct sockaddr_un));
   assert_int_equal(ret, buf_len);
 
-  ret = read_domain_data(server_sock, read_buf, 100, client_addr);
+  ret = read_domain_data(server_sock, read_buf, 100, client_addr, 0);
 
   assert_int_equal(ret, buf_len);
   assert_string_equal(send_buf, read_buf);

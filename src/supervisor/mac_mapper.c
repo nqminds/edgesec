@@ -75,7 +75,7 @@ bool put_mac_mapper(hmap_mac_conn **hmap, struct mac_conn conn)
 		}
 
 		// Copy the key and value
-    memcpy(s->key, conn.mac_addr, ETH_ALEN);
+    os_memcpy(s->key, conn.mac_addr, ETH_ALEN);
 		s->value = conn.info;
 
 		// HASH_ADD_STR(hmap, key, s);
@@ -129,7 +129,7 @@ int get_mac_list(hmap_mac_conn **hmap, struct mac_conn **list)
   struct mac_conn *ptr = (struct mac_conn *) os_malloc(total_entries * sizeof(struct mac_conn));
 
 	HASH_ITER(hh, *hmap, current, tmp) {
-    memcpy(ptr[count].mac_addr, current->key, ETH_ALEN);
+    os_memcpy(ptr[count].mac_addr, current->key, ETH_ALEN);
     ptr[count].info = current->value;
     count ++;
   }

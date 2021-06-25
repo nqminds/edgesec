@@ -87,7 +87,7 @@ static int store_nlmsg(struct nlmsghdr *n, void *arg)
 	if (h == NULL)
 		return -1;
 
-	memcpy(&h->h, n, n->nlmsg_len);
+	os_memcpy(&h->h, n, n->nlmsg_len);
 	h->next = NULL;
 
 	if (lchain->tail)
@@ -324,7 +324,7 @@ int get_linkinfo(struct nlmsghdr *n, netif_info_t *info)
 	log_trace("ifindex=%d link_type=%s", ifi->ifi_index, info->link_type);
 	if (tb[IFLA_ADDRESS]) {
 		if (RTA_PAYLOAD(tb[IFLA_ADDRESS]) == ETH_ALEN) {
-			memcpy(info->mac_addr, RTA_DATA(tb[IFLA_ADDRESS]), ETH_ALEN);
+			os_memcpy(info->mac_addr, RTA_DATA(tb[IFLA_ADDRESS]), ETH_ALEN);
 			log_trace("ifindex=%d mac_address=%s", ifi->ifi_index, ll_addr_n2a(info->mac_addr, ETH_ALEN, ifi->ifi_type, b1, sizeof(b1)));
 		}
 	}
@@ -866,7 +866,7 @@ int get_if_mapper(hmap_if_conn **hmap, in_addr_t subnet, char *ifname)
   HASH_FIND(hh, *hmap, &subnet, sizeof(in_addr_t), s); /* id already in the hash? */
 
   if (s != NULL) {
-	memcpy(ifname, s->value, IFNAMSIZ);
+	os_memcpy(ifname, s->value, IFNAMSIZ);
     return 1;
   }
  
@@ -898,12 +898,12 @@ bool put_if_mapper(hmap_if_conn **hmap, in_addr_t subnet, char *ifname)
 
 	// Copy the key and value
 	s->key = subnet;
-    memcpy(s->value, ifname, IFNAMSIZ);
+    os_memcpy(s->value, ifname, IFNAMSIZ);
 
     HASH_ADD(hh, *hmap, key, sizeof(in_addr_t), s);
   } else {
 	// Copy the value
-    memcpy(s->value, ifname, IFNAMSIZ);
+    os_memcpy(s->value, ifname, IFNAMSIZ);
   }
 
   return true;	
@@ -968,12 +968,12 @@ bool put_vlan_mapper(hmap_vlan_conn **hmap, struct vlan_conn *conn)
 
 	// Copy the key and value
 	s->key = conn->vlanid;
-    memcpy(&s->value, conn, sizeof(struct vlan_conn));
+    os_memcpy(&s->value, conn, sizeof(struct vlan_conn));
 
     HASH_ADD(hh, *hmap, key, sizeof(int), s);
   } else {
 	// Copy the value
-    memcpy(&s->value, conn, sizeof(struct vlan_conn));
+    os_memcpy(&s->value, conn, sizeof(struct vlan_conn));
   }
 
   return true;	

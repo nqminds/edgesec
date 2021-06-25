@@ -227,7 +227,7 @@ static int process_iface_handler(struct nl_msg *msg, void *arg)
 
 		if (tb_msg[NL80211_ATTR_MAC]) {
 			char mac_addr[20];
-			memcpy(element.addr, nla_data(tb_msg[NL80211_ATTR_MAC]), ETH_ALEN);
+			os_memcpy(element.addr, nla_data(tb_msg[NL80211_ATTR_MAC]), ETH_ALEN);
 			mac_addr_n2a(mac_addr, element.addr);
 			log_trace("%s -> addr=%s", element.ifname, mac_addr);
 		}

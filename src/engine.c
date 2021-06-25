@@ -75,7 +75,7 @@ bool init_mac_mapper_ifnames(UT_array *connections, hmap_vlan_conn **vlan_mapper
   if (connections != NULL) {
     while(p = (struct mac_conn *) utarray_next(connections, p)) {
       int ret = get_vlan_mapper(vlan_mapper, p->info.vlanid, &vlan_conn);
-      memcpy(p->info.ifname, vlan_conn.ifname, IFNAMSIZ);
+      os_memcpy(p->info.ifname, vlan_conn.ifname, IFNAMSIZ);
       if (ret < 0) {
         log_trace("get_vlan_mapper fail");
         return false;
@@ -109,12 +109,12 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
   ctx->config_ifinfo_array = app_config->config_ifinfo_array;
 
   ctx->wpa_passphrase_len = os_strnlen_s(app_config->hconfig.wpa_passphrase, AP_SECRET_LEN);
-  memcpy(ctx->wpa_passphrase, app_config->hconfig.wpa_passphrase, ctx->wpa_passphrase_len);
+  os_memcpy(ctx->wpa_passphrase, app_config->hconfig.wpa_passphrase, ctx->wpa_passphrase_len);
   
-  memcpy(ctx->nat_interface, app_config->nat_interface, IFNAMSIZ);
-  memcpy(ctx->db_path, app_config->db_path, MAX_OS_PATH_LEN);
+  os_memcpy(ctx->nat_interface, app_config->nat_interface, IFNAMSIZ);
+  os_memcpy(ctx->db_path, app_config->db_path, MAX_OS_PATH_LEN);
 
-  memcpy(&ctx->capture_config, &app_config->capture_config, sizeof(ctx->capture_config));
+  os_memcpy(&ctx->capture_config, &app_config->capture_config, sizeof(ctx->capture_config));
 
   log_info("Creating subnet to interface mapper...");
   if (!create_if_mapper(app_config->config_ifinfo_array, &ctx->if_mapper)) {

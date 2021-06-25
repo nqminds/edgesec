@@ -156,12 +156,12 @@ int add_bridge_mac(struct bridge_mac_list *ml, const uint8_t *mac_addr_left, con
     return -1;
   }
 
-	memcpy(src_el->mac_tuple.src_addr, mac_addr_left, ETH_ALEN);
-  memcpy(src_el->mac_tuple.dst_addr, mac_addr_right, ETH_ALEN);
+	os_memcpy(src_el->mac_tuple.src_addr, mac_addr_left, ETH_ALEN);
+  os_memcpy(src_el->mac_tuple.dst_addr, mac_addr_right, ETH_ALEN);
 	dl_list_add(&ml->list, &src_el->list);
 
-	memcpy(dst_el->mac_tuple.src_addr, mac_addr_right, ETH_ALEN);
-  memcpy(dst_el->mac_tuple.dst_addr, mac_addr_left, ETH_ALEN);
+	os_memcpy(dst_el->mac_tuple.src_addr, mac_addr_right, ETH_ALEN);
+  os_memcpy(dst_el->mac_tuple.dst_addr, mac_addr_left, ETH_ALEN);
 	dl_list_add(&ml->list, &dst_el->list);
 
 	return 1;

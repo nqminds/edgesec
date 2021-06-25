@@ -163,7 +163,7 @@ size_t os_strlcpy(char *dest, const char *src, size_t siz)
 void * os_zalloc(size_t size)
 {
 	void *n = os_malloc(size);
-	if (n)
+	if (n != NULL)
 		os_memset(n, 0, size);
 	return n;
 }
@@ -872,6 +872,11 @@ char *rtrim(char *str, const char *seps)
 
   if (seps == NULL) {
       seps = "\t\n\v\f\r ";
+  }
+
+  if (str == NULL) {
+    log_trace("str param is NULL");
+    return NULL;
   }
 
   i = strlen(str) - 1;

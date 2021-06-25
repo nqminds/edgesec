@@ -204,7 +204,7 @@ void list_rule_cb(void *ctx, void *buf, size_t count)
 
   char *out_str = os_malloc(count + 1);
 
-  memcpy(out_str, buf, count);
+  os_memcpy(out_str, buf, count);
   out_str[count] = '\0';
 
   utarray_clear(iptables_context->rule_list);

@@ -112,7 +112,7 @@ int create_domain_server(char *server_path)
   return sfd;
 }
 
-ssize_t read_domain_data(int sock, char *data, size_t data_len, char *addr)
+ssize_t read_domain_data(int sock, char *data, size_t data_len, char *addr, int flags)
 {
   struct sockaddr_un unaddr;
   int addr_len = sizeof(struct sockaddr_un);
@@ -122,7 +122,7 @@ ssize_t read_domain_data(int sock, char *data, size_t data_len, char *addr)
     return -1;
   }
 
-  ssize_t num_bytes = recvfrom(sock, data, data_len, 0, (struct sockaddr *) &unaddr, &addr_len);
+  ssize_t num_bytes = recvfrom(sock, data, data_len, flags, (struct sockaddr *) &unaddr, &addr_len);
   if (num_bytes == -1) {
     log_err("recvfrom");
     return -1;
@@ -138,6 +138,7 @@ ssize_t write_domain_data(int sock, char *data, size_t data_len, char *addr)
 {
   struct sockaddr_un unaddr;
   int addr_len = sizeof(struct sockaddr_un);
+  ssize_t num_bytes;
 
   if (data == NULL) {
     log_trace("error write_domain_data data param=NULL");
@@ -151,8 +152,8 @@ ssize_t write_domain_data(int sock, char *data, size_t data_len, char *addr)
 
   init_domain_addr(&unaddr, addr);
 
-  ssize_t num_bytes = sendto(sock, data, data_len, 0, (struct sockaddr *) &unaddr, addr_len);
-  if (num_bytes == -1) {
+  errno = 0;
+  if ((num_bytes = sendto(sock, data, data_len, 0, (struct sockaddr *) &unaddr, addr_len)) < 0) {
     log_err("sendto");
     return -1;
   }

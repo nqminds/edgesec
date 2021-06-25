@@ -50,6 +50,8 @@
 #include "utils/minIni.h"
 #include "utils/domain.h"
 
+#define SOCK_PACKET_SIZE 10
+
 #define OPT_STRING    ":a:s:p:z:dvh"
 #define USAGE_STRING  "\t%s [-s address] [-a address] [-p port] [-d] [-h] [-v]\n"
 
@@ -152,7 +154,12 @@ void process_app_options(int argc, char *argv[], char *spath, char *apath,
       os_strlcpy(apath, optarg, MAX_OS_PATH_LEN);
       break;
     case 'z':
-      *delim = optarg[0];
+      errno = 0;
+      *delim = strtol(optarg, NULL, 10);
+      if (errno == EINVAL || errno == ERANGE || !*delim) {
+        log_cmdline_error("Unrecognized delim value -%s\n", optarg);
+        exit(EXIT_FAILURE);
+      }
       break;
     case 'p':
       if ((p = get_port(optarg)) < 0) {
@@ -229,11 +236,12 @@ enum MHD_Result create_connection_response(char *data, struct MHD_Connection *co
 int forward_command(char *cmd_str, char *socket_path, char **sresponse)
 {
   int sfd;
-  ssize_t send_count, rec_bytes;
+  uint32_t bytes_available;
+  ssize_t send_count;
   struct timeval timeout;
   fd_set readfds, masterfds;
   char socket_name[DOMAIN_SOCKET_NAME_SIZE];
-  char *rec_data = NULL;
+  char *rec_data;
   timeout.tv_sec = MESSAGE_REPLY_TIMEOUT;
   timeout.tv_usec = 0;
 
@@ -246,28 +254,35 @@ int forward_command(char *cmd_str, char *socket_path, char **sresponse)
   FD_SET(sfd, &masterfds);
   os_memcpy(&readfds, &masterfds, sizeof(fd_set));
 
-  if (send_count = write_domain_data(sfd, cmd_str, strlen(cmd_str), socket_path) != strlen(cmd_str)) {
+  log_trace("socket_path=%s", socket_path);
+  if ((send_count = write_domain_data(sfd, cmd_str, strlen(cmd_str), socket_path)) != strlen(cmd_str)) {
     log_err("sendto");
     goto fail;
   }
 
   log_debug("Sent %d bytes to %s", send_count, socket_path);
 
+  errno = 0;
   if (select(sfd + 1, &readfds, NULL, NULL, &timeout) < 0) {
     log_err("select");
     goto fail;
   }
 
   if(FD_ISSET(sfd, &readfds)) {
-    if (ioctl(sfd, FIONREAD, &rec_bytes) == -1) {
+    if (ioctl(sfd, FIONREAD, &bytes_available) == -1) {
       log_err("ioctl");
       goto fail;
     }
 
-    log_debug("Received %d bytes", rec_bytes);
-    rec_data = os_malloc((rec_bytes + 1) * sizeof(char));
-    recv(sfd, rec_data, rec_bytes, 0);
-    rec_data[rec_bytes] = '\0';
+    log_trace("Bytes available=%u", bytes_available);
+    rec_data = os_zalloc(bytes_available + 1);
+    if (rec_data == NULL) {
+      log_err("os_zalloc");
+      goto fail;
+    }
+
+    read_domain_data(sfd, rec_data, bytes_available, socket_path, MSG_DONTWAIT);
+
     *sresponse = rtrim(rec_data, NULL);
   } else {
     log_debug("Socket timeout");
@@ -394,7 +409,8 @@ int main(int argc, char *argv[])
   uint8_t level = 0;
   struct socket_address sad;
   int port = -1;
-  sad.delim = 0x0;
+
+  os_memset(&sad, 0, sizeof(struct socket_address));
 
   process_app_options(argc, argv, sad.spath, sad.apath, &port, &sad.delim, &verbosity); 
 
@@ -414,10 +430,6 @@ int main(int argc, char *argv[])
   if (port == -1) {
     log_cmdline_error("Unrecognized port value -%d\n", port);
     exit(EXIT_FAILURE); 
-  }
-
-  if (sad.delim == 0x0) {
-    sad.delim = 0x20;
   }
 
   fprintf(stdout, "Starting server with:\n");

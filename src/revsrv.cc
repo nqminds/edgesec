@@ -534,7 +534,7 @@ void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
   char buf[MAX_DOMAIN_RECEIVE_DATA];
 
   char *client_addr = (char *)os_malloc(sizeof(struct sockaddr_un));
-  ssize_t num_bytes = read_domain_data(sock, buf, 100, client_addr);
+  ssize_t num_bytes = read_domain_data(sock, buf, MAX_DOMAIN_RECEIVE_DATA, client_addr, 0);
   if (num_bytes == -1) {
     log_trace("read_domain_data fail");
     os_free(client_addr);

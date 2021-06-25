@@ -58,9 +58,10 @@ int create_domain_server(char *server_path);
  * @param data Data buffer
  * @param data_len Data buffer length
  * @param addr Sender address
+ * @param flags The flags for recvfrom function
  * @return ssize_t Size of read data
  */
-ssize_t read_domain_data(int sock, char *data, size_t data_len, char *addr);
+ssize_t read_domain_data(int sock, char *data, size_t data_len, char *addr, int flags);
 
 /**
  * @brief Write data to the domain server socket

@@ -71,14 +71,14 @@ struct pcap_queue* push_pcap_queue(struct pcap_queue* queue, struct pcap_pkthdr 
     return NULL;
   }
 
-  memcpy(&el->header, header, sizeof(struct pcap_pkthdr));
+  os_memcpy(&el->header, header, sizeof(struct pcap_pkthdr));
   el->packet = os_malloc(header->caplen);
   if (el->packet ==  NULL) {
     log_err("os_malloc");
     return NULL;
   }
 
-  memcpy(el->packet, packet, header->caplen);
+  os_memcpy(el->packet, packet, header->caplen);
 
   dl_list_add_tail(&queue->list, &el->list);
 

@@ -30,6 +30,7 @@
 #include <string.h>
 
 #include "hash.h"
+#include "os.h"
 
 #define CHUNK_SIZE 64
 #define TOTAL_LEN_LEN 8
@@ -89,7 +90,7 @@ static inline const uint8_t *sha256_calc_chunk(uint8_t chunk[CHUNK_SIZE], struct
 	}
 
 	const uint8_t *const chunk_start = chunk;
-	memcpy(chunk, state->p, state->len);
+	os_memcpy(chunk, state->p, state->len);
 	chunk += state->len;
 	size_t space_in_chunk = CHUNK_SIZE - state->len;
 	state->p += state->len;
@@ -252,7 +253,7 @@ uint32_t md_hash(const char* msg, size_t length)
 
   // Loop over the message 32-bits at-a-time
   while (length >= 4) {
-    memcpy(&block, msg, sizeof(uint32_t));
+    os_memcpy(&block, msg, sizeof(uint32_t));
     state = md_mix(block, state);
     length -= sizeof(uint32_t);
     msg += sizeof(uint32_t);
@@ -260,7 +261,7 @@ uint32_t md_hash(const char* msg, size_t length)
 
   // Are there any remaining bytes?
   if (length) {
-    memcpy(&block, msg, length);
+    os_memcpy(&block, msg, length);
     state = md_mix(block, state);
   }
 

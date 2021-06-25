@@ -684,7 +684,7 @@ static void ndpi_process_packet(const void *ctx, struct pcap_pkthdr *header, uin
 
     workflow->cur_active_flows++;
     workflow->total_active_flows++;
-    memcpy(flow_to_process, &flow, sizeof(*flow_to_process));
+    os_memcpy(flow_to_process, &flow, sizeof(*flow_to_process));
 
     pthread_mutex_lock(&lock);
     flow_to_process->flow_id = context->flow_id++;
