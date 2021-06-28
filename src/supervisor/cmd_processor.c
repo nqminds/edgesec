@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
+#include <inttypes.h>
 
 #include "cmd_processor.h"
 #include "mac_mapper.h"
@@ -227,9 +228,9 @@ ssize_t process_get_map_cmd(int sock, char *client_addr,
       int ret = get_mac_mapper(&context->mac_mapper, addr, &info);
 
       if (ret == 1) {
-        int line_size = snprintf(temp, 255, "%s,%02x:%02x:%02x:%02x:%02x:%02x,%s,%d,%d,%s,%s\n",
+        int line_size = snprintf(temp, 255, "%s,%02x:%02x:%02x:%02x:%02x:%02x,%s,%d,%d,%s,%s,%d,%"PRIu64"\n",
           (info.allow_connection) ? "a" : "d", MAC2STR(addr), info.ip_addr, info.vlanid, (info.nat) ? 1 : 0,
-          info.label, info.id);
+          info.label, info.id, (info.pass_len) ? 1 : 0, info.join_timestamp);
         return write_domain_data(sock, temp, line_size, client_addr);
       } else if (!ret) {
         return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
@@ -254,9 +255,9 @@ ssize_t process_get_all_cmd(int sock, char *client_addr, struct supervisor_conte
 
   for (int count = 0; count < mac_list_len; count ++) {
     struct mac_conn el = mac_list[count];
-    int line_size = snprintf(temp, 255, "%s,%02x:%02x:%02x:%02x:%02x:%02x,%s,%d,%d,%s,%s\n",
+    int line_size = snprintf(temp, 255, "%s,%02x:%02x:%02x:%02x:%02x:%02x,%s,%d,%d,%s,%s,%d,%"PRIu64"\n",
       (el.info.allow_connection) ? "a" : "d", MAC2STR(el.mac_addr), el.info.ip_addr, el.info.vlanid,
-      (el.info.nat) ? 1 : 0, el.info.label, el.info.id);
+      (el.info.nat) ? 1 : 0, el.info.label, el.info.id, (el.info.pass_len) ? 1 : 0, el.info.join_timestamp);
     total += line_size + 1;
     if (reply_buf == NULL)
       reply_buf = os_zalloc(total);

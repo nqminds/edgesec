@@ -123,6 +123,7 @@ int get_mac_list(hmap_mac_conn **hmap, struct mac_conn **list)
 void init_default_mac_info(struct mac_conn_info *info, int default_open_vlanid,
                             bool allow_all_nat)
 {
+  info->join_timestamp = 0;
   info->status = 0;
   info->vlanid = default_open_vlanid;
   info->allow_connection = true;

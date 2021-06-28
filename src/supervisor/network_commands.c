@@ -53,15 +53,13 @@ bool save_mac_mapper(struct supervisor_context *context, struct mac_conn conn)
     return false;
   }
 
-  if (conn.info.pass_len) {
-    pair.key = conn.info.id;
-    pair.value = conn.info.pass;
-    pair.value_size = conn.info.pass_len;
+  pair.key = conn.info.id;
+  pair.value = conn.info.pass;
+  pair.value_size = conn.info.pass_len;
 
-    if (put_crypt_pair(context->crypt_ctx, &pair) < 0) {
-      log_trace("put_crypt_pair fail");
-      return false;
-    }
+  if (put_crypt_pair(context->crypt_ctx, &pair) < 0) {
+    log_trace("put_crypt_pair fail");
+    return false;
   }
 
   return true;
@@ -199,6 +197,7 @@ struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg)
     }
 
     log_trace("ALLOWING mac=" MACSTR " on default vlanid=%d", MAC2STR(mac_addr), info.vlanid);
+    info.join_timestamp = os_get_timestamp();
     os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
     conn.info = info;
     if (!save_mac_mapper(context, conn)) {
@@ -209,7 +208,6 @@ struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg)
     return info;
   } else {
     if (find_mac == 1 && info.allow_connection && info.pass_len) {
-      log_trace("ALLOWING mac=" MACSTR " on vlanid=%d", MAC2STR(mac_addr), info.vlanid);
       if (context->exec_capture) {
         if (schedule_analyser(context, info.vlanid) < 0) {
           log_trace("execute_capture fail");
@@ -217,6 +215,15 @@ struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg)
           info.vlanid = -1;
           return info;
         }
+      }
+
+      log_trace("ALLOWING mac=" MACSTR " on vlanid=%d", MAC2STR(mac_addr), info.vlanid);
+      info.join_timestamp = os_get_timestamp();
+      os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
+      conn.info = info;
+      if (!save_mac_mapper(context, conn)) {
+        log_trace("save_mac_mapper fail");
+        info.vlanid = -1;
       }
 
       return info;
@@ -227,13 +234,13 @@ struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg)
       info.allow_connection = true;
 
       if (context->ticket != NULL) {
+        // Use ticket
         log_trace("Assigning auth ticket");
         info.vlanid = context->ticket->vlanid;
         info.pass_len = context->ticket->passphrase_len;
         os_memcpy(info.pass, context->ticket->passphrase, info.pass_len);
         os_memcpy(info.label, context->ticket->device_label, MAX_DEVICE_LABEL_SIZE);
         free_ticket(context);
-        // Use ticket
       } else {
         // Assign to default VLAN ID
         log_trace("Assigning default connection");
@@ -252,6 +259,7 @@ struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg)
       }
 
       log_trace("ALLOWING mac=" MACSTR " on vlanid=%d", MAC2STR(mac_addr), info.vlanid);
+      info.join_timestamp = os_get_timestamp();
       os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
       conn.info = info;
       if (!save_mac_mapper(context, conn)) {

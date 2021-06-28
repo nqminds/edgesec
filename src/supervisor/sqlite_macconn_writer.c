@@ -168,6 +168,7 @@ int get_sqlite_macconn_entries(sqlite3 *db, UT_array *entries)
   int rc;
   struct mac_conn el;
   uint8_t mac_addr[ETH_ALEN];
+  char *value;
 
   if (entries == NULL) {
     log_trace("entries param is NULL");
@@ -181,6 +182,8 @@ int get_sqlite_macconn_entries(sqlite3 *db, UT_array *entries)
 
 
   while((rc = sqlite3_step(res)) == SQLITE_ROW) {
+    os_memset(&el.info, 0, sizeof(el.info));
+
     // mac
     if (hwaddr_aton2(sqlite3_column_text(res, 0), mac_addr) == -1) {
       log_trace("hwaddr_aton2 fail");
@@ -191,7 +194,9 @@ int get_sqlite_macconn_entries(sqlite3 *db, UT_array *entries)
     os_memcpy(el.mac_addr, mac_addr, ETH_ALEN);
 
     // id
-    os_strlcpy(el.info.id, sqlite3_column_text(res, 1), MAX_RANDOM_UUID_LEN);
+    if ((value = (unsigned char*) sqlite3_column_text(res, 1)) != NULL) {
+      os_strlcpy(el.info.id, value, MAX_RANDOM_UUID_LEN);
+    }
 
     //status
     el.info.status = sqlite3_column_int(res, 2);
@@ -206,7 +211,9 @@ int get_sqlite_macconn_entries(sqlite3 *db, UT_array *entries)
     el.info.allow_connection = sqlite3_column_int(res, 5);
 
     //label
-    os_strlcpy(el.info.label, sqlite3_column_text(res, 6), MAX_DEVICE_LABEL_SIZE);
+    if ((value = (unsigned char*) sqlite3_column_text(res, 6)) != NULL) {
+      os_strlcpy(el.info.label, value, MAX_DEVICE_LABEL_SIZE);
+    }
 
     utarray_push_back(entries, &el);
   }

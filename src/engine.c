@@ -125,9 +125,8 @@ bool create_mac_mapper(struct supervisor_context *ctx)
         if (pair->value_size <= AP_SECRET_LEN) {
           p->info.pass_len = pair->value_size;
           os_memcpy(p->info.pass, pair->value, p->info.pass_len);
-          log_trace("pass=%s", p->info.pass);
         } else
-          log_trace("Unknown passphrase for id=%s", p->info.id);
+          log_trace("Unknown passphrase format for id=%s", p->info.id);
 
         free_crypt_pair(pair);
       }
@@ -264,8 +263,6 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
     log_debug("create_mac_mapper fail");
     return false;
   }
-
-  exit(1);
 
   log_info("Checking wifi interface...");
   if (!app_config->ap_detect) {
