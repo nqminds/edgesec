@@ -417,6 +417,9 @@ ssize_t process_set_fingerprint_cmd(int sock, char *client_addr, struct supervis
   char src_mac_addr[MACSTR_LEN];
   char dst_mac_addr[MACSTR_LEN];
   char protocol[MAX_PROTOCOL_NAME_LEN];
+  char fingerprint[MAX_FINGERPRINT_LEN];
+  uint64_t timestamp = os_get_timestamp();
+  char *query = NULL;
 
   // MAC address source
   ptr = (char**) utarray_next(cmd_arr, ptr);
@@ -433,8 +436,15 @@ ssize_t process_set_fingerprint_cmd(int sock, char *client_addr, struct supervis
         ptr = (char**) utarray_next(cmd_arr, ptr);
         // Fingerprint
         if (ptr != NULL && *ptr != NULL) {
-          if ((set_fingerprint_cmd(context, src_mac_addr, protocol, *ptr) >= 0) &&
-              (set_fingerprint_cmd(context, dst_mac_addr, protocol, *ptr) >= 0))
+          os_strlcpy(fingerprint, *ptr, MAX_FINGERPRINT_LEN);
+          ptr = (char**) utarray_next(cmd_arr, ptr);
+          // Query
+          if (ptr != NULL && *ptr != NULL) {
+            query = *ptr;
+          }
+
+          if ((set_fingerprint_cmd(context, src_mac_addr, protocol, fingerprint, timestamp, query) >= 0) &&
+              (set_fingerprint_cmd(context, dst_mac_addr, protocol, fingerprint, timestamp, query) >= 0))
           {
             return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
           }

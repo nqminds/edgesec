@@ -366,22 +366,36 @@ int send_flow_meta(struct nDPI_reader_thread *reader_thread, struct nDPI_flow_me
   if (reader_thread->sfd && strlen(reader_thread->domain_command) &&
       strlen(reader_thread->domain_server_path))
   {
-    char buf[255];
-    char *base64_encoding = NULL;
+    char *buf;
+    char *base64_encoding;
     size_t out_len = 0;
     char delim = reader_thread->domain_delim;
+    int ret;
 
-    base64_encoding = base64_encode(meta->hash, SHA256_HASH_LEN, &out_len);
-    if (base64_encoding == NULL) {
+    if ((base64_encoding = base64_encode(meta->hash, SHA256_HASH_LEN, &out_len)) == NULL) {
       log_trace("base64_url_decode fail");
       return -1;
     }
 
-    sprintf(buf, "%s%c%s%c%s%c%s%c%s", reader_thread->domain_command, delim, meta->src_mac_addr,
-            delim, meta->dst_mac_addr, delim, meta->protocol, delim, base64_encoding);
+    out_len += strlen(reader_thread->domain_command) + 5 + 2 * strlen(meta->src_mac_addr) +
+               strlen(meta->protocol) + strlen(meta->query) + 1;
+
+    buf = os_zalloc(out_len);
+    if (buf == NULL) {
+      log_err("os_zalloc");
+      os_free(base64_encoding);
+      return -1;  
+    }
+
+    sprintf(buf, "%s%c%s%c%s%c%s%c%s%c%s", reader_thread->domain_command, delim, meta->src_mac_addr,
+            delim, meta->dst_mac_addr, delim, meta->protocol, delim, base64_encoding, delim, meta->query);
     log_trace("%s", buf);
+
+    ret = write_domain_data(reader_thread->sfd, buf, strlen(buf), reader_thread->domain_server_path);
+
+    os_free(buf);
     os_free(base64_encoding);
-    return write_domain_data(reader_thread->sfd, buf, strlen(buf), reader_thread->domain_server_path);
+    return ret;
   }
 
   return 0;

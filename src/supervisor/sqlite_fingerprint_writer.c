@@ -73,7 +73,8 @@ int open_sqlite_fingerprint_db(char *db_path, sqlite3** sql)
   return 0;
 }
 
-int save_sqlite_fingerprint_entry(sqlite3 *db, char *mac, char *protocol, char *fingerprint)
+int save_sqlite_fingerprint_entry(sqlite3 *db, char *mac, char *protocol, char *fingerprint,
+                                  uint64_t timestamp, char *query)
 {
   sqlite3_stmt *res = NULL;
   int column_idx;
@@ -99,6 +100,20 @@ int save_sqlite_fingerprint_entry(sqlite3 *db, char *mac, char *protocol, char *
 
   column_idx = sqlite3_bind_parameter_index(res, "@fingerprint");
   if (sqlite3_bind_text(res, column_idx, fingerprint, -1, NULL) != SQLITE_OK) {
+    log_trace("sqlite3_bind_text fail");
+    sqlite3_finalize(res);
+    return -1;
+  }
+
+  column_idx = sqlite3_bind_parameter_index(res, "@timestamp");
+  if (sqlite3_bind_int64(res, column_idx, timestamp) != SQLITE_OK) {
+    log_trace("sqlite3_bind_text fail");
+    sqlite3_finalize(res);
+    return -1;
+  }
+
+  column_idx = sqlite3_bind_parameter_index(res, "@query");
+  if (sqlite3_bind_text(res, column_idx, query, -1, NULL) != SQLITE_OK) {
     log_trace("sqlite3_bind_text fail");
     sqlite3_finalize(res);
     return -1;

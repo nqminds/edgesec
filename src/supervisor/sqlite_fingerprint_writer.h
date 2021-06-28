@@ -34,8 +34,8 @@
 
 #define FINGERPRINT_TABLE_NAME "fingerprint"
 #define FINGERPRINT_CREATE_TABLE "CREATE TABLE " FINGERPRINT_TABLE_NAME " (mac TEXT NOT NULL, protocol TEXT, fingerprint TEXT, " \
-                                 "PRIMARY KEY (mac, protocol, fingerprint));"
-#define FINGERPRINT_INSERT_INTO "INSERT INTO " FINGERPRINT_TABLE_NAME " VALUES(@mac, @protocol, @fingerprint);"
+                                 "timestamp INTEGER NOT NULL, query TEXT, PRIMARY KEY (mac, timestamp));"
+#define FINGERPRINT_INSERT_INTO "INSERT INTO " FINGERPRINT_TABLE_NAME " VALUES(@mac, @protocol, @fingerprint, @timestamp, @query);"
 
 /**
  * @brief Opens the sqlite fingerprint db
@@ -60,7 +60,10 @@ void free_sqlite_fingerprint_db(sqlite3 *db);
  * @param mac The MAC address string
  * @param protocol The protocol string
  * @param fingerprint The fingerprint string
+ * @param timestamp The timestamp 64 bit value
+ * @param query The query string
  * @return int 0 on success, -1 on failure
  */
-int save_sqlite_fingerprint_entry(sqlite3 *db, char *mac, char *protocol, char *fingerprint);
+int save_sqlite_fingerprint_entry(sqlite3 *db, char *mac, char *protocol, char *fingerprint,
+                                  uint64_t timestamp, char *query);
 #endif

@@ -31,10 +31,10 @@
 #include <ndpi_main.h>
 #include <ndpi_typedefs.h>
 
+#include "capture_config.h"
+
 #include "../utils/os.h"
 #include "../utils/hash.h"
-
-#define META_HASH_SIZE  SHA256_HASH_LEN * 2 + 1
 
 enum nDPI_l3_type {
   L3_IP, L3_IP6
@@ -88,6 +88,7 @@ struct nDPI_flow_meta {
   char dst_mac_addr[MACSTR_LEN];
   char protocol[MAX_PROTOCOL_NAME_LEN];
   char hash[SHA256_HASH_LEN];
+  char query[MAX_QUERY_LEN];
 };
 
 int ndpi_serialise_meta(struct ndpi_detection_module_struct *ndpi_struct,

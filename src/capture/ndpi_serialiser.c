@@ -58,6 +58,7 @@ int ndpi_serialise_dns(struct ndpi_flow_struct *flow, struct nDPI_flow_meta *met
   size_t str_len = os_strnlen_s(flow->host_server_name, sizeof(flow->host_server_name));
   if(str_len > 0 && str_len < sizeof(flow->host_server_name)) {
     log_trace("dns_query=%s", flow->host_server_name);
+    os_strlcpy(meta->query, flow->host_server_name, MAX_QUERY_LEN);
     sha256_hash(meta->hash, flow->host_server_name, strlen(flow->host_server_name));
     return 0;
   } else {
@@ -71,6 +72,7 @@ int ndpi_serialise_mdns(struct ndpi_flow_struct *flow, struct nDPI_flow_meta *me
   size_t str_len = os_strnlen_s(flow->host_server_name, sizeof(flow->host_server_name));
   if(str_len > 0 && str_len < sizeof(flow->host_server_name)) {
     log_trace("mdns_query=%s", flow->host_server_name);
+    os_strlcpy(meta->query, flow->host_server_name, MAX_QUERY_LEN);
     sha256_hash(meta->hash, flow->host_server_name, strlen(flow->host_server_name));
     return 0;
   } else {
@@ -117,6 +119,7 @@ int ndpi_serialise_tls(struct ndpi_flow_struct *flow, struct nDPI_flow_meta *met
               strcat(buf, client_requested_server_name);
               strcat(buf, ja3);
               strcat(buf, ja3s);
+              os_strlcpy(meta->query, client_requested_server_name, MAX_QUERY_LEN);
               sha256_hash(meta->hash, buf, str_len);
               os_free(buf);
               return 0;

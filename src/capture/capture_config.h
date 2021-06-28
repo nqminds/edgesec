@@ -41,6 +41,11 @@
 #define DEFAULT_CAPTURE_TIMEOUT     10
 #define DEFAULT_CAPTURE_INTERVAL    10
 
+// #define META_HASH_SIZE              SHA256_HASH_LEN * 2 + 1
+#define MAX_PROTOCOL_NAME_LEN 	    64
+#define MAX_FINGERPRINT_LEN 	      1024
+#define MAX_QUERY_LEN 	            MAX_OS_PATH_LEN
+
 /**
  * @brief The capture configuration structure
  * 

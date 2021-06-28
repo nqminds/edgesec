@@ -555,10 +555,12 @@ int remove_bridge_cmd(struct supervisor_context *context, uint8_t *left_mac_addr
 }
 
 int set_fingerprint_cmd(struct supervisor_context *context, char *mac_addr, char *protocol,
-                        char *fingerprint)
+                        char *fingerprint, uint64_t timestamp, char *query)
 {
-  log_trace("Setting fingerprint for mac=%s, protocol=%s", mac_addr, protocol);
-  if (save_sqlite_fingerprint_entry(context->fingeprint_db, mac_addr, protocol, fingerprint) < 0) {
+  log_trace("Setting fingerprint for mac=%s, protocol=%s and timestamp=%"PRIu64, mac_addr,
+            protocol, timestamp);
+  if (save_sqlite_fingerprint_entry(context->fingeprint_db, mac_addr, protocol, fingerprint,
+                                    timestamp, query) < 0) {
     log_trace("save_sqlite_fingerprint_entry fail");
     return -1;
   }
