@@ -48,6 +48,7 @@
 #define CMD_REMOVE_BRIDGE		    "REMOVE_BRIDGE"
 #define CMD_GET_BRIDGES		        "GET_BRIDGES"
 #define CMD_SET_FINGERPRINT		    "SET_FINGERPRINT"
+#define CMD_QUERY_FINGERPRINT		"QUERY_FINGERPRINT"
 #define CMD_REGISTER_TICKET		    "REGISTER_TICKET"
 #define CMD_CLEAR_PSK			    "CLEAR_PSK"
 
@@ -210,7 +211,6 @@ ssize_t process_remove_bridge_cmd(int sock, char *client_addr, struct supervisor
  */
 ssize_t process_get_bridges_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
-
 /**
  * @brief Processes the SET_FINGERPRINT command
  * 
@@ -221,6 +221,17 @@ ssize_t process_get_bridges_cmd(int sock, char *client_addr, struct supervisor_c
  * @return ssize_t Size of reply written data
  */
 ssize_t process_set_fingerprint_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+
+/**
+ * @brief Processes the QUERY_FINGERPRINT command
+ * 
+ * @param sock The domain server socket
+ * @param client_addr The client address for replies
+ * @param context The supervisor structure instance
+ * @param cmd_arr The array of received commands
+ * @return ssize_t Size of reply written data
+ */
+ssize_t process_query_fingerprint_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Processes the REGISTER_TICKET command

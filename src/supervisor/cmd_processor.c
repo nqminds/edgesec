@@ -456,6 +456,12 @@ ssize_t process_set_fingerprint_cmd(int sock, char *client_addr, struct supervis
   return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
+ssize_t process_query_fingerprint_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
+{
+  
+  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+}
+
 ssize_t process_register_ticket_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
 {
   char **ptr = (char**) utarray_next(cmd_arr, NULL);
@@ -543,6 +549,8 @@ process_cmd_fn get_command_function(char *cmd)
     return process_get_bridges_cmd;
   } else if (!strcmp(cmd, CMD_SET_FINGERPRINT)) {
     return process_set_fingerprint_cmd;
+  } else if (!strcmp(cmd, CMD_QUERY_FINGERPRINT)) {
+    return process_query_fingerprint_cmd;
   } else if (!strcmp(cmd, CMD_REGISTER_TICKET)) {
     return process_register_ticket_cmd;
   } else if (!strcmp(cmd, CMD_CLEAR_PSK)) {
