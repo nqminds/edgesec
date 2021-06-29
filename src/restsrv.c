@@ -49,6 +49,7 @@
 #include "utils/log.h"
 #include "utils/minIni.h"
 #include "utils/domain.h"
+#include "utils/cryptou.h"
 
 #define SOCK_PACKET_SIZE 10
 
@@ -437,6 +438,8 @@ int main(int argc, char *argv[])
   fprintf(stdout, "AP address --> %s\n", sad.spath);
   fprintf(stdout, "Port --> %d\n", port);
   fprintf(stdout, "Command delimiter --> %c\n", sad.delim);
+
+  crypto_generate_certificate();
 
   d = MHD_start_daemon (MHD_USE_THREAD_PER_CONNECTION, (uint16_t) port,
                         NULL, NULL, &mhd_reply, (void*)&sad, MHD_OPTION_END);

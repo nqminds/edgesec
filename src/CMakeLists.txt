@@ -34,7 +34,7 @@ endif ()
 
 if (BUILD_REST_SERVER)
   add_executable(restsrv restsrv.c)
-  target_link_libraries(restsrv config minIni os hashmap cmd_processor ${LIBMICROHTTPD_LIB})
+  target_link_libraries(restsrv crypto config minIni os hashmap cmd_processor ${LIBMICROHTTPD_LIB})
 endif ()
 
 if (BUILD_SQLSYNC_SERVICE)
