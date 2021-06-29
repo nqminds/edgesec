@@ -50,6 +50,8 @@
 #define SQLITE_EXTENSION              ".sqlite"
 #define PCAP_EXTENSION                ".pcap"
 
+#define MAX_UINT64_DIGITS		20
+
 #ifdef __GNUC__
 #define STRUCT_PACKED __attribute__ ((packed))
 #else
@@ -545,6 +547,14 @@ char *rtrim(char *str, const char *seps);
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Concatenates an array of strings into a single string
+ * 
+ * @param strings The array of string, the last element is NULL
+ * @return char* The concatenated string
+ */
+char* string_array2string(char *strings[]);
 
 /**
  * @brief Generates a random UUID string of MAX_RANDOM_UUID_LEN - 1 characters long not including '\0'

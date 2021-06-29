@@ -36,6 +36,22 @@
 #define FINGERPRINT_CREATE_TABLE "CREATE TABLE " FINGERPRINT_TABLE_NAME " (mac TEXT NOT NULL, protocol TEXT, fingerprint TEXT, " \
                                  "timestamp INTEGER NOT NULL, query TEXT, PRIMARY KEY (mac, timestamp));"
 #define FINGERPRINT_INSERT_INTO "INSERT INTO " FINGERPRINT_TABLE_NAME " VALUES(@mac, @protocol, @fingerprint, @timestamp, @query);"
+#define FINGERPRINT_SELECT_FROM_NO_PROTO "SELECT mac, protocol, fingerprint, timestamp, query FROM " FINGERPRINT_TABLE_NAME \
+                                         " WHERE mac=@mac AND timestamp%.2s@timestamp;"
+#define FINGERPRINT_SELECT_FROM_PROTO "SELECT mac, protocol, fingerprint, timestamp, query FROM " FINGERPRINT_TABLE_NAME \
+                                      " WHERE mac=@mac AND timestamp%.2s@timestamp AND protocol LIKE @protocol;"
+
+/**
+ * @brief The fingerprint row definition
+ * 
+ */
+struct fingerprint_row {
+  char *mac;                /**< The MAC */
+  char *protocol;           /**< The protocol idenitifier */
+  char *fingerprint;        /**< The fingerprint */
+  uint64_t timestamp;       /**< The timestamp */
+  char *query;              /**< The query string */
+};
 
 /**
  * @brief Opens the sqlite fingerprint db
@@ -57,13 +73,31 @@ void free_sqlite_fingerprint_db(sqlite3 *db);
  * @brief Save a fingerprint entry into the sqlite db
  * 
  * @param db The sqlite db structure pointer
- * @param mac The MAC address string
- * @param protocol The protocol string
- * @param fingerprint The fingerprint string
- * @param timestamp The timestamp 64 bit value
- * @param query The query string
+ * @param row The entry row
  * @return int 0 on success, -1 on failure
  */
-int save_sqlite_fingerprint_entry(sqlite3 *db, char *mac, char *protocol, char *fingerprint,
-                                  uint64_t timestamp, char *query);
+int save_sqlite_fingerprint_entry(sqlite3 *db, struct fingerprint_row *row);
+
+
+/**
+ * @brief Retrieves all teh fingerprint rows satifying a query
+ * 
+ * @param db The sqlite db structure pointer
+ * @param mac The MAC value for
+ * @param timestamp The timestamp value
+ * @param op The timestamp operator value
+ * @param protocol The protocol value (if NULL returns all the protocols)
+ * @param entries The output entries
+ * @return int 0 on success, -1 on failure
+ */
+int get_sqlite_fingerprint_entries(sqlite3 *db, char *mac, uint64_t timestamp, char *op,
+                                   char *protocol, UT_array *entries);
+
+/**
+ * @brief Frees the elements of a fingerprint row
+ * 
+ * @param column The store row value
+ */
+void free_sqlite_fingerprint_row_els(struct fingerprint_row *row);
+
 #endif

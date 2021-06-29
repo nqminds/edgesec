@@ -1,5 +1,6 @@
 # Fetch and Compile libgrpc
 if (BUILD_GRPC_LIB AND NOT (BUILD_ONLY_DOCS))
+  message("I am here")
   set(RE2_BUILD_TESTING OFF)
   FetchContent_Declare(
     gRPC

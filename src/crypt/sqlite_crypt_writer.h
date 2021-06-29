@@ -45,19 +45,27 @@
 #define CRYPT_SECRETS_INSERT_INTO "INSERT INTO " CRYPT_SECRETS_TABLE_NAME " VALUES(@id, @value, @salt, @iv);"
 #define CRYPT_SECRETS_GET         "SELECT value, salt, iv FROM  " CRYPT_SECRETS_TABLE_NAME " WHERE id=?;"
 
+/**
+ * @brief The store row structure definition
+ * 
+ */
 struct store_row {
-  char *key;
-  char *value;
-  char *id;
-  char *iv;
+  char *key;      /**< The key */
+  char *value;    /**< The stored value */
+  char *id;       /**< The key ID */
+  char *iv;       /**< The IV of the key */
 };
 
 
+/**
+ * @brief The secrets row structure definition
+ * 
+ */
 struct secrets_row {
-  char *id;
-  char *value;
-  char *salt;
-  char *iv;
+  char *id;       /**< The key ID */
+  char *value;    /**< The key value */
+  char *salt;     /**< The key salt */
+  char *iv;       /**< The IV of the key */
 };
 
 /**

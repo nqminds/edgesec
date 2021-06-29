@@ -39,6 +39,8 @@
 
 #define ANALYSER_FILTER_FORMAT "\"ether dst " MACSTR " or ether src " MACSTR"\""
 
+static const UT_icd fingerprint_icd = {sizeof(struct fingerprint_row), NULL, NULL, NULL};
+
 bool save_mac_mapper(struct supervisor_context *context, struct mac_conn conn)
 {
   struct crypt_pair pair;
@@ -557,15 +559,218 @@ int remove_bridge_cmd(struct supervisor_context *context, uint8_t *left_mac_addr
 int set_fingerprint_cmd(struct supervisor_context *context, char *mac_addr, char *protocol,
                         char *fingerprint, uint64_t timestamp, char *query)
 {
-  log_trace("Setting fingerprint for mac=%s, protocol=%s and timestamp=%"PRIu64, mac_addr,
+  struct fingerprint_row row = {.mac = mac_addr, .protocol = protocol,
+                                .fingerprint = fingerprint, .timestamp = timestamp,
+                                .query = query};
+  log_trace("SET_FINGERPRINT for mac=%s, protocol=%s and timestamp=%"PRIu64, mac_addr,
             protocol, timestamp);
-  if (save_sqlite_fingerprint_entry(context->fingeprint_db, mac_addr, protocol, fingerprint,
-                                    timestamp, query) < 0) {
+  if (save_sqlite_fingerprint_entry(context->fingeprint_db, &row) < 0) {
     log_trace("save_sqlite_fingerprint_entry fail");
     return -1;
   }
 
   return 0;
+}
+
+void free_fingerprint_rows(UT_array *rows)
+{
+  struct fingerprint_row *p = NULL;
+
+  while(p = (struct fingerprint_row *) utarray_next(rows, p)) {
+    free_sqlite_fingerprint_row_els(p);
+  }
+}
+
+void free_row_array(char *row_array[])
+{
+  int idx = 0;
+  while(row_array[idx] != NULL) {
+    os_free(row_array[idx]);
+    idx ++;
+  }
+}
+
+ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr, uint64_t timestamp,
+                        char *op, char *protocol, char **out)
+{
+  UT_array *rows = NULL;
+  ssize_t out_size = 0;
+  struct fingerprint_row *p = NULL;
+  char *row_array[6] = {}, *row;
+  char *proto = (strcmp(protocol, "all") == 0) ? NULL : protocol;
+
+  // Create the connections list
+  utarray_new(rows, &fingerprint_icd);
+
+  if (rows == NULL) {
+    log_trace("utarray_new fail");
+    return -1;
+  }
+
+  *out = NULL;
+  log_trace("QUERY_FINGERPRINT for mac=%s, protocol=%s op=\"%s\" and timestamp=%"PRIu64, mac_addr,
+            protocol, op, timestamp);
+  if (get_sqlite_fingerprint_entries(context->fingeprint_db, mac_addr,
+                                     timestamp, op, proto, rows) < 0)
+  {
+    log_trace("get_sqlite_fingerprint_entries fail");
+    free_fingerprint_rows(rows);
+    utarray_free(rows);
+    return -1;
+  }
+
+  while(p = (struct fingerprint_row *) utarray_next(rows, p)) {
+    os_memset(row_array, 0, 6);
+
+    if (p->mac != NULL) {
+      row_array[0] = os_malloc(strlen(p->mac) + 2);
+      if (row_array[0] == NULL) {
+        log_err("os_malloc");
+        free_fingerprint_rows(rows);
+        utarray_free(rows);
+        if (*out != NULL) os_free(*out);
+        return -1;
+      }
+      sprintf(row_array[0], "%s,", p->mac);
+    } else {
+      row_array[0] = os_malloc(2);
+      if (row_array[0] == NULL) {
+        log_err("os_malloc");
+        free_fingerprint_rows(rows);
+        utarray_free(rows);
+        if (*out != NULL) os_free(*out);
+        return -1;
+      }
+
+      sprintf(row_array[0], ",");
+    }
+
+    if (p->protocol != NULL) {
+      row_array[1] = os_malloc(strlen(p->protocol) + 2);
+      if (row_array[1] == NULL) {
+        log_err("os_malloc");
+        free_row_array(row_array);
+        free_fingerprint_rows(rows);
+        utarray_free(rows);
+        if (*out != NULL) os_free(*out);
+        return -1;
+      }
+
+      sprintf(row_array[1], "%s,", p->protocol);
+    } else {
+      row_array[1] = os_malloc(2);
+      if (row_array[1] == NULL) {
+        log_err("os_malloc");
+        free_row_array(row_array);
+        free_fingerprint_rows(rows);
+        utarray_free(rows);
+        if (*out != NULL) os_free(*out);
+        return -1;
+      }
+      sprintf(row_array[1], ",");
+    }
+
+    if (p->fingerprint != NULL) {
+      row_array[2] = os_malloc(strlen(p->fingerprint) + 2);
+      if (row_array[2] == NULL) {
+        log_err("os_malloc");
+        free_row_array(row_array);
+        free_fingerprint_rows(rows);
+        utarray_free(rows);
+        if (*out != NULL) os_free(*out);
+        return -1;
+      }
+
+      sprintf(row_array[2], "%s,", p->fingerprint);
+    } else {
+      row_array[2] = os_malloc(2);
+      if (row_array[2] == NULL) {
+        log_err("os_malloc");
+        free_row_array(row_array);
+        free_fingerprint_rows(rows);
+        utarray_free(rows);
+        if (*out != NULL) os_free(*out);
+        return -1;
+      }
+
+      sprintf(row_array[2], ",");
+    }
+
+    row_array[3] = os_malloc(MAX_UINT64_DIGITS + 2);
+    if (row_array[3] == NULL) {
+      log_err("os_malloc");
+      free_row_array(row_array);
+      free_fingerprint_rows(rows);
+      utarray_free(rows);
+      if (*out != NULL) os_free(*out);
+      return -1;
+    }
+    sprintf(row_array[3], "%"PRIu64",", p->timestamp);
+
+    if (p->query != NULL) {
+      row_array[4] = os_malloc(strlen(p->query) + 2);
+      if (row_array[4] == NULL) {
+        log_err("os_malloc");
+        free_row_array(row_array);
+        free_fingerprint_rows(rows);
+        utarray_free(rows);
+        if (*out != NULL) os_free(*out);
+        return -1;
+      }
+      sprintf(row_array[4], "%s\n", p->query);
+    } else {
+      row_array[4] = os_malloc(2);
+      if (row_array[4] == NULL) {
+        log_err("os_malloc");
+        free_row_array(row_array);
+        free_fingerprint_rows(rows);
+        utarray_free(rows);
+        if (*out != NULL) os_free(*out);
+        return -1;
+      }
+      sprintf(row_array[4], "\n");
+    }
+
+    row = os_zalloc(strlen(row_array[0]) + strlen(row_array[1]) + strlen(row_array[2]) +
+                    strlen(row_array[3]) + strlen(row_array[4]) + 1);
+
+    if (row == NULL) {
+      log_err("os_zalloc");
+      free_row_array(row_array);
+      free_fingerprint_rows(rows);
+      utarray_free(rows);
+      return -1;
+    }
+
+    for (int idx = 0; idx < 5; idx ++) {
+      strcat(row, row_array[idx]);
+    }
+
+    free_row_array(row_array);
+
+    if (*out == NULL) {
+      out_size = strlen(row) + 1;
+      *out = os_zalloc(out_size);
+    } else {
+      out_size += strlen(row);
+      *out = os_realloc(*out, out_size);
+    }
+
+    if (*out == NULL) {
+      log_trace("os_zalloc/os_realloc");
+      os_free(row);
+      free_fingerprint_rows(rows);
+      utarray_free(rows);
+      return -1;
+    }
+
+    strcat(*out, row);
+    os_free(row);
+  }
+
+  free_fingerprint_rows(rows);
+  utarray_free(rows);
+  return out_size;
 }
 
 uint8_t* register_ticket_cmd(struct supervisor_context *context, uint8_t *mac_addr, char *label,

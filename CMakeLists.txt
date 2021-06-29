@@ -28,9 +28,9 @@ option(USE_PTHREAD_LIB "Use pthread library" ON)
 option(USE_M_LIB "Use m library" ON)
 option(USE_OW_DNSMASQ "Use the OpenWrt dnsmasq service" OFF)
 option(BUILD_NDPI_LIB "Build nDPI library" ON)
-option(BUILD_GRPC_LIB "Build gRPC library" OFF)
-option(BUILD_SQLSYNC_SERVICE "Build sqlsync service" OFF)
-option(BUILD_REVERSE_SERVICE "Build Reverse service" OFF)
+option(BUILD_GRPC_LIB "Build gRPC library" ON)
+option(BUILD_SQLSYNC_SERVICE "Build sqlsync service" ON)
+option(BUILD_REVERSE_SERVICE "Build Reverse service" ON)
 
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_SYSTEM_NAME Linux)
@@ -182,8 +182,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wunused-variable")
 
 # Set the color for terminal logging
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLOG_USE_COLOR")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ftest-coverage")
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs")
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ftest-coverage")
 
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_LIBNL")
 

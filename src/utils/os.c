@@ -750,8 +750,10 @@ char* string_array2string(char *strings[])
 
   char *buf = NULL;
 
-  if (strings == NULL)
+  if (strings == NULL) {
+    log_trace("strings is NULL");
     return NULL;
+  }
 
   while (strings[idx] != NULL && /*total <= size && */len >= 0) {
     if (buf == NULL) {

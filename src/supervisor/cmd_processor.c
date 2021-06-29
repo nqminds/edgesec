@@ -458,7 +458,42 @@ ssize_t process_set_fingerprint_cmd(int sock, char *client_addr, struct supervis
 
 ssize_t process_query_fingerprint_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
 {
+  char **ptr = (char**) utarray_next(cmd_arr, NULL);
+  char mac_addr[MACSTR_LEN];
+  char op[3];
+  char protocol[MAX_PROTOCOL_NAME_LEN];
+  uint64_t timestamp;
+  char *out;
+  ssize_t out_len;
+
+  // MAC address source
+  ptr = (char**) utarray_next(cmd_arr, ptr);
+  if (ptr != NULL && *ptr != NULL) {
+    os_strlcpy(mac_addr, *ptr, MACSTR_LEN);
   
+    ptr = (char**) utarray_next(cmd_arr, ptr);
+    // Timestamp
+    if (ptr != NULL && *ptr != NULL) {
+      errno = 0;
+      timestamp = (uint64_t) strtoull(*ptr, NULL, 10);
+      if (errno != ERANGE && is_number(*ptr)) {
+        ptr = (char**) utarray_next(cmd_arr, ptr);
+        // Query operator
+        if (ptr != NULL && *ptr != NULL) {
+          os_strlcpy(op, *ptr, 3);
+          ptr = (char**) utarray_next(cmd_arr, ptr);
+          // Protocol
+          if (ptr != NULL && *ptr != NULL) {
+            os_strlcpy(protocol, *ptr, MAX_PROTOCOL_NAME_LEN);
+            if ((out_len = query_fingerprint_cmd(context, mac_addr, timestamp, op, protocol, &out)) > 0)
+            {
+              return write_domain_data(sock, out, out_len, client_addr);
+            }
+          }
+        }
+      }
+    }
+  }
   return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 

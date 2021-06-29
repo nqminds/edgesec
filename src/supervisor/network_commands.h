@@ -137,6 +137,19 @@ int set_fingerprint_cmd(struct supervisor_context *context, char *mac_addr, char
                         char *fingerprint, uint64_t timestamp, char *query);
 
 /**
+ * @brief QUERY_FINGERPRINT command
+ * 
+ * @param context The supervisor structure instance
+ * @param mac_addr The MAC address string
+ * @param timestamp The timestamp 64 bit value
+ * @param op The operator string
+ * @param protocol The protocol string
+ * @param out The output string
+ * @return ssize_t the sizeo fo the output buffer, -1 on failure
+ */
+ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr, uint64_t timestamp,
+                        char *op, char *protocol, char **out);
+/**
  * @brief REGISTER_TICKET command
  * 
  * @param context The supervisor structure instance

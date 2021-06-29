@@ -387,6 +387,7 @@ int send_flow_meta(struct nDPI_reader_thread *reader_thread, struct nDPI_flow_me
       return -1;  
     }
 
+    log_trace("fingerprint=%s", base64_encoding);
     sprintf(buf, "%s%c%s%c%s%c%s%c%s%c%s", reader_thread->domain_command, delim, meta->src_mac_addr,
             delim, meta->dst_mac_addr, delim, meta->protocol, delim, base64_encoding, delim, meta->query);
     log_trace("%s", buf);
