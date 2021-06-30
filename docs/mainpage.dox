@@ -35,8 +35,8 @@ We plan to integrate all of the above strategies into a single opensource codeba
 
 We plan to tackle the mentioned IoT gateway solutions as follows:
 1. [\ref networkcontrol] The network isolation technique will be implemented at the WiFi level protocol. We plan to use the VLAN mechanism to segment the network of connected IoT devices. We will also implement techniques to detect the device manufacturer/type based on the device MAC address and traffic monitoring. The result of the detection algorithm will be used by the IoT gateway to allocate the IoT device to a given subnet.
-2. [\ref networkcapture] To monitor the IoT device traffic we will use packet sniffers and advanced ML algorithms to detect compromised IoT devices.
-3. For secure discovery and connectivity between IoT devices and IoT gateway we plan to use the efficient gRPC protocol.
-5. To store the encryption keys and to implement IoT gateway attestation we plan to leverage the existing hardware implementations of Trusted execution and secure memory storage. We will consider verified u-boot, UEFI, HAB secure boot technology from NXP and similar.
+2. [\ref networkcapture] To monitor the IoT device traffic we will use packet sniffers and advanced algorithms to detect compromised IoT devices.
+3. [\ref securediscovery] For secure discovery and connectivity between IoT devices and IoT gateway we plan to use the efficient gRPC protocol.
+5. [\ref securestorage] To store the encryption keys and to implement IoT gateway attestation we plan to leverage the existing hardware implementations of Trusted execution and secure memory storage. We will consider verified u-boot, UEFI, HAB secure boot technology from NXP and similar.
 
 */

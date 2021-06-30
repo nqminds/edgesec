@@ -181,97 +181,97 @@ int crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
   return plaintext_len;
 }
 
-int crypto_generate_certificate(void)
-{
-  BIGNUM *bne = NULL;
-	EVP_PKEY *pkey=NULL;
-  RSA *rsa;
+// int crypto_generate_certificate(void)
+// {
+//   BIGNUM *bne = NULL;
+// 	EVP_PKEY *pkey=NULL;
+//   RSA *rsa;
   
-  if ((pkey = EVP_PKEY_new()) == NULL) {
-    log_trace("EVP_PKEY_new fail with code=%d", ERR_get_error());
-    return -1;
-  }
+//   if ((pkey = EVP_PKEY_new()) == NULL) {
+//     log_trace("EVP_PKEY_new fail with code=%d", ERR_get_error());
+//     return -1;
+//   }
 
-  bne = BN_new();
-  if (BN_set_word(bne, RSA_F4) < 1) {
-    log_trace("BN_set_word fail");
-    EVP_PKEY_free(pkey);
-    return -1;
-  }
-  if ((rsa = RSA_new()) == NULL) {
-    log_trace("RSA_new fail");
-    EVP_PKEY_free(pkey);
-    BN_free(bne);
-    return -1;
-  }
+//   bne = BN_new();
+//   if (BN_set_word(bne, RSA_F4) < 1) {
+//     log_trace("BN_set_word fail");
+//     EVP_PKEY_free(pkey);
+//     return -1;
+//   }
+//   if ((rsa = RSA_new()) == NULL) {
+//     log_trace("RSA_new fail");
+//     EVP_PKEY_free(pkey);
+//     BN_free(bne);
+//     return -1;
+//   }
 
-  if (RSA_generate_key_ex(rsa, 2048, bne, NULL) < 1) {
-    log_trace("RSA_generate_key_ex fail");
-    RSA_free(rsa);
-    EVP_PKEY_free(pkey);
-    BN_free(bne);
-    return -1;
-  }
+//   if (RSA_generate_key_ex(rsa, 2048, bne, NULL) < 1) {
+//     log_trace("RSA_generate_key_ex fail");
+//     RSA_free(rsa);
+//     EVP_PKEY_free(pkey);
+//     BN_free(bne);
+//     return -1;
+//   }
 
-  if (EVP_PKEY_assign_RSA(pkey, rsa) < 1) {
-    log_trace("EVP_PKEY_assign_RSA fail");    RSA_free(rsa);
-    EVP_PKEY_free(pkey);
-    BN_free(bne);
-    return -1;
-  };
+//   if (EVP_PKEY_assign_RSA(pkey, rsa) < 1) {
+//     log_trace("EVP_PKEY_assign_RSA fail");    RSA_free(rsa);
+//     EVP_PKEY_free(pkey);
+//     BN_free(bne);
+//     return -1;
+//   };
 
-  BIO *mem = BIO_new(BIO_s_mem());
-  BUF_MEM *ptr = NULL;
-  if (PEM_write_bio_PrivateKey(mem, pkey, NULL, NULL, 0, NULL, NULL) < 1) {
-    log_trace("PEM_write_bio_PrivateKey fail");
-    EVP_PKEY_free(pkey);
-    BN_free(bne);
-    return -1;
-  }
-  BIO_get_mem_ptr(mem, &ptr);
-  log_trace("%.*s", ptr->length, ptr->data);
+//   BIO *mem = BIO_new(BIO_s_mem());
+//   BUF_MEM *ptr = NULL;
+//   if (PEM_write_bio_PrivateKey(mem, pkey, NULL, NULL, 0, NULL, NULL) < 1) {
+//     log_trace("PEM_write_bio_PrivateKey fail");
+//     EVP_PKEY_free(pkey);
+//     BN_free(bne);
+//     return -1;
+//   }
+//   BIO_get_mem_ptr(mem, &ptr);
+//   log_trace("%.*s", ptr->length, ptr->data);
 
-  X509* x509 = X509_new();
-  /* certificate expiration date: 365 days from now (60s * 60m * 24h * 365d) */
-  X509_gmtime_adj(X509_get_notBefore(x509), 0);
-  X509_gmtime_adj(X509_get_notAfter(x509), 31536000L);
+//   X509* x509 = X509_new();
+//   /* certificate expiration date: 365 days from now (60s * 60m * 24h * 365d) */
+//   X509_gmtime_adj(X509_get_notBefore(x509), 0);
+//   X509_gmtime_adj(X509_get_notAfter(x509), 31536000L);
 
-  X509_set_pubkey(x509, pkey);
+//   X509_set_pubkey(x509, pkey);
 
-  /* set the name of the issuer to the name of the subject. */
-  X509_NAME* name = X509_get_subject_name(x509);
-  X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, (unsigned char*)"US", -1, -1, 0);
-  X509_NAME_add_entry_by_txt(name, "ST", MBSTRING_ASC, (unsigned char*)"Isles of Blessed", -1, -1, 0);
-  X509_NAME_add_entry_by_txt(name, "L", MBSTRING_ASC, (unsigned char*)"Arkadia", -1, -1, 0);
-  X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, (unsigned char*)"acme", -1, -1, 0);
-  X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, (unsigned char*)"dev", -1, -1, 0);
-  X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, (unsigned char*)"127.0.0.1", -1, -1, 0);
+//   /* set the name of the issuer to the name of the subject. */
+//   X509_NAME* name = X509_get_subject_name(x509);
+//   X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, (unsigned char*)"US", -1, -1, 0);
+//   X509_NAME_add_entry_by_txt(name, "ST", MBSTRING_ASC, (unsigned char*)"Isles of Blessed", -1, -1, 0);
+//   X509_NAME_add_entry_by_txt(name, "L", MBSTRING_ASC, (unsigned char*)"Arkadia", -1, -1, 0);
+//   X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, (unsigned char*)"acme", -1, -1, 0);
+//   X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, (unsigned char*)"dev", -1, -1, 0);
+//   X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, (unsigned char*)"127.0.0.1", -1, -1, 0);
 
-  X509_set_issuer_name(x509, name);
+//   X509_set_issuer_name(x509, name);
 
-  /* finally sign the certificate with the key. */
-  X509_sign(x509, pkey, EVP_sha256());  
+//   /* finally sign the certificate with the key. */
+//   X509_sign(x509, pkey, EVP_sha256());  
 
-  BIO *mem_x509 = BIO_new(BIO_s_mem());
-  BUF_MEM *ptr_x509 = NULL;
+//   BIO *mem_x509 = BIO_new(BIO_s_mem());
+//   BUF_MEM *ptr_x509 = NULL;
 
-  if (PEM_write_bio_X509(mem_x509, x509) < 1) {
-    log_trace("PEM_write_bio_X509 fail");
-    BIO_free(mem);
-    BIO_free(mem_x509);
-    EVP_PKEY_free(pkey);
-    BN_free(bne);
-    X509_free(x509);
-    return -1;
-  }
+//   if (PEM_write_bio_X509(mem_x509, x509) < 1) {
+//     log_trace("PEM_write_bio_X509 fail");
+//     BIO_free(mem);
+//     BIO_free(mem_x509);
+//     EVP_PKEY_free(pkey);
+//     BN_free(bne);
+//     X509_free(x509);
+//     return -1;
+//   }
 
-  BIO_get_mem_ptr(mem_x509, &ptr_x509);
-  log_trace("%.*s", ptr_x509->length, ptr_x509->data);
+//   BIO_get_mem_ptr(mem_x509, &ptr_x509);
+//   log_trace("%.*s", ptr_x509->length, ptr_x509->data);
 
-  BIO_free(mem);
-  BIO_free(mem_x509);
-  EVP_PKEY_free(pkey);
-  BN_free(bne);
-  X509_free(x509);
-  return 0;
-}
+//   BIO_free(mem);
+//   BIO_free(mem_x509);
+//   EVP_PKEY_free(pkey);
+//   BN_free(bne);
+//   X509_free(x509);
+//   return 0;
+// }

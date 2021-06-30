@@ -439,7 +439,7 @@ int main(int argc, char *argv[])
   fprintf(stdout, "Port --> %d\n", port);
   fprintf(stdout, "Command delimiter --> %c\n", sad.delim);
 
-  crypto_generate_certificate();
+  // crypto_generate_certificate();
 
   d = MHD_start_daemon (MHD_USE_THREAD_PER_CONNECTION, (uint16_t) port,
                         NULL, NULL, &mhd_reply, (void*)&sad, MHD_OPTION_END);

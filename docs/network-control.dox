@@ -10,6 +10,7 @@ The network architecture of the EDGESec tool consist of several services that cr
 \li DHCP service
 \li State machine service
 \li Network Capture service
+\li Crypt service
 
 \dotfile network-control-arch.dot
 

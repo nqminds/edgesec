@@ -80,6 +80,15 @@ digraph D {
      <tr><td align="left"><font color="darkgreen">struct config_dhcpinfo_t</font></td></tr>
    </table>>];
 
+  crypt [ label=<
+   <table border="1" cellborder="0" cellspacing="1">
+     <tr><td align="left"><b>Crypt service</b></td></tr>
+     <tr><td align="left"><i>crypt_service.c</i></td></tr>
+     <tr><td align="left">Runs the crypt service,</td></tr>
+     <tr><td align="left">which store implements a secure key/value store</td></tr>
+     <tr><td align="left"><font color="darkgreen">struct crypt_context</font></td></tr>
+   </table>>];
+
   edgesec -> engine;
   engine -> subnet_service;
   engine -> supervisor;
@@ -88,4 +97,5 @@ digraph D {
   engine -> state;
   engine -> capture;
   engine -> dhcp;
+  engine -> crypt;
 }

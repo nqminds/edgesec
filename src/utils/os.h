@@ -233,6 +233,10 @@ bool is_number(const char *ptr);
 }
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Copy a string with size bound and NUL-termination
  * 
@@ -253,6 +257,10 @@ size_t os_strlcpy(char *dest, const char *src, size_t siz);
  * @return size_t Total length of the string
  */
 size_t os_strnlen_s(char *str, size_t max_len);
+
+#ifdef __cplusplus
+}
+#endif
 
 /**
  * @brief Returns a pointer to a new string which is a duplicate of the string s

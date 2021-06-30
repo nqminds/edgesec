@@ -10,7 +10,7 @@ The network capture has the purpose of monitoring network traffic for each conne
 \li SQLite header storer
 \li Raw packet storer
 \li GRPC Synchroniser
-\li DPI analytics
+\li Device monitoring
 
 The capture service is implemented as a standalone executable that can be run on demand by the network controller. The configuration of the capture service is depicted below:
 
@@ -144,40 +144,57 @@ message SyncDbStatementReply {
 \endverbatim
 The forward synchroniser is used for cases when one needs to syncronise only the metadata to the cloud. It is implemented as a queue that pushes the packets at given intervals of time.
 
-The reverse service is implemented by the below protocol buffer:
+\section devicemonitoring Device monitoring
+
+The device monitoring service decodes the network traffic and assembles nettwork flow. Each flow is denoted by a source and destination MAC address, and protcol type. For each flow the device monitoring service calculates a fingerpint using the SHA256 algorithm.
+
+The flow results in the following structure:
+\code{.c}
+struct nDPI_flow_meta {
+  char src_mac_addr[MACSTR_LEN];
+  char dst_mac_addr[MACSTR_LEN];
+  char protocol[MAX_PROTOCOL_NAME_LEN];
+  char hash[SHA256_HASH_LEN];
+  char query[MAX_QUERY_LEN];
+};
+\endcode
+where \b src_mac_addr is the source MAC address, \b dst_mac_addr is the destination MAC address, \b protocol is the ID of the identified network protocol, \b hash is the fingerprint of the flow and \b query is the optional query string. The optional \b query string is dependent on the protocol type. For DNS, mDNS and TLS it is the same as the requested host name.
+
+Each flow is stored in a sqlite database with teh followinf schema:
+
 \verbatim
-syntax = "proto3";
-
-package reverse_access;
-
-// The reverse access service definition.
-service Reverser {
-  // Send client resource to server 
-  rpc SendResource (ResourceRequest) returns (ResourceReply) {}
-
-  // Subscribe to client to server commands
-  rpc SubscribeCommand (CommandRequest) returns (stream CommandReply) {}
-}
-
-message CommandRequest {
-  string id = 1;
-}
-
-message CommandReply {
-  string command = 1;
-  string id = 2;
-}
-
-message ResourceRequest {
-  uint32 type = 1;
-  string meta = 2;
-  bytes data = 3;
-}
-
-message ResourceReply {
-  uint32 status = 1;
-}
+CREATE TABLE fingerprint (mac TEXT NOT NULL, protocol TEXT, fingerprint TEXT, timestamp INTEGER NOT NULL, query TEXT, PRIMARY KEY (mac, timestamp));
 \endverbatim
-The reverse service is used for transferring large amounts of data or for intermittent access to the tool data. As the reverse name suggests the syncroniser connects to the cloud endpoint and executes a SubscribeCommand gRPC function that puts the synchroniser into the listening mode. Subsequently the cloud endpoint can send commands to the client. If a command involves accessing a resource then the SendResource function is used with the corresponding parameters. 
+
+The timestamp is given as 64 bit microseconds value and the fingerprint string is encoded in base64.
+
+
+An example of the fingerprint table rows are below:
+<table>
+<caption id="multi_row">The fingerprint table</caption>
+<tr><th>MAC<th>PROTOCOL<th>FINGERPRINT<th>TIMESTAMP<th>QUERY
+<tr><td> 84:e3:42:3a:cb:2f <td> TLS.Amazon <td> mI1ENXMPBQDVjwGh/o0bLSrD8+O2O5RCFQLbUVt4lzI <td> 1625055051481102 <td> a2.tuyaeu.com
+<tr><td> 9c:ef:d5:fd:db:56 <td> TLS.Amazon <td> mI1ENXMPBQDVjwGh/o0bLSrD8+O2O5RCFQLbUVt4lzI <td> 1625055051481102 <td> a2.tuyaeu.com
+<tr><td> 84:e3:42:3a:cb:2f <td> DNS <td> NqRTRWiNdfG4zMkiXE9P0eRQIefPgMYV/vXUymxdvNw <td> 1625055072748967 <td> 1.0.0.10.in-addr.arpa
+<tr><td> 9c:ef:d5:fd:db:56 <td> DNS <td> NqRTRWiNdfG4zMkiXE9P0eRQIefPgMYV/vXUymxdvNw <td> 1625055072748967 <td> 1.0.0.10.in-addr.arpa
+</table>
+
+The entries of the fingerprint table can be queried using the supervisor service.
+
+For instance to retrieve all fingerprints for the MAC address 84:e3:42:3a:cb:2f one could use the following command:
+\verbatim
+QUERY_FINGERPRINT 84:e3:42:3a:cb:2f 0 >= all
+\endverbatim
+
+To retrieve all the fingerprints up to a given timestamp one could use the following command:
+\verbatim
+QUERY_FINGERPRINT 84:e3:42:3a:cb:2f 1625055051481102 <= all
+\endverbatim
+
+To retrieve all the fingerprints for the DNS protocol one could use the following command:
+\verbatim
+QUERY_FINGERPRINT 84:e3:42:3a:cb:2f 0 >= DNS
+\endverbatim
+
 
 */
