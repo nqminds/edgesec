@@ -100,4 +100,14 @@ int crypto_encrypt(uint8_t *in, int in_size, uint8_t *key,
  */
 int crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
                    uint8_t *iv, uint8_t *out);
+
+/**
+ * @brief Generates a pair of private key and certificate strings
+ * 
+ * @param bits Number of bits for the private key
+ * @param key The private key string
+ * @param cert The certificate string
+ * @return int 0 on success, -1 on failure
+ */
+int crypto_generate_keycert_str(int bits, char **key, char **cert);
 #endif

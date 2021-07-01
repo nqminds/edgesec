@@ -12,6 +12,7 @@ if (BUILD_OPENSSL_LIB AND NOT (BUILD_ONLY_DOCS))
         GIT_REPOSITORY https://github.com/openssl/openssl
         GIT_TAG        openssl-3.0.0-beta1
       )
+
       set(FETCHCONTENT_QUIET OFF)
       FetchContent_MakeAvailable(openssl)
       FetchContent_GetProperties(openssl SOURCE_DIR OPENSSL_SOURCE_DIR)

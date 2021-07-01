@@ -42,6 +42,9 @@
 #include <string.h>
 #include <inttypes.h>
 
+#include "config.h"
+
+#include "crypt/crypt_service.h"
 #include "supervisor/cmd_processor.h"
 #include "microhttpd.h"
 #include "version.h"
@@ -53,8 +56,8 @@
 
 #define SOCK_PACKET_SIZE 10
 
-#define OPT_STRING    ":a:s:p:z:dvh"
-#define USAGE_STRING  "\t%s [-s address] [-a address] [-p port] [-d] [-h] [-v]\n"
+#define OPT_STRING    ":a:s:p:z:c:u:tdvh"
+#define USAGE_STRING  "\t%s [-s address] [-a address] [-p port] [-z delim] [-c path] [-u passphrase] [-t] [-d] [-h] [-v]\n"
 
 #define JSON_RESPONSE_OK "{\"cmd\":\"%s\",\"response\":[%s]}"
 #define JSON_RESPONSE_FAIL "{\"error\":\"invalid get request\"}"
@@ -99,6 +102,9 @@ void show_app_help(char *app_name)
   fprintf(stdout, "\t-a address\t Path to AP socket\n");
   fprintf(stdout, "\t-p port\t\t Server port\n");
   fprintf(stdout, "\t-z delim\t\t Command delimiter\n");
+  fprintf(stdout, "\t-c path\t\t The crypt db path\n");
+  fprintf(stdout, "\t-u passphrase\t\t The user passpharse\n");
+  fprintf(stdout, "\t-t\t\t Use TLS\n");
   fprintf(stdout, "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n");
   fprintf(stdout, "\t-h\t\t Show help\n");
   fprintf(stdout, "\t-v\t\t Show app version\n\n");
@@ -131,13 +137,22 @@ int get_port(char *port_str)
 }
 
 void process_app_options(int argc, char *argv[], char *spath, char *apath,
-  int *port, char *delim, uint8_t *verbosity)
+  int *port, char *delim, bool *tls, char ** db_path, char **passphrase, uint8_t *verbosity)
 {
   int opt;
   int p;
-
+  *tls = false;
   while ((opt = getopt(argc, argv, OPT_STRING)) != -1) {
     switch (opt) {
+    case 'c':
+      *db_path = os_strdup(optarg);
+      break;
+    case 'u':
+      *passphrase = os_strdup(optarg);
+      break;
+    case 't':
+      *tls = true;
+      break;
     case 'd':
       (*verbosity)++;
       break;
@@ -410,10 +425,21 @@ int main(int argc, char *argv[])
   uint8_t level = 0;
   struct socket_address sad;
   int port = -1;
+  char *key;
+  char *cert;
+  bool tls = false;
+  int flags;
+  char *db_path = NULL;
+  char *passphrase = NULL;
+  struct crypt_context *crypt_ctx;
+  struct crypt_pair* get_pair;
+  struct crypt_pair put_pair;
+  char *keyhttps = "keyhttps";
+  char *certhttps = "certhttps";
 
   os_memset(&sad, 0, sizeof(struct socket_address));
 
-  process_app_options(argc, argv, sad.spath, sad.apath, &port, &sad.delim, &verbosity); 
+  process_app_options(argc, argv, sad.spath, sad.apath, &port, &sad.delim, &tls, &db_path, &passphrase, &verbosity); 
 
   if (optind <= 1) show_app_help(argv[0]);
 
@@ -438,11 +464,70 @@ int main(int argc, char *argv[])
   fprintf(stdout, "AP address --> %s\n", sad.spath);
   fprintf(stdout, "Port --> %d\n", port);
   fprintf(stdout, "Command delimiter --> %c\n", sad.delim);
+  fprintf(stdout, "Using TLS --> %d\n", tls);
+  fprintf(stdout, "Using crypt db path --> %s\n", db_path);
 
-  // crypto_generate_certificate();
+  if (crypto_generate_keycert_str(1024, &key, &cert) < 0) {
+    fprintf(stderr, "crypto_generate_keycert_str failure\n");
+    exit(EXIT_FAILURE);
+  }
 
-  d = MHD_start_daemon (MHD_USE_THREAD_PER_CONNECTION, (uint16_t) port,
-                        NULL, NULL, &mhd_reply, (void*)&sad, MHD_OPTION_END);
+  if ((crypt_ctx = load_crypt_service(db_path, "microhttps", passphrase,
+                                      (passphrase == NULL) ? 0 : os_strnlen_s(passphrase, MAX_USER_SECRET))) == NULL) {
+    fprintf(stderr, "load_crypt_service fail\n");
+    exit(EXIT_FAILURE);
+  }
+
+  get_pair = get_crypt_pair(crypt_ctx, keyhttps);
+
+  if (get_pair == NULL) {
+    fprintf(stderr, "get_crypt_pair failure\n");
+    exit(EXIT_FAILURE);
+  }
+
+  if (!get_pair->value_size) {
+    fprintf(stdout, "Inserting new key\n");
+    put_pair.key = keyhttps;
+    put_pair.value = key;
+    put_pair.value_size = strlen(key) + 1;
+    put_crypt_pair(crypt_ctx, &put_pair);
+  } else {
+    fprintf(stdout, "Retrieving existing key\n");
+    os_free(key);
+    key = os_zalloc(get_pair->value_size);
+    os_memcpy(key, get_pair->value, get_pair->value_size);
+  }
+  free_crypt_pair(get_pair);
+
+  get_pair = get_crypt_pair(crypt_ctx, certhttps);
+
+  if (get_pair == NULL) {
+    fprintf(stderr, "get_crypt_pair failure\n");
+    exit(EXIT_FAILURE);
+  }
+  if (!get_pair->value_size) {
+    fprintf(stdout, "Inserting new certificate\n");
+    put_pair.key = certhttps;
+    put_pair.value = cert;
+    put_pair.value_size = strlen(cert) + 1;
+    put_crypt_pair(crypt_ctx, &put_pair);
+  } else {
+    os_free(cert);
+    fprintf(stdout, "Retrieving existing certificate\n");
+    cert = os_zalloc(get_pair->value_size);
+    os_memcpy(cert, get_pair->value, get_pair->value_size);
+  }
+  free_crypt_pair(get_pair);
+
+
+  flags = MHD_USE_THREAD_PER_CONNECTION;
+  flags = (tls) ? flags | MHD_USE_TLS : flags;
+
+  d = MHD_start_daemon (flags, (uint16_t) port,
+                        NULL, NULL, &mhd_reply, (void*)&sad,
+                        MHD_OPTION_HTTPS_MEM_KEY, key,
+                        MHD_OPTION_HTTPS_MEM_CERT, cert,
+                        MHD_OPTION_END);
 
   if (d == NULL) {
     fprintf(stderr, "Error: Failed to start server\n");
