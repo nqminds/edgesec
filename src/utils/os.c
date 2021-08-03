@@ -29,6 +29,7 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <uuid/uuid.h>
+
 #include "utarray.h"
 #include "os.h"
 #include "log.h"
@@ -972,4 +973,19 @@ bool exist_dir(char *dirpath)
 
   closedir(dirp);
   return true;
+}
+
+int check_sock_file_exists(char *path)
+{
+  struct stat sb;
+
+  if (stat(path, &sb) == -1) {
+    log_err("stat %s", path);
+    return -1;
+  }
+
+  if ((sb.st_mode & S_IFMT) != S_IFSOCK)
+    return -1;
+
+  return 0;
 }

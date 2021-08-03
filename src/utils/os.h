@@ -590,4 +590,12 @@ bool find_dir_proc_fn(char *path, void *args);
  * @return bool true on success, false on failure 
  */
 bool exist_dir(char *dirpath);
+
+/**
+ * @brief Check if a socket file exists
+ * 
+ * @param path The path to the socket file
+ * @return 0 if it exists, -1 otherwise 
+ */
+int check_sock_file_exists(char *path);
 #endif /* OS_H */

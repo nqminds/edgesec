@@ -13,6 +13,7 @@
 #include <cmocka.h>
 
 #include "utils/log.h"
+#include "utils/os.h"
 #include "ap/ap_config.h"
 #include "ap/hostapd.h"
 
@@ -47,6 +48,36 @@ static char *test_hostapd_conf_content =
 "wpa_psk_radius=2\n";
 
 static char *test_hostapd_vlan_content = "*\twlan0.#\n";
+
+static char *test_ap_bin_path = "/tmp/hostapd";
+static char *test_ap_log_path = "/tmp/hostapd.log";
+static char *test_ctrl_if_path = "/var/run/hostapd/wlan0";
+
+bool __wrap_kill_process(char *proc_name)
+{
+  return true;
+}
+
+bool __wrap_reset_interface(char *if_name)
+{
+  return true;
+}
+
+int __wrap_run_process(char *argv[], pid_t *child_pid)
+{
+  return 0;
+}
+
+int __wrap_list_dir(char *dirpath, list_dir_fn fun, void *args)
+{
+  return 0;
+}
+
+int __wrap_check_sock_file_exists(char *path)
+{
+  return 0;
+}
+
 
 static void test_generate_hostapd_conf(void **state)
 {
@@ -137,13 +168,28 @@ static void test_generate_vlan_conf(void **state)
   free(buffer);
 }
 
+static void test_run_ap_process(void **state)
+{
+  (void) state; /* unused */
+
+  struct apconf hconf;
+
+  strcpy(hconf.ap_bin_path, test_ap_bin_path);
+  strcpy(hconf.ap_file_path, test_hostapd_conf_file);
+  strcpy(hconf.ap_log_path, test_ap_log_path);
+  
+  int ret = run_ap_process(&hconf, test_ctrl_if_path);
+  assert_int_equal(ret, 0);
+}
+
 int main(int argc, char *argv[])
 {  
-  log_set_quiet(true);
+  log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_generate_hostapd_conf),
-    cmocka_unit_test(test_generate_vlan_conf)
+    cmocka_unit_test(test_generate_vlan_conf),
+    cmocka_unit_test(test_run_ap_process)
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

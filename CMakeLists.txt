@@ -8,7 +8,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/docs")
 include(CTest)
 include(FetchContent)
 include(ExternalProject)
-include(CodeCoverage)
+# include(CodeCoverage)
 include(glibc)
 
 option(BUILD_ONLY_DOCS "Build only docs" OFF)
