@@ -50,7 +50,6 @@ int capture_opt2config(char key, char *value, struct capture_conf *config)
       os_strlcpy(config->capture_interface, value, IFNAMSIZ);
       break;
     case 'f':
-      config->filter = os_malloc(MAX_FILTER_SIZE);
       os_strlcpy(config->filter, value, MAX_FILTER_SIZE);
       break;
     case 'm':

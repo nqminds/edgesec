@@ -70,6 +70,8 @@ int __wrap_run_process(char *argv[], pid_t *child_pid)
 
 int __wrap_list_dir(char *dirpath, list_dir_fn fun, void *args)
 {
+  struct find_dir_type *dir_args = (struct find_dir_type *) args;
+  dir_args->proc_running = 1;
   return 0;
 }
 

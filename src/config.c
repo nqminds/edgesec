@@ -505,10 +505,9 @@ bool load_capture_config(const char *filename, struct capture_conf *config)
   // Load filter param
   value = os_zalloc(INI_BUFFERSIZE);
   ret = ini_gets("capture", "filter", "", value, INI_BUFFERSIZE, filename);
-  if (config->filter != NULL)
-    os_free(config->filter);
 
-  config->filter = value;
+  os_strlcpy(config->filter, value, MAX_FILTER_SIZE);
+  os_free(value);
 
   // Load promiscuous param
   config->promiscuous = (int) ini_getbool("capture", "promiscuous", 0, filename);

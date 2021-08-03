@@ -4,7 +4,7 @@ include_directories(
 )
 
 add_executable(test_capture_service test_capture_service.c)
-target_link_libraries(test_capture_service os log ${CMOCKA_LIB})
+target_link_libraries(test_capture_service capture_service os log ${CMOCKA_LIB})
 
 add_executable(test_sqlite_pcap_writer test_sqlite_pcap_writer.c)
 target_link_libraries(test_sqlite_pcap_writer os log ${CMOCKA_LIB})
