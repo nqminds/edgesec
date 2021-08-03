@@ -35,6 +35,7 @@
 #include <libgen.h>
 #include <pcap.h>
 
+#include "default_analyser.h"
 #include "capture_config.h"
 #include "packet_decoder.h"
 #include "packet_queue.h"
@@ -49,28 +50,8 @@
 #include "../utils/list.h"
 #include "../utils/os.h"
 
-#define MAX_DB_NAME_LENGTH            MAX_RANDOM_UUID_LEN + STRLEN(SQLITE_EXTENSION)
 #define MAX_PCAP_FILE_NAME_LENGTH     MAX_RANDOM_UUID_LEN + STRLEN(PCAP_EXTENSION)
 #define PCAP_DB_NAME                  "pcap-meta" SQLITE_EXTENSION
-
-struct capture_context {
-  uint32_t process_interval;
-  struct pcap_context *pc;
-  struct packet_queue *pqueue;
-  struct pcap_queue *cqueue;
-  struct string_queue *squeue;
-  sqlite3 *header_db;
-  sqlite3 *pcap_db;
-  bool file_write;
-  bool db_write;
-  bool db_sync;
-  char grpc_srv_addr[MAX_WEB_PATH_LEN];
-  char db_name[MAX_DB_NAME_LENGTH];
-  char *db_path;
-  char *interface;
-  char *filter;
-  char cap_id[MAX_RANDOM_UUID_LEN];
-};
 
 #ifdef WITH_SQLSYNC_SERVICE
 uint32_t run_register_db(char *address, char *name);
@@ -360,8 +341,13 @@ int start_default_analyser(struct capture_conf *config)
     return -1;
 	}
 
-  if (eloop_register_read_sock((context.pc)->pcap_fd, eloop_read_fd_handler, (void*)NULL, (void *)&context) ==  -1) {
-    log_debug("eloop_register_read_sock fail");
+  if (context.pc != NULL) {
+    if (eloop_register_read_sock((context.pc)->pcap_fd, eloop_read_fd_handler, (void*)NULL, (void *)&context) ==  -1) {
+      log_debug("eloop_register_read_sock fail");
+      goto fail;
+    }
+  } else {
+    log_debug("Empty pcap context");
     goto fail;
   }
 

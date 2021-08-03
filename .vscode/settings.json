@@ -13,6 +13,7 @@
         "err.h": "c",
         "rand.h": "c",
         "log.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "sqlite_header_writer.h": "c"
     }
 }
