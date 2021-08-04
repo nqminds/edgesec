@@ -87,21 +87,26 @@ bool extract_meta_params(sqlite3_stmt *res, struct meta_packet *mp)
   return true;
 }
 
-void extract_eth_statement(sqlite3 *db, struct tuple_packet *tp)
+int extract_eth_statement(sqlite3 *db, struct tuple_packet *tp)
 {
   struct ether_header *ethh = (struct ether_header *)tp->packet;
   sqlite3_stmt *res = NULL;
-  int column_idx;
+  int column_idx, rc;
   char ether_dhost[MAX_SCHEMA_STR_LENGTH];
   char ether_shost[MAX_SCHEMA_STR_LENGTH];
 
-  int rc = sqlite3_prepare_v2(db, ETH_INSERT_INTO, -1, &res, 0);
+  if (ethh == NULL) {
+    log_trace("ethh is NULL");
+    return -1;
+  }
+
+  rc = sqlite3_prepare_v2(db, ETH_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
     if (!extract_meta_params(res, &tp->mp)) {
       log_trace("extract_meta_params fail");
       sqlite3_finalize(res);
-      return;
+      return -1;
     }
 
     snprintf(ether_dhost, MAX_SCHEMA_STR_LENGTH, MACSTR, MAC2STR(ethh->ether_dhost));
@@ -121,25 +126,34 @@ void extract_eth_statement(sqlite3 *db, struct tuple_packet *tp)
     sqlite3_finalize(res);
   } else {
     log_trace("Failed to prepare statement: %s", sqlite3_errmsg(db));
+    return -1;
   }
+
+  return 0;
 }
 
-void extract_arp_statement(sqlite3 *db, struct tuple_packet *tp)
+int extract_arp_statement(sqlite3 *db, struct tuple_packet *tp)
 {
   struct ether_arp *arph = (struct ether_arp *)tp->packet;
-  int column_idx;
+  int column_idx, rc;
   char arp_sha[MAX_SCHEMA_STR_LENGTH];
   char arp_spa[MAX_SCHEMA_STR_LENGTH];
   char arp_tha[MAX_SCHEMA_STR_LENGTH];
   char arp_tpa[MAX_SCHEMA_STR_LENGTH];
   sqlite3_stmt *res = NULL;
-  int rc = sqlite3_prepare_v2(db, ARP_INSERT_INTO, -1, &res, 0);
+  
+  if (arph == NULL) {
+    log_trace("arph is NULL");
+    return -1;
+  }
+  
+  rc = sqlite3_prepare_v2(db, ARP_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
     if (!extract_meta_params(res, &tp->mp)) {
       log_trace("extract_meta_params fail");
       sqlite3_finalize(res);
-      return;
+      return -1;
     }
 
     column_idx = sqlite3_bind_parameter_index(res, "@arp_hrd");
@@ -179,23 +193,32 @@ void extract_arp_statement(sqlite3 *db, struct tuple_packet *tp)
     sqlite3_finalize(res);
   } else {
     log_trace("Failed to prepare statement: %s", sqlite3_errmsg(db));
+    return -1;
   }
+
+  return 0;
 }
 
-void extract_ip4_statement(sqlite3 *db, struct tuple_packet *tp)
+int extract_ip4_statement(sqlite3 *db, struct tuple_packet *tp)
 {
   struct ip *ip4h = (struct ip *)tp->packet;
-  int column_idx;
+  int column_idx, rc;
   char ip_src[MAX_SCHEMA_STR_LENGTH];
   char ip_dst[MAX_SCHEMA_STR_LENGTH];
   sqlite3_stmt *res = NULL;
-  int rc = sqlite3_prepare_v2(db, IP4_INSERT_INTO, -1, &res, 0);
+
+  if (ip4h == NULL) {
+    log_trace("ip4h is NULL");
+    return -1;
+  }
+
+  rc = sqlite3_prepare_v2(db, IP4_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
     if (!extract_meta_params(res, &tp->mp)) {
       log_trace("extract_meta_params fail");
       sqlite3_finalize(res);
-      return;
+      return -1;
     }
 
     column_idx = sqlite3_bind_parameter_index(res, "@ip_hl");
@@ -238,24 +261,33 @@ void extract_ip4_statement(sqlite3 *db, struct tuple_packet *tp)
     sqlite3_finalize(res);
   } else {
     log_debug("Failed to prepare statement: %s", sqlite3_errmsg(db));
+    return -1;
   }
+
+  return 0;
 }
 
-void extract_ip6_statement(sqlite3 *db, struct tuple_packet *tp)
+int extract_ip6_statement(sqlite3 *db, struct tuple_packet *tp)
 {
   struct ip6_hdr *ip6h = (struct ip6_hdr *)tp->packet;
-  int column_idx;
+  int column_idx, rc;
   char ip6_src[MAX_SCHEMA_STR_LENGTH];
   char ip6_dst[MAX_SCHEMA_STR_LENGTH];
 
   sqlite3_stmt *res = NULL;
-  int rc = sqlite3_prepare_v2(db, IP6_INSERT_INTO, -1, &res, 0);
+  
+  if (ip6h == NULL) {
+    log_trace("ip6h is NULL");
+    return -1;
+  }
+
+  rc = sqlite3_prepare_v2(db, IP6_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
     if (!extract_meta_params(res, &tp->mp)) {
       log_trace("extract_meta_params fail");
       sqlite3_finalize(res);
-      return;
+      return -1;
     }
 
     column_idx = sqlite3_bind_parameter_index(res, "@ip6_un1_flow");
@@ -286,21 +318,30 @@ void extract_ip6_statement(sqlite3 *db, struct tuple_packet *tp)
     sqlite3_finalize(res);
   } else {
     log_debug("Failed to prepare statement: %s", sqlite3_errmsg(db));
+    return -1;
   }
+
+  return 0;
 }
 
-void extract_tcp_statement(sqlite3 *db, struct tuple_packet *tp)
+int extract_tcp_statement(sqlite3 *db, struct tuple_packet *tp)
 {
   struct tcphdr *tcph = (struct tcphdr *)tp->packet;
-  int column_idx;
+  int column_idx, rc;
   sqlite3_stmt *res = NULL;
-  int rc = sqlite3_prepare_v2(db, TCP_INSERT_INTO, -1, &res, 0);
+  
+  if (tcph == NULL) {
+    log_trace("tcph is NULL");
+    return -1;
+  }
+  
+  rc = sqlite3_prepare_v2(db, TCP_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
     if (!extract_meta_params(res, &tp->mp)) {
       log_trace("extract_meta_params fail");
       sqlite3_finalize(res);
-      return;
+      return -1;
     }
 
     column_idx = sqlite3_bind_parameter_index(res, "@source");
@@ -353,21 +394,30 @@ void extract_tcp_statement(sqlite3 *db, struct tuple_packet *tp)
     sqlite3_finalize(res);
   } else {
     log_debug("Failed to prepare statement: %s", sqlite3_errmsg(db));
+    return -1;
   }
+
+  return 0;
 }
 
-void extract_udp_statement(sqlite3 *db, struct tuple_packet *tp)
+int extract_udp_statement(sqlite3 *db, struct tuple_packet *tp)
 {
   struct udphdr *udph = (struct udphdr *)tp->packet;
-  int column_idx;
+  int column_idx, rc;
   sqlite3_stmt *res = NULL;
-  int rc = sqlite3_prepare_v2(db, UDP_INSERT_INTO, -1, &res, 0);
+  
+  if (udph == NULL) {
+    log_trace("udph is NULL");
+    return -1;
+  }
+  
+  rc = sqlite3_prepare_v2(db, UDP_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
     if (!extract_meta_params(res, &tp->mp)) {
       log_trace("extract_meta_params fail");
       sqlite3_finalize(res);
-      return;
+      return -1;
     }
 
     column_idx = sqlite3_bind_parameter_index(res, "@source");
@@ -387,21 +437,30 @@ void extract_udp_statement(sqlite3 *db, struct tuple_packet *tp)
     sqlite3_finalize(res);
   } else {
     log_debug("Failed to prepare statement: %s", sqlite3_errmsg(db));
+    return -1;
   }
+
+  return 0;
 }
 
-void extract_icmp4_statement(sqlite3 *db, struct tuple_packet *tp)
+int extract_icmp4_statement(sqlite3 *db, struct tuple_packet *tp)
 {
   struct icmphdr *icmp4h = (struct icmphdr *)tp->packet;
-  int column_idx;
+  int column_idx, rc;
   sqlite3_stmt *res = NULL;
-  int rc = sqlite3_prepare_v2(db, ICMP4_INSERT_INTO, -1, &res, 0);
+  
+  if (icmp4h == NULL) {
+    log_trace("icmp4h is NULL");
+    return -1;
+  }
+  
+  rc = sqlite3_prepare_v2(db, ICMP4_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
     if (!extract_meta_params(res, &tp->mp)) {
       log_trace("extract_meta_params fail");
       sqlite3_finalize(res);
-      return;
+      return -1;
     }
 
     column_idx = sqlite3_bind_parameter_index(res, "@type");
@@ -421,21 +480,30 @@ void extract_icmp4_statement(sqlite3 *db, struct tuple_packet *tp)
     sqlite3_finalize(res);
   } else {
     log_debug("Failed to prepare statement: %s", sqlite3_errmsg(db));
+    return -1;
   }
+
+  return 0;
 }
 
-void extract_icmp6_statement(sqlite3 *db, struct tuple_packet *tp)
+int extract_icmp6_statement(sqlite3 *db, struct tuple_packet *tp)
 {
   struct icmp6_hdr *icmp6h = (struct icmp6_hdr *)tp->packet;
-  int column_idx;
+  int column_idx, rc;
   sqlite3_stmt *res = NULL;
-  int rc = sqlite3_prepare_v2(db, ICMP6_INSERT_INTO, -1, &res, 0);
+  
+  if (icmp6h == NULL) {
+    log_trace("icmp6h is NULL");
+    return -1;
+  }
+  
+  rc = sqlite3_prepare_v2(db, ICMP6_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
     if (!extract_meta_params(res, &tp->mp)) {
       log_trace("extract_meta_params fail");
       sqlite3_finalize(res);
-      return;
+      return -1;
     }
 
     column_idx = sqlite3_bind_parameter_index(res, "@icmp6_type");
@@ -455,21 +523,30 @@ void extract_icmp6_statement(sqlite3 *db, struct tuple_packet *tp)
     sqlite3_finalize(res);
   } else {
     log_debug("Failed to prepare statement: %s", sqlite3_errmsg(db));
+    return -1;
   }
+
+  return 0;
 }
 
-void extract_dns_statement(sqlite3 *db, struct tuple_packet *tp)
+int extract_dns_statement(sqlite3 *db, struct tuple_packet *tp)
 {
   struct dns_header *dnsh = (struct dns_header *)tp->packet;
-  int column_idx;
+  int column_idx, rc;
   sqlite3_stmt *res = NULL;
-  int rc = sqlite3_prepare_v2(db, DNS_INSERT_INTO, -1, &res, 0);
+  
+  if (dnsh == NULL) {
+    log_trace("dnsh is NULL");
+    return -1;
+  }
+  
+  rc = sqlite3_prepare_v2(db, DNS_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
     if (!extract_meta_params(res, &tp->mp)) {
       log_trace("extract_meta_params fail");
       sqlite3_finalize(res);
-      return;
+      return -1;
     }
 
     column_idx = sqlite3_bind_parameter_index(res, "@tid");
@@ -495,21 +572,30 @@ void extract_dns_statement(sqlite3 *db, struct tuple_packet *tp)
     sqlite3_finalize(res);
   } else {
     log_debug("Failed to prepare statement: %s", sqlite3_errmsg(db));
+    return -1;
   }
+
+  return 0;
 }
 
-void extract_mdsn_statement(sqlite3 *db, struct tuple_packet *tp)
+int extract_mdsn_statement(sqlite3 *db, struct tuple_packet *tp)
 {
   struct mdns_header *mdnsh = (struct mdns_header *)tp->packet;
-  int column_idx;
+  int column_idx, rc;
   sqlite3_stmt *res = NULL;
-  int rc = sqlite3_prepare_v2(db, MDNS_INSERT_INTO, -1, &res, 0);
+
+  if (mdnsh == NULL) {
+    log_trace("dnsh is NULL");
+    return -1;
+  }
+
+  rc = sqlite3_prepare_v2(db, MDNS_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
     if (!extract_meta_params(res, &tp->mp)) {
       log_trace("extract_meta_params fail");
       sqlite3_finalize(res);
-      return;
+      return -1;
     }
 
     column_idx = sqlite3_bind_parameter_index(res, "@tid");
@@ -535,25 +621,34 @@ void extract_mdsn_statement(sqlite3 *db, struct tuple_packet *tp)
     sqlite3_finalize(res);
   } else {
     log_debug("Failed to prepare statement: %s", sqlite3_errmsg(db));
+    return -1;
   }
+
+  return 0;
 }
 
-void extract_dhcp_statement(sqlite3 *db, struct tuple_packet *tp)
+int extract_dhcp_statement(sqlite3 *db, struct tuple_packet *tp)
 {
   struct dhcp_header *dhcph = (struct dhcp_header *)tp->packet;
   char ciaddr[MAX_SCHEMA_STR_LENGTH];
   char yiaddr[MAX_SCHEMA_STR_LENGTH];
   char siaddr[MAX_SCHEMA_STR_LENGTH];
   char giaddr[MAX_SCHEMA_STR_LENGTH];
-  int column_idx;
+  int column_idx, rc;
   sqlite3_stmt *res = NULL;
-  int rc = sqlite3_prepare_v2(db, DHCP_INSERT_INTO, -1, &res, 0);
+  
+  if (dhcph == NULL) {
+    log_trace("dhcph is NULL");
+    return -1;
+  }
+  
+  rc = sqlite3_prepare_v2(db, DHCP_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
     if (!extract_meta_params(res, &tp->mp)) {
       log_trace("extract_meta_params fail");
       sqlite3_finalize(res);
-      return;
+      return -1;
     }
 
     column_idx = sqlite3_bind_parameter_index(res, "@op");
@@ -598,46 +693,40 @@ void extract_dhcp_statement(sqlite3 *db, struct tuple_packet *tp)
     sqlite3_finalize(res);
   } else {
     log_debug("Failed to prepare statement: %s", sqlite3_errmsg(db));
+    return -1;
   }
+
+  return 0;
 }
 
-void save_packet_statement(sqlite3 *db, struct tuple_packet *tp)
+int save_packet_statement(sqlite3 *db, struct tuple_packet *tp)
 {
   switch (tp->mp.type) {
     case PACKET_ETHERNET:
-      extract_eth_statement(db, tp);
-      return;
+      return extract_eth_statement(db, tp);
     case PACKET_ARP:
-      extract_arp_statement(db, tp);
-      return;
+      return extract_arp_statement(db, tp);
     case PACKET_IP4:
-      extract_ip4_statement(db, tp);
-      return;
+      return extract_ip4_statement(db, tp);
     case PACKET_IP6:
-      extract_ip6_statement(db, tp);
-      return;
+      return extract_ip6_statement(db, tp);
     case PACKET_TCP:
-      extract_tcp_statement(db, tp);
-      return;
+      return extract_tcp_statement(db, tp);
     case PACKET_UDP:
-      extract_udp_statement(db, tp);
-      return;
+      return extract_udp_statement(db, tp);
     case PACKET_ICMP4:
-      extract_icmp4_statement(db, tp);
-      return;
+      return extract_icmp4_statement(db, tp);
     case PACKET_ICMP6:
-      extract_icmp6_statement(db, tp);
-      return;
+      return extract_icmp6_statement(db, tp);
     case PACKET_DNS:
-      extract_dns_statement(db, tp);
-      return;
+      return extract_dns_statement(db, tp);
     case PACKET_MDNS:
-      extract_mdsn_statement(db, tp);
-      return;
+      return extract_mdsn_statement(db, tp);
     case PACKET_DHCP:
-      extract_dhcp_statement(db, tp);
-      return;
+      return extract_dhcp_statement(db, tp);
   }
+
+  return -1;
 }
 
 void free_sqlite_header_db(sqlite3 *db)

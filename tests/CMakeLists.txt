@@ -5,6 +5,7 @@ include_directories (
 )
 
 add_subdirectory(capture)
+add_subdirectory(crypt)
 add_subdirectory(utils)
 add_subdirectory(supervisor)
 add_subdirectory(radius)

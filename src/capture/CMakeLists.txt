@@ -24,7 +24,7 @@ add_library(pcap_queue pcap_queue.c)
 target_link_libraries(pcap_queue log os)
 
 add_library(sqlite_header_writer sqlite_header_writer.c)
-target_link_libraries(sqlite_header_writer sqliteu squeue log os ${LIBSQLITE3_LIB})
+target_link_libraries(sqlite_header_writer sqliteu squeue log os if ${LIBSQLITE3_LIB})
 
 add_library(sqlite_pcap_writer sqlite_pcap_writer.c)
 target_link_libraries(sqlite_pcap_writer sqliteu log os ${LIBSQLITE3_LIB})

@@ -324,8 +324,9 @@ typedef void (*trace_callback_fn)(char *sqlite_statement, void *trace_ctx);
  * 
  * @param db The sqlite db
  * @param tp The packet tuple structure
+ * @return int 0 on success, -1 o failure
  */
-void save_packet_statement(sqlite3 *db, struct tuple_packet *tp);
+int save_packet_statement(sqlite3 *db, struct tuple_packet *tp);
 
 /**
  * @brief Opens the sqlite3 header database

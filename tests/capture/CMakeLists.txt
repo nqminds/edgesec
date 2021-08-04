@@ -37,13 +37,18 @@ add_executable(test_capture_service test_capture_service.c)
 target_link_libraries(test_capture_service capture_service os log ${CMOCKA_LIB})
 
 add_executable(test_sqlite_pcap_writer test_sqlite_pcap_writer.c)
-target_link_libraries(test_sqlite_pcap_writer os log ${CMOCKA_LIB})
+target_link_libraries(test_sqlite_pcap_writer sqlite_pcap_writer sqliteu os log ${CMOCKA_LIB})
+set_target_properties(test_sqlite_pcap_writer
+  PROPERTIES
+  LINK_FLAGS  "-Wl,--wrap=sqlite3_open"
+)
 
 add_executable(test_sqlite_header_writer test_sqlite_header_writer.c)
-target_link_libraries(test_sqlite_header_writer os log ${CMOCKA_LIB})
-
-add_executable(test_pcap_service test_pcap_service.c)
-target_link_libraries(test_pcap_service os log ${CMOCKA_LIB})
+target_link_libraries(test_sqlite_header_writer sqlite_header_writer sqliteu os log ${CMOCKA_LIB})
+set_target_properties(test_sqlite_header_writer
+  PROPERTIES
+  LINK_FLAGS  "-Wl,--wrap=sqlite3_open"
+)
 
 add_test(NAME test_default_analyser COMMAND test_default_analyser)
 set_tests_properties(test_default_analyser
@@ -67,22 +72,17 @@ set_tests_properties(test_pcap_queue
   PROPERTIES
   WILL_FAIL FALSE)
 
+add_test(NAME test_capture_service COMMAND test_capture_service)
+set_tests_properties(test_capture_service
+  PROPERTIES
+  WILL_FAIL FALSE)
+
 add_test(NAME test_sqlite_pcap_writer COMMAND test_sqlite_pcap_writer)
 set_tests_properties(test_sqlite_pcap_writer
   PROPERTIES
   WILL_FAIL FALSE)
 
-add_test(NAME test_capture_service COMMAND test_capture_service)
-set_tests_properties(test_capture_service
-  PROPERTIES
-  WILL_FAIL FALSE)
-  
 add_test(NAME test_sqlite_header_writer COMMAND test_sqlite_header_writer)
 set_tests_properties(test_sqlite_header_writer
-  PROPERTIES
-  WILL_FAIL FALSE)
-
-add_test(NAME test_pcap_service COMMAND test_pcap_service)
-set_tests_properties(test_pcap_service
   PROPERTIES
   WILL_FAIL FALSE)
