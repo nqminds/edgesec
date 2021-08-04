@@ -45,7 +45,7 @@
 struct nDPI_workflow {
   struct pcap_context *pctx;
 
-  uint8_t error_or_eof:1;
+  // uint8_t error_or_eof:1;
   uint8_t reserved_00:7;
   uint8_t reserved_01[3];
 
@@ -865,15 +865,15 @@ static void * processing_thread(void *args)
   return NULL;
 }
 
-static int processing_threads_error_or_eof(struct nDPI_context *context)
-{
-  for (int i = 0; i < context->reader_thread_count; ++i) {
-    if (context->reader_threads[i].workflow->error_or_eof == 0) {
-      return 0;
-    }
-  }
-  return 1;
-}
+// static int processing_threads_error_or_eof(struct nDPI_context *context)
+// {
+//   for (int i = 0; i < context->reader_thread_count; ++i) {
+//     if (context->reader_threads[i].workflow->error_or_eof == 0) {
+//       return 0;
+//     }
+//   }
+//   return 1;
+// }
 
 static struct nDPI_workflow * init_workflow(struct nDPI_thread_arg *targs)
 {
@@ -1055,7 +1055,7 @@ int start_ndpi_analyser(struct capture_conf *config)
   log_info("nDPI version: %s, API version: %u", ndpi_revision(), ndpi_get_api_version());
   log_info("domain_server_path=%s", context.domain_server_path);
   log_info("domain_command=%s", context.domain_command);
-  log_info("domain_delim=%c", context.domain_delim);
+  log_info("domain_delim=0x%x", context.domain_delim);
   log_info("interface=%s", context.interface);
   log_info("promiscuous=%d", context.promiscuous);
   log_info("immediate=%d", context.immediate);
@@ -1074,9 +1074,9 @@ int start_ndpi_analyser(struct capture_conf *config)
     return -1;
   }
 
-  while (processing_threads_error_or_eof(&context) == 0) {
-    sleep(1);
-  }
+  // while (processing_threads_error_or_eof(&context) == 0) {
+  //   sleep(1);
+  // }
 
   if (stop_reader_threads(&context) != 0) {
     log_debug("stop_reader_threads");
