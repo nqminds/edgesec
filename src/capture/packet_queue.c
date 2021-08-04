@@ -77,9 +77,8 @@ struct packet_queue* pop_packet_queue(struct packet_queue* queue)
 
 void free_packet_queue_el(struct packet_queue* el)
 {
-  if (el) {
+  if (el != NULL) {
     dl_list_del(&el->list);
-    free_packet_tuple(&el->tp);
 	  os_free(el);
   }
 }

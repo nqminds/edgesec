@@ -27,6 +27,12 @@ if (BUILD_NDPI_LIB)
   )
 endif()
 
+add_executable(test_packet_queue test_packet_queue.c)
+target_link_libraries(test_packet_queue packet_queue os log ${CMOCKA_LIB})
+
+add_executable(test_pcap_queue test_pcap_queue.c)
+target_link_libraries(test_pcap_queue pcap_queue os log ${CMOCKA_LIB})
+
 add_executable(test_capture_service test_capture_service.c)
 target_link_libraries(test_capture_service capture_service os log ${CMOCKA_LIB})
 
@@ -51,6 +57,16 @@ if (BUILD_NDPI_LIB)
     WILL_FAIL FALSE)
 endif ()
 
+add_test(NAME test_packet_queue COMMAND test_packet_queue)
+set_tests_properties(test_packet_queue
+  PROPERTIES
+  WILL_FAIL FALSE)
+
+add_test(NAME test_pcap_queue COMMAND test_pcap_queue)
+set_tests_properties(test_pcap_queue
+  PROPERTIES
+  WILL_FAIL FALSE)
+
 add_test(NAME test_sqlite_pcap_writer COMMAND test_sqlite_pcap_writer)
 set_tests_properties(test_sqlite_pcap_writer
   PROPERTIES
@@ -70,4 +86,3 @@ add_test(NAME test_pcap_service COMMAND test_pcap_service)
 set_tests_properties(test_pcap_service
   PROPERTIES
   WILL_FAIL FALSE)
-  

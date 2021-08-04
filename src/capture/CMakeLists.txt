@@ -11,17 +11,17 @@ else ()
   )
 endif ()
 
+add_library(packet_decoder packet_decoder.c)
+target_link_libraries(packet_decoder hash if log os hashmap ${LIBPCAP_LIB})
+
 add_library(packet_queue packet_queue.c)
-target_link_libraries(packet_queue log os)
+target_link_libraries(packet_queue packet_decoder log os)
 
 add_library(pcap_service pcap_service.c)
 target_link_libraries(pcap_service if log os ${LIBPCAP_LIB})
 
 add_library(pcap_queue pcap_queue.c)
 target_link_libraries(pcap_queue log os)
-
-add_library(packet_decoder packet_decoder.c)
-target_link_libraries(packet_decoder hash if log os hashmap ${LIBPCAP_LIB})
 
 add_library(sqlite_header_writer sqlite_header_writer.c)
 target_link_libraries(sqlite_header_writer sqliteu squeue log os ${LIBSQLITE3_LIB})
