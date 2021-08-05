@@ -46,6 +46,11 @@ int get_mac_mapper(hmap_mac_conn **hmap, uint8_t mac_addr[ETH_ALEN], struct mac_
 		return -1;
 	}
 
+  if (info == NULL) {
+		log_trace("info param is NULL");
+		return -1;
+  }
+
 	HASH_FIND(hh, *hmap, mac_addr, ETH_ALEN, s);
 
 	if (s != NULL) {

@@ -936,8 +936,8 @@ int get_vlan_mapper(hmap_vlan_conn **hmap, int vlanid, struct vlan_conn	*conn)
   HASH_FIND(hh, *hmap, &vlanid, sizeof(int), s); /* id already in the hash? */
 
   if (s != NULL) {
-	*conn = s->value;
-	return 1;
+		*conn = s->value;
+		return 1;
   }
  
   return 0;
