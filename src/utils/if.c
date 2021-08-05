@@ -1083,8 +1083,8 @@ bool get_ifname_from_ip(hmap_if_conn **if_mapper, UT_array *config_ifinfo_array,
     log_trace("get_if_mapper fail");
     return false;
   } else if (ret == 0) {
-	log_trace("subnet not in mapper");
-	return false;
+		log_trace("subnet not in mapper");
+		return false;
   }
 
   return true;

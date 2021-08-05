@@ -60,7 +60,7 @@ struct supervisor_context {
   bool            allow_all_nat;                              /**< @c allow_all_nat Flag from @c struct app_config */
   bool            exec_capture;                               /**< @c execute_capture from @c struct app_config */  
   char            hostapd_ctrl_if_path[MAX_OS_PATH_LEN];      /**< @c ctrl_interface param from @c struct hostapd_conf */
-  uint8_t         wpa_passphrase[AP_SECRET_LEN];      /**< @c wpa_passphrase from @c struct hostapd_conf */
+  uint8_t         wpa_passphrase[AP_SECRET_LEN];              /**< @c wpa_passphrase from @c struct hostapd_conf */
   ssize_t         wpa_passphrase_len;                         /**< the length of @c wpa_passphrase*/
   char            nat_interface[IFNAMSIZ];                    /**< @c nat_interface param from @c struct app_config */
   int             default_open_vlanid;                        /**< @c default_open_vlanid from @c struct app_config */
