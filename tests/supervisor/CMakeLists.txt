@@ -14,7 +14,7 @@ target_link_libraries(test_cmd_processor cmd_processor iptables log engine ${CMO
 
 set_target_properties(test_cmd_processor
         PROPERTIES
-        LINK_FLAGS  "-Wl,--wrap=write_domain_data -Wl,--wrap=accept_mac_cmd -Wl,--wrap=deny_mac_cmd -Wl,--wrap=add_nat_cmd -Wl,--wrap=remove_nat_cmd -Wl,--wrap=assign_psk_cmd -Wl,--wrap=set_ip_cmd -Wl,--wrap=add_bridge_cmd -Wl,--wrap=remove_bridge_cmd -Wl,--wrap=set_fingerprint_cmd -Wl,--wrap=query_fingerprint_cmd -Wl,--wrap=register_ticket_cmd -Wl,--wrap=clear_psk_cmd"
+        LINK_FLAGS  "-Wl,--wrap=write_domain_data -Wl,--wrap=accept_mac_cmd -Wl,--wrap=deny_mac_cmd -Wl,--wrap=add_nat_cmd -Wl,--wrap=remove_nat_cmd -Wl,--wrap=assign_psk_cmd -Wl,--wrap=set_ip_cmd -Wl,--wrap=add_bridge_cmd -Wl,--wrap=remove_bridge_cmd -Wl,--wrap=set_fingerprint_cmd -Wl,--wrap=query_fingerprint_cmd -Wl,--wrap=register_ticket_cmd -Wl,--wrap=clear_psk_cmd -Wl,--wrap=get_mac_mapper"
 )
 
 add_executable(test_mac_mapper test_mac_mapper.c)

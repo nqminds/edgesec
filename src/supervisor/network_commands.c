@@ -556,15 +556,26 @@ int remove_bridge_cmd(struct supervisor_context *context, uint8_t *left_mac_addr
   return 0;
 }
 
-int set_fingerprint_cmd(struct supervisor_context *context, char *mac_addr, char *protocol,
-                        char *fingerprint, uint64_t timestamp, char *query)
+int set_fingerprint_cmd(struct supervisor_context *context, char *src_mac_addr,
+                        char *dst_mac_addr, char *protocol, char *fingerprint,
+                        uint64_t timestamp, char *query)
 {
-  struct fingerprint_row row = {.mac = mac_addr, .protocol = protocol,
+  struct fingerprint_row row_src = {.mac = src_mac_addr, .protocol = protocol,
                                 .fingerprint = fingerprint, .timestamp = timestamp,
                                 .query = query};
-  log_trace("SET_FINGERPRINT for mac=%s, protocol=%s and timestamp=%"PRIu64, mac_addr,
-            protocol, timestamp);
-  if (save_sqlite_fingerprint_entry(context->fingeprint_db, &row) < 0) {
+
+  struct fingerprint_row row_dst = {.mac = dst_mac_addr, .protocol = protocol,
+                                .fingerprint = fingerprint, .timestamp = timestamp,
+                                .query = query};
+
+  log_trace("SET_FINGERPRINT for src_mac=%s, dst_mac=%s, protocol=%s and timestamp=%"PRIu64, src_mac_addr,
+            dst_mac_addr, protocol, timestamp);
+  if (save_sqlite_fingerprint_entry(context->fingeprint_db, &row_src) < 0) {
+    log_trace("save_sqlite_fingerprint_entry fail");
+    return -1;
+  }
+
+  if (save_sqlite_fingerprint_entry(context->fingeprint_db, &row_dst) < 0) {
     log_trace("save_sqlite_fingerprint_entry fail");
     return -1;
   }

@@ -253,20 +253,20 @@ ssize_t process_get_all_cmd(int sock, char *client_addr, struct supervisor_conte
 
   log_trace("GET_ALL");
 
-  for (int count = 0; count < mac_list_len; count ++) {
-    struct mac_conn el = mac_list[count];
-    int line_size = snprintf(temp, 255, "%s,%02x:%02x:%02x:%02x:%02x:%02x,%s,%d,%d,%s,%s,%d,%"PRIu64"\n",
-      (el.info.allow_connection) ? "a" : "d", MAC2STR(el.mac_addr), el.info.ip_addr, el.info.vlanid,
-      (el.info.nat) ? 1 : 0, el.info.label, el.info.id, (el.info.pass_len) ? 1 : 0, el.info.join_timestamp);
-    total += line_size + 1;
-    if (reply_buf == NULL)
-      reply_buf = os_zalloc(total);
-    else
-      reply_buf = os_realloc(reply_buf, total);
-    strcat(reply_buf, temp);
-  }
-
   if (mac_list != NULL) {
+    for (int count = 0; count < mac_list_len; count ++) {
+      struct mac_conn el = mac_list[count];
+      int line_size = snprintf(temp, 255, "%s,%02x:%02x:%02x:%02x:%02x:%02x,%s,%d,%d,%s,%s,%d,%"PRIu64"\n",
+        (el.info.allow_connection) ? "a" : "d", MAC2STR(el.mac_addr), el.info.ip_addr, el.info.vlanid,
+        (el.info.nat) ? 1 : 0, el.info.label, el.info.id, (el.info.pass_len) ? 1 : 0, el.info.join_timestamp);
+      total += line_size + 1;
+      if (reply_buf == NULL)
+        reply_buf = os_zalloc(total);
+      else
+        reply_buf = os_realloc(reply_buf, total);
+      strcat(reply_buf, temp);
+    }
+
     bytes_sent = write_domain_data(sock, reply_buf, strlen(reply_buf), client_addr);
 
     os_free(mac_list);
@@ -443,8 +443,8 @@ ssize_t process_set_fingerprint_cmd(int sock, char *client_addr, struct supervis
             query = *ptr;
           }
 
-          if ((set_fingerprint_cmd(context, src_mac_addr, protocol, fingerprint, timestamp, query) >= 0) &&
-              (set_fingerprint_cmd(context, dst_mac_addr, protocol, fingerprint, timestamp, query) >= 0))
+          if ((set_fingerprint_cmd(context, src_mac_addr, dst_mac_addr, protocol,
+                                   fingerprint, timestamp, query) >= 0))
           {
             return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
           }

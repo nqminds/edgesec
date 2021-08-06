@@ -126,15 +126,17 @@ int remove_bridge_cmd(struct supervisor_context *context, uint8_t *left_mac_addr
  * @brief SET_FINGERPRINT command
  * 
  * @param context The supervisor structure instance
- * @param mac_addr The MAC address string
+ * @param src_mac_addr The source MAC address string
+ * @param dst_mac_addr The destination MAC address string
  * @param protocol The protocol string
  * @param fingerprint The fingerprint string
  * @param timestamp The timestamp 64 bit value
  * @param query The query string
  * @return int 0 on success, -1 on failure
  */
-int set_fingerprint_cmd(struct supervisor_context *context, char *mac_addr, char *protocol,
-                        char *fingerprint, uint64_t timestamp, char *query);
+int set_fingerprint_cmd(struct supervisor_context *context, char *src_mac_addr,
+                        char *dst_mac_addr, char *protocol, char *fingerprint,
+                        uint64_t timestamp, char *query);
 
 /**
  * @brief QUERY_FINGERPRINT command
