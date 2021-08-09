@@ -414,6 +414,7 @@ ssize_t process_get_bridges_cmd(int sock, char *client_addr, struct supervisor_c
 ssize_t process_set_fingerprint_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
 {
   char **ptr = (char**) utarray_next(cmd_arr, NULL);
+  uint8_t addr[ETH_ALEN];
   char src_mac_addr[MACSTR_LEN];
   char dst_mac_addr[MACSTR_LEN];
   char protocol[MAX_PROTOCOL_NAME_LEN];
@@ -425,10 +426,20 @@ ssize_t process_set_fingerprint_cmd(int sock, char *client_addr, struct supervis
   ptr = (char**) utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
     os_strlcpy(src_mac_addr, *ptr, MACSTR_LEN);
+    
+    if (hwaddr_aton2(src_mac_addr, addr) == -1) {
+      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+    }
+
     // MAC address destination
     ptr = (char**) utarray_next(cmd_arr, ptr);
     if (ptr != NULL && *ptr != NULL) {
       os_strlcpy(dst_mac_addr, *ptr, MACSTR_LEN);
+
+      if (hwaddr_aton2(dst_mac_addr, addr) == -1) {
+        return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+      }
+
       ptr = (char**) utarray_next(cmd_arr, ptr);
       // Protocol
       if (ptr != NULL && *ptr != NULL) {
@@ -441,12 +452,11 @@ ssize_t process_set_fingerprint_cmd(int sock, char *client_addr, struct supervis
           // Query
           if (ptr != NULL && *ptr != NULL) {
             query = *ptr;
-          }
-
-          if ((set_fingerprint_cmd(context, src_mac_addr, dst_mac_addr, protocol,
-                                   fingerprint, timestamp, query) >= 0))
-          {
-            return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
+            if ((set_fingerprint_cmd(context, src_mac_addr, dst_mac_addr, protocol,
+                                     fingerprint, timestamp, query) >= 0))
+            {
+              return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
+            }
           }
         }
       }
@@ -459,8 +469,9 @@ ssize_t process_set_fingerprint_cmd(int sock, char *client_addr, struct supervis
 ssize_t process_query_fingerprint_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
 {
   char **ptr = (char**) utarray_next(cmd_arr, NULL);
+  uint8_t addr[ETH_ALEN];
   char mac_addr[MACSTR_LEN];
-  char op[3];
+  char op[MAX_QUERY_OP_LEN];
   char protocol[MAX_PROTOCOL_NAME_LEN];
   uint64_t timestamp;
   char *out;
@@ -470,7 +481,11 @@ ssize_t process_query_fingerprint_cmd(int sock, char *client_addr, struct superv
   ptr = (char**) utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
     os_strlcpy(mac_addr, *ptr, MACSTR_LEN);
-  
+
+    if (hwaddr_aton2(mac_addr, addr) == -1) {
+      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+    }
+
     ptr = (char**) utarray_next(cmd_arr, ptr);
     // Timestamp
     if (ptr != NULL && *ptr != NULL) {
@@ -480,14 +495,18 @@ ssize_t process_query_fingerprint_cmd(int sock, char *client_addr, struct superv
         ptr = (char**) utarray_next(cmd_arr, ptr);
         // Query operator
         if (ptr != NULL && *ptr != NULL) {
-          os_strlcpy(op, *ptr, 3);
-          ptr = (char**) utarray_next(cmd_arr, ptr);
-          // Protocol
-          if (ptr != NULL && *ptr != NULL) {
-            os_strlcpy(protocol, *ptr, MAX_PROTOCOL_NAME_LEN);
-            if ((out_len = query_fingerprint_cmd(context, mac_addr, timestamp, op, protocol, &out)) > 0)
-            {
-              return write_domain_data(sock, out, out_len, client_addr);
+          if (os_strnlen_s(*ptr, MAX_QUERY_OP_LEN) < MAX_QUERY_OP_LEN) {
+            os_strlcpy(op, *ptr, MAX_QUERY_OP_LEN);
+            ptr = (char**) utarray_next(cmd_arr, ptr);
+            // Protocol
+            if (ptr != NULL && *ptr != NULL) {
+              if (os_strnlen_s(*ptr, MAX_PROTOCOL_NAME_LEN) < MAX_PROTOCOL_NAME_LEN) {
+                os_strlcpy(protocol, *ptr, MAX_PROTOCOL_NAME_LEN);
+                if ((out_len = query_fingerprint_cmd(context, mac_addr, timestamp, op, protocol, &out)) > 0)
+                {
+                  return write_domain_data(sock, out, out_len, client_addr);
+                }
+              }
             }
           }
         }
@@ -517,15 +536,17 @@ ssize_t process_register_ticket_cmd(int sock, char *client_addr, struct supervis
 
           // VLAN ID
           ptr = (char**) utarray_next(cmd_arr, ptr);
-          errno = 0;
-          vlanid = (int) strtoul(*ptr, NULL, 10);
-          if (errno != ERANGE && is_number(*ptr)) {
-            passphrase = register_ticket_cmd(context, mac_addr, label, vlanid);
+          if (ptr != NULL && *ptr != NULL) {
+            errno = 0;
+            vlanid = (int) strtoul(*ptr, NULL, 10);
+            if (errno != ERANGE && is_number(*ptr)) {
+              passphrase = register_ticket_cmd(context, mac_addr, label, vlanid);
 
-            if (passphrase != NULL) {
-              return write_domain_data(sock, passphrase, strlen(passphrase), client_addr);
-            } else {
-              return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);            
+              if (passphrase != NULL) {
+                return write_domain_data(sock, passphrase, strlen(passphrase), client_addr);
+              } else {
+                return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);            
+              }
             }
           }
         }

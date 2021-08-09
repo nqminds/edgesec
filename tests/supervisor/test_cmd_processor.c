@@ -104,7 +104,7 @@ ssize_t __wrap_query_fingerprint_cmd(struct supervisor_context *context, char *m
   check_expected(op);
   check_expected(protocol);
   check_expected(out);
-  return 0;
+  return strlen(OK_REPLY);
 }
 
 uint8_t* __wrap_register_ticket_cmd(struct supervisor_context *context, uint8_t *mac_addr, char *label,
@@ -113,7 +113,7 @@ uint8_t* __wrap_register_ticket_cmd(struct supervisor_context *context, uint8_t 
   check_expected(mac_addr);
   check_expected(label);
   check_expected(vlanid);
-  return NULL;
+  return OK_REPLY;
 }
 
 int __wrap_clear_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr)
@@ -472,6 +472,113 @@ static void test_process_set_fingerprint_cmd(void **state)
   assert_int_equal(process_set_fingerprint_cmd(0, NULL, NULL, cmd_arr), strlen(OK_REPLY));
   utarray_free(cmd_arr);
 
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("SET_FINGERPRINT 11:22:33:44:55: aa:bb:cc:dd:ee:ff IP 12345 test", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_set_fingerprint_cmd(0, NULL, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("SET_FINGERPRINT 11:22:33:44:55:66 aa:bb:cc:dd:ee: IP 12345 test", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_set_fingerprint_cmd(0, NULL, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("SET_FINGERPRINT 11:22:33:44:55:66 aa:bb:cc:dd:ee:ff 12345 test", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_set_fingerprint_cmd(0, NULL, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("SET_FINGERPRINT 11:22:33:44:55:66 aa:bb:cc:dd:ee:ff IP ", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_set_fingerprint_cmd(0, NULL, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+}
+
+static void test_process_query_fingerprint_cmd(void **state)
+{
+  (void) state; /* unused */
+
+  UT_array *cmd_arr;
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("QUERY_FINGERPRINT 11:22:33:44:55:66 12345 >= IP4", CMD_DELIMITER, cmd_arr), -1);
+  expect_string(__wrap_query_fingerprint_cmd, mac_addr, "11:22:33:44:55:66");
+  expect_value(__wrap_query_fingerprint_cmd, timestamp, 12345);
+  expect_string(__wrap_query_fingerprint_cmd, op, ">=");
+  expect_string(__wrap_query_fingerprint_cmd, protocol, "IP4");
+  expect_any(__wrap_query_fingerprint_cmd, out);
+  assert_int_equal(process_query_fingerprint_cmd(0, NULL, NULL, cmd_arr), strlen(OK_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("QUERY_FINGERPRINT 11:22:33:44:55: 12345 >= IP4", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_query_fingerprint_cmd(0, NULL, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("QUERY_FINGERPRINT 11:22:33:44:55:66 a12345 >= IP4", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_query_fingerprint_cmd(0, NULL, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("QUERY_FINGERPRINT 11:22:33:44:55:66 12345 >== IP4", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_query_fingerprint_cmd(0, NULL, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("QUERY_FINGERPRINT 11:22:33:44:55:66 12345 >= 1234567812345678123456781234567812345678123456781234567812345678", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_query_fingerprint_cmd(0, NULL, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+}
+
+static void test_process_register_ticket_cmd(void **state)
+{
+  (void) state; /* unused */
+
+  uint8_t addr[ETH_ALEN] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
+  UT_array *cmd_arr;
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("REGISTER_TICKET 11:22:33:44:55:66 test 23", CMD_DELIMITER, cmd_arr), -1);
+  expect_memory(__wrap_register_ticket_cmd, mac_addr, addr, ETH_ALEN);
+  expect_string(__wrap_register_ticket_cmd, label, "test");
+  expect_value(__wrap_register_ticket_cmd, vlanid, 23);
+  assert_int_equal(process_register_ticket_cmd(0, NULL, NULL, cmd_arr), strlen(OK_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("REGISTER_TICKET 11:22:33:44:55: test 23", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_register_ticket_cmd(0, NULL, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("REGISTER_TICKET 11:22:33:44:55:66 23", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_register_ticket_cmd(0, NULL, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("REGISTER_TICKET 11:22:33:44:55:66 test 23f", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_register_ticket_cmd(0, NULL, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+}
+
+static void test_process_clear_psk_cmd(void **state)
+{
+  (void) state; /* unused */
+
+  uint8_t addr[ETH_ALEN] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
+  UT_array *cmd_arr;
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("CLEAR_PSK 11:22:33:44:55:66", CMD_DELIMITER, cmd_arr), -1);
+  expect_memory(__wrap_clear_psk_cmd, mac_addr, addr, ETH_ALEN);
+  assert_int_equal(process_clear_psk_cmd(0, NULL, NULL, cmd_arr), strlen(OK_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("CLEAR_PSK 11:22:33:44:55:", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_clear_psk_cmd(0, NULL, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
 }
 
 int main(int argc, char *argv[])
@@ -490,7 +597,10 @@ int main(int argc, char *argv[])
     cmocka_unit_test(test_process_set_ip_cmd),
     cmocka_unit_test(test_process_add_bridge_cmd),
     cmocka_unit_test(test_process_remove_bridge_cmd),
-    cmocka_unit_test(test_process_set_fingerprint_cmd)
+    cmocka_unit_test(test_process_set_fingerprint_cmd),
+    cmocka_unit_test(test_process_query_fingerprint_cmd),
+    cmocka_unit_test(test_process_register_ticket_cmd),
+    cmocka_unit_test(test_process_clear_psk_cmd)
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

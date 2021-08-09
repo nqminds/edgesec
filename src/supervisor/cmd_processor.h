@@ -55,6 +55,8 @@
 #define OK_REPLY              "OK"
 #define FAIL_REPLY            "FAIL"
 
+#define MAX_QUERY_OP_LEN      3
+
 typedef ssize_t (*process_cmd_fn)(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**

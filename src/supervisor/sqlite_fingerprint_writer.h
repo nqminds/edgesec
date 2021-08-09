@@ -80,7 +80,7 @@ int save_sqlite_fingerprint_entry(sqlite3 *db, struct fingerprint_row *row);
 
 
 /**
- * @brief Retrieves all teh fingerprint rows satifying a query
+ * @brief Retrieves all the fingerprint rows satifying a query
  * 
  * @param db The sqlite db structure pointer
  * @param mac The MAC value for

@@ -20,6 +20,19 @@ set_target_properties(test_cmd_processor
 add_executable(test_mac_mapper test_mac_mapper.c)
 target_link_libraries(test_mac_mapper log system_checks os mac_mapper ${CMOCKA_LIB})
 
+add_executable(test_sqlite_fingerprint_writer test_sqlite_fingerprint_writer.c)
+target_link_libraries(test_sqlite_fingerprint_writer sqlite_fingerprint_writer sqliteu os log ${CMOCKA_LIB})
+set_target_properties(test_sqlite_fingerprint_writer
+  PROPERTIES
+  LINK_FLAGS  "-Wl,--wrap=sqlite3_open"
+)
+
+add_executable(test_sqlite_macconn_writer test_sqlite_macconn_writer.c)
+target_link_libraries(test_sqlite_macconn_writer sqlite_macconn_writer sqliteu os log ${CMOCKA_LIB})
+set_target_properties(test_sqlite_macconn_writer
+  PROPERTIES
+  LINK_FLAGS  "-Wl,--wrap=sqlite3_open"
+)
 
 add_test(NAME test_bridge_list COMMAND test_bridge_list)
 set_tests_properties(test_bridge_list
@@ -41,4 +54,13 @@ set_tests_properties(test_mac_mapper
   PROPERTIES
   WILL_FAIL FALSE)
   
+add_test(NAME test_sqlite_fingerprint_writer COMMAND test_sqlite_fingerprint_writer)
+set_tests_properties(test_sqlite_fingerprint_writer
+  PROPERTIES
+  WILL_FAIL FALSE)
+
+add_test(NAME test_sqlite_macconn_writer COMMAND test_sqlite_macconn_writer)
+set_tests_properties(test_sqlite_macconn_writer
+  PROPERTIES
+  WILL_FAIL FALSE)
   
