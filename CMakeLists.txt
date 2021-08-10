@@ -11,6 +11,7 @@ include(ExternalProject)
 # include(CodeCoverage)
 include(glibc)
 
+option(USE_ARM_MUSL_LIBC "Use arm musl standard C library" OFF)
 option(BUILD_ONLY_DOCS "Build only docs" OFF)
 option(BUILD_CAPTURE_SERVICE "Build Capture server" ON)
 option(BUILD_REST_SERVER "Build Rest server" ON)
@@ -35,10 +36,12 @@ option(BUILD_REVERSE_SERVICE "Build Reverse service" OFF)
 
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_SYSTEM_NAME Linux)
-# set(CMAKE_SYSTEM_PROCESSOR arm)
-# set(tools /usr/local/arm-linux-musleabihf)
-# set(CMAKE_C_COMPILER /usr/local/bin/arm-linux-musleabihf-gcc)
-# set(CMAKE_CXX_COMPILER /usr/local/bin/arm-linux-musleabihf-g++)
+if (USE_ARM_MUSL_LIBC)
+  set(CMAKE_SYSTEM_PROCESSOR arm)
+  set(tools /usr/local/arm-linux-musleabihf)
+  set(CMAKE_C_COMPILER /usr/local/bin/arm-linux-musleabihf-gcc)
+  set(CMAKE_CXX_COMPILER /usr/local/bin/arm-linux-musleabihf-g++)
+endif ()
 
 # The edgesec version number.
 set(EDGESEC_VERSION_MAJOR 0)
@@ -70,7 +73,9 @@ set(REVSRV_VERSION_MAJOR 0)
 set(REVSRV_VERSION_MINOR 1)
 set(REVSRV_VERSION_PATCH 0)
 
-CHECK_GLIBC_VERSION()
+if (NOT USE_ARM_MUSL_LIBC)
+  CHECK_GLIBC_VERSION()
+endif ()
 
 # Include the libraries
 include(hostapd)
