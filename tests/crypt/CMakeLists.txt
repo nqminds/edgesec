@@ -22,7 +22,9 @@ set_tests_properties(test_sqlite_crypt_writer
   PROPERTIES
   WILL_FAIL FALSE)
 
-add_test(NAME test_crypt_service COMMAND test_crypt_service)
-set_tests_properties(test_crypt_service
-  PROPERTIES
-  WILL_FAIL FALSE)
+if (BUILD_OPENSSL_LIB)
+  add_test(NAME test_crypt_service COMMAND test_crypt_service)
+  set_tests_properties(test_crypt_service
+    PROPERTIES
+    WILL_FAIL FALSE)
+endif ()

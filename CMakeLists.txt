@@ -11,7 +11,7 @@ include(ExternalProject)
 # include(CodeCoverage)
 include(glibc)
 
-option(USE_ARM_MUSL_LIBC "Use arm musl standard C library" ON)
+option(USE_ARM_MUSL_LIBC "Use arm musl standard C library" OFF)
 option(BUILD_ONLY_DOCS "Build only docs" OFF)
 option(BUILD_CAPTURE_SERVICE "Build Capture server" ON)
 option(BUILD_REST_SERVER "Build Rest server" ON)
@@ -207,7 +207,7 @@ include(doxygen)
 
 if (NOT BUILD_ONLY_DOCS)
   add_subdirectory(src)
-  # add_subdirectory(tests)
+  add_subdirectory(tests)
 endif ()
 
 # setup_target_for_coverage_lcov(

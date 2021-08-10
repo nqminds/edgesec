@@ -10,7 +10,11 @@ if (BUILD_UUID_LIB)
 endif ()
 
 if (BUILD_OPENSSL_LIB)
-include_directories("${LIBOPENSSL_INCLUDE_PATH}")
+  include_directories("${LIBOPENSSL_INCLUDE_PATH}")
+endif ()
+
+if (BUILD_NL_LIB)
+  include_directories("${LIBNL_INCLUDE_DIR}")
 endif ()
 
 add_library(log log.c)
@@ -28,10 +32,10 @@ add_library(iptables iptables.c)
 target_link_libraries(iptables os log)
 
 add_library(if if.c)
-target_link_libraries(if ${LibNL_LIBRARY} ${LibNL_GENL_LIBRARY} ${LIBNETLINK_LIB} ${LL_MAP_LIB} ${UTILS_LIB} ${RT_NAMES_LIB} ${LL_TYPES_LIB} log os)
+target_link_libraries(if ${LIBNL_LIBRARY} ${LIBNL_GENL_LIBRARY} ${LIBNETLINK_LIB} ${LL_MAP_LIB} ${UTILS_LIB} ${RT_NAMES_LIB} ${LL_TYPES_LIB} log os)
 
 add_library(iw iw.c)
-target_link_libraries(iw ${LibNL_LIBRARY} ${LibNL_GENL_LIBRARY} ${LIBNETLINK_LIB} ${LL_MAP_LIB} ${UTILS_LIB} ${RT_NAMES_LIB} ${LL_TYPES_LIB} log)
+target_link_libraries(iw ${LIBNL_LIBRARY} ${LIBNL_GENL_LIBRARY} ${LIBNETLINK_LIB} ${LL_MAP_LIB} ${UTILS_LIB} ${RT_NAMES_LIB} ${LL_TYPES_LIB} log)
 
 add_library(hashmap hashmap.c)
 target_link_libraries(hashmap log os)

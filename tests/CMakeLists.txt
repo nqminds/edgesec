@@ -1,8 +1,11 @@
 include_directories (
   "${EDGESEC_SOURCE_DIR}/src"
-  "${LibNL_INCLUDE_DIR}"
   "${CMOCKA_INCLUDE_DIR}"
 )
+
+if (BUILD_NL_LIB)
+  include_directories("${LIBNL_INCLUDE_DIR}")
+endif ()
 
 add_subdirectory(capture)
 add_subdirectory(crypt)

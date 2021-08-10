@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#ifdef WITH_OPENSSL_SERVICE
 #include <openssl/evp.h>
 #include <openssl/sha.h>
 #include <openssl/crypto.h>
@@ -36,6 +37,7 @@
 #ifndef OPENSSL_NO_ENGINE
 #include <openssl/engine.h>
 #endif
+#endif
 #include "cryptou.h"
 
 #include "../utils/os.h"
@@ -44,22 +46,38 @@
 
 int crypto_geniv(uint8_t *buf, int iv_size)
 {
+#ifdef WITH_OPENSSL_SERVICE
   return RAND_bytes(buf, iv_size);
+#else
+  log_trace("crypto_geniv not implemented");
+  return 0;
+#endif
 }
 
 int crypto_gensalt(uint8_t *buf, int salt_size)
 {
+#ifdef WITH_OPENSSL_SERVICE
   return RAND_bytes(buf, salt_size);
+#else
+  log_trace("crypto_gensalt not implemented");
+  return 0;
+#endif
 }
 
 int crypto_genkey(uint8_t *buf, int key_size)
 {
+#ifdef WITH_OPENSSL_SERVICE
   return RAND_bytes(buf, key_size);
+#else
+  log_trace("crypto_genkey not implemented");
+  return 0;
+#endif
 }
 
 int crypto_buf2key(uint8_t *buf, int buf_size, uint8_t *salt, int salt_size,
                    uint8_t *key, int key_size)
 {
+#ifdef WITH_OPENSSL_SERVICE
   if (PKCS5_PBKDF2_HMAC(buf, buf_size, salt, salt_size, MAX_KEY_ITERATIONS,
                     EVP_sha256(), key_size, key) < 1) {
     log_trace("PKCS5_PBKDF2_HMAC fail wit code=%d", ERR_get_error());
@@ -67,11 +85,16 @@ int crypto_buf2key(uint8_t *buf, int buf_size, uint8_t *salt, int salt_size,
   }
 
   return 0;
+#else
+  log_trace("crypto_buf2key not implemented");
+  return -1;
+#endif
 }
 
 int crypto_encrypt(uint8_t *in, int in_size, uint8_t *key,
                    uint8_t *iv, uint8_t *out)
 {
+#ifdef WITH_OPENSSL_SERVICE
   EVP_CIPHER_CTX *ctx;
   int len;
   int ciphertext_len;
@@ -123,13 +146,18 @@ int crypto_encrypt(uint8_t *in, int in_size, uint8_t *key,
   EVP_CIPHER_CTX_free(ctx);
 
   return ciphertext_len;
+#else
+   log_trace("crypto_encrypt not implemented");
+  return -1;
+#endif
 }
 
 int crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
                    uint8_t *iv, uint8_t *out)
 {
+#ifdef WITH_OPENSSL_SERVICE
   EVP_CIPHER_CTX *ctx;
-
+  
   int len;
   int plaintext_len;
 
@@ -180,8 +208,13 @@ int crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
   EVP_CIPHER_CTX_free(ctx);
 
   return plaintext_len;
+#else
+   log_trace("crypto_decrypt not implemented");
+  return -1;
+#endif
 }
 
+#ifdef WITH_OPENSSL_SERVICE
 EVP_PKEY *crypto_generate_RSA_key(EVP_PKEY_CTX *ctx, int bits)
 {
   EVP_PKEY *pkey = NULL;
@@ -248,9 +281,11 @@ char* crypto_generate_cert_str(EVP_PKEY *pkey)
   X509_free(x509);
   return out;
 }
+#endif
 
 int crypto_generate_keycert_str(int bits, char **key, char **cert)
 {
+#ifdef WITH_OPENSSL_SERVICE
   char *key_str = NULL, *cert_str = NULL;
   EVP_PKEY_CTX *ctx;
   EVP_PKEY *pkey = NULL;
@@ -319,4 +354,8 @@ int crypto_generate_keycert_str(int bits, char **key, char **cert)
   EVP_PKEY_free(pkey);
   EVP_PKEY_CTX_free(ctx);
   return 0;
+#else
+  log_trace("crypto_generate_keycert_str not implemented");
+  return -1;
+#endif
 }
