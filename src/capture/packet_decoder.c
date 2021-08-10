@@ -284,18 +284,18 @@ struct capture_packet decode_packet(const struct pcap_pkthdr *header, const uint
   }
 
   if ((void *)cpac.tcph != NULL) {
-    if (ntohs((cpac.tcph)->source) == DNS_PORT || ntohs((cpac.tcph)->dest) == DNS_PORT) {
+    if (ntohs((cpac.tcph)->th_sport) == DNS_PORT || ntohs((cpac.tcph)->th_dport) == DNS_PORT) {
       if(decode_dns_packet(&cpac)) cpac.count ++;
-    } else if (ntohs((cpac.tcph)->source) == MDNS_PORT || ntohs((cpac.tcph)->dest) == MDNS_PORT) {
+    } else if (ntohs((cpac.tcph)->th_sport) == MDNS_PORT || ntohs((cpac.tcph)->th_dport) == MDNS_PORT) {
       if(decode_mdns_packet(&cpac)) cpac.count ++;
     }
   } else if ((void *)cpac.udph != NULL) {
-    if (ntohs((cpac.udph)->source) == DNS_PORT || ntohs((cpac.udph)->dest) == DNS_PORT) {
+    if (ntohs((cpac.udph)->uh_sport) == DNS_PORT || ntohs((cpac.udph)->uh_dport) == DNS_PORT) {
       if(decode_dns_packet(&cpac)) cpac.count ++;
-    } else if (ntohs((cpac.udph)->source) == MDNS_PORT || ntohs((cpac.udph)->dest) == MDNS_PORT) {
+    } else if (ntohs((cpac.udph)->uh_sport) == MDNS_PORT || ntohs((cpac.udph)->uh_dport) == MDNS_PORT) {
       if(decode_mdns_packet(&cpac)) cpac.count ++;
-    } else if ((ntohs((cpac.udph)->source) == DHCP_CLIENT_PORT && ntohs((cpac.udph)->dest) == DHCP_SERVER_PORT) ||
-              (ntohs((cpac.udph)->source) == DHCP_SERVER_PORT && ntohs((cpac.udph)->dest) == DHCP_CLIENT_PORT)) {
+    } else if ((ntohs((cpac.udph)->uh_sport) == DHCP_CLIENT_PORT && ntohs((cpac.udph)->uh_dport) == DHCP_SERVER_PORT) ||
+              (ntohs((cpac.udph)->uh_sport) == DHCP_SERVER_PORT && ntohs((cpac.udph)->uh_dport) == DHCP_CLIENT_PORT)) {
       if(decode_dhcp_packet(&cpac)) cpac.count ++;
     }
   }

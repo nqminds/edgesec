@@ -11,7 +11,7 @@ include(ExternalProject)
 # include(CodeCoverage)
 include(glibc)
 
-option(USE_ARM_MUSL_LIBC "Use arm musl standard C library" OFF)
+option(USE_ARM_MUSL_LIBC "Use arm musl standard C library" ON)
 option(BUILD_ONLY_DOCS "Build only docs" OFF)
 option(BUILD_CAPTURE_SERVICE "Build Capture server" ON)
 option(BUILD_REST_SERVER "Build Rest server" ON)
