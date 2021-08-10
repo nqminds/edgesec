@@ -3,11 +3,13 @@ if (BUILD_NDPI_LIB)
     "${EDGESEC_SOURCE_DIR}/src"
     "${CMAKE_CURRENT_BINARY_DIR}"
     "${LIBNDPI_INCLUDE_PATH}"
+    ${LIBPCAP_INCLUDE_PATH}
   )
 else ()
   include_directories (
     "${EDGESEC_SOURCE_DIR}/src"
     "${CMAKE_CURRENT_BINARY_DIR}"
+    ${LIBPCAP_INCLUDE_PATH}
   )
 endif ()
 

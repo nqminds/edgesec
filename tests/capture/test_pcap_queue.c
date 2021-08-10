@@ -12,6 +12,7 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
+#include "utils/os.h"
 #include "utils/log.h"
 #include "capture/pcap_queue.h"
 
@@ -23,6 +24,7 @@ static void test_push_pcap_queue(void **state)
 
   struct pcap_queue* queue = init_pcap_queue();
 
+  os_memset(&header, 0, sizeof(struct pcap_pkthdr));
   assert_non_null(push_pcap_queue(queue, &header, packet));
   assert_int_equal(get_pcap_queue_length(queue), 1);
 

@@ -113,7 +113,7 @@ static void test_get_crypt_pair(void **state)
   char *value = "value";
   struct crypt_pair in = {.key = key, .value = value, .value_size = strlen(value)}, *out;
   ignore_function_calls(__wrap_crypto_decrypt);
-  struct crypt_context* ctx = load_crypt_service("", "key", secret, 4), *ctx1;
+  struct crypt_context* ctx = load_crypt_service("", "key", secret, 4);
 
   assert_non_null(ctx);
 

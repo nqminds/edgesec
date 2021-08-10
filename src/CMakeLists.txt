@@ -3,6 +3,7 @@ include_directories(
   "${LibNL_INCLUDE_DIR}"
   "${LIBNETLINK_INCLUDE_DIR}"
   "${LIBMICROHTTPD_INCLUDE_DIR}"
+  "${LIBPCAP_INCLUDE_PATH}"
 )
 
 add_subdirectory(utils)
@@ -29,7 +30,7 @@ target_link_libraries(edgesec config engine minIni os hashmap)
 
 if (BUILD_CAPTURE_SERVICE)
   add_executable(capsrv capsrv.c)
-  target_link_libraries(capsrv capture_service config minIni os hashmap ${LIBPCAP_LIB})
+  target_link_libraries(capsrv capture_service config minIni os hashmap ${LIBPCAP_LIB_PATH})
 endif ()
 
 if (BUILD_REST_SERVER)

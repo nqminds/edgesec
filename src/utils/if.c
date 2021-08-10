@@ -46,7 +46,7 @@
 #include "ll_map.h"
 #include "utils.h"
 #include "linux/if_addr.h"
-#include "linux/if_arp.h"
+// #include "linux/if_arp.h"
 #include "linux/if_infiniband.h"
 #include "rt_names.h"
 

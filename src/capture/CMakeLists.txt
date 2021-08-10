@@ -3,22 +3,24 @@ if (BUILD_NDPI_LIB)
     "${EDGESEC_SOURCE_DIR}/src"
     "${CMAKE_CURRENT_BINARY_DIR}"
     "${LIBNDPI_INCLUDE_PATH}"
+    "${LIBPCAP_INCLUDE_PATH}"
   )
 else ()
   include_directories (
     "${EDGESEC_SOURCE_DIR}/src"
     "${CMAKE_CURRENT_BINARY_DIR}"
+    "${LIBPCAP_INCLUDE_PATH}"
   )
 endif ()
 
 add_library(packet_decoder packet_decoder.c)
-target_link_libraries(packet_decoder hash if log os hashmap ${LIBPCAP_LIB})
+target_link_libraries(packet_decoder hash if log os hashmap ${LIBPCAP_LIB_PATH})
 
 add_library(packet_queue packet_queue.c)
 target_link_libraries(packet_queue packet_decoder log os)
 
 add_library(pcap_service pcap_service.c)
-target_link_libraries(pcap_service if log os ${LIBPCAP_LIB})
+target_link_libraries(pcap_service if log os ${LIBPCAP_LIB_PATH})
 
 add_library(pcap_queue pcap_queue.c)
 target_link_libraries(pcap_queue log os)
@@ -43,7 +45,7 @@ if (BUILD_NDPI_LIB)
   add_library(ndpi_serialiser ndpi_serialiser.c)
   target_link_libraries(ndpi_serialiser hash os log ${LIBNDPI_LIB_PATH})
   add_library(ndpi_analyser ndpi_analyser.c)
-  target_link_libraries(ndpi_analyser ndpi_serialiser domain base64 os log pcap_service ${LIBNDPI_LIB_PATH} ${LIBPCAP_LIB} ${LIBPTHREAD_LIB} ${LIBM_LIB})
+  target_link_libraries(ndpi_analyser ndpi_serialiser domain base64 os log pcap_service ${LIBNDPI_LIB_PATH} ${LIBPCAP_LIB_PATH} ${LIBPTHREAD_LIB} ${LIBM_LIB})
   target_link_libraries(capture_service ndpi_analyser default_analyser log)
 else ()
   target_link_libraries(capture_service default_analyser log)
