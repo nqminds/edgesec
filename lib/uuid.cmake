@@ -5,7 +5,7 @@ if (BUILD_UUID_LIB AND NOT (BUILD_ONLY_DOCS))
   set(LIBUUID_INCLUDE_DIR "${LIBUUID_INSTALL_DIR}/include")
   set(LIBUUID_LIB_DIR "${LIBUUID_INSTALL_DIR}/lib")
 
-  find_library(LIBUUID_LIB NAMES uuid libuuid PATHS "${LIBUUID_LIB_DIR}")
+  find_library(LIBUUID_LIB NAMES uuid libuuid PATHS "${LIBUUID_LIB_DIR}" NO_DEFAULT_PATH)
   if (LIBUUID_LIB)
     message("Found libuuid library: ${LIBUUID_LIB}")
   ELSE ()
@@ -29,6 +29,6 @@ if (BUILD_UUID_LIB AND NOT (BUILD_ONLY_DOCS))
       WORKING_DIRECTORY "${LIBUUID_SOURCE_DIR}"
     )
 
-    find_library(LIBUUID_LIB NAMES uuid libuuid PATHS "${LIBUUID_LIB_DIR}")
+    find_library(LIBUUID_LIB NAMES uuid libuuid PATHS "${LIBUUID_LIB_DIR}" NO_DEFAULT_PATH)
   endif ()
 endif ()

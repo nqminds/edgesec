@@ -1,20 +1,22 @@
+include_directories (
+  "${EDGESEC_SOURCE_DIR}/src"
+  "${CMAKE_CURRENT_BINARY_DIR}"
+)
+
 if (BUILD_NDPI_LIB)
-  include_directories (
-    "${EDGESEC_SOURCE_DIR}/src"
-    "${CMAKE_CURRENT_BINARY_DIR}"
-    "${LIBNDPI_INCLUDE_PATH}"
-    ${LIBPCAP_INCLUDE_PATH}
-  )
-else ()
-  include_directories (
-    "${EDGESEC_SOURCE_DIR}/src"
-    "${CMAKE_CURRENT_BINARY_DIR}"
-    ${LIBPCAP_INCLUDE_PATH}
-  )
+  include_directories ("${LIBNDPI_INCLUDE_PATH}")
+endif ()
+
+if (BUILD_PCAP_LIB)
+  include_directories ("${LIBPCAP_INCLUDE_PATH}")
+endif ()
+
+if (BUILD_SQLITE_LIB)
+  include_directories ("${LIBSQLITE_INCLUDE_DIR}")
 endif ()
 
 add_executable(test_default_analyser test_default_analyser.c)
-target_link_libraries(test_default_analyser default_analyser packet_queue os log ${CMOCKA_LIB})
+target_link_libraries(test_default_analyser default_analyser packet_queue os log ${LIBSQLITE_LIB} ${CMOCKA_LIB})
 set_target_properties(test_default_analyser
   PROPERTIES
   LINK_FLAGS  "-Wl,--wrap=open_sqlite_header_db -Wl,--wrap=open_sqlite_pcap_db -Wl,--wrap=free_sqlite_header_db -Wl,--wrap=free_sqlite_pcap_db -Wl,--wrap=run_pcap -Wl,--wrap=close_pcap -Wl,--wrap=eloop_init -Wl,--wrap=eloop_register_read_sock -Wl,--wrap=eloop_register_timeout -Wl,--wrap=eloop_run -Wl,--wrap=eloop_destroy -Wl,--wrap=run_register_db -Wl,--wrap=extract_packets -Wl,--wrap=push_packet_queue -Wl,--wrap=push_pcap_queue"

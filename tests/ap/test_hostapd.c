@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 #include <inttypes.h>
 #include <unistd.h>
@@ -14,6 +16,7 @@
 
 #include "utils/log.h"
 #include "utils/os.h"
+#include "utils/if.h"
 #include "ap/ap_config.h"
 #include "ap/hostapd.h"
 
@@ -55,6 +58,7 @@ static char *test_ctrl_if_path = "/var/run/hostapd/wlan0";
 
 bool __wrap_kill_process(char *proc_name)
 {
+  log_trace("HERE");
   return true;
 }
 
@@ -189,8 +193,8 @@ int main(int argc, char *argv[])
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
-    cmocka_unit_test(test_generate_hostapd_conf),
-    cmocka_unit_test(test_generate_vlan_conf),
+    // cmocka_unit_test(test_generate_hostapd_conf),
+    // cmocka_unit_test(test_generate_vlan_conf),
     cmocka_unit_test(test_run_ap_process)
   };
 

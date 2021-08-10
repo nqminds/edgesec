@@ -29,8 +29,6 @@ uname -v = #90-Ubuntu SMP Fri Jul 9 22:49:44 UTC 2021
 
 PATH: /home/alex/.nvm/versions/node/v10.17.0/bin
 PATH: /home/alex/.poetry/bin
-PATH: /usr/local/texlive/2016/bin/x86_64-linux
-PATH: /home/alex/.poetry/bin
 PATH: /usr/local/sbin
 PATH: /usr/local/bin
 PATH: /usr/sbin

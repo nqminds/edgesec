@@ -14,6 +14,10 @@ if (BUILD_PCAP_LIB)
   include_directories("${LIBPCAP_INCLUDE_PATH}")
 endif ()
 
+if (BUILD_SQLITE_LIB)
+ include_directories("${LIBSQLITE_INCLUDE_DIR}")
+endif ()
+
 add_subdirectory(utils)
 add_subdirectory(supervisor)
 add_subdirectory(radius)
@@ -38,17 +42,17 @@ target_link_libraries(edgesec config engine minIni os hashmap)
 
 if (BUILD_CAPTURE_SERVICE)
   add_executable(capsrv capsrv.c)
-  target_link_libraries(capsrv capture_service config minIni os hashmap ${LIBPCAP_LIB_PATH})
+  target_link_libraries(capsrv capture_service config minIni os hashmap ${LIBPCAP_LIB})
 endif ()
 
-if (BUILD_REST_SERVER)
+if (BUILD_REST_SERVER AND BUILD_MICROHTTPD_LIB)
   add_executable(restsrv restsrv.c)
   target_link_libraries(restsrv config minIni cryptou os hashmap cmd_processor ${LIBMICROHTTPD_LIB})
 endif ()
 
 if (BUILD_SQLSYNC_SERVICE)
   add_executable(sqlsyncsrv sqlsyncsrv.cc)
-  target_link_libraries(sqlsyncsrv os sqlite_grpc_proto ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF} ${LIBSQLITE3_LIB})
+  target_link_libraries(sqlsyncsrv os sqlite_grpc_proto ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF} ${LIBSQLITE_LIB})
 endif ()
 
 if (BUILD_REVERSE_SERVICE)

@@ -17,6 +17,10 @@ if (BUILD_NL_LIB)
   include_directories("${LIBNL_INCLUDE_DIR}")
 endif ()
 
+if (BUILD_SQLITE_LIB)
+ include_directories("${LIBSQLITE_INCLUDE_DIR}")
+endif ()
+
 add_library(log log.c)
 
 add_library(cryptou cryptou.c)
@@ -52,7 +56,7 @@ add_library(squeue squeue.c)
 target_link_libraries(squeue log os)
 
 add_library(sqliteu sqliteu.c)
-target_link_libraries(sqliteu log os ${LIBSQLITE3_LIB})
+target_link_libraries(sqliteu log os ${LIBSQLITE_LIB})
 
 add_library(domain domain.c)
 target_link_libraries(domain log os)

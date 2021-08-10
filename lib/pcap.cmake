@@ -2,9 +2,9 @@ if (BUILD_PCAP_LIB AND NOT (BUILD_ONLY_DOCS))
   add_compile_definitions(WITH_PCAP_SERVICE)
   set(LIBPCAP_PATH ${CMAKE_CURRENT_BINARY_DIR}/lib/pcap)
   set(LIBPCAP_INCLUDE_PATH ${LIBPCAP_PATH}/include)
-  find_library(LIBPCAP_LIB_PATH NAMES pcap libpcap PATHS "${LIBPCAP_PATH}/lib")
-  if (LIBPCAP_LIB_PATH)
-    message("Found libpcap library: ${LIBPCAP_LIB_PATH}")
+  find_library(LIBPCAP_LIB NAMES pcap libpcap PATHS "${LIBPCAP_PATH}/lib" NO_DEFAULT_PATH)
+  if (LIBPCAP_LIB)
+    message("Found libpcap library: ${LIBPCAP_LIB}")
   ELSE ()
       FetchContent_Declare(
         pcap
@@ -27,6 +27,6 @@ if (BUILD_PCAP_LIB AND NOT (BUILD_ONLY_DOCS))
         COMMAND make install
         WORKING_DIRECTORY "${PCAP_SOURCE_DIR}"
       )
-      find_library(LIBPCAP_LIB_PATH NAMES pcap libpcap PATHS "${LIBPCAP_PATH}/lib")
+      find_library(LIBPCAP_LIB NAMES pcap libpcap PATHS "${LIBPCAP_PATH}/lib" NO_DEFAULT_PATH)
   endif ()
 endif ()
