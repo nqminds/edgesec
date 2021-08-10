@@ -1,2 +1,0 @@
-/usr/bin/ar qc libmpls_ntop.a  CMakeFiles/mpls_ntop.dir/mpls_ntop.c.o
-/usr/bin/ranlib libmpls_ntop.a

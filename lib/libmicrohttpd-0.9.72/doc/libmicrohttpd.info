@@ -1,7 +1,7 @@
 This is libmicrohttpd.info, produced by makeinfo version 6.7 from
 libmicrohttpd.texi.
 
-This manual is for GNU libmicrohttpd (version 0.9.72, 19 May 2021), a
+This manual is for GNU libmicrohttpd (version 0.9.72, 10 August 2021), a
 library for embedding an HTTP(S) server into C applications.
 
    Copyright © 2007–2019 Christian Grothoff
@@ -23,7 +23,7 @@ File: libmicrohttpd.info,  Node: Top,  Next: microhttpd-intro,  Up: (dir)
 The GNU libmicrohttpd Library
 *****************************
 
-This manual is for GNU libmicrohttpd (version 0.9.72, 19 May 2021), a
+This manual is for GNU libmicrohttpd (version 0.9.72, 10 August 2021), a
 library for embedding an HTTP(S) server into C applications.
 
    Copyright © 2007–2019 Christian Grothoff
@@ -4699,44 +4699,44 @@ Type Index
 
 
 Tag Table:
-Node: Top813
-Node: microhttpd-intro3120
-Ref: fig:performance8037
-Ref: tbl:supported9008
-Node: microhttpd-const16985
-Node: microhttpd-struct52925
-Node: microhttpd-cb53709
-Node: microhttpd-init63969
-Node: microhttpd-inspect69851
-Node: microhttpd-requests72632
-Node: microhttpd-responses76712
-Node: microhttpd-response enqueue77911
-Ref: microhttpd-response enqueue-Footnote-180240
-Node: microhttpd-response create80475
-Node: microhttpd-response headers87608
-Node: microhttpd-response options90106
-Node: microhttpd-response inspect90989
-Node: microhttpd-response upgrade92210
-Node: microhttpd-flow97588
-Node: microhttpd-dauth100906
-Node: microhttpd-dauth basic102457
-Node: microhttpd-dauth digest103863
-Node: microhttpd-post114083
-Node: microhttpd-post api117082
-Node: microhttpd-info119750
-Node: microhttpd-info daemon120172
-Node: microhttpd-info conn123632
-Node: microhttpd-option conn128691
-Node: microhttpd-util129771
-Node: microhttpd-util feature130042
-Node: microhttpd-util unescape133628
-Node: GNU-LGPL134276
-Node: eCos License162467
-Node: GNU-GPL163858
-Node: GNU-FDL183165
-Node: Concept Index208434
-Node: Function and Data Index217880
-Node: Type Index224618
+Node: Top816
+Node: microhttpd-intro3126
+Ref: fig:performance8043
+Ref: tbl:supported9014
+Node: microhttpd-const16991
+Node: microhttpd-struct52931
+Node: microhttpd-cb53715
+Node: microhttpd-init63975
+Node: microhttpd-inspect69857
+Node: microhttpd-requests72638
+Node: microhttpd-responses76718
+Node: microhttpd-response enqueue77917
+Ref: microhttpd-response enqueue-Footnote-180246
+Node: microhttpd-response create80481
+Node: microhttpd-response headers87614
+Node: microhttpd-response options90112
+Node: microhttpd-response inspect90995
+Node: microhttpd-response upgrade92216
+Node: microhttpd-flow97594
+Node: microhttpd-dauth100912
+Node: microhttpd-dauth basic102463
+Node: microhttpd-dauth digest103869
+Node: microhttpd-post114089
+Node: microhttpd-post api117088
+Node: microhttpd-info119756
+Node: microhttpd-info daemon120178
+Node: microhttpd-info conn123638
+Node: microhttpd-option conn128697
+Node: microhttpd-util129777
+Node: microhttpd-util feature130048
+Node: microhttpd-util unescape133634
+Node: GNU-LGPL134282
+Node: eCos License162473
+Node: GNU-GPL163864
+Node: GNU-FDL183171
+Node: Concept Index208440
+Node: Function and Data Index217886
+Node: Type Index224624
 
 End Tag Table
 

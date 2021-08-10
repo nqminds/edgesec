@@ -1,9 +1,17 @@
-include_directories(
-  "${LIBNETLINK_UAPI_INCLUDE_DIR}"
-  "${LIBNETLINK_INCLUDE_DIR}"
-  "${LIBUUID_INCLUDE_DIR}"
-  "${LIBOPENSSL_INCLUDE_PATH}"
-)
+if (BUILD_NETLINK_LIB)
+  include_directories(
+    "${LIBNETLINK_UAPI_INCLUDE_PATH}"
+    "${LIBNETLINK_INCLUDE_PATH}"
+  )
+endif ()
+
+if (BUILD_UUID_LIB)
+  include_directories("${LIBUUID_INCLUDE_DIR}")
+endif ()
+
+if (BUILD_OPENSSL_LIB)
+include_directories("${LIBOPENSSL_INCLUDE_PATH}")
+endif ()
 
 add_library(log log.c)
 

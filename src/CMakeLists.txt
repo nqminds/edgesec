@@ -1,10 +1,18 @@
-include_directories(
-  "${PROJECT_BINARY_DIR}"
-  "${LibNL_INCLUDE_DIR}"
-  "${LIBNETLINK_INCLUDE_DIR}"
-  "${LIBMICROHTTPD_INCLUDE_DIR}"
-  "${LIBPCAP_INCLUDE_PATH}"
-)
+include_directories("${PROJECT_BINARY_DIR}")
+
+if (BUILD_MNL_LIB)
+  include_directories("${LIBNL_INCLUDE_DIR}")
+endif()
+
+if (BUILD_NETLINK_LIB)
+  include_directories("${LIBNETLINK_INCLUDE_PATH}")
+endif ()
+if (BUILD_MICROHTTPD_LIB)
+  include_directories("${LIBMICROHTTPD_INCLUDE_DIR}")
+endif ()
+if (BUILD_PCAP_LIB)
+  include_directories("${LIBPCAP_INCLUDE_PATH}")
+endif ()
 
 add_subdirectory(utils)
 add_subdirectory(supervisor)

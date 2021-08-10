@@ -9,17 +9,28 @@ if [ -z "$MY_PATH" ] ; then
   # to the script (e.g. permissions re-evaled after suid)
   exit 1  # fail
 fi
-echo "Building $MY_PATH"
+echo "Building $MY_PATH on $1"
+
+INSTALL_PATH="$1/netlink"
 
 cd ${MY_PATH}/libnetlink
 
 rm -rf build/
 
 mkdir build
+mkdir "${INSTALL_PATH}"
 
 cd build/
 
-cmake -DLIBMNL_PATH:STRING=${MY_PATH}/libmnl-1.0.4 ../
+cmake -DLIB_PATH:STRING=$1 ../
 
 make
 
+
+cmake --install . --prefix "${INSTALL_PATH}"
+
+cd ../
+
+cp -a include/ "${INSTALL_PATH}"
+
+rm -rf build/

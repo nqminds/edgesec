@@ -1,2 +1,0 @@
-/usr/bin/ar qc libmpls_pton.a  CMakeFiles/mpls_pton.dir/mpls_pton.c.o
-/usr/bin/ranlib libmpls_pton.a

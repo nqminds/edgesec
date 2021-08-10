@@ -1,11 +1,17 @@
 project(LIBNETLINK)
 
 cmake_minimum_required(VERSION 3.10)
-SET(LIBMNL_PATH "" CACHE STRING "libmnl path")
+SET(LIB_PATH "" CACHE STRING "lib path")
 
-set(LIBMNL_INCLUDE_DIR "${LIBMNL_PATH}/include")
-find_library(LIBMNL_LIB NAMES mnl PATHS "${LIBMNL_PATH}/build/lib")
+set(LIBMNL_INCLUDE_DIR "${LIB_PATH}/mnl/include")
+find_library(LIBMNL_LIB NAMES mnl PATHS "${LIB_PATH}/mnl/lib")
+if (LIBMNL_LIB)
+    message("Found libmnl library: ${LIBMNL_LIB}")
+else ()
+    message(FATAL_ERROR "Could not find libmnl library.")
+endif ()
 
+message("PATH ${LIBMNL_PATH}")
 set(CMAKE_BUILD_TYPE Debug)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_GNU_SOURCE")
@@ -20,3 +26,10 @@ set(SRC_INCLUDE_DIR "${CMAKE_HOME_DIRECTORY}/include")
 set(UAPI_INCLUDE_DIR "${CMAKE_HOME_DIRECTORY}/include/uapi")
 
 add_subdirectory(lib)
+
+install(TARGETS libnetlink DESTINATION lib)
+install(TARGETS ll_map DESTINATION lib)
+install(TARGETS utils DESTINATION lib)
+install(TARGETS rt_names DESTINATION lib)
+install(TARGETS ll_types DESTINATION lib)
+install(TARGETS ll_proto DESTINATION lib)
