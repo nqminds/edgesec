@@ -4,19 +4,19 @@ include_directories(
 )
 
 add_executable(test_if test_if.c)
-target_link_libraries(test_if if ${CMOCKA_LIB})
+target_link_libraries(test_if PRIVATE if cmocka-static)
 
 add_executable(test_os test_os.c)
-target_link_libraries(test_os os ${CMOCKA_LIB})
+target_link_libraries(test_os PRIVATE os cmocka-static)
 
 add_executable(test_hashmap test_hashmap.c)
-target_link_libraries(test_hashmap hashmap ${CMOCKA_LIB})
+target_link_libraries(test_hashmap PRIVATE hashmap cmocka-static)
 
 add_executable(test_utarray test_utarray.c)
-target_link_libraries(test_utarray ${CMOCKA_LIB})
+target_link_libraries(test_utarray PRIVATE cmocka-static)
 
 add_executable(test_minIni test_minIni.c)
-target_link_libraries(test_minIni minIni ${CMOCKA_LIB})
+target_link_libraries(test_minIni PRIVATE minIni cmocka-static)
 
 add_executable(test_log_thread_safe test_log_thread_safe.c)
 target_link_libraries(test_log_thread_safe log pthread)

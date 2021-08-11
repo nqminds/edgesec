@@ -15,6 +15,7 @@
         "log.h": "c",
         "stdlib.h": "c",
         "sqlite_header_writer.h": "c",
-        "pthread.h": "c"
+        "pthread.h": "c",
+        "capture_service.h": "c"
     }
 }

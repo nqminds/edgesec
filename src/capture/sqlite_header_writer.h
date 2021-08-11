@@ -346,4 +346,5 @@ int open_sqlite_header_db(char *db_path, trace_callback_fn trace_fn,
  * @param ctx The sqlite db
  */
 void free_sqlite_header_db(sqlite3 *db);
+
 #endif

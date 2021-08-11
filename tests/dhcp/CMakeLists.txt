@@ -4,7 +4,7 @@ include_directories(
 )
 
 add_executable(test_dnsmasq test_dnsmasq.c)
-target_link_libraries(test_dnsmasq dnsmasq log ${CMOCKA_LIB})
+target_link_libraries(test_dnsmasq PRIVATE dnsmasq log cmocka-static)
 
 add_test(NAME test_dnsmasq COMMAND test_dnsmasq)
 set_tests_properties(test_dnsmasq

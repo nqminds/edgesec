@@ -102,7 +102,7 @@ sqlite3-shell.o: shell.c /usr/include/stdc-predef.h /usr/include/stdlib.h \
  /usr/include/errno.h /usr/include/x86_64-linux-gnu/bits/errno.h \
  /usr/include/linux/errno.h /usr/include/x86_64-linux-gnu/asm/errno.h \
  /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
- /usr/local/include/zlib.h /usr/local/include/zconf.h \
+ /usr/include/zlib.h /usr/include/zconf.h \
  /usr/lib/gcc/x86_64-linux-gnu/9/include/limits.h \
  /usr/lib/gcc/x86_64-linux-gnu/9/include/syslimits.h \
  /usr/include/limits.h /usr/include/x86_64-linux-gnu/bits/posix2_lim.h
@@ -351,9 +351,9 @@ sqlite3.h:
 
 /usr/include/asm-generic/errno-base.h:
 
-/usr/local/include/zlib.h:
+/usr/include/zlib.h:
 
-/usr/local/include/zconf.h:
+/usr/include/zconf.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/9/include/limits.h:
 

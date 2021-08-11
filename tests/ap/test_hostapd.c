@@ -193,8 +193,8 @@ int main(int argc, char *argv[])
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
-    // cmocka_unit_test(test_generate_hostapd_conf),
-    // cmocka_unit_test(test_generate_vlan_conf),
+    cmocka_unit_test(test_generate_hostapd_conf),
+    cmocka_unit_test(test_generate_vlan_conf),
     cmocka_unit_test(test_run_ap_process)
   };
 

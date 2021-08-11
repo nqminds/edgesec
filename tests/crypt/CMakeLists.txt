@@ -8,14 +8,14 @@ if (BUILD_SQLITE_LIB)
 endif ()
 
 add_executable(test_sqlite_crypt_writer test_sqlite_crypt_writer.c)
-target_link_libraries(test_sqlite_crypt_writer sqlite_crypt_writer sqliteu os log ${LIBSQLITE_LIB} ${CMOCKA_LIB})
+target_link_libraries(test_sqlite_crypt_writer PRIVATE sqlite_crypt_writer sqliteu os log ${LIBSQLITE_LIB} cmocka-static)
 set_target_properties(test_sqlite_crypt_writer
   PROPERTIES
   LINK_FLAGS  "-Wl,--wrap=sqlite3_open"
 )
 
 add_executable(test_crypt_service test_crypt_service.c)
-target_link_libraries(test_crypt_service crypt_service sqlite_crypt_writer sqliteu os log ${CMOCKA_LIB})
+target_link_libraries(test_crypt_service PRIVATE crypt_service sqlite_crypt_writer sqliteu os log cmocka-static)
 set_target_properties(test_crypt_service
   PROPERTIES
   LINK_FLAGS  "-Wl,--wrap=sqlite3_open -Wl,--wrap=sqlite3_close -Wl,--wrap=crypto_decrypt"
