@@ -10,6 +10,11 @@ if (BUILD_UUID_LIB AND NOT (BUILD_ONLY_DOCS))
     message("Found libuuid library: ${LIBUUID_LIB}")
   ELSE ()
     execute_process(
+      COMMAND autoreconf -f -i
+      WORKING_DIRECTORY "${LIBSQLITE_SOURCE_DIR}"
+    )
+
+    execute_process(
       COMMAND ./configure --prefix=${LIBUUID_INSTALL_DIR}
       WORKING_DIRECTORY "${LIBUUID_SOURCE_DIR}"
     )
