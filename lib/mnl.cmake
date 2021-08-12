@@ -10,6 +10,11 @@ if (BUILD_MNL_LIB AND NOT (BUILD_ONLY_DOCS))
     message("Found libmnl library: ${LIBMNL_LIB}")
   ELSE ()
     execute_process(
+      COMMAND autoreconf -f -i
+      WORKING_DIRECTORY "${LIBSQLITE_SOURCE_DIR}"
+    )
+
+    execute_process(
       COMMAND ./configure --prefix=${LIBMNL_INSTALL_DIR}
       WORKING_DIRECTORY "${LIBMNL_SOURCE_DIR}"
     )
