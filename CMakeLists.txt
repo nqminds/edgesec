@@ -182,6 +182,10 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLOG_USE_COLOR")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
+set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
+set(CMAKE_INSTALL_RPATH "$ORIGIN" "$ORIGIN/lib")
+set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/install" )
+
 # configure a header file to pass some of the CMake settings
 # to the source code
 configure_file(
@@ -202,6 +206,67 @@ if (NOT BUILD_ONLY_DOCS)
   add_subdirectory(tests)
 endif ()
 
+install(
+  TARGETS edgesec capsrv
+  RUNTIME DESTINATION "bin"
+)
+
+if (BUILD_REST_SERVER AND LIBMICROHTTPD_LIB)
+  install(
+    TARGETS restsrv
+    RUNTIME DESTINATION "bin"
+  )
+endif ()
+
+if (BUILD_SQLSYNC_SERVICE AND LIBSQLITE_LIB)
+  install(
+    TARGETS sqlsyncsrv
+    RUNTIME DESTINATION "bin"
+  )
+endif ()
+
+if (BUILD_REVERSE_SERVICE)
+  install(
+    TARGETS revclient revsrv
+    RUNTIME DESTINATION "bin"
+  )
+endif ()
+
+if (BUILD_UUID_LIB AND LIBUUID_LIB)
+  install(DIRECTORY ${LIBUUID_LIB_DIR} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
+endif ()
+
+if (BUILD_SQLITE_LIB AND LIBSQLITE_LIB)
+  install(DIRECTORY ${LIBSQLITE_LIB_DIR} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
+endif ()
+
+if(BUILD_PCAP_LIB AND LIBPCAP_LIB)
+  install(DIRECTORY ${LIBPCAP_LIB_DIR} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
+endif ()
+
+if(BUILD_OPENSSL_LIB AND LIBCRYPTO_LIB)
+  install(DIRECTORY ${LIBOPENSSL_LIB_PATH} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
+endif ()
+
+if (BUILD_NETLINK_LIB AND LIBNETLINK_LIB)
+  install(DIRECTORY ${LIBNETLINK_LIB_PATH} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
+endif ()
+
+if (BUILD_NDPI_LIB AND LIBNDPI_LIB)
+  install(DIRECTORY ${LIBNDPI_LIB_DIR} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
+endif ()
+
+if (BUILD_MNL_LIB AND LIBMNL_LIB)
+  install(DIRECTORY ${LIBMNL_LIB_DIR} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
+endif ()
+
+if (BUILD_MICROHTTPD_LIB AND LIBMICROHTTPD_LIB)
+  install(DIRECTORY ${LIBMICROHTTPD_LIB_DIR} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
+endif ()
+
+if (BUILD_HOSTAPD AND HOSTAPD)
+  install(FILES ${HOSTAPD} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
+endif ()
 # setup_target_for_coverage_lcov(
 #   NAME coverage
 #   EXECUTABLE /home/alexandru/Projects/EDGESec/build/src/edgesec -c /home/alexandru/Projects/EDGESec/build/config.ini -dddddddd -s 12345

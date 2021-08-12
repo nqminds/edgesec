@@ -2,9 +2,11 @@ if (BUILD_NDPI_LIB AND NOT (BUILD_ONLY_DOCS))
   add_compile_definitions(WITH_NDPI_SERVICE)
   set(LIBNDPI_PATH ${CMAKE_CURRENT_BINARY_DIR}/lib/ndpi)
   set(LIBNDPI_INCLUDE_PATH ${LIBNDPI_PATH}/include/ndpi)
-  find_library(LIBNDPI_LIB_PATH NAMES ndpi libndpi PATHS "${LIBNDPI_PATH}/lib" NO_DEFAULT_PATH)
-  if (LIBNDPI_LIB_PATH)
-    message("Found libndpi library: ${LIBNDPI_LIB_PATH}")
+  set(LIBNDPI_LIB_DIR "${LIBNDPI_PATH}/lib")
+
+  find_library(LIBNDPI_LIB NAMES ndpi libndpi PATHS "${LIBNDPI_LIB_DIR}" NO_DEFAULT_PATH)
+  if (LIBNDPI_LIB)
+    message("Found libndpi library: ${LIBNDPI_LIB}")
   ELSE ()
       FetchContent_Declare(
         ndpi
@@ -31,6 +33,6 @@ if (BUILD_NDPI_LIB AND NOT (BUILD_ONLY_DOCS))
         COMMAND make install
         WORKING_DIRECTORY "${NDPI_SOURCE_DIR}"
       )
-    find_library(LIBNDPI_LIB_PATH NAMES ndpi libndpi PATHS "${LIBNDPI_PATH}/lib" NO_DEFAULT_PATH)
+    find_library(LIBNDPI_LIB NAMES ndpi libndpi PATHS "${LIBNDPI_LIB_DIR}" NO_DEFAULT_PATH)
   endif ()
 endif ()
