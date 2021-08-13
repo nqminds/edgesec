@@ -11,7 +11,7 @@ if (BUILD_UUID_LIB AND NOT (BUILD_ONLY_DOCS))
   ELSE ()
     execute_process(
       COMMAND autoreconf -f -i
-      WORKING_DIRECTORY "${LIBSQLITE_SOURCE_DIR}"
+      WORKING_DIRECTORY "${LIBUUID_SOURCE_DIR}"
     )
 
     execute_process(

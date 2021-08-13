@@ -38,7 +38,7 @@ jobs:
     #   run: cd build && make test
     
     - name: builds docs
-      run: cd build && make docs
+      run: cd build && make doxydocs
 
     - name: publish docs
       uses: peaceiris/actions-gh-pages@v3
