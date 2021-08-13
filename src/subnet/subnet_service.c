@@ -36,7 +36,6 @@
 #include "utils/log.h"
 #include "utils/os.h"
 #include "utils/if.h"
-#include "utils/iw.h"
 
 #include "subnet/subnet_service.h"
 

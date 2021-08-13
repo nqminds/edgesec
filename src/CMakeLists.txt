@@ -1,6 +1,6 @@
 include_directories("${PROJECT_BINARY_DIR}")
 
-if (BUILD_MNL_LIB)
+if (BUILD_NL_LIB)
   include_directories("${LIBNL_INCLUDE_DIR}")
 endif()
 
@@ -32,7 +32,11 @@ if (BUILD_CAPTURE_SERVICE)
 endif ()
 
 add_library(engine engine.c)
-target_link_libraries(engine crypt_service log if os sqlite_macconn_writer sqlite_fingerprint_writer subnet_service system_checks eloop supervisor network_commands radius_service mac_mapper ap_service iptables dhcp_service)
+if (BUILD_NL_LIB)
+  target_link_libraries(engine crypt_service log if iw os sqlite_macconn_writer sqlite_fingerprint_writer subnet_service system_checks eloop supervisor network_commands radius_service mac_mapper ap_service iptables dhcp_service)
+else ()
+  target_link_libraries(engine crypt_service log if os sqlite_macconn_writer sqlite_fingerprint_writer subnet_service system_checks eloop supervisor network_commands radius_service mac_mapper ap_service iptables dhcp_service)
+endif ()
 
 add_library(config config.c)
 target_link_libraries(config minIni mac_mapper)

@@ -38,8 +38,10 @@ target_link_libraries(iptables os log)
 add_library(if if.c)
 target_link_libraries(if ${LIBNL_LIBRARY} ${LIBNL_GENL_LIBRARY} ${LIBNETLINK_LIB} ${LL_MAP_LIB} ${UTILS_LIB} ${RT_NAMES_LIB} ${LL_TYPES_LIB} log os)
 
-add_library(iw iw.c)
-target_link_libraries(iw ${LIBNL_LIBRARY} ${LIBNL_GENL_LIBRARY} ${LIBNETLINK_LIB} ${LL_MAP_LIB} ${UTILS_LIB} ${RT_NAMES_LIB} ${LL_TYPES_LIB} log)
+if (BUILD_NL_LIB)
+  add_library(iw iw.c)
+  target_link_libraries(iw ${LIBNL_LIBRARY} ${LIBNL_GENL_LIBRARY} ${LIBNETLINK_LIB} ${LL_MAP_LIB} ${UTILS_LIB} ${RT_NAMES_LIB} ${LL_TYPES_LIB} log)
+endif ()
 
 add_library(hashmap hashmap.c)
 target_link_libraries(hashmap log os)

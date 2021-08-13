@@ -36,11 +36,11 @@
 #include <fnmatch.h>
 #include <linux/netlink.h>
 
-#include <netlink/genl/genl.h>
-#include <netlink/genl/family.h>
-#include <netlink/genl/ctrl.h>
-#include <netlink/msg.h>
-#include <netlink/attr.h>
+// #include <netlink/genl/genl.h>
+// #include <netlink/genl/family.h>
+// #include <netlink/genl/ctrl.h>
+// #include <netlink/msg.h>
+// #include <netlink/attr.h>
 
 #include "libnetlink.h"
 #include "ll_map.h"

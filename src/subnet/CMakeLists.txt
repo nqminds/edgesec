@@ -3,4 +3,4 @@ include_directories (
 )
 
 add_library(subnet_service subnet_service.c)
-target_link_libraries(subnet_service log if iw os hashmap log)
+target_link_libraries(subnet_service log if os hashmap log)

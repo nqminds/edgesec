@@ -13,6 +13,7 @@ if (BUILD_NL_LIB AND NOT (BUILD_ONLY_DOCS))
   find_library(LIBNL_GENL_LIBRARY NAMES nl-genl nl-genl-3)
 
   if (LIBNL_INCLUDE_DIR AND LIBNL_LIBRARY)
+    add_compile_definitions(WITH_IW_SERVICE)
     message("Found netlink library: ${LIBNL_LIBRARY}")
     # message("Found netlink route library: ${LibNL_ROUTE_LIBRARY}")
     # message("Found netlink netfilter library: ${LibNL_NETFILTER_LIBRARY}")

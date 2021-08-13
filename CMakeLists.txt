@@ -21,7 +21,7 @@ option(BUILD_OPENSSL_LIB "Build OpenSSL" OFF)
 option(BUILD_CMOCKA_LIB "Build cmocka library" ON)
 option(BUILD_MNL_LIB "Build mnl library" ON)
 option(BUILD_NETLINK_LIB "Build netlink library" ON)
-option(BUILD_NL_LIB "Build nl library" ON)
+option(BUILD_NL_LIB "Build nl library" OFF)
 option(BUILD_MICROHTTPD_LIB "Build microhttpd library" OFF)
 option(BUILD_UUID_LIB "Build uuid library" ON)
 option(BUILD_PCAP_LIB "Build pcap library" OFF)
@@ -182,7 +182,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLOG_USE_COLOR")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
+# set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 set(CMAKE_INSTALL_RPATH "$ORIGIN" "$ORIGIN/lib")
 set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/install" )
 
