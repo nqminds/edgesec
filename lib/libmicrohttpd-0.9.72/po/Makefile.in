@@ -21,7 +21,7 @@ srcdir = .
 top_srcdir = ..
 
 
-prefix = /home/alexandru/Projects/EDGESec/lib/libmicrohttpd-0.9.72/build
+prefix = /home/alexandru/Projects/EDGESec/build/lib/libmicrohttpd
 exec_prefix = ${prefix}
 datarootdir = ${prefix}/share
 datadir = ${datarootdir}

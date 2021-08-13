@@ -15,7 +15,7 @@ if (BUILD_UUID_LIB AND NOT (BUILD_ONLY_DOCS))
     )
 
     execute_process(
-      COMMAND ./configure --prefix=${LIBUUID_INSTALL_DIR}
+      COMMAND ./configure --prefix=${LIBUUID_INSTALL_DIR} --host=${COMPILE_CONFIG_HOST}
       WORKING_DIRECTORY "${LIBUUID_SOURCE_DIR}"
     )
 

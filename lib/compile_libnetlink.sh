@@ -22,7 +22,7 @@ mkdir "${INSTALL_PATH}"
 
 cd build/
 
-cmake -DLIB_PATH:STRING=$1 ../
+cmake -DLIB_PATH:STRING=$1 -DC_COMPILER:STRING=$2 -DCXX_COMPILER:STRING=$3 ../
 
 make
 

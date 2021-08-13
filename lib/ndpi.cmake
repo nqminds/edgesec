@@ -22,7 +22,7 @@ if (BUILD_NDPI_LIB AND NOT (BUILD_ONLY_DOCS))
         WORKING_DIRECTORY "${NDPI_SOURCE_DIR}"
       )
       execute_process(
-        COMMAND ./configure --prefix=${LIBNDPI_PATH}
+        COMMAND ./configure --prefix=${LIBNDPI_PATH} --host=${COMPILE_CONFIG_HOST}
         WORKING_DIRECTORY "${NDPI_SOURCE_DIR}"
       )
       execute_process(

@@ -18,7 +18,7 @@ if (BUILD_PCAP_LIB AND NOT (BUILD_ONLY_DOCS))
       FetchContent_GetProperties(pcap SOURCE_DIR PCAP_SOURCE_DIR)
       message("Source dir: ${PCAP_SOURCE_DIR}")
       execute_process(
-        COMMAND ./configure --prefix=${LIBPCAP_PATH}
+        COMMAND ./configure --prefix=${LIBPCAP_PATH} --host=${COMPILE_CONFIG_HOST}
         WORKING_DIRECTORY "${PCAP_SOURCE_DIR}"
       )
       execute_process(

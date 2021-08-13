@@ -18,7 +18,7 @@ if (BUILD_OPENSSL_LIB AND NOT (BUILD_ONLY_DOCS))
       FetchContent_GetProperties(openssl SOURCE_DIR OPENSSL_SOURCE_DIR)
       message("Source dir: ${OPENSSL_SOURCE_DIR}")
       execute_process(
-        COMMAND ./Configure --prefix=${LIBOPENSSL_INSTALL_DIR} --openssldir=${LIBOPENSSL_INSTALL_DIR} no-dtls no-dtls1 no-psk no-srp no-ec2m no-weak-ssl-ciphers
+        COMMAND ./Configure --prefix=${LIBOPENSSL_INSTALL_DIR} --openssldir=${LIBOPENSSL_INSTALL_DIR} no-dtls no-dtls1 no-psk no-srp no-ec2m no-weak-ssl-ciphers --host=${COMPILE_CONFIG_HOST}
         WORKING_DIRECTORY "${OPENSSL_SOURCE_DIR}"
       )
       execute_process(

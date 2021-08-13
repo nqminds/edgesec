@@ -15,7 +15,7 @@ if (BUILD_SQLITE_LIB AND NOT (BUILD_ONLY_DOCS))
     )
 
     execute_process(
-      COMMAND ./configure --prefix=${LIBSQLITE_INSTALL_DIR}
+      COMMAND ./configure --prefix=${LIBSQLITE_INSTALL_DIR} --host=${COMPILE_CONFIG_HOST}
       WORKING_DIRECTORY "${LIBSQLITE_SOURCE_DIR}"
     )
 
