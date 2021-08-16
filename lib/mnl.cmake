@@ -15,7 +15,7 @@ if (BUILD_MNL_LIB AND NOT (BUILD_ONLY_DOCS))
     )
 
     execute_process(
-      COMMAND ./configure --prefix=${LIBMNL_INSTALL_DIR} --host=${COMPILE_CONFIG_HOST}
+      COMMAND ./configure --prefix=${LIBMNL_INSTALL_DIR}
       WORKING_DIRECTORY "${LIBMNL_SOURCE_DIR}"
     )
 

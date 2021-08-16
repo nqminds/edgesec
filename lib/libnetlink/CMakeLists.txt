@@ -9,15 +9,14 @@ message("LIB_PATH=${LIB_PATH}")
 message("C_COMPILER=${C_COMPILER}")
 message("CXX_COMPILER=${CXX_COMPILER}")
 
-set(LIBMNL_INCLUDE_DIR "${LIB_PATH}/mnl/include")
-find_library(LIBMNL_LIB NAMES mnl PATHS "${LIB_PATH}/mnl/lib")
+set(LIBMNL_INCLUDE_DIR "${LIB_PATH}/include")
+find_library(LIBMNL_LIB NAMES mnl PATHS "${LIB_PATH}/lib")
 if (LIBMNL_LIB)
     message("Found libmnl library: ${LIBMNL_LIB}")
 else ()
     message(FATAL_ERROR "Could not find libmnl library.")
 endif ()
 
-message("PATH ${LIBMNL_PATH}")
 set(CMAKE_BUILD_TYPE Debug)
 
 if (C_COMPILER)

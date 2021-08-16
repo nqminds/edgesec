@@ -16,7 +16,7 @@ if (BUILD_MICROHTTPD_LIB AND NOT (BUILD_ONLY_DOCS))
     )
 
     execute_process(
-      COMMAND ./configure --prefix=${LIBMICROHTTPD_INSTALL_DIR} --host=${COMPILE_CONFIG_HOST}
+      COMMAND ./configure --prefix=${LIBMICROHTTPD_INSTALL_DIR}
       WORKING_DIRECTORY "${LIBMICROHTTPD_SOURCE_DIR}"
     )
 

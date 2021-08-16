@@ -2,35 +2,37 @@
 
 set -e
 
-MY_PATH="`dirname \"$0\"`"              # relative
-MY_PATH="`( cd \"$MY_PATH\" && pwd )`"  # absolutized and normalized
-if [ -z "$MY_PATH" ] ; then
-  # error; for some reason, the path is not accessible
-  # to the script (e.g. permissions re-evaled after suid)
-  exit 1  # fail
-fi
-echo "Building $MY_PATH on $1"
 
-INSTALL_PATH="$1/netlink"
+LIBNETLINK_SOURCE_DIR=$1
+LIBNETLINK_INSTALL_ROOT=$2
+LIBNETLINK_INSTALL_DIR=${LIBNETLINK_INSTALL_ROOT}/netlink
+LIBMNL_INSTALL_DIR=${LIBNETLINK_INSTALL_ROOT}/mnl
+C_COMPILER=$3
+CXX_COMPILER=$4
 
-cd ${MY_PATH}/libnetlink
+echo "NETLINK lib source dir: ${LIBNETLINK_SOURCE_DIR}"
+echo "NETLINK lib install dir: ${LIBNETLINK_INSTALL_DIR}"
+echo "NETLINK lib config C compiler: ${C_COMPILER}"
+echo "NETLINK lib config CXX compiler: ${CXX_COMPILER}"
+
+cd "${LIBNETLINK_SOURCE_DIR}"
 
 rm -rf build/
 
 mkdir build
-mkdir "${INSTALL_PATH}"
+mkdir "${LIBNETLINK_INSTALL_DIR}"
 
 cd build/
 
-cmake -DLIB_PATH:STRING=$1 -DC_COMPILER:STRING=$2 -DCXX_COMPILER:STRING=$3 ../
+cmake -DLIB_PATH:STRING=${LIBMNL_INSTALL_DIR} -DC_COMPILER:STRING=${C_COMPILER} -DCXX_COMPILER:STRING=${CXX_COMPILER} ../
 
 make
 
 
-cmake --install . --prefix "${INSTALL_PATH}"
+cmake --install . --prefix "${LIBNETLINK_INSTALL_DIR}"
 
 cd ../
 
-cp -a include/ "${INSTALL_PATH}"
+cp -a include/ "${LIBNETLINK_INSTALL_DIR}"
 
 rm -rf build/

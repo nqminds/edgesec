@@ -410,7 +410,7 @@ configure:9698: $? = 0
 configure:9698: result: yes
 configure:9698: checking for fullfsync
 configure:9698: /usr/bin/cc -o conftest -g -O2   conftest.c  >&5
-/usr/bin/ld: /tmp/ccjmVhi8.o: in function `main':
+/usr/bin/ld: /tmp/ccXYdKTP.o: in function `main':
 /home/alexandru/Projects/EDGESec/lib/sqlite/conftest.c:59: undefined reference to `fullfsync'
 collect2: error: ld returned 1 exit status
 configure:9698: $? = 1
@@ -803,7 +803,7 @@ configure:9920: checking for readline/readline.h
 configure:9920: result: no
 configure:10071: checking for library containing pthread_create
 configure:10102: /usr/bin/cc -o conftest -g -O2   conftest.c  >&5
-/usr/bin/ld: /tmp/cc0lgOYv.o: in function `main':
+/usr/bin/ld: /tmp/ccNkcQoh.o: in function `main':
 /home/alexandru/Projects/EDGESec/lib/sqlite/conftest.c:40: undefined reference to `pthread_create'
 collect2: error: ld returned 1 exit status
 configure:10102: $? = 1
@@ -860,7 +860,7 @@ configure:10158: $? = 0
 configure:10175: result: none required
 configure:10197: checking for library containing dlopen
 configure:10228: /usr/bin/cc -o conftest -g -O2   conftest.c -lpthread  >&5
-/usr/bin/ld: /tmp/ccNayTQb.o: in function `main':
+/usr/bin/ld: /tmp/ccSSYMlK.o: in function `main':
 /home/alexandru/Projects/EDGESec/lib/sqlite/conftest.c:40: undefined reference to `dlopen'
 collect2: error: ld returned 1 exit status
 configure:10228: $? = 1
@@ -922,7 +922,7 @@ conftest.c:36:6: warning: conflicting types for built-in function 'ceil'; expect
       |      ^~~~
 conftest.c:1:1: note: 'ceil' is declared in header '<math.h>'
     1 | /* confdefs.h */
-/usr/bin/ld: /tmp/ccZShfiZ.o: in function `main':
+/usr/bin/ld: /tmp/cclbookz.o: in function `main':
 /home/alexandru/Projects/EDGESec/lib/sqlite/conftest.c:40: undefined reference to `ceil'
 collect2: error: ld returned 1 exit status
 configure:10309: $? = 1
@@ -1017,7 +1017,7 @@ configure:10576: checking for zlib.h
 configure:10576: result: yes
 configure:10582: checking for library containing deflate
 configure:10613: /usr/bin/cc -o conftest -g -O2   conftest.c -lm -ldl -lpthread  >&5
-/usr/bin/ld: /tmp/ccx42MpU.o: in function `main':
+/usr/bin/ld: /tmp/ccndlF3B.o: in function `main':
 /home/alexandru/Projects/EDGESec/lib/sqlite/conftest.c:42: undefined reference to `deflate'
 collect2: error: ld returned 1 exit status
 configure:10613: $? = 1
