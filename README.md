@@ -8,7 +8,7 @@ On Ubuntu, we need a C compiler, CMake, Doxygen, and libnl libraries:
 
 ```console
 sudo apt update
-sudo apt install cmake doxygen libnl-genl-3-dev libnl-route-3-dev graphviz dnsmasq libtool texinfo jq protobuf-compiler
+sudo apt install cmake doxygen libnl-genl-3-dev libnl-route-3-dev graphviz dnsmasq libtool texinfo jq protobuf-compiler flex bison
 ```
 
 To install grpc dependencies:
