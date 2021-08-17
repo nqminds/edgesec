@@ -20,9 +20,6 @@ git clone --depth 1 --branch 3.4 https://github.com/ntop/nDPI
 cd "${LIBNDPI_SOURCE_DIR}"
 ./autogen.sh
 
-# > config.site
-# echo "CPPFLAGS=-I$LIBPCAP_INCLUDE_PATH" >> config.site
-# echo "LDFLAGS=-L$LIBPCAP_LIB_PATH" >> config.site
 CFLAGS="-I$LIBPCAP_INCLUDE_PATH" LDFLAGS="-L$LIBPCAP_LIB_PATH" ./configure --prefix=${LIBNDPI_INSTALL_DIR} --host=${CONFIG_HOST}
 make
 make install

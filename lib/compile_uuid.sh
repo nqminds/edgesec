@@ -15,4 +15,4 @@ autoreconf -f -i
 ./configure --prefix=${LIBUUID_INSTALL_DIR} --host=${CONFIG_HOST}
 make
 make install
-make clean
+make distclean
