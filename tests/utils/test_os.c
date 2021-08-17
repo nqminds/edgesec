@@ -431,7 +431,9 @@ static void test_get_secure_path(void **state)
 
   /* Testing get_secure_path on path /bin and binary ls */
   char *path = get_secure_path(arr, "ls", NULL);
-  assert_string_equal(path, "/bin/ls");
+  bool comp = (strcmp(path, "/bin/ls") == 0) || (strcmp(path, "/usr/bin/ls") == 0);
+
+  assert_true(comp);
 
   free(path);
 

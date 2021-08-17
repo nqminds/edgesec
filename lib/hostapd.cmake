@@ -6,18 +6,19 @@ if (BUILD_HOSTAPD AND NOT (BUILD_ONLY_DOCS))
   if (HOSTAPD)
     message("Found hostapd program: ${HOSTAPD}")
   ELSE ()
-  execute_process(
-    COMMAND make
-    WORKING_DIRECTORY "${HOSTAPD_SOURCE_DIR}"
-  )
-  execute_process(
-    COMMAND cp ./hostapd "${HOSTAPD_INSTALL_DIR}"
-    WORKING_DIRECTORY "${HOSTAPD_SOURCE_DIR}"
-  )
-  execute_process(
-    COMMAND make clean
-    WORKING_DIRECTORY "${HOSTAPD_SOURCE_DIR}"
-  )
-  find_program(HOSTAPD NAMES hostapd PATHS "${HOSTAPD_INSTALL_DIR}")
+    message("Building hostapd...")
+    execute_process(
+      COMMAND make
+      WORKING_DIRECTORY "${HOSTAPD_SOURCE_DIR}"
+    )
+    execute_process(
+      COMMAND cp ./hostapd "${HOSTAPD_INSTALL_DIR}"
+      WORKING_DIRECTORY "${HOSTAPD_SOURCE_DIR}"
+    )
+    execute_process(
+      COMMAND make clean
+      WORKING_DIRECTORY "${HOSTAPD_SOURCE_DIR}"
+    )
+    find_program(HOSTAPD NAMES hostapd PATHS "${HOSTAPD_INSTALL_DIR}")
   endif ()
 endif ()
