@@ -13,6 +13,7 @@ execRadius = true
 execDhcp = true
 execCapture = true
 execIptables = true
+setIpForward = true
 dbPath = "./db"
 cryptDbPath = "./crypt.sqlite"
 cryptKeyId = "master"

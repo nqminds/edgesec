@@ -35,7 +35,9 @@
 void free_crypt_service(struct crypt_context *ctx)
 {
   if (ctx != NULL) {
+    log_trace("HERE crypt_db=%p", ctx->crypt_db);
     free_sqlite_crypt_db(ctx->crypt_db);
+    log_trace("HERE ctx");
     os_free(ctx);
   }
 }
@@ -218,7 +220,12 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
     return NULL;
   }
 
-  context = (struct crypt_context*) os_malloc(sizeof(struct crypt_context));
+  context = (struct crypt_context*) os_zalloc(sizeof(struct crypt_context));
+  if (context == NULL) {
+    log_err("os_zalloc");
+    return NULL;
+  }
+
   strncpy(context->key_id, key_id, MAX_KEY_ID_SIZE);
 
   if (open_sqlite_crypt_db(crypt_db_path, &context->crypt_db) < 0) {
@@ -228,6 +235,7 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
     return NULL;
   }
 
+  log_trace("HERE crypt_db=%p", context->crypt_db);
   // Retrieve an existing key
   if ((row_secret = get_sqlite_secrets_row(context->crypt_db, key_id)) == NULL) {
     log_trace("get_sqlite_secrets_row fail");
@@ -272,7 +280,7 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
     }
   } else {
     log_trace("found crypto key=%s", row_secret->id);
-    if (user_secret_size) {
+    if (user_secret_size > 0) {
       if (extract_user_crypto_key_entry(row_secret, user_secret, user_secret_size,
                                   context->crypto_key) < 0)
       {

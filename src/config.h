@@ -64,6 +64,7 @@ struct app_config {
   bool                allow_all_connections;                /**< Flag to allow all connections. */
   bool                allow_all_nat;                        /**< Flag to allow all nat connections. */
   bool                kill_running_proc;                    /**< Flag to terminate running app processes. */
+  bool                set_ip_forward;                       /**< Flag to set the ip forward os system param. */
   struct radius_conf  rconfig;                              /**< Radius service configuration. */
   struct apconf       hconfig;                              /**< AP service configuration. */
   struct dns_conf     dns_config;                           /**< DNS service configuration. */

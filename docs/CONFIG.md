@@ -149,6 +149,9 @@ The default VLAN ID positive integer number assigned to new devices if ```allowA
 ### killRunningProcess (boolean)
 If set to true the current running ```edgesec``` will terminate exisiting running ```edgesec``` processes.
 
+### setIpForward (boolean)
+If set to true ```edgesec``` will set the ip forward os system param.
+
 ### execHostapd (boolean)
 If set to ```true```, ```edgesec``` will execute the ```hostapd``` service using ```excve``` system command. If set to ```false``` the ```hostapd``` service has to be run before executing ```edgesec```.
 

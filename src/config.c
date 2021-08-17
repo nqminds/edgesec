@@ -577,6 +577,9 @@ bool load_app_config(const char *filename, struct app_config *config)
   // Load the AP detect flag
   config->ap_detect = ini_getbool("system", "apDetect", 0, filename);
 
+  // Load the IP forward flag
+  config->set_ip_forward = ini_getbool("system", "setIpForward", 0, filename);
+
   // Load the exec ap flag
   config->exec_ap = ini_getbool("system", "execAp", 0, filename);
 

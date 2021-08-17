@@ -1,6 +1,6 @@
 # Fetch and Compile libgrpc
 if (BUILD_GRPC_LIB AND NOT (BUILD_ONLY_DOCS))
-  set(RE2_BUILD_TESTING OFF)
+  set(RE2_BUILD_TESTING OFF CACHE BOOL "RE2 test flag" FORCE)
   FetchContent_Declare(
     gRPC
     GIT_REPOSITORY https://github.com/grpc/grpc

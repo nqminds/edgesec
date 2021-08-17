@@ -158,11 +158,11 @@ int crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
 #ifdef WITH_OPENSSL_SERVICE
   EVP_CIPHER_CTX *ctx;
   
-  int len;
-  int plaintext_len;
+  int len = 0;
+  int plaintext_len = 0;
 
   /* Create and initialise the context */
-  if(!(ctx = EVP_CIPHER_CTX_new())) {
+  if((ctx = EVP_CIPHER_CTX_new()) == NULL) {
     log_trace("EVP_CIPHER_CTX_new fail with code=%d", ERR_get_error());
     return -1;
   }

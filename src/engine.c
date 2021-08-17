@@ -154,6 +154,7 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
     return false;
   }
 
+  ctx->crypt_ctx = NULL;
   ctx->ticket = NULL;
   ctx->iptables_ctx = NULL;
   ctx->fingeprint_db = NULL;
@@ -256,6 +257,12 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
     log_debug("load_crypt_service fail");
     goto run_engine_fail;
   }
+
+  if (app_config->set_ip_forward) {
+    log_debug("Setting the ip forward os system flag...");
+  }
+
+  goto run_engine_fail;
 
   log_info("Adding default mac mappers...");
   if (!create_mac_mapper(&context)) {

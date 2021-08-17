@@ -989,3 +989,16 @@ int check_sock_file_exists(char *path)
 
   return 0;
 }
+
+// void *os_malloc(size_t size)
+// {
+//   void *ptr = malloc(size);
+//   log_trace("malloc=%p", ptr);
+//   return ptr;
+// }
+
+// void os_free( void* ptr ) {
+//   log_trace("free=%p", ptr);
+//   free(ptr);
+// }
+

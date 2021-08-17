@@ -320,6 +320,9 @@ static inline void * os_calloc(size_t nmemb, size_t size)
  */
 void * os_memdup(const void *src, size_t len);
 
+// void *os_malloc(size_t size);
+// void os_free(void* ptr);
+
 #ifndef os_malloc
 #define os_malloc(s) malloc((s))
 #endif

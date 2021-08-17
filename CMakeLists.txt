@@ -11,13 +11,18 @@ include(ExternalProject)
 # include(CodeCoverage)
 include(glibc)
 
+# Installation options
+# set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
+set(CMAKE_INSTALL_RPATH "$ORIGIN" "$ORIGIN/lib")
+set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/install" CACHE BOOL "Installation path" FORCE)
+
 option(USE_ARM_MUSL_LIBC "Use arm musl standard C library" OFF)
 option(BUILD_ONLY_DOCS "Build only docs" OFF)
 option(BUILD_CAPTURE_SERVICE "Build Capture server" ON)
 option(BUILD_REST_SERVER "Build Rest server" ON)
 option(BUILD_HOSTAPD "Build hostapd" ON)
 option(BUILD_SQLITE_LIB "Build sqlite3 library" ON)
-option(BUILD_OPENSSL_LIB "Build OpenSSL" OFF)
+option(BUILD_OPENSSL_LIB "Build OpenSSL" ON)
 option(BUILD_CMOCKA_LIB "Build cmocka library" ON)
 option(BUILD_MNL_LIB "Build mnl library" ON)
 option(BUILD_NETLINK_LIB "Build netlink library" ON)
@@ -26,9 +31,9 @@ option(BUILD_MICROHTTPD_LIB "Build microhttpd library" ON)
 option(BUILD_UUID_LIB "Build uuid library" ON)
 option(BUILD_PCAP_LIB "Build pcap library" ON)
 option(BUILD_NDPI_LIB "Build nDPI library" ON)
-option(BUILD_GRPC_LIB "Build gRPC library" OFF)
-option(BUILD_SQLSYNC_SERVICE "Build sqlsync service" OFF)
-option(BUILD_REVERSE_SERVICE "Build Reverse service" OFF)
+option(BUILD_GRPC_LIB "Build gRPC library" ON)
+option(BUILD_SQLSYNC_SERVICE "Build sqlsync service" ON)
+option(BUILD_REVERSE_SERVICE "Build Reverse service" ON)
 
 option(USE_SQLITE3_LIB "Use sqlite3 library" ON)
 option(USE_UUID_LIB "Use uuid library" ON)
@@ -182,10 +187,6 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLOG_USE_COLOR")
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_LIBNL")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-
-# set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
-set(CMAKE_INSTALL_RPATH "$ORIGIN" "$ORIGIN/lib")
-set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/install" )
 
 # configure a header file to pass some of the CMake settings
 # to the source code
