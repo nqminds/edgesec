@@ -2,18 +2,20 @@
 
 set -e
 
-MY_PATH="`dirname \"$0\"`"              # relative
-MY_PATH="`( cd \"$MY_PATH\" && pwd )`"  # absolutized and normalized
-if [ -z "$MY_PATH" ] ; then
-  # error; for some reason, the path is not accessible
-  # to the script (e.g. permissions re-evaled after suid)
-  exit 1  # fail
-fi
+set -e
 
-GRPC_BUILD_PATH=${MY_PATH}/grpc/cmake/build
-echo "Building $MY_PATH"
+LIBGRPC_SOURCE_DIR=./grpc
+LIBGRPC_INSTALL_DIR=$1/grpc
+CONFIG_HOST=$2
 
-cd ${MY_PATH}/grpc
+echo "GRPC lib source dir: ${LIBGRPC_SOURCE_DIR}"
+echo "GRPC lib install dir: ${LIBGRPC_INSTALL_DIR}"
+echo "GRPC lib config host: ${CONFIG_HOST}"
+
+rm -rf "${LIBGRPC_SOURCE_DIR}"
+git clone --depth 1 --branch v1.36.4 https://github.com/grpc/grpc
+
+cd ${LIBGRPC_SOURCE_DIR}
 
 # Just before installing gRPC, wipe out contents of all the submodules to simulate
 # a standalone build from an archive
@@ -33,7 +35,7 @@ cmake \
   -DgRPC_RE2_PROVIDER=package \
   -DgRPC_SSL_PROVIDER=package \
   -DgRPC_ZLIB_PROVIDER=package \
-  -DCMAKE_INSTALL_PREFIX=$GRPC_BUILD_PATH \
+  -DCMAKE_INSTALL_PREFIX=$LIBGRPC_INSTALL_DIR \
   ../..
 make -j4 install
 popd

@@ -590,9 +590,18 @@ bool find_dir_proc_fn(char *path, void *args);
  * @brief Check if folder exists
  * 
  * @param dirpath The folder path
- * @return bool true on success, false on failure 
+ * @return int 1 if exists, 0 otherwise, -1 on failure
  */
-bool exist_dir(char *dirpath);
+int exist_dir(char *dirpath);
+
+/**
+ * @brief Creates a fodler
+ * 
+ * @param dirpath The folder path
+ * @param mode The folder creation mode
+ * @return 0 on success, -1 on failure 
+ */
+int create_dir(char *dirpath, mode_t mode);
 
 /**
  * @brief Check if a socket file exists

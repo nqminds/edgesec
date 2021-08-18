@@ -208,6 +208,12 @@ if (NOT BUILD_ONLY_DOCS)
   add_subdirectory(tests)
 endif ()
 
+#message(STATUS "Folders...")
+#get_target_property(TT_INCLUDES revsrv INCLUDE_DIRECTORIES)
+#foreach(dir ${TT_INCLUDES})
+#  message(STATUS "dir='${dir}'")
+#endforeach()
+
 install(
   TARGETS edgesec capsrv
   RUNTIME DESTINATION "bin"

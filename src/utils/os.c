@@ -960,19 +960,43 @@ bool find_dir_proc_fn(char *path, void *args)
   return true;
 }
 
-bool exist_dir(char *dirpath)
+int exist_dir(char *dirpath)
 {
   DIR *dirp;
 
   /* Open the directory - on failure print an error and return */
   errno = 0;
   if ((dirp = opendir(dirpath)) == NULL) {
-    log_err("opendir");
-    return false;
+    if (errno != ENOENT) {
+      log_err("opendir");
+      return -1;
+    }
+    return 0;
   }
 
   closedir(dirp);
-  return true;
+  return 1;
+}
+
+int create_dir(char *dirpath, mode_t mode)
+{
+  int ret;
+  ret = exist_dir(dirpath);
+  if (ret < 0) {
+    log_trace("dir path=%s open fail", dirpath);
+    return -1;
+  } else if (ret == 0) {
+    log_debug("creating dir path=%s", dirpath);
+    errno = 0;
+    if (mkdir(dirpath, mode) < 0) {
+      if (errno != EEXIST) {
+        log_err("mkdir");
+        return -1;
+      }
+    }
+  }
+
+  return 0;
 }
 
 int check_sock_file_exists(char *path)

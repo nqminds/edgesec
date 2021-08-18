@@ -67,7 +67,7 @@ bool construct_hostapd_ctrlif(char *ctrl_interface, char *interface, char *hosta
   }
 
   os_strlcpy(hostapd_ctrl_if_path, ctrl_if_path, AP_SECRET_LEN);
-  free(ctrl_if_path);
+  os_free(ctrl_if_path);
 
   return true;
 }
@@ -211,17 +211,17 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
   int domain_sock = -1;
   char *commands[] = {"ip", "iw", "iptables", "dnsmasq", "sysctl", NULL};
   char *nat_ip = NULL;
+  int ret;
 
   // Set the log level
   log_set_level(log_level);
-
-  if (!init_context(app_config, &context)) {
-    log_trace("init_context fail");
-    goto run_engine_fail;
+  if (create_dir(app_config->db_path, S_IRWXU | S_IRWXG) < 0) {
+    log_debug("create_db_folder fail");
+    return false;
   }
 
-  if (!exist_dir(context.db_path)) {
-    log_debug("db path=%s open fail", context.db_path);
+  if (!init_context(app_config, &context)) {
+    log_debug("init_context fail");
     goto run_engine_fail;
   }
 
@@ -276,7 +276,7 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
   log_info("Checking wifi interface...");
   if (!app_config->ap_detect) {
 #ifdef WITH_IW_SERVICE
-    int ret = is_iw_vlan(app_config->hconfig.interface);
+    ret = is_iw_vlan(app_config->hconfig.interface);
     if(ret > 0) {
       log_debug("interface %s not VLAN capable", app_config->hconfig.interface);
       goto run_engine_fail;
@@ -378,7 +378,7 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
   close_dhcp();
   close_radius(radius_srv);
   eloop_destroy();
-  free(nat_ip);
+  if (nat_ip != NULL) os_free(nat_ip);
   hmap_str_keychar_free(&hmap_bin_paths);
   iptables_free(context.iptables_ctx);
   free_mac_mapper(&context.mac_mapper);
@@ -396,7 +396,7 @@ run_engine_fail:
   close_dhcp();
   close_radius(radius_srv);
   eloop_destroy();
-  free(nat_ip);
+  if (nat_ip != NULL) os_free(nat_ip);
   hmap_str_keychar_free(&hmap_bin_paths);
   iptables_free(context.iptables_ctx);
   free_mac_mapper(&context.mac_mapper);

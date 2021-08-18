@@ -17,6 +17,7 @@
         "sqlite_header_writer.h": "c",
         "pthread.h": "c",
         "capture_service.h": "c",
-        "*.tcc": "c"
+        "*.tcc": "c",
+        "x509v3.h": "c"
     }
 }

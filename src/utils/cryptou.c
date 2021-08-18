@@ -326,7 +326,6 @@ int crypto_generate_keycert_str(int bits, char **key, char **cert)
     return -1;
   }
 
-
   if (PEM_write_bio_PrivateKey(mem, pkey, NULL, NULL, 0, NULL, NULL) < 1) {
     log_trace("PEM_write_bio_PrivateKey fail");
     BIO_free(mem);

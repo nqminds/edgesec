@@ -4,7 +4,7 @@ set -e
 
 LIBPCAP_SOURCE_DIR=./libpcap
 LIBPCAP_INSTALL_DIR=$1/pcap
-CONFIG_HOST=$3
+CONFIG_HOST=$2
 
 echo "PCAP lib source dir: ${LIBPCAP_SOURCE_DIR}"
 echo "PCAP lib install dir: ${LIBPCAP_INSTALL_DIR}"

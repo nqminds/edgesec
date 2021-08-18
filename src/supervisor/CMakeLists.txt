@@ -2,10 +2,6 @@ include_directories (
   "${EDGESEC_SOURCE_DIR}/src"
 )
 
-if (BUILD_SQLITE_LIB)
- include_directories("${LIBSQLITE_INCLUDE_DIR}")
-endif ()
-
 add_library(bridge_list bridge_list.c)
 target_link_libraries(bridge_list log os)
 
