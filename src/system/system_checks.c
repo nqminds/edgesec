@@ -46,6 +46,8 @@
 #include "utils/iw.h"
 #include "utils/os.h"
 
+#define IP_FORWARD_PATH "/proc/sys/net/ipv4/ip_forward"
+
 hmap_str_keychar *check_systems_commands(char *commands[], UT_array *bin_path_arr, hmap_str_keychar *hmap_bin_hashes)
 {
   if (commands == NULL) {
@@ -76,4 +78,36 @@ hmap_str_keychar *check_systems_commands(char *commands[], UT_array *bin_path_ar
   }
 
   return hmap_bin_paths;
+}
+
+int set_ip_forward(void)
+{
+  char buf[2];
+  int fd = open(IP_FORWARD_PATH, O_RDWR);
+  if (read(fd, buf, 1) < 0) {
+    log_err("read");
+    close(fd);
+    return -1;
+  }
+
+  log_trace("Current IP forward flag %c", buf[0]);
+
+  if (buf[0] == 0x30) {
+    log_trace("Setting IP forward flag to 1");
+    if (lseek(fd, 0 , SEEK_SET) < 0) {
+      log_err("lseek")  ;
+      close(fd);
+      return -1;
+    }
+
+    buf[0] = 0x31;
+
+	  if (write(fd, buf, 1) < 0) {
+      log_err("write");
+        close(fd);
+        return -1;
+    }
+  }
+  close(fd);
+  return 0; 
 }

@@ -35,9 +35,7 @@
 void free_crypt_service(struct crypt_context *ctx)
 {
   if (ctx != NULL) {
-    log_trace("HERE crypt_db=%p", ctx->crypt_db);
     free_sqlite_crypt_db(ctx->crypt_db);
-    log_trace("HERE ctx");
     os_free(ctx);
   }
 }
@@ -235,7 +233,6 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
     return NULL;
   }
 
-  log_trace("HERE crypt_db=%p", context->crypt_db);
   // Retrieve an existing key
   if ((row_secret = get_sqlite_secrets_row(context->crypt_db, key_id)) == NULL) {
     log_trace("get_sqlite_secrets_row fail");

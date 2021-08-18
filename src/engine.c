@@ -209,7 +209,7 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
 
   struct radius_server_data *radius_srv = NULL;
   int domain_sock = -1;
-  char *commands[] = {"ip", "iw", "iptables", "dnsmasq", NULL};
+  char *commands[] = {"ip", "iw", "iptables", "dnsmasq", "sysctl", NULL};
   char *nat_ip = NULL;
 
   // Set the log level
@@ -260,9 +260,12 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
 
   if (app_config->set_ip_forward) {
     log_debug("Setting the ip forward os system flag...");
+    if (set_ip_forward() < 0) {
+      log_debug("set_ip_forward fail");
+      goto run_engine_fail;
+    }
   }
 
-  goto run_engine_fail;
 
   log_info("Adding default mac mappers...");
   if (!create_mac_mapper(&context)) {

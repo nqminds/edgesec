@@ -42,4 +42,12 @@
  */
 hmap_str_keychar *check_systems_commands(char *commands[], UT_array *bin_path_arr, hmap_str_keychar *hmap_bin_hashes);
 
+/**
+ * @brief Set the ip forward os system param
+ * 
+ * @return int 0 on success, -1 on failure
+ */
+
+int set_ip_forward(void);
+
 #endif
