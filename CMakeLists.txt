@@ -12,14 +12,14 @@ include(ExternalProject)
 include(glibc)
 
 # Installation options
-# set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
+#set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 set(CMAKE_INSTALL_RPATH "$ORIGIN" "$ORIGIN/lib")
 set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/install" CACHE BOOL "Installation path" FORCE)
 
 option(USE_ARM_MUSL_LIBC "Use arm musl standard C library" OFF)
 option(BUILD_ONLY_DOCS "Build only docs" OFF)
 option(BUILD_CAPTURE_SERVICE "Build Capture server" ON)
-option(BUILD_REST_SERVER "Build Rest server" OFF)
+option(BUILD_REST_SERVER "Build Rest server" ON)
 option(BUILD_HOSTAPD "Build hostapd" ON)
 option(BUILD_SQLITE_LIB "Build sqlite3 library" ON)
 option(BUILD_OPENSSL_LIB "Build OpenSSL" ON)
@@ -136,13 +136,13 @@ if (BUILD_SQLSYNC_SERVICE AND NOT (BUILD_ONLY_DOCS))
     ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}"
       --cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
       -I "${sqlite_proto_path}"
-      --plugin=protoc-gen-grpc="${GRPC_CPP_PLUGIN_BIN}"
+      --plugin=protoc-gen-grpc="${GRPC_CPP_PLUGIN_SH}"
       "${sqlite_proto}"
     DEPENDS "${sqlite_proto}")
 
   add_library(sqlite_grpc_proto ${sqlite_grpc_srcs} ${sqlite_grpc_hdrs} ${sqlite_proto_srcs} ${sqlite_proto_hdrs})
-  target_include_directories(sqlite_grpc_proto PRIVATE ${LIBGRPC_INCLUDE_PATH})
-  target_link_libraries(sqlite_grpc_proto ${LIBGRPCPP_LIB} ${LIBGRPC_PLUGIN_SUPPORT_LIB})
+  target_include_directories(sqlite_grpc_proto PUBLIC ${LIBGRPC_INCLUDE_PATH})
+  target_link_libraries(sqlite_grpc_proto PUBLIC ${LIBGRPC_LIB} ${LIBGRPCPP_LIB} ${LIBGRPC_PLUGIN_SUPPORT_LIB})
 endif ()
 
 if (BUILD_REVERSE_SERVICE AND NOT (BUILD_ONLY_DOCS))
@@ -154,15 +154,13 @@ if (BUILD_REVERSE_SERVICE AND NOT (BUILD_ONLY_DOCS))
   set(reverse_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/reverse_access.grpc.pb.cc")
   set(reverse_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/reverse_access.grpc.pb.h")
 
-  set(PROTO_COMMAND "LD_LIBRARY_PATH=${LIBGRPC_LIB_DIR} ${PROTOC_BIN}")
-  message("${GRPC_CPP_PLUGIN_BIN}")
   add_custom_command(
     OUTPUT "${reverse_proto_srcs}" "${reverse_proto_hdrs}" "${reverse_grpc_srcs}" "${reverse_grpc_hdrs}"
     COMMAND ${PROTOC_BIN}
     ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}"
       --cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
       -I "${reverse_proto_path}"
-      --plugin=protoc-gen-grpc="${GRPC_CPP_PLUGIN_BIN}"
+      --plugin=protoc-gen-grpc="${GRPC_CPP_PLUGIN_SH}"
       "${reverse_proto}"
     DEPENDS "${reverse_proto}")
 
@@ -171,8 +169,8 @@ if (BUILD_REVERSE_SERVICE AND NOT (BUILD_ONLY_DOCS))
 
   # Compile grpc protobuf sources
   add_library(reverse_grpc_proto ${reverse_grpc_srcs} ${reverse_grpc_hdrs} ${reverse_proto_srcs} ${reverse_proto_hdrs})
-  target_include_directories(reverse_grpc_proto PRIVATE ${LIBGRPC_INCLUDE_PATH})
-  target_link_libraries(reverse_grpc_proto ${LIBGRPCPP_LIB} ${LIBGRPC_PLUGIN_SUPPORT_LIB})
+  target_include_directories(reverse_grpc_proto PUBLIC ${LIBGRPC_INCLUDE_PATH})
+  target_link_libraries(reverse_grpc_proto PUBLIC ${LIBGRPC_LIB} ${LIBGRPCPP_LIB} ${LIBGRPC_PLUGIN_SUPPORT_LIB})
 endif ()
 
 if (USE_OW_DNSMASQ)
@@ -211,12 +209,6 @@ if (NOT BUILD_ONLY_DOCS)
   add_subdirectory(src)
   add_subdirectory(tests)
 endif ()
-
-#message(STATUS "Folders...")
-#get_target_property(TT_INCLUDES revsrv INCLUDE_DIRECTORIES)
-#foreach(dir ${TT_INCLUDES})
-#  message(STATUS "dir='${dir}'")
-#endforeach()
 
 install(
   TARGETS edgesec capsrv
@@ -276,6 +268,10 @@ endif ()
 
 if (BUILD_MICROHTTPD_LIB AND LIBMICROHTTPD_LIB)
   install(DIRECTORY ${LIBMICROHTTPD_LIB_DIR} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
+endif ()
+
+if (BUILD_GRPC_LIB AND LIBGRPC_LIB)
+  install(DIRECTORY ${LIBGRPC_LIB_DIR} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
 endif ()
 
 if (BUILD_HOSTAPD AND HOSTAPD)

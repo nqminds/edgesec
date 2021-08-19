@@ -2,8 +2,6 @@
 
 set -e
 
-set -e
-
 LIBGRPC_SOURCE_DIR=./grpc
 LIBGRPC_INSTALL_DIR=$1/grpc
 CONFIG_HOST=$2
@@ -17,11 +15,6 @@ git clone -b v1.36.4 https://github.com/grpc/grpc
 
 cd ${LIBGRPC_SOURCE_DIR}
 git submodule update --init
-
-# Just before installing gRPC, wipe out contents of all the submodules to simulate
-# a standalone build from an archive
-# shellcheck disable=SC2016
-# git submodule foreach 'cd $toplevel; rm -rf $name'
 
 # Install gRPC
 mkdir -p "cmake/build"
@@ -37,6 +30,7 @@ cmake \
   -DgRPC_RE2_PROVIDER=module \
   -DgRPC_SSL_PROVIDER=module \
   -DgRPC_ZLIB_PROVIDER=module \
+  -DCMAKE_INSTALL_RPATH=\$ORIGIN \
   -DCMAKE_INSTALL_PREFIX=$LIBGRPC_INSTALL_DIR \
   ../..
 make -j4 install

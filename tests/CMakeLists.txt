@@ -3,14 +3,6 @@ include_directories (
   "${CMOCKA_INCLUDE_DIR}"
 )
 
-if (BUILD_NL_LIB)
-  include_directories("${LIBNL_INCLUDE_DIR}")
-endif ()
-
-if (BUILD_SQLITE_LIB)
- include_directories("${LIBSQLITE_INCLUDE_DIR}")
-endif ()
-
 if (LIBPCAP_LIB)
   add_subdirectory(capture)
 endif ()

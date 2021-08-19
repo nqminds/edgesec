@@ -1,6 +1,5 @@
 include_directories (
   "${EDGESEC_SOURCE_DIR}/src"
-  "${LibNL_INCLUDE_DIR}"
   "${CMOCKA_INCLUDE_DIR}"
 )
 

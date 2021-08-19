@@ -14,6 +14,8 @@ if (BUILD_GRPC_LIB AND NOT (BUILD_ONLY_DOCS))
   find_library(LIBGRPCPP_REFLECTION_LIB NAMES grpc++_reflection libgrpc++_reflection PATHS "${LIBGRPC_LIB_DIR}" NO_DEFAULT_PATH)
   find_program(PROTOC_BIN NAMES protoc PATHS "${LIBGRPC_BIN_DIR}" NO_DEFAULT_PATH)
   find_program(GRPC_CPP_PLUGIN_BIN NAMES grpc_cpp_plugin PATHS "${LIBGRPC_BIN_DIR}" NO_DEFAULT_PATH)
+  find_program(GRPC_CPP_PLUGIN_SH NAMES grpc_cpp_plugin.sh PATHS "${LIBGRPC_BIN_DIR}" NO_DEFAULT_PATH)
+  
   if (LIBGRPCPP_LIB AND LIBPROTOBUF_LIB AND LIBGRPCPP_REFLECTION_LIB AND PROTOC_BIN AND GRPC_CPP_PLUGIN_BIN)
     message("Found libgrpc_plugin_support library: ${LIBGRPC_PLUGIN_SUPPORT_LIB}")
     message("Found libgrpc library: ${LIBGRPC_LIB}")
@@ -33,6 +35,23 @@ if (BUILD_GRPC_LIB AND NOT (BUILD_ONLY_DOCS))
     find_library(LIBGRPCPP_REFLECTION_LIB NAMES grpc++_reflection libgrpc++_reflection PATHS "${LIBGRPC_LIB_DIR}" NO_DEFAULT_PATH)
     find_program(PROTOC_BIN NAMES protoc PATHS "${LIBGRPC_BIN_DIR}" NO_DEFAULT_PATH)
     find_program(GRPC_CPP_PLUGIN_BIN NAMES grpc_cpp_plugin PATHS "${LIBGRPC_BIN_DIR}" NO_DEFAULT_PATH)
+
+    file(WRITE ${LIBGRPC_INSTALL_DIR}/grpc_cpp_plugin.tmp
+    "#!/bin/bash
+    set -e
+    LD_LIBRARY_PATH=${LIBGRPC_LIB_DIR} ${GRPC_CPP_PLUGIN_BIN} \"$@\"
+    "
+    )
+
+    file(
+      COPY ${LIBGRPC_INSTALL_DIR}/grpc_cpp_plugin.tmp
+      DESTINATION ${LIBGRPC_BIN_DIR}
+      FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+    )
+
+    file(RENAME ${LIBGRPC_BIN_DIR}/grpc_cpp_plugin.tmp ${LIBGRPC_BIN_DIR}/grpc_cpp_plugin.sh)
+    file(REMOVE  ${LIBGRPC_INSTALL_DIR}/grpc_cpp_plugin.tmp)
+    find_program(GRPC_CPP_PLUGIN_SH NAMES grpc_cpp_plugin.sh PATHS "${LIBGRPC_BIN_DIR}" NO_DEFAULT_PATH)
   endif ()
 
 

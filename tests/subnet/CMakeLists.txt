@@ -4,10 +4,8 @@ include_directories (
 )
 
 if (BUILD_NL_LIB)
-  include_directories("${LIBNL_INCLUDE_DIR}")
-
-
   add_executable(test_subnet_service test_subnet_service.c)
+  target_include_directories(test_subnet_service PRIVATE ${LIBNL_INCLUDE_DIR})
   target_link_libraries(test_subnet_service PRIVATE log if iw os hashmap subnet_service cmocka-static)
   set_target_properties(test_subnet_service
          PROPERTIES
