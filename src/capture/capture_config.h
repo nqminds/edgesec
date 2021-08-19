@@ -46,6 +46,32 @@
 #define MAX_FINGERPRINT_LEN 	      1024
 #define MAX_QUERY_LEN 	            MAX_OS_PATH_LEN
 
+#define CAPTURE_MAX_OPT       26
+#define CAPTURE_OPT_STRING    ":c:i:q:f:t:n:p:y:a:o:x:z:dvhmewus"
+#define CAPTURE_USAGE_STRING  "\t%s [-c config] [-d] [-h] [-v] [-i interface] [-q domain]" \
+                              "[-f filter] [-m] [-t timeout] [-n interval] " \
+                              "[-e] [-y engine][-w] [-u] [-s] [-p path] [-a address] [-o port]\n"
+#define CAPTURE_OPT_DEFS      "\t-c config\t Path to the config file name\n" \
+                              "\t-q domain\t The UNIX domain path\n" \
+                              "\t-x command\t The UNIX domain command\n" \
+                              "\t-z delimiter\t The UNIX domain command delimiter\n" \
+                              "\t-i interface\t The capture interface name\n" \
+                              "\t-f filter\t The capture filter expression\n" \
+                              "\t-t timeout\t The buffer timeout (milliseconds)\n" \
+                              "\t-n interval\t The process interval (milliseconds)\n" \
+                              "\t-y analyser\t Analyser\n" \
+                              "\t-p path\t\t The db path\n" \
+                              "\t-a address\t The db sync address\n" \
+                              "\t-o port\t\t The db sync port\n" \
+                              "\t-m\t\t Promiscuous mode\n" \
+                              "\t-e\t\t Immediate mode\n" \
+                              "\t-u\t\t Write to file\n" \
+                              "\t-w\t\t Write to db\n" \
+                              "\t-s\t\t Sync the db\n" \
+                              "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n" \
+                              "\t-h\t\t Show help\n" \
+                              "\t-v\t\t Show app version\n\n"
+
 /**
  * @brief The capture configuration structure
  * 
@@ -69,5 +95,30 @@ struct capture_conf {
   uint16_t db_sync_port;                                      /**< Specifies the port of the web address for sqlite syncing */
   char filter[MAX_FILTER_SIZE];                                               /**< Specifies the filter expression or pcap lib */
 };
+
+/**
+ * @brief Translate a capture process option to a config structure value
+ * 
+ * @param key Capture process option key
+ * @param opt Capture process option value
+ * @param config The config structure
+ * @return int 0 on success, -1 on error and 1 for an unknown option key
+ */
+int capture_opt2config(char key, char *value, struct capture_conf *config);
+
+/**
+ * @brief Transforms a config structure to opt string array
+ * 
+ * @param config The config structure
+ * @return char** the opt string array, NULL on failure
+ */
+
+char** capture_config2opt(struct capture_conf *config);
+/**
+ * @brief Free opt string array
+ * 
+ * @param opt_str Opt string array
+ */
+void capture_freeopt(char **opt_str);
 
 #endif

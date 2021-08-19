@@ -2,6 +2,9 @@ include_directories (
   "${EDGESEC_SOURCE_DIR}/src"
 )
 
+add_library(capture_config capture_config.c)
+target_link_libraries(capture_config log os)
+
 if (BUILD_PCAP_LIB)
   add_library(packet_decoder packet_decoder.c)
   target_include_directories(packet_decoder PRIVATE ${LIBPCAP_INCLUDE_PATH})
@@ -32,8 +35,8 @@ endif ()
 
 if (BUILD_SQLSYNC_SERVICE)
   add_library(sync_client sync_client.cc)
-  target_include_directories(sync_client PRIVATE ${PROJECT_BINARY_DIR})
-  target_link_libraries(sync_client log sqlite_grpc_proto ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF})
+  target_include_directories(sync_client PRIVATE ${PROJECT_BINARY_DIR} ${LIBGRPC_INCLUDE_PATH})
+  target_link_libraries(sync_client log sqlite_grpc_proto ${LIBGRPCPP_REFLECTION_LIB} ${LIBGRPCPP_LIB} ${LIBPROTOBUF_LIB})
   target_link_libraries(default_analyser pcap_service sync_client sqlite_header_writer sqlite_pcap_writer pcap_queue packet_queue packet_decoder eloop if log os hashmap)
 else ()
   if (BUILD_PCAP_LIB)

@@ -37,8 +37,8 @@ target_link_libraries(test_packet_queue PRIVATE packet_queue os log cmocka-stati
 add_executable(test_pcap_queue test_pcap_queue.c)
 target_link_libraries(test_pcap_queue PRIVATE pcap_queue os log cmocka-static)
 
-add_executable(test_capture_service test_capture_service.c)
-target_link_libraries(test_capture_service PRIVATE capture_service os log cmocka-static)
+add_executable(test_capture_config test_capture_config.c)
+target_link_libraries(test_capture_config PRIVATE capture_config os log cmocka-static)
 
 add_executable(test_sqlite_pcap_writer test_sqlite_pcap_writer.c)
 target_link_libraries(test_sqlite_pcap_writer PRIVATE sqlite_pcap_writer sqliteu os log cmocka-static)
@@ -76,8 +76,8 @@ set_tests_properties(test_pcap_queue
   PROPERTIES
   WILL_FAIL FALSE)
 
-add_test(NAME test_capture_service COMMAND test_capture_service)
-set_tests_properties(test_capture_service
+add_test(NAME test_capture_config COMMAND test_capture_config)
+set_tests_properties(test_capture_config
   PROPERTIES
   WILL_FAIL FALSE)
 
