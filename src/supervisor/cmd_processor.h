@@ -26,6 +26,7 @@
 #ifndef CMD_PROCESSOR_H
 #define CMD_PROCESSOR_H
 
+#include <sys/un.h>
 #include <sys/types.h>
 #include <stdbool.h>
 
@@ -57,7 +58,16 @@
 
 #define MAX_QUERY_OP_LEN      3
 
-typedef ssize_t (*process_cmd_fn)(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+/**
+ * @brief Client address structure definition
+ * 
+ */
+struct client_address {
+  struct sockaddr_un addr;
+  int len;
+};
+
+typedef ssize_t (*process_cmd_fn)(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Processes the domain command string
@@ -79,7 +89,7 @@ bool process_domain_buffer(char *domain_buffer, size_t domain_buffer_len, UT_arr
  * @param cmd_arr The array of received commands
  * @return ssize_t Size of reply written data
  */
-ssize_t process_ping_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+ssize_t process_ping_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Processes the HOSTAPD_IF command
@@ -90,7 +100,7 @@ ssize_t process_ping_cmd(int sock, char *client_addr, struct supervisor_context 
  * @param cmd_arr The array of received commands
  * @return ssize_t Size of reply written data
  */
-ssize_t process_hostapd_ctrlif_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+ssize_t process_hostapd_ctrlif_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Processes the ACCEPT_MAC command
@@ -101,7 +111,7 @@ ssize_t process_hostapd_ctrlif_cmd(int sock, char *client_addr, struct superviso
  * @param cmd_arr The array of received commands
  * @return ssize_t Size of reply written data
  */
-ssize_t process_accept_mac_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+ssize_t process_accept_mac_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Processes the DENY_MAC command
@@ -112,7 +122,7 @@ ssize_t process_accept_mac_cmd(int sock, char *client_addr, struct supervisor_co
  * @param cmd_arr The array of received commands
  * @return ssize_t Size of reply written data
  */
-ssize_t process_deny_mac_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+ssize_t process_deny_mac_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Processes the ADD_NAT command
@@ -123,7 +133,7 @@ ssize_t process_deny_mac_cmd(int sock, char *client_addr, struct supervisor_cont
  * @param cmd_arr The array of received commands
  * @return ssize_t Size of reply written data
  */
-ssize_t process_add_nat_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+ssize_t process_add_nat_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Processes the REMOVE_NAT command
@@ -134,7 +144,7 @@ ssize_t process_add_nat_cmd(int sock, char *client_addr, struct supervisor_conte
  * @param cmd_arr The array of received commands
  * @return ssize_t Size of reply written data
  */
-ssize_t process_remove_nat_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+ssize_t process_remove_nat_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Processes the ASSIGN_PSK command
@@ -145,7 +155,7 @@ ssize_t process_remove_nat_cmd(int sock, char *client_addr, struct supervisor_co
  * @param cmd_arr The array of received commands
  * @return ssize_t Size of reply written data
  */
-ssize_t process_assign_psk_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+ssize_t process_assign_psk_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Processes the GET_MAP command
@@ -156,7 +166,7 @@ ssize_t process_assign_psk_cmd(int sock, char *client_addr, struct supervisor_co
  * @param cmd_arr The array of received commands
  * @return ssize_t Size of reply written data
  */
-ssize_t process_get_map_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+ssize_t process_get_map_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Processes the GET_ALL command
@@ -167,7 +177,7 @@ ssize_t process_get_map_cmd(int sock, char *client_addr, struct supervisor_conte
  * @param cmd_arr The array of received commands
  * @return ssize_t Size of reply written data
  */
-ssize_t process_get_all_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+ssize_t process_get_all_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Processes the SET_IP command
@@ -178,7 +188,7 @@ ssize_t process_get_all_cmd(int sock, char *client_addr, struct supervisor_conte
  * @param cmd_arr The array of received commands
  * @return ssize_t Size of reply written data
  */
-ssize_t process_set_ip_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+ssize_t process_set_ip_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Processes the ADD_BRIDGE command
@@ -189,7 +199,7 @@ ssize_t process_set_ip_cmd(int sock, char *client_addr, struct supervisor_contex
  * @param cmd_arr The array of received commands
  * @return ssize_t Size of reply written data
  */
-ssize_t process_add_bridge_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+ssize_t process_add_bridge_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Processes the REMOVE_BRIDGE command
@@ -200,7 +210,7 @@ ssize_t process_add_bridge_cmd(int sock, char *client_addr, struct supervisor_co
  * @param cmd_arr The array of received commands
  * @return ssize_t Size of reply written data
  */
-ssize_t process_remove_bridge_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+ssize_t process_remove_bridge_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Processes the GET_BRIDGES command
@@ -211,7 +221,7 @@ ssize_t process_remove_bridge_cmd(int sock, char *client_addr, struct supervisor
  * @param cmd_arr The array of received commands
  * @return ssize_t Size of reply written data
  */
-ssize_t process_get_bridges_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+ssize_t process_get_bridges_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Processes the SET_FINGERPRINT command
@@ -222,7 +232,7 @@ ssize_t process_get_bridges_cmd(int sock, char *client_addr, struct supervisor_c
  * @param cmd_arr The array of received commands
  * @return ssize_t Size of reply written data
  */
-ssize_t process_set_fingerprint_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+ssize_t process_set_fingerprint_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Processes the QUERY_FINGERPRINT command
@@ -233,7 +243,7 @@ ssize_t process_set_fingerprint_cmd(int sock, char *client_addr, struct supervis
  * @param cmd_arr The array of received commands
  * @return ssize_t Size of reply written data
  */
-ssize_t process_query_fingerprint_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+ssize_t process_query_fingerprint_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Processes the REGISTER_TICKET command
@@ -244,7 +254,7 @@ ssize_t process_query_fingerprint_cmd(int sock, char *client_addr, struct superv
  * @param cmd_arr The array of received commands
  * @return ssize_t Size of reply written data
  */
-ssize_t process_register_ticket_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+ssize_t process_register_ticket_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Processes the CLEAR_PSK command
@@ -255,7 +265,7 @@ ssize_t process_register_ticket_cmd(int sock, char *client_addr, struct supervis
  * @param cmd_arr The array of received commands
  * @return ssize_t Size of reply written data
  */
-ssize_t process_clear_psk_cmd(int sock, char *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+ssize_t process_clear_psk_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Get the command function pointer

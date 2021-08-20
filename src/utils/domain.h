@@ -26,6 +26,7 @@
 #ifndef DOMAIN_H
 #define DOMAIN_H
 
+#include <sys/un.h>
 #include <sys/types.h>
 
 #define MAX_DOMAIN_RECEIVE_DATA 1024
@@ -38,10 +39,10 @@ extern "C" {
 /**
  * @brief Create a domain client object
  * 
- * @param socket_name The returned client address
+ * @param addr The socket addr, if NULL is auto genereated and hidden
  * @return int Client socket
  */
-int create_domain_client(char *socket_name);
+int create_domain_client(char *add);
 
 /**
  * @brief Create a domain server object
@@ -58,10 +59,23 @@ int create_domain_server(char *server_path);
  * @param data Data buffer
  * @param data_len Data buffer length
  * @param addr Sender address
+ * @param addr_len Sender address length
  * @param flags The flags for recvfrom function
  * @return ssize_t Size of read data
  */
-ssize_t read_domain_data(int sock, char *data, size_t data_len, char *addr, int flags);
+ssize_t read_domain_data(int sock, char *data, size_t data_len, struct sockaddr_un *addr, int *addr_len, int flags);
+
+/**
+ * @brief Read data from the domain server socket with a string address
+ * 
+ * @param sock Domain Server socket
+ * @param data Data buffer
+ * @param data_len Data buffer length
+ * @param addr Sender address
+ * @param flags The flags for recvfrom function
+ * @return ssize_t Size of read data
+ */
+ssize_t read_domain_data_s(int sock, char *data, size_t data_len, char *addr, int flags);
 
 /**
  * @brief Write data to the domain server socket
@@ -70,9 +84,21 @@ ssize_t read_domain_data(int sock, char *data, size_t data_len, char *addr, int 
  * @param data Data buffer
  * @param data_len Data buffer length
  * @param addr Client address
+ * @param addr_len Client address length
  * @return ssize_t Size of written data
  */
-ssize_t write_domain_data(int sock, char *data, size_t data_len, char *addr);
+ssize_t write_domain_data(int sock, char *data, size_t data_len, struct sockaddr_un *addr, int addr_len);
+
+/**
+ * @brief Write data to the domain server socket with a string address
+ * 
+ * @param sock Domain server socket
+ * @param data Data buffer
+ * @param data_len Data buffer length
+ * @param addr Client address (string)
+ * @return ssize_t Size of written data
+ */
+ssize_t write_domain_data_s(int sock, char *data, size_t data_len, char *addr);
 
 /**
  * @brief Closes teh domain socket

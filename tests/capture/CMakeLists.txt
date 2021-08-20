@@ -51,12 +51,12 @@ set_tests_properties(test_default_analyser
   PROPERTIES
   WILL_FAIL FALSE)
 
-if (BUILD_NDPI_LIB)
-  add_test(NAME test_ndpi_analyser COMMAND test_ndpi_analyser)
-  set_tests_properties(test_ndpi_analyser
-    PROPERTIES
-    WILL_FAIL FALSE)
-endif ()
+#if (BUILD_NDPI_LIB)
+#  add_test(NAME test_ndpi_analyser COMMAND test_ndpi_analyser)
+#  set_tests_properties(test_ndpi_analyser
+#    PROPERTIES
+#    WILL_FAIL FALSE)
+#endif ()
 
 add_test(NAME test_packet_queue COMMAND test_packet_queue)
 set_tests_properties(test_packet_queue

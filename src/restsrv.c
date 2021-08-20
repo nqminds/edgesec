@@ -256,12 +256,11 @@ int forward_command(char *cmd_str, char *socket_path, char **sresponse)
   ssize_t send_count;
   struct timeval timeout;
   fd_set readfds, masterfds;
-  char socket_name[DOMAIN_SOCKET_NAME_SIZE];
   char *rec_data;
   timeout.tv_sec = MESSAGE_REPLY_TIMEOUT;
   timeout.tv_usec = 0;
 
-  if ((sfd = create_domain_client(socket_name)) == -1) {
+  if ((sfd = create_domain_client(NULL)) == -1) {
     log_debug("create_domain_client fail");
     return -1;
   }
@@ -271,7 +270,7 @@ int forward_command(char *cmd_str, char *socket_path, char **sresponse)
   os_memcpy(&readfds, &masterfds, sizeof(fd_set));
 
   log_trace("socket_path=%s", socket_path);
-  if ((send_count = write_domain_data(sfd, cmd_str, strlen(cmd_str), socket_path)) != strlen(cmd_str)) {
+  if ((send_count = write_domain_data_s(sfd, cmd_str, strlen(cmd_str), socket_path)) != strlen(cmd_str)) {
     log_err("sendto");
     goto fail;
   }
@@ -297,7 +296,7 @@ int forward_command(char *cmd_str, char *socket_path, char **sresponse)
       goto fail;
     }
 
-    read_domain_data(sfd, rec_data, bytes_available, socket_path, MSG_DONTWAIT);
+    read_domain_data_s(sfd, rec_data, bytes_available, socket_path, MSG_DONTWAIT);
 
     *sresponse = rtrim(rec_data, NULL);
   } else {
@@ -306,19 +305,11 @@ int forward_command(char *cmd_str, char *socket_path, char **sresponse)
   }
 
   close(sfd);
-  if (unlink(socket_name) < 0) {
-    log_err("unlink");
-    return -1;
-  }
-
   return 0;
 
 fail:
   *sresponse = NULL;
   close(sfd);
-  if (unlink(socket_name) < 0) {
-    log_err("unlink");
-  }
   return -1;
 }
 

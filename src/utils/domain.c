@@ -29,9 +29,12 @@
 #include <ctype.h>
 #include <errno.h>
 
+#include "domain.h"
+
 #include "os.h"
 #include "log.h"
 
+#define SOCK_EXTENSION ".sock"
 void init_domain_addr(struct sockaddr_un *unaddr, char *addr)
 {
   os_memset(unaddr, 0, sizeof(struct sockaddr_un));
@@ -39,21 +42,28 @@ void init_domain_addr(struct sockaddr_un *unaddr, char *addr)
   os_strlcpy(unaddr->sun_path, addr, sizeof(unaddr->sun_path));
 }
 
-char* generate_socket_name(char *buf)
+char* generate_socket_name(void)
 {
   unsigned char crypto_rand[4];
+  char *buf = NULL;
   if (os_get_random(crypto_rand, 4) == -1) {
     log_trace("os_get_random fail");
     return NULL;
   }
-  sprintf(buf, "%x%x%x%x.sock", crypto_rand[0], crypto_rand[1], crypto_rand[2], crypto_rand[3]);
+  buf = os_zalloc(sizeof(crypto_rand) * 2 + STRLEN(SOCK_EXTENSION) + 1);
+  sprintf(buf, "%x%x%x%x"SOCK_EXTENSION, crypto_rand[0], crypto_rand[1], crypto_rand[2], crypto_rand[3]);
   return buf;
 }
 
-int create_domain_client(char *socket_name)
+int create_domain_client(char *addr)
 {
   struct sockaddr_un claddr;
   int sock;
+  char *client_addr = NULL;
+  socklen_t addrlen = 0;
+
+  os_memset(&claddr, 0, sizeof(struct sockaddr_un));
+  claddr.sun_family = AF_UNIX;
 
   sock = socket(AF_UNIX, SOCK_DGRAM, 0);
   if (sock == -1) {
@@ -61,14 +71,23 @@ int create_domain_client(char *socket_name)
     return -1;
   }
 
-  if (generate_socket_name(socket_name) == NULL) {
-    log_trace("generate_random_name fail");
-    return -1;
+  if (addr == NULL) {
+    if ((client_addr = generate_socket_name()) == NULL) {
+      log_trace("generate_socket_name fail");
+      return -1;
+    }
+
+    strcpy(&claddr.sun_path[1], client_addr);
+    addrlen = sizeof(sa_family_t) + strlen(client_addr) + 1;
+    os_free(client_addr);
+  } else {
+    os_strlcpy(claddr.sun_path, addr, sizeof(claddr.sun_path));
+    addrlen = sizeof(struct sockaddr_un);
   }
 
-  init_domain_addr(&claddr, socket_name);
+  
 
-  if (bind(sock, (struct sockaddr *) &claddr, sizeof(struct sockaddr_un)) == -1) {
+  if (bind(sock, (struct sockaddr *) &claddr, addrlen) == -1) {
     log_err("bind");
     return -1;
   }
@@ -112,48 +131,78 @@ int create_domain_server(char *server_path)
   return sfd;
 }
 
-ssize_t read_domain_data(int sock, char *data, size_t data_len, char *addr, int flags)
+ssize_t read_domain_data(int sock, char *data, size_t data_len,
+  struct sockaddr_un *addr, int *addr_len, int flags)
 {
-  struct sockaddr_un unaddr;
-  int addr_len = sizeof(struct sockaddr_un);
+  *addr_len = sizeof(struct sockaddr_un);
 
   if (data == NULL) {
-    log_trace("error get_domain_data data param=NULL");
+    log_trace("data param is NULL");
     return -1;
   }
 
-  ssize_t num_bytes = recvfrom(sock, data, data_len, flags, (struct sockaddr *) &unaddr, &addr_len);
+  if (addr == NULL) {
+    log_trace("addr param is NULL");
+    return -1;
+  }
+
+  ssize_t num_bytes = recvfrom(sock, data, data_len, flags, (struct sockaddr *) addr, addr_len);
   if (num_bytes == -1) {
     log_err("recvfrom");
     return -1;
   }
 
-  if (addr != NULL)
-    strcpy(addr, unaddr.sun_path);
+  return num_bytes;
+}
+
+ssize_t read_domain_data_s(int sock, char *data, size_t data_len, char *addr, int flags)
+{
+  struct sockaddr_un unaddr;
+  ssize_t num_bytes;
+  int addr_len;
+
+  if (addr == NULL) {
+    log_trace("addr is NULL");
+    return -1;
+  }
+
+  num_bytes = read_domain_data(sock, data, data_len, &unaddr, &addr_len, flags);
+
+  strcpy(addr, unaddr.sun_path);
 
   return num_bytes;
 }
 
-ssize_t write_domain_data(int sock, char *data, size_t data_len, char *addr)
+ssize_t write_domain_data_s(int sock, char *data, size_t data_len, char *addr)
 {
-  struct sockaddr_un unaddr;
-  int addr_len = sizeof(struct sockaddr_un);
+  struct sockaddr_un uaddr;
+
+  if (addr == NULL) {
+    log_trace("addr param is NULL");
+    return -1;
+  }
+
+  init_domain_addr(&uaddr, addr);
+
+  return write_domain_data(sock, data, data_len, &uaddr, sizeof(struct sockaddr_un));
+}
+
+ssize_t write_domain_data(int sock, char *data, size_t data_len, struct sockaddr_un *addr, int addr_len)
+{
   ssize_t num_bytes;
 
   if (data == NULL) {
-    log_trace("error write_domain_data data param=NULL");
+    log_trace("data param is NULL");
     return -1;
   }
 
   if (addr == NULL) {
-    log_trace("error write_domain_data addr param=NULL");
+    log_trace("addr param is NULL");
     return -1;
   }
 
-  init_domain_addr(&unaddr, addr);
-
   errno = 0;
-  if ((num_bytes = sendto(sock, data, data_len, 0, (struct sockaddr *) &unaddr, addr_len)) < 0) {
+  if ((num_bytes = sendto(sock, data, data_len, 0, (struct sockaddr *) addr, addr_len)) < 0) {
     log_err("sendto");
     return -1;
   }

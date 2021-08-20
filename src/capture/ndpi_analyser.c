@@ -75,7 +75,6 @@ struct nDPI_reader_thread {
   pthread_t thread_id;
   int array_index;
   int sfd;
-  char socket_name[DOMAIN_SOCKET_NAME_SIZE];
   char *domain_server_path;
   char *domain_command;
   char domain_delim;
@@ -392,7 +391,7 @@ int send_flow_meta(struct nDPI_reader_thread *reader_thread, struct nDPI_flow_me
             delim, meta->dst_mac_addr, delim, meta->protocol, delim, base64_encoding, delim, meta->query);
     log_trace("%s", buf);
 
-    ret = write_domain_data(reader_thread->sfd, buf, strlen(buf), reader_thread->domain_server_path);
+    ret = write_domain_data_s(reader_thread->sfd, buf, strlen(buf), reader_thread->domain_server_path);
 
     os_free(buf);
     os_free(base64_encoding);
@@ -946,7 +945,7 @@ static int start_reader_threads(struct nDPI_thread_arg *targs)
   for (int i = 0; i < reader_thread_count; ++i) {
     reader_threads[i].array_index = i;
     targs[i].thread_index = i;
-    reader_threads[i].sfd = create_domain_client(reader_threads[i].socket_name);
+    reader_threads[i].sfd = create_domain_client(NULL);
     reader_threads[i].domain_server_path = context->domain_server_path;
     reader_threads[i].domain_command = context->domain_command;
     reader_threads[i].domain_delim = context->domain_delim;

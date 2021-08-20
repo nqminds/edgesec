@@ -19,6 +19,7 @@
 #include "utils/hashmap.h"
 #include "utils/utarray.h"
 #include "utils/log.h"
+#include "utils/os.h"
 
 #define TMP_PFX "tdoms"
 
@@ -56,28 +57,53 @@ static void test_create_domain_server(void **state)
 
   assert_int_not_equal(sock, -1);
   if (temp_file_path)
-    free(temp_file_path);
+    os_free(temp_file_path);
 
   close(sock);
 }
 
-static void test_read_domain_data(void **state)
+static void test_create_domain_client(void **state)
+{
+  (void) state; /* unused */
+
+  char *temp_file_path = tempnam(NULL, TMP_PFX);
+
+  assert_non_null(temp_file_path);
+
+  int sock = create_domain_client(temp_file_path);
+
+  assert_int_not_equal(sock, -1);
+  if (temp_file_path) {
+    os_free(temp_file_path);
+  }
+
+  close(sock);
+
+  sock = create_domain_client(NULL);
+  assert_int_not_equal(sock, -1);
+  close(sock);
+}
+
+
+static void test_read_domain_data_s(void **state)
 {
   (void) state; /* unused */
 
   struct sockaddr_un svaddr;
+  struct sockaddr_un claddr;
   char *send_buf = "domain";
   char read_buf[100];
   char client_addr[100];
+  int addr_len;
 
   char *server_file_path = tempnam(NULL, TMP_PFX);
   char *client_file_path = tempnam(NULL, TMP_PFX);
-
+  
   int server_sock = create_domain_server(server_file_path);
 
   assert_int_not_equal(server_sock, -1);
 
-  int client_sock = create_client(client_file_path);
+  int client_sock = create_domain_client(client_file_path);
   assert_int_not_equal(client_sock, -1);
 
   memset(&svaddr, 0, sizeof(struct sockaddr_un));
@@ -87,16 +113,36 @@ static void test_read_domain_data(void **state)
   ssize_t ret = sendto(client_sock, send_buf, buf_len, 0, (struct sockaddr *) &svaddr, sizeof(struct sockaddr_un));
   assert_int_equal(ret, buf_len);
 
-  ret = read_domain_data(server_sock, read_buf, 100, client_addr, 0);
+  ret = read_domain_data_s(server_sock, read_buf, 100, client_addr, 0);
 
   assert_int_equal(ret, buf_len);
   assert_string_equal(send_buf, read_buf);
   assert_string_equal(client_addr, client_file_path);
 
-  free(server_file_path);
-  free(client_file_path);
-  close(server_sock);
+  os_free(client_file_path);
+
+  client_sock = create_domain_client(NULL);
+  assert_int_not_equal(client_sock, -1);
+
+  ret = sendto(client_sock, send_buf, buf_len, 0, (struct sockaddr *) &svaddr, sizeof(struct sockaddr_un));
+  assert_int_equal(ret, buf_len);
+
+  os_memset(&claddr, 0, sizeof(struct sockaddr_un));
+  ret = read_domain_data(server_sock, read_buf, 100, &claddr, &addr_len, 0);
+  assert_int_equal(ret, buf_len);
+  assert_string_equal(send_buf, read_buf);
+
+  ret = sendto(server_sock, send_buf, buf_len, 0, (struct sockaddr *) &claddr, addr_len);
+  assert_int_equal(ret, buf_len);
+
+  ret = read_domain_data(client_sock, read_buf, 100, &svaddr, &addr_len, 0);
+  assert_int_equal(ret, buf_len);
+  assert_string_equal(send_buf, read_buf);
+
   close(client_sock);
+
+  os_free(server_file_path);
+  close(server_sock);
 }
 
 static void test_write_domain_data(void **state)
@@ -104,6 +150,7 @@ static void test_write_domain_data(void **state)
   (void) state; /* unused */
 
   struct sockaddr_un svaddr;
+  struct sockaddr_un claddr;
   char *send_buf = "domain";
   char read_buf[100];
 
@@ -114,23 +161,37 @@ static void test_write_domain_data(void **state)
 
   assert_int_not_equal(server_sock, -1);
 
-  int client_sock = create_client(client_file_path);
+  int client_sock = create_domain_client(client_file_path);
   assert_int_not_equal(client_sock, -1);
 
   int buf_len = strlen(send_buf) + 1; 
-  ssize_t ret = write_domain_data(server_sock, send_buf, buf_len, client_file_path);
+  ssize_t ret = write_domain_data_s(server_sock, send_buf, buf_len, client_file_path);
   assert_int_equal(ret, buf_len);
 
   socklen_t len = sizeof(struct sockaddr_un);
+  os_memset(&svaddr, 0, sizeof(struct sockaddr_un));
   ret = recvfrom(client_sock, read_buf, 100, 0, (struct sockaddr *) &svaddr, &len);
 
   assert_int_equal(ret, buf_len);
   assert_string_equal(send_buf, read_buf);
 
-  free(server_file_path);
-  free(client_file_path);
-  close(server_sock);
+  os_free(client_file_path);
   close(client_sock);
+
+  client_sock = create_domain_client(NULL);
+  assert_int_not_equal(client_sock, -1);
+
+  ret = write_domain_data(client_sock, send_buf, buf_len, &svaddr, len);
+  assert_int_equal(ret, buf_len);
+
+  len = sizeof(struct sockaddr_un);
+  ret = recvfrom(server_sock, read_buf, 100, 0, (struct sockaddr *) &claddr, &len);
+  assert_int_equal(ret, buf_len);
+  assert_string_equal(send_buf, read_buf);
+
+  close(client_sock);
+  os_free(server_file_path);
+  close(server_sock);
 }
 
 int main(int argc, char *argv[])
@@ -139,7 +200,8 @@ int main(int argc, char *argv[])
 
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_create_domain_server),
-    cmocka_unit_test(test_read_domain_data),
+    cmocka_unit_test(test_create_domain_client),
+    cmocka_unit_test(test_read_domain_data_s),
     cmocka_unit_test(test_write_domain_data)
   };
 

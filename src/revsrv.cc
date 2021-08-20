@@ -307,7 +307,7 @@ int write_command_data(std::string id, char *buf, ssize_t buf_size)
   struct client_context ctx = get_client_context(id);
   if (ctx.sock>= 0) {
     log_trace("Writing command with id=%s", id.c_str());
-    return write_domain_data(ctx.sock, buf, buf_size, (char *)(ctx.client_address).c_str());
+    return write_domain_data_s(ctx.sock, buf, buf_size, (char *)(ctx.client_address).c_str());
   }
 
   return -1;
@@ -534,7 +534,7 @@ void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
   char buf[MAX_DOMAIN_RECEIVE_DATA];
 
   char *client_addr = (char *)os_malloc(sizeof(struct sockaddr_un));
-  ssize_t num_bytes = read_domain_data(sock, buf, MAX_DOMAIN_RECEIVE_DATA, client_addr, 0);
+  ssize_t num_bytes = read_domain_data_s(sock, buf, MAX_DOMAIN_RECEIVE_DATA, client_addr, 0);
   if (num_bytes == -1) {
     log_trace("read_domain_data fail");
     os_free(client_addr);
