@@ -23,6 +23,7 @@
  * @brief File containing the implementation of the sync server.
  */
 
+#include <sys/stat.h>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -40,6 +41,8 @@
 
 #define OPT_STRING    ":f:p:dvh"
 #define USAGE_STRING  "\t%s [-f path] [-p port] [-d] [-h] [-v]"
+
+#define DEFAULT_DB_NAME "sync.sqlite"
 
 using grpc::Server;
 using grpc::ServerBuilder;
@@ -78,7 +81,7 @@ void show_app_help(char *app_name)
   fprintf(stdout, "Usage:\n");
   fprintf(stdout, USAGE_STRING, basename(app_name));
   fprintf(stdout, "\nOptions:\n");
-  fprintf(stdout, "\t-f folder\t\t Folder where to save teh databases\n");
+  fprintf(stdout, "\t-f folder\t\t Folder where to save the databases\n");
   fprintf(stdout, "\t-p port\t\t Server port\n");
   fprintf(stdout, "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n");
   fprintf(stdout, "\t-h\t\t Show help\n");
@@ -194,6 +197,15 @@ int execute_sqlite_statement(char *db_path, char *statement)
   return 0;
 }
 
+std::string get_db_path(std::string path, char *db_name)
+{
+  std::string db_path;
+  char *dpath = construct_path((char *) path.c_str(), db_name);
+  db_path = dpath;
+  os_free(dpath);
+  return db_path;
+}
+
 // Logic and data behind the server's behavior.
 class SynchroniserServiceImpl final : public Synchroniser::Service {
  public:
@@ -202,7 +214,7 @@ class SynchroniserServiceImpl final : public Synchroniser::Service {
   Status RegisterDb(ServerContext* context, const RegisterDbRequest* request, RegisterDbReply* reply) override {
     if (request->name().length()) {
       const char *db_name = request->name().c_str();
-      std::string db_path = GetDbPath((char *)db_name);
+      std::string db_path = get_db_path(path_, (char *)db_name);
 
       if (create_sqlite_db((char *)db_path.c_str()) == -1) {
         log_debug("Could not registered db=%s", db_name);
@@ -220,7 +232,9 @@ class SynchroniserServiceImpl final : public Synchroniser::Service {
 
   Status SyncDbStatement(ServerContext* context, const SyncDbStatementRequest* request, SyncDbStatementReply* reply) override {
     if (request->name().length() && request->statement().length()) {
-      std::string db_path = GetDbPath((char *)request->name().c_str());
+      std::string db_path = (request->default_db()) ?
+                            get_db_path(path_, (char *)DEFAULT_DB_NAME) :
+                            get_db_path(path_, (char *)request->name().c_str());
       if (execute_sqlite_statement((char *)db_path.c_str(), (char *)request->statement().c_str()) == -1) {
         log_debug("execute_sqlite_statement fail");
         reply->set_status(0);
@@ -299,17 +313,23 @@ int main(int argc, char** argv) {
 
   // Check if directory can be read
   if (os_strnlen_s(path, MAX_OS_PATH_LEN)) {
-    if (list_dir(path, NULL, NULL) == -1) {
-      fprintf(stderr, "Can not read folder %s", path);
-      exit(EXIT_FAILURE); 
+    if (create_dir(path, S_IRWXU | S_IRWXG) < 0) {
+      fprintf(stderr, "create_dir fail");
+      exit(EXIT_FAILURE);
     }
   } else {
     strcpy(path, "./");
   }
 
+  std::string db_path = get_db_path(path, (char *)DEFAULT_DB_NAME);
+  if (create_sqlite_db((char *)db_path.c_str()) == -1) {
+    fprintf(stderr, "Could not create db=%s", DEFAULT_DB_NAME);
+    exit(EXIT_FAILURE);
+  }
+
   fprintf(stdout, "Starting server with:\n");
   fprintf(stdout, "Port --> %d\n", port);
-  fprintf(stdout, "DB save path --> %s\n", path);
+  fprintf(stdout, "Default DB save path --> %s\n", db_path.c_str());
 
   if (run_grpc_server(path, port) == -1) {
     fprintf(stderr, "run_grpc_server fail");

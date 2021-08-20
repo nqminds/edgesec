@@ -23,7 +23,8 @@ message RegisterDbReply {
 
 message SyncDbStatementRequest {
   string name = 1;
-  string statement = 2;
+  uint32 default_db = 2;
+  string statement = 3;
 }
 
 message SyncDbStatementReply {

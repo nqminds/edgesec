@@ -26,12 +26,12 @@ promiscuous = false
 bufferTimeout = 10
 processInterval = 10
 immediate = false
-analyser = "ndpi"
-fileWrite = true
-dbWrite = false
-dbSync = false
+analyser = "default"
+fileWrite = false
+dbWrite = true
+dbSync = true
 dbSyncAddress = "localhost"
-dbSyncPort = 12345
+dbSyncPort = 3000
 command = "SET_FINGERPRINT"
 
 [supervisor]

@@ -44,6 +44,7 @@
 #define LINK_TYPE_LEN 			64
 
 #define MAX_RANDOM_UUID_LEN		37
+#define MAX_HOSTNAME_LEN		37
 
 #define MAX_SUPERVISOR_CMD_SIZE 40
 
@@ -103,6 +104,10 @@ struct os_reltime {
 	os_time_t usec;
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Get current time (sec, usec)
  * 
@@ -152,10 +157,6 @@ static inline void os_reltime_sub(struct os_reltime *a, struct os_reltime *b,
 	}
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /**
  * @brief get the timestamp in microseconds from system time
  * 
@@ -170,9 +171,6 @@ uint64_t os_get_timestamp(void);
  * @return uint64_t Timestamp in microseconds
  */
 uint64_t os_to_timestamp(struct timeval ts);
-#ifdef __cplusplus
-}
-#endif
 
 /**
  * @brief Get cryptographically strong pseudo random data
@@ -219,9 +217,6 @@ int hexstr2bin(const char *hex, uint8_t *buf, size_t len);
  */
 int hwaddr_aton2(const char *txt, uint8_t *addr);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 /**
  * @brief Check if a string is a number
  * 
@@ -229,13 +224,6 @@ extern "C" {
  * @return true if numer, false otherwise
  */
 bool is_number(const char *ptr);
-#ifdef __cplusplus
-}
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * @brief Copy a string with size bound and NUL-termination
@@ -258,10 +246,6 @@ size_t os_strlcpy(char *dest, const char *src, size_t siz);
  */
 size_t os_strnlen_s(char *str, size_t max_len);
 
-#ifdef __cplusplus
-}
-#endif
-
 /**
  * @brief Returns a pointer to a new string which is a duplicate of the string s
  * 
@@ -269,10 +253,6 @@ size_t os_strnlen_s(char *str, size_t max_len);
  * @return char* The dublicate string pointer, NULL on error
  */
 char * os_strdup(const char *s);
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * @brief Allocate and zero memory
@@ -283,10 +263,6 @@ extern "C" {
  * @return void* Pointer to allocated and zeroed memory or %NULL on failure
  */
 void * os_zalloc(size_t size);
-#ifdef __cplusplus
-}
-#endif
-
 
 /**
  * @brief Allocate and zero memory for an array
@@ -452,9 +428,6 @@ char *concat_paths(char *path_left, char *path_right);
  */
 char *get_valid_path(char *path);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 /**
  * @brief Construct a valid path from two paths
  * 
@@ -463,9 +436,6 @@ extern "C" {
  * @return char* output valid path
  */
 char *construct_path(char *path_left, char *path_right);
-#ifdef __cplusplus
-}
-#endif
 
 /**
  * @brief Get the secure path string of a binary
@@ -473,13 +443,9 @@ char *construct_path(char *path_left, char *path_right);
  * @param bin_path_arr The path string of binary
  * @param filename The binary name
  * @param filehash The binary hashstring
- * @return char* teh secure path
+ * @return char* the secure path
  */
 char* get_secure_path(UT_array *bin_path_arr, char *filename, char *filehash);
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 typedef bool(*list_dir_fn)(char *, void *args);
 
@@ -492,9 +458,6 @@ typedef bool(*list_dir_fn)(char *, void *args);
  * @return int 
  */
 int list_dir(char *dirpath, list_dir_fn fun, void *args);
-#ifdef __cplusplus
-}
-#endif
 
 /**
  * @brief Check if a process path from /proc folder contains the process name
@@ -539,10 +502,6 @@ int run_process(char *argv[], pid_t *child_pid);
  */
 int make_file_exec_fd(int fd);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /**
  * @brief Right trim the string
  * 
@@ -551,13 +510,6 @@ extern "C" {
  * @return char* The pointer to the source string
  */
 char *rtrim(char *str, const char *seps);
-#ifdef __cplusplus
-}
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * @brief Concatenates an array of strings into a single string
@@ -573,9 +525,6 @@ char* string_array2string(char *strings[]);
  * @param rid The output string of MAX_RANDOM_UUID_LEN bytes
  */
 void generate_radom_uuid(char *rid);
-#ifdef __cplusplus
-}
-#endif
 
 /**
  * @brief Callback function for list_dir function to check if process running
@@ -610,4 +559,8 @@ int create_dir(char *dirpath, mode_t mode);
  * @return 0 if it exists, -1 otherwise 
  */
 int check_sock_file_exists(char *path);
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* OS_H */

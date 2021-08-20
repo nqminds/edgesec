@@ -101,7 +101,7 @@ ssize_t write_domain_data(int sock, char *data, size_t data_len, struct sockaddr
 ssize_t write_domain_data_s(int sock, char *data, size_t data_len, char *addr);
 
 /**
- * @brief Closes teh domain socket
+ * @brief Closes the domain socket
  * 
  * @param sfd The domain socket
  * @return int 0 on success, -1 on failure

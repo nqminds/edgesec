@@ -44,7 +44,7 @@ using sqlite_sync::SyncDbStatementRequest;
 using sqlite_sync::SyncDbStatementReply;
 
 extern "C" uint32_t run_register_db(char *address, char *name);
-extern "C" uint32_t run_sync_db_statement(char *address, char *name, char *statement);
+extern "C" uint32_t run_sync_db_statement(char *address, char *name, bool default_db, char *statement);
 
 class SynchroniserClient {
  public:
@@ -67,12 +67,13 @@ class SynchroniserClient {
     }
   }
 
-  uint32_t SyncDbStatement(const std::string& name, const std::string& statement) {
+  uint32_t SyncDbStatement(const std::string& name, bool default_db, const std::string& statement) {
     SyncDbStatementRequest request;
     SyncDbStatementReply reply;
     ClientContext context;
 
     request.set_name(name);
+    request.set_default_db(default_db);
     request.set_statement(statement);
 
     // The actual RPC.
@@ -101,9 +102,9 @@ uint32_t run_register_db(char *address, char *name)
 }
 
 // extern "C"
-uint32_t run_sync_db_statement(char *address, char *name, char *statement)
+uint32_t run_sync_db_statement(char *address, char *name, bool default_db, char *statement)
 {
   SynchroniserClient syncroniser(grpc::CreateChannel(address, grpc::InsecureChannelCredentials()));
-  log_trace("SyncDbStatement with name=%s and address=%s", name, address);
-  return syncroniser.SyncDbStatement(name, statement);
+  log_trace("SyncDbStatement with name=%s, address=%s and default_db=%d", name, address, default_db);
+  return syncroniser.SyncDbStatement(name, default_db, statement);
 }

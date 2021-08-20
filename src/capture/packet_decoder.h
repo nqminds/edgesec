@@ -40,6 +40,7 @@
 #include <pcap.h>
 
 #include "../utils/utarray.h"
+#include "../utils/os.h"
 
 typedef enum packet_types {
   PACKET_NONE = 0,
@@ -105,12 +106,15 @@ struct dhcp_header {
  * 
  */
 struct meta_packet {
-  PACKET_TYPES type;            /**< Packet type */
-  uint32_t hash;                /**< Packet header hash */
-  uint32_t ethh_hash;           /**< Packet ethernet header hash */
-  uint64_t timestamp;           /**< Packet timestamp */
-  uint32_t caplen;              /**< Packet caplen */
-  uint32_t length;              /**< Packet length */
+  PACKET_TYPES type;                /**< Packet type */
+  uint32_t hash;                    /**< Packet header hash */
+  uint32_t ethh_hash;               /**< Packet ethernet header hash */
+  uint64_t timestamp;               /**< Packet timestamp */
+  uint32_t caplen;                  /**< Packet caplen */
+  uint32_t length;                  /**< Packet length */
+  char interface[IFNAMSIZ];         /**< Packet interface name */
+  char hostname[MAX_HOSTNAME_LEN];  /**< Packet hostname name */
+  char id[MAX_RANDOM_UUID_LEN];     /**< Packet id */
 };
 
 struct tuple_packet {
@@ -123,10 +127,14 @@ struct tuple_packet {
  * 
  * @param header The packet header as per pcap
  * @param packet The packet data
+ * @param interface The packet interface
+ * @param hostname The packet hostname
+ * @param id The packet id
  * @param tp_array The array of returned packet tuples
  * @return int Total count of packet tuples
  */
-int extract_packets(const struct pcap_pkthdr *header, const uint8_t *packet, UT_array **tp_array);
+int extract_packets(const struct pcap_pkthdr *header, const uint8_t *packet,
+                    char *interface, char *hostname, char *id, UT_array **tp_array);
 
 /**
  * @brief Frees an allocated packet tuple

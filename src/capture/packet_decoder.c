@@ -310,11 +310,14 @@ void free_packet_tuple(struct tuple_packet *tp)
   }
 }
 
-int extract_packets(const struct pcap_pkthdr *header, const uint8_t *packet, UT_array **tp_array)
+int extract_packets(const struct pcap_pkthdr *header, const uint8_t *packet,
+                    char *interface, char *hostname, char *id, UT_array **tp_array)
 {
   struct capture_packet cpac;
   struct tuple_packet tp;
   utarray_new(*tp_array, &tp_list_icd);
+
+  os_memset(&tp, 0, sizeof(struct tuple_packet));
 
   if (header->caplen >= sizeof(struct ether_header)) {
     cpac = decode_packet(header, packet);
@@ -323,6 +326,9 @@ int extract_packets(const struct pcap_pkthdr *header, const uint8_t *packet, UT_
       tp.mp.length = cpac.length;
       tp.mp.timestamp = cpac.timestamp;
       tp.mp.ethh_hash = cpac.ethh_hash;
+      os_strlcpy(tp.mp.interface, interface, IFNAMSIZ);
+      os_strlcpy(tp.mp.hostname, hostname, MAX_HOSTNAME_LEN);
+      os_strlcpy(tp.mp.id, id, MAX_RANDOM_UUID_LEN);
 
       if (cpac.ethh != NULL) {
         tp.packet = os_malloc(sizeof(struct ether_header));

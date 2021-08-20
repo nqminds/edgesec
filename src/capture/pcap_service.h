@@ -62,7 +62,7 @@ void capture_pcap_stop(struct pcap_context *ctx);
  * @brief Get the pcap config datalink value
  * 
  * @param ctx The pcap context
- * @return int teh config value
+ * @return int the config value
  */
 int get_pcap_datalink(struct pcap_context *ctx);
 

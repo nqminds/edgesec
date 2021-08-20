@@ -55,12 +55,12 @@
 
 #ifdef WITH_SQLSYNC_SERVICE
 uint32_t run_register_db(char *address, char *name);
-uint32_t run_sync_db_statement(char *address, char *name, char *statement);
+uint32_t run_sync_db_statement(char *address, char *name, bool default_db, char *statement);
 #endif
 
-void construct_header_db_name(char *db_name)
+void construct_header_db_name(char *name, char *db_name)
 {
-  generate_radom_uuid(db_name);
+  strcat(db_name, name);
   strcat(db_name, SQLITE_EXTENSION);
 }
 
@@ -88,7 +88,10 @@ void pcap_callback(const void *ctx, struct pcap_pkthdr *header, uint8_t *packet)
   int count;
 
   if (context->db_write) {
-    if ((count = extract_packets(header, packet, &tp_array)) > 0) {
+    if ((count = extract_packets(header, packet,
+                                 context->interface,
+                                 context->hostname,
+                                 context->cap_id, &tp_array)) > 0) {
       add_packet_queue(tp_array, count, context->pqueue);
     }
 
@@ -170,7 +173,7 @@ void eloop_tout_handler(void *eloop_ctx, void *user_ctx)
   if (context->db_sync) {
     if ((traces = concat_string_queue(context->squeue)) != NULL) {
 #ifdef WITH_SQLSYNC_SERVICE
-      if (!run_sync_db_statement(context-> grpc_srv_addr, context->db_name, traces)) {
+      if (!run_sync_db_statement(context-> grpc_srv_addr, context->db_name, 1, traces)) {
         log_trace("run_sync_db_statement fail");
       }
 #endif
@@ -215,7 +218,7 @@ int start_default_analyser(struct capture_conf *config)
     snprintf(context.grpc_srv_addr, MAX_WEB_PATH_LEN, "%s:%d", config->db_sync_address, config->db_sync_port);
   }
 
-  construct_header_db_name(context.db_name);
+  construct_header_db_name(context.cap_id, context.db_name);
   header_db_path = construct_path(context.db_path, context.db_name);
 
   if (header_db_path == NULL) {

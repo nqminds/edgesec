@@ -38,58 +38,58 @@
 #define MAX_SCHEMA_STR_LENGTH 100
 
 #define ETH_CREATE_TABLE "CREATE TABLE eth (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, "\
-                         "caplen INTEGER, length INTEGER, " \
-                         "ether_dhost TEXT, ether_shost TEXT, ether_type INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash));"
+                         "caplen INTEGER, length INTEGER, ifname TEXT, hostname TEXT, id TEXT, " \
+                         "ether_dhost TEXT, ether_shost TEXT, ether_type INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash, id));"
 
 #define ARP_CREATE_TABLE "CREATE TABLE arp (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, "\
-                         "caplen INTEGER, length INTEGER, " \
+                         "caplen INTEGER, length INTEGER, id TEXT, " \
                          "arp_hrd INTEGER, arp_pro INTEGER, arp_hln INTEGER, " \
                          "arp_pln INTEGER, arp_op INTEGER, arp_sha TEXT, arp_spa TEXT, " \
-                         "arp_tha TEXT, arp_tpa TEXT, PRIMARY KEY (hash, timestamp, ethh_hash));"
+                         "arp_tha TEXT, arp_tpa TEXT, PRIMARY KEY (hash, timestamp, ethh_hash, id));"
 
 #define IP4_CREATE_TABLE "CREATE TABLE ip4 (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, " \
-                         "caplen INTEGER, length INTEGER, " \
+                         "caplen INTEGER, length INTEGER, id TEXT, " \
                          "ip_hl INTEGER, ip_v INTEGER, ip_tos INTEGER, ip_len INTEGER, ip_id INTEGER, " \
                          "ip_off INTEGER, ip_ttl INTEGER, ip_p INTEGER, ip_sum INTEGER, ip_src TEXT, " \
-                         "ip_dst TEXT, PRIMARY KEY (hash, timestamp, ethh_hash));"
+                         "ip_dst TEXT, PRIMARY KEY (hash, timestamp, ethh_hash, id));"
 
 #define IP6_CREATE_TABLE "CREATE TABLE ip6 (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, " \
-                         "caplen INTEGER, length INTEGER, " \
+                         "caplen INTEGER, length INTEGER, id TEXT, " \
                          "ip6_un1_flow INTEGER, ip6_un1_plen INTEGER, ip6_un1_nxt INTEGER, cip6_un1_hlim INTEGER, " \
-                         "ip6_un2_vfc INTEGER, ip6_src TEXT, ip6_dst TEXT, PRIMARY KEY (hash, timestamp, ethh_hash));"
+                         "ip6_un2_vfc INTEGER, ip6_src TEXT, ip6_dst TEXT, PRIMARY KEY (hash, timestamp, ethh_hash, id));"
 
 #define TCP_CREATE_TABLE "CREATE TABLE tcp (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, " \
-                         "caplen INTEGER, length INTEGER, " \
+                         "caplen INTEGER, length INTEGER, id TEXT, " \
                          "source INTEGER, dest INTEGER, seq INTEGER, ack_seq INTEGER, res1 INTEGER, doff INTEGER, fin INTEGER, " \
                          "syn INTEGER, rst INTEGER, psh INTEGER, ack INTEGER, urg INTEGER, window INTEGER, check_p INTEGER, " \
-                         "urg_ptr INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash));"
+                         "urg_ptr INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash, id));"
 
 #define UDP_CREATE_TABLE "CREATE TABLE udp (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, " \
-                         "caplen INTEGER, length INTEGER, " \
-                         "source INTEGER, dest INTEGER, len INTEGER, check_p INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash));"
+                         "caplen INTEGER, length INTEGER, id TEXT, " \
+                         "source INTEGER, dest INTEGER, len INTEGER, check_p INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash, id));"
 
 #define ICMP4_CREATE_TABLE "CREATE TABLE icmp4 (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, " \
-                           "caplen INTEGER, length INTEGER, " \
-                           "type INTEGER, code INTEGER, checksum INTEGER, gateway INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash));"
+                           "caplen INTEGER, length INTEGER, id TEXT, " \
+                           "type INTEGER, code INTEGER, checksum INTEGER, gateway INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash, id));"
 
 #define ICMP6_CREATE_TABLE "CREATE TABLE icmp6 (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, " \
-                           "caplen INTEGER, length INTEGER, " \
-                           "icmp6_type INTEGER, icmp6_code INTEGER, icmp6_cksum INTEGER, icmp6_un_data32 INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash));"
+                           "caplen INTEGER, length INTEGER, id TEXT, " \
+                           "icmp6_type INTEGER, icmp6_code INTEGER, icmp6_cksum INTEGER, icmp6_un_data32 INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash, id));"
 
 #define DNS_CREATE_TABLE "CREATE TABLE dns (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, " \
-                         "caplen INTEGER, length INTEGER, " \
+                         "caplen INTEGER, length INTEGER, id TEXT, " \
                          "tid INTEGER, flags INTEGER, nqueries INTEGER, nanswers INTEGER, nauth INTEGER, " \
-                         "nother INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash));"
+                         "nother INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash, id));"
 
 #define MDNS_CREATE_TABLE "CREATE TABLE mdns (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, " \
-                          "caplen INTEGER, length INTEGER, " \
+                          "caplen INTEGER, length INTEGER, id TEXT, " \
                           "tid INTEGER, flags INTEGER, nqueries INTEGER, nanswers INTEGER, nauth INTEGER, " \
-                          "nother INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash));"
+                          "nother INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash, id));"
 
 #define DHCP_CREATE_TABLE "CREATE TABLE dhcp (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, " \
-                          "caplen INTEGER, length INTEGER, " \
+                          "caplen INTEGER, length INTEGER, id TEXT, " \
                           "op INTEGER, htype INTEGER, hlen INTEGER, hops INTEGER, xid INTEGER, secs INTEGER, flags INTEGER, " \
-                          "ciaddr TEXT, yiaddr TEXT, siaddr TEXT, giaddr TEXT, PRIMARY KEY (hash, timestamp, ethh_hash));"
+                          "ciaddr TEXT, yiaddr TEXT, siaddr TEXT, giaddr TEXT, PRIMARY KEY (hash, timestamp, ethh_hash, id));"
 
 #define ETH_INSERT_INTO "INSERT INTO eth VALUES(@hash, @timestamp, @ethh_hash, @caplen, @length, @ether_dhost, @ether_shost, @ether_type);"
 #define ARP_INSERT_INTO "INSERT INTO arp VALUES(@hash, @timestamp, @ethh_hash, @caplen, @length, " \
@@ -125,6 +125,9 @@ struct eth_schema {
   uint64_t timestamp;                               /**< Packet timestamp */
   uint32_t caplen;                                  /**< Packet caplen */
   uint32_t length;                                  /**< Packet length */
+  char ifname[MAX_SCHEMA_STR_LENGTH];               /**< Packet interface name */
+  char hostname[MAX_SCHEMA_STR_LENGTH];             /**< Packet hostname name */
+  char id[MAX_SCHEMA_STR_LENGTH];                   /**< Packet id */
   char ether_dhost[MAX_SCHEMA_STR_LENGTH];	        /**< Packet destination eth addr */
   char ether_shost[MAX_SCHEMA_STR_LENGTH];	        /**< Packet source ether addr */
   uint16_t ether_type;		                          /**< Packet packet type ID field */
@@ -135,10 +138,6 @@ struct eth_schema {
  * 
  */
 struct arp_schema {
-  uint32_t hash;                                    /**< Packet hash */
-  uint64_t timestamp;                               /**< Packet timestamp */
-  uint32_t caplen;                                  /**< Packet caplen */
-  uint32_t length;                                  /**< Packet length */
   uint16_t ar_hrd;		                              /**< Packet Format of hardware address.  */
   uint16_t ar_pro;		                              /**< Packet Format of protocol address.  */
   uint8_t ar_hln;		                                /**< Packet Length of hardware address.  */
@@ -155,10 +154,6 @@ struct arp_schema {
  * 
  */
 struct ip4_schema {
-  uint32_t hash;                                      /**< Packet hash */
-  uint64_t timestamp;                                 /**< Packet timestamp */
-  uint32_t caplen;                                    /**< Packet caplen */
-  uint32_t length;                                    /**< Packet length */
   uint8_t ip_hl;		                                  /**< Packet header length */
   uint8_t ip_v;		                                    /**< Packet version */
   uint8_t ip_tos;			                                /**< Packet type of service */
@@ -177,10 +172,6 @@ struct ip4_schema {
  * 
  */
 struct ip6_schema {
-  uint32_t hash;                                      /**< Packet hash */
-  uint64_t timestamp;                                 /**< Packet timestamp */
-  uint32_t caplen;                                    /**< Packet caplen */
-  uint32_t length;                                    /**< Packet length */
   uint32_t ip6_un1_flow;                              /**< Packet 4 bits version, 8 bits TC, 20 bits flow-ID */
   uint16_t ip6_un1_plen;                              /**< Packet payload length */
   uint8_t ip6_un1_nxt;                                /**< Packet next header */
@@ -195,25 +186,20 @@ struct ip6_schema {
  * 
  */
 struct tcp_schema {
-  uint32_t hash;                /**< Packet hash */
-  uint64_t timestamp;           /**< Packet timestamp */
-  uint32_t caplen;              /**< Packet caplen */
-  uint32_t length;              /**< Packet length */
-  uint16_t source;              /**< Packet source port */
-  uint16_t dest;                /**< Packet destination port */
-  uint32_t seq;                 /**< Packet seq flag */
-  uint32_t ack_seq;             /**< Packet ack_seq flag */
-  uint16_t res1;                 /**< Packet res1 flag */
-  uint16_t doff;                 /**< Packet doff flag */
-  uint16_t fin;                  /**< Packet fin flag */
-  uint16_t syn;                  /**< Packet syn flag */
-  uint16_t rst;                  /**< Packet rst flag */
-  uint16_t psh;                  /**< Packet psh flag */
-  uint16_t ack;                  /**< Packet ack flag */
-  uint16_t urg;                  /**< Packet urg flag */
-  uint16_t window;              /**< Packet window */
+  uint16_t dest;                  /**< Packet destination port */
+  uint32_t seq;                   /**< Packet seq flag */
+  uint32_t ack_seq;               /**< Packet ack_seq flag */
+  uint16_t res1;                  /**< Packet res1 flag */
+  uint16_t doff;                  /**< Packet doff flag */
+  uint16_t fin;                   /**< Packet fin flag */
+  uint16_t syn;                   /**< Packet syn flag */
+  uint16_t rst;                   /**< Packet rst flag */
+  uint16_t psh;                   /**< Packet psh flag */
+  uint16_t ack;                   /**< Packet ack flag */
+  uint16_t urg;                   /**< Packet urg flag */
+  uint16_t window;                /**< Packet window */
   uint16_t check_p;               /**< Packet check */
-  uint16_t urg_ptr;             /**< Packet urg_ptr */
+  uint16_t urg_ptr;               /**< Packet urg_ptr */
 };
 
 /**
@@ -221,14 +207,10 @@ struct tcp_schema {
  * 
  */
 struct udp_schema {
-  uint32_t hash;                /**< Packet hash */
-  uint64_t timestamp;           /**< Packet timestamp */
-  uint32_t caplen;              /**< Packet caplen */
-  uint32_t length;              /**< Packet length */
-  uint16_t source;              /**< Packet source port */
-  uint16_t dest;                /**< Packet destination port */
-  uint16_t len;                 /**< Packet udp length */
-  uint16_t check_p;               /**< Packet udp checksum */
+  uint16_t source;                  /**< Packet source port */
+  uint16_t dest;                    /**< Packet destination port */
+  uint16_t len;                     /**< Packet udp length */
+  uint16_t check_p;                 /**< Packet udp checksum */
 };
 
 /**
@@ -236,14 +218,10 @@ struct udp_schema {
  * 
  */
 struct icmp4_schema {
-  uint32_t hash;                /**< Packet hash */
-  uint64_t timestamp;           /**< Packet timestamp */
-  uint32_t caplen;              /**< Packet caplen */
-  uint32_t length;              /**< Packet length */
-  uint8_t type;		              /**< Packet message type */
-  uint8_t code;		              /**< Packet type sub-code */
-  uint16_t checksum;            /**< Packet checksum */
-  uint32_t gateway;	            /**< Packet gateway address */
+  uint8_t type;		                  /**< Packet message type */
+  uint8_t code;		                  /**< Packet type sub-code */
+  uint16_t checksum;                /**< Packet checksum */
+  uint32_t gateway;	                /**< Packet gateway address */
 };
 
 /**
@@ -251,14 +229,10 @@ struct icmp4_schema {
  * 
  */
 struct icmp6_schema {
-  uint32_t hash;                /**< Packet hash */
-  uint64_t timestamp;           /**< Packet timestamp */
-  uint32_t caplen;              /**< Packet caplen */
-  uint32_t length;              /**< Packet length */
-  uint8_t icmp6_type;           /**< Packet type field */
-  uint8_t icmp6_code;           /**< Packet code field */
-  uint16_t icmp6_cksum;         /**< Packet checksum field */
-  uint32_t icmp6_un_data32;     /**< Packet type-specific field */
+  uint8_t icmp6_type;               /**< Packet type field */
+  uint8_t icmp6_code;               /**< Packet code field */
+  uint16_t icmp6_cksum;             /**< Packet checksum field */
+  uint32_t icmp6_un_data32;         /**< Packet type-specific field */
 };
 
 /**
@@ -266,16 +240,12 @@ struct icmp6_schema {
  * 
  */
 struct dns_schema {
-  uint32_t hash;                /**< Packet hash */
-  uint64_t timestamp;           /**< Packet timestamp */
-  uint32_t caplen;              /**< Packet caplen */
-  uint32_t length;              /**< Packet length */
-  uint16_t tid;		            /**< Packet Transaction ID */
-  uint16_t flags;	            /**< Packet Flags */
-  uint16_t nqueries;	        /**< Packet Questions */
-  uint16_t nanswers;	        /**< Packet Answers */
-  uint16_t nauth;		        /**< Packet Authority PRs */
-  uint16_t nother;		        /**< Packet Other PRs */
+  uint16_t tid;		                  /**< Packet Transaction ID */
+  uint16_t flags;	                  /**< Packet Flags */
+  uint16_t nqueries;	              /**< Packet Questions */
+  uint16_t nanswers;	              /**< Packet Answers */
+  uint16_t nauth;		                /**< Packet Authority PRs */
+  uint16_t nother;		              /**< Packet Other PRs */
 };
 
 /**
@@ -283,16 +253,12 @@ struct dns_schema {
  * 
  */
 struct mdns_schema {
-  uint32_t hash;                /**< Packet hash */
-  uint64_t timestamp;           /**< Packet timestamp */
-  uint32_t caplen;              /**< Packet caplen */
-  uint32_t length;              /**< Packet length */
-  uint16_t tid;		              /**< Packet Transaction ID */
-  uint16_t flags;	              /**< Packet Flags */
-  uint16_t nqueries;	          /**< Packet Questions */
-  uint16_t nanswers;	          /**< Packet Answers */
-  uint16_t nauth;		            /**< Packet Authority PRs */
-  uint16_t nother;		          /**< Packet Other PRs */
+  uint16_t tid;		                  /**< Packet Transaction ID */
+  uint16_t flags;	                  /**< Packet Flags */
+  uint16_t nqueries;	              /**< Packet Questions */
+  uint16_t nanswers;	              /**< Packet Answers */
+  uint16_t nauth;		                /**< Packet Authority PRs */
+  uint16_t nother;		              /**< Packet Other PRs */
 };
 
 /**
@@ -300,10 +266,6 @@ struct mdns_schema {
  * 
  */
 struct dhcp_schema {
-  uint32_t hash;                                      /**< Packet hash */
-  uint64_t timestamp;                                 /**< Packet timestamp */
-  uint32_t caplen;                                    /**< Packet caplen */
-  uint32_t length;                                    /**< Packet length */
   uint8_t  op;                                        /**< Packet packet type */
   uint8_t  htype;                                     /**< Packet type of hardware address for this machine (Ethernet, etc) */
   uint8_t  hlen;                                      /**< Packet length of hardware address (of this machine) */
