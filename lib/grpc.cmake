@@ -1,11 +1,4 @@
-# Fetch and Compile libgrpc
-if (BUILD_GRPC_LIB AND NOT (BUILD_ONLY_DOCS))
-  set(LIBGRPC_INSTALL_ROOT ${CMAKE_CURRENT_BINARY_DIR}/lib)
-  set(LIBGRPC_INSTALL_DIR ${LIBGRPC_INSTALL_ROOT}/grpc)
-  set(LIBGRPC_INCLUDE_PATH ${LIBGRPC_INSTALL_DIR}/include)
-  set(LIBGRPC_LIB_DIR "${LIBGRPC_INSTALL_DIR}/lib")
-  set(LIBGRPC_BIN_DIR "${LIBGRPC_INSTALL_DIR}/bin")
-
+MACRO (FIND_GRPC_PATHS)
   find_library(LIBGRPC_PLUGIN_SUPPORT_LIB NAMES grpc_plugin_support libgrpc_plugin_support PATHS "${LIBGRPC_LIB_DIR}" NO_DEFAULT_PATH)
   find_library(LIBGRPC_LIB NAMES grpc libgrpc PATHS "${LIBGRPC_LIB_DIR}" NO_DEFAULT_PATH)
   find_library(LIBGRPC_CRYPTO_LIB NAMES crypto libcrypto PATHS "${LIBGRPC_LIB_DIR}" NO_DEFAULT_PATH)
@@ -15,6 +8,17 @@ if (BUILD_GRPC_LIB AND NOT (BUILD_ONLY_DOCS))
   find_program(PROTOC_BIN NAMES protoc PATHS "${LIBGRPC_BIN_DIR}" NO_DEFAULT_PATH)
   find_program(GRPC_CPP_PLUGIN_BIN NAMES grpc_cpp_plugin PATHS "${LIBGRPC_BIN_DIR}" NO_DEFAULT_PATH)
   find_program(GRPC_CPP_PLUGIN_SH NAMES grpc_cpp_plugin.sh PATHS "${LIBGRPC_BIN_DIR}" NO_DEFAULT_PATH)
+ENDMACRO()
+
+# Fetch and Compile libgrpc
+if (BUILD_GRPC_LIB AND NOT (BUILD_ONLY_DOCS))
+  set(LIBGRPC_INSTALL_ROOT ${CMAKE_CURRENT_BINARY_DIR}/lib)
+  set(LIBGRPC_INSTALL_DIR ${LIBGRPC_INSTALL_ROOT}/grpc)
+  set(LIBGRPC_INCLUDE_PATH ${LIBGRPC_INSTALL_DIR}/include)
+  set(LIBGRPC_LIB_DIR "${LIBGRPC_INSTALL_DIR}/lib")
+  set(LIBGRPC_BIN_DIR "${LIBGRPC_INSTALL_DIR}/bin")
+
+  FIND_GRPC_PATHS()
   
   if (LIBGRPCPP_LIB AND LIBPROTOBUF_LIB AND LIBGRPCPP_REFLECTION_LIB AND PROTOC_BIN AND GRPC_CPP_PLUGIN_BIN)
     message("Found libgrpc_plugin_support library: ${LIBGRPC_PLUGIN_SUPPORT_LIB}")
@@ -27,14 +31,8 @@ if (BUILD_GRPC_LIB AND NOT (BUILD_ONLY_DOCS))
     message("Found grpc_cpp_plugin binary: ${GRPC_CPP_PLUGIN_BIN}")
   ELSE ()
     execute_process(COMMAND bash ${CMAKE_SOURCE_DIR}/lib/compile_grpc.sh ${LIBGRPC_INSTALL_ROOT})
-    find_library(LIBGRPC_PLUGIN_SUPPORT_LIB NAMES grpc_plugin_support libgrpc_plugin_support PATHS "${LIBGRPC_LIB_DIR}" NO_DEFAULT_PATH)
-    find_library(LIBGRPC_LIB NAMES grpc libgrpc PATHS "${LIBGRPC_LIB_DIR}" NO_DEFAULT_PATH)
-    find_library(LIBGRPC_CRYPTO_LIB NAMES crypto libcrypto PATHS "${LIBGRPC_LIB_DIR}" NO_DEFAULT_PATH)
-    find_library(LIBGRPCPP_LIB NAMES grpc++ libgrpc++ PATHS "${LIBGRPC_LIB_DIR}" NO_DEFAULT_PATH)
-    find_library(LIBPROTOBUF_LIB NAMES protobuf libprotobuf PATHS "${LIBGRPC_LIB_DIR}" NO_DEFAULT_PATH)
-    find_library(LIBGRPCPP_REFLECTION_LIB NAMES grpc++_reflection libgrpc++_reflection PATHS "${LIBGRPC_LIB_DIR}" NO_DEFAULT_PATH)
-    find_program(PROTOC_BIN NAMES protoc PATHS "${LIBGRPC_BIN_DIR}" NO_DEFAULT_PATH)
-    find_program(GRPC_CPP_PLUGIN_BIN NAMES grpc_cpp_plugin PATHS "${LIBGRPC_BIN_DIR}" NO_DEFAULT_PATH)
+
+    FIND_GRPC_PATHS()
 
     file(WRITE ${LIBGRPC_INSTALL_DIR}/grpc_cpp_plugin.tmp
     "#!/bin/bash
