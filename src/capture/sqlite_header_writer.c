@@ -76,13 +76,8 @@ bool extract_meta_params(sqlite3_stmt *res, struct meta_packet *mp)
   if(sqlite3_bind_int64(res, column_idx, mp->timestamp) != SQLITE_OK)
     return false;
 
-  column_idx = sqlite3_bind_parameter_index(res, "@caplen");
-  if (sqlite3_bind_int64(res, column_idx, mp->caplen) != SQLITE_OK)
-    return false;
-
-  column_idx = sqlite3_bind_parameter_index(res, "@length");
-  if (sqlite3_bind_int64(res, column_idx, mp->length) != SQLITE_OK)
-    return false;
+  column_idx = sqlite3_bind_parameter_index(res, "@id");
+  sqlite3_bind_text(res, column_idx, mp->id, -1, NULL);
 
   return true;
 }
@@ -108,6 +103,20 @@ int extract_eth_statement(sqlite3 *db, struct tuple_packet *tp)
       sqlite3_finalize(res);
       return -1;
     }
+
+    column_idx = sqlite3_bind_parameter_index(res, "@caplen");
+    if (sqlite3_bind_int64(res, column_idx, tp->mp.caplen) != SQLITE_OK)
+      return false;
+
+    column_idx = sqlite3_bind_parameter_index(res, "@length");
+    if (sqlite3_bind_int64(res, column_idx, tp->mp.length) != SQLITE_OK)
+      return false;
+
+    column_idx = sqlite3_bind_parameter_index(res, "@ifname");
+    sqlite3_bind_text(res, column_idx, tp->mp.interface, -1, NULL);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@hostname");
+    sqlite3_bind_text(res, column_idx, tp->mp.hostname, -1, NULL);
 
     snprintf(ether_dhost, MAX_SCHEMA_STR_LENGTH, MACSTR, MAC2STR(ethh->ether_dhost));
     column_idx = sqlite3_bind_parameter_index(res, "@ether_dhost");

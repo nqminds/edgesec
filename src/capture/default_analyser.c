@@ -87,16 +87,14 @@ void pcap_callback(const void *ctx, struct pcap_pkthdr *header, uint8_t *packet)
   UT_array *tp_array;
   int count;
 
-  if (context->db_write) {
-    if ((count = extract_packets(header, packet,
-                                 context->interface,
-                                 context->hostname,
-                                 context->cap_id, &tp_array)) > 0) {
-      add_packet_queue(tp_array, count, context->pqueue);
-    }
-
-    utarray_free(tp_array);
+  if ((count = extract_packets(header, packet,
+                               context->interface,
+                               context->hostname,
+                               context->cap_id, &tp_array)) > 0) {
+    add_packet_queue(tp_array, count, context->pqueue);
   }
+
+  utarray_free(tp_array);
 
   if (context->file_write) {
     if (push_pcap_queue(context->cqueue, header, packet) == NULL) {
@@ -148,13 +146,13 @@ void eloop_tout_handler(void *eloop_ctx, void *user_ctx)
   char *traces = NULL;
 
   // Process all packets in the queue
-  if (context->db_write) {
-    while(get_packet_queue_length(context->pqueue)) {
-      if ((el_packet = pop_packet_queue(context->pqueue)) != NULL) {
+  while(get_packet_queue_length(context->pqueue)) {
+    if ((el_packet = pop_packet_queue(context->pqueue)) != NULL) {
+      if (context->db_write) {
         save_packet_statement(context->header_db, &(el_packet->tp));
-        // Process packet
-        free_packet_queue_el(el_packet);
       }
+      // Process packet
+      free_packet_queue_el(el_packet);
     }
   }
 
@@ -205,6 +203,10 @@ int start_default_analyser(struct capture_conf *config)
   os_memset(&context, 0, sizeof(context));
   generate_radom_uuid(context.cap_id);
 
+  if (get_hostname(context.hostname) < 0) {
+    log_debug("get_hostname fail");
+    return -1;
+  }
   // Transform to microseconds
   context.interface = config->capture_interface;
   context.filter = config->filter;
@@ -233,6 +235,7 @@ int start_default_analyser(struct capture_conf *config)
     return -1;
   }
   
+  log_info("Capturing hostname=%s", context.hostname);
   log_info("Capturing id=%s", context.cap_id);
   log_info("Capturing interface=%s", context.interface);
   log_info("Capturing filter=%s", context.filter);

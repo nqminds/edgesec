@@ -39,7 +39,7 @@
  */
 struct string_queue {
   char *str;                    /**< String value */
-  struct dl_list list;          /**< List defintion */
+  struct dl_list list;          /**< List definition */
 };
 
 /**

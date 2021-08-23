@@ -1014,6 +1014,16 @@ int check_sock_file_exists(char *path)
   return 0;
 }
 
+int get_hostname(char *buf)
+{
+  if (gethostname(buf, HOST_NAME_MAX) < 0) {
+    log_err("gethostname");
+    return -1;
+  }
+
+  return 0;
+}
+
 // void *os_malloc(size_t size)
 // {
 //   void *ptr = malloc(size);

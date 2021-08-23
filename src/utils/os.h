@@ -37,14 +37,25 @@
 #include "utarray.h"
 #include "log.h"
 
-/* Common costant defintions */
+/* Common costant definitions */
 #define MAX_OS_PATH_LEN			4096
 #define MAX_WEB_PATH_LEN		2048
 #define IP_LEN 					20
 #define LINK_TYPE_LEN 			64
 
 #define MAX_RANDOM_UUID_LEN		37
-#define MAX_HOSTNAME_LEN		37
+
+#ifndef HOST_NAME_MAX
+#define HOST_NAME_MAX			64
+#endif
+
+#ifndef INET_ADDRSTRLEN
+#define INET_ADDRSTRLEN  		22
+#endif
+
+#ifndef INET6_ADDRSTRLEN
+#define INET6_ADDRSTRLEN 		63
+#endif
 
 #define MAX_SUPERVISOR_CMD_SIZE 40
 
@@ -559,6 +570,14 @@ int create_dir(char *dirpath, mode_t mode);
  * @return 0 if it exists, -1 otherwise 
  */
 int check_sock_file_exists(char *path);
+
+/**
+ * @brief Get the hostname of the running machine
+ * 
+ * @param buf The returned hostname
+ * @return int 0 on success, -1 on failure
+ */
+int get_hostname(char *buf);
 #ifdef __cplusplus
 }
 #endif

@@ -39,7 +39,7 @@
  */
 struct packet_queue {
   struct tuple_packet tp;       /**< Packet address and metadata */
-  struct dl_list list;          /**< List defintion */
+  struct dl_list list;          /**< List definition */
 };
 
 /**

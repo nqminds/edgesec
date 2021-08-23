@@ -41,7 +41,7 @@
 struct pcap_queue {
   struct pcap_pkthdr header;            /**< pcap header */
   uint8_t *packet;                      /**< pointer to the packet data */
-  struct dl_list list;                  /**< List defintion */
+  struct dl_list list;                  /**< List definition */
 };
 
 /**
