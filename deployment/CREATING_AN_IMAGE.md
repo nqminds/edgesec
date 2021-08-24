@@ -33,8 +33,11 @@ The default login details are username `ubuntu` and password `ubuntu`.
 
 ## SSH Server setup
 
-Copy `./ssh/authoirzed_keys` to `~/.ssh/authorized_keys`.
+Copy `./ssh/authorized` to `~/.ssh/authorized_keys`.
 This will allow us to SSH in without a password,
 preventing man-in-the-middle and dictionary attacks.
 
 ## Reverse SSH setup
+
+Follow the instructions in `first-boot` to automatically create a new hostname,
+and to automatically install an SSH tunnel.
