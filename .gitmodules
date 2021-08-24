@@ -1,3 +1,6 @@
 [submodule "lib/grpc"]
 	path = lib/grpc
 	url = https://github.com/grpc/grpc
+[submodule "deployment/ssh/nqm-ssh-tunnel"]
+	path = deployment/ssh/nqm-ssh-tunnel
+	url = ../../nqminds/nqm-ssh-tunnel.git

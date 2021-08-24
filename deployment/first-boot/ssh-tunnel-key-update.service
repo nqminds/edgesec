@@ -1,0 +1,15 @@
+[Unit]
+Description=Update SSH Tunnel SSH Key. Assumes that edgesec-deploy-key.pub is in your home directory.
+After=network.target
+
+[Service]
+
+Type=oneshot
+
+ExecStart=%h/EDGESec/deployment/ssh/nqm-ssh-tunnel/install.bash %h/edgesec-deploy-key.pem
+# gets disabled by itself as long as the previous command works
+ExecStart=/bin/systemctl --user disable ssh-tunnel-key-update.service
+
+[Install]
+# stop sshtunnel.service if this fails
+RequiredBy=sshtunnel.service
