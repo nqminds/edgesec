@@ -170,14 +170,14 @@ void eloop_tout_handler(void *eloop_ctx, void *user_ctx)
   }
 
   if (context->db_sync) {
-    if ((traces = concat_string_queue(context->squeue, -1)) != NULL) {
+    if ((traces = concat_string_queue(context->squeue, context->sync_send_size)) != NULL) {
 #ifdef WITH_SQLSYNC_SERVICE
       if (!run_sync_db_statement(context-> grpc_srv_addr, context->db_name, 1, traces)) {
         log_trace("run_sync_db_statement fail");
       }
 #endif
       os_free(traces);
-      empty_string_queue(context->squeue, -1);
+      empty_string_queue(context->squeue, context->sync_send_size);
     }
   }
 
@@ -217,6 +217,8 @@ int start_default_analyser(struct capture_conf *config)
   context.db_write = config->db_write;
   context.db_sync = config->db_sync;
   context.db_path = config->db_path;
+  context.sync_store_size = config->sync_store_size;
+  context.sync_send_size = config->sync_send_size;
 
   if (strlen(config->db_sync_address)) {
     snprintf(context.grpc_srv_addr, MAX_WEB_PATH_LEN, "%s:%d", config->db_sync_address, config->db_sync_port);
@@ -271,7 +273,7 @@ int start_default_analyser(struct capture_conf *config)
     return -1;
   }
 
-  context.squeue = init_string_queue(-1);
+  context.squeue = init_string_queue(context.sync_store_size);
   if (context.squeue == NULL) {
     log_debug("init_string_queue fail");
     free_packet_queue(context.pqueue);

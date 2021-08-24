@@ -113,7 +113,9 @@ struct capture_conf {
   char db_path[MAX_OS_PATH_LEN];                              /**< Specifies the path to the sqlite3 dbs */ 
   char db_sync_address[MAX_WEB_PATH_LEN];                     /**< Specifies the web address for sqlite syncing */
   uint16_t db_sync_port;                                      /**< Specifies the port of the web address for sqlite syncing */
-  char filter[MAX_FILTER_SIZE];                                               /**< Specifies the filter expression or pcap lib */
+  char filter[MAX_FILTER_SIZE];                               /**< Specifies the filter expression or pcap lib */
+  ssize_t sync_store_size;                                    /**< Specifies the sync store size */
+  ssize_t sync_send_size;                                     /**< Specifies the sync send size */
 };
 
 struct tuple_packet {

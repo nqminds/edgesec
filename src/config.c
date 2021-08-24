@@ -545,6 +545,12 @@ bool load_capture_config(const char *filename, struct capture_conf *config)
   // Load syncPort param
   config->db_sync_port = (uint16_t) ini_getl("capture", "dbSyncPort", 0, filename);
 
+  // Load syncStoreSize param
+  config->sync_store_size = (ssize_t) ini_getl("capture", "syncStoreSize", -1, filename);
+
+  // Load syncSendSize param
+  config->sync_send_size = (ssize_t) ini_getl("capture", "syncSendSize", -1, filename);
+
   return true;
 }
 

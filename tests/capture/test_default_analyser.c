@@ -23,7 +23,6 @@
 #include "capture/packet_queue.h"
 
 static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL, NULL};
-static UT_array *packet_array;
 
 int __wrap_open_sqlite_header_db(char *db_path, trace_callback_fn fn, void *trace_ctx, sqlite3 **sql)
 {

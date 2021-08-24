@@ -51,6 +51,8 @@ struct capture_context {
   char *filter;
   char cap_id[MAX_RANDOM_UUID_LEN];
   char hostname[OS_HOST_NAME_MAX];
+  ssize_t sync_store_size;
+  ssize_t sync_send_size;
 };
 
 /**

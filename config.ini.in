@@ -33,6 +33,8 @@ dbSync = true
 dbSyncAddress = "localhost"
 dbSyncPort = 3000
 command = "SET_FINGERPRINT"
+syncStoreSize = 1000
+syncSendSize = 20
 
 [supervisor]
 domainServerPath = "/tmp/edgesec-domain-server"
