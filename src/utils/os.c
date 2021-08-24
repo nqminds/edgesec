@@ -1016,7 +1016,7 @@ int check_sock_file_exists(char *path)
 
 int get_hostname(char *buf)
 {
-  if (gethostname(buf, HOST_NAME_MAX) < 0) {
+  if (gethostname(buf, OS_HOST_NAME_MAX) < 0) {
     log_err("gethostname");
     return -1;
   }

@@ -266,7 +266,6 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
     }
   }
 
-
   log_info("Adding default mac mappers...");
   if (!create_mac_mapper(&context)) {
     log_debug("create_mac_mapper fail");

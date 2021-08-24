@@ -132,7 +132,7 @@ struct eth_schema {
   uint32_t caplen;                                  /**< Packet caplen */
   uint32_t length;                                  /**< Packet length */
   char ifname[IFNAMSIZ];                            /**< Packet interface name */
-  char hostname[HOST_NAME_MAX];                     /**< Packet hostname name */
+  char hostname[OS_HOST_NAME_MAX];                     /**< Packet hostname name */
   char ether_dhost[MACSTR_LEN];	                    /**< Packet destination eth addr */
   char ether_shost[MACSTR_LEN];	                    /**< Packet source ether addr */
   uint16_t ether_type;		                          /**< Packet packet type ID field */
@@ -153,9 +153,9 @@ struct arp_schema {
   uint8_t ar_pln;		                                /**< Packet Length of protocol address.  */
   uint16_t ar_op;		                                /**< Packet ARP opcode (command).  */
   char arp_sha[MACSTR_LEN];	                        /**< Packet sender hardware address */
-  char arp_spa[INET_ADDRSTRLEN];		                      /**< Packet sender protocol address */
+  char arp_spa[OS_INET_ADDRSTRLEN];		                      /**< Packet sender protocol address */
   char arp_tha[MACSTR_LEN];	                        /**< Packet target hardware address */
-  char arp_tpa[INET_ADDRSTRLEN];		                      /**< Packet target protocol address */
+  char arp_tpa[OS_INET_ADDRSTRLEN];		                      /**< Packet target protocol address */
 };
 
 /**
@@ -167,6 +167,9 @@ struct ip4_schema {
   uint64_t timestamp;                               /**< Packet timestamp */
   uint32_t ethh_hash;                               /**< Packet ethernet hash */
   char id[MAX_RANDOM_UUID_LEN];                     /**< Packet id */
+  char ip_src[OS_INET_ADDRSTRLEN];                       /**< Packet source address */
+  char ip_dst[OS_INET_ADDRSTRLEN];	                      /**< Packet dest address */
+
   uint8_t ip_hl;		                                  /**< Packet header length */
   uint8_t ip_v;		                                    /**< Packet version */
   uint8_t ip_tos;			                                /**< Packet type of service */
@@ -176,8 +179,6 @@ struct ip4_schema {
   uint8_t ip_ttl;			                                /**< Packet time to live */
   uint8_t ip_p;			                                  /**< Packet protocol */
   uint16_t ip_sum;		                                /**< Packet checksum */
-  char ip_src[INET_ADDRSTRLEN];                       /**< Packet source address */
-  char ip_dst[INET_ADDRSTRLEN];	                      /**< Packet dest address */
 };
 
 /**
@@ -194,8 +195,8 @@ struct ip6_schema {
   uint8_t ip6_un1_nxt;                              /**< Packet next header */
   uint8_t ip6_un1_hlim;                             /**< Packet hop limit */
   uint8_t ip6_un2_vfc;                              /**< Packet 4 bits version, top 4 bits tclass */
-  char ip6_src[INET6_ADDRSTRLEN];                   /**< Packet source address */
-  char ip6_dst[INET6_ADDRSTRLEN];                   /**< Packet destination address */
+  char ip6_src[OS_INET6_ADDRSTRLEN];                   /**< Packet source address */
+  char ip6_dst[OS_INET6_ADDRSTRLEN];                   /**< Packet destination address */
 };
 
 /**
@@ -321,10 +322,10 @@ struct dhcp_schema {
   uint32_t xid;                                       /**< Packet random transaction id number - chosen by this machine */
   uint16_t secs;                                      /**< Packet seconds used in timing */
   uint16_t flags;                                     /**< Packet flags */
-  char ciaddr[INET_ADDRSTRLEN];                       /**< Packet IP address of this machine (if we already have one) */
-  char yiaddr[INET_ADDRSTRLEN];                       /**< Packet IP address of this machine (offered by the DHCP server) */
-  char siaddr[INET_ADDRSTRLEN];                       /**< Packet IP address of DHCP server */
-  char giaddr[INET_ADDRSTRLEN];                       /**< Packet IP address of DHCP relay */
+  char ciaddr[OS_INET_ADDRSTRLEN];                       /**< Packet IP address of this machine (if we already have one) */
+  char yiaddr[OS_INET_ADDRSTRLEN];                       /**< Packet IP address of this machine (offered by the DHCP server) */
+  char siaddr[OS_INET_ADDRSTRLEN];                       /**< Packet IP address of DHCP server */
+  char giaddr[OS_INET_ADDRSTRLEN];                       /**< Packet IP address of DHCP relay */
 };
 
 /**

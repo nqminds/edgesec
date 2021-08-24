@@ -119,7 +119,7 @@ struct capture_packet {
   uint32_t caplen;
   uint32_t length;
   char ifname[IFNAMSIZ];
-  char hostname[HOST_NAME_MAX];
+  char hostname[OS_HOST_NAME_MAX];
   char id[MAX_RANDOM_UUID_LEN];
   uint32_t ethh_hash;
   uint32_t arph_hash;

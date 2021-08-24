@@ -261,9 +261,9 @@ bool decode_arp_packet(struct capture_packet *cpac)
   cpac->arps.ar_op = ntohs(cpac->arph->arp_op);
 
   snprintf(cpac->arps.arp_sha, MACSTR_LEN, MACSTR, MAC2STR(cpac->arph->arp_sha));
-  snprintf(cpac->arps.arp_spa, INET_ADDRSTRLEN, IPSTR, IP2STR(cpac->arph->arp_spa));
+  snprintf(cpac->arps.arp_spa, OS_INET_ADDRSTRLEN, IPSTR, IP2STR(cpac->arph->arp_spa));
   snprintf(cpac->arps.arp_tha, MACSTR_LEN, MACSTR, MAC2STR(cpac->arph->arp_tha));
-  snprintf(cpac->arps.arp_tpa, INET_ADDRSTRLEN, IPSTR, IP2STR(cpac->arph->arp_tpa));
+  snprintf(cpac->arps.arp_tpa, OS_INET_ADDRSTRLEN, IPSTR, IP2STR(cpac->arph->arp_tpa));
 
   // log_trace("ARP arp_sha=" MACSTR " arp_spa=" IPSTR " arp_tha=" MACSTR, MAC2STR((cpac->arph)->arp_sha), IP2STR((cpac->arph)->arp_spa), MAC2STR((cpac->arph)->arp_tha));
 
@@ -366,7 +366,7 @@ int extract_packets(const struct pcap_pkthdr *header, const uint8_t *packet,
   cpac.length = header->len;
 
   os_strlcpy(cpac.ifname, interface, IFNAMSIZ);
-  os_strlcpy(cpac.hostname, hostname, HOST_NAME_MAX);
+  os_strlcpy(cpac.hostname, hostname, OS_HOST_NAME_MAX);
   os_strlcpy(cpac.id, id, MAX_RANDOM_UUID_LEN);
 
   if ((count = decode_packet(header, packet, &cpac)) > 0) {

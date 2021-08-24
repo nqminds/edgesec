@@ -220,8 +220,7 @@ int extract_ip4_statement(sqlite3 *db, struct ip4_schema *ip4s)
     column_idx = sqlite3_bind_parameter_index(res, "@ip_dst");
     sqlite3_bind_text(res, column_idx, ip4s->ip_dst, -1, NULL);
 
-    log_trace("sqlite insert IP4 ip_p=%d ip_v=%d ip_src=%s ip_dst=%s",
-      ip4s->ip_p, ip4s->ip_v, ip4s->ip_src, ip4s->ip_dst);
+    log_trace("sqlite insert IP4 ip_p=%d ip_v=%d ip_src=%s ip_dst=%s", ip4s->ip_p, ip4s->ip_v, ip4s->ip_src, ip4s->ip_dst);
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {

@@ -45,17 +45,12 @@
 
 #define MAX_RANDOM_UUID_LEN		37
 
-#ifndef HOST_NAME_MAX
-#define HOST_NAME_MAX			64
-#endif
+#define OS_HOST_NAME_MAX		64
 
-#ifndef INET_ADDRSTRLEN
-#define INET_ADDRSTRLEN  		22
-#endif
 
-#ifndef INET6_ADDRSTRLEN
-#define INET6_ADDRSTRLEN 		63
-#endif
+#define OS_INET_ADDRSTRLEN  		22
+#define OS_INET6_ADDRSTRLEN 		63
+
 
 #define MAX_SUPERVISOR_CMD_SIZE 40
 

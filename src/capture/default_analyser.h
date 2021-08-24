@@ -50,7 +50,7 @@ struct capture_context {
   char *interface;
   char *filter;
   char cap_id[MAX_RANDOM_UUID_LEN];
-  char hostname[HOST_NAME_MAX];
+  char hostname[OS_HOST_NAME_MAX];
 };
 
 /**
