@@ -39,15 +39,17 @@
  */
 struct string_queue {
   char *str;                    /**< String value */
+  ssize_t max_length;           /**< Maximum length of the queue */
   struct dl_list list;          /**< List definition */
 };
 
 /**
  * @brief Initialises and empty string queue
  * 
+ * @param max_length Maximum queue size, -1 for unlimited
  * @return struct string_queue* Returned initialised empty string queue
  */
-struct string_queue* init_string_queue(void);
+struct string_queue* init_string_queue(ssize_t max_length);
 
 /**
  * @brief Pushes a string in the string queue
@@ -65,6 +67,14 @@ struct string_queue* push_string_queue(struct string_queue* queue, char *str);
  * @return struct string_queue* The returned string (NULL if queue is empty)
  */
 struct string_queue* pop_string_queue(struct string_queue* queue);
+
+/**
+ * @brief Empty a string entry
+ * 
+ * @param queue The string queue
+ * @param count NUmber of elements to remove, -1 for all
+ */
+void empty_string_queue(struct string_queue* queue, ssize_t count);
 
 /**
  * @brief Delete a string entry
@@ -91,8 +101,9 @@ void free_string_queue(struct string_queue* queue);
 /**
  * @brief Concat all the string ain the queue
  * 
- * @param The pointer to the string queue
+ * @param queue The pointer to the string queue
+ * @param count Number of queue strings to concat, if -1 concat the entire queue
  * @return char* The pointer to the concatenated string, NULL for failure or empty queue
  */
-char* concat_string_queue(struct string_queue *queue);
+char* concat_string_queue(struct string_queue *queue, ssize_t count);
 #endif
