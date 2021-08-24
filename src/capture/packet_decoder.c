@@ -51,6 +51,7 @@
 
 #include "packet_decoder.h"
 #include "dns_decoder.h"
+#include "mdns_decoder.h"
 #include "capture_config.h"
 
 /* Linux compat */
@@ -72,34 +73,6 @@ bool decode_dhcp_packet(struct capture_packet *cpac)
 {
   // log_trace("DHCP");
   return false;
-}
-
-bool decode_mdns_packet(struct capture_packet *cpac)
-{
-  if ((void *)cpac->tcph != NULL && (void *)cpac->udph == NULL)
-    cpac->mdnsh = (struct mdns_header *) ((void *)cpac->tcph + sizeof(struct tcphdr));
-  else if ((void *)cpac->tcph == NULL && (void *)cpac->udph != NULL)
-    cpac->mdnsh = (struct mdns_header *) ((void *)cpac->udph + sizeof(struct udphdr));
-  else
-    return false;
-
-  cpac->mdnsh_hash = md_hash((const char*) cpac->mdnsh, sizeof(struct mdns_header));
-
-  cpac->mdnss.hash = cpac->mdnsh_hash;
-  cpac->mdnss.timestamp = cpac->timestamp;
-  cpac->mdnss.ethh_hash = cpac->ethh_hash;
-  strcpy(cpac->mdnss.id, cpac->id);
-
-  cpac->mdnss.tid = ntohs(cpac->mdnsh->tid);
-  cpac->mdnss.flags = ntohs(cpac->mdnsh->flags);
-  cpac->mdnss.nqueries = ntohs(cpac->mdnsh->nqueries);
-  cpac->mdnss.nanswers = ntohs(cpac->mdnsh->nanswers);
-  cpac->mdnss.nauth = ntohs(cpac->mdnsh->nauth);
-  cpac->mdnss.nother = ntohs(cpac->mdnsh->nother);
-
-  log_trace("mDNS nqueries=%d", cpac->mdnss.nqueries);
-
-  return true;
 }
 
 bool decode_udp_packet(struct capture_packet *cpac)

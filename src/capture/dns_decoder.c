@@ -96,9 +96,9 @@ bool decode_dns_packet(struct capture_packet *cpac)
         decode_dns_questions((uint8_t *)payload, cpac);
   }
   
-  log_trace("DNS id=%d flags=0x%x nqueries=%d nanswers=%d nauth=%d nother=%d qname=%s",
-    cpac->dnss.tid, cpac->dnss.flags, cpac->dnss.nqueries, cpac->dnss.nanswers,
-    cpac->dnss.nauth, cpac->dnss.nother, cpac->dnss.qname);
+  // log_trace("DNS id=%d flags=0x%x nqueries=%d nanswers=%d nauth=%d nother=%d qname=%s",
+  //   cpac->dnss.tid, cpac->dnss.flags, cpac->dnss.nqueries, cpac->dnss.nanswers,
+  //   cpac->dnss.nauth, cpac->dnss.nother, cpac->dnss.qname);
 
   return true;
 }

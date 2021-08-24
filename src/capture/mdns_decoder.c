@@ -59,7 +59,7 @@ void decode_mdns_questions(uint8_t *payload, struct capture_packet *cpac)
   }
 }
 
-bool decode_dns_packet(struct capture_packet *cpac)
+bool decode_mdns_packet(struct capture_packet *cpac)
 {
   void *payload;
   int pos = 0;

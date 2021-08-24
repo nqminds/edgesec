@@ -6,13 +6,17 @@ add_library(capture_config capture_config.c)
 target_link_libraries(capture_config log os)
 
 if (BUILD_PCAP_LIB)
+  add_library(mdns_decoder mdns_decoder.c)
+  target_include_directories(mdns_decoder PRIVATE ${LIBPCAP_INCLUDE_PATH})
+  target_link_libraries(mdns_decoder log os hash)
+
   add_library(dns_decoder dns_decoder.c)
   target_include_directories(dns_decoder PRIVATE ${LIBPCAP_INCLUDE_PATH})
   target_link_libraries(dns_decoder log os hash)
 
   add_library(packet_decoder packet_decoder.c)
   target_include_directories(packet_decoder PRIVATE ${LIBPCAP_INCLUDE_PATH})
-  target_link_libraries(packet_decoder dns_decoder hash if log os hashmap ${LIBPCAP_LIB})
+  target_link_libraries(packet_decoder mdns_decoder dns_decoder hash if log os hashmap ${LIBPCAP_LIB})
 
   add_library(packet_queue packet_queue.c)
   target_include_directories(packet_queue PRIVATE ${LIBPCAP_INCLUDE_PATH})

@@ -134,6 +134,7 @@ struct meta_packet {
 
 struct tuple_packet {
   uint8_t *packet;                  /**< Packet data */
+  PACKET_TYPES type;                /**< Packet type */
   struct meta_packet mp;            /**< Packet metadata */
 };
 
