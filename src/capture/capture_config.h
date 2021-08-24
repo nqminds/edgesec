@@ -75,6 +75,8 @@
 
 #define MAX_SCHEMA_STR_LENGTH 100
 
+#define MAX_QUESTION_LEN 255
+
 typedef enum packet_types {
   PACKET_NONE = 0,
   PACKET_ETHERNET,
@@ -292,25 +294,13 @@ struct dns_schema {
   uint64_t timestamp;                               /**< Packet timestamp */
   uint32_t ethh_hash;                               /**< Packet ethernet hash */
   char id[MAX_RANDOM_UUID_LEN];                     /**< Packet id */
-  uint16_t tid;		                  /**< Packet Transaction ID */
-  uint16_t flags;	                  /**< Packet Flags */
-  uint16_t nqueries;	              /**< Packet Questions */
-  uint16_t nanswers;	              /**< Packet Answers */
-  uint16_t nauth;		                /**< Packet Authority PRs */
-  uint16_t nother;		              /**< Packet Other PRs */
-  uint16_t p_id;                    /**< Packet payload params */
-  uint8_t p_qr;                     /**< Packet payload params */
-  uint8_t p_aa;                     /**< Packet payload params */
-  uint8_t p_tc;                     /**< Packet payload params */
-  uint8_t p_rd;                     /**< Packet payload params */
-  uint8_t p_ra;                     /**< Packet payload params */
-  uint8_t p_z;                      /**< Packet payload params */
-  uint8_t p_opcode;                 /**< Packet payload params */
-  uint8_t p_rcode;                  /**< Packet payload params */
-  uint16_t p_qdcount;               /**< Packet payload params */
-  uint16_t p_ancount;               /**< Packet payload params */ 
-  uint16_t p_nscount;               /**< Packet payload params */
-  uint16_t p_arcount;               /**< Packet payload params */
+  uint16_t tid;		                                  /**< Packet Transaction ID */
+  uint16_t flags;	                                  /**< Packet Flags */
+  uint16_t nqueries;	                              /**< Packet Questions */
+  uint16_t nanswers;	                              /**< Packet Answers */
+  uint16_t nauth;		                                /**< Packet Authority PRs */
+  uint16_t nother;		                              /**< Packet Other PRs */
+  char qname[MAX_QUESTION_LEN];                     /**< Packet question name*/
 };
 
 /**
@@ -322,12 +312,13 @@ struct mdns_schema {
   uint64_t timestamp;                               /**< Packet timestamp */
   uint32_t ethh_hash;                               /**< Packet ethernet hash */
   char id[MAX_RANDOM_UUID_LEN];                     /**< Packet id */
-  uint16_t tid;		                  /**< Packet Transaction ID */
-  uint16_t flags;	                  /**< Packet Flags */
-  uint16_t nqueries;	              /**< Packet Questions */
-  uint16_t nanswers;	              /**< Packet Answers */
-  uint16_t nauth;		                /**< Packet Authority PRs */
-  uint16_t nother;		              /**< Packet Other PRs */
+  uint16_t tid;		                                  /**< Packet Transaction ID */
+  uint16_t flags;	                                  /**< Packet Flags */
+  uint16_t nqueries;	                              /**< Packet Questions */
+  uint16_t nanswers;	                              /**< Packet Answers */
+  uint16_t nauth;		                                /**< Packet Authority PRs */
+  uint16_t nother;		                              /**< Packet Other PRs */
+  char qname[MAX_QUESTION_LEN];                     /**< Packet question name*/
 };
 
 /**
