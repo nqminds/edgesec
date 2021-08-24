@@ -98,16 +98,23 @@ uint32_t __wrap_run_register_db(char *address, char *name)
   return 1;
 }
 
-int __wrap_extract_packets(const struct pcap_pkthdr *header, const uint8_t *packet, UT_array **tp_array)
+int __wrap_extract_packets(const struct pcap_pkthdr *header, const uint8_t *packet,
+                    char *interface, char *hostname, char *id, UT_array **tp_array)
 {
-  *tp_array = packet_array;
+  struct tuple_packet tp;
+  utarray_new(*tp_array, &tp_list_icd);
+
+  tp.packet = NULL;
+  tp.type = PACKET_ETHERNET;
+
+  utarray_push_back(*tp_array, &tp);
+
   return 1;
 }
 
 struct packet_queue* __wrap_push_packet_queue(struct packet_queue* queue, struct tuple_packet tp)
 {
-  assert_int_equal(tp.mp.caplen, 100);
-  assert_int_equal(tp.mp.length, 100);
+  assert_int_equal(tp.type, PACKET_ETHERNET);
   return queue;
 }
 
@@ -162,22 +169,12 @@ static void test_pcap_callback(void **state)
   header.caplen = 100;
   header.len = 100;
 
-  uint8_t *packet = os_malloc(100);
-  struct tuple_packet tp;
-  utarray_new(packet_array, &tp_list_icd);
-
-  tp.packet = packet;
-  tp.mp.caplen = header.caplen;
-  tp.mp.length = header.len;
-
-  utarray_push_back(packet_array, &tp);
-
   context.db_write = true;
   context.file_write = true;
   context.pqueue = init_packet_queue();
   context.cqueue = init_pcap_queue();
 
-  pcap_callback((const void *)&context, &header, packet);
+  pcap_callback((const void *)&context, &header, NULL);
 
   free_packet_queue(context.pqueue);
   free_pcap_queue(context.cqueue);

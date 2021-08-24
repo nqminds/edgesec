@@ -75,6 +75,7 @@ void add_packet_queue(UT_array *tp_array, int count, struct packet_queue *queue)
   struct tuple_packet *p = NULL;
   while((p = (struct tuple_packet *) utarray_next(tp_array, p)) != NULL) {
     if (push_packet_queue(queue, *p) == NULL) {
+      log_trace("push_packet_queue fail");
       // Free the packet if cannot be added to the queue
       free_packet_tuple(p);
     }
@@ -84,7 +85,7 @@ void add_packet_queue(UT_array *tp_array, int count, struct packet_queue *queue)
 void pcap_callback(const void *ctx, struct pcap_pkthdr *header, uint8_t *packet)
 {
   struct capture_context *context = (struct capture_context *)ctx;
-  UT_array *tp_array;
+  UT_array *tp_array = NULL;
   int count;
 
   if ((count = extract_packets(header, packet,
@@ -129,7 +130,8 @@ int save_pcap_file_data(struct pcap_pkthdr *header, uint8_t *packet, struct capt
 
   os_free(path);
 
-  if (save_sqlite_pcap_entry(context->pcap_db, context->cap_id, file_name, os_to_timestamp(header->ts),
+  if (save_sqlite_pcap_entry(context->pcap_db, context->cap_id, file_name,
+        os_to_timestamp(header->ts),
         header->caplen, header->len, context->interface, context->filter) < 0) {
     log_trace("save_sqlite_pcap_entry fail");
     return -1;
@@ -151,7 +153,7 @@ void eloop_tout_handler(void *eloop_ctx, void *user_ctx)
       if (context->db_write) {
         save_packet_statement(context->header_db, &(el_packet->tp));
       }
-      // Process packet
+      free_packet_tuple(&el_packet->tp);
       free_packet_queue_el(el_packet);
     }
   }
@@ -162,7 +164,6 @@ void eloop_tout_handler(void *eloop_ctx, void *user_ctx)
         if (save_pcap_file_data(&(el_pcap->header), el_pcap->packet, context) < 0) {
           log_trace("save_pcap_file_data fail");
         }
-
         free_pcap_queue_el(el_pcap);
       }
     }

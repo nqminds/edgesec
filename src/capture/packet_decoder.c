@@ -261,9 +261,9 @@ bool decode_arp_packet(struct capture_packet *cpac)
   cpac->arps.ar_op = ntohs(cpac->arph->arp_op);
 
   snprintf(cpac->arps.arp_sha, MACSTR_LEN, MACSTR, MAC2STR(cpac->arph->arp_sha));
-  snprintf(cpac->arps.arp_spa, MACSTR_LEN, MACSTR, MAC2STR(cpac->arph->arp_spa));
+  snprintf(cpac->arps.arp_spa, INET_ADDRSTRLEN, IPSTR, IP2STR(cpac->arph->arp_spa));
   snprintf(cpac->arps.arp_tha, MACSTR_LEN, MACSTR, MAC2STR(cpac->arph->arp_tha));
-  snprintf(cpac->arps.arp_tpa, MACSTR_LEN, MACSTR, MAC2STR(cpac->arph->arp_tpa));
+  snprintf(cpac->arps.arp_tpa, INET_ADDRSTRLEN, IPSTR, IP2STR(cpac->arph->arp_tpa));
 
   // log_trace("ARP arp_sha=" MACSTR " arp_spa=" IPSTR " arp_tha=" MACSTR, MAC2STR((cpac->arph)->arp_sha), IP2STR((cpac->arph)->arp_spa), MAC2STR((cpac->arph)->arp_tha));
 
@@ -350,22 +350,14 @@ int decode_packet(const struct pcap_pkthdr *header, const uint8_t *packet, struc
   return count;
 }
 
-void free_packet_tuple(struct tuple_packet *tp)
-{
-  if (tp) {
-    if (tp->packet)
-      os_free(tp->packet);
-  }
-}
-
 int extract_packets(const struct pcap_pkthdr *header, const uint8_t *packet,
                     char *interface, char *hostname, char *id, UT_array **tp_array)
 {
   struct capture_packet cpac;
   struct tuple_packet tp;
   int count;
-  utarray_new(*tp_array, &tp_list_icd);
 
+  utarray_new(*tp_array, &tp_list_icd);
   memset(&cpac, 0, sizeof(struct capture_packet));
   os_memset(&tp, 0, sizeof(struct tuple_packet));
 
@@ -378,88 +370,103 @@ int extract_packets(const struct pcap_pkthdr *header, const uint8_t *packet,
   os_strlcpy(cpac.id, id, MAX_RANDOM_UUID_LEN);
 
   if ((count = decode_packet(header, packet, &cpac)) > 0) {
-    tp.mp.caplen = cpac.caplen;
-    tp.mp.length = cpac.length;
-    tp.mp.timestamp = cpac.timestamp;
-    tp.mp.ethh_hash = cpac.ethh_hash;
-    os_strlcpy(tp.mp.interface, interface, IFNAMSIZ);
-    os_strlcpy(tp.mp.hostname, hostname, HOST_NAME_MAX);
-    os_strlcpy(tp.mp.id, id, MAX_RANDOM_UUID_LEN);
     if (cpac.ethh != NULL) {
-      tp.packet = os_malloc(sizeof(struct ether_header));
-      os_memcpy(tp.packet, cpac.ethh, sizeof(struct ether_header));
-      tp.mp.hash = cpac.ethh_hash;
-      tp.mp.type = PACKET_ETHERNET;
+      if ((tp.packet = os_malloc(sizeof(struct eth_schema))) == NULL) {
+        log_err("os_malloc");
+        return -1;
+      }
+      os_memcpy(tp.packet, &cpac.eths, sizeof(struct eth_schema));
+      tp.type = PACKET_ETHERNET;
       utarray_push_back(*tp_array, &tp);
     }
     if (cpac.arph != NULL) {
-      tp.packet = os_malloc(sizeof(struct ether_arp));
-      os_memcpy(tp.packet, cpac.arph, sizeof(struct ether_arp));
-      tp.mp.hash = cpac.arph_hash;
-      tp.mp.type = PACKET_ARP;
+      if ((tp.packet = os_malloc(sizeof(struct arp_schema))) == NULL) {
+        log_err("os_malloc");
+        return -1;
+      }
+      os_memcpy(tp.packet, &cpac.arps, sizeof(struct arp_schema));
+      tp.type = PACKET_ARP;
       utarray_push_back(*tp_array, &tp);
     }
     if (cpac.ip4h != NULL) {
-      tp.packet = os_malloc(sizeof(struct ip));
-      os_memcpy(tp.packet, cpac.ip4h, sizeof(struct ip));
-      tp.mp.hash = cpac.ip4h_hash;
-      tp.mp.type = PACKET_IP4;
+      if ((tp.packet = os_malloc(sizeof(struct ip4_schema))) == NULL) {
+        log_err("os_malloc");
+        return -1;
+      }
+      os_memcpy(tp.packet, &cpac.ip4s, sizeof(struct ip4_schema));
+      tp.type = PACKET_IP4;
       utarray_push_back(*tp_array, &tp);
     };
     if (cpac.ip6h != NULL) {
-      tp.packet = os_malloc(sizeof(struct ip6_hdr));
-      os_memcpy(tp.packet, cpac.ip6h, sizeof(struct ip6_hdr));
-      tp.mp.hash = cpac.ip6h_hash;
-      tp.mp.type = PACKET_IP6;
+      if ((tp.packet = os_malloc(sizeof(struct ip6_schema))) == NULL) {
+        log_err("os_malloc");
+        return -1;
+      }
+      os_memcpy(tp.packet, &cpac.ip6s, sizeof(struct ip6_schema));
+      tp.type = PACKET_IP6;
       utarray_push_back(*tp_array, &tp);
     };
     if (cpac.tcph != NULL) {
-      tp.packet = os_malloc(sizeof(struct tcphdr));
-      os_memcpy(tp.packet, cpac.tcph, sizeof(struct tcphdr));
-      tp.mp.hash = cpac.tcph_hash;
-      tp.mp.type = PACKET_TCP;
+      if ((tp.packet = os_malloc(sizeof(struct tcp_schema))) == NULL) {
+        log_err("os_malloc");
+        return -1;
+      }
+      os_memcpy(tp.packet, &cpac.tcps, sizeof(struct tcp_schema));
+      tp.type = PACKET_TCP;
       utarray_push_back(*tp_array, &tp);
     };
     if (cpac.udph != NULL) {
-      tp.packet = os_malloc(sizeof(struct udphdr));
-      os_memcpy(tp.packet, cpac.udph, sizeof(struct udphdr));
-      tp.mp.hash = cpac.udph_hash;
-      tp.mp.type = PACKET_UDP;
+      if ((tp.packet = os_malloc(sizeof(struct udp_schema))) == NULL) {
+        log_err("os_malloc");
+        return -1;
+      }
+      os_memcpy(tp.packet, &cpac.udps, sizeof(struct udp_schema));
+      tp.type = PACKET_UDP;
       utarray_push_back(*tp_array, &tp);
     };
     if (cpac.icmp4h != NULL) {
-      tp.packet = os_malloc(sizeof(struct icmphdr));
-      os_memcpy(tp.packet, cpac.icmp4h, sizeof(struct icmphdr));
-      tp.mp.hash = cpac.icmp4h_hash;
-      tp.mp.type = PACKET_ICMP4;
+      if ((tp.packet = os_malloc(sizeof(struct icmp4_schema))) == NULL) {
+        log_err("os_malloc");
+        return -1;
+      }
+      os_memcpy(tp.packet, &cpac.icmp4s, sizeof(struct icmp4_schema));
+      tp.type = PACKET_ICMP4;
       utarray_push_back(*tp_array, &tp);
     };
     if (cpac.icmp6h != NULL) {
-      tp.packet = os_malloc(sizeof(struct icmp6_hdr));
-      os_memcpy(tp.packet, cpac.icmp6h, sizeof(struct icmp6_hdr));
-      tp.mp.hash = cpac.icmp6h_hash;
-      tp.mp.type = PACKET_ICMP6;
+      if ((tp.packet = os_malloc(sizeof(struct icmp6_schema))) == NULL) {
+        log_err("os_malloc");
+        return -1;
+      }
+      os_memcpy(tp.packet, &cpac.icmp6s, sizeof(struct icmp6_schema));
+      tp.type = PACKET_ICMP6;
       utarray_push_back(*tp_array, &tp);
     };
     if (cpac.dnsh != NULL) {
-      tp.packet = os_malloc(sizeof(struct dns_header));
-      os_memcpy(tp.packet, cpac.dnsh, sizeof(struct dns_header));
-      tp.mp.hash = cpac.dnsh_hash;
-      tp.mp.type = PACKET_DNS;
+      if ((tp.packet = os_malloc(sizeof(struct dns_schema))) == NULL) {
+        log_err("os_malloc");
+        return -1;
+      }
+      os_memcpy(tp.packet, &cpac.dnss, sizeof(struct dns_schema));
+      tp.type = PACKET_DNS;
       utarray_push_back(*tp_array, &tp);
     };
     if (cpac.mdnsh != NULL) {
-      tp.packet = os_malloc(sizeof(struct mdns_header));
-      os_memcpy(tp.packet, cpac.mdnsh, sizeof(struct mdns_header));
-      tp.mp.hash = cpac.mdnsh_hash;
-      tp.mp.type = PACKET_MDNS;
+      if ((tp.packet = os_malloc(sizeof(struct mdns_schema))) == NULL) {
+        log_err("os_malloc");
+        return -1;
+      }
+      os_memcpy(tp.packet, &cpac.mdnss, sizeof(struct mdns_schema));
+      tp.type = PACKET_MDNS;
       utarray_push_back(*tp_array, &tp);
     };
     if (cpac.dhcph != NULL) {
-      tp.packet = os_malloc(sizeof(struct dhcp_header));
-      os_memcpy(tp.packet, cpac.dhcph, sizeof(struct dhcp_header));
-      tp.mp.hash = cpac.dhcph_hash;
-      tp.mp.type = PACKET_DHCP;
+      if ((tp.packet = os_malloc(sizeof(struct dhcp_schema))) == NULL) {
+        log_err("os_malloc");
+        return -1;
+      }
+      os_memcpy(tp.packet, &cpac.dhcps, sizeof(struct dhcp_schema));
+      tp.type = PACKET_DHCP;
       utarray_push_back(*tp_array, &tp);
     };
   }

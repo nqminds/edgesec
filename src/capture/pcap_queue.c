@@ -95,7 +95,7 @@ struct pcap_queue* pop_pcap_queue(struct pcap_queue* queue)
 
 void free_pcap_queue_el(struct pcap_queue* el)
 {
-  if (el) {
+  if (el != NULL) {
     dl_list_del(&el->list);
     os_free(el->packet);
 	  os_free(el);

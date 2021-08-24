@@ -67,6 +67,13 @@ struct packet_queue* push_packet_queue(struct packet_queue* queue, struct tuple_
 struct packet_queue* pop_packet_queue(struct packet_queue* queue);
 
 /**
+ * @brief Frees an allocated packet tuple
+ * 
+ * @param tp The pointer to the packet tuple
+ */
+void free_packet_tuple(struct tuple_packet *tp);
+
+/**
  * @brief Delete a packet entry
  * 
  * @param el The packet queue entry

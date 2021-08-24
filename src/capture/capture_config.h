@@ -116,26 +116,9 @@ struct capture_conf {
   char filter[MAX_FILTER_SIZE];                                               /**< Specifies the filter expression or pcap lib */
 };
 
-/**
- * @brief Meta packet structure definition
- * 
- */
-struct meta_packet {
-  PACKET_TYPES type;                /**< Packet type */
-  uint32_t hash;                    /**< Packet header hash */
-  uint32_t ethh_hash;               /**< Packet ethernet header hash */
-  uint64_t timestamp;               /**< Packet timestamp */
-  uint32_t caplen;                  /**< Packet caplen */
-  uint32_t length;                  /**< Packet length */
-  char interface[IFNAMSIZ];         /**< Packet interface name */
-  char hostname[HOST_NAME_MAX];     /**< Packet hostname name */
-  char id[MAX_RANDOM_UUID_LEN];     /**< Packet id */
-};
-
 struct tuple_packet {
   uint8_t *packet;                  /**< Packet data */
   PACKET_TYPES type;                /**< Packet type */
-  struct meta_packet mp;            /**< Packet metadata */
 };
 
 /**
@@ -170,9 +153,9 @@ struct arp_schema {
   uint8_t ar_pln;		                                /**< Packet Length of protocol address.  */
   uint16_t ar_op;		                                /**< Packet ARP opcode (command).  */
   char arp_sha[MACSTR_LEN];	                        /**< Packet sender hardware address */
-  char arp_spa[MACSTR_LEN];		                      /**< Packet sender protocol address */
+  char arp_spa[INET_ADDRSTRLEN];		                      /**< Packet sender protocol address */
   char arp_tha[MACSTR_LEN];	                        /**< Packet target hardware address */
-  char arp_tpa[MACSTR_LEN];		                      /**< Packet target protocol address */
+  char arp_tpa[INET_ADDRSTRLEN];		                      /**< Packet target protocol address */
 };
 
 /**
@@ -193,8 +176,8 @@ struct ip4_schema {
   uint8_t ip_ttl;			                                /**< Packet time to live */
   uint8_t ip_p;			                                  /**< Packet protocol */
   uint16_t ip_sum;		                                /**< Packet checksum */
-  char ip_src[MAX_SCHEMA_STR_LENGTH];                 /**< Packet source address */
-  char ip_dst[MAX_SCHEMA_STR_LENGTH];	                /**< Packet dest address */
+  char ip_src[INET_ADDRSTRLEN];                       /**< Packet source address */
+  char ip_dst[INET_ADDRSTRLEN];	                      /**< Packet dest address */
 };
 
 /**
@@ -338,10 +321,10 @@ struct dhcp_schema {
   uint32_t xid;                                       /**< Packet random transaction id number - chosen by this machine */
   uint16_t secs;                                      /**< Packet seconds used in timing */
   uint16_t flags;                                     /**< Packet flags */
-  char ciaddr[MAX_SCHEMA_STR_LENGTH];                 /**< Packet IP address of this machine (if we already have one) */
-  char yiaddr[MAX_SCHEMA_STR_LENGTH];                 /**< Packet IP address of this machine (offered by the DHCP server) */
-  char siaddr[MAX_SCHEMA_STR_LENGTH];                 /**< Packet IP address of DHCP server */
-  char giaddr[MAX_SCHEMA_STR_LENGTH];                 /**< Packet IP address of DHCP relay */
+  char ciaddr[INET_ADDRSTRLEN];                       /**< Packet IP address of this machine (if we already have one) */
+  char yiaddr[INET_ADDRSTRLEN];                       /**< Packet IP address of this machine (offered by the DHCP server) */
+  char siaddr[INET_ADDRSTRLEN];                       /**< Packet IP address of DHCP server */
+  char giaddr[INET_ADDRSTRLEN];                       /**< Packet IP address of DHCP relay */
 };
 
 /**

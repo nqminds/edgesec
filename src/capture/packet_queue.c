@@ -75,6 +75,14 @@ struct packet_queue* pop_packet_queue(struct packet_queue* queue)
   return dl_list_first(&queue->list, struct packet_queue, list);
 }
 
+void free_packet_tuple(struct tuple_packet *tp)
+{
+  if (tp != NULL) {
+    if (tp->packet != NULL)
+      os_free(tp->packet);
+  }
+}
+
 void free_packet_queue_el(struct packet_queue* el)
 {
   if (el != NULL) {

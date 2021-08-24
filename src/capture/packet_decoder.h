@@ -148,10 +148,4 @@ struct capture_packet {
 int extract_packets(const struct pcap_pkthdr *header, const uint8_t *packet,
                     char *interface, char *hostname, char *id, UT_array **tp_array);
 
-/**
- * @brief Frees an allocated packet tuple
- * 
- * @param tp The pointer to the packet tuple
- */
-void free_packet_tuple(struct tuple_packet *tp);
 #endif
