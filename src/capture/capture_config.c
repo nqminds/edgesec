@@ -28,7 +28,7 @@
 
 #include "../utils/log.h"
 #include "../utils/os.h"
-
+#include "../utils/utarray.h"
 
 long get_opt_num(char *port_str)
 {
@@ -36,6 +36,61 @@ long get_opt_num(char *port_str)
     return -1;
   
   return strtol(port_str, NULL, 10);
+}
+
+int process_sync_params(char *param_str, struct capture_conf *config)
+{
+  char **p = NULL;
+  UT_array *param_arr;
+  utarray_new(param_arr, &ut_str_icd);
+
+  if (split_string_array(param_str, ',', param_arr) < 0) {
+    return -1;
+  }
+
+  if (utarray_len(param_arr) < 2) {
+    utarray_free(param_arr);
+    return -1;
+  }
+
+  errno = 0;
+  p = (char**) utarray_next(param_arr, p);
+  if (*p != NULL) {
+    if (os_strnlen_s(*p, 9) && is_number(*p)) {
+      config->sync_store_size = strtol(*p, NULL, 10);
+      if (errno == EINVAL) {
+        utarray_free(param_arr);
+        return -1;
+      }
+    } else {
+      utarray_free(param_arr);
+      return -1;
+    }
+  } else {
+    utarray_free(param_arr);
+    return -1;
+  }
+
+  errno = 0;
+  p = (char**) utarray_next(param_arr, p);
+  if (*p != NULL) {
+    if (os_strnlen_s(*p, 9) && is_number(*p)) {
+      config->sync_send_size = strtol(*p, NULL, 10);
+      if (errno == EINVAL) {
+        utarray_free(param_arr);
+        return -1;
+      }
+    } else {
+      utarray_free(param_arr);
+      return -1;
+    }
+  } else {
+    utarray_free(param_arr);
+    return -1;
+  }
+
+  utarray_free(param_arr);
+  return 0;
 }
 
 int capture_opt2config(char key, char *value, struct capture_conf *config)
@@ -101,6 +156,11 @@ int capture_opt2config(char key, char *value, struct capture_conf *config)
     case 'o':
       config->db_sync_port = get_opt_num(value);
       if (config->db_sync_port <= 0 || config->db_sync_port > 65535) {
+        return -1;
+      }
+      break;
+    case 'r':
+      if (process_sync_params(value, config) < 0) {
         return -1;
       }
       break;
@@ -281,6 +341,16 @@ char** capture_config2opt(struct capture_conf *config)
     strcpy(opt_str[idx], buf);
     idx ++;
   }
+
+  //sync params, -r
+  sprintf(buf, "%ld,%ld", config->sync_store_size, config->sync_send_size);
+  opt_str[idx] = os_zalloc(3);
+  strcpy(opt_str[idx], "-r");
+  idx ++;
+
+  opt_str[idx] = os_zalloc(strlen(buf) + 1);
+  strcpy(opt_str[idx], buf);
+  idx ++;
 
   opt_str[idx] = NULL;
 

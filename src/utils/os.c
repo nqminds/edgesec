@@ -43,10 +43,18 @@ struct proc_signal_arg {
 
 bool is_number(const char *ptr)
 {
+  int offset = 0;
   if (ptr == NULL)
     return false;
 
-  for (int i = 0; i < MAX_64BIT_DIGITS, ptr[i] != '\0'; i++) {
+  if (ptr[0] == '-' || ptr[0] == '+')
+    offset = 1;
+
+  if (strlen(ptr) && offset && ptr[1] == '\0') {
+    return false;
+  }
+
+  for (int i = offset; i < MAX_64BIT_DIGITS, ptr[i] != '\0'; i++) {
     if (!isdigit(ptr[i]))
       return false;
   }

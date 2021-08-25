@@ -247,6 +247,8 @@ int start_default_analyser(struct capture_conf *config)
   log_info("Immediate mode=%d", config->immediate);
   log_info("Buffer timeout=%d", config->buffer_timeout);
   log_info("Process interval=%d (milliseconds)", config->process_interval);
+  log_info("Sync store size=%ld",   context.sync_store_size);
+  log_info("Sync send size=%ld",   context.sync_send_size);
   log_info("File write=%d", context.file_write);
   log_info("DB write=%d", context.db_write);
   log_info("DB sync=%d", context.db_sync);
