@@ -31,6 +31,7 @@
 
 // #include "packet_decoder.h"
 
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 
 #include "capture_config.h"
@@ -108,14 +109,20 @@
 
 typedef void (*trace_callback_fn)(char *sqlite_statement, void *trace_ctx);
 
+struct sqlite_header_context {
+  sqlite3 *db;
+  trace_callback_fn trace_fn;
+  uint8_t *trace_ctx;
+};
+
 /**
  * @brief Save packets to sqlite db
  * 
- * @param db The sqlite db
+ * @param ctx The sqlite db context
  * @param tp The packet tuple structure
  * @return int 0 on success, -1 o failure
  */
-int save_packet_statement(sqlite3 *db, struct tuple_packet *tp);
+int save_packet_statement(struct sqlite_header_context *ctx, struct tuple_packet *tp);
 
 /**
  * @brief Opens the sqlite3 header database
@@ -123,17 +130,17 @@ int save_packet_statement(sqlite3 *db, struct tuple_packet *tp);
  * @param db_path The path to sqlite3 db
  * @param trace_fn The callback to the trace callback function
  * @param trace_ctx The context for trace callback
- * @param sql The returned sqlite db structure pointer
+ * @param ctx The returned sqlite db context
  * @return 0 on success, -1 on failure
  */
-int open_sqlite_header_db(char *db_path, trace_callback_fn trace_fn,
-                                void *trace_ctx, sqlite3 **sql);
+int open_sqlite_header_db(char *db_path, trace_callback_fn fn,
+                               void *trace_ctx, struct sqlite_header_context **ctx);
 
 /**
  * @brief Closes the sqlite db
  * 
- * @param ctx The sqlite db
+ * @param ctx The sqlite db context
  */
-void free_sqlite_header_db(sqlite3 *db);
+void free_sqlite_header_db(struct sqlite_header_context *ctx);
 
 #endif

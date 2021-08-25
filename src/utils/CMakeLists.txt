@@ -1,4 +1,5 @@
 add_library(log log.c)
+add_library(allocs allocs.c)
 
 add_library(cryptou cryptou.c)
 target_include_directories(cryptou BEFORE PRIVATE ${LIBOPENSSL_INCLUDE_PATH})
@@ -8,8 +9,8 @@ add_library(base64 base64.c)
 target_link_libraries(base64 os log)
 
 add_library(os os.c)
-target_include_directories(os PRIVATE ${LIBUUID_INCLUDE_DIR})
-target_link_libraries(os log ${LIBUUID_LIB})
+target_include_directories(os PUBLIC ${LIBUUID_INCLUDE_DIR})
+target_link_libraries(os PUBLIC allocs log ${LIBUUID_LIB})
 
 add_library(iptables iptables.c)
 target_link_libraries(iptables os log)

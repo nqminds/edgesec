@@ -32,6 +32,7 @@
 
 #include "../crypt/crypt_service.h"
 #include "../capture/capture_service.h"
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/log.h"
 #include "../utils/eloop.h"

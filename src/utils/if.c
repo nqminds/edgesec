@@ -51,6 +51,7 @@
 #include "rt_names.h"
 
 #include "nl80211.h"
+#include "allocs.h"
 #include "os.h"
 #include "log.h"
 #include "if.h"

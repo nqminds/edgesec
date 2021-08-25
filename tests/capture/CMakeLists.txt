@@ -33,10 +33,6 @@ target_link_libraries(test_capture_config PRIVATE capture_config os log cmocka-s
 
 add_executable(test_sqlite_pcap_writer test_sqlite_pcap_writer.c)
 target_link_libraries(test_sqlite_pcap_writer PRIVATE sqlite_pcap_writer sqliteu os log cmocka-static)
-set_target_properties(test_sqlite_pcap_writer
-  PROPERTIES
-  LINK_FLAGS  "-Wl,--wrap=sqlite3_open"
-)
 
 add_executable(test_sqlite_header_writer test_sqlite_header_writer.c)
 target_include_directories(test_sqlite_header_writer PRIVATE ${LIBPCAP_INCLUDE_PATH})

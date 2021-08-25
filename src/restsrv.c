@@ -48,6 +48,7 @@
 #include "supervisor/cmd_processor.h"
 #include "microhttpd.h"
 #include "version.h"
+#include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/log.h"
 #include "utils/minIni.h"

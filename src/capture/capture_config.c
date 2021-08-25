@@ -27,6 +27,7 @@
 #include "capture_config.h"
 
 #include "../utils/log.h"
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/utarray.h"
 
@@ -45,6 +46,7 @@ int process_sync_params(char *param_str, struct capture_conf *config)
   utarray_new(param_arr, &ut_str_icd);
 
   if (split_string_array(param_str, ',', param_arr) < 0) {
+    utarray_free(param_arr);
     return -1;
   }
 

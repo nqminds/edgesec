@@ -67,5 +67,6 @@ int check_table_exists(sqlite3 *db, char *table_name)
     return 1;
   }
 
+  sqlite3_finalize(res);
   return 0;
 }

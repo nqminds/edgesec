@@ -30,6 +30,7 @@
 #include <net/if.h>
 #include <stdbool.h>
 
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 
 #define MAX_ANALYSER_NAME_SIZE      64

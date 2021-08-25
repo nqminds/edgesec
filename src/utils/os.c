@@ -31,6 +31,7 @@
 #include <uuid/uuid.h>
 
 #include "utarray.h"
+#include "allocs.h"
 #include "os.h"
 #include "log.h"
 
@@ -167,23 +168,6 @@ size_t os_strlcpy(char *dest, const char *src, size_t siz)
 	}
 
 	return s - src - 1;
-}
-
-void * os_zalloc(size_t size)
-{
-	void *n = os_malloc(size);
-	if (n != NULL)
-		os_memset(n, 0, size);
-	return n;
-}
-
-void * os_memdup(const void *src, size_t len)
-{
-	void *r = os_malloc(len);
-
-	if (r && src)
-		os_memcpy(r, src, len);
-	return r;
 }
 
 int os_memcmp_const(const void *a, const void *b, size_t len)
@@ -366,7 +350,7 @@ int fn_split_string_array(const char *str, size_t len, void *data)
 
 ssize_t split_string(const char *str, char sep, split_string_fn fun, void *data)
 {
-  size_t start = 0, stop, count = 0;
+  ssize_t start = 0, stop, count = 0;
 
   if (fun == NULL) {
     log_trace("fun is NULL");
@@ -379,11 +363,11 @@ ssize_t split_string(const char *str, char sep, split_string_fn fun, void *data)
   }
 
   for (stop = 0; str[stop]; stop++) {
-      if (str[stop] == sep) {
-          fun(str + start, stop - start, data);
-          start = stop + 1;
-          count++;
-      }
+    if (str[stop] == sep) {
+      fun(str + start, stop - start, data);
+      start = stop + 1;
+      count++;
+    }
   }
 
   if (stop - start < 0) {
@@ -398,7 +382,7 @@ ssize_t split_string(const char *str, char sep, split_string_fn fun, void *data)
     }
   }
 
-  return (ssize_t)(count + 1);
+  return count + 1;
 }
 
 ssize_t split_string_array(const char *str, char sep, UT_array *arr)
@@ -409,24 +393,6 @@ ssize_t split_string_array(const char *str, char sep, UT_array *arr)
   }
 
   return split_string(str, sep, fn_split_string_array, (void *)arr);
-}
-
-char * os_strdup(const char *s)
-{
-	char *dest = NULL;
-  size_t len = strlen(s) + 1;
-
-	if (s != NULL) {
-  	dest = (char *) os_malloc(len);
-		if (dest == NULL) {
-			log_err("os_malloc");
-      return NULL;
-		}
-
-		strcpy(dest, s);
-	}
-
-	return dest;
 }
 
 char *  concat_paths(char *path_left, char *path_right)
@@ -486,16 +452,17 @@ char *get_valid_path(char *path)
   char *path_dirname = dirname(dir);
   char *path_basename = basename(base);
 
-  if (!strlen(path))
+  if (!strlen(path)) {
     concat = concat_paths(path_dirname, NULL);
-  else if (strlen(path) &&
+  } else if (strlen(path) &&
           (strcmp(path, ".") == 0 ||
            strcmp(path, "..") == 0 ||
            strcmp(path, "/") == 0||
-           strcmp(path, "//") == 0))
+           strcmp(path, "//") == 0)) {
     concat = concat_paths(path, NULL);
-  else
+  } else {
     concat = concat_paths(path_dirname, path_basename);
+  }
 
   os_free(dir);
   os_free(base);
@@ -504,15 +471,20 @@ char *get_valid_path(char *path)
 
 char *construct_path(char *path_left, char *path_right)
 {
+  char *path = NULL;
   if (path_left == NULL || path_right == NULL)
     return NULL;
 
-  if (!strlen(path_right) && strlen(path_left))
-    return get_valid_path(path_left);
-  else if (strlen(path_right) && !strlen(path_left))
-    return get_valid_path(path_right);
-  else if (!strlen(path_right) && !strlen(path_left))
-    return get_valid_path("");
+  if (!strlen(path_right) && strlen(path_left)) {
+    path = get_valid_path(path_left);
+    return path;
+  } else if (strlen(path_right) && !strlen(path_left)) {
+    path = get_valid_path(path_right);
+    return path;
+  } else if (!strlen(path_right) && !strlen(path_left)) {
+    path = get_valid_path("");
+    return path;
+  }
 
   char *valid_left = get_valid_path(path_left);
   char *valid_right = get_valid_path(path_right);
@@ -527,7 +499,7 @@ char *construct_path(char *path_left, char *path_right)
   os_free(valid_left);
   os_free(valid_right);
 
-  char *path = get_valid_path(concat);
+  path = get_valid_path(concat);
   os_free(concat);
 
   return path;

@@ -23,6 +23,7 @@
  * @brief File containing the implementation of the bridge creation functions.
  */
 
+#include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/log.h"
 #include "utils/list.h"

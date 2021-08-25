@@ -44,6 +44,7 @@
 #include <pcap.h>
 
 #include "../utils/log.h"
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/if.h"
 #include "../utils/hash.h"

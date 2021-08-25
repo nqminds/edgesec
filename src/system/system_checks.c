@@ -44,6 +44,7 @@
 #include "utils/log.h"
 #include "utils/if.h"
 #include "utils/iw.h"
+#include "utils/allocs.h"
 #include "utils/os.h"
 
 #define IP_FORWARD_PATH "/proc/sys/net/ipv4/ip_forward"

@@ -3,7 +3,7 @@ include_directories (
 )
 
 add_library(capture_config capture_config.c)
-target_link_libraries(capture_config log os)
+target_link_libraries(capture_config PRIVATE log os)
 
 if (BUILD_PCAP_LIB)
   add_library(mdns_decoder mdns_decoder.c)

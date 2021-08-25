@@ -27,6 +27,7 @@
 #include <string.h>
 #include <stdbool.h>
 
+#include "allocs.h"
 #include "os.h"
 #include "log.h"
 #include "hashmap.h"

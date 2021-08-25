@@ -28,6 +28,7 @@
 #include <string.h>
 
 #include "squeue.h"
+#include "allocs.h"
 #include "os.h"
 #include "log.h"
 

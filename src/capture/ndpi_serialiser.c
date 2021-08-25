@@ -30,6 +30,7 @@
 #include "ndpi_serialiser.h"
 
 #include "../utils/log.h"
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 
 int ndpi_serialise_dhcp(struct ndpi_flow_struct *flow, struct nDPI_flow_meta *meta)

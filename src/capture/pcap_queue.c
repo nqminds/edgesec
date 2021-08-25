@@ -29,6 +29,7 @@
 #include <pcap.h>
 
 #include "pcap_queue.h"
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/log.h"
 

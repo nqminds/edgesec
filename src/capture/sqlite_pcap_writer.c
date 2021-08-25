@@ -31,6 +31,7 @@
 
 #include "sqlite_pcap_writer.h"
 
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/log.h"
 #include "../utils/sqliteu.h"
@@ -38,6 +39,7 @@
 void free_sqlite_pcap_db(sqlite3 *db)
 {
   if (db != NULL) {
+    log_trace("HERE");
     sqlite3_close(db);
   }
 }

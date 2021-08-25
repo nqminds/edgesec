@@ -29,6 +29,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
+#include "allocs.h"
 #include "os.h"
 
 /**

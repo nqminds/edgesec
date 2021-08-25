@@ -28,6 +28,7 @@
 
 #include "sqlite_crypt_writer.h"
 
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/log.h"
 #include "../utils/sqliteu.h"
@@ -275,6 +276,8 @@ struct store_row* get_sqlite_store_row(sqlite3 *db, char *key)
 void free_sqlite_secrets_row(struct secrets_row *row)
 {
   if (row != NULL) {
+    if (row->id != NULL)
+      os_free(row->id);
     if (row->value != NULL)
       os_free(row->value);
     if (row->salt != NULL)

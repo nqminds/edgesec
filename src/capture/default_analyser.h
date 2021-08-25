@@ -39,7 +39,7 @@ struct capture_context {
   struct packet_queue *pqueue;
   struct pcap_queue *cqueue;
   struct string_queue *squeue;
-  sqlite3 *header_db;
+  struct sqlite_header_context *header_db;
   sqlite3 *pcap_db;
   bool file_write;
   bool db_write;

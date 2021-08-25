@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 
+#include "allocs.h"
 #include "os.h"
 #include "base64.h"
 

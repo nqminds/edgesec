@@ -29,6 +29,7 @@
 
 #include "crypt_config.h"
 
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/utarray.h"
 

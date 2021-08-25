@@ -12,6 +12,7 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
+#include "supervisor/sqlite_macconn_writer.h"
 #include "system/system_checks.h"
 #include "utils/hashmap.h"
 #include "utils/log.h"
@@ -27,6 +28,8 @@ static void test_init_context(void **state)
   struct app_config app_config;
   memset(&app_config, 0, sizeof(struct app_config));
   assert_true(init_context(&app_config, &context));
+  free_bridge_list(context.bridge_list);
+  free_sqlite_macconn_db(context.macconn_db);
 }
 
 int main(int argc, char *argv[])

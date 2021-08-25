@@ -22,6 +22,7 @@
 #include "radius/wpabuf.h"
 #include "radius_client.h"
 #include "utils/eloop.h"
+#include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/if.h"
 #include "utils/log.h"

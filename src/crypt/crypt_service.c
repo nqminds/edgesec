@@ -28,6 +28,7 @@
 #include "crypt_service.h"
 
 #include "../utils/log.h"
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/cryptou.h"
 #include "../utils/base64.h"

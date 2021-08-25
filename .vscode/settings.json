@@ -22,6 +22,12 @@
         "hash_map": "c",
         "hash_set": "c",
         "bitset": "c",
-        "any": "c"
+        "any": "c",
+        "array": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp",
+        "regex": "cpp",
+        "utility": "cpp",
+        "valarray": "cpp"
     }
 }

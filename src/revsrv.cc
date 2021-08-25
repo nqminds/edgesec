@@ -43,6 +43,7 @@
 
 #include "utils/domain.h"
 #include "utils/eloop.h"
+#include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/log.h"
 #include "version.h"

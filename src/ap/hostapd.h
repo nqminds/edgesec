@@ -31,6 +31,7 @@
 #include <stdbool.h>
 
 #include "ap_config.h"
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../radius/radius_server.h"
 

@@ -40,6 +40,7 @@
 #include <pcap.h>
 
 #include "../utils/utarray.h"
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 
 #include "capture_config.h"

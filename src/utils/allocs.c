@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (C) 2021 by NQMCyber Ltd                                       *
+ * Copyright (C) 2020 by NQMCyber Ltd                                       *
  *                                                                          *
  * This file is part of EDGESec.                                            *
  *                                                                          *
@@ -18,30 +18,52 @@
  ****************************************************************************/
 
 /**
- * @file dhcp_service.c
+ * @file allocs.c
  * @author Alexandru Mereacre 
- * @brief File containing the implementation of dhcp service configuration utilities.
+ * @brief File containing the implementation of the allocs functionalities.
  */
-#include "dnsmasq.h"
-#include "dhcp_config.h"
 
-#include "../utils/log.h"
-#include "../utils/allocs.h"
-#include "../utils/os.h"
-#include "../utils/utarray.h"
+#include <stddef.h>
+#include <sys/types.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <stdarg.h>
 
-int run_dhcp(char *dhcp_bin_path, struct dhcp_conf *dconf,
-  char *interface, UT_array *dns_server_array, char *domain_server_path)
+#include "allocs.h"
+
+void * os_zalloc(size_t size)
 {
-  if (!generate_dhcp_configs(dconf, interface, dns_server_array, domain_server_path)) {
-    log_trace("generate_dhcp_configs fail");
-    return -1;
-  }
-
-  return (run_dhcp_process(dhcp_bin_path, dconf->dhcp_conf_path) == NULL) ? -1 : 0;
+	void *n = os_malloc(size);
+	if (n != NULL)
+		os_memset(n, 0, size);
+	return n;
 }
 
-bool close_dhcp(void)
+void * os_memdup(const void *src, size_t len)
 {
-  return kill_dhcp_process();
+	void *r = os_malloc(len);
+
+	if (r && src)
+		os_memcpy(r, src, len);
+	return r;
+}
+
+char * os_strdup(const char *s)
+{
+  char *dest = NULL;
+  size_t len = strlen(s) + 1;
+
+  if (s != NULL) {
+  	dest = (char *) os_malloc(len);
+	if (dest == NULL) {
+      return NULL;
+	}
+
+	strcpy(dest, s);
+  }
+
+  return dest;
 }

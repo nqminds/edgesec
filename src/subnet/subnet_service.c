@@ -34,6 +34,7 @@
 #include "utils/utarray.h"
 #include "utils/hashmap.h"
 #include "utils/log.h"
+#include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/if.h"
 

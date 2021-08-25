@@ -28,6 +28,7 @@
 #include "pcap_service.h"
 
 #include "../utils/if.h"
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/log.h"
 

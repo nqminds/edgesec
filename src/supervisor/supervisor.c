@@ -31,6 +31,7 @@
 #include "sqlite_fingerprint_writer.h"
 
 #include "utils/log.h"
+#include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/eloop.h"
 #include "utils/utarray.h"

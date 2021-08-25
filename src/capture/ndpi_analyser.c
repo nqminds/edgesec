@@ -18,6 +18,7 @@
 #include "ndpi_serialiser.h"
 
 #include "../utils/log.h"
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/domain.h"
 #include "../utils/base64.h"

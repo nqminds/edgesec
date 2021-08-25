@@ -48,6 +48,7 @@
 #include "../utils/log.h"
 #include "../utils/eloop.h"
 #include "../utils/list.h"
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 
 #define MAX_PCAP_FILE_NAME_LENGTH     MAX_RANDOM_UUID_LEN + STRLEN(PCAP_EXTENSION)
@@ -289,16 +290,12 @@ int start_default_analyser(struct capture_conf *config)
       if (!run_register_db(context.grpc_srv_addr, context.db_name)) {
         log_trace("run_register_db fail");
       }
-
-      ret = open_sqlite_header_db(header_db_path, trace_callback, (void*)context.squeue,
-                                  (sqlite3 **)&context.header_db);
+      ret = open_sqlite_header_db(header_db_path, trace_callback, (void*)context.squeue, &context.header_db);
 #else
-      ret = open_sqlite_header_db(header_db_path, NULL, NULL,
-                                                     (sqlite3 **)&context.header_db);
+      ret = open_sqlite_header_db(header_db_path, NULL, NULL, &context.header_db);
 #endif
     } else {
-      ret = open_sqlite_header_db(header_db_path, NULL, NULL,
-                                                     (sqlite3 **)&context.header_db);
+      ret = open_sqlite_header_db(header_db_path, NULL, NULL, &context.header_db);
     }
 
     if (ret < 0) {

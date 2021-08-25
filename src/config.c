@@ -34,6 +34,7 @@
 #include <errno.h>
 
 #include "supervisor/mac_mapper.h"
+#include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/minIni.h"
 #include "utils/utarray.h"

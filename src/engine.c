@@ -35,6 +35,7 @@
 #include "utils/hashmap.h"
 #include "utils/utarray.h"
 #include "utils/hashmap.h"
+#include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/eloop.h"
 #include "utils/iptables.h"
@@ -181,9 +182,12 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
 
   log_info("Opening the macconn db...");
   if (open_sqlite_macconn_db(db_path, &ctx->macconn_db) < 0) {
+    os_free(db_path);
     log_debug("open_sqlite_macconn_db fail");
     return false;
   }
+
+  os_free(db_path);
 
   log_info("Creating subnet to interface mapper...");
   if (!create_if_mapper(app_config->config_ifinfo_array, &ctx->if_mapper)) {
@@ -199,7 +203,6 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
 
   // Init the list of bridges
   ctx->bridge_list = init_bridge_list();
-
   return true;
 }
 

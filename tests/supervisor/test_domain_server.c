@@ -19,6 +19,7 @@
 #include "utils/hashmap.h"
 #include "utils/utarray.h"
 #include "utils/log.h"
+#include "utils/allocs.h"
 #include "utils/os.h"
 
 #define TMP_PFX "tdoms"

@@ -24,57 +24,57 @@ int __wrap_sqlite3_open(const char *filename, sqlite3 **ppDb)
 static void test_open_sqlite_header_db(void **state)
 {
   (void) state; /* unused */
-  sqlite3* db;
+  struct sqlite_header_context *ctx;
 
-  assert_int_equal(open_sqlite_header_db(":memory:", NULL, NULL, &db), 0);
-  
-  free_sqlite_header_db(db);
+  assert_int_equal(open_sqlite_header_db(":memory:", NULL, NULL, &ctx), 0);
+  free_sqlite_header_db(ctx);
 }
 
 static void test_save_packet_statement(void **state)
 {
   (void) state; /* unused */
 
-  sqlite3* db;
-  uint8_t packet[100];
+  struct sqlite_header_context *ctx;
+  uint8_t packet[1000];
   struct tuple_packet tp;
+  os_memset(packet, 0, 1000);
   tp.type = PACKET_ETHERNET;
   tp.packet = packet;
  
-  assert_int_equal(open_sqlite_header_db(":memory:", NULL, NULL, &db), 0);
-  assert_int_equal(save_packet_statement(db, &tp), 0);
+  assert_int_equal(open_sqlite_header_db(":memory:", NULL, NULL, &ctx), 0);
+  assert_int_equal(save_packet_statement(ctx, &tp), 0);
 
   tp.type = PACKET_ARP;
-  assert_int_equal(save_packet_statement(db, &tp), 0);
+  assert_int_equal(save_packet_statement(ctx, &tp), 0);
 
   tp.type = PACKET_IP4;
-  assert_int_equal(save_packet_statement(db, &tp), 0);
+  assert_int_equal(save_packet_statement(ctx, &tp), 0);
 
   tp.type = PACKET_IP6;
-  assert_int_equal(save_packet_statement(db, &tp), 0);
+  assert_int_equal(save_packet_statement(ctx, &tp), 0);
 
   tp.type = PACKET_TCP;
-  assert_int_equal(save_packet_statement(db, &tp), 0);
+  assert_int_equal(save_packet_statement(ctx, &tp), 0);
 
   tp.type = PACKET_UDP;
-  assert_int_equal(save_packet_statement(db, &tp), 0);
+  assert_int_equal(save_packet_statement(ctx, &tp), 0);
 
   tp.type = PACKET_ICMP4;
-  assert_int_equal(save_packet_statement(db, &tp), 0);
+  assert_int_equal(save_packet_statement(ctx, &tp), 0);
 
   tp.type = PACKET_ICMP6;
-  assert_int_equal(save_packet_statement(db, &tp), 0);
+  assert_int_equal(save_packet_statement(ctx, &tp), 0);
 
   tp.type = PACKET_DNS;
-  assert_int_equal(save_packet_statement(db, &tp), 0);
+  assert_int_equal(save_packet_statement(ctx, &tp), 0);
 
   tp.type = PACKET_MDNS;
-  assert_int_equal(save_packet_statement(db, &tp), 0);
+  assert_int_equal(save_packet_statement(ctx, &tp), 0);
 
   tp.type = PACKET_DHCP;
-  assert_int_equal(save_packet_statement(db, &tp), 0);
+  assert_int_equal(save_packet_statement(ctx, &tp), 0);
 
-  free_sqlite_header_db(db);
+  free_sqlite_header_db(ctx);
 }
 
 int main(int argc, char *argv[])
