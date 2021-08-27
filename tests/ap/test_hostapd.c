@@ -181,6 +181,8 @@ static void test_run_ap_process(void **state)
 
   struct apconf hconf;
 
+  os_memset(&hconf, 0, sizeof(struct apconf));
+
   strcpy(hconf.ap_bin_path, test_ap_bin_path);
   strcpy(hconf.ap_file_path, test_hostapd_conf_file);
   strcpy(hconf.ap_log_path, test_ap_log_path);

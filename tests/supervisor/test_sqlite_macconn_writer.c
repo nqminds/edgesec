@@ -58,6 +58,7 @@ static void test_get_sqlite_macconn_entries(void **state)
   struct mac_conn conn, *p = NULL;
   UT_array *rows;
 
+  os_memset(&conn, 0, sizeof(struct mac_conn));
   os_memcpy(conn.mac_addr, addr1, ETH_ALEN);
 
   utarray_new(rows, &mac_conn_icd);

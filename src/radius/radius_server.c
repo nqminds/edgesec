@@ -116,9 +116,9 @@ struct hostapd_radius_attr * get_password_attribute(const uint8_t *req_authentic
 	
 	salt |= 0x8000;
 
-	buf = os_malloc(packet_len);
+	buf = os_zalloc(packet_len);
 	if (buf == NULL) {
-		log_err("os_malloc");
+		log_err("os_zalloc");
 		return 0;
 	}
 

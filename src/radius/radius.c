@@ -296,6 +296,9 @@ static void radius_msg_dump_attr(struct radius_attr_hdr *hdr)
 	unsigned char *pos;
 	char buf[1000];
 
+	if (hdr == NULL)
+	  return;
+
 	attr = radius_get_attr_type(hdr->type);
 
 	log_trace(" Attribute %d (%s) length=%d", hdr->type, attr ? attr->name : "?Unknown?", hdr->length);

@@ -70,6 +70,7 @@ static void test_get_if_mapper(void **state)
 
   ret = get_if_mapper(&hmap, 0x0A000101, ifname);
   assert_false(ret);
+  free_if_mapper(&hmap);
 }
 
 static void test_put_if_mapper(void **state)
@@ -86,6 +87,7 @@ static void test_put_if_mapper(void **state)
   assert_true(ret);
 
   assert_int_equal(strcmp(ifname, "br2"), 0);
+  free_if_mapper(&hmap);
 }
 
 static void test_find_subnet_address(void **state)

@@ -333,6 +333,13 @@ int printf_hex(char *buf, size_t buf_size, const uint8_t *data, size_t len, int 
 	int ret;
 	if (buf_size == 0)
 		return 0;
+
+  if (buf == NULL)
+    return 0;
+
+  if (data == NULL)
+    return 0;
+
 	for (i = 0; i < len; i++) {
 		ret = snprintf(pos, end - pos, uppercase ? "%02X" : "%02x",
 				  data[i]);

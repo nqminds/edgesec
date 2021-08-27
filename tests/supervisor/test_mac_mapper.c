@@ -41,6 +41,7 @@ static void test_put_mac_mapper(void **state)
   }
 
   free_mac_mapper(&hmap);
+  utarray_free(mac_conn_arr);
 }
 
 static void test_get_mac_mapper(void **state)
@@ -82,6 +83,7 @@ static void test_get_mac_list(void **state)
   cnt = get_mac_list(&hmap, &list);
   assert_int_equal(cnt, 6);
   free_mac_mapper(&hmap);
+  os_free(list);
 }
 
 

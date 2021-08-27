@@ -250,9 +250,16 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn fn, 
   int status;
   int exit_code = 0;
   int pfd[2];                      /* Pipe file descriptors */
+  char *command = NULL;
 
   if (argv ==  NULL) {
     log_trace("argv is NULL");
+    return 1;
+  }
+
+  command = argv[0];
+  if (command == NULL) {
+    log_trace("run command is NULL");
     return 1;
   }
 
@@ -261,8 +268,6 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn fn, 
     log_err("pipe");
     return 1;
   }
-
-  char *command = argv[0];
 
   fflush(stdout);
   fflush(stderr);

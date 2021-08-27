@@ -49,51 +49,38 @@ struct string_queue* init_string_queue(ssize_t max_length)
   return queue;
 }
 
-struct string_queue* push_string_queue(struct string_queue* queue, char *str)
+int push_string_queue(struct string_queue* queue, char *str)
 {
   struct string_queue* el;
   ssize_t max_length;
+
   if (str == NULL) {
     log_debug("str param is NULL");
-    return NULL;
+    return -1;
   }
 
   if (queue == NULL) {
     log_debug("queue param is NULL");
-    return NULL;
+    return -1;
   }
 
   max_length = queue->max_length;
 
-  if (max_length == 0) {
-    log_debug("max_length is 0");
-    return NULL;
-  }
-
-  if (get_string_queue_length(queue) >= max_length) {
-    el = pop_string_queue(queue);
-    free_string_queue_el(el);
-  }
-
   if ((el = init_string_queue(queue->max_length)) == NULL) {
     log_debug("init_string_queue fail");
-    return NULL;
+    return -1;
   }
 
-  el->str = (char*) os_zalloc(strlen(str) + 1);
-  strcpy(el->str, str);
+  el->str = os_strdup(str);
 
   dl_list_add_tail(&queue->list, &el->list);
 
-  return el;
-}
+  if (get_string_queue_length(queue) > max_length && max_length >= 0) {
+    el = dl_list_first(&queue->list, struct string_queue, list);
+    free_string_queue_el(el);
+  }
 
-struct string_queue* pop_string_queue(struct string_queue* queue)
-{
-  if (queue == NULL)
-    return NULL;
-
-  return dl_list_first(&queue->list, struct string_queue, list);
+  return 0;
 }
 
 void free_string_queue_el(struct string_queue* el)
@@ -105,12 +92,43 @@ void free_string_queue_el(struct string_queue* el)
   }
 }
 
+int peek_string_queue(struct string_queue* queue, char **str)
+{
+  struct string_queue* el = NULL;
+  *str = NULL;
+
+  if (queue == NULL)
+    return -1;
+
+  el = dl_list_first(&queue->list, struct string_queue, list);
+
+  if (el != NULL)
+    *str = os_strdup(el->str);
+
+  return 0;
+}
+
+int pop_string_queue(struct string_queue* queue, char **str)
+{
+  struct string_queue* el = NULL;
+  int ret = peek_string_queue(queue, str);
+
+  if (ret == 0) {
+    el = dl_list_first(&queue->list, struct string_queue, list);
+    free_string_queue_el(el);
+  }
+
+  return ret;
+}
+
 void empty_string_queue(struct string_queue* queue, ssize_t count)
 {
   struct string_queue* el;
   ssize_t num = 0;
 
-  while ((el = pop_string_queue(queue)) != NULL  && ((num < count && count > 0) || count < 0)) {
+  while ((el = dl_list_first(&queue->list, struct string_queue, list)) != NULL &&
+         ((num < count && count > 0) || count < 0))
+  {
     free_string_queue_el(el);
     num ++;
   }

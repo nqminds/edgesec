@@ -221,6 +221,8 @@ ssize_t process_get_map_cmd(int sock, struct client_address *client_addr,
   uint8_t addr[ETH_ALEN];
   struct mac_conn_info info;
 
+  init_default_mac_info(&info, context->default_open_vlanid, context->allow_all_nat);
+
   // MAC address
   ptr = (char**) utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {

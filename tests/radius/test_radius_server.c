@@ -132,19 +132,21 @@ static void test_radius_server_init(void **state)
  	(void) state; /* unused */
 
 	struct radius_ctx ctx;
-	struct hostapd_radius_server *srv;
+	struct hostapd_radius_server *srv = NULL;
 	struct radius_conf conf;
+
+	os_memset(&ctx, 0, sizeof(struct radius_ctx));
+	os_memset(&conf, 0, sizeof(struct radius_conf));
 
 	strcpy(conf.radius_client_ip, "127.0.0.1");
 	conf.radius_client_mask = 32;
 	strcpy(conf.radius_secret, "radius");
 
   	struct radius_client *client = init_radius_client(&conf, get_mac_conn, NULL);
-	struct radius_server_data *radius_srv;
+	struct radius_server_data *radius_srv = NULL;
 
 	log_set_level(0);
 
-	os_memset(&ctx, 0, sizeof(ctx));
 	inet_aton(conf.radius_client_ip, &ctx.own_ip_addr);
 
 	bool ret = (eloop_init() == 0);

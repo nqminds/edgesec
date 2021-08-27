@@ -142,7 +142,7 @@ void get_hostapd_args(char *hostapd_bin_path, char *hostapd_file_path, char *hos
 
 int run_ap_process(struct apconf *hconf, char *ctrl_if_path)
 {
-  pid_t child_pid;
+  pid_t child_pid = 0;
   int ret, check_count = 0;
   char *process_argv[5] = {NULL, NULL, NULL, NULL, NULL};
 

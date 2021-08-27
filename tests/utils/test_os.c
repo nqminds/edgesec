@@ -485,7 +485,6 @@ int main(int argc, char *argv[])
 
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_run_command),
-    cmocka_unit_test(test_run_command),
     cmocka_unit_test(test_split_string),
     cmocka_unit_test(test_split_string_array),
     cmocka_unit_test(test_allocate_string),
