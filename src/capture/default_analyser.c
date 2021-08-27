@@ -149,7 +149,7 @@ void eloop_tout_handler(void *eloop_ctx, void *user_ctx)
   char *traces = NULL;
 
   // Process all packets in the queue
-  while(get_packet_queue_length(context->pqueue)) {
+  while(is_packet_queue_empty(context->pqueue) < 1) {
     if ((el_packet = pop_packet_queue(context->pqueue)) != NULL) {
       if (context->db_write) {
         save_packet_statement(context->header_db, &(el_packet->tp));
@@ -160,7 +160,7 @@ void eloop_tout_handler(void *eloop_ctx, void *user_ctx)
   }
 
   if (context->file_write) {
-    while(get_pcap_queue_length(context->cqueue)) {
+    while(is_pcap_queue_empty(context->cqueue) < 1) {
       if ((el_pcap = pop_pcap_queue(context->cqueue)) != NULL) {
         if (save_pcap_file_data(&(el_pcap->header), el_pcap->packet, context) < 0) {
           log_trace("save_pcap_file_data fail");
@@ -191,7 +191,7 @@ void trace_callback(char *sqlite_statement, void *ctx)
 {
   struct string_queue *squeue = (struct string_queue *)ctx;
 
-  if (push_string_queue(squeue, sqlite_statement) == NULL) {
+  if (push_string_queue(squeue, sqlite_statement) < 0) {
     log_trace("push_string_queue fail");
   }
 }

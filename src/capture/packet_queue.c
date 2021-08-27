@@ -106,3 +106,13 @@ ssize_t get_packet_queue_length(struct packet_queue* queue)
 {
   return (queue != NULL) ? dl_list_len(&queue->list) : 0;
 }
+
+int is_packet_queue_empty(struct packet_queue* queue)
+{
+  if (queue == NULL) {
+    log_trace("queue param is NULL");
+    return -1;
+  }
+
+  return dl_list_empty(&queue->list);
+}

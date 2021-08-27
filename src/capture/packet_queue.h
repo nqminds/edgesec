@@ -94,4 +94,12 @@ ssize_t get_packet_queue_length(struct packet_queue* queue);
  * @param queue The pointer to the packet queue
  */
 void free_packet_queue(struct packet_queue* queue);
+
+/**
+ * @brief Checks if packet queue is empty
+ * 
+ * @param queue The pointer to the packet queue
+ * @return 1, is empty, 0 otherwise, -1 for error
+ */
+int is_packet_queue_empty(struct packet_queue* queue);
 #endif

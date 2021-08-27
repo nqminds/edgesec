@@ -117,3 +117,13 @@ ssize_t get_pcap_queue_length(struct pcap_queue* queue)
 {
   return (queue != NULL) ? dl_list_len(&queue->list) : 0;
 }
+
+int is_pcap_queue_empty(struct pcap_queue* queue)
+{
+  if (queue == NULL) {
+    log_trace("queue param is NULL");
+    return -1;
+  }
+
+  return dl_list_empty(&queue->list);
+}

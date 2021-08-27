@@ -115,6 +115,10 @@ struct sqlite_header_context {
   uint8_t *trace_ctx;
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Save packets to sqlite db
  * 
@@ -142,5 +146,8 @@ int open_sqlite_header_db(char *db_path, trace_callback_fn fn,
  * @param ctx The sqlite db context
  */
 void free_sqlite_header_db(struct sqlite_header_context *ctx);
+#ifdef __cplusplus
+}
+#endif
 
 #endif

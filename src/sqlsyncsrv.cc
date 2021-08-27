@@ -35,6 +35,7 @@
 
 #include "sqlite_sync.grpc.pb.h"
 
+#include "capture/sqlite_header_writer.h"
 #include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/log.h"
@@ -167,13 +168,20 @@ sqlite3* open_sqlite_db(char *db_path)
 
 int create_sqlite_db(char *db_path)
 {
-  sqlite3 *db;
-  if ((db = open_sqlite_db(db_path)) == NULL) {
-    log_debug("open_sqlite_db fail");
+  struct sqlite_header_context *ctx = NULL;
+  if (open_sqlite_header_db(db_path, NULL, NULL, &ctx) < 0) {
+    log_debug("open_sqlite_header_db fail");
     return -1;
   }
+  free_sqlite_header_db(ctx);
 
-  sqlite3_close(db);
+  // sqlite3 *db;
+  // if ((db = open_sqlite_db(db_path)) == NULL) {
+  //   log_debug("open_sqlite_db fail");
+  //   return -1;
+  // }
+
+  // sqlite3_close(db);
   return 0;
 }
 
