@@ -9,9 +9,11 @@ add_library(mac_mapper mac_mapper.c)
 target_link_libraries(mac_mapper bridge_list log os)
 
 add_library(sqlite_fingerprint_writer sqlite_fingerprint_writer.c)
+target_include_directories(sqlite_fingerprint_writer PRIVATE ${LIBSQLITE_INCLUDE_DIR})
 target_link_libraries(sqlite_fingerprint_writer sqliteu squeue log os ${LIBSQLITE_LIB})
 
 add_library(sqlite_macconn_writer sqlite_macconn_writer.c)
+target_include_directories(sqlite_macconn_writer PRIVATE ${LIBSQLITE_INCLUDE_DIR})
 target_link_libraries(sqlite_macconn_writer sqliteu squeue log os ${LIBSQLITE_LIB})
 
 add_library(network_commands network_commands.c)
