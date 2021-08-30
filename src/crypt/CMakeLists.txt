@@ -3,7 +3,7 @@ include_directories (
 )
 
 add_library(sqlite_crypt_writer sqlite_crypt_writer.c)
-target_include_directories(sqlite_crypt_writer PRIVATE ${LIBSQLITE_INCLUDE_DIR})
+target_include_directories(sqlite_crypt_writer PUBLIC ${LIBSQLITE_INCLUDE_DIR})
 target_link_libraries(sqlite_crypt_writer sqliteu log os ${LIBSQLITE_LIB})
 
 add_library(crypt_service crypt_service.c)

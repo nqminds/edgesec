@@ -35,7 +35,7 @@ add_executable(test_sqlite_pcap_writer test_sqlite_pcap_writer.c)
 target_link_libraries(test_sqlite_pcap_writer PRIVATE sqlite_pcap_writer sqliteu os log cmocka-static)
 
 add_executable(test_sqlite_header_writer test_sqlite_header_writer.c)
-target_include_directories(test_sqlite_header_writer PRIVATE ${LIBPCAP_INCLUDE_PATH})
+target_include_directories(test_sqlite_header_writer PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
 target_link_libraries(test_sqlite_header_writer PRIVATE sqlite_header_writer sqliteu os log cmocka-static)
 set_target_properties(test_sqlite_header_writer
   PROPERTIES
