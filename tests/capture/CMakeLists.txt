@@ -32,6 +32,7 @@ add_executable(test_capture_config test_capture_config.c)
 target_link_libraries(test_capture_config PRIVATE capture_config os log cmocka-static)
 
 add_executable(test_sqlite_pcap_writer test_sqlite_pcap_writer.c)
+target_include_directories(test_sqlite_pcap PRIVATE ${LIBSQLITE_INCLUDE_DIR})
 target_link_libraries(test_sqlite_pcap_writer PRIVATE sqlite_pcap_writer sqliteu os log cmocka-static)
 
 add_executable(test_sqlite_header_writer test_sqlite_header_writer.c)
