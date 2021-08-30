@@ -53,4 +53,4 @@ endif ()
 
 add_executable(edgesec edgesec.c)
 target_include_directories(edgesec PRIVATE ${PROJECT_BINARY_DIR} ${LIBOPENSSL_INCLUDE_PATH})
-target_link_libraries(edgesec config engine minIni os hashmap ${LIBCRYPTO_LIB})
+target_link_libraries(edgesec eloop config engine minIni os hashmap ${LIBCRYPTO_LIB})

@@ -325,11 +325,6 @@ bool run_engine(struct app_config *app_config)
     }
   }
 
-  if (eloop_init()) {
-		log_debug("Failed to initialize event loop");
-		goto run_engine_fail;
-	}
-
   log_info("Creating supervisor on %s", app_config->domain_server_path);
   if ((domain_sock = run_supervisor(app_config->domain_server_path, &context)) == -1) {
     log_debug("run_supervisor fail");

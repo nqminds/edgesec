@@ -181,8 +181,6 @@ endif ()
 # C compiler options
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wunused-variable")
 
-# Set the color for terminal logging
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLOG_USE_COLOR")
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs")
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ftest-coverage")
 
