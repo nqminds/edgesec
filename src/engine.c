@@ -228,7 +228,7 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
     goto run_engine_fail;
   }
 
-  log_info("AP name: %s", app_config->hconfig.ssid);  
+  log_info("AP name: %s", app_config->hconfig.ssid);
   log_info("AP interface: %s", app_config->hconfig.interface);
   log_info("DB path: %s", context.db_path);
 

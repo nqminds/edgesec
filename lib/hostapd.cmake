@@ -2,7 +2,7 @@
 if (BUILD_HOSTAPD AND NOT (BUILD_ONLY_DOCS))
   set(HOSTAPD_SOURCE_DIR "${CMAKE_SOURCE_DIR}/lib/hostap/hostapd")
   set(HOSTAPD_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}")
-  find_program(HOSTAPD NAMES hostapd PATHS "${HOSTAPD_INSTALL_DIR}")
+  find_program(HOSTAPD NAMES hostapd PATHS "${HOSTAPD_INSTALL_DIR}" NO_DEFAULT_PATH)
   if (HOSTAPD)
     message("Found hostapd program: ${HOSTAPD}")
   ELSE ()
@@ -19,6 +19,6 @@ if (BUILD_HOSTAPD AND NOT (BUILD_ONLY_DOCS))
       COMMAND make clean
       WORKING_DIRECTORY "${HOSTAPD_SOURCE_DIR}"
     )
-    find_program(HOSTAPD NAMES hostapd PATHS "${HOSTAPD_INSTALL_DIR}")
+    find_program(HOSTAPD NAMES hostapd PATHS "${HOSTAPD_INSTALL_DIR}" NO_DEFAULT_PATH)
   endif ()
 endif ()
