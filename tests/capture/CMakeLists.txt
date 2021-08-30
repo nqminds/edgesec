@@ -3,7 +3,7 @@ include_directories (
 )
 
 add_executable(test_default_analyser test_default_analyser.c)
-target_include_directories(test_default_analyser PRIVATE ${LIBPCAP_INCLUDE_PATH})
+target_include_directories(test_default_analyser PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
 target_link_libraries(test_default_analyser PRIVATE default_analyser packet_queue os log cmocka-static ${LIBGRPC_LIB} ${LIBGRPCPP_LIB})
 set_target_properties(test_default_analyser
   PROPERTIES
@@ -32,7 +32,7 @@ add_executable(test_capture_config test_capture_config.c)
 target_link_libraries(test_capture_config PRIVATE capture_config os log cmocka-static)
 
 add_executable(test_sqlite_pcap_writer test_sqlite_pcap_writer.c)
-target_include_directories(test_sqlite_pcap PRIVATE ${LIBSQLITE_INCLUDE_DIR})
+target_include_directories(test_sqlite_pcap_writer PRIVATE ${LIBSQLITE_INCLUDE_DIR})
 target_link_libraries(test_sqlite_pcap_writer PRIVATE sqlite_pcap_writer sqliteu os log cmocka-static)
 
 add_executable(test_sqlite_header_writer test_sqlite_header_writer.c)
