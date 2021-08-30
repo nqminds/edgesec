@@ -362,7 +362,7 @@ int extract_packets(const struct pcap_pkthdr *header, const uint8_t *packet,
   memset(&cpac, 0, sizeof(struct capture_packet));
   os_memset(&tp, 0, sizeof(struct tuple_packet));
 
-  cpac.timestamp = os_to_timestamp(header->ts);
+  os_to_timestamp(header->ts, &cpac.timestamp);
   cpac.caplen = header->caplen;
   cpac.length = header->len;
 

@@ -199,8 +199,13 @@ struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg)
       }
     }
 
+    if (os_get_timestamp(&info.join_timestamp) < 0) {
+      log_trace("os_get_timestamp fail");
+        info.vlanid = -1;
+        return info;
+    }
+
     log_trace("ALLOWING mac=" MACSTR " on default vlanid=%d", MAC2STR(mac_addr), info.vlanid);
-    info.join_timestamp = os_get_timestamp();
     os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
     conn.info = info;
     if (!save_mac_mapper(context, conn)) {
@@ -220,8 +225,13 @@ struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg)
         }
       }
 
+      if (os_get_timestamp(&info.join_timestamp) < 0) {
+        log_trace("os_get_timestamp fail");
+          info.vlanid = -1;
+          return info;
+      }
+
       log_trace("ALLOWING mac=" MACSTR " on vlanid=%d", MAC2STR(mac_addr), info.vlanid);
-      info.join_timestamp = os_get_timestamp();
       os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
       conn.info = info;
       if (!save_mac_mapper(context, conn)) {
@@ -261,8 +271,13 @@ struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg)
         }
       }
 
+      if (os_get_timestamp(&info.join_timestamp) < 0) {
+        log_trace("os_get_timestamp fail");
+          info.vlanid = -1;
+          return info;
+      }
+
       log_trace("ALLOWING mac=" MACSTR " on vlanid=%d", MAC2STR(mac_addr), info.vlanid);
-      info.join_timestamp = os_get_timestamp();
       os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
       conn.info = info;
       if (!save_mac_mapper(context, conn)) {

@@ -167,17 +167,18 @@ static inline void os_reltime_sub(struct os_reltime *a, struct os_reltime *b,
 /**
  * @brief get the timestamp in microseconds from system time
  * 
- * @return uint64_t Timestamp in microseconds
+ * @patat, timestamp The returned timestamp
+ * @return int 0 on success, -1 on failure
  */
-uint64_t os_get_timestamp(void);
+int os_get_timestamp(uint64_t *timestamp);
 
 /**
  * @brief get the timestamp in microseconds from struct timeval
  * 
  * @param ts The input struct timeval
- * @return uint64_t Timestamp in microseconds
+ * @param timestamp The returned timestamp
  */
-uint64_t os_to_timestamp(struct timeval ts);
+void os_to_timestamp(struct timeval ts, uint64_t *timestamp);
 
 /**
  * @brief Get cryptographically strong pseudo random data

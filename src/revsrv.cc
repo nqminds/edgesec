@@ -234,7 +234,9 @@ void wait_reverse_command(std::string id, REVERSE_COMMANDS cmd, uint64_t client_
 uint64_t save_client_id(std:: string id)
 {
   const std::lock_guard<std::mutex> lock(client_map_lock);
-  client_mapper[id] = os_get_timestamp();
+  uint64_t timestamp;
+  os_get_timestamp(&timestamp);
+  client_mapper[id] = timestamp;
 
   return client_mapper[id];
 }

@@ -119,7 +119,9 @@ int save_pcap_file_data(struct pcap_pkthdr *header, uint8_t *packet, struct capt
 {
   char *path = NULL;
   char file_name[MAX_PCAP_FILE_NAME_LENGTH];
+  uint64_t timestamp = 0;
 
+  os_to_timestamp(header->ts, &timestamp);
   construct_pcap_file_name(file_name);
 
   path = construct_path(context->db_path, file_name);
@@ -132,7 +134,7 @@ int save_pcap_file_data(struct pcap_pkthdr *header, uint8_t *packet, struct capt
   os_free(path);
 
   if (save_sqlite_pcap_entry(context->pcap_db, context->cap_id, file_name,
-        os_to_timestamp(header->ts),
+        timestamp,
         header->caplen, header->len, context->interface, context->filter) < 0) {
     log_trace("save_sqlite_pcap_entry fail");
     return -1;

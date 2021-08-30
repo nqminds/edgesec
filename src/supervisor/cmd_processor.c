@@ -426,8 +426,12 @@ ssize_t process_set_fingerprint_cmd(int sock, struct client_address *client_addr
   char dst_mac_addr[MACSTR_LEN];
   char protocol[MAX_PROTOCOL_NAME_LEN];
   char fingerprint[MAX_FINGERPRINT_LEN];
-  uint64_t timestamp = os_get_timestamp();
+  uint64_t timestamp;
   char *query = NULL;
+
+  if (os_get_timestamp(&timestamp) < 0) {
+    return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
+  }
 
   // MAC address source
   ptr = (char**) utarray_next(cmd_arr, ptr);
