@@ -201,6 +201,9 @@ int main(int argc, char *argv[])
     level = MAX_LOG_LEVELS - verbosity;
   }
   
+  // Set the log level
+  log_set_level(level);
+
   if (optind <= 1) show_app_help(argv[0]);
 
   if (!load_app_config(filename, &config)) {
@@ -216,7 +219,12 @@ int main(int argc, char *argv[])
     }
   }
 
-  if (!run_engine(&config, level)) {
+  if (create_pid_file(config.pid_file_path, FD_CLOEXEC) < 0) {
+    fprintf(stderr, "create_pid_file fail");
+    exit(1);
+  }
+
+  if (!run_engine(&config)) {
     fprintf(stderr, "Failed to start edgesec engine.\n");
   } else
     fprintf(stderr, "Edgesec engine stopped.\n");

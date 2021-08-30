@@ -206,7 +206,7 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
   return true;
 }
 
-bool run_engine(struct app_config *app_config, uint8_t log_level)
+bool run_engine(struct app_config *app_config)
 {
   struct supervisor_context context;
 
@@ -216,8 +216,6 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
   char *nat_ip = NULL;
   int ret;
 
-  // Set the log level
-  log_set_level(log_level);
   if (create_dir(app_config->db_path, S_IRWXU | S_IRWXG) < 0) {
     log_debug("create_dir fail");
     return false;

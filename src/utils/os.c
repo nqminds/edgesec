@@ -1009,6 +1009,88 @@ int get_hostname(char *buf)
   return 0;
 }
 
+static int lock_reg(int fd, int cmd, int type, int whence, int start, off_t len)
+{
+  struct flock fl;
+  fl.l_type = type;
+  fl.l_whence = whence;
+  fl.l_start = start;
+  fl.l_len = len;
+  return fcntl(fd, cmd, &fl);
+}
+
+int lock_region(int fd, int type, int whence, int start, int len)
+{
+  return lock_reg(fd, F_SETLK, type, whence, start, len);
+}
+
+int lock_region_block(int fd, int type, int whence, int start, int len)
+{
+  return lock_reg(fd, F_SETLKW, type, whence, start, len);
+}
+
+int create_pid_file(const char *pid_file, int flags)
+{
+  int fd;
+  char buf[100];
+
+  fd = open(pid_file, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+
+  if (fd == -1) {
+    log_err("open");
+    return -1;
+  }
+
+  if (flags & FD_CLOEXEC) {
+    /* Set the close-on-exec file descriptor flag */
+    /* Instead of the following steps, we could (on Linux) have opened the
+       file with O_CLOEXEC flag. However, not all systems support open()
+       O_CLOEXEC (which was standardized only in SUSv4), so instead we use
+       fcntl() to set the close-on-exec flag after opening the file */
+    flags = fcntl(fd, F_GETFD);                     /* Fetch flags */
+
+    if (flags == -1) {
+      log_err("fcntl");
+      close(fd);
+      return -1;
+    }
+
+    flags |= FD_CLOEXEC;                            /* Turn on FD_CLOEXEC */
+    if (fcntl(fd, F_SETFD, flags) == -1){            /* Update flags */
+      log_err("fcntl");
+      close(fd);
+      return -1;
+    }
+  }
+
+  if (lock_region(fd, F_WRLCK, SEEK_SET, 0, 0) == -1) {
+    if (errno  == EAGAIN || errno == EACCES) {
+      log_err("PID file '%s' is locked", pid_file);
+      close(fd);
+      return -1;
+    }else {
+      log_err("lock_region");
+      close(fd);
+      return -1;
+    }
+  }
+
+  if (ftruncate(fd, 0) == -1) {
+    log_err("ftruncate");
+    close(fd);
+    return -1;
+  }
+
+  snprintf(buf, 100, "%ld\n", (long) getpid());
+  if (write(fd, buf, strlen(buf)) != strlen(buf)) {
+    log_trace("write fail");
+    close(fd);
+    return -1;
+  }
+
+  return fd;
+}
+
 // void *os_malloc(size_t size)
 // {
 //   void *ptr = malloc(size);

@@ -492,6 +492,23 @@ int check_sock_file_exists(char *path);
  * @return int 0 on success, -1 on failure
  */
 int get_hostname(char *buf);
+
+/**
+ * @brief Open/create the file named in 'pidFile', lock it, optionally set the
+   close-on-exec flag for the file descriptor, write our PID into the file,
+   and (in case the caller is interested) return the file descriptor
+   referring to the locked file. The caller is responsible for deleting
+   'pidFile' file (just) before process termination. 'progName' should be the
+   name of the calling program (i.e., argv[0] or similar), and is used only for
+   diagnostic messages. If we can't open 'pidFile', or we encounter some other
+   error, then we print an appropriate diagnostic and terminate.
+ * 
+ * @param pid_file The pid file path to create
+ * @param flags The pid file open flags
+ * @return int The pif file descriptor, -1 on failure
+ */
+int create_pid_file(const char *pid_file, int flags);
+
 #ifdef __cplusplus
 }
 #endif

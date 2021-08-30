@@ -668,6 +668,18 @@ bool load_app_config(const char *filename, struct app_config *config)
   // Load killRunningProcess flag
   config->kill_running_proc = ini_getbool("system", "killRunningProcess", 0, filename);
 
+  // Load pidFilePath
+  value = os_malloc(INI_BUFFERSIZE);
+  ret = ini_gets("system", "pidFilePath", "", value, INI_BUFFERSIZE, filename);
+  if (!ret) {
+    fprintf(stderr, "pid file path was not specified\n");
+    os_free(value);
+    return false;
+  }
+
+  os_strlcpy(config->pid_file_path, value, MAX_OS_PATH_LEN);
+  os_free(value);
+
   // Load ap radius config params
   if(!load_radius_conf(filename, config)) {
     fprintf(stderr, "radius config parsing error.\n");
