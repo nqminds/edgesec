@@ -36,7 +36,7 @@ endif ()
 
 if (BUILD_SQLSYNC_SERVICE)
   add_executable(sqlsyncsrv sqlsyncsrv.cc)
-  target_include_directories(sqlsyncsrv PRIVATE ${PROJECT_BINARY_DIR} ${LIBGRPC_INCLUDE_PATH})
+  target_include_directories(sqlsyncsrv PRIVATE ${PROJECT_BINARY_DIR} ${LIBGRPC_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
   target_link_libraries(sqlsyncsrv PUBLIC sqlite_header_writer os sqlite_grpc_proto ${LIBGRPCPP_REFLECTION_LIB} ${LIBGRPCPP_LIB} ${LIBPROTOBUF_LIB} ${LIBSQLITE_LIB})
 endif ()
 
