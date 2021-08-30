@@ -21,6 +21,7 @@ add_executable(test_mac_mapper test_mac_mapper.c)
 target_link_libraries(test_mac_mapper PRIVATE log system_checks os mac_mapper cmocka-static)
 
 add_executable(test_sqlite_fingerprint_writer test_sqlite_fingerprint_writer.c)
+target_include_directories(test_sqlite_fingerprint_writer PRIVATE ${LIBSQLITE_INCLUDE_DIR})
 target_link_libraries(test_sqlite_fingerprint_writer PRIVATE sqlite_fingerprint_writer sqliteu os log cmocka-static)
 set_target_properties(test_sqlite_fingerprint_writer
   PROPERTIES
@@ -28,6 +29,7 @@ set_target_properties(test_sqlite_fingerprint_writer
 )
 
 add_executable(test_sqlite_macconn_writer test_sqlite_macconn_writer.c)
+target_include_directories(test_sqlite_macconn_writer PRIVATE ${LIBSQLITE_INCLUDE_DIR})
 target_link_libraries(test_sqlite_macconn_writer PRIVATE sqlite_macconn_writer sqliteu os log cmocka-static)
 set_target_properties(test_sqlite_macconn_writer
   PROPERTIES
