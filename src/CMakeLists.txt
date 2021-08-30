@@ -20,6 +20,7 @@ else ()
 endif ()
 
 add_library(config config.c)
+target_include_directories(config PUBLIC ${LIBSQLITE_INCLUDE_DIR})
 target_link_libraries(config minIni mac_mapper)
 
 if (BUILD_CAPTURE_SERVICE)
