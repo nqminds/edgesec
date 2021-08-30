@@ -39,7 +39,7 @@ if (BUILD_PCAP_LIB)
   target_link_libraries(sqlite_pcap_writer sqliteu log os ${LIBSQLITE_LIB})
 
   add_library(default_analyser default_analyser.c)
-  target_include_directories(default_analyser PRIVATE ${LIBPCAP_INCLUDE_PATH})
+  target_include_directories(default_analyser PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
 endif ()
 
 if (BUILD_SQLSYNC_SERVICE)
