@@ -31,10 +31,11 @@ if (BUILD_PCAP_LIB)
   target_link_libraries(pcap_queue log os)
 
   add_library(sqlite_header_writer sqlite_header_writer.c)
-  target_include_directories(sqlite_header_writer PRIVATE ${LIBPCAP_INCLUDE_PATH})
+  target_include_directories(sqlite_header_writer PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
   target_link_libraries(sqlite_header_writer sqliteu squeue log os if ${LIBSQLITE_LIB})
 
   add_library(sqlite_pcap_writer sqlite_pcap_writer.c)
+  target_include_directories(sqlite_pcap_writer PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
   target_link_libraries(sqlite_pcap_writer sqliteu log os ${LIBSQLITE_LIB})
 
   add_library(default_analyser default_analyser.c)
