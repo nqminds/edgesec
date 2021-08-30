@@ -55,7 +55,7 @@ endif ()
 
 add_library(capture_service capture_service.c)
 if (BUILD_PCAP_LIB)
-  target_include_directories(capture_service PRIVATE ${LIBPCAP_INCLUDE_PATH})
+  target_include_directories(capture_service PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
 endif ()
 
 if (BUILD_NDPI_LIB)
