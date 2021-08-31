@@ -354,8 +354,8 @@ int main(int argc, char *argv[])
   uint8_t level = 0;
   struct socket_address sad;
   int port = -1;
-  char *key;
-  char *cert;
+  char *key = NULL;
+  char *cert = NULL;
   bool tls = false;
   int flags;
   char *db_path = NULL;
@@ -396,57 +396,61 @@ int main(int argc, char *argv[])
   fprintf(stdout, "Using TLS --> %d\n", tls);
   fprintf(stdout, "Using crypt db path --> %s\n", db_path);
 
-  if (crypto_generate_keycert_str(1024, &key, &cert) < 0) {
-    fprintf(stderr, "crypto_generate_keycert_str failure\n");
-    exit(EXIT_FAILURE);
-  }
+  if (tls) {
+    if (crypto_generate_keycert_str(1024, &key, &cert) < 0) {
+      fprintf(stderr, "crypto_generate_keycert_str failure\n");
+      exit(EXIT_FAILURE);
+    }
 
-  if ((crypt_ctx = load_crypt_service(db_path, "microhttps", passphrase,
-                                      (passphrase == NULL) ? 0 : os_strnlen_s(passphrase, MAX_USER_SECRET))) == NULL) {
-    fprintf(stderr, "load_crypt_service fail\n");
-    exit(EXIT_FAILURE);
-  }
+    if ((crypt_ctx = load_crypt_service(db_path, "microhttps", passphrase,
+                                        (passphrase == NULL) ? 0 : os_strnlen_s(passphrase, MAX_USER_SECRET))) == NULL) {
+      fprintf(stderr, "load_crypt_service fail\n");
+      exit(EXIT_FAILURE);
+    }
 
-  get_pair = get_crypt_pair(crypt_ctx, keyhttps);
+    get_pair = get_crypt_pair(crypt_ctx, keyhttps);
 
-  if (get_pair == NULL) {
-    fprintf(stderr, "get_crypt_pair failure\n");
-    exit(EXIT_FAILURE);
-  }
+    if (get_pair == NULL) {
+      fprintf(stderr, "get_crypt_pair failure\n");
+      exit(EXIT_FAILURE);
+    }
 
-  if (!get_pair->value_size) {
-    fprintf(stdout, "Inserting new key\n");
-    put_pair.key = keyhttps;
-    put_pair.value = key;
-    put_pair.value_size = strlen(key) + 1;
-    put_crypt_pair(crypt_ctx, &put_pair);
-  } else {
-    fprintf(stdout, "Retrieving existing key\n");
+    if (!get_pair->value_size) {
+      fprintf(stdout, "Inserting new key\n");
+      put_pair.key = keyhttps;
+      put_pair.value = key;
+      put_pair.value_size = strlen(key) + 1;
+      put_crypt_pair(crypt_ctx, &put_pair);
+    } else {
+      fprintf(stdout, "Retrieving existing key\n");
+      os_free(key);
+      key = os_zalloc(get_pair->value_size);
+      os_memcpy(key, get_pair->value, get_pair->value_size);
+    }
+    free_crypt_pair(get_pair);
+
+    get_pair = get_crypt_pair(crypt_ctx, certhttps);
+
+    if (get_pair == NULL) {
+      fprintf(stderr, "get_crypt_pair failure\n");
+      exit(EXIT_FAILURE);
+    }
+    if (!get_pair->value_size) {
+      fprintf(stdout, "Inserting new certificate\n");
+      put_pair.key = certhttps;
+      put_pair.value = cert;
+      put_pair.value_size = strlen(cert) + 1;
+      put_crypt_pair(crypt_ctx, &put_pair);
+    } else {
+      os_free(cert);
+      fprintf(stdout, "Retrieving existing certificate\n");
+      cert = os_zalloc(get_pair->value_size);
+      os_memcpy(cert, get_pair->value, get_pair->value_size);
+    }
+    free_crypt_pair(get_pair);
     os_free(key);
-    key = os_zalloc(get_pair->value_size);
-    os_memcpy(key, get_pair->value, get_pair->value_size);
-  }
-  free_crypt_pair(get_pair);
-
-  get_pair = get_crypt_pair(crypt_ctx, certhttps);
-
-  if (get_pair == NULL) {
-    fprintf(stderr, "get_crypt_pair failure\n");
-    exit(EXIT_FAILURE);
-  }
-  if (!get_pair->value_size) {
-    fprintf(stdout, "Inserting new certificate\n");
-    put_pair.key = certhttps;
-    put_pair.value = cert;
-    put_pair.value_size = strlen(cert) + 1;
-    put_crypt_pair(crypt_ctx, &put_pair);
-  } else {
     os_free(cert);
-    fprintf(stdout, "Retrieving existing certificate\n");
-    cert = os_zalloc(get_pair->value_size);
-    os_memcpy(cert, get_pair->value, get_pair->value_size);
   }
-  free_crypt_pair(get_pair);
 
 
   flags = MHD_USE_THREAD_PER_CONNECTION;

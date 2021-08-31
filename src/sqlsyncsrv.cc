@@ -36,15 +36,21 @@
 #include "sqlite_sync.grpc.pb.h"
 
 #include "capture/sqlite_header_writer.h"
+#include "crypt/crypt_service.h"
 #include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/log.h"
+#include "utils/cryptou.h"
+#include "config.h"
 #include "version.h"
 
-#define OPT_STRING    ":f:p:dvh"
-#define USAGE_STRING  "\t%s [-f path] [-p port] [-d] [-h] [-v]"
+#define OPT_STRING    ":f:p:c:u:n:dvh"
+#define USAGE_STRING  "\t%s [-f path] [-p port] [-c path] [-u passphrase] [-n hostname] [-d] [-h] [-v]"
 
 #define DEFAULT_DB_NAME "sync.sqlite"
+#define KEY_ID    "syncgrpc"
+#define KEY_NAME  "keysyncgrpc"
+#define CERT_NAME "certsyncgrpc"
 
 using grpc::Server;
 using grpc::ServerBuilder;
@@ -85,6 +91,9 @@ void show_app_help(char *app_name)
   fprintf(stdout, "\nOptions:\n");
   fprintf(stdout, "\t-f folder\t\t Folder where to save the databases\n");
   fprintf(stdout, "\t-p port\t\t Server port\n");
+  fprintf(stdout, "\t-c path\t\t The crypt db path\n");
+  fprintf(stdout, "\t-u passphrase\t\t The user passphrase for TLS connection\n");
+  fprintf(stdout, "\t-n hostname\t\t The hostname for certificate\n");
   fprintf(stdout, "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n");
   fprintf(stdout, "\t-h\t\t Show help\n");
   fprintf(stdout, "\t-v\t\t Show app version\n\n");
@@ -116,7 +125,9 @@ int get_port(char *port_str)
   return strtol(port_str, NULL, 10);
 }
 
-void process_app_options(int argc, char *argv[], int *port, char *path, uint8_t *verbosity)
+void process_app_options(int argc, char *argv[], int *port, char *path,
+                         char *crypt_path, char *passphrase,
+                         char *hostname, uint8_t *verbosity)
 {
   int opt;
   int p;
@@ -142,6 +153,15 @@ void process_app_options(int argc, char *argv[], int *port, char *path, uint8_t 
       break;
     case 'f':
       os_strlcpy(path, optarg, MAX_OS_PATH_LEN);
+      break;
+    case 'c':
+      os_strlcpy(crypt_path, optarg, MAX_OS_PATH_LEN);
+      break;
+    case 'u':
+      os_strlcpy(passphrase, optarg, MAX_USER_SECRET);
+      break;
+    case 'n':
+      os_strlcpy(hostname, optarg, MAX_WEB_PATH_LEN);
       break;
     case ':':
       log_cmdline_error("Missing argument for -%c\n", optopt);
@@ -271,7 +291,7 @@ class SynchroniserServiceImpl final : public Synchroniser::Service {
     std::string path_;
 };
 
-int run_grpc_server(char *path, uint16_t port) {
+int run_grpc_server(char *path, uint16_t port, char *key, char *cert) {
   SynchroniserServiceImpl service(path);
   std::string server_address("0.0.0.0:");
   server_address += std::to_string(port);
@@ -280,7 +300,15 @@ int run_grpc_server(char *path, uint16_t port) {
   grpc::reflection::InitProtoReflectionServerBuilderPlugin();
   ServerBuilder builder;
 
-  builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
+  if (key == NULL && cert == NULL) {
+    builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
+  } else {
+    grpc::SslServerCredentialsOptions::PemKeyCertPair pkcp = {key, cert};
+    grpc::SslServerCredentialsOptions ssl_opts(GRPC_SSL_DONT_REQUEST_CLIENT_CERTIFICATE);
+    ssl_opts.pem_key_cert_pairs.push_back(pkcp);
+    std::shared_ptr<grpc::ServerCredentials> creds = grpc::SslServerCredentials(ssl_opts);
+    builder.AddListeningPort(server_address, creds);
+  }
 
   builder.RegisterService(&service);
 
@@ -297,10 +325,20 @@ int main(int argc, char** argv) {
   uint8_t level = 0;
   int port = -1;
   char path[MAX_OS_PATH_LEN];
+  char crypt_path[MAX_OS_PATH_LEN];
+  char passphrase[MAX_USER_SECRET];
+  char hostname[MAX_WEB_PATH_LEN];
+  struct crypt_context *crypt_ctx;
+  struct crypt_pair* get_pair;
+  struct crypt_pair put_pair;
+  char *key = NULL;
+  char *cert = NULL;
 
+  os_memset(passphrase, 0, MAX_USER_SECRET);
   os_memset(path, 0, MAX_OS_PATH_LEN);
 
-  process_app_options(argc, argv, &port, path, &verbosity); 
+  process_app_options(argc, argv, &port, path, crypt_path,
+                      passphrase, hostname, &verbosity); 
 
   if (optind <= 1) show_app_help(argv[0]);
 
@@ -339,8 +377,68 @@ int main(int argc, char** argv) {
   fprintf(stdout, "Starting server with:\n");
   fprintf(stdout, "Port --> %d\n", port);
   fprintf(stdout, "Default DB save path --> %s\n", db_path.c_str());
+  fprintf(stdout, "Crypt DB path --> %s\n", crypt_path);
+  fprintf(stdout, "Hostname --> %s\n", hostname);
 
-  if (run_grpc_server(path, port) == -1) {
+  if (strlen(passphrase)) {
+    fprintf(stdout, "Creating/loading certificates...\n");
+    if (crypto_generate_keycert_str(1024, &key, &cert) < 0) {
+      fprintf(stderr, "crypto_generate_keycert_str failure\n");
+      exit(EXIT_FAILURE);
+    }
+
+    if ((crypt_ctx = load_crypt_service(crypt_path, (char *)KEY_ID, (uint8_t *)passphrase,
+                                        (passphrase == NULL) ? 0 : os_strnlen_s(passphrase, MAX_USER_SECRET))) == NULL) {
+      fprintf(stderr, "load_crypt_service fail\n");
+      exit(EXIT_FAILURE);
+    }
+
+    get_pair = get_crypt_pair(crypt_ctx, (char *)KEY_NAME);
+
+    if (get_pair == NULL) {
+      fprintf(stderr, "get_crypt_pair failure\n");
+      exit(EXIT_FAILURE);
+    }
+
+    if (!get_pair->value_size) {
+      fprintf(stdout, "Inserting new key\n");
+      put_pair.key = (char *)KEY_NAME;
+      put_pair.value = (uint8_t *)key;
+      put_pair.value_size = strlen(key) + 1;
+      put_crypt_pair(crypt_ctx, &put_pair);
+    } else {
+      fprintf(stdout, "Retrieving existing key\n");
+      os_free(key);
+      key = (char *)os_zalloc(get_pair->value_size);
+      os_memcpy(key, get_pair->value, get_pair->value_size);
+    }
+    free_crypt_pair(get_pair);
+
+    get_pair = get_crypt_pair(crypt_ctx, (char *)CERT_NAME);
+
+    if (get_pair == NULL) {
+      fprintf(stderr, "get_crypt_pair failure\n");
+      exit(EXIT_FAILURE);
+    }
+
+    if (!get_pair->value_size) {
+      fprintf(stdout, "Inserting new certificate\n");
+      put_pair.key = (char *)CERT_NAME;
+      put_pair.value = (uint8_t *)cert;
+      put_pair.value_size = strlen(cert) + 1;
+      put_crypt_pair(crypt_ctx, &put_pair);
+    } else {
+      os_free(cert);
+      fprintf(stdout, "Retrieving existing certificate\n");
+      cert = (char *)os_zalloc(get_pair->value_size);
+      os_memcpy(cert, get_pair->value, get_pair->value_size);
+    }
+    free_crypt_pair(get_pair);
+    os_free(key);
+    os_free(cert);
+  }
+
+  if (run_grpc_server(path, port, key, cert) == -1) {
     fprintf(stderr, "run_grpc_server fail");
     exit(EXIT_FAILURE);
   } 
