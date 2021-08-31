@@ -993,11 +993,25 @@ int create_dir(char *dirpath, mode_t mode)
   return 0;
 }
 
+int check_file_exists(char *path, struct stat *sb)
+{
+  struct stat sb_in;
+  int res;
+
+  if (sb == NULL) {
+    res = stat(path, &sb_in);
+  } else {
+    res = stat(path, sb);
+  }
+
+  return res;
+}
+
 int check_sock_file_exists(char *path)
 {
   struct stat sb;
 
-  if (stat(path, &sb) == -1) {
+  if (check_file_exists(path, &sb) < 0) {
     log_err("stat %s", path);
     return -1;
   }

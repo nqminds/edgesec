@@ -28,6 +28,7 @@
 
 #include <stddef.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <stddef.h>
@@ -477,6 +478,15 @@ int exist_dir(char *dirpath);
  * @return 0 on success, -1 on failure 
  */
 int create_dir(char *dirpath, mode_t mode);
+
+/**
+ * @brief Check if a file exists
+ * 
+ * @param path The path to the file
+ * @param sb Optional stat struct
+ * @return 0 if it exists, -1 on failure 
+ */
+int check_file_exists(char *path, struct stat *sb);
 
 /**
  * @brief Check if a socket file exists
