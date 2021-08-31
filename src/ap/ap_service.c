@@ -158,16 +158,7 @@ int run_ap(struct apconf *hconf, struct radius_conf *rconf, bool exec_ap)
   }
 
   if (exec_ap) {
-<<<<<<< HEAD
     res = run_ap_process(hconf);
-=======
-    if (check_file_exists(hconf->ap_bin_path, NULL) < 0) {
-      log_trace("check_file_exists fail");
-      return -1;
-    }
-
-    return run_ap_process(hconf, ctrl_if_path);
->>>>>>> 53a76836f231ff0a31bdec6696a8e846bb99fda3
   } else {
     res = signal_ap_process(hconf->ap_bin_path);
   }
