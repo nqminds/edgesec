@@ -89,25 +89,24 @@ static void test_1_get_nat_if_ip(void **state)
 {
   (void) state; /* unused */
 
-  char *ip_buf = NULL;
-  bool ret = get_nat_if_ip("nat_test", &ip_buf);
+  char ip_buf[OS_INET_ADDRSTRLEN];
+  os_memset(ip_buf, 0, OS_INET_ADDRSTRLEN);
+  bool ret = get_nat_if_ip("nat_test", ip_buf);
 
   assert_true(ret);
   assert_string_equal(ip_buf, "127.0.0.1");
-
-  free(ip_buf);  
 }
 
 static void test_2_get_nat_if_ip(void **state)
 {
   (void) state; /* unused */
 
-  char *ip_buf = NULL;
-  bool ret = get_nat_if_ip("wlan0", &ip_buf);
+  char ip_buf[OS_INET_ADDRSTRLEN];
+  os_memset(ip_buf, 0, OS_INET_ADDRSTRLEN);
+
+  bool ret = get_nat_if_ip("wlan0", ip_buf);
 
   assert_false(ret);
-
-  free(ip_buf);  
 }
 
 static void test_create_subnet_ifs(void **state)

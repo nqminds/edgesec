@@ -98,7 +98,7 @@ bool create_subnet_ifs(UT_array *ifinfo_array, bool ignore_error)
   return true;
 }
 
-bool get_nat_if_ip(const char *nat_interface, char **ip_buf)
+bool get_nat_if_ip(const char *nat_interface, char *ip_buf)
 {
   UT_array *netip_list = NULL;
   unsigned int if_idx = if_nametoindex(nat_interface);
@@ -122,7 +122,7 @@ bool get_nat_if_ip(const char *nat_interface, char **ip_buf)
   }
 
   if (el->ifa_family == AF_INET) {
-    *ip_buf = os_strdup(el->ip_addr);
+    os_strlcpy(ip_buf, el->ip_addr, OS_INET_ADDRSTRLEN);
   }
 
   utarray_free(netip_list);

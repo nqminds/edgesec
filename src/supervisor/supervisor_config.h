@@ -56,6 +56,7 @@ struct supervisor_context {
   hmap_mac_conn   *mac_mapper;                                /**< MAC mapper connection structure */
   hmap_if_conn    *if_mapper;                                 /**< WiFi subnet to interface mapper */
   hmap_vlan_conn  *vlan_mapper;                               /**< WiFi VLAN to interface mapper */
+  hmap_str_keychar *hmap_bin_paths;                           /**< Mapper for paths to systems binaries */
   bool            allow_all_connections;                      /**< @c allow_all_connections Flag from @c struct app_config */
   bool            allow_all_nat;                              /**< @c allow_all_nat Flag from @c struct app_config */
   bool            exec_capture;                               /**< @c execute_capture from @c struct app_config */  
@@ -66,11 +67,14 @@ struct supervisor_context {
   char            db_path[MAX_OS_PATH_LEN];                   /**< @c db_path from @c struct app_config */
   UT_array        *config_ifinfo_array;                       /**< @c config_ifinfo_array from @c struct app_config */
   struct bridge_mac_list *bridge_list;                        /**< List of assigned bridges */
-  char            domain_delim;                               /**< Cntrol server command delimiter */
+  char            domain_delim;                               /**< Control server command delimiter */
+  int             domain_sock;                                /**< The domain socket */
+  char            nat_ip[OS_INET_ADDRSTRLEN];                 /**< The NAT IP address */
   struct capture_conf capture_config;                         /**< Capture service configuration. */
   struct apconf       hconfig;                                /**< AP service configuration. */
   sqlite3         *fingeprint_db;                             /**< The fingerprint sqlite db structure. */
   sqlite3         *macconn_db;                                /**< The macconn db structure. */
+  struct radius_server_data *radius_srv;                      /**< The radius server context. */
   struct iptables_context *iptables_ctx;                      /**< The iptables context. */
   struct crypt_context *crypt_ctx;                            /**< The crypt context. */
   struct auth_ticket *ticket;                                 /**< The authentication ticket. */  

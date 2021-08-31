@@ -141,10 +141,13 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
     return false;
   }
 
+  ctx->hmap_bin_paths = NULL;
+  ctx->radius_srv = NULL;
   ctx->crypt_ctx = NULL;
   ctx->ticket = NULL;
   ctx->iptables_ctx = NULL;
   ctx->fingeprint_db = NULL;
+  ctx->domain_sock = -1;
   ctx->exec_capture = app_config->exec_capture;
   ctx->domain_delim = app_config->domain_delim;
   ctx->allow_all_connections = app_config->allow_all_connections;
@@ -197,10 +200,7 @@ bool run_engine(struct app_config *app_config)
 {
   struct supervisor_context context;
 
-  struct radius_server_data *radius_srv = NULL;
-  int domain_sock = -1;
   char *commands[] = {"ip", "iw", "iptables", "dnsmasq", "sysctl", NULL};
-  char *nat_ip = NULL;
   int ret;
 
   if (create_dir(app_config->db_path, S_IRWXU | S_IRWXG) < 0) {
@@ -218,16 +218,12 @@ bool run_engine(struct app_config *app_config)
   log_info("DB path: %s", context.db_path);
 
   log_info("Checking system commands...");
-  hmap_str_keychar *hmap_bin_paths = check_systems_commands(
-    commands, app_config->bin_path_array, NULL
-  );
-
-  if (hmap_bin_paths == NULL) {
+  if ((context.hmap_bin_paths = check_systems_commands(commands, app_config->bin_path_array, NULL)) == NULL) {
     log_debug("check_systems_commands fail (no bin paths found)");
     goto run_engine_fail;
   }
 
-  char *iptables_path = hmap_str_keychar_get(&hmap_bin_paths, "iptables");
+  char *iptables_path = hmap_str_keychar_get(&context.hmap_bin_paths, "iptables");
   if (iptables_path == NULL) {
     log_debug("Couldn't find xtables-multi binary");
     goto run_engine_fail;
@@ -289,13 +285,13 @@ bool run_engine(struct app_config *app_config)
 
   if (os_strnlen_s(app_config->nat_interface, IFNAMSIZ)) {
     log_info("Checking nat interface %s", app_config->nat_interface);
-    if (!get_nat_if_ip(app_config->nat_interface, &nat_ip)) {
+    if (!get_nat_if_ip(app_config->nat_interface, context.nat_ip)) {
       log_debug("get_nat_if_ip fail");
       goto run_engine_fail;
     }
     log_info("Found nat interface %s", app_config->nat_interface);
-    if (nat_ip != NULL)
-      log_info("Found nat IP %s", nat_ip);
+    if (validate_ipv4_string(context.nat_ip))
+      log_info("Found nat IP %s", context.nat_ip);
 
   } else
     log_info("Not using any nat interface");
@@ -309,7 +305,7 @@ bool run_engine(struct app_config *app_config)
   }
 
   log_info("Creating supervisor on %s", app_config->domain_server_path);
-  if ((domain_sock = run_supervisor(app_config->domain_server_path, &context)) == -1) {
+  if ((context.domain_sock = run_supervisor(app_config->domain_server_path, &context)) == -1) {
     log_debug("run_supervisor fail");
     goto run_engine_fail;
   }
@@ -324,8 +320,8 @@ bool run_engine(struct app_config *app_config)
     log_info("Creating the radius server on port %d with client ip %s",
       app_config->rconfig.radius_port, app_config->rconfig.radius_client_ip);
 
-    radius_srv = run_radius(&app_config->rconfig, (void*) get_mac_conn_cmd, &context);
-    if (radius_srv == NULL) {
+    if ((context.radius_srv = run_radius(&app_config->rconfig,
+                                        (void*) get_mac_conn_cmd, &context)) == NULL) {
       log_debug("run_radius fail");
       goto run_engine_fail;
     }
@@ -333,7 +329,7 @@ bool run_engine(struct app_config *app_config)
 
   if (app_config->exec_dhcp) {
     log_info("Running the dhcp service...");
-    char *dnsmasq_path = hmap_str_keychar_get(&hmap_bin_paths, "dnsmasq");
+    char *dnsmasq_path = hmap_str_keychar_get(&context.hmap_bin_paths, "dnsmasq");
     if (dnsmasq_path == NULL) {
       log_debug("Couldn't find dnsmasq binary");
       goto run_engine_fail;
@@ -351,13 +347,12 @@ bool run_engine(struct app_config *app_config)
   log_info("++++++++++++++++++");
   eloop_run();
 
-  close_supervisor(domain_sock);
+  close_supervisor(context.domain_sock);
   close_ap();
   close_dhcp();
-  close_radius(radius_srv);
+  close_radius(context.radius_srv);
   eloop_destroy();
-  if (nat_ip != NULL) os_free(nat_ip);
-  hmap_str_keychar_free(&hmap_bin_paths);
+  hmap_str_keychar_free(&context.hmap_bin_paths);
   iptables_free(context.iptables_ctx);
   free_mac_mapper(&context.mac_mapper);
   free_if_mapper(&context.if_mapper);
@@ -369,13 +364,12 @@ bool run_engine(struct app_config *app_config)
   return true;
 
 run_engine_fail:
-  close_supervisor(domain_sock);
+  close_supervisor(context.domain_sock);
   close_ap();
   close_dhcp();
-  close_radius(radius_srv);
+  close_radius(context.radius_srv);
   eloop_destroy();
-  if (nat_ip != NULL) os_free(nat_ip);
-  hmap_str_keychar_free(&hmap_bin_paths);
+  hmap_str_keychar_free(&context.hmap_bin_paths);
   iptables_free(context.iptables_ctx);
   free_mac_mapper(&context.mac_mapper);
   free_if_mapper(&context.if_mapper);
