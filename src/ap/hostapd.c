@@ -140,7 +140,7 @@ void get_hostapd_args(char *hostapd_bin_path, char *hostapd_file_path, char *hos
   }
 }
 
-int run_ap_process(struct apconf *hconf, char *ctrl_if_path)
+int run_ap_process(struct apconf *hconf)
 {
   pid_t child_pid = 0;
   int ret, check_count = 0;
@@ -191,8 +191,8 @@ int run_ap_process(struct apconf *hconf, char *ctrl_if_path)
   log_trace("hostapd running with pid=%d", child_pid);
 
   while (check_count++ < 7) {
-    if (check_sock_file_exists(ctrl_if_path) != -1) {
-      log_trace("hostapd unix domain control path %s", ctrl_if_path);
+    if (check_sock_file_exists(hconf->ctrl_interface_path) != -1) {
+      log_trace("hostapd unix domain control path %s", hconf->ctrl_interface_path);
       break;
     } else {
       log_trace("hostapd unix domain control path check try=%d", check_count);

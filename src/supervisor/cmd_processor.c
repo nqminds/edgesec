@@ -83,8 +83,8 @@ ssize_t process_hostapd_ctrlif_cmd(int sock, struct client_address *client_addr,
   UT_array *cmd_arr)
 {
   (void) cmd_arr; /* unused */
-  return write_domain_data(sock, context->hostapd_ctrl_if_path,
-    strlen(context->hostapd_ctrl_if_path), &client_addr->addr, client_addr->len);
+  return write_domain_data(sock, context->hconfig.ctrl_interface_path,
+    strlen(context->hconfig.ctrl_interface_path), &client_addr->addr, client_addr->len);
 }
 
 ssize_t process_accept_mac_cmd(int sock, struct client_address *client_addr,

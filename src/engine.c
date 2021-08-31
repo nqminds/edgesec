@@ -59,20 +59,6 @@
 
 static const UT_icd mac_conn_icd = {sizeof(struct mac_conn), NULL, NULL, NULL};
 
-bool construct_hostapd_ctrlif(char *ctrl_interface, char *interface, char *hostapd_ctrl_if_path)
-{
-  char *ctrl_if_path = construct_path(ctrl_interface, interface);
-  if (ctrl_if_path == NULL) {
-    log_trace("construct_path fail");
-    return false;
-  }
-
-  os_strlcpy(hostapd_ctrl_if_path, ctrl_if_path, AP_SECRET_LEN);
-  os_free(ctrl_if_path);
-
-  return true;
-}
-
 bool init_mac_mapper_ifnames(UT_array *connections, hmap_vlan_conn **vlan_mapper)
 {
   struct mac_conn *p = NULL;
@@ -172,7 +158,8 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
   os_memcpy(ctx->nat_interface, app_config->nat_interface, IFNAMSIZ);
   os_memcpy(ctx->db_path, app_config->db_path, MAX_OS_PATH_LEN);
 
-  os_memcpy(&ctx->capture_config, &app_config->capture_config, sizeof(ctx->capture_config));
+  os_memcpy(&ctx->capture_config, &app_config->capture_config, sizeof(struct capture_conf));
+  os_memcpy(&ctx->hconfig, &app_config->hconfig, sizeof(struct apconf));
 
   db_path = construct_path(ctx->db_path, MACCONN_DB_NAME);
   if (db_path == NULL) {
@@ -299,10 +286,6 @@ bool run_engine(struct app_config *app_config)
   }
 
   log_info("Found wifi interface %s", app_config->hconfig.interface);
-  if(!construct_hostapd_ctrlif(app_config->hconfig.ctrl_interface, app_config->hconfig.interface, context.hostapd_ctrl_if_path)) {
-    log_debug("construct_hostapd_ctrlif fail");
-    goto run_engine_fail;
-  }
 
   if (os_strnlen_s(app_config->nat_interface, IFNAMSIZ)) {
     log_info("Checking nat interface %s", app_config->nat_interface);
@@ -332,7 +315,7 @@ bool run_engine(struct app_config *app_config)
   }
 
   log_info("Running the ap service...");
-  if (run_ap(&app_config->hconfig, &app_config->rconfig, context.hostapd_ctrl_if_path, app_config->exec_ap) < 0) {
+  if (run_ap(&app_config->hconfig, &app_config->rconfig, app_config->exec_ap) < 0) {
     log_debug("run_ap fail");
     goto run_engine_fail;
   }

@@ -55,7 +55,6 @@ static char *test_hostapd_vlan_content = "*\twlan0.#\n";
 
 static char *test_ap_bin_path = "/tmp/hostapd";
 static char *test_ap_log_path = "/tmp/hostapd.log";
-static char *test_ctrl_if_path = "/var/run/hostapd/wlan0";
 
 bool __wrap_kill_process(char *proc_name)
 {
@@ -187,7 +186,7 @@ static void test_run_ap_process(void **state)
   strcpy(hconf.ap_file_path, test_hostapd_conf_file);
   strcpy(hconf.ap_log_path, test_ap_log_path);
   
-  int ret = run_ap_process(&hconf, test_ctrl_if_path);
+  int ret = run_ap_process(&hconf);
   assert_int_equal(ret, 0);
 }
 

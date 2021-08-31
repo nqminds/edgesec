@@ -32,7 +32,7 @@ endif ()
 if (BUILD_REST_SERVER AND BUILD_MICROHTTPD_LIB)
   add_executable(restsrv restsrv.c)
   target_include_directories(restsrv PRIVATE ${LIBMICROHTTPD_INCLUDE_DIR} ${PROJECT_BINARY_DIR})
-  target_link_libraries(restsrv config minIni cryptou os hashmap cmd_processor ${LIBMICROHTTPD_LIB})
+  target_link_libraries(restsrv config minIni cryptou os hashmap ap_service cmd_processor ${LIBMICROHTTPD_LIB})
 endif ()
 
 if (BUILD_SQLSYNC_SERVICE)

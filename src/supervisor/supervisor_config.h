@@ -59,7 +59,6 @@ struct supervisor_context {
   bool            allow_all_connections;                      /**< @c allow_all_connections Flag from @c struct app_config */
   bool            allow_all_nat;                              /**< @c allow_all_nat Flag from @c struct app_config */
   bool            exec_capture;                               /**< @c execute_capture from @c struct app_config */  
-  char            hostapd_ctrl_if_path[MAX_OS_PATH_LEN];      /**< @c ctrl_interface param from @c struct hostapd_conf */
   uint8_t         wpa_passphrase[AP_SECRET_LEN];              /**< @c wpa_passphrase from @c struct hostapd_conf */
   ssize_t         wpa_passphrase_len;                         /**< the length of @c wpa_passphrase*/
   char            nat_interface[IFNAMSIZ];                    /**< @c nat_interface param from @c struct app_config */
@@ -69,6 +68,7 @@ struct supervisor_context {
   struct bridge_mac_list *bridge_list;                        /**< List of assigned bridges */
   char            domain_delim;                               /**< Cntrol server command delimiter */
   struct capture_conf capture_config;                         /**< Capture service configuration. */
+  struct apconf       hconfig;                                /**< AP service configuration. */
   sqlite3         *fingeprint_db;                             /**< The fingerprint sqlite db structure. */
   sqlite3         *macconn_db;                                /**< The macconn db structure. */
   struct iptables_context *iptables_ctx;                      /**< The iptables context. */

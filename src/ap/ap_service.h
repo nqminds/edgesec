@@ -41,11 +41,10 @@
  * 
  * @param hconf The AP configuration structure
  * @param rconf The radius configuration structure
- * @param ctrl_if_path The path of the AP control interface
  * @param exec_ap Flag to execute the AP process
  * @return int 0 on success, -1 on failure
  */
-int run_ap(struct apconf *hconf, struct radius_conf *rconf, char *ctrl_if_path, bool exec_ap);
+int run_ap(struct apconf *hconf, struct radius_conf *rconf, bool exec_ap);
 
 /**
  * @brief Closes (terminates) AP process
@@ -53,5 +52,15 @@ int run_ap(struct apconf *hconf, struct radius_conf *rconf, char *ctrl_if_path, 
  * @return true success, false otherwise
  */
 bool close_ap(void);
+
+/**
+ * @brief Send a command to the AP service
+ * 
+ * @param socket_path The service UNIX domain path
+ * @param cmd_str The command string
+ * @param reply The reply
+ * @return int 0 on success, -1 on failure
+ */
+int send_ap_command(char *socket_path, char *cmd_str, char **reply);
 
 #endif

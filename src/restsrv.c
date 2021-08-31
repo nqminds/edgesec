@@ -46,6 +46,7 @@
 
 #include "crypt/crypt_service.h"
 #include "supervisor/cmd_processor.h"
+#include "ap/ap_service.h"
 #include "microhttpd.h"
 #include "version.h"
 #include "utils/allocs.h"
@@ -250,70 +251,6 @@ enum MHD_Result create_connection_response(char *data, struct MHD_Connection *co
   return ret;
 }
 
-int forward_command(char *cmd_str, char *socket_path, char **sresponse)
-{
-  int sfd;
-  uint32_t bytes_available;
-  ssize_t send_count;
-  struct timeval timeout;
-  fd_set readfds, masterfds;
-  char *rec_data;
-  timeout.tv_sec = MESSAGE_REPLY_TIMEOUT;
-  timeout.tv_usec = 0;
-
-  if ((sfd = create_domain_client(NULL)) == -1) {
-    log_debug("create_domain_client fail");
-    return -1;
-  }
-
-  FD_ZERO(&masterfds);
-  FD_SET(sfd, &masterfds);
-  os_memcpy(&readfds, &masterfds, sizeof(fd_set));
-
-  log_trace("socket_path=%s", socket_path);
-  if ((send_count = write_domain_data_s(sfd, cmd_str, strlen(cmd_str), socket_path)) != strlen(cmd_str)) {
-    log_err("sendto");
-    goto fail;
-  }
-
-  log_debug("Sent %d bytes to %s", send_count, socket_path);
-
-  errno = 0;
-  if (select(sfd + 1, &readfds, NULL, NULL, &timeout) < 0) {
-    log_err("select");
-    goto fail;
-  }
-
-  if(FD_ISSET(sfd, &readfds)) {
-    if (ioctl(sfd, FIONREAD, &bytes_available) == -1) {
-      log_err("ioctl");
-      goto fail;
-    }
-
-    log_trace("Bytes available=%u", bytes_available);
-    rec_data = os_zalloc(bytes_available + 1);
-    if (rec_data == NULL) {
-      log_err("os_zalloc");
-      goto fail;
-    }
-
-    read_domain_data_s(sfd, rec_data, bytes_available, socket_path, MSG_DONTWAIT);
-
-    *sresponse = rtrim(rec_data, NULL);
-  } else {
-    log_debug("Socket timeout");
-    goto fail;
-  }
-
-  close(sfd);
-  return 0;
-
-fail:
-  *sresponse = NULL;
-  close(sfd);
-  return -1;
-}
-
 char* process_response_array(UT_array *cmd_arr)
 {
   char **p = NULL;
@@ -383,8 +320,8 @@ static enum MHD_Result mhd_reply(void *cls, struct MHD_Connection *connection, c
     address = sad->apath;
   }
 
-  if (forward_command(cmd_str, address, &socket_response) == -1) {
-    log_debug("forward_command fail");
+  if (send_ap_command(address, cmd_str, &socket_response) < 0) {
+    log_debug("send_ap_command fail");
     sprintf(fail_response_buf, JSON_RESPONSE_FAIL);
     return create_connection_response(fail_response_buf, connection);
   }
