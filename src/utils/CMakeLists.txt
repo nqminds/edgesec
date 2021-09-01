@@ -3,7 +3,7 @@ add_library(allocs allocs.c)
 
 add_library(cryptou cryptou.c)
 target_include_directories(cryptou BEFORE PRIVATE ${LIBOPENSSL_INCLUDE_PATH})
-target_link_libraries(cryptou base64 os log ${LIBCRYPTO_LIB})
+target_link_libraries(cryptou PRIVATE base64 os log ${LIBCRYPTO_LIB})
 
 add_library(base64 base64.c)
 target_link_libraries(base64 os log)

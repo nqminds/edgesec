@@ -16,7 +16,7 @@ git clone --depth 1 --branch openssl-3.0.0-beta1 https://github.com/openssl/open
 
 cd "${LIBOPENSSL_SOURCE_DIR}"
 
-./Configure --prefix=${LIBOPENSSL_INSTALL_DIR} --openssldir=${LIBOPENSSL_INSTALL_DIR} no-dtls no-dtls1 no-psk no-srp no-ec2m no-weak-ssl-ciphers
+./Configure --prefix=${LIBOPENSSL_INSTALL_DIR} --openssldir=${LIBOPENSSL_INSTALL_DIR} -lpthread no-dtls no-dtls1 no-psk no-srp no-ec2m no-weak-ssl-ciphers no-dso no-engine no-threads
 make
 make install
 make clean

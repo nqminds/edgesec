@@ -33,6 +33,7 @@
 #include "sqlite_sync.grpc.pb.h"
 
 #include "../utils/log.h"
+#include "../utils/os.h"
 
 using grpc::Channel;
 using grpc::ClientContext;
@@ -43,8 +44,8 @@ using sqlite_sync::RegisterDbReply;
 using sqlite_sync::SyncDbStatementRequest;
 using sqlite_sync::SyncDbStatementReply;
 
-extern "C" uint32_t run_register_db(char *address, char *name);
-extern "C" uint32_t run_sync_db_statement(char *address, char *name, bool default_db, char *statement);
+extern "C" uint32_t run_register_db(char *ca, char *address, char *name);
+extern "C" uint32_t run_sync_db_statement(char *ca, char *address, char *name, bool default_db, char *statement);
 
 class SynchroniserClient {
  public:
@@ -94,17 +95,35 @@ class SynchroniserClient {
 };
 
 // extern "C" 
-uint32_t run_register_db(char *address, char *name)
+uint32_t run_register_db(char *ca, char *address, char *name)
 {
-  SynchroniserClient syncroniser(grpc::CreateChannel(address, grpc::InsecureChannelCredentials()));
+  std::shared_ptr<grpc::ChannelCredentials> creds;
+  if (ca != NULL) {
+    grpc::SslCredentialsOptions ssl_opts;
+    ssl_opts.pem_root_certs = ca;
+    creds = grpc::SslCredentials(ssl_opts);
+  } else {
+    creds = grpc::InsecureChannelCredentials();
+  }
+
+  SynchroniserClient syncroniser(grpc::CreateChannel(address, creds));
   log_trace("RegisterDb with name=%s and address=%s", name, address);
   return syncroniser.RegisterDb(name);
 }
 
 // extern "C"
-uint32_t run_sync_db_statement(char *address, char *name, bool default_db, char *statement)
+uint32_t run_sync_db_statement(char *ca, char *address, char *name, bool default_db, char *statement)
 {
-  SynchroniserClient syncroniser(grpc::CreateChannel(address, grpc::InsecureChannelCredentials()));
+  std::shared_ptr<grpc::ChannelCredentials> creds;
+  if (ca != NULL) {
+    grpc::SslCredentialsOptions ssl_opts;
+    ssl_opts.pem_root_certs = ca;
+    creds = grpc::SslCredentials(ssl_opts);
+  } else {
+    creds = grpc::InsecureChannelCredentials();
+  }
+
+  SynchroniserClient syncroniser(grpc::CreateChannel(address, creds));
   log_trace("SyncDbStatement with name=%s, address=%s and default_db=%d", name, address, default_db);
   return syncroniser.SyncDbStatement(name, default_db, statement);
 }

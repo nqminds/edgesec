@@ -155,6 +155,9 @@ int capture_opt2config(char key, char *value, struct capture_conf *config)
     case 'a':
       os_strlcpy(config->db_sync_address, value, MAX_WEB_PATH_LEN);
       break;
+    case 'k':
+      os_strlcpy(config->ca_path, value, MAX_OS_PATH_LEN);
+      break;
     case 'o':
       config->db_sync_port = get_opt_num(value);
       if (config->db_sync_port <= 0 || config->db_sync_port > 65535) {
@@ -341,6 +344,17 @@ char** capture_config2opt(struct capture_conf *config)
 
     opt_str[idx] = os_zalloc(strlen(buf) + 1);
     strcpy(opt_str[idx], buf);
+    idx ++;
+  }
+
+  //ca_path, -k
+  if (strlen(config->ca_path)) {
+    opt_str[idx] = os_zalloc(3);
+    strcpy(opt_str[idx], "-k");
+    idx ++;
+
+    opt_str[idx] = os_malloc(MAX_OS_PATH_LEN);
+    os_strlcpy(opt_str[idx], config->ca_path, MAX_OS_PATH_LEN);
     idx ++;
   }
 

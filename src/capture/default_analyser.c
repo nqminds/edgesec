@@ -55,8 +55,8 @@
 #define PCAP_DB_NAME                  "pcap-meta" SQLITE_EXTENSION
 
 #ifdef WITH_SQLSYNC_SERVICE
-uint32_t run_register_db(char *address, char *name);
-uint32_t run_sync_db_statement(char *address, char *name, bool default_db, char *statement);
+uint32_t run_register_db(char *ca, char *address, char *name);
+uint32_t run_sync_db_statement(char *ca, char *address, char *name, bool default_db, char *statement);
 #endif
 
 void construct_header_db_name(char *name, char *db_name)
@@ -175,7 +175,7 @@ void eloop_tout_handler(void *eloop_ctx, void *user_ctx)
   if (context->db_sync) {
     if ((traces = concat_string_queue(context->squeue, context->sync_send_size)) != NULL) {
 #ifdef WITH_SQLSYNC_SERVICE
-      if (!run_sync_db_statement(context-> grpc_srv_addr, context->db_name, 1, traces)) {
+      if (!run_sync_db_statement(context->ca, context-> grpc_srv_addr, context->db_name, 1, traces)) {
         log_trace("run_sync_db_statement fail");
       }
 #endif
@@ -242,6 +242,14 @@ int start_default_analyser(struct capture_conf *config)
     return -1;
   }
   
+  if (config->ca_path != NULL) {
+      if (read_file_string(config->ca_path, &context.ca) < 0) {
+        os_free(header_db_path);
+        os_free(pcap_db_path);
+        return -1;
+      }
+  }
+
   log_info("Capturing hostname=%s", context.hostname);
   log_info("Capturing id=%s", context.cap_id);
   log_info("Capturing interface=%s", context.interface);
@@ -258,11 +266,13 @@ int start_default_analyser(struct capture_conf *config)
   log_info("DB name=%s", context.db_name);
   log_info("DB path=%s", header_db_path);
   log_info("GRPC Server address=%s", context.grpc_srv_addr);
+  log_info("GRPC Sync CA path=%s", config->ca_path);
 
   context.pqueue = init_packet_queue();
 
   if (context.pqueue == NULL) {
     log_debug("init_packet_queue fail");
+    if (context.ca != NULL) os_free(context.ca);
     os_free(header_db_path);
     os_free(pcap_db_path);
     return -1;
@@ -272,6 +282,7 @@ int start_default_analyser(struct capture_conf *config)
 
   if (context.cqueue == NULL) {
     log_debug("init_pcap_queue fail");
+    if (context.ca != NULL) os_free(context.ca);
     os_free(header_db_path);
     os_free(pcap_db_path);
     free_packet_queue(context.pqueue);
@@ -281,15 +292,18 @@ int start_default_analyser(struct capture_conf *config)
   context.squeue = init_string_queue(context.sync_store_size);
   if (context.squeue == NULL) {
     log_debug("init_string_queue fail");
+    if (context.ca != NULL) os_free(context.ca);
     free_packet_queue(context.pqueue);
     free_pcap_queue(context.cqueue);
+    os_free(header_db_path);
+    os_free(pcap_db_path);
     return -1;
   }
 
   if (config->db_write) {
     if (config->db_sync) {
 #ifdef WITH_SQLSYNC_SERVICE
-      if (!run_register_db(context.grpc_srv_addr, context.db_name)) {
+      if (!run_register_db(context.ca, context.grpc_srv_addr, context.db_name)) {
         log_trace("run_register_db fail");
       }
       ret = open_sqlite_header_db(header_db_path, trace_callback, (void*)context.squeue, &context.header_db);
@@ -302,6 +316,7 @@ int start_default_analyser(struct capture_conf *config)
 
     if (ret < 0) {
       log_debug("open_sqlite_header_db fail");
+      if (context.ca != NULL) os_free(context.ca);
       free_packet_queue(context.pqueue);
       free_pcap_queue(context.cqueue);
       free_string_queue(context.squeue);
@@ -314,6 +329,7 @@ int start_default_analyser(struct capture_conf *config)
   if (config->file_write) {
     if (open_sqlite_pcap_db(pcap_db_path, (sqlite3**)&context.pcap_db) < 0) {
       log_debug("open_sqlite_pcap_db fail");
+      if (context.ca != NULL) os_free(context.ca);
       free_packet_queue(context.pqueue);
       free_pcap_queue(context.cqueue);
       free_string_queue(context.squeue);
@@ -329,6 +345,7 @@ int start_default_analyser(struct capture_conf *config)
                context.filter, true, pcap_callback, (void *)&context,
                (struct pcap_context**)&(context.pc)) < 0) {
     log_debug("run_pcap fail");
+    if (context.ca != NULL) os_free(context.ca);
     free_packet_queue(context.pqueue);
     free_pcap_queue(context.cqueue);
     free_string_queue(context.squeue);
@@ -341,6 +358,7 @@ int start_default_analyser(struct capture_conf *config)
 
   if (eloop_init()) {
 		log_debug("Failed to initialize event loop");
+    if (context.ca != NULL) os_free(context.ca);
 		close_pcap(context.pc);
     free_packet_queue(context.pqueue);
     free_pcap_queue(context.cqueue);
@@ -371,6 +389,7 @@ int start_default_analyser(struct capture_conf *config)
   log_info("Capture ended.");
 
 	/* And close the session */
+  if (context.ca != NULL) os_free(context.ca);
 	close_pcap(context.pc);
   eloop_destroy();
   free_packet_queue(context.pqueue);
@@ -383,6 +402,7 @@ int start_default_analyser(struct capture_conf *config)
   return 0;
 
 fail:
+  if (context.ca != NULL) os_free(context.ca);
 	close_pcap(context.pc);
   eloop_destroy();
   free_packet_queue(context.pqueue);

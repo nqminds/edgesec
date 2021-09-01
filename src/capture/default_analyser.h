@@ -53,6 +53,7 @@ struct capture_context {
   char hostname[OS_HOST_NAME_MAX];
   ssize_t sync_store_size;
   ssize_t sync_send_size;
+  char *ca;
 };
 
 /**

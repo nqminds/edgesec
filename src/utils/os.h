@@ -520,6 +520,24 @@ int get_hostname(char *buf);
  */
 int create_pid_file(const char *pid_file, int flags);
 
+/**
+ * @brief Read the entire file
+ * 
+ * @param path The file path
+ * @param out The output buffer
+ * @return ssize_t The file size, -1 on failure
+ */
+ssize_t read_file(char *path, uint8_t **out);
+
+/**
+ * @brief Read the entire file into a string
+ * 
+ * @param path The file path
+ * @param out The output string
+ * @return 0 on success, -1 on failure
+ */
+int read_file_string(char *path, char **out);
+
 #ifdef __cplusplus
 }
 #endif

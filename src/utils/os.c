@@ -1114,6 +1114,82 @@ int create_pid_file(const char *pid_file, int flags)
   return fd;
 }
 
+ssize_t read_file(char *path, uint8_t **out)
+{
+  size_t read_size;
+  long file_size;
+  uint8_t *buffer;
+
+  *out = NULL;
+
+  errno = 0;
+
+  FILE *fp = fopen(path, "rb");
+
+  if (fp == NULL) {
+    log_err("fopen");
+    return -1;
+  }
+
+  if (fseek(fp, 0 , SEEK_END) < 0) {
+    log_err("fseek");
+    fclose(fp);
+    return -1;
+  }
+
+  if ((file_size = ftell(fp)) < 0) {
+    log_err("ftell");
+    fclose(fp);
+    return -1;
+  }
+
+  rewind(fp);
+
+  if ((buffer = (char*) os_malloc(sizeof(char) * file_size)) == NULL) {
+    log_err("os_malloc");
+    fclose(fp);
+    return -1;
+  }
+
+  read_size = fread(buffer, sizeof(char), file_size, fp);
+
+  if (read_size != file_size) {
+    log_trace("fread fail");
+    os_free(buffer);
+    fclose(fp);
+  }
+
+  *out = buffer;
+
+  fclose(fp);
+  return read_size;
+}
+
+int read_file_string(char *path, char **out)
+{
+  uint8_t *data = NULL;
+  ssize_t data_size = 0;
+  char *buffer;
+
+  *out = NULL;
+
+  if ((data_size = read_file(path, &data)) < 0) {
+    log_trace("read_file fail");
+    return -1;
+  }
+
+  if ((buffer = (char *)os_zalloc(data_size + 1)) == NULL) {
+    log_err("os_zalloc");
+    return -1;
+  }
+
+  os_memcpy(buffer, data, data_size);
+
+  *out = buffer;
+
+  os_free(data);
+  return 0;
+}
 // void *os_malloc(size_t size)
 // {
 //   void *ptr = malloc(size);

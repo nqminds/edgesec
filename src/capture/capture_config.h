@@ -49,10 +49,10 @@
 
 #define CAPTURE_MAX_OPT       26
                               
-#define CAPTURE_OPT_STRING    ":c:i:q:f:t:n:p:y:a:o:x:z:r:dvhmewus"   // pgjklb
+#define CAPTURE_OPT_STRING    ":c:i:q:f:t:n:p:y:a:o:x:z:r:k:dvhmewus"   // pgjlb
 #define CAPTURE_USAGE_STRING  "\t%s [-c config] [-d] [-h] [-v] [-i interface] [-q domain]" \
                               "[-f filter] [-m] [-t timeout] [-n interval] " \
-                              "[-e] [-y engine][-w] [-u] [-s] [-p path] [-a address] [-o port] [-r params]\n"
+                              "[-e] [-y engine][-w] [-u] [-s] [-p path] [-a address] [-o port] [-k path] [-r params]\n"
 #define CAPTURE_OPT_DEFS      "\t-c config\t Path to the config file name\n" \
                               "\t-q domain\t The UNIX domain path\n" \
                               "\t-x command\t The UNIX domain command\n" \
@@ -65,6 +65,7 @@
                               "\t-p path\t\t The db path\n" \
                               "\t-a address\t The db sync address\n" \
                               "\t-o port\t\t The db sync port\n" \
+                              "\t-k path\t\t The sync certificate authority path\n" \
                               "\t-m\t\t Promiscuous mode\n" \
                               "\t-e\t\t Immediate mode\n" \
                               "\t-u\t\t Write to file\n" \
@@ -115,6 +116,7 @@ struct capture_conf {
   bool db_sync;                                               /**< Specifies wether the packets db should be synced. */
   char db_path[MAX_OS_PATH_LEN];                              /**< Specifies the path to the sqlite3 dbs */ 
   char db_sync_address[MAX_WEB_PATH_LEN];                     /**< Specifies the web address for sqlite syncing */
+  char ca_path[MAX_OS_PATH_LEN];                              /**< Specifies the certificate authority path */
   uint16_t db_sync_port;                                      /**< Specifies the port of the web address for sqlite syncing */
   char filter[MAX_FILTER_SIZE];                               /**< Specifies the filter expression or pcap lib */
   ssize_t sync_store_size;                                    /**< Specifies the sync store size */

@@ -179,6 +179,7 @@ endif ()
 
 
 # C compiler options
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wunused-variable")
 
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs")
