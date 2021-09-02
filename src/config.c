@@ -313,10 +313,8 @@ bool load_ap_conf(const char *filename, struct app_config *config)
   // Load AP interface
   value = os_malloc(INI_BUFFERSIZE);
   ret = ini_gets("ap", "interface", "", value, INI_BUFFERSIZE, filename);
-  if (!ret) {
-    fprintf(stderr, "AP interface was not specified\n");
-    os_free(value);
-    return false;
+  if (os_strnlen_s(value, IFNAMSIZ)) {
+    os_strlcpy(config->hconfig.interface, value, IFNAMSIZ);
   }
 
   os_strlcpy(config->hconfig.interface, value, IFNAMSIZ);
