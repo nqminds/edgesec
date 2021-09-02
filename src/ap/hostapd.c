@@ -157,11 +157,11 @@ int run_ap_process(struct apconf *hconf)
     return -1;
   }
 
-  log_trace("Resetting wifi interface %s", hconf->interface);
-  if (!reset_interface(hconf->interface)) {
-    log_debug("reset_interface fail");
-    return -1;
-  }
+  // log_trace("Resetting wifi interface %s", hconf->interface);
+  // if (!reset_interface(hconf->interface)) {
+  //   log_debug("reset_interface fail");
+  //   return -1;
+  // }
 
   while((ret = run_process(process_argv, &child_pid)) < 0) {
     log_trace("Killing hostapd process");
