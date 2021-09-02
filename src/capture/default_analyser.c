@@ -242,7 +242,8 @@ int start_default_analyser(struct capture_conf *config)
     return -1;
   }
   
-  if (config->ca_path != NULL) {
+
+  if (os_strnlen_s(config->ca_path, MAX_OS_PATH_LEN)) {
       if (read_file_string(config->ca_path, &context.ca) < 0) {
         os_free(header_db_path);
         os_free(pcap_db_path);

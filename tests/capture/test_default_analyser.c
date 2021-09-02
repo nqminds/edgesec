@@ -144,6 +144,7 @@ void capture_config(struct capture_conf *config)
   config->db_sync = true;
   strcpy(config->db_path, "./db");
   strcpy(config->db_sync_address, "localhost");
+  os_memset(config->ca_path, 0, MAX_OS_PATH_LEN);
   config->db_sync_port = 12345;
   strcpy(config->filter, "port 80");
 }
