@@ -42,20 +42,6 @@
 
 #include "supervisor/cmd_processor.h"
 
-bool construct_ap_ctrlif(char *ctrl_interface, char *interface, char *ap_ctrl_if_path)
-{
-  char *ctrl_if_path = construct_path(ctrl_interface, interface);
-  if (ctrl_if_path == NULL) {
-    log_trace("construct_path fail");
-    return false;
-  }
-
-  os_strlcpy(ap_ctrl_if_path, ctrl_if_path, MAX_OS_PATH_LEN);
-  os_free(ctrl_if_path);
-
-  return true;
-}
-
 bool get_config_dhcpinfo(char *info, config_dhcpinfo_t *el)
 {
   UT_array *info_arr;
@@ -415,12 +401,6 @@ bool load_ap_conf(const char *filename, struct app_config *config)
 
   // Load ap wpaPskRadius
   config->hconfig.wpa_psk_radius = (int) ini_getl("ap", "wpaPskRadius", 2, filename);
-
-  if(!construct_ap_ctrlif(config->hconfig.ctrl_interface, config->hconfig.interface,
-                          config->hconfig.ctrl_interface_path)) {
-    log_debug("construct_ap_ctrlif fail");
-    return false;
-  }
 
   return true;
 }

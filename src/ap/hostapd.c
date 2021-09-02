@@ -145,6 +145,7 @@ int check_ap_running(char *name, char *if_name, int wait_time)
 {
   int running = 0;
   int count = 0;
+
   while((!running || check_sock_file_exists(if_name) < 0) && count < MAX_AP_CHECK_COUNT) {
     if ((running = is_proc_running(name)) < 0) {
       log_trace("is_proc_running fail");

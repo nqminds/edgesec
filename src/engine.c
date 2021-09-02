@@ -130,6 +130,20 @@ bool create_mac_mapper(struct supervisor_context *ctx)
   return true;
 }
 
+bool construct_ap_ctrlif(char *ctrl_interface, char *interface, char *ap_ctrl_if_path)
+{
+  char *ctrl_if_path = construct_path(ctrl_interface, interface);
+  if (ctrl_if_path == NULL) {
+    log_trace("construct_path fail");
+    return false;
+  }
+
+  os_strlcpy(ap_ctrl_if_path, ctrl_if_path, MAX_OS_PATH_LEN);
+  os_free(ctrl_if_path);
+
+  return true;
+}
+
 bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
 {
   char *db_path = NULL;
@@ -213,8 +227,8 @@ bool run_engine(struct app_config *app_config)
     goto run_engine_fail;
   }
 
-  log_info("AP name: %s", app_config->hconfig.ssid);
-  log_info("AP interface: %s", app_config->hconfig.interface);
+  log_info("AP name: %s", context.hconfig.ssid);
+  log_info("AP interface: %s", context.hconfig.interface);
   log_info("DB path: %s", context.db_path);
 
   log_info("Checking system commands...");
@@ -259,9 +273,9 @@ bool run_engine(struct app_config *app_config)
   log_info("Checking wifi interface...");
   if (!app_config->ap_detect) {
 #ifdef WITH_IW_SERVICE
-    ret = is_iw_vlan(app_config->hconfig.interface);
+    ret = is_iw_vlan(context.hconfig.interface);
     if(ret > 0) {
-      log_debug("interface %s not VLAN capable", app_config->hconfig.interface);
+      log_debug("interface %s not VLAN capable", context.hconfig.interface);
       goto run_engine_fail;
     } else if (ret < 0) {
       log_debug("is_iw_vlan fail");
@@ -270,8 +284,9 @@ bool run_engine(struct app_config *app_config)
   log_warn("iw service not implemented");
 #endif
   } else {
+    log_info("Looking for VLAN capable wifi interface...");
 #ifdef WITH_IW_SERVICE
-    if(get_valid_iw(app_config->hconfig.interface) == NULL) {
+    if(get_valid_iw(context.hconfig.interface) == NULL) {
       log_debug("get_valid_iw fail");
       goto run_engine_fail;
     }
@@ -281,15 +296,21 @@ bool run_engine(struct app_config *app_config)
 #endif
   }
 
-  log_info("Found wifi interface %s", app_config->hconfig.interface);
+  log_info("Found wifi interface %s", context.hconfig.interface);
 
-  if (os_strnlen_s(app_config->nat_interface, IFNAMSIZ)) {
-    log_info("Checking nat interface %s", app_config->nat_interface);
-    if (!get_nat_if_ip(app_config->nat_interface, context.nat_ip)) {
+  if(!construct_ap_ctrlif(context.hconfig.ctrl_interface, context.hconfig.interface,
+                          context.hconfig.ctrl_interface_path)) {
+    log_debug("construct_ap_ctrlif fail");
+    goto run_engine_fail;
+  }
+
+  if (os_strnlen_s(context.nat_interface, IFNAMSIZ)) {
+    log_info("Checking nat interface %s", context.nat_interface);
+    if (!get_nat_if_ip(context.nat_interface, context.nat_ip)) {
       log_debug("get_nat_if_ip fail");
       goto run_engine_fail;
     }
-    log_info("Found nat interface %s", app_config->nat_interface);
+    log_info("Found nat interface %s", context.nat_interface);
     if (validate_ipv4_string(context.nat_ip))
       log_info("Found nat IP %s", context.nat_ip);
 
@@ -311,7 +332,7 @@ bool run_engine(struct app_config *app_config)
   }
 
   log_info("Running the ap service...");
-  if (run_ap(&app_config->hconfig, &app_config->rconfig, app_config->exec_ap) < 0) {
+  if (run_ap(&context.hconfig, &app_config->rconfig, app_config->exec_ap) < 0) {
     log_debug("run_ap fail");
     goto run_engine_fail;
   }
