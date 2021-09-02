@@ -10,6 +10,7 @@ add_executable(test_domain_server test_domain_server.c)
 target_link_libraries(test_domain_server PRIVATE domain os log cmocka-static)
 
 add_executable(test_cmd_processor test_cmd_processor.c)
+target_include_directories(test_cmd_processor PRIVATE ${LIBSQLITE_INCLUDE_DIR})
 target_link_libraries(test_cmd_processor PRIVATE cmd_processor iptables log engine cmocka-static)
 
 set_target_properties(test_cmd_processor
