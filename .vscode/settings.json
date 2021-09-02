@@ -30,6 +30,8 @@
         "utility": "cpp",
         "valarray": "cpp",
         "string": "c",
-        "sstream": "c"
+        "sstream": "c",
+        "typeindex": "c",
+        "typeinfo": "c"
     }
 }

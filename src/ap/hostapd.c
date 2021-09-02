@@ -43,6 +43,7 @@
 #define HOSTAPD_LOG_FILE_OPTION "-f"
 
 #define PROCESS_RESTART_TIME  5 // In seconds
+#define MAX_AP_CHECK_COUNT  100 // number of tries
 
 static char hostapd_proc_name[MAX_OS_PATH_LEN];
 static bool ap_process_started = false;
@@ -140,16 +141,30 @@ void get_hostapd_args(char *hostapd_bin_path, char *hostapd_file_path, char *hos
   }
 }
 
+int check_ap_running(char *name, char *if_name, int wait_time)
+{
+  int running = 0;
+  int count = 0;
+  while((!running || check_sock_file_exists(if_name) < 0) && count < MAX_AP_CHECK_COUNT) {
+    if ((running = is_proc_running(name)) < 0) {
+      log_trace("is_proc_running fail");
+      return -1;
+    }
+    count ++;
+    sleep(wait_time);
+  }
+
+  return running;
+}
+
 int run_ap_process(struct apconf *hconf)
 {
   pid_t child_pid = 0;
-  int ret, check_count = 0;
+  int ret;
   char *process_argv[5] = {NULL, NULL, NULL, NULL, NULL};
 
   os_strlcpy(hostapd_proc_name, basename(hconf->ap_bin_path), MAX_OS_PATH_LEN);
-
   get_hostapd_args(hconf->ap_bin_path, hconf->ap_file_path, hconf->ap_log_path, process_argv);
-  struct find_dir_type dir_args = {.proc_running = 0, .proc_name = basename(process_argv[0])};
 
   // Kill any running hostapd process
   if (!kill_process(hostapd_proc_name)) {
@@ -179,33 +194,15 @@ int run_ap_process(struct apconf *hconf)
     return -1;
   }
 
-  if (list_dir("/proc", find_dir_proc_fn, (void *)&dir_args) == -1) {
-    log_trace("list_dir fail");
+  log_trace("Checking ap proc running...");
+  if (check_ap_running(basename(process_argv[0]), hconf->ctrl_interface_path, 1) <= 0) {
+    log_trace("check_ap_running or process not running");
     return -1;
-  }
-
-  if (!dir_args.proc_running) {
-    log_trace("hostapd proc not found");
   }
 
   log_trace("hostapd running with pid=%d", child_pid);
-
-  while (check_count++ < 7) {
-    if (check_sock_file_exists(hconf->ctrl_interface_path) != -1) {
-      log_trace("hostapd unix domain control path %s", hconf->ctrl_interface_path);
-      break;
-    } else {
-      log_trace("hostapd unix domain control path check try=%d", check_count);
-    }
-    sleep(2);
-  }
-
-  if (check_count >= 7) {
-    log_trace("hostapd unix domain control path fail");
-    return -1;
-  }
-
   ap_process_started = true;
+
   return 0;
 }
 
@@ -220,9 +217,18 @@ bool kill_ap_process(void)
   return true;
 }
 
-int signal_ap_process(char *ap_bin_path)
+int signal_ap_process(struct apconf *hconf)
 {
-  os_strlcpy(hostapd_proc_name, basename(ap_bin_path), MAX_OS_PATH_LEN);
+  char *process_argv[5] = {NULL, NULL, NULL, NULL, NULL};
+  get_hostapd_args(hconf->ap_bin_path, hconf->ap_file_path, hconf->ap_log_path, process_argv);
+
+  os_strlcpy(hostapd_proc_name, basename(hconf->ap_bin_path), MAX_OS_PATH_LEN);
+
+  log_trace("Checking ap proc running...");
+  if (check_ap_running(basename(process_argv[0]), hconf->ctrl_interface_path, 1) <= 0) {
+    log_trace("check_ap_running or process not running");
+    return -1;
+  }
 
   // Signal any running hostapd process to reload the config
   if (!signal_process(hostapd_proc_name, SIGHUP)) {

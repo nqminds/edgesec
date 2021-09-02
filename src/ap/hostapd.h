@@ -64,10 +64,10 @@ int run_ap_process(struct apconf *hconf);
 /**
  * @brief Signal the AP process to reload the config
  * 
- * @param ap_bin_path The AP process binary path
+ * @param hconf The hostapd process config structure
  * @return int 0 on success, -1 on failure
  */
-int signal_ap_process(char *ap_bin_path);
+int signal_ap_process(struct apconf *hconf);
 
 /**
  * @brief Terminate the AP service

@@ -263,6 +263,11 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn fn, 
     return 1;
   }
 
+  if (check_file_exists(command, NULL) < 0) {
+    log_trace("check_file_exists fail");
+    return -1;
+  }
+
   /* Create pipe */
   if (pipe(pfd) == -1) {
     log_err("pipe");
@@ -556,6 +561,18 @@ char* get_secure_path(UT_array *bin_path_arr, char *filename, char *filehash)
   return NULL;
 }
 
+int is_proc_running(char *name)
+{
+  struct find_dir_type dir_args = {.proc_running = 0, .proc_name = name};
+
+  if (list_dir("/proc", find_dir_proc_fn, (void *)&dir_args) == -1) {
+    log_trace("list_dir fail");
+    return -1;
+  }
+
+  return dir_args.proc_running;
+}
+
 int list_dir(char *dirpath, list_dir_fn fun, void *args)
 {
   DIR *dirp;
@@ -785,6 +802,11 @@ int run_process(char *argv[], pid_t *child_pid)
     return -1;
   }
 
+  if (check_file_exists(argv[0], NULL) < 0) {
+    log_trace("check_file_exists fail for path=%s", argv[0]);
+    return -1;
+  }
+
   log_trace("Running process %s with params:", argv[0]);
   if ((buf = string_array2string(argv)) != NULL) {
     log_trace("\t %s", buf);
@@ -948,8 +970,6 @@ bool find_dir_proc_fn(char *path, void *args)
 
   if ((pid = is_proc_app(path, dir_args->proc_name)) != 0)
     dir_args->proc_running = 1;
-  else
-    dir_args->proc_running = 0;
 
   return true;
 }

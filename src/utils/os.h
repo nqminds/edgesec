@@ -422,6 +422,14 @@ bool signal_process(char *proc_name, int sig);
 int run_process(char *argv[], pid_t *child_pid);
 
 /**
+ * @brief Check if a process is running
+ * 
+ * @param name The process name
+ * @return int 1 if running, 0 otherwise, -1 on failure
+ */
+int is_proc_running(char *name);
+
+/**
  * @brief Makes a file given by descriptor executable
  * 
  * @param fd File descriptor

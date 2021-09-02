@@ -160,7 +160,7 @@ int run_ap(struct apconf *hconf, struct radius_conf *rconf, bool exec_ap)
   if (exec_ap) {
     res = run_ap_process(hconf);
   } else {
-    res = signal_ap_process(hconf->ap_bin_path);
+    res = signal_ap_process(hconf);
   }
 
   if (!res && ping_ap_command(hconf) < 0) {

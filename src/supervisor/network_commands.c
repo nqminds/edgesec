@@ -94,26 +94,16 @@ int run_analyser(struct capture_conf *config, pid_t *child_pid)
     log_trace("capture_config2opt fail");
     return -1;
   }
-  struct find_dir_type dir_args = {.proc_running = 0, .proc_name = basename(process_argv[0])};
 
   ret = run_process(process_argv, child_pid);
   capture_freeopt(process_argv);
 
-  if (ret <  0) {
-    log_trace("run_process fail");
+  if (is_proc_running(basename(process_argv[0])) <= 0) {
+    log_trace("is_proc_running fail");
     return -1;
   }
 
-  if (list_dir("/proc", find_dir_proc_fn, (void *)&dir_args) == -1) {
-    log_trace("list_dir fail");
-    return -1;
-  }
-
-  if (!dir_args.proc_running) {
-    log_trace("analyser not running");
-  }
-
-  log_trace("Found %s running with pid=%d", dir_args.proc_name, *child_pid);
+  log_trace("Found capture process running with pid=%d", *child_pid);
 
   return ret;
 }
