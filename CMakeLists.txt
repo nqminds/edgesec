@@ -11,10 +11,13 @@ include(ExternalProject)
 # include(CodeCoverage)
 include(glibc)
 
+string(TOLOWER ${CMAKE_HOST_SYSTEM_PROCESSOR} _sys)
+string(TOLOWER ${PROJECT_NAME} _project_lower)
+
 # Installation options
 #set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 set(CMAKE_INSTALL_RPATH "$ORIGIN" "$ORIGIN/lib")
-set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/install" CACHE BOOL "Installation path" FORCE)
+set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/${_project_lower}" CACHE BOOL "Installation path" FORCE)
 
 option(USE_ARM_MUSL_LIBC "Use arm musl standard C library" OFF)
 option(BUILD_ONLY_DOCS "Build only docs" OFF)
@@ -179,7 +182,6 @@ endif ()
 
 
 # C compiler options
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wunused-variable")
 
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs")
@@ -209,75 +211,13 @@ if (NOT BUILD_ONLY_DOCS)
   add_subdirectory(tests)
 endif ()
 
-install(
-  TARGETS edgesec capsrv
-  RUNTIME DESTINATION "bin"
-)
-if (BUILD_REST_SERVER AND LIBMICROHTTPD_LIB)
-  install(
-    TARGETS restsrv
-    RUNTIME DESTINATION "bin"
-  )
-endif ()
-if (BUILD_SQLSYNC_SERVICE AND LIBSQLITE_LIB)
-  install(
-    TARGETS sqlsyncsrv
-    RUNTIME DESTINATION "bin"
-  )
-endif ()
-if (BUILD_REVERSE_SERVICE)
-  install(
-    TARGETS revclient revsrv
-    RUNTIME DESTINATION "bin"
-  )
-endif ()
+include(install)
 
-install(FILES "${PROJECT_BINARY_DIR}/config.ini" DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
-if (BUILD_UUID_LIB AND LIBUUID_LIB)
-  install(DIRECTORY ${LIBUUID_LIB_DIR} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
-endif ()
-
-if (BUILD_SQLITE_LIB AND LIBSQLITE_LIB)
-  install(DIRECTORY ${LIBSQLITE_LIB_DIR} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
-endif ()
-
-if(BUILD_PCAP_LIB AND LIBPCAP_LIB)
-  install(DIRECTORY ${LIBPCAP_LIB_DIR} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
-endif ()
-
-if(BUILD_OPENSSL_LIB AND LIBCRYPTO_LIB)
-  install(DIRECTORY ${LIBOPENSSL_LIB_PATH} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
-endif ()
-
-if (BUILD_NETLINK_LIB AND LIBNETLINK_LIB)
-  install(DIRECTORY ${LIBNETLINK_LIB_PATH} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
-endif ()
-
-if (BUILD_NDPI_LIB AND LIBNDPI_LIB)
-  install(DIRECTORY ${LIBNDPI_LIB_DIR} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
-endif ()
-
-if (BUILD_MNL_LIB AND LIBMNL_LIB)
-  install(DIRECTORY ${LIBMNL_LIB_DIR} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
-endif ()
-
-if (BUILD_MICROHTTPD_LIB AND LIBMICROHTTPD_LIB)
-  install(DIRECTORY ${LIBMICROHTTPD_LIB_DIR} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
-endif ()
-
-if (BUILD_GRPC_LIB AND LIBGRPC_LIB)
-  install(DIRECTORY ${LIBGRPC_LIB_DIR} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
-endif ()
-
-if (BUILD_HOSTAPD AND HOSTAPD)
-  install(FILES ${HOSTAPD} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
-endif ()
+add_custom_target(archive COMMAND
+    ${CMAKE_COMMAND} -E tar "cvz" "${_project_lower}-${_sys}-${EDGESEC_VERSION_MAJOR}.${EDGESEC_VERSION_MINOR}.${EDGESEC_VERSION_PATCH}.tar.gz" --format=gnutar "${CMAKE_INSTALL_PREFIX}")
 
 # setup_target_for_coverage_lcov(
 #   NAME coverage
 #   EXECUTABLE /home/alexandru/Projects/EDGESec/build/src/edgesec -c /home/alexandru/Projects/EDGESec/build/config.ini -dddddddd -s 12345
 #   BASE_DIRECTORY "${PROJECT_BINARY_DIR}"
 # )
-
-#
-# add_subdirectory("${GRPC_SOURCE_DIR}/third_party/re2" EXCLUDE_FROM_ALL)
