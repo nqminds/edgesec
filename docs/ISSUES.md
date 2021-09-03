@@ -42,6 +42,17 @@ Usage:
 sudo ./scripts/predictable_wifi_name.sh source_if_name destination_fi_name
 ```
 
+# Stop wpa_supplicant listenning on WiFi interfaces (Raspberry Pi case)
+Disable the entire wap_supplicant add the below line to ```/etc/dhcpcd.conf```:
+```
+nohook wpa_supplicant
+```
+
+Disable only for a particular wifi interface ```wlanx``` add the below line to ```/etc/dhcpcd.conf```:
+```
+denyinterfaces wlanx
+```
+
 # iptables commands
 ```bash
 iptables -P INPUT ACCEPT
