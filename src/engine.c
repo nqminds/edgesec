@@ -356,7 +356,7 @@ bool run_engine(struct app_config *app_config)
       goto run_engine_fail;
     }
 
-    if (run_dhcp(dnsmasq_path, &app_config->dhcp_config, app_config->hconfig.interface,
+    if (run_dhcp(dnsmasq_path, &app_config->dhcp_config, context.hconfig.interface,
           app_config->dns_config.server_array, app_config->domain_server_path) == -1) {
       log_debug("run_dhcp fail");
       goto run_engine_fail;

@@ -89,22 +89,30 @@ int run_analyser(struct capture_conf *config, pid_t *child_pid)
 {
   int ret;
   char **process_argv = capture_config2opt(config);
-
+  char *proc_name;
   if (process_argv == NULL) {
     log_trace("capture_config2opt fail");
     return -1;
   }
 
   ret = run_process(process_argv, child_pid);
-  capture_freeopt(process_argv);
 
-  if (is_proc_running(basename(process_argv[0])) <= 0) {
+  if ((proc_name = os_strdup(basename(process_argv[0]))) == NULL) {
+    log_err("os_malloc");
+    capture_freeopt(process_argv);
+    return -1;
+  }
+
+  if (is_proc_running(proc_name) <= 0) {
     log_trace("is_proc_running fail");
+    os_free(proc_name);
+    capture_freeopt(process_argv);
     return -1;
   }
 
   log_trace("Found capture process running with pid=%d", *child_pid);
-
+  os_free(proc_name);
+  capture_freeopt(process_argv);
   return ret;
 }
 
