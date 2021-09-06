@@ -28,23 +28,31 @@
 
 #include <stddef.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdarg.h>
 
 #include "utarray.h"
 #include "log.h"
 
-/* Common costant defintions */
+/* Common costant definitions */
 #define MAX_OS_PATH_LEN			4096
 #define MAX_WEB_PATH_LEN		2048
 #define IP_LEN 					20
 #define LINK_TYPE_LEN 			64
 
 #define MAX_RANDOM_UUID_LEN		37
-#define MAX_HOSTNAME_LEN		37
+
+#define OS_HOST_NAME_MAX		64
+
+
+#define OS_INET_ADDRSTRLEN  		22
+#define OS_INET6_ADDRSTRLEN 		63
+
 
 #define MAX_SUPERVISOR_CMD_SIZE 40
 
@@ -160,17 +168,18 @@ static inline void os_reltime_sub(struct os_reltime *a, struct os_reltime *b,
 /**
  * @brief get the timestamp in microseconds from system time
  * 
- * @return uint64_t Timestamp in microseconds
+ * @patat, timestamp The returned timestamp
+ * @return int 0 on success, -1 on failure
  */
-uint64_t os_get_timestamp(void);
+int os_get_timestamp(uint64_t *timestamp);
 
 /**
  * @brief get the timestamp in microseconds from struct timeval
  * 
  * @param ts The input struct timeval
- * @return uint64_t Timestamp in microseconds
+ * @param timestamp The returned timestamp
  */
-uint64_t os_to_timestamp(struct timeval ts);
+void os_to_timestamp(struct timeval ts, uint64_t *timestamp);
 
 /**
  * @brief Get cryptographically strong pseudo random data
@@ -246,88 +255,6 @@ size_t os_strlcpy(char *dest, const char *src, size_t siz);
  */
 size_t os_strnlen_s(char *str, size_t max_len);
 
-/**
- * @brief Returns a pointer to a new string which is a duplicate of the string s
- * 
- * @param s The input string
- * @return char* The dublicate string pointer, NULL on error
- */
-char * os_strdup(const char *s);
-
-/**
- * @brief Allocate and zero memory
- * 
- * Caller is responsible for freeing the returned buffer with os_free().
- * 
- * @param size Number of bytes to allocate
- * @return void* Pointer to allocated and zeroed memory or %NULL on failure
- */
-void * os_zalloc(size_t size);
-
-/**
- * @brief Allocate and zero memory for an array
- * 
- * This function can be used as a wrapper for os_zalloc(nmemb * size) when an
- * allocation is used for an array. The main benefit over os_zalloc() is in
- * having an extra check to catch integer overflows in multiplication.
- *
- * Caller is responsible for freeing the returned buffer with os_free().
- *
- * @param nmemb Number of members in the array
- * @param size Number of bytes in each member
- * @return void* Pointer to allocated and zeroed memory or %NULL on failure
- */
-static inline void * os_calloc(size_t nmemb, size_t size)
-{
-	if (size && nmemb > (~(size_t) 0) / size)
-		return NULL;
-	return os_zalloc(nmemb * size);
-}
-
-/**
- * @brief Allocate duplicate of passed memory chunk
- * 
- * This function allocates a memory block like os_malloc() would, and
- * copies the given source buffer into it.
- *
- * @param src Source buffer to duplicate
- * @param len Length of source buffer
- * @return void* %NULL if allocation failed, copy of src buffer otherwise
- */
-void * os_memdup(const void *src, size_t len);
-
-// void *os_malloc(size_t size);
-// void os_free(void* ptr);
-
-#ifndef os_malloc
-#define os_malloc(s) malloc((s))
-#endif
-#ifndef os_realloc
-#define os_realloc(p, s) realloc((p), (s))
-#endif
-#ifndef os_free
-#define os_free(p) free((p))
-#endif
-
-#ifndef os_memcpy
-#define os_memcpy(d, s, n) memcpy((d), (s), (n))
-#endif
-#ifndef os_memmove
-#define os_memmove(d, s, n) memmove((d), (s), (n))
-#endif
-#ifndef os_memset
-#define os_memset(s, c, n) memset(s, c, n)
-#endif
-#ifndef os_memcmp
-#define os_memcmp(s1, s2, n) memcmp((s1), (s2), (n))
-#endif
-
-static inline void * os_realloc_array(void *ptr, size_t nmemb, size_t size)
-{
-	if (size && nmemb > (~(size_t) 0) / size)
-		return NULL;
-	return os_realloc(ptr, nmemb * size);
-}
 
 /**
  * @brief Constant time memory comparison
@@ -495,6 +422,14 @@ bool signal_process(char *proc_name, int sig);
 int run_process(char *argv[], pid_t *child_pid);
 
 /**
+ * @brief Check if a process is running
+ * 
+ * @param name The process name
+ * @return int 1 if running, 0 otherwise, -1 on failure
+ */
+int is_proc_running(char *name);
+
+/**
  * @brief Makes a file given by descriptor executable
  * 
  * @param fd File descriptor
@@ -553,12 +488,64 @@ int exist_dir(char *dirpath);
 int create_dir(char *dirpath, mode_t mode);
 
 /**
+ * @brief Check if a file exists
+ * 
+ * @param path The path to the file
+ * @param sb Optional stat struct
+ * @return 0 if it exists, -1 on failure 
+ */
+int check_file_exists(char *path, struct stat *sb);
+
+/**
  * @brief Check if a socket file exists
  * 
  * @param path The path to the socket file
  * @return 0 if it exists, -1 otherwise 
  */
 int check_sock_file_exists(char *path);
+
+/**
+ * @brief Get the hostname of the running machine
+ * 
+ * @param buf The returned hostname
+ * @return int 0 on success, -1 on failure
+ */
+int get_hostname(char *buf);
+
+/**
+ * @brief Open/create the file named in 'pidFile', lock it, optionally set the
+   close-on-exec flag for the file descriptor, write our PID into the file,
+   and (in case the caller is interested) return the file descriptor
+   referring to the locked file. The caller is responsible for deleting
+   'pidFile' file (just) before process termination. 'progName' should be the
+   name of the calling program (i.e., argv[0] or similar), and is used only for
+   diagnostic messages. If we can't open 'pidFile', or we encounter some other
+   error, then we print an appropriate diagnostic and terminate.
+ * 
+ * @param pid_file The pid file path to create
+ * @param flags The pid file open flags
+ * @return int The pif file descriptor, -1 on failure
+ */
+int create_pid_file(const char *pid_file, int flags);
+
+/**
+ * @brief Read the entire file
+ * 
+ * @param path The file path
+ * @param out The output buffer
+ * @return ssize_t The file size, -1 on failure
+ */
+ssize_t read_file(char *path, uint8_t **out);
+
+/**
+ * @brief Read the entire file into a string
+ * 
+ * @param path The file path
+ * @param out The output string
+ * @return 0 on success, -1 on failure
+ */
+int read_file_string(char *path, char **out);
+
 #ifdef __cplusplus
 }
 #endif

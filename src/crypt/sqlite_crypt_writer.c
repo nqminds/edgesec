@@ -28,6 +28,7 @@
 
 #include "sqlite_crypt_writer.h"
 
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/log.h"
 #include "../utils/sqliteu.h"
@@ -275,6 +276,8 @@ struct store_row* get_sqlite_store_row(sqlite3 *db, char *key)
 void free_sqlite_secrets_row(struct secrets_row *row)
 {
   if (row != NULL) {
+    if (row->id != NULL)
+      os_free(row->id);
     if (row->value != NULL)
       os_free(row->value);
     if (row->salt != NULL)
@@ -291,7 +294,8 @@ struct secrets_row* get_sqlite_secrets_row(sqlite3 *db, char *id)
   struct secrets_row *row;
   sqlite3_stmt *res;
   int rc;
-  
+  char *column_value;
+
   if (id == NULL) {
     log_trace("id param is NULL");
     return NULL;
@@ -312,21 +316,18 @@ struct secrets_row* get_sqlite_secrets_row(sqlite3 *db, char *id)
   rc = sqlite3_step(res);
 
   if (rc == SQLITE_ROW) {
-    row->id = id;
+    row->id = os_strdup(id);
 
-    row->value = (unsigned char*) sqlite3_column_text(res, 0);
-    if (row->value != NULL) {
-      row->value = os_strdup(row->value);
+    if ((column_value = (unsigned char*) sqlite3_column_text(res, 0)) != NULL) {
+      row->value = os_strdup(column_value);
     }
 
-    row->salt = (unsigned char *) sqlite3_column_text(res, 1);
-    if (row->salt != NULL) {
-      row->salt = os_strdup(row->salt);
+    if ((column_value = (unsigned char *) sqlite3_column_text(res, 1)) != NULL) {
+      row->salt = os_strdup(column_value);
     }
 
-    row->iv = (unsigned char *) sqlite3_column_text(res, 2);
-    if (row->iv != NULL) {
-      row->iv = os_strdup(row->iv);
+    if ((column_value = (unsigned char *) sqlite3_column_text(res, 2)) != NULL) {
+      row->iv = os_strdup(column_value);
     }
 
     sqlite3_finalize(res);

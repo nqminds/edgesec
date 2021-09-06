@@ -27,6 +27,8 @@
 
 #include "utils/utarray.h"
 #include "utils/hashmap.h"
+#include "utils/allocs.h"
+#include "utils/allocs.h"
 #include "utils/os.h"
 #include "ap/ap_config.h"
 #include "radius/radius_server.h"
@@ -65,6 +67,7 @@ struct app_config {
   bool                allow_all_nat;                        /**< Flag to allow all nat connections. */
   bool                kill_running_proc;                    /**< Flag to terminate running app processes. */
   bool                set_ip_forward;                       /**< Flag to set the ip forward os system param. */
+  char                pid_file_path[MAX_OS_PATH_LEN];       /**< Path to the pid file. */
   struct radius_conf  rconfig;                              /**< Radius service configuration. */
   struct apconf       hconfig;                              /**< AP service configuration. */
   struct dns_conf     dns_config;                           /**< DNS service configuration. */

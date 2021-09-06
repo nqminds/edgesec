@@ -39,7 +39,7 @@
  */
 struct packet_queue {
   struct tuple_packet tp;       /**< Packet address and metadata */
-  struct dl_list list;          /**< List defintion */
+  struct dl_list list;          /**< List definition */
 };
 
 /**
@@ -67,6 +67,13 @@ struct packet_queue* push_packet_queue(struct packet_queue* queue, struct tuple_
 struct packet_queue* pop_packet_queue(struct packet_queue* queue);
 
 /**
+ * @brief Frees an allocated packet tuple
+ * 
+ * @param tp The pointer to the packet tuple
+ */
+void free_packet_tuple(struct tuple_packet *tp);
+
+/**
  * @brief Delete a packet entry
  * 
  * @param el The packet queue entry
@@ -87,4 +94,12 @@ ssize_t get_packet_queue_length(struct packet_queue* queue);
  * @param queue The pointer to the packet queue
  */
 void free_packet_queue(struct packet_queue* queue);
+
+/**
+ * @brief Checks if packet queue is empty
+ * 
+ * @param queue The pointer to the packet queue
+ * @return 1, is empty, 0 otherwise, -1 for error
+ */
+int is_packet_queue_empty(struct packet_queue* queue);
 #endif

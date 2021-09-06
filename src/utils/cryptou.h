@@ -34,6 +34,10 @@
 #define AES_KEY_SIZE        32
 #define MAX_KEY_ITERATIONS  1000
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Generate IV
  * 
@@ -110,4 +114,9 @@ int crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
  * @return int 0 on success, -1 on failure
  */
 int crypto_generate_keycert_str(int bits, char **key, char **cert);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

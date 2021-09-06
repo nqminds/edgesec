@@ -56,11 +56,11 @@ static void test_run_command(void **state)
 int fn_split_string(const char *str, size_t len, void *data)
 {
   UT_array *strs = (UT_array *)data;
-  char *dest = (char *)malloc(len + 1);
+  char *dest = (char *)os_malloc(len + 1);
   memset(dest, '\0', len + 1);
   strncpy(dest, str, len);
   utarray_push_back(strs, &dest);
-  free(dest);
+  os_free(dest);
 
   return 0;
 }
@@ -69,23 +69,26 @@ static void test_split_string(void **state)
 {
   (void) state; /* unused */
 
-  UT_array *strs;
+  char **p = NULL;
+  UT_array *strs = NULL;
+  size_t count;
   char *str_one = ":";
 
-  utarray_new(strs,&ut_str_icd);
-
+  utarray_new(strs, &ut_str_icd);
   /* Testing split_string on input: \":\" */
-  size_t count = split_string(str_one, ':', fn_split_string, strs);
+  count = split_string(str_one, ':', fn_split_string, strs);
   assert_int_equal(count, (size_t) 2);
-
-  char **p = NULL;
   p = (char**)utarray_next(strs, p);
+  assert_non_null(p);
   assert_int_equal(strlen(*p), (size_t) 0);
-
   p = (char**)utarray_next(strs, p);
+  assert_non_null(p);
   assert_int_equal(strlen(*p), (size_t) 0);
 
   utarray_free(strs);
+
+
+  strs = NULL;
   utarray_new(strs,&ut_str_icd);
   char *str_two = "12345:";
   p = NULL;
@@ -101,6 +104,7 @@ static void test_split_string(void **state)
   assert_int_equal(strlen(*p), (size_t) 0);
 
   utarray_free(strs);
+  strs = NULL;
   utarray_new(strs,&ut_str_icd);
 
   char *str_three = ":12345";

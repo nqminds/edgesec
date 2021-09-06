@@ -38,19 +38,26 @@ static void test_pop_packet_queue(void **state)
   struct tuple_packet tp1, tp2;
   struct packet_queue* queue = init_packet_queue();
 
-  tp1.mp.caplen = 10;
-  tp2.mp.caplen = 100;
+  tp1.type = PACKET_ETHERNET;
+  tp1.packet = os_malloc(100);
+
+  tp2.type = PACKET_ARP;
+  tp2.packet = os_malloc(100);
+
   assert_non_null(push_packet_queue(queue, tp1));
   assert_non_null(push_packet_queue(queue, tp2));
   struct packet_queue* pq = pop_packet_queue(queue);
   assert_non_null(pq);
-  assert_int_equal(pq->tp.mp.caplen, 10);
-
+  assert_int_equal(pq->tp.type, PACKET_ETHERNET);
+  free_packet_tuple(&pq->tp);
   free_packet_queue_el(pq);
   pq = pop_packet_queue(queue);
+
   assert_non_null(pq);
-  assert_int_equal(pq->tp.mp.caplen, 100);
+  assert_int_equal(pq->tp.type, PACKET_ARP);
   assert_int_equal(get_packet_queue_length(queue), 1);
+  free_packet_tuple(&pq->tp);
+  free_packet_queue_el(pq);
   free_packet_queue(queue);
 
   queue = init_packet_queue();

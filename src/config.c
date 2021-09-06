@@ -34,6 +34,7 @@
 #include <errno.h>
 
 #include "supervisor/mac_mapper.h"
+#include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/minIni.h"
 #include "utils/utarray.h"
@@ -298,10 +299,8 @@ bool load_ap_conf(const char *filename, struct app_config *config)
   // Load AP interface
   value = os_malloc(INI_BUFFERSIZE);
   ret = ini_gets("ap", "interface", "", value, INI_BUFFERSIZE, filename);
-  if (!ret) {
-    fprintf(stderr, "AP interface was not specified\n");
-    os_free(value);
-    return false;
+  if (os_strnlen_s(value, IFNAMSIZ)) {
+    os_strlcpy(config->hconfig.interface, value, IFNAMSIZ);
   }
 
   os_strlcpy(config->hconfig.interface, value, IFNAMSIZ);
@@ -545,6 +544,19 @@ bool load_capture_config(const char *filename, struct capture_conf *config)
   // Load syncPort param
   config->db_sync_port = (uint16_t) ini_getl("capture", "dbSyncPort", 0, filename);
 
+  // Load syncCaPath param
+  value = os_zalloc(INI_BUFFERSIZE);
+  ini_gets("capture", "syncCaPath", "", value, INI_BUFFERSIZE, filename);
+  if (strlen(value))
+    os_strlcpy(config->ca_path, value, MAX_OS_PATH_LEN);
+  os_free(value);
+
+  // Load syncStoreSize param
+  config->sync_store_size = (ssize_t) ini_getl("capture", "syncStoreSize", -1, filename);
+
+  // Load syncSendSize param
+  config->sync_send_size = (ssize_t) ini_getl("capture", "syncSendSize", -1, filename);
+
   return true;
 }
 
@@ -660,6 +672,18 @@ bool load_app_config(const char *filename, struct app_config *config)
 
   // Load killRunningProcess flag
   config->kill_running_proc = ini_getbool("system", "killRunningProcess", 0, filename);
+
+  // Load pidFilePath
+  value = os_malloc(INI_BUFFERSIZE);
+  ret = ini_gets("system", "pidFilePath", "", value, INI_BUFFERSIZE, filename);
+  if (!ret) {
+    fprintf(stderr, "pid file path was not specified\n");
+    os_free(value);
+    return false;
+  }
+
+  os_strlcpy(config->pid_file_path, value, MAX_OS_PATH_LEN);
+  os_free(value);
 
   // Load ap radius config params
   if(!load_radius_conf(filename, config)) {

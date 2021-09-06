@@ -37,6 +37,7 @@
 
 #include "reverse_access.grpc.pb.h"
 
+#include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/log.h"
 #include "version.h"

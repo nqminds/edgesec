@@ -33,6 +33,7 @@
 
 #include "../ap/ap_config.h"
 
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/utarray.h"
 #include "../utils/uthash.h"

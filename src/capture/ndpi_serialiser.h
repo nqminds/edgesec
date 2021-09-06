@@ -33,6 +33,7 @@
 
 #include "capture_config.h"
 
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/hash.h"
 

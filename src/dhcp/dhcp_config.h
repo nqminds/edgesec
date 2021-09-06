@@ -25,6 +25,7 @@
 #ifndef DHCP_CONFIG_H
 #define DHCP_CONFIG_H
 
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/utarray.h"
 

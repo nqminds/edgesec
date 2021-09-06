@@ -35,6 +35,7 @@
 #include "capture_service.h"
 
 #include "../utils/log.h"
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 
 int run_capture(struct capture_conf *config)

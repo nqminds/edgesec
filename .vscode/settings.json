@@ -18,6 +18,20 @@
         "pthread.h": "c",
         "capture_service.h": "c",
         "*.tcc": "c",
-        "x509v3.h": "c"
+        "x509v3.h": "c",
+        "hash_map": "c",
+        "hash_set": "c",
+        "bitset": "c",
+        "any": "c",
+        "array": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp",
+        "regex": "cpp",
+        "utility": "cpp",
+        "valarray": "cpp",
+        "string": "c",
+        "sstream": "c",
+        "typeindex": "c",
+        "typeinfo": "c"
     }
 }

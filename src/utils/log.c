@@ -35,21 +35,34 @@
 #include <stdbool.h>
 #include <time.h>
 #include <sys/time.h>
+#include <sys/stat.h>
+#include <syslog.h>
 
 #include "log.h"
 #include "time.h"
 #include "ename.h"
+
+#define PRINT_COLOR(stream, time, color, name, err, file, line)    \
+  fprintf(stream, "%s %s%-5s\x1b[0m%s\x1b[0m \x1b[90m%s:%d:\x1b[0m ", \
+          time, color, name, err, file, line)
+
+#define PRINT_NO_COLOR(stream, time, color, name, err, file, line)    \
+  fprintf(stream, "%s %-5s%s %s:%d: ", time, name, err, file, line)
 
 static struct {
   log_lock_fn lock;
   uint8_t level;
   bool quiet;
   bool meta;
+  bool color;
+  FILE *logfp;
 } L = {
   .lock = NULL,
   .level = 0,
   .quiet = false,
-  .meta = true
+  .meta = true,
+  .color = true,
+  .logfp = NULL
 };
 
 static const char *level_names[] = LEVEL_NAMES;
@@ -140,6 +153,38 @@ void log_set_meta(bool enable)
   L.meta = enable;
 }
 
+void log_set_color(bool enable)
+{
+  L.color = enable;
+}
+
+int log_open_file(char *path)
+{
+  mode_t m;
+
+  log_set_color(false);
+
+  m = umask(077);
+  L.logfp = fopen(path, "a");
+  umask(m);
+
+  /* If opening the log fails we can't display a message... */
+  if (L.logfp == NULL) {
+    return -1;
+  }
+
+  /* Disable stdio buffering */
+  setbuf(L.logfp, NULL);
+}
+
+void log_close_file(void)
+{
+  if (L.logfp != NULL) {
+    fclose(L.logfp);
+    L.logfp = NULL;
+  }
+}
+
 bool log_check_level(uint8_t level, bool ignore_level)
 {
   if (level < L.level && !ignore_level)
@@ -162,21 +207,27 @@ int16_t get_error_text(char *buf, uint8_t err)
   return ret;
 }
 
-void print_to_stderr(uint8_t level, const char *file, uint32_t line,
+void print_to(uint8_t level, const char *file, uint32_t line,
   uint8_t err, const char *time_string, const char *err_text_buf,
   const char *format, va_list args)
 {
+  FILE *stream = (L.logfp != NULL) ? L.logfp : stderr;
+
   if (L.meta) {
-    PRINT_LOG_TEXT(stderr, time_string, level_colors[level],
-      level_names[level], err_text_buf, file, line);
+    if (L.color) {
+      fprintf(stream, "%s %s%-5s\x1b[0m%s\x1b[0m \x1b[90m%s:%d:\x1b[0m ",
+              time_string, level_colors[level], level_names[level], err_text_buf, file, line);
+    } else {
+      fprintf(stream, "%s %-5s%s %s:%d: ", time_string, level_names[level], err_text_buf, file, line);
+    }
   }
 
   if (err > 0 && err <= MAX_ENAME)
-    fprintf(stderr, "[%s] ", strerror(err));
+    fprintf(stream, "[%s] ", strerror(err));
   
-  vfprintf(stderr, format, args);
-  fprintf(stderr, "\n");
-  fflush(stderr); 
+  vfprintf(stream, format, args);
+  fprintf(stream, "\n");
+  fflush(stream); 
 }
 
 void log_msg(uint8_t level, const char *file, uint32_t line, bool flush_std, 
@@ -196,12 +247,12 @@ void log_msg(uint8_t level, const char *file, uint32_t line, bool flush_std,
   /* Get current time */
   time_to_str(time_string);
 
-  /* Log to stderr */
+  /* Log to stream */
   if (!L.quiet) {
-    print_to_stderr(level, file, line, err, time_string, err_text_buf, format, args);
+    print_to(level, file, line, err, time_string, err_text_buf, format, args);
 
-    if (flush_std)
-      fflush(stdout);
+    // if (flush_std)
+    //   fflush(stdout);
   }
 
   /* Release lock */
@@ -333,6 +384,13 @@ int printf_hex(char *buf, size_t buf_size, const uint8_t *data, size_t len, int 
 	int ret;
 	if (buf_size == 0)
 		return 0;
+
+  if (buf == NULL)
+    return 0;
+
+  if (data == NULL)
+    return 0;
+
 	for (i = 0; i < len; i++) {
 		ret = snprintf(pos, end - pos, uppercase ? "%02X" : "%02x",
 				  data[i]);

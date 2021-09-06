@@ -35,19 +35,7 @@ enum {
 };
 
 #define LEVEL_NAMES {"TRACE", "DEBUG", "INFO", "WARN", "ERROR"}
-
-#ifdef LOG_USE_COLOR
 #define LEVEL_COLORS {"\x1b[94m", "\x1b[36m", "\x1b[32m", "\x1b[33m", "\x1b[31m"}
-
-#define PRINT_LOG_TEXT(stream, time, color, name, err, file, line)    \
-  fprintf(stream, "%s %s%-5s\x1b[0m%s\x1b[0m \x1b[90m%s:%d:\x1b[0m ", \
-          time, color, name, err, file, line)
-#else
-#define LEVEL_COLORS {}
-
-#define PRINT_LOG_TEXT(stream, time, color, name, err, file, line)    \
-  fprintf(stream, "%s %-5s%s %s:%d: ", time, name, err, file, line)
-#endif
 
 #ifdef __GNUC__
 #define PRINTF_FORMAT(a,b) __attribute__ ((format (printf, (a), (b))))
@@ -77,7 +65,10 @@ void log_set_udata(void *udata);
 void log_set_lock(log_lock_fn fn);
 void log_set_level(uint8_t level);
 void log_set_quiet(bool enable);
+void log_set_color(bool enable);
 void log_set_meta(bool enable);
+int log_open_file(char *path);
+void log_close_file(void);
 
 void log_levels(uint8_t level, const char *file, uint32_t line, const char *format, ...);
 void log_error(uint8_t level, const char *file, uint32_t line, const char *format, ...);

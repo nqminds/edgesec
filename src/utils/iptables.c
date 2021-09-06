@@ -31,6 +31,7 @@
 
 #include "iptables.h"
 #include "utarray.h"
+#include "allocs.h"
 #include "os.h"
 #include "log.h"
 #include "if.h"

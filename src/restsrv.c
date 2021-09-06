@@ -46,8 +46,10 @@
 
 #include "crypt/crypt_service.h"
 #include "supervisor/cmd_processor.h"
+#include "ap/ap_service.h"
 #include "microhttpd.h"
 #include "version.h"
+#include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/log.h"
 #include "utils/minIni.h"
@@ -249,70 +251,6 @@ enum MHD_Result create_connection_response(char *data, struct MHD_Connection *co
   return ret;
 }
 
-int forward_command(char *cmd_str, char *socket_path, char **sresponse)
-{
-  int sfd;
-  uint32_t bytes_available;
-  ssize_t send_count;
-  struct timeval timeout;
-  fd_set readfds, masterfds;
-  char *rec_data;
-  timeout.tv_sec = MESSAGE_REPLY_TIMEOUT;
-  timeout.tv_usec = 0;
-
-  if ((sfd = create_domain_client(NULL)) == -1) {
-    log_debug("create_domain_client fail");
-    return -1;
-  }
-
-  FD_ZERO(&masterfds);
-  FD_SET(sfd, &masterfds);
-  os_memcpy(&readfds, &masterfds, sizeof(fd_set));
-
-  log_trace("socket_path=%s", socket_path);
-  if ((send_count = write_domain_data_s(sfd, cmd_str, strlen(cmd_str), socket_path)) != strlen(cmd_str)) {
-    log_err("sendto");
-    goto fail;
-  }
-
-  log_debug("Sent %d bytes to %s", send_count, socket_path);
-
-  errno = 0;
-  if (select(sfd + 1, &readfds, NULL, NULL, &timeout) < 0) {
-    log_err("select");
-    goto fail;
-  }
-
-  if(FD_ISSET(sfd, &readfds)) {
-    if (ioctl(sfd, FIONREAD, &bytes_available) == -1) {
-      log_err("ioctl");
-      goto fail;
-    }
-
-    log_trace("Bytes available=%u", bytes_available);
-    rec_data = os_zalloc(bytes_available + 1);
-    if (rec_data == NULL) {
-      log_err("os_zalloc");
-      goto fail;
-    }
-
-    read_domain_data_s(sfd, rec_data, bytes_available, socket_path, MSG_DONTWAIT);
-
-    *sresponse = rtrim(rec_data, NULL);
-  } else {
-    log_debug("Socket timeout");
-    goto fail;
-  }
-
-  close(sfd);
-  return 0;
-
-fail:
-  *sresponse = NULL;
-  close(sfd);
-  return -1;
-}
-
 char* process_response_array(UT_array *cmd_arr)
 {
   char **p = NULL;
@@ -382,8 +320,8 @@ static enum MHD_Result mhd_reply(void *cls, struct MHD_Connection *connection, c
     address = sad->apath;
   }
 
-  if (forward_command(cmd_str, address, &socket_response) == -1) {
-    log_debug("forward_command fail");
+  if (send_ap_command(address, cmd_str, &socket_response) < 0) {
+    log_debug("send_ap_command fail");
     sprintf(fail_response_buf, JSON_RESPONSE_FAIL);
     return create_connection_response(fail_response_buf, connection);
   }
@@ -416,8 +354,8 @@ int main(int argc, char *argv[])
   uint8_t level = 0;
   struct socket_address sad;
   int port = -1;
-  char *key;
-  char *cert;
+  char *key = NULL;
+  char *cert = NULL;
   bool tls = false;
   int flags;
   char *db_path = NULL;
@@ -458,57 +396,61 @@ int main(int argc, char *argv[])
   fprintf(stdout, "Using TLS --> %d\n", tls);
   fprintf(stdout, "Using crypt db path --> %s\n", db_path);
 
-  if (crypto_generate_keycert_str(1024, &key, &cert) < 0) {
-    fprintf(stderr, "crypto_generate_keycert_str failure\n");
-    exit(EXIT_FAILURE);
-  }
+  if (tls) {
+    if (crypto_generate_keycert_str(1024, &key, &cert) < 0) {
+      fprintf(stderr, "crypto_generate_keycert_str failure\n");
+      exit(EXIT_FAILURE);
+    }
 
-  if ((crypt_ctx = load_crypt_service(db_path, "microhttps", passphrase,
-                                      (passphrase == NULL) ? 0 : os_strnlen_s(passphrase, MAX_USER_SECRET))) == NULL) {
-    fprintf(stderr, "load_crypt_service fail\n");
-    exit(EXIT_FAILURE);
-  }
+    if ((crypt_ctx = load_crypt_service(db_path, "microhttps", passphrase,
+                                        (passphrase == NULL) ? 0 : os_strnlen_s(passphrase, MAX_USER_SECRET))) == NULL) {
+      fprintf(stderr, "load_crypt_service fail\n");
+      exit(EXIT_FAILURE);
+    }
 
-  get_pair = get_crypt_pair(crypt_ctx, keyhttps);
+    get_pair = get_crypt_pair(crypt_ctx, keyhttps);
 
-  if (get_pair == NULL) {
-    fprintf(stderr, "get_crypt_pair failure\n");
-    exit(EXIT_FAILURE);
-  }
+    if (get_pair == NULL) {
+      fprintf(stderr, "get_crypt_pair failure\n");
+      exit(EXIT_FAILURE);
+    }
 
-  if (!get_pair->value_size) {
-    fprintf(stdout, "Inserting new key\n");
-    put_pair.key = keyhttps;
-    put_pair.value = key;
-    put_pair.value_size = strlen(key) + 1;
-    put_crypt_pair(crypt_ctx, &put_pair);
-  } else {
-    fprintf(stdout, "Retrieving existing key\n");
+    if (!get_pair->value_size) {
+      fprintf(stdout, "Inserting new key\n");
+      put_pair.key = keyhttps;
+      put_pair.value = key;
+      put_pair.value_size = strlen(key) + 1;
+      put_crypt_pair(crypt_ctx, &put_pair);
+    } else {
+      fprintf(stdout, "Retrieving existing key\n");
+      os_free(key);
+      key = os_zalloc(get_pair->value_size);
+      os_memcpy(key, get_pair->value, get_pair->value_size);
+    }
+    free_crypt_pair(get_pair);
+
+    get_pair = get_crypt_pair(crypt_ctx, certhttps);
+
+    if (get_pair == NULL) {
+      fprintf(stderr, "get_crypt_pair failure\n");
+      exit(EXIT_FAILURE);
+    }
+    if (!get_pair->value_size) {
+      fprintf(stdout, "Inserting new certificate\n");
+      put_pair.key = certhttps;
+      put_pair.value = cert;
+      put_pair.value_size = strlen(cert) + 1;
+      put_crypt_pair(crypt_ctx, &put_pair);
+    } else {
+      os_free(cert);
+      fprintf(stdout, "Retrieving existing certificate\n");
+      cert = os_zalloc(get_pair->value_size);
+      os_memcpy(cert, get_pair->value, get_pair->value_size);
+    }
+    free_crypt_pair(get_pair);
     os_free(key);
-    key = os_zalloc(get_pair->value_size);
-    os_memcpy(key, get_pair->value, get_pair->value_size);
-  }
-  free_crypt_pair(get_pair);
-
-  get_pair = get_crypt_pair(crypt_ctx, certhttps);
-
-  if (get_pair == NULL) {
-    fprintf(stderr, "get_crypt_pair failure\n");
-    exit(EXIT_FAILURE);
-  }
-  if (!get_pair->value_size) {
-    fprintf(stdout, "Inserting new certificate\n");
-    put_pair.key = certhttps;
-    put_pair.value = cert;
-    put_pair.value_size = strlen(cert) + 1;
-    put_crypt_pair(crypt_ctx, &put_pair);
-  } else {
     os_free(cert);
-    fprintf(stdout, "Retrieving existing certificate\n");
-    cert = os_zalloc(get_pair->value_size);
-    os_memcpy(cert, get_pair->value, get_pair->value_size);
   }
-  free_crypt_pair(get_pair);
 
 
   flags = MHD_USE_THREAD_PER_CONNECTION;

@@ -36,6 +36,7 @@
 #include "mac_mapper.h"
 #include "network_commands.h"
 
+#include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/log.h"
 #include "utils/utarray.h"
@@ -82,8 +83,8 @@ ssize_t process_hostapd_ctrlif_cmd(int sock, struct client_address *client_addr,
   UT_array *cmd_arr)
 {
   (void) cmd_arr; /* unused */
-  return write_domain_data(sock, context->hostapd_ctrl_if_path,
-    strlen(context->hostapd_ctrl_if_path), &client_addr->addr, client_addr->len);
+  return write_domain_data(sock, context->hconfig.ctrl_interface_path,
+    strlen(context->hconfig.ctrl_interface_path), &client_addr->addr, client_addr->len);
 }
 
 ssize_t process_accept_mac_cmd(int sock, struct client_address *client_addr,
@@ -219,6 +220,8 @@ ssize_t process_get_map_cmd(int sock, struct client_address *client_addr,
   char **ptr = (char**) utarray_next(cmd_arr, NULL);
   uint8_t addr[ETH_ALEN];
   struct mac_conn_info info;
+
+  init_default_mac_info(&info, context->default_open_vlanid, context->allow_all_nat);
 
   // MAC address
   ptr = (char**) utarray_next(cmd_arr, ptr);
@@ -423,8 +426,12 @@ ssize_t process_set_fingerprint_cmd(int sock, struct client_address *client_addr
   char dst_mac_addr[MACSTR_LEN];
   char protocol[MAX_PROTOCOL_NAME_LEN];
   char fingerprint[MAX_FINGERPRINT_LEN];
-  uint64_t timestamp = os_get_timestamp();
+  uint64_t timestamp;
   char *query = NULL;
+
+  if (os_get_timestamp(&timestamp) < 0) {
+    return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
+  }
 
   // MAC address source
   ptr = (char**) utarray_next(cmd_arr, ptr);

@@ -15,6 +15,7 @@ add_subdirectory(dhcp)
 add_subdirectory(subnet)
 
 add_executable(test_engine test_engine.c)
+target_include_directories(test_engine PUBLIC ${LIBSQLITE_INCLUDE_DIR})
 target_link_libraries(test_engine PRIVATE engine log system_checks os mac_mapper ${LIBSQLITE_LIB} cmocka-static)
 
 add_test(NAME test_engine COMMAND test_engine)

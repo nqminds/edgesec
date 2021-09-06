@@ -28,6 +28,7 @@
 #include "crypt_service.h"
 
 #include "../utils/log.h"
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/cryptou.h"
 #include "../utils/base64.h"
@@ -210,6 +211,7 @@ struct secrets_row * generate_user_crypto_key_entry(char *key_id, uint8_t *user_
 struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
                                          uint8_t *user_secret, int user_secret_size)
 {
+  sqlite3 *db = NULL;
   struct crypt_context *context;
   struct secrets_row *row_secret;
 
@@ -218,20 +220,22 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
     return NULL;
   }
 
-  context = (struct crypt_context*) os_zalloc(sizeof(struct crypt_context));
-  if (context == NULL) {
-    log_err("os_zalloc");
-    return NULL;
-  }
-
-  strncpy(context->key_id, key_id, MAX_KEY_ID_SIZE);
-
-  if (open_sqlite_crypt_db(crypt_db_path, &context->crypt_db) < 0) {
+  if (open_sqlite_crypt_db(crypt_db_path, &db) < 0) {
     log_trace("open_sqlite_crypt_db fail");
     free_crypt_service(context);
 
     return NULL;
   }
+
+  context = (struct crypt_context*) os_zalloc(sizeof(struct crypt_context));
+  if (context == NULL) {
+    log_err("os_zalloc");
+    free_sqlite_crypt_db(db);
+    return NULL;
+  }
+
+  context->crypt_db = db;
+  strncpy(context->key_id, key_id, MAX_KEY_ID_SIZE);
 
   // Retrieve an existing key
   if ((row_secret = get_sqlite_secrets_row(context->crypt_db, key_id)) == NULL) {
@@ -241,6 +245,8 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
   }
 
   if (row_secret->id == NULL) {
+    free_sqlite_secrets_row(row_secret);
+
     log_trace("No secret with key=%s, generating new one", key_id);
     // Create encryption key
     if (!crypto_genkey(context->crypto_key, AES_KEY_SIZE)) {
@@ -268,11 +274,11 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
         free_crypt_service(context);
         return NULL;
       }
+      free_sqlite_secrets_row(row_secret);
     } else {
       log_debug("Using hardware secure element");
       log_trace("Not implemented, yet");
       free_crypt_service(context);
-      free_sqlite_secrets_row(row_secret);
       return NULL;      
     }
   } else {
@@ -286,6 +292,7 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
         free_crypt_service(context);
         return NULL;
       }
+      free_sqlite_secrets_row(row_secret);
     } else {
       log_debug("Using hardware secure element");
       log_trace("Not implemented, yet");
@@ -294,8 +301,7 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
       return NULL;      
     }
   }
-
-  free_sqlite_secrets_row(row_secret);
+  
   return context;
 }
 

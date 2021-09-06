@@ -19,6 +19,7 @@
 #include <byteswap.h>
 
 #include "utils/log.h"
+#include "utils/allocs.h"
 #include "utils/os.h"
 
 /*

@@ -11,10 +11,13 @@ include(ExternalProject)
 # include(CodeCoverage)
 include(glibc)
 
+string(TOLOWER ${CMAKE_HOST_SYSTEM_PROCESSOR} _sys)
+string(TOLOWER ${PROJECT_NAME} _project_lower)
+
 # Installation options
 #set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 set(CMAKE_INSTALL_RPATH "$ORIGIN" "$ORIGIN/lib")
-set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/install" CACHE BOOL "Installation path" FORCE)
+set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/${_project_lower}-dist" CACHE BOOL "Installation path" FORCE)
 
 option(USE_ARM_MUSL_LIBC "Use arm musl standard C library" OFF)
 option(BUILD_ONLY_DOCS "Build only docs" OFF)
@@ -53,33 +56,33 @@ endif ()
 
 # The edgesec version number.
 set(EDGESEC_VERSION_MAJOR 0)
-set(EDGESEC_VERSION_MINOR 3)
-set(EDGESEC_VERSION_PATCH 0)
+set(EDGESEC_VERSION_MINOR 9)
+set(EDGESEC_VERSION_PATCH 9)
 
 # The restsrv version number.
 set(RESTSRV_VERSION_MAJOR 0)
-set(RESTSRV_VERSION_MINOR 1)
-set(RESTSRV_VERSION_PATCH 0)
+set(RESTSRV_VERSION_MINOR 9)
+set(RESTSRV_VERSION_PATCH 9)
 
 # The capture version number.
 set(CAPTURE_VERSION_MAJOR 0)
-set(CAPTURE_VERSION_MINOR 1)
-set(CAPTURE_VERSION_PATCH 0)
+set(CAPTURE_VERSION_MINOR 9)
+set(CAPTURE_VERSION_PATCH 9)
 
 # The sqlite sync server version number.
 set(SQLSYNCSRV_VERSION_MAJOR 0)
-set(SQLSYNCSRV_VERSION_MINOR 1)
-set(SQLSYNCSRV_VERSION_PATCH 0)
+set(SQLSYNCSRV_VERSION_MINOR 9)
+set(SQLSYNCSRV_VERSION_PATCH 9)
 
 # The reverse client version number.
 set(REVCLIENT_VERSION_MAJOR 0)
-set(REVCLIENT_VERSION_MINOR 1)
-set(REVCLIENT_VERSION_PATCH 0)
+set(REVCLIENT_VERSION_MINOR 9)
+set(REVCLIENT_VERSION_PATCH 9)
 
 # The reverse server version number.
 set(REVSRV_VERSION_MAJOR 0)
-set(REVSRV_VERSION_MINOR 1)
-set(REVSRV_VERSION_PATCH 0)
+set(REVSRV_VERSION_MINOR 9)
+set(REVSRV_VERSION_PATCH 9)
 
 if (NOT USE_ARM_MUSL_LIBC)
   CHECK_GLIBC_VERSION()
@@ -181,8 +184,6 @@ endif ()
 # C compiler options
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wunused-variable")
 
-# Set the color for terminal logging
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLOG_USE_COLOR")
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs")
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ftest-coverage")
 
@@ -210,78 +211,13 @@ if (NOT BUILD_ONLY_DOCS)
   add_subdirectory(tests)
 endif ()
 
-install(
-  TARGETS edgesec capsrv
-  RUNTIME DESTINATION "bin"
-)
+include(install)
 
-if (BUILD_REST_SERVER AND LIBMICROHTTPD_LIB)
-  install(
-    TARGETS restsrv
-    RUNTIME DESTINATION "bin"
-  )
-endif ()
+add_custom_target(archive COMMAND
+    ${CMAKE_COMMAND} -E tar "cvz" "${_project_lower}-${_sys}-${EDGESEC_VERSION_MAJOR}.${EDGESEC_VERSION_MINOR}.${EDGESEC_VERSION_PATCH}.tar.gz" --format=gnutar "${CMAKE_INSTALL_PREFIX}")
 
-if (BUILD_SQLSYNC_SERVICE AND LIBSQLITE_LIB)
-  install(
-    TARGETS sqlsyncsrv
-    RUNTIME DESTINATION "bin"
-  )
-endif ()
-
-if (BUILD_REVERSE_SERVICE)
-  install(
-    TARGETS revclient revsrv
-    RUNTIME DESTINATION "bin"
-  )
-endif ()
-
-install(FILES "${PROJECT_BINARY_DIR}/config.ini" DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
-
-if (BUILD_UUID_LIB AND LIBUUID_LIB)
-  install(DIRECTORY ${LIBUUID_LIB_DIR} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
-endif ()
-
-if (BUILD_SQLITE_LIB AND LIBSQLITE_LIB)
-  install(DIRECTORY ${LIBSQLITE_LIB_DIR} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
-endif ()
-
-if(BUILD_PCAP_LIB AND LIBPCAP_LIB)
-  install(DIRECTORY ${LIBPCAP_LIB_DIR} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
-endif ()
-
-if(BUILD_OPENSSL_LIB AND LIBCRYPTO_LIB)
-  install(DIRECTORY ${LIBOPENSSL_LIB_PATH} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
-endif ()
-
-if (BUILD_NETLINK_LIB AND LIBNETLINK_LIB)
-  install(DIRECTORY ${LIBNETLINK_LIB_PATH} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
-endif ()
-
-if (BUILD_NDPI_LIB AND LIBNDPI_LIB)
-  install(DIRECTORY ${LIBNDPI_LIB_DIR} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
-endif ()
-
-if (BUILD_MNL_LIB AND LIBMNL_LIB)
-  install(DIRECTORY ${LIBMNL_LIB_DIR} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
-endif ()
-
-if (BUILD_MICROHTTPD_LIB AND LIBMICROHTTPD_LIB)
-  install(DIRECTORY ${LIBMICROHTTPD_LIB_DIR} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
-endif ()
-
-if (BUILD_GRPC_LIB AND LIBGRPC_LIB)
-  install(DIRECTORY ${LIBGRPC_LIB_DIR} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
-endif ()
-
-if (BUILD_HOSTAPD AND HOSTAPD)
-  install(FILES ${HOSTAPD} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
-endif ()
 # setup_target_for_coverage_lcov(
 #   NAME coverage
 #   EXECUTABLE /home/alexandru/Projects/EDGESec/build/src/edgesec -c /home/alexandru/Projects/EDGESec/build/config.ini -dddddddd -s 12345
 #   BASE_DIRECTORY "${PROJECT_BINARY_DIR}"
 # )
-
-#
-# add_subdirectory("${GRPC_SOURCE_DIR}/third_party/re2" EXCLUDE_FROM_ALL)

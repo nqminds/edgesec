@@ -32,6 +32,7 @@
 // #include "common.h"
 // #include "trace.h"
 #include "log.h"
+#include "allocs.h"
 #include "os.h"
 #include "list.h"
 #include "eloop.h"

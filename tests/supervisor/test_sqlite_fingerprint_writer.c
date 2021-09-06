@@ -33,7 +33,7 @@ static void test_open_sqlite_fingerprint_db(void **state)
   free_sqlite_fingerprint_db(db);
 }
 
-static void test_save_sqlite_fingerprint_entry(void **state)
+static void test_save_sqlite_fingerprint_row(void **state)
 {
   (void) state; /* unused */
 
@@ -49,14 +49,14 @@ static void test_save_sqlite_fingerprint_entry(void **state)
   sqlite3* db;
 
   assert_int_equal(open_sqlite_fingerprint_db(":memory:", &db), 0);
-  assert_int_equal(save_sqlite_fingerprint_entry(db, &row), 0);
-  assert_int_equal(save_sqlite_fingerprint_entry(db, NULL), -1);
-  assert_int_equal(save_sqlite_fingerprint_entry(NULL, &row), -1);
-  assert_int_equal(save_sqlite_fingerprint_entry(NULL, NULL), -1);
+  assert_int_equal(save_sqlite_fingerprint_row(db, &row), 0);
+  assert_int_equal(save_sqlite_fingerprint_row(db, NULL), -1);
+  assert_int_equal(save_sqlite_fingerprint_row(NULL, &row), -1);
+  assert_int_equal(save_sqlite_fingerprint_row(NULL, NULL), -1);
   free_sqlite_fingerprint_db(db);
 }
 
-static void test_get_sqlite_fingerprint_entries(void **state)
+static void test_get_sqlite_fingerprint_rows(void **state)
 {
   (void) state; /* unused */
 
@@ -74,8 +74,8 @@ static void test_get_sqlite_fingerprint_entries(void **state)
   utarray_new(rows, &fingerprint_icd);
 
   assert_int_equal(open_sqlite_fingerprint_db(":memory:", &db), 0);
-  assert_int_equal(save_sqlite_fingerprint_entry(db, &in), 0);
-  assert_int_equal(get_sqlite_fingerprint_entries(db, mac, timestamp, op, protocol, rows), 0);
+  assert_int_equal(save_sqlite_fingerprint_row(db, &in), 0);
+  assert_int_equal(get_sqlite_fingerprint_rows(db, mac, timestamp, op, protocol, rows), 0);
   p = (struct fingerprint_row *) utarray_next(rows, p);
   assert_non_null(p);
 
@@ -87,22 +87,22 @@ static void test_get_sqlite_fingerprint_entries(void **state)
 
   p = (struct fingerprint_row *) utarray_next(rows, p);
   assert_null(p);
-  utarray_free(rows);
+  free_sqlite_fingerprint_rows(rows);
 
   utarray_new(rows, &fingerprint_icd);
-  assert_int_equal(get_sqlite_fingerprint_entries(db, mac, timestamp, op1, protocol, rows), 0);
+  assert_int_equal(get_sqlite_fingerprint_rows(db, mac, timestamp, op1, protocol, rows), 0);
   p = (struct fingerprint_row *) utarray_next(rows, p);
   assert_null(p);
-  utarray_free(rows);
+  free_sqlite_fingerprint_rows(rows);
 
   free_sqlite_fingerprint_db(db);
 
   utarray_new(rows, &fingerprint_icd);
   assert_int_equal(open_sqlite_fingerprint_db(":memory:", &db), 0);
-  assert_int_equal(get_sqlite_fingerprint_entries(db, mac, timestamp, op, protocol, rows), 0);
+  assert_int_equal(get_sqlite_fingerprint_rows(db, mac, timestamp, op, protocol, rows), 0);
   p = (struct fingerprint_row *) utarray_next(rows, p);
   assert_null(p);
-  utarray_free(rows);
+  free_sqlite_fingerprint_rows(rows);
   free_sqlite_fingerprint_db(db);
 }
 
@@ -112,8 +112,8 @@ int main(int argc, char *argv[])
 
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_open_sqlite_fingerprint_db),
-    cmocka_unit_test(test_save_sqlite_fingerprint_entry),
-    cmocka_unit_test(test_get_sqlite_fingerprint_entries)
+    cmocka_unit_test(test_save_sqlite_fingerprint_row),
+    cmocka_unit_test(test_get_sqlite_fingerprint_rows)
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

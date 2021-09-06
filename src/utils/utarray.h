@@ -37,6 +37,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stddef.h>  /* size_t */
 #include <string.h>  /* memset, etc */
 #include <stdlib.h>  /* exit */
+#include <stdarg.h>  /* va_list */
+
+#include "allocs.h"
 
 #ifdef __GNUC__
 #define UTARRAY_UNUSED __attribute__((__unused__))
@@ -51,6 +54,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef utarray_oom
 #define utarray_oom() exit(-1)
+#endif
+
+#ifndef utr_malloc
+#define utr_malloc(s) malloc((s))
+#endif
+
+#ifndef utr_realloc
+#define utr_realloc(p, s) realloc((p), (s))
+#endif
+
+#ifndef utr_free
+#define utr_free(p) free((p))
 #endif
 
 typedef void (ctor_f)(void *dst, const void *src);
@@ -82,13 +97,13 @@ typedef struct {
         (a)->icd.dtor(utarray_eltptr(a,_ut_i));                               \
       }                                                                       \
     }                                                                         \
-    free((a)->d);                                                             \
+    utr_free((a)->d);                                                             \
   }                                                                           \
   (a)->n=0;                                                                   \
 } while(0)
 
 #define utarray_new(a,_icd) do {                                              \
-  (a) = (UT_array*)malloc(sizeof(UT_array));                                  \
+  (a) = (UT_array*)utr_malloc(sizeof(UT_array));                                  \
   if ((a) == NULL) {                                                          \
     utarray_oom();                                                            \
   }                                                                           \
@@ -97,14 +112,14 @@ typedef struct {
 
 #define utarray_free(a) do {                                                  \
   utarray_done(a);                                                            \
-  free(a);                                                                    \
+  utr_free(a);                                                                \
 } while(0)
 
 #define utarray_reserve(a,by) do {                                            \
   if (((a)->i+(by)) > (a)->n) {                                               \
     char *utarray_tmp;                                                        \
     while (((a)->i+(by)) > (a)->n) { (a)->n = ((a)->n ? (2*(a)->n) : 8); }    \
-    utarray_tmp=(char*)realloc((a)->d, (a)->n*(a)->icd.sz);                   \
+    utarray_tmp=(char*)utr_realloc((a)->d, (a)->n*(a)->icd.sz);                   \
     if (utarray_tmp == NULL) {                                                \
       utarray_oom();                                                          \
     }                                                                         \
@@ -243,7 +258,7 @@ static void utarray_str_cpy(void *dst, const void *src) {
 }
 static void utarray_str_dtor(void *elt) {
   char **eltc = (char**)elt;
-  if (*eltc != NULL) free(*eltc);
+  if (*eltc != NULL) utr_free(*eltc);
 }
 static const UT_icd ut_str_icd UTARRAY_UNUSED = {sizeof(char*),NULL,utarray_str_cpy,utarray_str_dtor};
 static const UT_icd ut_int_icd UTARRAY_UNUSED = {sizeof(int),NULL,NULL,NULL};

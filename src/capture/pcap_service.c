@@ -28,6 +28,7 @@
 #include "pcap_service.h"
 
 #include "../utils/if.h"
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/log.h"
 
@@ -124,7 +125,7 @@ int run_pcap(char *interface, bool immediate, bool promiscuous,
   int ret;
   char err[PCAP_ERRBUF_SIZE];
   bpf_u_int32 mask, net;
-  char ip_str[INET_ADDRSTRLEN], mask_str[INET_ADDRSTRLEN];
+  char ip_str[OS_INET_ADDRSTRLEN], mask_str[OS_INET_ADDRSTRLEN];
   struct bpf_program fp;
   struct pcap_context *ctx = NULL;
 

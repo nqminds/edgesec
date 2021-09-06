@@ -27,22 +27,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#include <netinet/in.h>
-#include <netinet/ip.h>
-#include <net/if.h>
-#include <netinet/if_ether.h>
-#include <netinet/ip6.h>
-#include <netinet/icmp6.h>
-#include <netinet/ip_icmp.h>
-#include <net/ethernet.h>
-#include <netinet/tcp.h>
-#include <netinet/udp.h>
-#include <arpa/inet.h>
 #include <sqlite3.h>
 
 #include "sqlite_header_writer.h"
 #include "packet_decoder.h"
 
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/if.h"
 #include "../utils/log.h"
@@ -54,691 +44,669 @@
             term.caplen = tp->mp.caplen;        \
             term.length = tp->mp.length;
 
-struct header_context {
-  trace_callback_fn trace_fn;
-  uint8_t *trace_ctx;
-};
-
-bool extract_meta_params(sqlite3_stmt *res, struct meta_packet *mp)
+int extract_eth_statement(struct sqlite_header_context *ctx, struct eth_schema *eths)
 {
-  int column_idx;
-
-  column_idx = sqlite3_bind_parameter_index(res, "@hash");
-  if (sqlite3_bind_int64(res, column_idx, mp->hash) != SQLITE_OK)
-    return false;
-
-  column_idx = sqlite3_bind_parameter_index(res, "@ethh_hash");
-  if (sqlite3_bind_int64(res, column_idx, mp->ethh_hash) != SQLITE_OK)
-    return false;
-
-  //>>> Correct truncation problem
-  column_idx = sqlite3_bind_parameter_index(res, "@timestamp");
-  if(sqlite3_bind_int64(res, column_idx, mp->timestamp) != SQLITE_OK)
-    return false;
-
-  column_idx = sqlite3_bind_parameter_index(res, "@caplen");
-  if (sqlite3_bind_int64(res, column_idx, mp->caplen) != SQLITE_OK)
-    return false;
-
-  column_idx = sqlite3_bind_parameter_index(res, "@length");
-  if (sqlite3_bind_int64(res, column_idx, mp->length) != SQLITE_OK)
-    return false;
-
-  return true;
-}
-
-int extract_eth_statement(sqlite3 *db, struct tuple_packet *tp)
-{
-  struct ether_header *ethh = (struct ether_header *)tp->packet;
   sqlite3_stmt *res = NULL;
   int column_idx, rc;
-  char ether_dhost[MAX_SCHEMA_STR_LENGTH];
-  char ether_shost[MAX_SCHEMA_STR_LENGTH];
 
-  if (ethh == NULL) {
+  if (eths == NULL) {
     log_trace("ethh is NULL");
     return -1;
   }
 
-  rc = sqlite3_prepare_v2(db, ETH_INSERT_INTO, -1, &res, 0);
+  rc = sqlite3_prepare_v2(ctx->db, ETH_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
-    if (!extract_meta_params(res, &tp->mp)) {
-      log_trace("extract_meta_params fail");
-      sqlite3_finalize(res);
-      return -1;
-    }
+    column_idx = sqlite3_bind_parameter_index(res, "@hash");
+    if (sqlite3_bind_int64(res, column_idx, eths->hash) != SQLITE_OK)
+      return false;
 
-    snprintf(ether_dhost, MAX_SCHEMA_STR_LENGTH, MACSTR, MAC2STR(ethh->ether_dhost));
+    column_idx = sqlite3_bind_parameter_index(res, "@timestamp");
+    if(sqlite3_bind_int64(res, column_idx, eths->timestamp) != SQLITE_OK)
+      return false;
+
+    column_idx = sqlite3_bind_parameter_index(res, "@id");
+    sqlite3_bind_text(res, column_idx, eths->id, -1, NULL);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@caplen");
+    if (sqlite3_bind_int64(res, column_idx, eths->caplen) != SQLITE_OK)
+      return false;
+
+    column_idx = sqlite3_bind_parameter_index(res, "@length");
+    if (sqlite3_bind_int64(res, column_idx, eths->length) != SQLITE_OK)
+      return false;
+
+    column_idx = sqlite3_bind_parameter_index(res, "@ifname");
+    sqlite3_bind_text(res, column_idx, eths->ifname, -1, NULL);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@hostname");
+    sqlite3_bind_text(res, column_idx, eths->hostname, -1, NULL);
+
     column_idx = sqlite3_bind_parameter_index(res, "@ether_dhost");
-    sqlite3_bind_text(res, column_idx, ether_dhost, -1, NULL);
+    sqlite3_bind_text(res, column_idx, eths->ether_dhost, -1, NULL);
 
-    snprintf(ether_shost, MAX_SCHEMA_STR_LENGTH, MACSTR, MAC2STR(ethh->ether_shost));
     column_idx = sqlite3_bind_parameter_index(res, "@ether_shost");
-    sqlite3_bind_text(res, column_idx, ether_shost, -1, NULL);
+    sqlite3_bind_text(res, column_idx, eths->ether_shost, -1, NULL);
 
     column_idx = sqlite3_bind_parameter_index(res, "@ether_type");
-    sqlite3_bind_int64(res, column_idx, ethh->ether_type);
+    sqlite3_bind_int64(res, column_idx, eths->ether_type);
 
-    log_trace("sqlite insert eth ether_type=0x%x ether_dhost=%s ether_shost=%s", ethh->ether_type, ether_dhost, ether_shost);
+    log_trace("sqlite insert eth ether_type=0x%x ether_dhost=%s ether_shost=%s", eths->ether_type, eths->ether_dhost, eths->ether_shost);
 
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {
-    log_trace("Failed to prepare statement: %s", sqlite3_errmsg(db));
+    log_trace("Failed to prepare statement: %s", sqlite3_errmsg(ctx->db));
     return -1;
   }
 
   return 0;
 }
 
-int extract_arp_statement(sqlite3 *db, struct tuple_packet *tp)
+int extract_arp_statement(struct sqlite_header_context *ctx, struct arp_schema *arps)
 {
-  struct ether_arp *arph = (struct ether_arp *)tp->packet;
   int column_idx, rc;
-  char arp_sha[MAX_SCHEMA_STR_LENGTH];
-  char arp_spa[MAX_SCHEMA_STR_LENGTH];
-  char arp_tha[MAX_SCHEMA_STR_LENGTH];
-  char arp_tpa[MAX_SCHEMA_STR_LENGTH];
   sqlite3_stmt *res = NULL;
   
-  if (arph == NULL) {
-    log_trace("arph is NULL");
-    return -1;
-  }
-  
-  rc = sqlite3_prepare_v2(db, ARP_INSERT_INTO, -1, &res, 0);
+  rc = sqlite3_prepare_v2(ctx->db, ARP_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
-    if (!extract_meta_params(res, &tp->mp)) {
-      log_trace("extract_meta_params fail");
-      sqlite3_finalize(res);
-      return -1;
-    }
+    column_idx = sqlite3_bind_parameter_index(res, "@hash");
+    sqlite3_bind_int64(res, column_idx, arps->hash);
 
-    column_idx = sqlite3_bind_parameter_index(res, "@arp_hrd");
-    sqlite3_bind_int64(res, column_idx, arph->arp_hrd);
+    column_idx = sqlite3_bind_parameter_index(res, "@timestamp");
+    sqlite3_bind_int64(res, column_idx, arps->timestamp);
 
-    column_idx = sqlite3_bind_parameter_index(res, "@arp_pro");
-    sqlite3_bind_int64(res, column_idx, arph->arp_pro);
+    column_idx = sqlite3_bind_parameter_index(res, "@ethh_hash");
+    sqlite3_bind_int64(res, column_idx, arps->ethh_hash);
 
-    column_idx = sqlite3_bind_parameter_index(res, "@arp_hln");
-    sqlite3_bind_int64(res, column_idx, arph->arp_hln);
+    column_idx = sqlite3_bind_parameter_index(res, "@id");
+    sqlite3_bind_text(res, column_idx, arps->id, -1, NULL);
 
-    column_idx = sqlite3_bind_parameter_index(res, "@arp_pln");
-    sqlite3_bind_int64(res, column_idx, arph->arp_pln);
+    column_idx = sqlite3_bind_parameter_index(res, "@ar_hrd");
+    sqlite3_bind_int64(res, column_idx, arps->ar_hrd);
 
-    column_idx = sqlite3_bind_parameter_index(res, "@arp_op");
-    sqlite3_bind_int64(res, column_idx, arph->arp_op);
+    column_idx = sqlite3_bind_parameter_index(res, "@ar_pro");
+    sqlite3_bind_int64(res, column_idx, arps->ar_pro);
 
-    snprintf(arp_sha, MAX_SCHEMA_STR_LENGTH, MACSTR, MAC2STR(arph->arp_sha));
+    column_idx = sqlite3_bind_parameter_index(res, "@ar_hln");
+    sqlite3_bind_int64(res, column_idx, arps->ar_hln);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@ar_pln");
+    sqlite3_bind_int64(res, column_idx, arps->ar_pln);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@ar_op");
+    sqlite3_bind_int64(res, column_idx, arps->ar_op);
+
     column_idx = sqlite3_bind_parameter_index(res, "@arp_sha");
-    sqlite3_bind_text(res, column_idx, arp_sha, -1, NULL);
+    sqlite3_bind_text(res, column_idx, arps->arp_sha, -1, NULL);
 
-    snprintf(arp_spa, MAX_SCHEMA_STR_LENGTH, IPSTR, IP2STR(arph->arp_spa));
     column_idx = sqlite3_bind_parameter_index(res, "@arp_spa");
-    sqlite3_bind_text(res, column_idx, arp_spa, -1, NULL);
+    sqlite3_bind_text(res, column_idx, arps->arp_spa, -1, NULL);
 
-
-    snprintf(arp_tha, MAX_SCHEMA_STR_LENGTH, MACSTR, MAC2STR(arph->arp_tha));
     column_idx = sqlite3_bind_parameter_index(res, "@arp_tha");
-    sqlite3_bind_text(res, column_idx, arp_tha, -1, NULL);
+    sqlite3_bind_text(res, column_idx, arps->arp_tha, -1, NULL);
 
-    snprintf(arp_tpa, MAX_SCHEMA_STR_LENGTH, IPSTR, IP2STR(arph->arp_tpa));
     column_idx = sqlite3_bind_parameter_index(res, "@arp_tpa");
-    sqlite3_bind_text(res, column_idx, arp_tpa, -1, NULL);
+    sqlite3_bind_text(res, column_idx, arps->arp_tpa, -1, NULL);
 
-    log_trace("sqlite insert arp ar_hrd=%d arp_sha=%s arp_spa=%s arp_tha=%s arp_tpa=%s", arph->arp_hrd, arp_sha, arp_spa, arp_tha, arp_tpa);
+    log_trace("sqlite insert arp ar_hrd=%d arp_sha=%s arp_spa=%s arp_tha=%s arp_tpa=%s",
+      arps->ar_hrd, arps->arp_sha, arps->arp_spa, arps->arp_tha, arps->arp_tpa);
+
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {
-    log_trace("Failed to prepare statement: %s", sqlite3_errmsg(db));
+    log_trace("Failed to prepare statement: %s", sqlite3_errmsg(ctx->db));
     return -1;
   }
 
   return 0;
 }
 
-int extract_ip4_statement(sqlite3 *db, struct tuple_packet *tp)
+int extract_ip4_statement(struct sqlite_header_context *ctx, struct ip4_schema *ip4s)
 {
-  struct ip *ip4h = (struct ip *)tp->packet;
   int column_idx, rc;
-  char ip_src[MAX_SCHEMA_STR_LENGTH];
-  char ip_dst[MAX_SCHEMA_STR_LENGTH];
   sqlite3_stmt *res = NULL;
 
-  if (ip4h == NULL) {
-    log_trace("ip4h is NULL");
-    return -1;
-  }
-
-  rc = sqlite3_prepare_v2(db, IP4_INSERT_INTO, -1, &res, 0);
+  rc = sqlite3_prepare_v2(ctx->db, IP4_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
-    if (!extract_meta_params(res, &tp->mp)) {
-      log_trace("extract_meta_params fail");
-      sqlite3_finalize(res);
-      return -1;
-    }
+    column_idx = sqlite3_bind_parameter_index(res, "@hash");
+    sqlite3_bind_int64(res, column_idx, ip4s->hash);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@timestamp");
+    sqlite3_bind_int64(res, column_idx, ip4s->timestamp);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@ethh_hash");
+    sqlite3_bind_int64(res, column_idx, ip4s->ethh_hash);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@id");
+    sqlite3_bind_text(res, column_idx, ip4s->id, -1, NULL);
 
     column_idx = sqlite3_bind_parameter_index(res, "@ip_hl");
-    sqlite3_bind_int64(res, column_idx, ip4h->ip_hl);
+    sqlite3_bind_int64(res, column_idx, ip4s->ip_hl);
 
     column_idx = sqlite3_bind_parameter_index(res, "@ip_v");
-    sqlite3_bind_int64(res, column_idx, ip4h->ip_v);
+    sqlite3_bind_int64(res, column_idx, ip4s->ip_v);
 
     column_idx = sqlite3_bind_parameter_index(res, "@ip_tos");
-    sqlite3_bind_int64(res, column_idx, ip4h->ip_tos);
+    sqlite3_bind_int64(res, column_idx, ip4s->ip_tos);
 
     column_idx = sqlite3_bind_parameter_index(res, "@ip_len");
-    sqlite3_bind_int64(res, column_idx, ip4h->ip_len);
+    sqlite3_bind_int64(res, column_idx, ip4s->ip_len);
 
     column_idx = sqlite3_bind_parameter_index(res, "@ip_id");
-    sqlite3_bind_int64(res, column_idx, ip4h->ip_id);
+    sqlite3_bind_int64(res, column_idx, ip4s->ip_id);
 
     column_idx = sqlite3_bind_parameter_index(res, "@ip_off");
-    sqlite3_bind_int64(res, column_idx, ip4h->ip_off);
+    sqlite3_bind_int64(res, column_idx, ip4s->ip_off);
 
     column_idx = sqlite3_bind_parameter_index(res, "@ip_ttl");
-    sqlite3_bind_int64(res, column_idx, ip4h->ip_ttl);
+    sqlite3_bind_int64(res, column_idx, ip4s->ip_ttl);
 
     column_idx = sqlite3_bind_parameter_index(res, "@ip_p");
-    sqlite3_bind_int64(res, column_idx, ip4h->ip_p);
+    sqlite3_bind_int64(res, column_idx, ip4s->ip_p);
 
     column_idx = sqlite3_bind_parameter_index(res, "@ip_sum");
-    sqlite3_bind_int64(res, column_idx, ip4h->ip_sum);
+    sqlite3_bind_int64(res, column_idx, ip4s->ip_sum);
 
-    inaddr4_2_ip(&(ip4h->ip_src), ip_src);
     column_idx = sqlite3_bind_parameter_index(res, "@ip_src");
-    sqlite3_bind_text(res, column_idx, ip_src, -1, NULL);
+    sqlite3_bind_text(res, column_idx, ip4s->ip_src, -1, NULL);
 
-    inaddr4_2_ip(&(ip4h->ip_dst), ip_dst);
     column_idx = sqlite3_bind_parameter_index(res, "@ip_dst");
-    sqlite3_bind_text(res, column_idx, ip_dst, -1, NULL);
+    sqlite3_bind_text(res, column_idx, ip4s->ip_dst, -1, NULL);
 
-    log_trace("sqlite insert IP4 ip_p=%d ip_v=%d ip_src=%s ip_dst=%s", ip4h->ip_p, ip4h->ip_v, ip_src, ip_dst);
+    log_trace("sqlite insert IP4 ip_p=%d ip_v=%d ip_src=%s ip_dst=%s", ip4s->ip_p, ip4s->ip_v, ip4s->ip_src, ip4s->ip_dst);
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {
-    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(db));
+    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(ctx->db));
     return -1;
   }
 
   return 0;
 }
 
-int extract_ip6_statement(sqlite3 *db, struct tuple_packet *tp)
+int extract_ip6_statement(struct sqlite_header_context *ctx, struct ip6_schema *ip6s)
 {
-  struct ip6_hdr *ip6h = (struct ip6_hdr *)tp->packet;
   int column_idx, rc;
-  char ip6_src[MAX_SCHEMA_STR_LENGTH];
-  char ip6_dst[MAX_SCHEMA_STR_LENGTH];
-
   sqlite3_stmt *res = NULL;
   
-  if (ip6h == NULL) {
-    log_trace("ip6h is NULL");
-    return -1;
-  }
-
-  rc = sqlite3_prepare_v2(db, IP6_INSERT_INTO, -1, &res, 0);
+  rc = sqlite3_prepare_v2(ctx->db, IP6_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
-    if (!extract_meta_params(res, &tp->mp)) {
-      log_trace("extract_meta_params fail");
-      sqlite3_finalize(res);
-      return -1;
-    }
+    column_idx = sqlite3_bind_parameter_index(res, "@hash");
+    sqlite3_bind_int64(res, column_idx, ip6s->hash);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@timestamp");
+    sqlite3_bind_int64(res, column_idx, ip6s->timestamp);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@ethh_hash");
+    sqlite3_bind_int64(res, column_idx, ip6s->ethh_hash);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@id");
+    sqlite3_bind_text(res, column_idx, ip6s->id, -1, NULL);
 
     column_idx = sqlite3_bind_parameter_index(res, "@ip6_un1_flow");
-    sqlite3_bind_int64(res, column_idx, ip6h->ip6_flow);
+    sqlite3_bind_int64(res, column_idx, ip6s->ip6_un1_flow);
 
     column_idx = sqlite3_bind_parameter_index(res, "@ip6_un1_plen");
-    sqlite3_bind_int64(res, column_idx, ip6h->ip6_plen);
+    sqlite3_bind_int64(res, column_idx, ip6s->ip6_un1_plen);
 
     column_idx = sqlite3_bind_parameter_index(res, "@ip6_un1_nxt");
-    sqlite3_bind_int64(res, column_idx, ip6h->ip6_nxt);
+    sqlite3_bind_int64(res, column_idx, ip6s->ip6_un1_nxt);
 
     column_idx = sqlite3_bind_parameter_index(res, "@ip6_un1_hlim");
-    sqlite3_bind_int64(res, column_idx, ip6h->ip6_hlim);
+    sqlite3_bind_int64(res, column_idx, ip6s->ip6_un1_hlim);
 
     column_idx = sqlite3_bind_parameter_index(res, "@ip6_un2_vfc");
-    sqlite3_bind_int64(res, column_idx, ip6h->ip6_vfc);
+    sqlite3_bind_int64(res, column_idx, ip6s->ip6_un2_vfc);
 
-    inaddr6_2_ip(&(ip6h->ip6_src), ip6_src);
     column_idx = sqlite3_bind_parameter_index(res, "@ip6_src");
-    sqlite3_bind_text(res, column_idx, ip6_src, -1, NULL);
+    sqlite3_bind_text(res, column_idx, ip6s->ip6_src, -1, NULL);
 
-    inaddr6_2_ip(&(ip6h->ip6_dst), ip6_dst);
     column_idx = sqlite3_bind_parameter_index(res, "@ip6_dst");
-    sqlite3_bind_text(res, column_idx, ip6_dst, -1, NULL);
+    sqlite3_bind_text(res, column_idx, ip6s->ip6_dst, -1, NULL);
 
-    log_trace("sqlite insert IP6 ip6_src=%s ip6_dst=%s ip6_un1_nxt=%d", ip6_src, ip6_dst, ip6h->ip6_nxt);
+    log_trace("sqlite insert IP6 ip6_src=%s ip6_dst=%s ip6_un1_nxt=%d",
+      ip6s->ip6_src, ip6s->ip6_dst, ip6s->ip6_un1_nxt);
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {
-    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(db));
+    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(ctx->db));
     return -1;
   }
 
   return 0;
 }
 
-int extract_tcp_statement(sqlite3 *db, struct tuple_packet *tp)
+int extract_tcp_statement(struct sqlite_header_context *ctx, struct tcp_schema *tcps)
 {
-  struct tcphdr *tcph = (struct tcphdr *)tp->packet;
   int column_idx, rc;
   sqlite3_stmt *res = NULL;
   
-  if (tcph == NULL) {
-    log_trace("tcph is NULL");
-    return -1;
-  }
-  
-  rc = sqlite3_prepare_v2(db, TCP_INSERT_INTO, -1, &res, 0);
+  rc = sqlite3_prepare_v2(ctx->db, TCP_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
-    if (!extract_meta_params(res, &tp->mp)) {
-      log_trace("extract_meta_params fail");
-      sqlite3_finalize(res);
-      return -1;
-    }
+    column_idx = sqlite3_bind_parameter_index(res, "@hash");
+    sqlite3_bind_int64(res, column_idx, tcps->hash);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@timestamp");
+    sqlite3_bind_int64(res, column_idx, tcps->timestamp);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@ethh_hash");
+    sqlite3_bind_int64(res, column_idx, tcps->ethh_hash);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@id");
+    sqlite3_bind_text(res, column_idx, tcps->id, -1, NULL);
 
     column_idx = sqlite3_bind_parameter_index(res, "@source");
-    sqlite3_bind_int64(res, column_idx, ntohs(tcph->source));
+    sqlite3_bind_int64(res, column_idx, tcps->source);
 
     column_idx = sqlite3_bind_parameter_index(res, "@dest");
-    sqlite3_bind_int64(res, column_idx, ntohs(tcph->dest));
+    sqlite3_bind_int64(res, column_idx, tcps->dest);
 
     column_idx = sqlite3_bind_parameter_index(res, "@seq");
-    sqlite3_bind_int64(res, column_idx, tcph->seq);
+    sqlite3_bind_int64(res, column_idx, tcps->seq);
 
     column_idx = sqlite3_bind_parameter_index(res, "@ack_seq");
-    sqlite3_bind_int64(res, column_idx, tcph->ack_seq);
+    sqlite3_bind_int64(res, column_idx, tcps->ack_seq);
 
     column_idx = sqlite3_bind_parameter_index(res, "@res1");
-    sqlite3_bind_int64(res, column_idx, tcph->res1);
+    sqlite3_bind_int64(res, column_idx, tcps->res1);
 
     column_idx = sqlite3_bind_parameter_index(res, "@doff");
-    sqlite3_bind_int64(res, column_idx, tcph->doff);
+    sqlite3_bind_int64(res, column_idx, tcps->doff);
 
     column_idx = sqlite3_bind_parameter_index(res, "@fin");
-    sqlite3_bind_int64(res, column_idx, tcph->fin);
+    sqlite3_bind_int64(res, column_idx, tcps->fin);
 
     column_idx = sqlite3_bind_parameter_index(res, "@syn");
-    sqlite3_bind_int64(res, column_idx, tcph->syn);
+    sqlite3_bind_int64(res, column_idx, tcps->syn);
 
     column_idx = sqlite3_bind_parameter_index(res, "@rst");
-    sqlite3_bind_int64(res, column_idx, tcph->rst);
+    sqlite3_bind_int64(res, column_idx, tcps->rst);
 
     column_idx = sqlite3_bind_parameter_index(res, "@psh");
-    sqlite3_bind_int64(res, column_idx, tcph->psh);
+    sqlite3_bind_int64(res, column_idx, tcps->psh);
 
     column_idx = sqlite3_bind_parameter_index(res, "@ack");
-    sqlite3_bind_int64(res, column_idx, tcph->ack);
+    sqlite3_bind_int64(res, column_idx, tcps->ack);
 
     column_idx = sqlite3_bind_parameter_index(res, "@urg");
-    sqlite3_bind_int64(res, column_idx, tcph->urg);
+    sqlite3_bind_int64(res, column_idx, tcps->urg);
 
     column_idx = sqlite3_bind_parameter_index(res, "@window");
-    sqlite3_bind_int64(res, column_idx, tcph->window);
+    sqlite3_bind_int64(res, column_idx, tcps->window);
 
     column_idx = sqlite3_bind_parameter_index(res, "@check_p");
-    sqlite3_bind_int64(res, column_idx, tcph->check);
+    sqlite3_bind_int64(res, column_idx, tcps->check_p);
 
     column_idx = sqlite3_bind_parameter_index(res, "@urg_ptr");
-    sqlite3_bind_int64(res, column_idx, tcph->urg_ptr);
+    sqlite3_bind_int64(res, column_idx, tcps->urg_ptr);
 
-    log_trace("sqlite insert TCP source=%d dest=%d", ntohs(tcph->source), ntohs(tcph->dest));
+    log_trace("sqlite insert TCP source=%d dest=%d", tcps->source, tcps->dest);
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {
-    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(db));
+    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(ctx->db));
     return -1;
   }
 
   return 0;
 }
 
-int extract_udp_statement(sqlite3 *db, struct tuple_packet *tp)
+int extract_udp_statement(struct sqlite_header_context *ctx, struct udp_schema *udps)
 {
-  struct udphdr *udph = (struct udphdr *)tp->packet;
   int column_idx, rc;
   sqlite3_stmt *res = NULL;
   
-  if (udph == NULL) {
-    log_trace("udph is NULL");
-    return -1;
-  }
-  
-  rc = sqlite3_prepare_v2(db, UDP_INSERT_INTO, -1, &res, 0);
+  rc = sqlite3_prepare_v2(ctx->db, UDP_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
-    if (!extract_meta_params(res, &tp->mp)) {
-      log_trace("extract_meta_params fail");
-      sqlite3_finalize(res);
-      return -1;
-    }
+    column_idx = sqlite3_bind_parameter_index(res, "@hash");
+    sqlite3_bind_int64(res, column_idx, udps->hash);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@timestamp");
+    sqlite3_bind_int64(res, column_idx, udps->timestamp);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@ethh_hash");
+    sqlite3_bind_int64(res, column_idx, udps->ethh_hash);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@id");
+    sqlite3_bind_text(res, column_idx, udps->id, -1, NULL);
 
     column_idx = sqlite3_bind_parameter_index(res, "@source");
-    sqlite3_bind_int64(res, column_idx, ntohs(udph->source));
+    sqlite3_bind_int64(res, column_idx, udps->source);
 
     column_idx = sqlite3_bind_parameter_index(res, "@dest");
-    sqlite3_bind_int64(res, column_idx, ntohs(udph->dest));
+    sqlite3_bind_int64(res, column_idx, udps->dest);
 
     column_idx = sqlite3_bind_parameter_index(res, "@len");
-    sqlite3_bind_int64(res, column_idx, udph->len);
+    sqlite3_bind_int64(res, column_idx, udps->len);
 
     column_idx = sqlite3_bind_parameter_index(res, "@check_p");
-    sqlite3_bind_int64(res, column_idx, udph->check);
+    sqlite3_bind_int64(res, column_idx, udps->check_p);
 
-    log_trace("sqlite insert UDP source=%d dest=%d", ntohs(udph->source), ntohs(udph->dest));
+    log_trace("sqlite insert UDP source=%d dest=%d", udps->source, udps->dest);
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {
-    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(db));
+    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(ctx->db));
     return -1;
   }
 
   return 0;
 }
 
-int extract_icmp4_statement(sqlite3 *db, struct tuple_packet *tp)
+int extract_icmp4_statement(struct sqlite_header_context *ctx, struct icmp4_schema *icmp4s)
 {
-  struct icmphdr *icmp4h = (struct icmphdr *)tp->packet;
   int column_idx, rc;
   sqlite3_stmt *res = NULL;
   
-  if (icmp4h == NULL) {
-    log_trace("icmp4h is NULL");
-    return -1;
-  }
-  
-  rc = sqlite3_prepare_v2(db, ICMP4_INSERT_INTO, -1, &res, 0);
+  rc = sqlite3_prepare_v2(ctx->db, ICMP4_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
-    if (!extract_meta_params(res, &tp->mp)) {
-      log_trace("extract_meta_params fail");
-      sqlite3_finalize(res);
-      return -1;
-    }
+    column_idx = sqlite3_bind_parameter_index(res, "@hash");
+    sqlite3_bind_int64(res, column_idx, icmp4s->hash);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@timestamp");
+    sqlite3_bind_int64(res, column_idx, icmp4s->timestamp);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@ethh_hash");
+    sqlite3_bind_int64(res, column_idx, icmp4s->ethh_hash);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@id");
+    sqlite3_bind_text(res, column_idx, icmp4s->id, -1, NULL);
 
     column_idx = sqlite3_bind_parameter_index(res, "@type");
-    sqlite3_bind_int64(res, column_idx, icmp4h->type);
+    sqlite3_bind_int64(res, column_idx, icmp4s->type);
 
     column_idx = sqlite3_bind_parameter_index(res, "@code");
-    sqlite3_bind_int64(res, column_idx, icmp4h->code);
+    sqlite3_bind_int64(res, column_idx, icmp4s->code);
 
     column_idx = sqlite3_bind_parameter_index(res, "@checksum");
-    sqlite3_bind_int64(res, column_idx, icmp4h->checksum);
+    sqlite3_bind_int64(res, column_idx, icmp4s->checksum);
 
     column_idx = sqlite3_bind_parameter_index(res, "@gateway");
-    sqlite3_bind_int64(res, column_idx, icmp4h->un.gateway);
+    sqlite3_bind_int64(res, column_idx, icmp4s->gateway);
 
-    log_trace("sqlite insert ICMP4 type=%d code=%d", icmp4h->type, icmp4h->code);
+    log_trace("sqlite insert ICMP4 type=%d code=%d", icmp4s->type, icmp4s->code);
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {
-    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(db));
+    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(ctx->db));
     return -1;
   }
 
   return 0;
 }
 
-int extract_icmp6_statement(sqlite3 *db, struct tuple_packet *tp)
+int extract_icmp6_statement(struct sqlite_header_context *ctx, struct icmp6_schema *icmp6s)
 {
-  struct icmp6_hdr *icmp6h = (struct icmp6_hdr *)tp->packet;
   int column_idx, rc;
   sqlite3_stmt *res = NULL;
   
-  if (icmp6h == NULL) {
-    log_trace("icmp6h is NULL");
-    return -1;
-  }
-  
-  rc = sqlite3_prepare_v2(db, ICMP6_INSERT_INTO, -1, &res, 0);
+  rc = sqlite3_prepare_v2(ctx->db, ICMP6_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
-    if (!extract_meta_params(res, &tp->mp)) {
-      log_trace("extract_meta_params fail");
-      sqlite3_finalize(res);
-      return -1;
-    }
+    column_idx = sqlite3_bind_parameter_index(res, "@hash");
+    sqlite3_bind_int64(res, column_idx, icmp6s->hash);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@timestamp");
+    sqlite3_bind_int64(res, column_idx, icmp6s->timestamp);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@ethh_hash");
+    sqlite3_bind_int64(res, column_idx, icmp6s->ethh_hash);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@id");
+    sqlite3_bind_text(res, column_idx, icmp6s->id, -1, NULL);
 
     column_idx = sqlite3_bind_parameter_index(res, "@icmp6_type");
-    sqlite3_bind_int64(res, column_idx, icmp6h->icmp6_type);
+    sqlite3_bind_int64(res, column_idx, icmp6s->icmp6_type);
 
     column_idx = sqlite3_bind_parameter_index(res, "@icmp6_code");
-    sqlite3_bind_int64(res, column_idx, icmp6h->icmp6_code);
+    sqlite3_bind_int64(res, column_idx, icmp6s->icmp6_code);
 
     column_idx = sqlite3_bind_parameter_index(res, "@icmp6_cksum");
-    sqlite3_bind_int64(res, column_idx, icmp6h->icmp6_cksum);
+    sqlite3_bind_int64(res, column_idx, icmp6s->icmp6_cksum);
 
     column_idx = sqlite3_bind_parameter_index(res, "@icmp6_un_data32");
-    sqlite3_bind_int64(res, column_idx, icmp6h->icmp6_dataun.icmp6_un_data32[0]);
+    sqlite3_bind_int64(res, column_idx, icmp6s->icmp6_un_data32);
 
-    log_trace("sqlite insert ICMP6 type=%d code=%d", icmp6h->icmp6_type, icmp6h->icmp6_code);
+    log_trace("sqlite insert ICMP6 type=%d code=%d", icmp6s->icmp6_type, icmp6s->icmp6_code);
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {
-    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(db));
+    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(ctx->db));
     return -1;
   }
 
   return 0;
 }
 
-int extract_dns_statement(sqlite3 *db, struct tuple_packet *tp)
+int extract_dns_statement(struct sqlite_header_context *ctx, struct dns_schema *dnss)
 {
-  struct dns_header *dnsh = (struct dns_header *)tp->packet;
   int column_idx, rc;
   sqlite3_stmt *res = NULL;
   
-  if (dnsh == NULL) {
-    log_trace("dnsh is NULL");
-    return -1;
-  }
-  
-  rc = sqlite3_prepare_v2(db, DNS_INSERT_INTO, -1, &res, 0);
+  rc = sqlite3_prepare_v2(ctx->db, DNS_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
-    if (!extract_meta_params(res, &tp->mp)) {
-      log_trace("extract_meta_params fail");
-      sqlite3_finalize(res);
-      return -1;
-    }
+    column_idx = sqlite3_bind_parameter_index(res, "@hash");
+    sqlite3_bind_int64(res, column_idx, dnss->hash);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@timestamp");
+    sqlite3_bind_int64(res, column_idx, dnss->timestamp);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@ethh_hash");
+    sqlite3_bind_int64(res, column_idx, dnss->ethh_hash);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@id");
+    sqlite3_bind_text(res, column_idx, dnss->id, -1, NULL);
 
     column_idx = sqlite3_bind_parameter_index(res, "@tid");
-    sqlite3_bind_int64(res, column_idx, dnsh->tid);
+    sqlite3_bind_int64(res, column_idx, dnss->tid);
 
     column_idx = sqlite3_bind_parameter_index(res, "@flags");
-    sqlite3_bind_int64(res, column_idx, dnsh->flags);
+    sqlite3_bind_int64(res, column_idx, dnss->flags);
 
     column_idx = sqlite3_bind_parameter_index(res, "@nqueries");
-    sqlite3_bind_int64(res, column_idx, dnsh->nqueries);
+    sqlite3_bind_int64(res, column_idx, dnss->nqueries);
 
     column_idx = sqlite3_bind_parameter_index(res, "@nanswers");
-    sqlite3_bind_int64(res, column_idx, dnsh->nanswers);
+    sqlite3_bind_int64(res, column_idx, dnss->nanswers);
 
     column_idx = sqlite3_bind_parameter_index(res, "@nauth");
-    sqlite3_bind_int64(res, column_idx, dnsh->nauth);
+    sqlite3_bind_int64(res, column_idx, dnss->nauth);
 
     column_idx = sqlite3_bind_parameter_index(res, "@nother");
-    sqlite3_bind_int64(res, column_idx, dnsh->nother);
+    sqlite3_bind_int64(res, column_idx, dnss->nother);
 
-    log_trace("sqlite insert DNS tid=%d", dnsh->tid);
+    column_idx = sqlite3_bind_parameter_index(res, "@qname");
+    sqlite3_bind_text(res, column_idx, dnss->qname, -1, NULL);
+
+    log_trace("sqlite insert DNS tid=%d, qname=%s", dnss->tid, dnss->qname);
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {
-    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(db));
+    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(ctx->db));
     return -1;
   }
 
   return 0;
 }
 
-int extract_mdsn_statement(sqlite3 *db, struct tuple_packet *tp)
+int extract_mdsn_statement(struct sqlite_header_context *ctx, struct mdns_schema *mdnss)
 {
-  struct mdns_header *mdnsh = (struct mdns_header *)tp->packet;
   int column_idx, rc;
   sqlite3_stmt *res = NULL;
 
-  if (mdnsh == NULL) {
-    log_trace("dnsh is NULL");
-    return -1;
-  }
-
-  rc = sqlite3_prepare_v2(db, MDNS_INSERT_INTO, -1, &res, 0);
+  rc = sqlite3_prepare_v2(ctx->db, MDNS_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
-    if (!extract_meta_params(res, &tp->mp)) {
-      log_trace("extract_meta_params fail");
-      sqlite3_finalize(res);
-      return -1;
-    }
+    column_idx = sqlite3_bind_parameter_index(res, "@hash");
+    sqlite3_bind_int64(res, column_idx, mdnss->hash);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@timestamp");
+    sqlite3_bind_int64(res, column_idx, mdnss->timestamp);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@ethh_hash");
+    sqlite3_bind_int64(res, column_idx, mdnss->ethh_hash);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@id");
+    sqlite3_bind_text(res, column_idx, mdnss->id, -1, NULL);
 
     column_idx = sqlite3_bind_parameter_index(res, "@tid");
-    sqlite3_bind_int64(res, column_idx, mdnsh->tid);
+    sqlite3_bind_int64(res, column_idx, mdnss->tid);
 
     column_idx = sqlite3_bind_parameter_index(res, "@flags");
-    sqlite3_bind_int64(res, column_idx, mdnsh->flags);
+    sqlite3_bind_int64(res, column_idx, mdnss->flags);
 
     column_idx = sqlite3_bind_parameter_index(res, "@nqueries");
-    sqlite3_bind_int64(res, column_idx, mdnsh->nqueries);
+    sqlite3_bind_int64(res, column_idx, mdnss->nqueries);
 
     column_idx = sqlite3_bind_parameter_index(res, "@nanswers");
-    sqlite3_bind_int64(res, column_idx, mdnsh->nanswers);
+    sqlite3_bind_int64(res, column_idx, mdnss->nanswers);
 
     column_idx = sqlite3_bind_parameter_index(res, "@nauth");
-    sqlite3_bind_int64(res, column_idx, mdnsh->nauth);
+    sqlite3_bind_int64(res, column_idx, mdnss->nauth);
 
     column_idx = sqlite3_bind_parameter_index(res, "@nother");
-    sqlite3_bind_int64(res, column_idx, mdnsh->nother);
+    sqlite3_bind_int64(res, column_idx, mdnss->nother);
 
-    log_trace("sqlite insert mDNS tid=%d", mdnsh->tid);
+    column_idx = sqlite3_bind_parameter_index(res, "@qname");
+    sqlite3_bind_text(res, column_idx, mdnss->qname, -1, NULL);
+
+    log_trace("sqlite insert mDNS tid=%d, qname=%s", mdnss->tid, mdnss->qname);
+
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {
-    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(db));
+    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(ctx->db));
     return -1;
   }
 
   return 0;
 }
 
-int extract_dhcp_statement(sqlite3 *db, struct tuple_packet *tp)
+int extract_dhcp_statement(struct sqlite_header_context *ctx, struct dhcp_schema *dhcps)
 {
-  struct dhcp_header *dhcph = (struct dhcp_header *)tp->packet;
-  char ciaddr[MAX_SCHEMA_STR_LENGTH];
-  char yiaddr[MAX_SCHEMA_STR_LENGTH];
-  char siaddr[MAX_SCHEMA_STR_LENGTH];
-  char giaddr[MAX_SCHEMA_STR_LENGTH];
   int column_idx, rc;
   sqlite3_stmt *res = NULL;
   
-  if (dhcph == NULL) {
-    log_trace("dhcph is NULL");
-    return -1;
-  }
-  
-  rc = sqlite3_prepare_v2(db, DHCP_INSERT_INTO, -1, &res, 0);
+  rc = sqlite3_prepare_v2(ctx->db, DHCP_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
-    if (!extract_meta_params(res, &tp->mp)) {
-      log_trace("extract_meta_params fail");
-      sqlite3_finalize(res);
-      return -1;
-    }
+    column_idx = sqlite3_bind_parameter_index(res, "@hash");
+    sqlite3_bind_int64(res, column_idx, dhcps->hash);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@timestamp");
+    sqlite3_bind_int64(res, column_idx, dhcps->timestamp);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@ethh_hash");
+    sqlite3_bind_int64(res, column_idx, dhcps->ethh_hash);
+
+    column_idx = sqlite3_bind_parameter_index(res, "@id");
+    sqlite3_bind_text(res, column_idx, dhcps->id, -1, NULL);
 
     column_idx = sqlite3_bind_parameter_index(res, "@op");
-    sqlite3_bind_int64(res, column_idx, dhcph->op);
+    sqlite3_bind_int64(res, column_idx, dhcps->op);
 
     column_idx = sqlite3_bind_parameter_index(res, "@htype");
-    sqlite3_bind_int64(res, column_idx, dhcph->htype);
+    sqlite3_bind_int64(res, column_idx, dhcps->htype);
 
     column_idx = sqlite3_bind_parameter_index(res, "@hlen");
-    sqlite3_bind_int64(res, column_idx, dhcph->hlen);
+    sqlite3_bind_int64(res, column_idx, dhcps->hlen);
 
     column_idx = sqlite3_bind_parameter_index(res, "@hops");
-    sqlite3_bind_int64(res, column_idx, dhcph->hops);
+    sqlite3_bind_int64(res, column_idx, dhcps->hops);
 
     column_idx = sqlite3_bind_parameter_index(res, "@xid");
-    sqlite3_bind_int64(res, column_idx, dhcph->xid);
+    sqlite3_bind_int64(res, column_idx, dhcps->xid);
 
     column_idx = sqlite3_bind_parameter_index(res, "@secs");
-    sqlite3_bind_int64(res, column_idx, dhcph->secs);
+    sqlite3_bind_int64(res, column_idx, dhcps->secs);
 
     column_idx = sqlite3_bind_parameter_index(res, "@flags");
-    sqlite3_bind_int64(res, column_idx, dhcph->flags);
+    sqlite3_bind_int64(res, column_idx, dhcps->flags);
 
-    inaddr4_2_ip(&(dhcph->ciaddr), ciaddr);
     column_idx = sqlite3_bind_parameter_index(res, "@ciaddr");
-    sqlite3_bind_text(res, column_idx, ciaddr, -1, NULL);
+    sqlite3_bind_text(res, column_idx, dhcps->ciaddr, -1, NULL);
 
-    inaddr4_2_ip(&(dhcph->yiaddr), yiaddr);
     column_idx = sqlite3_bind_parameter_index(res, "@yiaddr");
-    sqlite3_bind_text(res, column_idx, yiaddr, -1, NULL);
+    sqlite3_bind_text(res, column_idx, dhcps->yiaddr, -1, NULL);
 
-    inaddr4_2_ip(&(dhcph->siaddr), siaddr);
     column_idx = sqlite3_bind_parameter_index(res, "@siaddr");
-    sqlite3_bind_text(res, column_idx, siaddr, -1, NULL);
+    sqlite3_bind_text(res, column_idx, dhcps->siaddr, -1, NULL);
 
-    inaddr4_2_ip(&(dhcph->giaddr), giaddr);
     column_idx = sqlite3_bind_parameter_index(res, "@giaddr");
-    sqlite3_bind_text(res, column_idx, giaddr, -1, NULL);
+    sqlite3_bind_text(res, column_idx, dhcps->giaddr, -1, NULL);
 
-    log_trace("sqlite insert DHCP ciaddr=%s yiaddr=%s siaddr=%s giaddr=%s", ciaddr, yiaddr, siaddr, giaddr);
+    log_trace("sqlite insert DHCP ciaddr=%s yiaddr=%s siaddr=%s giaddr=%s",
+      dhcps->ciaddr, dhcps->yiaddr, dhcps->siaddr, dhcps->giaddr);
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {
-    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(db));
+    log_debug("Failed to prepare statement: %s", sqlite3_errmsg(ctx->db));
     return -1;
   }
 
   return 0;
 }
 
-int save_packet_statement(sqlite3 *db, struct tuple_packet *tp)
+int save_packet_statement(struct sqlite_header_context *ctx, struct tuple_packet *tp)
 {
-  switch (tp->mp.type) {
+  if (tp == NULL) {
+    log_trace("tp param is NULL");
+    return -1;
+  }
+
+  if (tp->packet == NULL) {
+    log_trace("tp->packet param is NULL");
+    return -1;
+  }
+
+  switch (tp->type) {
     case PACKET_ETHERNET:
-      return extract_eth_statement(db, tp);
+      return extract_eth_statement(ctx, (struct eth_schema *)tp->packet);
     case PACKET_ARP:
-      return extract_arp_statement(db, tp);
+      return extract_arp_statement(ctx, (struct arp_schema *)tp->packet);
     case PACKET_IP4:
-      return extract_ip4_statement(db, tp);
+      return extract_ip4_statement(ctx, (struct ip4_schema *)tp->packet);
     case PACKET_IP6:
-      return extract_ip6_statement(db, tp);
+      return extract_ip6_statement(ctx, (struct ip6_schema *)tp->packet);
     case PACKET_TCP:
-      return extract_tcp_statement(db, tp);
+      return extract_tcp_statement(ctx, (struct tcp_schema *)tp->packet);
     case PACKET_UDP:
-      return extract_udp_statement(db, tp);
+      return extract_udp_statement(ctx, (struct udp_schema *)tp->packet);
     case PACKET_ICMP4:
-      return extract_icmp4_statement(db, tp);
+      return extract_icmp4_statement(ctx, (struct icmp4_schema *)tp->packet);
     case PACKET_ICMP6:
-      return extract_icmp6_statement(db, tp);
+      return extract_icmp6_statement(ctx, (struct icmp6_schema *)tp->packet);
     case PACKET_DNS:
-      return extract_dns_statement(db, tp);
+      return extract_dns_statement(ctx, (struct dns_schema *)tp->packet);
     case PACKET_MDNS:
-      return extract_mdsn_statement(db, tp);
+      return extract_mdsn_statement(ctx, (struct mdns_schema *)tp->packet);
     case PACKET_DHCP:
-      return extract_dhcp_statement(db, tp);
+      return extract_dhcp_statement(ctx, (struct dhcp_schema *)tp->packet);
   }
 
   return -1;
 }
 
-void free_sqlite_header_db(sqlite3 *db)
+void free_sqlite_header_db(struct sqlite_header_context *ctx)
 {
-  if (db != NULL) {
-    sqlite3_close(db);
+  if (ctx != NULL) {
+    if (ctx->db != NULL)
+      sqlite3_close(ctx->db);
+    os_free(ctx);
   }
 }
 
 int sqlite_trace_callback(unsigned int uMask, void* ctx, void* stm, void* X)
 {
-  struct header_context *sql_ctx = (struct header_context *)ctx;
+  struct sqlite_header_context *sql_ctx = (struct sqlite_header_context *)ctx;
   sqlite3_stmt *statement = (sqlite3_stmt *)stm;
   char *sqlite_str;
 
@@ -752,13 +720,13 @@ int sqlite_trace_callback(unsigned int uMask, void* ctx, void* stm, void* X)
 }
 
 int open_sqlite_header_db(char *db_path, trace_callback_fn fn,
-                               void *trace_ctx, sqlite3 **sql)
+                               void *trace_ctx, struct sqlite_header_context **ctx)
 {
+  
   sqlite3 *db;
-  struct header_context *ctx = NULL;
+  struct sqlite_header_context *context = NULL;
 
   int rc = sqlite3_open(db_path, &db);
-  *sql = db;
 
   if (rc != SQLITE_OK) {
     log_debug("Cannot open database: %s", sqlite3_errmsg(db));
@@ -766,13 +734,15 @@ int open_sqlite_header_db(char *db_path, trace_callback_fn fn,
     return -1;
   }
 
-  ctx = os_zalloc(sizeof(struct header_context));
-  ctx->trace_fn = fn;
-  ctx->trace_ctx = trace_ctx;
+  context = os_zalloc(sizeof(struct sqlite_header_context));
+  context->db = db;
+  context->trace_fn = fn;
+  context->trace_ctx = trace_ctx;
+  *ctx = context;
 
-  if (ctx->trace_fn != NULL) {
+  if (context->trace_fn != NULL) {
     log_trace("Register sqlite trace callback");
-    sqlite3_trace_v2(db, SQLITE_TRACE_STMT, sqlite_trace_callback, (void *)ctx);
+    sqlite3_trace_v2(db, SQLITE_TRACE_STMT, sqlite_trace_callback, (void *)context);
   }
 
   log_debug("sqlite autocommit mode=%d", sqlite3_get_autocommit(db));
@@ -783,12 +753,12 @@ int open_sqlite_header_db(char *db_path, trace_callback_fn fn,
     log_debug("eth table doesn't exist creating...");
     if (execute_sqlite_query(db, ETH_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
-      free_sqlite_header_db(db);
+      free_sqlite_header_db(context);
       return -1;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
-    free_sqlite_header_db(db);
+    free_sqlite_header_db(context);
     return -1;
   }
 
@@ -798,12 +768,12 @@ int open_sqlite_header_db(char *db_path, trace_callback_fn fn,
     log_debug("arp table doesn't exist creating...");
     if (execute_sqlite_query(db, ARP_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
-      free_sqlite_header_db(db);
+      free_sqlite_header_db(context);
       return -1;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
-    free_sqlite_header_db(db);
+    free_sqlite_header_db(context);
     return -1;
   }
 
@@ -813,12 +783,12 @@ int open_sqlite_header_db(char *db_path, trace_callback_fn fn,
     log_debug("ip4 table doesn't exist creating...");
     if (execute_sqlite_query(db, IP4_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
-      free_sqlite_header_db(db);
+      free_sqlite_header_db(context);
       return -1;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
-    free_sqlite_header_db(db);
+    free_sqlite_header_db(context);
     return -1;
   }
 
@@ -828,12 +798,12 @@ int open_sqlite_header_db(char *db_path, trace_callback_fn fn,
     log_debug("ip6 table doesn't exist creating...");
     if (execute_sqlite_query(db, IP6_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
-      free_sqlite_header_db(db);
+      free_sqlite_header_db(context);
       return -1;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
-    free_sqlite_header_db(db);
+    free_sqlite_header_db(context);
     return -1;
   }
 
@@ -843,12 +813,12 @@ int open_sqlite_header_db(char *db_path, trace_callback_fn fn,
     log_debug("tcp table doesn't exist creating...");
     if (execute_sqlite_query(db, TCP_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
-      free_sqlite_header_db(db);
+      free_sqlite_header_db(context);
       return -1;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
-    free_sqlite_header_db(db);
+    free_sqlite_header_db(context);
     return -1;
   }
 
@@ -858,12 +828,12 @@ int open_sqlite_header_db(char *db_path, trace_callback_fn fn,
     log_debug("udp table doesn't exist creating...");
     if (execute_sqlite_query(db, UDP_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
-      free_sqlite_header_db(db);
+      free_sqlite_header_db(context);
       return -1;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
-    free_sqlite_header_db(db);
+    free_sqlite_header_db(context);
     return -1;
   }
 
@@ -873,12 +843,12 @@ int open_sqlite_header_db(char *db_path, trace_callback_fn fn,
     log_debug("icmp4 table doesn't exist creating...");
     if (execute_sqlite_query(db, ICMP4_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
-      free_sqlite_header_db(db);
+      free_sqlite_header_db(context);
       return -1;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
-    free_sqlite_header_db(db);
+    free_sqlite_header_db(context);
     return -1;
   }
 
@@ -888,12 +858,12 @@ int open_sqlite_header_db(char *db_path, trace_callback_fn fn,
     log_debug("icmp6 table doesn't exist creating...");
     if (execute_sqlite_query(db, ICMP6_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
-      free_sqlite_header_db(db);
+      free_sqlite_header_db(context);
       return -1;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
-    free_sqlite_header_db(db);
+    free_sqlite_header_db(context);
     return -1;
   }
 
@@ -903,12 +873,12 @@ int open_sqlite_header_db(char *db_path, trace_callback_fn fn,
     log_debug("dns table doesn't exist creating...");
     if (execute_sqlite_query(db, DNS_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
-      free_sqlite_header_db(db);
+      free_sqlite_header_db(context);
       return -1;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
-    free_sqlite_header_db(db);
+    free_sqlite_header_db(context);
     return -1;
   }
 
@@ -918,12 +888,12 @@ int open_sqlite_header_db(char *db_path, trace_callback_fn fn,
     log_debug("mdns table doesn't exist creating...");
     if (execute_sqlite_query(db, MDNS_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
-      free_sqlite_header_db(db);
+      free_sqlite_header_db(context);
       return -1;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
-    free_sqlite_header_db(db);
+    free_sqlite_header_db(context);
     return -1;
   }
 
@@ -933,12 +903,12 @@ int open_sqlite_header_db(char *db_path, trace_callback_fn fn,
     log_debug("dhcp table doesn't exist creating...");
     if (execute_sqlite_query(db, DHCP_CREATE_TABLE) < 0) {
       log_debug("execute_sqlite_query fail");
-      free_sqlite_header_db(db);
+      free_sqlite_header_db(context);
       return -1;
     }
   } else if (rc < 0) {
     log_debug("check_table_exists fail");
-    free_sqlite_header_db(db);
+    free_sqlite_header_db(context);
     return -1;
   }
 

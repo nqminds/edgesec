@@ -7,7 +7,7 @@ allowAllConnections = true
 allowAllNat = true
 apDetect = false
 defaultOpenVlanId = 0
-killRunningProcess = true
+killRunningProcess = false
 execAp = false
 execRadius = true
 execDhcp = true
@@ -17,6 +17,7 @@ setIpForward = true
 dbPath = "./db"
 cryptDbPath = "./crypt.sqlite"
 cryptKeyId = "master"
+pidFilePath = "/var/run/edgesec.pid"
 
 [capture]
 captureBinPath = "./src/capsrv"
@@ -32,7 +33,10 @@ dbWrite = true
 dbSync = true
 dbSyncAddress = "localhost"
 dbSyncPort = 3000
+syncCaPath = "./cert/CA/CA.pem"
 command = "SET_FINGERPRINT"
+syncStoreSize = 1000
+syncSendSize = 20
 
 [supervisor]
 domainServerPath = "/tmp/edgesec-domain-server"

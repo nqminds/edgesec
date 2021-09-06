@@ -31,6 +31,7 @@
 
 #include "domain.h"
 
+#include "allocs.h"
 #include "os.h"
 #include "log.h"
 

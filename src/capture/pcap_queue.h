@@ -41,7 +41,7 @@
 struct pcap_queue {
   struct pcap_pkthdr header;            /**< pcap header */
   uint8_t *packet;                      /**< pointer to the packet data */
-  struct dl_list list;                  /**< List defintion */
+  struct dl_list list;                  /**< List definition */
 };
 
 /**
@@ -90,4 +90,12 @@ ssize_t get_pcap_queue_length(struct pcap_queue* queue);
  * @param queue The pointer to the pcap queue
  */
 void free_pcap_queue(struct pcap_queue* queue);
+
+/**
+ * @brief Checks if pcap queue is empty
+ * 
+ * @param queue The pointer to the packet queue
+ * @return 1, is empty, 0 otherwise, -1 for error
+ */
+int is_pcap_queue_empty(struct pcap_queue* queue);
 #endif

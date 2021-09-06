@@ -36,6 +36,7 @@
 #include "linux/rtnetlink.h"
 #include "utarray.h"
 #include "uthash.h"
+#include "allocs.h"
 #include "os.h"
 
 enum IF_STATE{

@@ -16,11 +16,6 @@
 #include "utils/sqliteu.h"
 #include "capture/sqlite_pcap_writer.h"
 
-int __wrap_sqlite3_open(const char *filename, sqlite3 **ppDb)
-{
-  return __real_sqlite3_open(filename, ppDb);
-}
-
 static void test_open_sqlite_pcap_db(void **state)
 {
   (void) state; /* unused */

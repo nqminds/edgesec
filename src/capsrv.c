@@ -43,6 +43,7 @@
 #include "config.h"
 #include "version.h"
 #include "utils/log.h"
+#include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/minIni.h"
 
@@ -151,6 +152,8 @@ int main(int argc, char *argv[])
   memset(&config, 0, sizeof(struct capture_conf));
   config.buffer_timeout = DEFAULT_CAPTURE_TIMEOUT;
   config.process_interval = DEFAULT_CAPTURE_INTERVAL;
+  config.sync_store_size = -1;
+  config.sync_send_size = -1;
   ret = process_app_options(argc, argv, &verbosity, &filename, &config);
   if (ret < 0) {
     fprintf(stderr, "process_app_options fail");

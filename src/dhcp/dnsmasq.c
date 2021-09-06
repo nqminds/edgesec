@@ -36,11 +36,14 @@
 
 
 #include "dhcp_config.h"
+
 #include "../utils/log.h"
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/utarray.h"
 
 #define PROCESS_RESTART_TIME  5 // In seconds
+#define MAX_DHCP_CHECK_COUNT  100 // number of tries
 
 #define DNSMASQ_BIND_INTERFACE_OPTION "--bind-interfaces"
 #define DNSMASQ_NO_DAEMON_OPTION      "--no-daemon"
@@ -168,6 +171,22 @@ char* get_dnsmasq_args(char *dnsmasq_bin_path, char *dnsmasq_conf_path, char *ar
   return conf_arg;
 }
 
+int check_dhcp_running(char *name, int wait_time)
+{
+  int running = 0;
+  int count = 0;
+  while(!running && count < MAX_DHCP_CHECK_COUNT) {
+    if ((running = is_proc_running(name)) < 0) {
+      log_trace("is_proc_running fail");
+      return -1;
+    }
+    count ++;
+    sleep(wait_time);
+  }
+
+  return running;
+}
+
 char* run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path)
 {
   pid_t child_pid;
@@ -188,7 +207,6 @@ char* run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path)
     log_trace("get_dnsmasq_args fail");
     return NULL;
   }
-  struct find_dir_type dir_args = {.proc_running = 0, .proc_name = basename(process_argv[0])};
 
   while((ret = run_process(process_argv, &child_pid)) < 0) {
     log_trace("Killing dhcp process");
@@ -208,14 +226,10 @@ char* run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path)
     return NULL;
   }
 
-  if (list_dir("/proc", find_dir_proc_fn, (void *)&dir_args) == -1) {
-    log_trace("list_dir fail");
-    os_free(conf_arg);
+  log_trace("Checking dnsmasq proc running...");
+  if (check_dhcp_running(basename(process_argv[0]), 1) <= 0) {
+    log_trace("check_dhcp_running or process not running");
     return NULL;
-  }
-
-  if (!dir_args.proc_running) {
-    log_trace("dnsmasq proc not found");
   }
 
   log_trace("dnsmasq running with pid=%d", child_pid);

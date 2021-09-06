@@ -12,6 +12,7 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
+#include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/log.h"
 #include "capture/pcap_queue.h"

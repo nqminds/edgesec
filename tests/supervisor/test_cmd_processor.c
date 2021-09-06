@@ -296,6 +296,8 @@ static void test_process_get_map_cmd(void **state)
   uint8_t addr[ETH_ALEN] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
   UT_array *cmd_arr;
   struct client_address claddr;
+  struct supervisor_context context;
+  os_memset(&context, 0, sizeof(struct supervisor_context));
 
   utarray_new(cmd_arr, &ut_str_icd);
 
@@ -303,14 +305,14 @@ static void test_process_get_map_cmd(void **state)
   expect_memory(__wrap_get_mac_mapper, mac_addr, addr, ETH_ALEN);
   expect_any(__wrap_get_mac_mapper, info);
 
-  int ret = process_get_map_cmd(0, &claddr, NULL, cmd_arr);
+  int ret = process_get_map_cmd(0, &claddr, &context, cmd_arr);
   bool comp = ret > STRLEN("11:22:33:44:55:66");
   assert_true(comp);
   utarray_free(cmd_arr);
 
   utarray_new(cmd_arr, &ut_str_icd);
   assert_int_not_equal(split_string_array("GET_MAP 11:22:33:44:55:", CMD_DELIMITER, cmd_arr), -1);
-  assert_int_equal(process_get_map_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  assert_int_equal(process_get_map_cmd(0, &claddr, &context, cmd_arr), strlen(FAIL_REPLY));
   utarray_free(cmd_arr);
 }
 

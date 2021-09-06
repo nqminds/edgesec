@@ -29,6 +29,7 @@
 
 #include "crypt_config.h"
 
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/utarray.h"
 
@@ -41,6 +42,10 @@ struct crypt_pair {
   uint8_t *value;         /**< The crypt value array. */
   size_t value_size;         /**< The crypt value array size. */
 };
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @brief Load the crypt service
@@ -85,4 +90,9 @@ int put_crypt_pair(struct crypt_context *ctx, struct crypt_pair *pair);
  * @param pair The crypt pair
  */
 void free_crypt_pair(struct crypt_pair *pair);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

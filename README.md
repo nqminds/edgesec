@@ -65,9 +65,13 @@ To enable verbose debug mode use:
 ```
 
 ## Testing
-To run the tests use:
+To compile the tests use:
 ```console
-make tests
+cd build/
+rm CMakeCache.txt
+cmake -DBUILD_TEST=ON ../
+make
+make test
 ```
 
 To run each test individually the test binaries can be located in ```./build/tests``` folder.
@@ -76,7 +80,7 @@ To run each test individually the test binaries can be located in ```./build/tes
 
 To compile the docs from ```./build``` folder:
 ```console
-make docs
+make doxydocs
 ```
 
 See [`./docs`](./docs) for how to build the developer doxygen documentation website.
