@@ -9,7 +9,7 @@ On Ubuntu, we need a C compiler, CMake, Doxygen, and libnl libraries:
 
 ```console
 sudo apt update
-apt_dependencies=(
+build_dependencies=(
     cmake # build-tool
     doxygen texinfo graphviz # documentation
     build-essential # C and C++ compilers
@@ -22,7 +22,10 @@ apt_dependencies=(
     protobuf-compiler
     flex bison
 )
-sudo apt install -y "${apt_dependencies[@]}"
+runtime_dependencies=(
+    dnsmasq
+)
+sudo apt install -y "${build_dependencies[@]}" "${runtime_dependencies[@]}
 ```
 
 To install grpc dependencies:
