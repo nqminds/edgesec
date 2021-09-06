@@ -8,7 +8,20 @@ On Ubuntu, we need a C compiler, CMake, Doxygen, and libnl libraries:
 
 ```console
 sudo apt update
-sudo apt install cmake doxygen libnl-genl-3-dev libnl-route-3-dev graphviz dnsmasq libtool texinfo jq protobuf-compiler flex bison
+apt_dependencies=(
+    cmake # build-tool
+    doxygen texinfo graphviz # documentation
+    build-essential # C and C++ compilers
+    libnl-genl-3-dev libnl-route-3-dev # netlink dependencies
+    automake # required by libmicrohttpd for some reason?
+    autoconf # required by compile_sqlite.sh
+    libtool-bin # required by autoconf somewhere
+    pkg-config # seems to be required by nDPI
+    libjson-c-dev # mystery requirement
+    protobuf-compiler
+    flex bison
+)
+sudo apt install -y "${apt_dependencies[@]}"
 ```
 
 To install grpc dependencies:
@@ -35,7 +48,7 @@ Second, to compile the ```edgesec``` tool and the tests use:
 make all
 ```
 
-After succesful compilation the binary will be located in ```./build/src``` folder. 
+After succesful compilation the binary will be located in ```./build/src``` folder.
 
 ## Running
 
