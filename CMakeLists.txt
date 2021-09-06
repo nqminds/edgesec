@@ -103,12 +103,6 @@ include(ndpi)
 include(grpc)
 include(sqlite)
 
-ExternalProject_Add_StepDependencies(
-    hostapd_external
-    configure
-    openssl_external
-)
-
 if (USE_PTHREAD_LIB AND NOT (BUILD_ONLY_DOCS))
   find_library(LIBPTHREAD_LIB NAMES pthread libpthread)
   if (LIBPTHREAD_LIB)
