@@ -53,5 +53,6 @@ if (BUILD_REVERSE_SERVICE)
 endif ()
 
 add_executable(edgesec edgesec.c)
+add_dependencies(edgesec openssl_external)
 target_include_directories(edgesec PRIVATE ${PROJECT_BINARY_DIR} ${LIBOPENSSL_INCLUDE_PATH})
-target_link_libraries(edgesec eloop config engine minIni os hashmap)
+target_link_libraries(edgesec eloop config engine minIni os hashmap ${LIBCRYPTO_LIB})

@@ -89,7 +89,8 @@ if (NOT USE_ARM_MUSL_LIBC)
 endif ()
 
 # Include the libraries
-include(hostapd)
+include(openssl)
+include(hostapd) # you must place this after OpenSSL!!
 include(cmocka)
 include(mnl)
 include(netlink)
@@ -99,8 +100,13 @@ include(uuid)
 include(pcap)
 include(ndpi)
 include(grpc)
-include(openssl)
 include(sqlite)
+
+ExternalProject_Add_StepDependencies(
+    hostapd_external
+    configure
+    openssl_external
+)
 
 if (USE_PTHREAD_LIB AND NOT (BUILD_ONLY_DOCS))
   find_library(LIBPTHREAD_LIB NAMES pthread libpthread)
