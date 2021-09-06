@@ -24,6 +24,7 @@ build_dependencies=(
 )
 runtime_dependencies=(
     dnsmasq
+    jq # required by predictable wifi name script
 )
 sudo apt install -y "${build_dependencies[@]}" "${runtime_dependencies[@]}
 ```
