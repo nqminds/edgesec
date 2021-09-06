@@ -2,6 +2,7 @@
 [![C/C++ CI](https://github.com/nqminds/EDGESec/workflows/C/C++%20CI/badge.svg?branch=main)](https://github.com/nqminds/EDGESec/actions?query=workflow%3A%22Github+Pages%22)
 
 ## Build
+
 ### Installing Dependencies
 
 On Ubuntu, we need a C compiler, CMake, Doxygen, and libnl libraries:
@@ -31,30 +32,36 @@ sudo ./compile_grpc_deps.sh
 ```
 
 ### Compile
+
 Compiling EDGESec is done with CMake.
 
-First, configure `cmake` in the `build/` directory by running the following:
+First, configure `cmake` in the `build/` directory by running the following.
+(equivalent to `mkdir build && cd build && cmake ..`)
+This is currently very slow, as it compiles all the C programs single-core.
 
 ```bash
 cmake -B build/ -S .
 ```
 
 To build, you can then run (`-j4` means 4 jobs/threads, replace `4` with the amount of cores you want to use):
+(equivalent to `make -j4`)
 
 ```bash
 cmake --build build/ -j4
 ```
 
-Second, to compile the ```edgesec``` tool and the tests use:
-```console
-make all
-```
-
 After succesful compilation the binary will be located in ```./build/src``` folder.
+
+You can use the following to also install files into `build/edgesec-dist` (equivalent to `make install`):
+
+```bash
+cmake --build build/ --target install -j4
+```
 
 ## Running
 
 To run ```edgesec``` tool with a configuration file ```config.ini``` located in ```./build``` folder use:
+
 ```console
 ./build/src/edgesec -c ./build/config.ini
 ```
@@ -65,13 +72,12 @@ To enable verbose debug mode use:
 ```
 
 ## Testing
+
 To compile the tests use:
-```console
-cd build/
-rm CMakeCache.txt
-cmake -DBUILD_TEST=ON ../
-make
-make test
+
+```bash
+cmake -B build/ -S .
+cmake --build build/ --target test -j4 # or `make test`
 ```
 
 To run each test individually the test binaries can be located in ```./build/tests``` folder.
