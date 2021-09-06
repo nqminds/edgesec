@@ -2,9 +2,11 @@
 if (BUILD_HOSTAPD AND NOT (BUILD_ONLY_DOCS))
   include(ExternalProject)
 
-  ExternalProject_Add(hostapd
+  ExternalProject_Add(hostapd_external
     URL https://w1.fi/releases/hostapd-2.9.tar.gz
-    CONFIGURE_COMMAND ""
+    CONFIGURE_COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/hostap/hostapd/.config <SOURCE_DIR><SOURCE_SUBDIR>/.config
+    BUILD_IN_SOURCE true
+    SOURCE_SUBDIR "./hostapd" # does nothing since we're not configuring with cmake
   )
 
   if (FALSE)
