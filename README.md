@@ -7,10 +7,11 @@
 
 On Ubuntu, we need a C compiler, CMake, Doxygen, and libnl libraries:
 
-```console
+```bash
 sudo apt update
 build_dependencies=(
     cmake # build-tool
+    git # required to download dependencies
     doxygen texinfo graphviz # documentation
     build-essential # C and C++ compilers
     libnl-genl-3-dev libnl-route-3-dev # netlink dependencies
