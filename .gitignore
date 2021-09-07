@@ -1,3 +1,8 @@
+# Debian
+/debian/.debhelper
+/debian/*.log
+
+##--------- C++.gitignore ---------##
 # Prerequisites
 *.d
 

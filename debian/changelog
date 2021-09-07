@@ -1,0 +1,6 @@
+edgesec-0.9.9-alpha1 (0) UNRELEASED; urgency=low
+
+  * Initial release. Closes: #nnnn
+    <nnnn is the bug number of your ITP>
+
+ -- Alois Klink <alois@nquiringminds.com>  Tue, 07 Sep 2021 14:12:38 +0100
