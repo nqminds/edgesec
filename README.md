@@ -31,17 +31,19 @@ sudo ./compile_grpc_deps.sh
 ```
 
 ### Compile
-Compiling EDGESec is done with CMake. First create the makefiles by using the following commands:
-```console
-mkdir -p build/
-cd build/
-cmake ..
+Compiling EDGESec is done with CMake.
+
+First, configure `cmake` in the `build/` directory by running the following:
+
+```bash
+cmake -B build/ -S .
 ```
-For parallel builds use:
-```console
-cmake -j n ..
+
+To build, you can then run (`-j4` means 4 jobs/threads, replace `4` with the amount of cores you want to use):
+
+```bash
+cmake --build build/ -j4
 ```
-where ```n``` is the number of cores.
 
 Second, to compile the ```edgesec``` tool and the tests use:
 ```console
