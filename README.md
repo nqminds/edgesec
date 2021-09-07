@@ -21,6 +21,7 @@ build_dependencies=(
     libjson-c-dev # mystery requirement
     protobuf-compiler
     flex bison
+    libssl-dev # required by hostapd only. GRPC uses own version, and we compile OpenSSL 3 for EDGESec
 )
 runtime_dependencies=(
     dnsmasq
