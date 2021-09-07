@@ -72,12 +72,14 @@ struct supervisor_context {
   char            nat_ip[OS_INET_ADDRSTRLEN];                 /**< The NAT IP address */
   struct capture_conf capture_config;                         /**< Capture service configuration. */
   struct apconf       hconfig;                                /**< AP service configuration. */
+  struct radius_conf  rconfig;                                /**< Radius service configuration. */
   sqlite3         *fingeprint_db;                             /**< The fingerprint sqlite db structure. */
   sqlite3         *macconn_db;                                /**< The macconn db structure. */
   struct radius_server_data *radius_srv;                      /**< The radius server context. */
   struct iptables_context *iptables_ctx;                      /**< The iptables context. */
   struct crypt_context *crypt_ctx;                            /**< The crypt context. */
   struct auth_ticket *ticket;                                 /**< The authentication ticket. */  
+  int              ap_sock;                                 /**< The AP notifier socket. */
 };
 
 #endif

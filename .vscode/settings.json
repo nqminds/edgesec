@@ -32,6 +32,7 @@
         "string": "c",
         "sstream": "c",
         "typeindex": "c",
-        "typeinfo": "c"
+        "typeinfo": "c",
+        "errno.h": "c"
     }
 }

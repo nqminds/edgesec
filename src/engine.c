@@ -155,6 +155,7 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
     return false;
   }
 
+  ctx->ap_sock = -1;
   ctx->hmap_bin_paths = NULL;
   ctx->radius_srv = NULL;
   ctx->crypt_ctx = NULL;
@@ -177,6 +178,7 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
 
   os_memcpy(&ctx->capture_config, &app_config->capture_config, sizeof(struct capture_conf));
   os_memcpy(&ctx->hconfig, &app_config->hconfig, sizeof(struct apconf));
+  os_memcpy(&ctx->rconfig, &app_config->rconfig, sizeof(struct radius_conf));
 
   db_path = construct_path(ctx->db_path, MACCONN_DB_NAME);
   if (db_path == NULL) {
@@ -332,16 +334,16 @@ bool run_engine(struct app_config *app_config)
   }
 
   log_info("Running the ap service...");
-  if (run_ap(&context.hconfig, &app_config->rconfig, app_config->exec_ap) < 0) {
+  if (run_ap(&context, app_config->exec_ap, ap_service_callback) < 0) {
     log_debug("run_ap fail");
     goto run_engine_fail;
   }
 
   if (app_config->exec_radius) {
     log_info("Creating the radius server on port %d with client ip %s",
-      app_config->rconfig.radius_port, app_config->rconfig.radius_client_ip);
+      context.rconfig.radius_port, context.rconfig.radius_client_ip);
 
-    if ((context.radius_srv = run_radius(&app_config->rconfig,
+    if ((context.radius_srv = run_radius(&context.rconfig,
                                         (void*) get_mac_conn_cmd, &context)) == NULL) {
       log_debug("run_radius fail");
       goto run_engine_fail;
@@ -369,7 +371,7 @@ bool run_engine(struct app_config *app_config)
   eloop_run();
 
   close_supervisor(context.domain_sock);
-  close_ap();
+  close_ap(&context);
   close_dhcp();
   close_radius(context.radius_srv);
   eloop_destroy();
@@ -382,11 +384,12 @@ bool run_engine(struct app_config *app_config)
   free_sqlite_fingerprint_db(context.fingeprint_db);
   free_sqlite_macconn_db(context.macconn_db);
   free_crypt_service(context.crypt_ctx);
+
   return true;
 
 run_engine_fail:
   close_supervisor(context.domain_sock);
-  close_ap();
+  close_ap(&context);
   close_dhcp();
   close_radius(context.radius_srv);
   eloop_destroy();

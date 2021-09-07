@@ -31,6 +31,7 @@
 #include <stdbool.h>
 
 #include "ap_config.h"
+#include "../supervisor/supervisor_config.h"
 #include "../radius/radius_server.h"
 #include "../utils/allocs.h"
 #include "../utils/os.h"
@@ -39,19 +40,20 @@
 /**
  * @brief Runs the AP service
  * 
- * @param hconf The AP configuration structure
- * @param rconf The radius configuration structure
+ * @param context The supervisor context structure
  * @param exec_ap Flag to execute the AP process
+ * @param ap_callback_fn The callback for AP service
  * @return int 0 on success, -1 on failure
  */
-int run_ap(struct apconf *hconf, struct radius_conf *rconf, bool exec_ap);
+int run_ap(struct supervisor_context *context, bool exec_ap, void *ap_callback_fn);
 
 /**
  * @brief Closes (terminates) AP process
  * 
+ * @param context The supervisor context structure
  * @return true success, false otherwise
  */
-bool close_ap(void);
+bool close_ap(struct supervisor_context *context);
 
 /**
  * @brief Send a command to the AP service

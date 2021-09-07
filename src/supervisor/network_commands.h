@@ -33,6 +33,15 @@
 #define TICKET_TIMEOUT          60  // In seconds
 
 /**
+ * @brief The AP service callback
+ * 
+ * @param context The supervisor context
+ * @param data The AP service data
+ * @return 0 on success, -1 on failure
+ */
+void ap_service_callback(struct supervisor_context *context, char *data);
+
+/**
  * @brief Return a mac_conn_info for a given MAC address
  * 
  * @param mac_addr The input MAC adderss

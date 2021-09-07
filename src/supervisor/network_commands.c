@@ -42,6 +42,11 @@
 
 static const UT_icd fingerprint_icd = {sizeof(struct fingerprint_row), NULL, NULL, NULL};
 
+void ap_service_callback(struct supervisor_context *context, char *data)
+{
+  log_trace("RECEIVED");
+}
+
 bool save_mac_mapper(struct supervisor_context *context, struct mac_conn conn)
 {
   struct crypt_pair pair;

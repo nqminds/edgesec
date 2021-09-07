@@ -29,9 +29,11 @@
 #include "ap_config.h"
 #include "hostapd.h"
 
+#include "../supervisor/supervisor_config.h"
 #include "../radius/radius_server.h"
 #include "../utils/allocs.h"
 #include "../utils/os.h"
+#include "../utils/eloop.h"
 #include "../utils/if.h"
 #include "../utils/log.h"
 #include "../utils/domain.h"
@@ -40,6 +42,9 @@
 
 #define PING_AP_COMMAND       "PING"
 #define PING_AP_COMMAND_REPLY "PONG"
+#define ATTACH_AP_COMMAND     "ATTACH"
+
+typedef void (*ap_service_fn)(struct supervisor_context *context, char *data);
 
 int send_ap_command(char *socket_path, char *cmd_str, char **reply)
 {
@@ -123,6 +128,7 @@ int send_ap_command(char *socket_path, char *cmd_str, char **reply)
   return 0;
 }
 
+// int subscribe_ap_command()
 int ping_ap_command(struct apconf *hconf)
 {
   char *reply = NULL;
@@ -142,36 +148,73 @@ int ping_ap_command(struct apconf *hconf)
   return 0;
 }
 
-int run_ap(struct apconf *hconf, struct radius_conf *rconf, bool exec_ap)
+void ap_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
+{
+  struct supervisor_context *context = (struct supervisor_context *) sock_ctx;
+  ap_service_fn fn = (ap_service_fn) eloop_ctx;
+  fn(context, NULL);
+}
+
+int register_ap_event(struct supervisor_context *context, void *ap_callback_fn)
+{
+  if ((context->ap_sock = create_domain_client(NULL)) == -1) {
+    log_debug("create_domain_client fail");
+    return -1;
+  }
+
+  if (eloop_register_read_sock(context->ap_sock, ap_sock_handler, ap_callback_fn, (void *)context) ==  -1) {
+    log_trace("eloop_register_read_sock fail");
+    return -1;
+  }
+
+  log_trace("Sending to socket_path=%s", context->hconfig.ctrl_interface_path);
+  if (write_domain_data_s(context->ap_sock, ATTACH_AP_COMMAND, STRLEN(ATTACH_AP_COMMAND), context->hconfig.ctrl_interface_path) != STRLEN(ATTACH_AP_COMMAND)) {
+    log_trace("write_domain_data_s fail");
+    return -1;
+  }
+
+  return 0;
+}
+
+int run_ap(struct supervisor_context *context, bool exec_ap, void *ap_callback_fn)
 {
   int res;
-
-  if (!generate_vlan_conf(hconf->vlan_file, hconf->interface)) {
+  if (!generate_vlan_conf(context->hconfig.vlan_file, context->hconfig.interface)) {
     log_trace("generate_vlan_conf fail");
     return -1;
   }
 
-  if (!generate_hostapd_conf(hconf, rconf)) {
-    unlink(hconf->vlan_file);
+  if (!generate_hostapd_conf(&context->hconfig, &context->rconfig)) {
+    unlink(context->hconfig.vlan_file);
     log_trace("generate_hostapd_conf fail");
     return -1;
   }
 
   if (exec_ap) {
-    res = run_ap_process(hconf);
+    res = run_ap_process(&context->hconfig);
   } else {
-    res = signal_ap_process(hconf);
+    res = signal_ap_process(&context->hconfig);
   }
 
-  if (!res && ping_ap_command(hconf) < 0) {
+  if (!res && ping_ap_command(&context->hconfig) < 0) {
     log_trace("ping_ap_command fail");
+    return -1;
+  }
+
+  if (register_ap_event(context, ap_callback_fn) < 0) {
+    log_trace("register_ap_event fail");
     return -1;
   }
 
   return res;
 }
 
-bool close_ap(void)
+bool close_ap(struct supervisor_context *context)
 {
+  if (context->ap_sock != -1) {
+    close(context->ap_sock);
+    context->ap_sock = -1;
+  }
+
   return kill_ap_process();
 }
