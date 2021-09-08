@@ -65,4 +65,31 @@ bool close_ap(struct supervisor_context *context);
  */
 int send_ap_command(char *socket_path, char *cmd_str, char **reply);
 
+/**
+ * @brief Deny ACL ADD AP command 
+ * 
+ * @param hconf AP config structure
+ * @param mac_addr The mac address to add to deny list
+ * @return int 0 on success, -1 on failure
+ */
+int denyacl_add_ap_command(struct apconf *hconf, char *mac_addr);
+
+/**
+ * @brief Deny ACL DEL AP command 
+ * 
+ * @param hconf AP config structure
+ * @param mac_addr The mac address to remove from deny list
+ * @return int 0 on success, -1 on failure
+ */
+int denyacl_del_ap_command(struct apconf *hconf, char *mac_addr);
+
+/**
+ * @brief Dissconnect and reconnect a MAC device from the AP
+ * 
+ * @param hconf AP config structure
+ * @param mac_addr The mac address to disconnect
+ * @return int 0 on success, -1 on failure
+ */
+int disconnect_ap_command(struct apconf *hconf, char *mac_addr);
+
 #endif

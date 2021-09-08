@@ -32,14 +32,17 @@
 #define TICKET_PASSPHRASE_SIZE  16
 #define TICKET_TIMEOUT          60  // In seconds
 
+#include "../ap/ap_config.h"
+
 /**
  * @brief The AP service callback
  * 
  * @param context The supervisor context
- * @param data The AP service data
+ * @param mac_addr The STA mac address
+ * @param status The STA connection status
  * @return 0 on success, -1 on failure
  */
-void ap_service_callback(struct supervisor_context *context, char *data);
+void ap_service_callback(struct supervisor_context *context, uint8_t mac_addr[], enum AP_CONNECTION_STATUS status);
 
 /**
  * @brief Return a mac_conn_info for a given MAC address

@@ -41,6 +41,12 @@
 #define AP_WPA_KEY_MGMT_LEN   20
 #define AP_RSN_PAIRWISE_LEN   20
 
+enum AP_CONNECTION_STATUS {
+  AP_DEFAULT_STATUS = 0,
+  AP_CONNECTED_STATUS,
+  AP_DISCONNECTED_STATUS
+};
+
 /**
  * @brief The hostapd configuration structure
  * 

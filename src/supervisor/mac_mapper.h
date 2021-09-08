@@ -47,7 +47,7 @@
  * MAC device = Device with a given MAC address
  */
 struct mac_conn_info {
-  int       status;                         /**< The MAC Connection status */
+  enum AP_CONNECTION_STATUS       status;   /**< The MAC Connection status */
   int       vlanid;                         /**< VLAN ID assigned to the MAC device */
   bool      nat;                            /**< Flag if set assigns NAT to the MAC device*/
   bool      allow_connection;               /**< If set allows the MAC device to connect ot the network */ 

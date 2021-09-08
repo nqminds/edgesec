@@ -18,7 +18,7 @@ target_link_libraries(sqlite_macconn_writer sqliteu squeue log os ${LIBSQLITE_LI
 
 add_library(network_commands network_commands.c)
 target_include_directories(network_commands PRIVATE ${LIBSQLITE_INCLUDE_DIR})
-target_link_libraries(network_commands crypt_service capture_config sqlite_macconn_writer mac_mapper eloop iptables log os)
+target_link_libraries(network_commands ap_service crypt_service capture_config sqlite_macconn_writer mac_mapper eloop iptables log os)
 
 add_library(cmd_processor cmd_processor.c)
 target_include_directories(cmd_processor PRIVATE ${LIBSQLITE_INCLUDE_DIR})

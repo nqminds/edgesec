@@ -40,11 +40,17 @@
 
 #define AP_REPLY_TIMEOUT 10
 
-#define PING_AP_COMMAND       "PING"
-#define PING_AP_COMMAND_REPLY "PONG"
-#define ATTACH_AP_COMMAND     "ATTACH"
+#define GENERIC_AP_COMMAND_REPLY  "OK"
+#define PING_AP_COMMAND           "PING"
+#define PING_AP_COMMAND_REPLY     "PONG"
+#define ATTACH_AP_COMMAND         "ATTACH"
+#define DENYACL_ADD_COMMAND       "DENY_ACL ADD_MAC"
+#define DENYACL_DEL_COMMAND       "DENY_ACL DEL_MAC"
 
-typedef void (*ap_service_fn)(struct supervisor_context *context, char *data);
+#define AP_STA_DISCONNECTED       "AP-STA-DISCONNECTED"
+#define AP_STA_CONNECTED          "AP-STA-CONNECTED"
+
+typedef void (*ap_service_fn)(struct supervisor_context *context, uint8_t mac_addr[], enum AP_CONNECTION_STATUS status);
 
 int send_ap_command(char *socket_path, char *cmd_str, char **reply)
 {
@@ -128,7 +134,6 @@ int send_ap_command(char *socket_path, char *cmd_str, char **reply)
   return 0;
 }
 
-// int subscribe_ap_command()
 int ping_ap_command(struct apconf *hconf)
 {
   char *reply = NULL;
@@ -148,15 +153,135 @@ int ping_ap_command(struct apconf *hconf)
   return 0;
 }
 
+int denyacl_ap_command(struct apconf *hconf, char *cmd, char *mac_addr)
+{
+  char *buffer;
+  char *reply = NULL;
+
+  if (mac_addr == NULL) {
+    log_trace("mac_addr is NULL");
+    return -1;
+  }
+
+  if ((buffer = os_zalloc(strlen(cmd) + strlen(mac_addr) + 1)) == NULL) {
+    log_err("os_zalloc");
+    return -1;
+  }
+
+  sprintf(buffer, "%s %s", cmd, mac_addr);
+  if (send_ap_command(hconf->ctrl_interface_path, buffer, &reply) < 0) {
+    log_trace("send_ap_command fail");
+    return -1;
+  }
+
+  if (strcmp(reply, GENERIC_AP_COMMAND_REPLY) != 0) {
+    log_trace(GENERIC_AP_COMMAND_REPLY" reply doesn't match %s", reply);
+    os_free(reply);
+    return -1;
+  }
+
+  os_free(reply);
+  return 0;
+}
+
+int denyacl_add_ap_command(struct apconf *hconf, char *mac_addr)
+{
+  return denyacl_ap_command(hconf, DENYACL_ADD_COMMAND, mac_addr);
+}
+
+int denyacl_del_ap_command(struct apconf *hconf, char *mac_addr)
+{
+  return denyacl_ap_command(hconf, DENYACL_DEL_COMMAND, mac_addr);
+}
+
+int disconnect_ap_command(struct apconf *hconf, char *mac_addr)
+{
+  if (denyacl_add_ap_command(hconf, mac_addr) < 0) {
+    log_trace("denyacl_add_ap_command fail");
+    return -1;
+  }
+
+  if (denyacl_del_ap_command(hconf, mac_addr) < 0) {
+    log_trace("denyacl_del_ap_command fail");
+    return -1;
+  }
+}
+
+int find_ap_status(char *ap_answer, uint8_t *mac_addr, enum AP_CONNECTION_STATUS *status)
+{
+  UT_array *str_arr;
+  char **ptr = NULL;
+
+  utarray_new(str_arr, &ut_str_icd);
+
+  if (split_string_array(ap_answer, 0x20, str_arr) > 1) {
+    ptr = (char**) utarray_next(str_arr, ptr);
+    if (ptr != NULL && *ptr != NULL) {
+      if (strstr(*ptr, AP_STA_CONNECTED) != NULL) {
+        *status = AP_CONNECTED_STATUS;
+      } else if (strstr(ap_answer, AP_STA_DISCONNECTED) != NULL) {
+        *status = AP_DISCONNECTED_STATUS;
+      } else {
+        utarray_free(str_arr);
+        return -1;
+      }
+
+      ptr = (char**) utarray_next(str_arr, ptr);
+      if (ptr != NULL && *ptr != NULL) {
+        if (hwaddr_aton2(*ptr, mac_addr) != -1) {
+          utarray_free(str_arr);
+          return 0;
+        }
+      }
+    }
+  }
+
+  utarray_free(str_arr);
+  return -1;
+}
+
 void ap_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
 {
+  uint8_t mac_addr[ETH_ALEN];
+  enum AP_CONNECTION_STATUS status;
+  uint32_t bytes_available;
+  char *rec_data, *trimmed;
   struct supervisor_context *context = (struct supervisor_context *) sock_ctx;
   ap_service_fn fn = (ap_service_fn) eloop_ctx;
-  fn(context, NULL);
+
+  if (ioctl(sock, FIONREAD, &bytes_available) == -1) {
+    log_err("ioctl");
+    return;
+  }
+
+  rec_data = os_zalloc(bytes_available + 1);
+  if (rec_data == NULL) {
+    log_err("os_zalloc");
+    return;
+  }
+
+  if (read_domain_data_s(sock, rec_data, bytes_available, context->hconfig.ctrl_interface_path, MSG_DONTWAIT) < 0) {
+    log_trace("read_domain_data_s fail");
+    os_free(rec_data);
+    return;
+  }
+
+  if ((trimmed = rtrim(rec_data, NULL)) == NULL) {
+    log_trace("rtrim fail");
+    os_free(rec_data);
+    return;
+  }
+
+  if (find_ap_status(trimmed, mac_addr, &status) > -1) {
+    fn(context, mac_addr, status);
+  }
+
+  os_free(rec_data);
 }
 
 int register_ap_event(struct supervisor_context *context, void *ap_callback_fn)
 {
+  size_t cmd_len = STRLEN(ATTACH_AP_COMMAND);
   if ((context->ap_sock = create_domain_client(NULL)) == -1) {
     log_debug("create_domain_client fail");
     return -1;
@@ -167,8 +292,8 @@ int register_ap_event(struct supervisor_context *context, void *ap_callback_fn)
     return -1;
   }
 
-  log_trace("Sending to socket_path=%s", context->hconfig.ctrl_interface_path);
-  if (write_domain_data_s(context->ap_sock, ATTACH_AP_COMMAND, STRLEN(ATTACH_AP_COMMAND), context->hconfig.ctrl_interface_path) != STRLEN(ATTACH_AP_COMMAND)) {
+  log_trace("Sending command %s to socket_path=%s", ATTACH_AP_COMMAND, context->hconfig.ctrl_interface_path);
+  if (write_domain_data_s(context->ap_sock, ATTACH_AP_COMMAND, cmd_len, context->hconfig.ctrl_interface_path) != cmd_len) {
     log_trace("write_domain_data_s fail");
     return -1;
   }
