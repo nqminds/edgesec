@@ -104,22 +104,24 @@ int extract_secret_entry(struct secrets_row* row, uint8_t *key, int *key_size,
   size_t out_len;
   char *buf;
   
-  if (row->value == NULL) {
+  if (row->value == NULL && key_size != NULL) {
     *key_size = 0;
-  } else {
+  } else if (row->value != NULL && key != NULL && key_size != NULL) {
     buf = base64_decode(row->value, strlen(row->value), &out_len);
     if (buf == NULL) {
       log_trace("base64_decode fail");
       return -1;
     }
+
     *key_size = out_len;
     os_memcpy(key, buf, *key_size);
+
     os_free(buf);
   }
 
-  if (row->salt == NULL) {
+  if (row->salt == NULL && salt_size != NULL) {
     *salt_size = 0;
-  } else {
+  } else if (row->salt != NULL && salt != NULL && salt_size != NULL) {
     buf = base64_decode(row->salt, strlen(row->salt), &out_len);
     if (buf == NULL) {
       log_trace("base64_decode fail");
@@ -127,19 +129,22 @@ int extract_secret_entry(struct secrets_row* row, uint8_t *key, int *key_size,
     }
     *salt_size = out_len;
     os_memcpy(salt, buf, *salt_size);
+
     os_free(buf);
   }
 
-  if (row->iv == NULL) {
+  if (row->iv == NULL && iv_size != NULL) {
     *iv_size = 0;
-  } else {
+  } else if (row->iv != NULL && iv != NULL && iv_size != NULL){
     buf = base64_decode(row->iv, strlen(row->iv), &out_len);
     if (buf == NULL) {
       log_trace("base64_decode fail");
       return -1;
     }
+
     *iv_size = out_len;
     os_memcpy(iv, buf, *iv_size);
+
     os_free(buf);
   }
 
@@ -345,8 +350,13 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
       }
       free_sqlite_secrets_row(row_secret);
     } else {
-      log_debug("Using hardware secure element");
-      log_trace("Not implemented, yet");
+      // if (extract_secret_entry(row_secret, crypto_buf, &crypto_buf_size, NULL, NULL, NULL, NULL) < 0) {
+      //   log_trace("extract_secret_entry fail");
+      //   free_sqlite_secrets_row(row_secret);
+      //   free_crypt_service(context);
+      //   return NULL;      
+      // }
+
       free_sqlite_secrets_row(row_secret);
       free_crypt_service(context);
       return NULL;      
