@@ -60,10 +60,32 @@ int close_zymkey4(zkCTX *ctx)
 
 int generate_zymkey4_key(zkCTX *ctx, uint8_t *key, size_t key_size)
 {
-// if (zkGetRandBytes (
-// zkCTX ctx,
-// uint8_t ** rdata,
-// int rdata_sz
-// ) 
-  return -1;
+  uint8_t *rdata = NULL;
+
+  if (zkGetRandBytes(*ctx, &rdata, (int) key_size) < 0) {
+    log_trace("zkGetRandBytes fail");
+    return -1;
+  }
+  
+  if (rdata == NULL) {
+    log_trace("zkGetRandBytes fail");
+    return -1;
+  }
+
+  os_memcpy(key, rdata, key_size);
+  os_free(rdata);
+
+  return 0;
+}
+
+int encrypt_zymkey4_blob(zkCTX *ctx, uint8_t *in, size_t in_size, uint8_t **out, size_t *out_size)
+{
+  int ret = zkLockDataB2B(*ctx, in, (int) in_size, out, (int*) out_size, false);
+
+  if (!ret && *out == NULL) {
+    log_trace("zkLockDataB2B fail");
+    return -1;
+  }
+
+  return ret;
 }

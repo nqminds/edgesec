@@ -72,12 +72,28 @@ int encrypt_master_key(uint8_t *key, int key_size, uint8_t *user_key, int user_k
 struct secrets_row* prepare_secret_entry(char *key_id, uint8_t *key, int key_size, uint8_t *salt, int salt_size, uint8_t *iv, int iv_size)
 {
   size_t out_len;
-  struct secrets_row *row = os_malloc(sizeof(struct secrets_row));
+  struct secrets_row *row = os_zalloc(sizeof(struct secrets_row));
 
-  row->id = os_strdup(key_id);
-  row->value = base64_encode(key, key_size, &out_len);
-  row->salt = base64_encode(salt, salt_size, &out_len);
-  row->iv = base64_encode(iv, iv_size, &out_len);
+  if (row == NULL) {
+    log_err("os_zalloc");
+    return NULL;
+  }
+
+  if (key_id != NULL) {
+    row->id = os_strdup(key_id);
+  }
+
+  if (key != NULL) {
+    row->value = base64_encode(key, key_size, &out_len);
+  }
+
+  if (salt != NULL) {
+    row->salt = base64_encode(salt, salt_size, &out_len);
+  }
+
+  if (iv != NULL) {
+    row->iv = base64_encode(iv, iv_size, &out_len);
+  }
 
   return row;
 }
@@ -216,6 +232,8 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
   sqlite3 *db = NULL;
   struct crypt_context *context;
   struct secrets_row *row_secret;
+  uint8_t *crypto_buf = NULL;
+  size_t crypto_buf_size = 0;
 
   if (key_id == NULL) {
     log_trace("key_id param is NULL");
@@ -236,6 +254,7 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
     return NULL;
   }
 
+  context->hcontext = NULL;
   context->crypt_db = db;
   strncpy(context->key_id, key_id, MAX_KEY_ID_SIZE);
 
@@ -250,15 +269,15 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
     free_sqlite_secrets_row(row_secret);
 
     log_trace("No secret with key=%s, generating new one", key_id);
-    // Create encryption key
-    if (!crypto_genkey(context->crypto_key, AES_KEY_SIZE)) {
-      log_trace("crypto_genkey fail");
-      free_crypt_service(context);
-      free_sqlite_secrets_row(row_secret);
-      return NULL;
-    }
-
     if (user_secret_size) {
+      // Create encryption key
+      if (!crypto_genkey(context->crypto_key, AES_KEY_SIZE)) {
+        log_trace("crypto_genkey fail");
+        free_crypt_service(context);
+        free_sqlite_secrets_row(row_secret);
+        return NULL;
+      }
+
       log_debug("Using user supplied secret");
       
       if ((row_secret = generate_user_crypto_key_entry(key_id, user_secret, user_secret_size,
@@ -278,10 +297,40 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
       }
       free_sqlite_secrets_row(row_secret);
     } else {
-      log_debug("Using hardware secure element");
-      log_trace("Not implemented, yet");
-      free_crypt_service(context);
-      return NULL;      
+      log_trace("Using HSM...");
+      if ((context->hcontext = init_hsm()) == NULL) {
+        log_trace("init_hsm fail");
+        free_crypt_service(context);
+        return NULL;
+      }
+
+      if (generate_hsm_key(context->hcontext, context->crypto_key, AES_KEY_SIZE) < 0) {
+        log_trace("generate_hsm_key fail");
+        free_crypt_service(context);
+        return NULL;
+      }
+
+      if (encrypt_hsm_blob(context->hcontext, context->crypto_key, AES_KEY_SIZE, &crypto_buf, &crypto_buf_size) < 0) {
+        log_trace("encrypt_hsm_blob fail");
+        free_crypt_service(context);
+        return NULL;
+      }
+
+      if ((row_secret = prepare_secret_entry(key_id, crypto_buf, crypto_buf_size, NULL, 0, NULL, 0)) == NULL) {
+        log_trace("prepare_secret_entry fail");
+        os_free(crypto_buf);
+        free_crypt_service(context);
+        return NULL;
+      }
+      os_free(crypto_buf);
+
+      if (save_sqlite_secrets_entry(context->crypt_db, row_secret) < 0) {
+        log_trace("save_sqlite_secrets_entry fail");
+        free_sqlite_secrets_row(row_secret);
+        free_crypt_service(context);
+        return NULL;
+      }
+      free_sqlite_secrets_row(row_secret);
     }
   } else {
     log_trace("found crypto key=%s", row_secret->id);

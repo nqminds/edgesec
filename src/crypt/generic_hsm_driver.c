@@ -79,8 +79,20 @@ int generate_hsm_key(struct hsm_context *context, uint8_t *key, size_t key_size)
 {
   if (context != NULL) {
 #ifdef WITH_ZYMKEY4_HSM
-  return 0;
+    return generate_zymkey4_key((zkCTX *)context->hsm_ctx, key, key_size);
 #endif
   }
+
+  return -1;
+}
+
+int encrypt_hsm_blob(struct hsm_context *context, uint8_t *in, size_t in_size, uint8_t **out, size_t *out_size)
+{
+  if (context != NULL) {
+#ifdef WITH_ZYMKEY4_HSM
+    return encrypt_zymkey4_blob((zkCTX *)context->hsm_ctx, in, in_size, out, out_size);
+#endif
+  }
+
   return -1;
 }
