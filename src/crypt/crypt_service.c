@@ -26,6 +26,7 @@
 #include "sqlite_crypt_writer.h"
 #include "crypt_config.h"
 #include "crypt_service.h"
+#include "generic_hsm_driver.h"
 
 #include "../utils/log.h"
 #include "../utils/allocs.h"
@@ -37,6 +38,7 @@ void free_crypt_service(struct crypt_context *ctx)
 {
   if (ctx != NULL) {
     free_sqlite_crypt_db(ctx->crypt_db);
+    close_hsm(ctx->hcontext);
     os_free(ctx);
   }
 }

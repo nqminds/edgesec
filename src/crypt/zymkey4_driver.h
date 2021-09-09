@@ -18,30 +18,37 @@
  ****************************************************************************/
 
 /**
- * @file crypt_config.h
+ * @file zymkey4_driver.h
  * @author Alexandru Mereacre 
- * @brief File containing the definition of crypt configuration structure.
+ * @brief File containing the definition of zymkey4 driver configuration utilities.
  */
-#ifndef CRYPT_CONFIG_H
-#define CRYPT_CONFIG_H
-
-#include <sqlite3.h>
-
-#include "generic_hsm_driver.h"
-
-#include "../utils/cryptou.h"
-
-#define MAX_KEY_ID_SIZE 255
+#ifndef ZYMKEY4_DRIVER_H
+#define ZYMKEY4_DRIVER_H
+#include <sys/types.h>
+#include <zymkey/zk_app_utils.h>
 
 /**
- * @brief crypt context structure definition
+ * @brief Initialises an HSM context
  * 
+ * @return zkCTX* The returned Zymkey4 context, NULL on error
  */
-struct crypt_context {
-  struct hsm_context *hcontext;                       /**< The HSM context. */
-  sqlite3 *crypt_db;                                  /**< The crypt sqlite db structure. */
-  char key_id[MAX_KEY_ID_SIZE];                       /**< The crypt secrets key id. */
-  uint8_t crypto_key[AES_KEY_SIZE + AES_BLOCK_SIZE];  /**< The crypt master key array (Need to be store securely or retrived from the secure memory). */
-};
+zkCTX* init_zymkey4(void);
 
+/**
+ * @brief Closes the zymkey4 context
+ * 
+ * @param ctx The Zymkey4 context
+ * @return int 0 on success, -1 on failure
+ */
+int close_zymkey4(zkCTX *ctx);
+
+/**
+ * @brief Generate a random Zymkey4 key
+ * 
+ * @param ctx The Zymkey4 context
+ * @param key The returned key
+ * @param key_size The key size
+ * @return int 0 on success, -1 on failure
+ */
+int generate_zymkey4_key(zkCTX *ctx, uint8_t *key, size_t key_size);
 #endif

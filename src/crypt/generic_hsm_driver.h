@@ -18,30 +18,41 @@
  ****************************************************************************/
 
 /**
- * @file crypt_config.h
+ * @file generic_hsm_driver.h
  * @author Alexandru Mereacre 
- * @brief File containing the definition of crypt configuration structure.
+ * @brief File containing the definition of generic HSM driver configuration utilities.
  */
-#ifndef CRYPT_CONFIG_H
-#define CRYPT_CONFIG_H
+#ifndef GENERIC_HSM_DRIVER_H
+#define GENERIC_HSM_DRIVER_H
 
-#include <sqlite3.h>
+#include <sys/types.h>
 
-#include "generic_hsm_driver.h"
-
-#include "../utils/cryptou.h"
-
-#define MAX_KEY_ID_SIZE 255
-
-/**
- * @brief crypt context structure definition
- * 
- */
-struct crypt_context {
-  struct hsm_context *hcontext;                       /**< The HSM context. */
-  sqlite3 *crypt_db;                                  /**< The crypt sqlite db structure. */
-  char key_id[MAX_KEY_ID_SIZE];                       /**< The crypt secrets key id. */
-  uint8_t crypto_key[AES_KEY_SIZE + AES_BLOCK_SIZE];  /**< The crypt master key array (Need to be store securely or retrived from the secure memory). */
+struct hsm_context {
+  void *hsm_ctx;
 };
 
+/**
+ * @brief Initialises an HSM context
+ * 
+ * @return struct hsm_context* The returned context, NULL on error
+ */
+struct hsm_context* init_hsm(void);
+
+/**
+ * @brief Closes the HSM context
+ * 
+ * @param context Tje HSM context
+ * @return int 0 on success, -1 on failure
+ */
+int close_hsm(struct hsm_context *context);
+
+/**
+ * @brief Generate an HSM key
+ * 
+ * @param context The HSM context
+ * @param key The returned key
+ * @param key_size The key size
+ * @return int 0 on success, -1 on failure
+ */
+int generate_hsm_key(struct hsm_context *context, uint8_t *key, size_t key_size);
 #endif

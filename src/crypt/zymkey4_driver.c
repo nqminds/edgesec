@@ -18,30 +18,52 @@
  ****************************************************************************/
 
 /**
- * @file crypt_config.h
+ * @file zymkey4_driver.c
  * @author Alexandru Mereacre 
- * @brief File containing the definition of crypt configuration structure.
+ * @brief File containing the implementation of zymkey4 driver configuration utilities.
  */
-#ifndef CRYPT_CONFIG_H
-#define CRYPT_CONFIG_H
 
-#include <sqlite3.h>
+#include <sys/types.h>
+#include <zymkey/zk_app_utils.h>
 
-#include "generic_hsm_driver.h"
+#include "../utils/log.h"
+#include "../utils/allocs.h"
+#include "../utils/os.h"
 
-#include "../utils/cryptou.h"
+zkCTX* init_zymkey4(void)
+{
+  zkCTX* context = os_zalloc(sizeof(zkCTX));
+  if (context == NULL) {
+    log_err("os_zalloc");
+    return NULL;
+  }
 
-#define MAX_KEY_ID_SIZE 255
+  if (zkOpen(context) < 0) {
+    log_trace("zkOpen fail");
+    os_free(context);
+    return NULL;
+  }
 
-/**
- * @brief crypt context structure definition
- * 
- */
-struct crypt_context {
-  struct hsm_context *hcontext;                       /**< The HSM context. */
-  sqlite3 *crypt_db;                                  /**< The crypt sqlite db structure. */
-  char key_id[MAX_KEY_ID_SIZE];                       /**< The crypt secrets key id. */
-  uint8_t crypto_key[AES_KEY_SIZE + AES_BLOCK_SIZE];  /**< The crypt master key array (Need to be store securely or retrived from the secure memory). */
-};
+  return context;
+}
 
-#endif
+int close_zymkey4(zkCTX *ctx)
+{
+  int ret = 0;
+  if (ctx != NULL) {
+    ret = zkClose(*ctx);
+    os_free(ctx);
+  }
+
+  return ret;
+}
+
+int generate_zymkey4_key(zkCTX *ctx, uint8_t *key, size_t key_size)
+{
+// if (zkGetRandBytes (
+// zkCTX ctx,
+// uint8_t ** rdata,
+// int rdata_sz
+// ) 
+  return -1;
+}
