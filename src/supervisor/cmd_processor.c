@@ -487,7 +487,7 @@ ssize_t process_query_fingerprint_cmd(int sock, struct client_address *client_ad
   char protocol[MAX_PROTOCOL_NAME_LEN];
   uint64_t timestamp;
   char *out;
-  ssize_t out_len;
+  ssize_t out_len, ret;
 
   // MAC address source
   ptr = (char**) utarray_next(cmd_arr, ptr);
@@ -516,7 +516,10 @@ ssize_t process_query_fingerprint_cmd(int sock, struct client_address *client_ad
                 os_strlcpy(protocol, *ptr, MAX_PROTOCOL_NAME_LEN);
                 if ((out_len = query_fingerprint_cmd(context, mac_addr, timestamp, op, protocol, &out)) > 0)
                 {
-                  return write_domain_data(sock, out, out_len, &client_addr->addr, client_addr->len);
+                  ret = write_domain_data(sock, out, out_len, &client_addr->addr, client_addr->len);
+
+                  os_free(out);
+                  return ret;
                 }
               }
             }
@@ -627,8 +630,32 @@ ssize_t process_put_crypt_cmd(int sock, struct client_address *client_addr, stru
 
 ssize_t process_get_crypt_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
 {
+  char **ptr = (char**) utarray_next(cmd_arr, NULL);
+  char * key = NULL, *value = NULL, *trimmed;
+  ssize_t ret = -1;
+  ptr = (char**) utarray_next(cmd_arr, ptr);
 
+  if (ptr != NULL && *ptr != NULL) {
+    if ((key = os_strdup(*ptr)) == NULL) {
+      log_err("os_strdup");
+      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);    
+    }
+
+    trimmed = rtrim(key, NULL);
+    if (strlen(trimmed)) {
+      if (!get_crypt_cmd(context, key, &value)) {
+        os_free(key);
+        ret =  write_domain_data(sock, value, strlen(value), &client_addr->addr, client_addr->len);
+        os_free(value);
+        return ret;
+      }
+    }
+  }
+  os_free(key);
+
+  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
 }
+
 process_cmd_fn get_command_function(char *cmd)
 {
   if (!strcmp(cmd, CMD_PING)) {

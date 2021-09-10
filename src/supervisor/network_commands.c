@@ -874,6 +874,7 @@ int clear_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr)
 int put_crypt_cmd(struct supervisor_context *context, char *key, char *value)
 {
   struct crypt_pair pair = {key, NULL, 0};
+
   if ((pair.value = base64_decode(value, strlen(value), &pair.value_size)) == NULL) {
     log_trace("base64_decode fail");
     return -1;
@@ -889,5 +890,19 @@ int put_crypt_cmd(struct supervisor_context *context, char *key, char *value)
 
 int get_crypt_cmd(struct supervisor_context *context, char *key, char **value)
 {
+  struct crypt_pair* pair = NULL;
+  size_t out_len;
+  if ((pair = get_crypt_pair(context->crypt_ctx, key)) == NULL) {
+    log_trace("get_crypt_pair fail");
+    return -1;
+  }
+
+  if ((*value = base64_encode(pair->value, pair->value_size, &out_len)) == NULL) {
+    log_trace("base64_encode fail");
+    free_crypt_pair(pair);
+    return -1;
+  }
+
+  free_crypt_pair(pair);
   return 0;
 }

@@ -103,7 +103,7 @@ ssize_t __wrap_query_fingerprint_cmd(struct supervisor_context *context, char *m
   check_expected(timestamp);
   check_expected(op);
   check_expected(protocol);
-  check_expected(out);
+  *out = os_malloc(sizeof(char));
   return strlen(OK_REPLY);
 }
 
@@ -132,7 +132,7 @@ int __wrap_put_crypt_cmd(struct supervisor_context *context, char *key, char *va
 int __wrap_get_crypt_cmd(struct supervisor_context *context, char *key, char **value)
 {
   check_expected(key);
-  check_expected(value);
+  *value = os_strdup(OK_REPLY);
   return 0;
 }
 
@@ -533,7 +533,6 @@ static void test_process_query_fingerprint_cmd(void **state)
   expect_value(__wrap_query_fingerprint_cmd, timestamp, 12345);
   expect_string(__wrap_query_fingerprint_cmd, op, ">=");
   expect_string(__wrap_query_fingerprint_cmd, protocol, "IP4");
-  expect_any(__wrap_query_fingerprint_cmd, out);
   assert_int_equal(process_query_fingerprint_cmd(0, &claddr, NULL, cmd_arr), strlen(OK_REPLY));
   utarray_free(cmd_arr);
 
@@ -640,6 +639,18 @@ static void test_process_get_crypt_cmd(void **state)
   (void) state; /* unused */
 
   UT_array *cmd_arr;
+  struct client_address claddr;
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("GET_CRYPT 12345", CMD_DELIMITER, cmd_arr), -1);
+  expect_string(__wrap_get_crypt_cmd, key, "12345");
+  assert_int_equal(process_get_crypt_cmd(0, &claddr, NULL, cmd_arr), strlen(OK_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("GET_CRYPT ", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_get_crypt_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
 }
 
 int main(int argc, char *argv[])
