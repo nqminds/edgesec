@@ -89,3 +89,15 @@ int encrypt_zymkey4_blob(zkCTX *ctx, uint8_t *in, size_t in_size, uint8_t **out,
 
   return ret;
 }
+
+int decrypt_zymkey4_blob(zkCTX *ctx, uint8_t *in, size_t in_size, uint8_t **out, size_t *out_size)
+{
+  int ret = zkUnlockDataB2B(*ctx, in, (int) in_size, out, (int*) out_size, false);
+
+  if (!ret && *out == NULL) {
+    log_trace("zkUnlockDataB2B fail");
+    return -1;
+  }
+
+  return ret;
+}

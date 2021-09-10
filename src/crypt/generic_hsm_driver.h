@@ -67,4 +67,16 @@ int generate_hsm_key(struct hsm_context *context, uint8_t *key, size_t key_size)
  * @return int 0 on success, -1 on failure
  */
 int encrypt_hsm_blob(struct hsm_context *context, uint8_t *in, size_t in_size, uint8_t **out, size_t *out_size);
+
+/**
+ * @brief Decrypt a byte array wiht the HSM
+ * 
+ * @param context The HSM context
+ * @param in The input array
+ * @param in_size The input array size
+ * @param out The output decrypted array
+ * @param out_size The output array size
+ * @return int 0 on success, -1 on failure
+ */
+int decrypt_hsm_blob(struct hsm_context *context, uint8_t *in, size_t in_size, uint8_t **out, size_t *out_size);
 #endif

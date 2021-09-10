@@ -236,9 +236,9 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
 {
   sqlite3 *db = NULL;
   struct crypt_context *context;
-  struct secrets_row *row_secret;
-  uint8_t *crypto_buf = NULL;
-  size_t crypto_buf_size = 0;
+  struct secrets_row *row_secret = NULL;
+  uint8_t *crypto_buf = NULL, *decrypted_buf = NULL;
+  size_t crypto_buf_size = 0, decrypted_buf_size = 0;
 
   if (key_id == NULL) {
     log_trace("key_id param is NULL");
@@ -272,6 +272,7 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
 
   if (row_secret->id == NULL) {
     free_sqlite_secrets_row(row_secret);
+    row_secret = NULL;
 
     log_trace("No secret with key=%s, generating new one", key_id);
     if (user_secret_size) {
@@ -279,7 +280,6 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
       if (!crypto_genkey(context->crypto_key, AES_KEY_SIZE)) {
         log_trace("crypto_genkey fail");
         free_crypt_service(context);
-        free_sqlite_secrets_row(row_secret);
         return NULL;
       }
 
@@ -290,7 +290,6 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
       {
         log_trace("generate_user_crypto_key_entry fail");
         free_crypt_service(context);
-        free_sqlite_secrets_row(row_secret);
         return NULL;
       }
 
@@ -300,7 +299,6 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
         free_crypt_service(context);
         return NULL;
       }
-      free_sqlite_secrets_row(row_secret);
     } else {
       log_trace("Using HSM...");
       if ((context->hcontext = init_hsm()) == NULL) {
@@ -335,7 +333,6 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
         free_crypt_service(context);
         return NULL;
       }
-      free_sqlite_secrets_row(row_secret);
     }
   } else {
     log_trace("found crypto key=%s", row_secret->id);
@@ -348,21 +345,53 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
         free_crypt_service(context);
         return NULL;
       }
-      free_sqlite_secrets_row(row_secret);
     } else {
-      // if (extract_secret_entry(row_secret, crypto_buf, &crypto_buf_size, NULL, NULL, NULL, NULL) < 0) {
-      //   log_trace("extract_secret_entry fail");
-      //   free_sqlite_secrets_row(row_secret);
-      //   free_crypt_service(context);
-      //   return NULL;      
-      // }
+      log_trace("Using HSM...");
+      if ((context->hcontext = init_hsm()) == NULL) {
+        log_trace("init_hsm fail");
+        free_sqlite_secrets_row(row_secret);
+        return NULL;
+      }
 
-      free_sqlite_secrets_row(row_secret);
-      free_crypt_service(context);
-      return NULL;      
+      if (row_secret->value == NULL) {
+        log_trace("No value in row");
+        free_sqlite_secrets_row(row_secret);
+        free_crypt_service(context);
+        return NULL;
+      }
+
+      crypto_buf = base64_decode(row_secret->value, strlen(row_secret->value), &crypto_buf_size);
+      if (crypto_buf == NULL) {
+        log_trace("base64_decode fail");
+        free_sqlite_secrets_row(row_secret);
+        free_crypt_service(context);
+        return NULL;
+      }
+
+      if (decrypt_hsm_blob(context->hcontext, crypto_buf, crypto_buf_size, &decrypted_buf, &decrypted_buf_size) < 0) {
+        log_trace("decrypt_hsm_blob fail");
+        os_free(crypto_buf);
+        free_sqlite_secrets_row(row_secret);
+        free_crypt_service(context);
+        return NULL;
+      }
+
+      if (decrypted_buf_size != AES_KEY_SIZE) {
+        log_trace("decrypted HSM key wrong size");
+        os_free(decrypted_buf);
+        os_free(crypto_buf);
+        free_sqlite_secrets_row(row_secret);
+        free_crypt_service(context);
+        return NULL;
+      }
+
+      os_memcpy(context->crypto_key, decrypted_buf, decrypted_buf_size);
+      os_free(decrypted_buf);
+      os_free(crypto_buf);
     }
   }
   
+  free_sqlite_secrets_row(row_secret);
   return context;
 }
 

@@ -63,36 +63,99 @@ struct hsm_context* init_hsm(void)
 
 int close_hsm(struct hsm_context *context)
 {
-  int ret = 0;
+  int ret = -1;
 
-  if (context != NULL) {
-#ifdef WITH_ZYMKEY4_HSM
-    ret = close_zymkey4((zkCTX *)context->hsm_ctx);
-#endif
-    os_free(context);
+  if (context == NULL) {
+    log_trace("context param is NULL");
+    return -1;
   }
 
+#ifdef WITH_ZYMKEY4_HSM
+  ret = close_zymkey4((zkCTX *)context->hsm_ctx);
+#else
+  log_debug("No HSM found");
+#endif
+
+  os_free(context);
   return ret;
 }
 
 int generate_hsm_key(struct hsm_context *context, uint8_t *key, size_t key_size)
 {
-  if (context != NULL) {
-#ifdef WITH_ZYMKEY4_HSM
-    return generate_zymkey4_key((zkCTX *)context->hsm_ctx, key, key_size);
-#endif
+  if (context == NULL) {
+    log_trace("context param is NULL");
+    return -1;
   }
 
+  if (key == NULL) {
+    log_trace("key param is NULL");
+    return -1;
+  }
+
+#ifdef WITH_ZYMKEY4_HSM
+  return generate_zymkey4_key((zkCTX *)context->hsm_ctx, key, key_size);
+#else
+  log_debug("No HSM found");
   return -1;
+#endif
 }
 
 int encrypt_hsm_blob(struct hsm_context *context, uint8_t *in, size_t in_size, uint8_t **out, size_t *out_size)
 {
-  if (context != NULL) {
-#ifdef WITH_ZYMKEY4_HSM
-    return encrypt_zymkey4_blob((zkCTX *)context->hsm_ctx, in, in_size, out, out_size);
-#endif
+  if (context == NULL) {
+    log_trace("context param is NULL");
+    return -1;
   }
 
+  if (in == NULL) {
+    log_trace("in param is NULL");
+    return -1;
+  }
+
+  if (out == NULL) {
+    log_trace("out param is NULL");
+    return -1;
+  }
+
+  if (out_size == NULL) {
+    log_trace("out_size param is NULL");
+    return -1;
+  }
+
+#ifdef WITH_ZYMKEY4_HSM
+  return encrypt_zymkey4_blob((zkCTX *)context->hsm_ctx, in, in_size, out, out_size);
+#else
+  log_debug("No HSM found");
   return -1;
+#endif
+}
+
+int decrypt_hsm_blob(struct hsm_context *context, uint8_t *in, size_t in_size, uint8_t **out, size_t *out_size)
+{
+  if (context == NULL) {
+    log_trace("context param is NULL");
+    return -1;
+  }
+
+  if (in == NULL) {
+    log_trace("in param is NULL");
+    return -1;
+  }
+
+  if (out == NULL) {
+    log_trace("out param is NULL");
+    return -1;
+  }
+
+  if (out_size == NULL) {
+    log_trace("out param is NULL");
+    return -1;
+  }
+
+#ifdef WITH_ZYMKEY4_HSM
+  return decrypt_zymkey4_blob((zkCTX *)context->hsm_ctx, in, in_size, out, out_size);
+#else
+  log_debug("No HSM found");
+  return -1;
+#endif
 }
