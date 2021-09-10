@@ -589,6 +589,46 @@ ssize_t process_clear_psk_cmd(int sock, struct client_address *client_addr,
   return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
 }
 
+ssize_t process_put_crypt_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
+{
+  char **ptr = (char**) utarray_next(cmd_arr, NULL);
+  char * key = NULL;
+  char *value = NULL, *trimmed;
+  ptr = (char**) utarray_next(cmd_arr, ptr);
+  if (ptr != NULL && *ptr != NULL) {
+    if ((key = os_strdup(*ptr)) == NULL) {
+      log_err("os_strdup");
+      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);    
+    }
+
+    ptr = (char**) utarray_next(cmd_arr, ptr);
+    if (ptr != NULL && *ptr != NULL) {
+      if ((value = os_strdup(*ptr)) == NULL) {
+        log_err("os_strdup");
+        os_free(key);
+        return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);    
+      }
+
+      trimmed = rtrim(value, NULL);
+      if (strlen(trimmed)) {
+        if (!put_crypt_cmd(context, key, trimmed)) {
+          os_free(key);
+          os_free(value);
+          return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), &client_addr->addr, client_addr->len);
+        }
+      }
+      os_free(value);
+    }
+    os_free(key);
+  }
+
+  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
+}
+
+ssize_t process_get_crypt_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
+{
+
+}
 process_cmd_fn get_command_function(char *cmd)
 {
   if (!strcmp(cmd, CMD_PING)) {
@@ -625,6 +665,10 @@ process_cmd_fn get_command_function(char *cmd)
     return process_register_ticket_cmd;
   } else if (!strcmp(cmd, CMD_CLEAR_PSK)) {
     return process_clear_psk_cmd;
+  } else if (!strcmp(cmd, CMD_PUT_CRYPT)) {
+    return process_put_crypt_cmd;
+  } else if (!strcmp(cmd, CMD_GET_CRYPT)) {
+    return process_get_crypt_cmd;
   } else {
     log_debug("unknown command");
   }

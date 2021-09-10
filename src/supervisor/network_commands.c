@@ -37,6 +37,7 @@
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/log.h"
+#include "../utils/base64.h"
 #include "../utils/eloop.h"
 #include "../utils/iptables.h"
 
@@ -867,5 +868,26 @@ int clear_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr)
     return -1;
   }
 
+  return 0;
+}
+
+int put_crypt_cmd(struct supervisor_context *context, char *key, char *value)
+{
+  struct crypt_pair pair = {key, NULL, 0};
+  if ((pair.value = base64_decode(value, strlen(value), &pair.value_size)) == NULL) {
+    log_trace("base64_decode fail");
+    return -1;
+  }
+
+  if (put_crypt_pair(context->crypt_ctx, &pair) < 0) {
+    log_trace("put_crypt_pair fail");
+    return -1;
+  }
+
+  return 0;
+}
+
+int get_crypt_cmd(struct supervisor_context *context, char *key, char **value)
+{
   return 0;
 }

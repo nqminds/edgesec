@@ -53,7 +53,7 @@ struct hsm_context* init_hsm(void)
   context->hsm_ctx = (void *)zk_ctx;
 
 #else
-    log_debug("No HSM found");
+    log_debug("No HSM implemented");
     os_free(context);
     return NULL;
 #endif
@@ -73,7 +73,7 @@ int close_hsm(struct hsm_context *context)
 #ifdef WITH_ZYMKEY4_HSM
   ret = close_zymkey4((zkCTX *)context->hsm_ctx);
 #else
-  log_debug("No HSM found");
+  log_debug("No HSM implemented");
 #endif
 
   os_free(context);
@@ -95,7 +95,7 @@ int generate_hsm_key(struct hsm_context *context, uint8_t *key, size_t key_size)
 #ifdef WITH_ZYMKEY4_HSM
   return generate_zymkey4_key((zkCTX *)context->hsm_ctx, key, key_size);
 #else
-  log_debug("No HSM found");
+  log_debug("No HSM implemented");
   return -1;
 #endif
 }
@@ -125,7 +125,7 @@ int encrypt_hsm_blob(struct hsm_context *context, uint8_t *in, size_t in_size, u
 #ifdef WITH_ZYMKEY4_HSM
   return encrypt_zymkey4_blob((zkCTX *)context->hsm_ctx, in, in_size, out, out_size);
 #else
-  log_debug("No HSM found");
+  log_debug("No HSM implemented");
   return -1;
 #endif
 }
@@ -155,7 +155,7 @@ int decrypt_hsm_blob(struct hsm_context *context, uint8_t *in, size_t in_size, u
 #ifdef WITH_ZYMKEY4_HSM
   return decrypt_zymkey4_blob((zkCTX *)context->hsm_ctx, in, in_size, out, out_size);
 #else
-  log_debug("No HSM found");
+  log_debug("No HSM implemented");
   return -1;
 #endif
 }

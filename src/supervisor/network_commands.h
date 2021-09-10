@@ -183,4 +183,24 @@ uint8_t* register_ticket_cmd(struct supervisor_context *context, uint8_t *mac_ad
  * @return 0 on success, -1 on failure
  */
 int clear_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr);
+
+/**
+ * @brief PUT_CRYPT command
+ * 
+ * @param context The supervisor structure instance
+ * @param key The crypt key
+ * @param value The crypt value
+ * @return 0 on success, -1 on failure
+ */
+int put_crypt_cmd(struct supervisor_context *context, char *key, char *value);
+
+/**
+ * @brief GET_CRYPT command
+ * 
+ * @param context The supervisor structure instance
+ * @param key The crypt key
+ * @param value The crypt output value
+ * @return 0 on success, -1 on failure
+ */
+int get_crypt_cmd(struct supervisor_context *context, char *key, char **value);
 #endif

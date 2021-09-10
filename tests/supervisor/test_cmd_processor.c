@@ -122,6 +122,20 @@ int __wrap_clear_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr)
   return 0;
 }
 
+int __wrap_put_crypt_cmd(struct supervisor_context *context, char *key, char *value)
+{
+  check_expected(key);
+  check_expected(value);
+  return 0;
+}
+
+int __wrap_get_crypt_cmd(struct supervisor_context *context, char *key, char **value)
+{
+  check_expected(key);
+  check_expected(value);
+  return 0;
+}
+
 int __wrap_get_mac_mapper(hmap_mac_conn **hmap, uint8_t mac_addr[ETH_ALEN], struct mac_conn_info *info)
 {
   check_expected(mac_addr);
@@ -594,7 +608,38 @@ static void test_process_clear_psk_cmd(void **state)
   assert_int_not_equal(split_string_array("CLEAR_PSK 11:22:33:44:55:", CMD_DELIMITER, cmd_arr), -1);
   assert_int_equal(process_clear_psk_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
   utarray_free(cmd_arr);
+}
 
+static void test_process_put_crypt_cmd(void **state)
+{
+  (void) state; /* unused */
+
+  UT_array *cmd_arr;
+  struct client_address claddr;
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("PUT_CRYPT 12345 54321", CMD_DELIMITER, cmd_arr), -1);
+  expect_string(__wrap_put_crypt_cmd, key, "12345");
+  expect_string(__wrap_put_crypt_cmd, value, "54321");
+  assert_int_equal(process_put_crypt_cmd(0, &claddr, NULL, cmd_arr), strlen(OK_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("PUT_CRYPT 12345 ", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_put_crypt_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("PUT_CRYPT ", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_put_crypt_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+}
+
+static void test_process_get_crypt_cmd(void **state)
+{
+  (void) state; /* unused */
+
+  UT_array *cmd_arr;
 }
 
 int main(int argc, char *argv[])
@@ -616,7 +661,9 @@ int main(int argc, char *argv[])
     cmocka_unit_test(test_process_set_fingerprint_cmd),
     cmocka_unit_test(test_process_query_fingerprint_cmd),
     cmocka_unit_test(test_process_register_ticket_cmd),
-    cmocka_unit_test(test_process_clear_psk_cmd)
+    cmocka_unit_test(test_process_clear_psk_cmd),
+    cmocka_unit_test(test_process_put_crypt_cmd),
+    cmocka_unit_test(test_process_get_crypt_cmd)
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

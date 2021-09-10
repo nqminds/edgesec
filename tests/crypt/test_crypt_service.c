@@ -42,6 +42,11 @@ int __wrap_sqlite3_close(sqlite3* db)
   return __real_sqlite3_close(db);
 }
 
+struct hsm_context* __wrap_init_hsm(void)
+{
+  return NULL;
+}
+
 static void test_load_crypt_service(void **state)
 {
   (void) state; /* unused */

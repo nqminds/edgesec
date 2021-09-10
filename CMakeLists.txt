@@ -44,7 +44,7 @@ option(USE_UUID_LIB "Use uuid library" ON)
 option(USE_PTHREAD_LIB "Use pthread library" ON)
 option(USE_M_LIB "Use m library" ON)
 option(USE_OW_DNSMASQ "Use the OpenWrt dnsmasq service" OFF)
-option(USE_ZYMKEY4_HSM "Use the Zymkey4 HSM" ON)
+option(USE_ZYMKEY4_HSM "Use the Zymkey4 HSM" OFF)
 
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_SYSTEM_NAME Linux)

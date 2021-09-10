@@ -52,6 +52,8 @@
 #define CMD_QUERY_FINGERPRINT		"QUERY_FINGERPRINT"
 #define CMD_REGISTER_TICKET		    "REGISTER_TICKET"
 #define CMD_CLEAR_PSK			    "CLEAR_PSK"
+#define CMD_PUT_CRYPT			    "PUT_CRYPT"
+#define CMD_GET_CRYPT			    "GET_CRYPT"
 
 #define OK_REPLY              "OK"
 #define FAIL_REPLY            "FAIL"
@@ -266,6 +268,28 @@ ssize_t process_register_ticket_cmd(int sock, struct client_address *client_addr
  * @return ssize_t Size of reply written data
  */
 ssize_t process_clear_psk_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+
+/**
+ * @brief Processes the PUT_CRYPT command
+ * 
+ * @param sock The domain server socket
+ * @param client_addr The client address for replies
+ * @param context The supervisor structure instance
+ * @param cmd_arr The array of received commands
+ * @return ssize_t Size of reply written data
+ */
+ssize_t process_put_crypt_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+
+/**
+ * @brief Processes the GET_CRYPT command
+ * 
+ * @param sock The domain server socket
+ * @param client_addr The client address for replies
+ * @param context The supervisor structure instance
+ * @param cmd_arr The array of received commands
+ * @return ssize_t Size of reply written data
+ */
+ssize_t process_get_crypt_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Get the command function pointer
