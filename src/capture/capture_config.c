@@ -97,6 +97,7 @@ int process_sync_params(char *param_str, struct capture_conf *config)
 
 int capture_opt2config(char key, char *value, struct capture_conf *config)
 {
+  long conversion;
   switch (key) {
     case 'i':
       os_strlcpy(config->capture_interface, value, IFNAMSIZ);
@@ -108,16 +109,20 @@ int capture_opt2config(char key, char *value, struct capture_conf *config)
       config->promiscuous = true;
       break;
     case 't':
-      config->buffer_timeout = get_opt_num(value);
-      if (config->buffer_timeout < 0) {
+      conversion = get_opt_num(value);
+      if (conversion < 0) {
         return -1;
       }
+
+      config->buffer_timeout = (uint32_t) conversion;
       break;
     case 'n':
-      config->process_interval = get_opt_num(value);
-      if (config->process_interval < 0) {
+      conversion = get_opt_num(value);
+      if (conversion < 0) {
         return -1;
       }
+
+      config->process_interval = (uint32_t) conversion;
       break;
     case 'y':
       os_strlcpy(config->analyser, value, MAX_ANALYSER_NAME_SIZE);
@@ -159,10 +164,12 @@ int capture_opt2config(char key, char *value, struct capture_conf *config)
       os_strlcpy(config->ca_path, value, MAX_OS_PATH_LEN);
       break;
     case 'o':
-      config->db_sync_port = get_opt_num(value);
-      if (config->db_sync_port <= 0 || config->db_sync_port > 65535) {
+      conversion = get_opt_num(value);
+      if (conversion <= 0 || conversion > 65535) {
         return -1;
       }
+
+      config->db_sync_port = (uint16_t) conversion;
       break;
     case 'r':
       if (process_sync_params(value, config) < 0) {

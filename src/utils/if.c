@@ -143,11 +143,13 @@ static int iplink_filter_req(struct nlmsghdr *nlh, int reqlen)
 
 static int ipaddr_dump_filter(struct nlmsghdr *nlh, int reqlen)
 {
-	struct ifaddrmsg *ifa = NLMSG_DATA(nlh);
+  (void) reqlen;
+	
+  struct ifaddrmsg *ifa = NLMSG_DATA(nlh);
 
-	ifa->ifa_index = ifindex;
+  ifa->ifa_index = ifindex;
 
-	return 0;
+  return 0;
 }
 
 static int ip_addr_list(struct nlmsg_chain *ainfo, int if_id)
@@ -182,7 +184,7 @@ static void ipaddr_filter(struct nlmsg_chain *linfo, struct nlmsg_chain *ainfo)
 			struct nlmsghdr *n = &a->h;
 			struct ifaddrmsg *ifa = NLMSG_DATA(n);
 
-			if (ifa->ifa_index != ifi->ifi_index)
+			if (ifa->ifa_index != (uint32_t) ifi->ifi_index)
 				continue;
 			ok = 1;
 			break;
@@ -230,7 +232,7 @@ int get_addrinfo(struct nlmsghdr *n, netif_info_t *info)
 	if (!rta_tb[IFA_ADDRESS])
 		rta_tb[IFA_ADDRESS] = rta_tb[IFA_LOCAL];
 
-	if (ifindex && ifindex != ifa->ifa_index)
+	if (ifindex && (uint32_t) ifindex != ifa->ifa_index)
 		return 0;
 
 	info->ifa_family = ifa->ifa_family;
@@ -275,7 +277,7 @@ static int get_selected_addrinfo(struct ifinfomsg *ifi, struct nlmsg_list *ainfo
 		if (n->nlmsg_len < NLMSG_LENGTH(sizeof(*ifa)))
 			return -1;
 
-		if (ifa->ifa_index != ifi->ifi_index)
+		if (ifa->ifa_index != (uint32_t) ifi->ifi_index)
 			continue;
 		/* Retrieve only one IP address instead of all of them */
 		if (info->ifa_family != AF_UNSPEC)
@@ -390,6 +392,9 @@ err:
 static int accept_msg(struct rtnl_ctrl_data *ctrl,
 		      struct nlmsghdr *n, void *arg)
 {
+	(void) ctrl;
+	(void) arg;
+
 	struct nlmsgerr *err = (struct nlmsgerr *)NLMSG_DATA(n);
 
 	if (n->nlmsg_type == NLMSG_ERROR &&
@@ -468,7 +473,6 @@ int iplink_parse(int argc, char **argv, struct iplink_req *req, char **type)
 {
 	char *name = NULL;
 	char *dev = NULL;
-	char *link = NULL;
 	int ret, len;
 	char abuf[32];
 	int addr_len = 0;
@@ -493,7 +497,6 @@ int iplink_parse(int argc, char **argv, struct iplink_req *req, char **type)
 				dev = name;
 		} else if (matches(*argv, "link") == 0) {
 			NEXT_ARG();
-			link = *argv;
 		} else if (matches(*argv, "address") == 0) {
 			NEXT_ARG();
 			addr_len = ll_addr_a2n(abuf, sizeof(abuf), *argv);
@@ -675,12 +678,13 @@ static int ipaddr_modify(int cmd, int flags, int argc, char **argv)
 		.ifa.ifa_family = /*preferred_family*/0,
 	};
 	char  *d = NULL;
-	inet_prefix lcl = {};
+	inet_prefix lcl;
 	inet_prefix peer;
 	int local_len = 0;
 	int brd_len = 0;
 	unsigned int ifa_flags = 0;
 
+	os_memset(&lcl, 0, sizeof(inet_prefix));
 	while (argc > 0) {
 		if (matches(*argv, "broadcast") == 0 ||
 			   strcmp(*argv, "brd") == 0) {
@@ -999,12 +1003,12 @@ bool ip_2_nbo(char *ip, char *subnet_mask, in_addr_t *addr)
 		return false;
 	}
 
-  if ((subnet = inet_network(subnet_mask)) == -1) {
+  if ((subnet = inet_network(subnet_mask)) == INADDR_NONE) {
 		log_trace("Invalid subnet mask address");
 		return -1;
 	}
 
-	if ((*addr = inet_network(ip)) == -1) {
+	if ((*addr = inet_network(ip)) == INADDR_NONE) {
 		log_trace("Invalid ip address");
 		return false;
 	}
@@ -1051,7 +1055,7 @@ int find_subnet_address(UT_array *config_ifinfo_array, char *ip, in_addr_t *subn
 	return -1;
   }
 
-  while(p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) {
+  while((p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) != NULL) {
 	if (!ip_2_nbo(p->ip_addr, p->subnet_mask, &addr_config)) {
 	  log_trace("ip_2_nbo fail");
 	  return -1;

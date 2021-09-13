@@ -51,16 +51,26 @@ bool __wrap_iwace_isvlan(uint32_t wiphy)
 
 bool __wrap_create_interface(char *if_name, char *type)
 {
+  (void) if_name;
+  (void) type;
+
   return true;
 }
 
 bool __wrap_set_interface_ip(char *ip_addr, char *brd_addr, char *if_name)
 {
+  (void) ip_addr;
+  (void) brd_addr;
+  (void) if_name;
+
   return true;
 }
 
 bool __wrap_set_interface_state(char *if_name, bool state)
 {
+  (void) if_name;
+  (void) state;
+
   return true;
 }
 
@@ -73,6 +83,8 @@ unsigned int __wrap_if_nametoindex (const char *__ifname)
 
 UT_array *__wrap_get_interfaces(int if_id)
 {
+  (void) if_id;
+
   UT_array *arr = NULL;
   netif_info_t el;
   strcpy(el.ifname, "nat_test");
@@ -242,6 +254,9 @@ static void test_create_vlan_mapper(void **state)
 
 int main(int argc, char *argv[])
 {  
+  (void) argc;
+  (void) argv;
+
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {

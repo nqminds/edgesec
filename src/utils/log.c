@@ -160,7 +160,7 @@ void log_set_color(bool enable)
 
 int log_open_file(char *path)
 {
-  mode_t m;
+  __mode_t m;
 
   log_set_color(false);
 
@@ -175,6 +175,8 @@ int log_open_file(char *path)
 
   /* Disable stdio buffering */
   setbuf(L.logfp, NULL);
+
+  return 0;
 }
 
 void log_close_file(void)
@@ -233,6 +235,8 @@ void print_to(uint8_t level, const char *file, uint32_t line,
 void log_msg(uint8_t level, const char *file, uint32_t line, bool flush_std, 
   bool ignore_level, uint8_t err, const char *format, va_list args)
 {
+  (void) flush_std; /* unused */
+
   char time_string[25];
   char err_text_buf[30];
 

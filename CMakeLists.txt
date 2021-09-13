@@ -56,6 +56,21 @@ if (USE_ARM_MUSL_LIBC)
   set(CMAKE_CXX_COMPILER /usr/local/bin/arm-linux-musleabihf-g++)
 endif ()
 
+# C compiler options
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wunused-variable -Wall -Wextra")
+#if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+#  set(CMAKE_C_FLAGS -g3 -O0)
+#else()
+#  set(CMAKE_C_FLAGS INTERFACE -g0 -O2)
+#endif()
+
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs")
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ftest-coverage")
+
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_LIBNL")
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
 # The edgesec version number.
 set(EDGESEC_VERSION_MAJOR 0)
 set(EDGESEC_VERSION_MINOR 9)
@@ -182,17 +197,6 @@ endif ()
 if (USE_OW_DNSMASQ)
   add_compile_definitions(WITH_OW_DNSMASQ_SERVICE)
 endif ()
-
-
-# C compiler options
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wunused-variable")
-
-# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs")
-# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ftest-coverage")
-
-# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_LIBNL")
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 # configure a header file to pass some of the CMake settings
 # to the source code

@@ -147,7 +147,7 @@ ssize_t read_domain_data(int sock, char *data, size_t data_len,
     return -1;
   }
 
-  ssize_t num_bytes = recvfrom(sock, data, data_len, flags, (struct sockaddr *) addr, addr_len);
+  ssize_t num_bytes = recvfrom(sock, data, data_len, flags, (struct sockaddr *) addr, (socklen_t *)addr_len);
   if (num_bytes == -1) {
     log_err("recvfrom");
     return -1;

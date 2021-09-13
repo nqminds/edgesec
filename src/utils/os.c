@@ -55,7 +55,7 @@ bool is_number(const char *ptr)
     return false;
   }
 
-  for (int i = offset; i < MAX_64BIT_DIGITS, ptr[i] != '\0'; i++) {
+  for (int i = offset; i < MAX_64BIT_DIGITS && ptr[i] != '\0'; i++) {
     if (!isdigit(ptr[i]))
       return false;
   }
@@ -202,7 +202,7 @@ int os_get_random(unsigned char *buf, size_t len)
 
 int os_get_random_number_s(unsigned char *buf, size_t len)
 {
-  int idx = 0;
+  size_t idx = 0;
   if (os_get_random(buf, len) < 0) {
     log_trace("os_get_random fail");
     return -1;
@@ -517,6 +517,9 @@ char *construct_path(char *path_left, char *path_right)
 
 bool check_file_hash(char *filename, const char *filehash)
 {
+  (void) filename;
+  (void) filehash;
+
   if (filehash == NULL)
     return true;
   else
@@ -657,7 +660,7 @@ long is_proc_app(char *path, char *proc_name)
   char cmdline_path[MAX_OS_PATH_LEN];
   char *resolved_path;
 
-  unsigned long pid = strtoul(basename(path), NULL, 10);
+  pid_t pid = strtoul(basename(path), NULL, 10);
 
   if (errno != ERANGE && pid != 0L) {
     snprintf(exe_path, MAX_OS_PATH_LEN - 1, "%s/exe", path);
@@ -677,7 +680,7 @@ long is_proc_app(char *path, char *proc_name)
 
 bool kill_dir_fn(char *path, void *args)
 {
-  unsigned long pid;
+  pid_t pid;
   pid_t current_pid = getpid();
   pid_t current_pid_group = getpgid(current_pid);
   if ((pid = is_proc_app(path, args)) != 0) {
@@ -698,7 +701,7 @@ bool signal_dir_fn(char *path, void *args)
 {
   struct proc_signal_arg *sarg = (struct proc_signal_arg *) args;
 
-  unsigned long pid;
+  pid_t pid;
   pid_t current_pid = getpid();
   pid_t current_pid_group = getpgid(current_pid);
 
@@ -749,7 +752,7 @@ char* string_array2string(char *strings[])
 {
   int idx = 0;
   ssize_t total = 0;
-  size_t len = 0;
+  ssize_t len = 0;
 
   char *buf = NULL;
 
@@ -1076,7 +1079,7 @@ int create_pid_file(const char *pid_file, int flags)
 {
   int fd;
   char buf[100];
-
+  ssize_t write_bytes;
   fd = open(pid_file, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 
   if (fd == -1) {
@@ -1125,7 +1128,13 @@ int create_pid_file(const char *pid_file, int flags)
   }
 
   snprintf(buf, 100, "%ld\n", (long) getpid());
-  if (write(fd, buf, strlen(buf)) != strlen(buf)) {
+  if ((write_bytes = write(fd, buf, strlen(buf))) < 0) {
+    log_err("write");
+    close(fd);
+    return -1;
+  }
+
+  if ((size_t)write_bytes != strlen(buf)) {
     log_trace("write fail");
     close(fd);
     return -1;
@@ -1136,8 +1145,8 @@ int create_pid_file(const char *pid_file, int flags)
 
 ssize_t read_file(char *path, uint8_t **out)
 {
-  size_t read_size;
-  long file_size;
+  long int read_size;
+  long int file_size;
   uint8_t *buffer;
 
   *out = NULL;
@@ -1157,7 +1166,7 @@ ssize_t read_file(char *path, uint8_t **out)
     return -1;
   }
 
-  if ((file_size = ftell(fp)) < 0) {
+  if ((file_size = ftell(fp)) == -1L) {
     log_err("ftell");
     fclose(fp);
     return -1;
@@ -1165,13 +1174,13 @@ ssize_t read_file(char *path, uint8_t **out)
 
   rewind(fp);
 
-  if ((buffer = (char*) os_malloc(sizeof(char) * file_size)) == NULL) {
+  if ((buffer = (uint8_t *) os_malloc(sizeof(char) * file_size)) == NULL) {
     log_err("os_malloc");
     fclose(fp);
     return -1;
   }
 
-  read_size = fread(buffer, sizeof(char), file_size, fp);
+  read_size = (long int) fread(buffer, sizeof(char), file_size, fp);
 
   if (read_size != file_size) {
     log_trace("fread fail");
