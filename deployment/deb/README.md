@@ -20,12 +20,15 @@ Install .deb build dependencies, as well as the build depenencies for EDGESec (s
 sudo apt install gnupg linux-headers-generic ubuntu-dev-tools apt-file -y
 ```
 
-Replace `-j4` with how many threads you want to use.
+Replace `-j9` with how many threads you want to use.
 This will automatically call `cmake` in the background.
 
 ```bash
-debuild -us -uc -j4
+debuild -us -uc -j9
 ```
+
+- Add the `--no-pre-clean` to prevent `debuild` from recompiling everything.
+  This saves a lot of time during testing.
 
 #### PBuild
 

@@ -21,8 +21,9 @@ build_dependencies=(
     pkg-config # seems to be required by nDPI
     libjson-c-dev # mystery requirement
     protobuf-compiler
-    flex bison
+    flex bison # required by pcap
     libssl-dev # required by hostapd only. GRPC uses own version, and we compile OpenSSL 3 for EDGESec
+    libmnl0 # we compile our own version of mnl, but we have a linking issue, so temporarily install a system version
 )
 runtime_dependencies=(
     dnsmasq
