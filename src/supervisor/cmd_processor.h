@@ -54,6 +54,12 @@
 #define CMD_CLEAR_PSK			    "CLEAR_PSK"
 #define CMD_PUT_CRYPT			    "PUT_CRYPT"
 #define CMD_GET_CRYPT			    "GET_CRYPT"
+#define CMD_GEN_RANDKEY       "GEN_RANDKEY"
+#define CMD_GEN_PRIVKEY       "GEN_PRIVKEY"
+#define CMD_GEN_CERT          "GEN_CERT"
+#define CMD_ENCRYPT_BLOB      "ENCRYPT_BLOB"
+#define CMD_DECRYPT_BLOB      "DECRYPT_BLOB"
+#define CMD_SIGN_BLOB         "SIGN_BLOB"
 
 #define OK_REPLY              "OK"
 #define FAIL_REPLY            "FAIL"
@@ -290,6 +296,72 @@ ssize_t process_put_crypt_cmd(int sock, struct client_address *client_addr, stru
  * @return ssize_t Size of reply written data
  */
 ssize_t process_get_crypt_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+
+/**
+ * @brief Processes the GEN_RANDKEY command
+ * 
+ * @param sock The domain server socket
+ * @param client_addr The client address for replies
+ * @param context The supervisor structure instance
+ * @param cmd_arr The array of received commands
+ * @return ssize_t Size of reply written data
+ */
+ssize_t process_gen_randkey_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+
+/**
+ * @brief Processes the GEN_PRIVKEY command
+ * 
+ * @param sock The domain server socket
+ * @param client_addr The client address for replies
+ * @param context The supervisor structure instance
+ * @param cmd_arr The array of received commands
+ * @return ssize_t Size of reply written data
+ */
+ssize_t process_gen_privkey_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+
+/**
+ * @brief Processes the GEN_CERT command
+ * 
+ * @param sock The domain server socket
+ * @param client_addr The client address for replies
+ * @param context The supervisor structure instance
+ * @param cmd_arr The array of received commands
+ * @return ssize_t Size of reply written data
+ */
+ssize_t process_gen_cert_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+
+/**
+ * @brief Processes the ENCRYPT_BLOB command
+ * 
+ * @param sock The domain server socket
+ * @param client_addr The client address for replies
+ * @param context The supervisor structure instance
+ * @param cmd_arr The array of received commands
+ * @return ssize_t Size of reply written data
+ */
+ssize_t process_encrypt_blob(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+
+/**
+ * @brief Processes the DECRYPT_BLOB command
+ * 
+ * @param sock The domain server socket
+ * @param client_addr The client address for replies
+ * @param context The supervisor structure instance
+ * @param cmd_arr The array of received commands
+ * @return ssize_t Size of reply written data
+ */
+ssize_t process_decrypt_blob(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+
+/**
+ * @brief Processes the SIGN_BLOB command
+ * 
+ * @param sock The domain server socket
+ * @param client_addr The client address for replies
+ * @param context The supervisor structure instance
+ * @param cmd_arr The array of received commands
+ * @return ssize_t Size of reply written data
+ */
+ssize_t process_sign_blob(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Get the command function pointer

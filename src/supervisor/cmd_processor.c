@@ -656,6 +656,48 @@ ssize_t process_get_crypt_cmd(int sock, struct client_address *client_addr, stru
   return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
 }
 
+ssize_t process_gen_randkey_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
+{
+  char **ptr = (char**) utarray_next(cmd_arr, NULL);
+
+  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
+}
+
+ssize_t process_gen_privkey_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
+{
+  char **ptr = (char**) utarray_next(cmd_arr, NULL);
+
+  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
+}
+
+ssize_t process_gen_cert_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
+{
+  char **ptr = (char**) utarray_next(cmd_arr, NULL);
+
+  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
+}
+
+ssize_t process_encrypt_blob(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
+{
+  char **ptr = (char**) utarray_next(cmd_arr, NULL);
+
+  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
+}
+
+ssize_t process_decrypt_blob(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
+{
+  char **ptr = (char**) utarray_next(cmd_arr, NULL);
+
+  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
+}
+
+ssize_t process_sign_blob(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
+{
+  char **ptr = (char**) utarray_next(cmd_arr, NULL);
+  
+  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
+}
+
 process_cmd_fn get_command_function(char *cmd)
 {
   if (!strcmp(cmd, CMD_PING)) {
@@ -696,7 +738,19 @@ process_cmd_fn get_command_function(char *cmd)
     return process_put_crypt_cmd;
   } else if (!strcmp(cmd, CMD_GET_CRYPT)) {
     return process_get_crypt_cmd;
-  } else {
+  } else if (!strcmp(cmd, CMD_GEN_RANDKEY)){
+    return process_gen_randkey_cmd;
+  } else if (!strcmp(cmd, CMD_GEN_PRIVKEY)){
+    return process_gen_privkey_cmd;
+  } else if (!strcmp(cmd, CMD_GEN_CERT)){
+    return process_gen_cert_cmd;
+  } else if (!strcmp(cmd, CMD_ENCRYPT_BLOB)){
+    return process_encrypt_blob;
+  } else if (!strcmp(cmd, CMD_DECRYPT_BLOB)){
+    return process_decrypt_blob;
+  } else if (!strcmp(cmd, CMD_SIGN_BLOB)){
+    return process_sign_blob;
+  }else {
     log_debug("unknown command");
   }
 
