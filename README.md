@@ -7,7 +7,7 @@
 
 On Ubuntu, we need a C compiler, CMake, Doxygen, and libnl libraries:
 
-```console
+```bash
 sudo apt update
 build_dependencies=(
     cmake # build-tool
@@ -27,7 +27,7 @@ runtime_dependencies=(
     dnsmasq
     jq # required by predictable wifi name script
 )
-sudo apt install -y "${build_dependencies[@]}" "${runtime_dependencies[@]}
+sudo apt install -y "${build_dependencies[@]}" "${runtime_dependencies[@]}"
 ```
 
 To install grpc dependencies:
