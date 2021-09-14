@@ -1,6 +1,7 @@
 project(LIBNETLINK)
 
-cmake_minimum_required(VERSION 3.10)
+# at least v3.13 is required for install(x) where x is from add_subdirectory()
+cmake_minimum_required(VERSION 3.13)
 SET(LIB_PATH "" CACHE STRING "lib path")
 SET(C_COMPILER "" CACHE STRING "c compiler")
 SET(CXX_COMPILER "" CACHE STRING "c++ compiler")
