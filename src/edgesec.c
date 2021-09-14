@@ -51,8 +51,6 @@
 #define OPT_STRING    ":c:s:f:dvh"
 #define USAGE_STRING  "\t%s [-c filename] [-s secret] [-f filename] [-d] [-h] [-v]\n"
 
-static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
-
 static const UT_icd config_ifinfo_icd = {sizeof(config_ifinfo_t), NULL, NULL, NULL};
 static const UT_icd config_dhcpinfo_icd = {sizeof(config_dhcpinfo_t), NULL, NULL, NULL};
 
@@ -60,28 +58,13 @@ static __thread char version_buf[10];
 
 void eloop_sighup_handler(int sig, void *ctx)
 {
+  (void) sig;
+
   char *log_filename = (char *) ctx;
 
   if (log_filename != NULL) {
     log_close_file();
     log_open_file(log_filename);
-  }
-}
-
-static void lock_fn(bool lock)
-{
-  int res;
-
-  if (lock) {
-    res = pthread_mutex_lock(&mtx);
-    if (res != 0) {
-      log_err_exp("pthread_mutex_lock\n");
-    }
-  } else {
-    res = pthread_mutex_unlock(&mtx);
-    if (res != 0) {
-      log_err_exp("pthread_mutex_unlock\n");
-    }
   }
 }
 

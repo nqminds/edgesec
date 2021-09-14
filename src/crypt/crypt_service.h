@@ -40,7 +40,7 @@
 struct crypt_pair {
   char *key;              /**< The crypt key string. */
   uint8_t *value;         /**< The crypt value array. */
-  size_t value_size;         /**< The crypt value array size. */
+  ssize_t value_size;         /**< The crypt value array size. */
 };
 
 #ifdef __cplusplus

@@ -241,17 +241,17 @@ struct store_row* get_sqlite_store_row(sqlite3 *db, char *key)
   if (rc == SQLITE_ROW) {
     row->key = key;
 
-    row->value = (unsigned char*) sqlite3_column_text(res, 0);
+    row->value = (char*) sqlite3_column_text(res, 0);
     if (row->value != NULL) {
       row->value = os_strdup(row->value);
     }
 
-    row->id = (unsigned char*) sqlite3_column_text(res, 1);
+    row->id = (char*) sqlite3_column_text(res, 1);
     if (row->id != NULL) {
       row->id = os_strdup(row->id);
     }
 
-    row->iv = (unsigned char*) sqlite3_column_text(res, 2);
+    row->iv = (char*) sqlite3_column_text(res, 2);
     if(row->iv != NULL) {
       row->iv = os_strdup(row->iv);
     }
@@ -318,15 +318,15 @@ struct secrets_row* get_sqlite_secrets_row(sqlite3 *db, char *id)
   if (rc == SQLITE_ROW) {
     row->id = os_strdup(id);
 
-    if ((column_value = (unsigned char*) sqlite3_column_text(res, 0)) != NULL) {
+    if ((column_value = (char*) sqlite3_column_text(res, 0)) != NULL) {
       row->value = os_strdup(column_value);
     }
 
-    if ((column_value = (unsigned char *) sqlite3_column_text(res, 1)) != NULL) {
+    if ((column_value = (char *) sqlite3_column_text(res, 1)) != NULL) {
       row->salt = os_strdup(column_value);
     }
 
-    if ((column_value = (unsigned char *) sqlite3_column_text(res, 2)) != NULL) {
+    if ((column_value = (char *) sqlite3_column_text(res, 2)) != NULL) {
       row->iv = os_strdup(column_value);
     }
 

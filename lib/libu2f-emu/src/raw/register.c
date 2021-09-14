@@ -4,6 +4,7 @@
 #include "crypto.h"
 #include "raw.h"
 
+#include "../log.h"
 
 /* Params len */
 #define U2F_CHA_PARAM_SIZE 32
@@ -250,6 +251,8 @@ static uint8_t *register_encrypt_key_handle(
         const uint8_t *key_handle, size_t key_handle_size,
         size_t *size)
 {
+    log_trace("register_encrypt_key_handle with key_handle_size=%lu", key_handle_size);
+    
     /* Cipher Key handle */
     uint8_t *key_handle_cipher = NULL;
     size_t key_handle_cipher_size = crypto_aes_encrypt(
@@ -268,6 +271,9 @@ struct payload *raw_register(u2f_emu_vdev *vdev,
 
 {
     (void)size;
+
+    log_trace("raw_register call with size=%d", size);
+
     /* Params */
     struct registration_params params;
     memcpy(&params, apdu + 7, sizeof(params));

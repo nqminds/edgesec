@@ -668,6 +668,8 @@ int save_packet_statement(struct sqlite_header_context *ctx, struct tuple_packet
   }
 
   switch (tp->type) {
+    case PACKET_NONE:
+      return -1;
     case PACKET_ETHERNET:
       return extract_eth_statement(ctx, (struct eth_schema *)tp->packet);
     case PACKET_ARP:
@@ -706,6 +708,9 @@ void free_sqlite_header_db(struct sqlite_header_context *ctx)
 
 int sqlite_trace_callback(unsigned int uMask, void* ctx, void* stm, void* X)
 {
+  (void) uMask;
+  (void) X;
+
   struct sqlite_header_context *sql_ctx = (struct sqlite_header_context *)ctx;
   sqlite3_stmt *statement = (sqlite3_stmt *)stm;
   char *sqlite_str;

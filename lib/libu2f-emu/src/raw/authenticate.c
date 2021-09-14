@@ -6,6 +6,7 @@
 #include "raw.h"
 #include "u2f-vdev.h"
 
+#include "../log.h"
 
 /* Authenticate bits */
 #define U2F_AUTH_CHECK 0x07
@@ -206,6 +207,8 @@ static uint8_t *authenticate_decrypt_key_handle_cipher(
         size_t key_handle_cipher_size,
         size_t *size)
 {
+    log_trace("authenticate_decrypt_key_handle_cipher call with key_handle_cipher_size=%lu", key_handle_cipher_size);
+
     /* Cipher Key handle */
     uint8_t *key_handle = NULL;
     size_t key_handle_size = crypto_aes_decrypt(
@@ -248,6 +251,8 @@ static EC_KEY *authenticate_get_pubkey_from_key_handle(
 static struct payload *raw_authenticate_check(u2f_emu_vdev *vdev,
         const uint8_t *apdu, size_t size)
 {
+    log_trace("raw_authenticate_check with size=%lu", size);
+
     /* Parmas */
     struct authentification_params params;
     memcpy(&params, apdu + 7, sizeof(params));
@@ -302,6 +307,8 @@ static struct payload *raw_authenticate_check(u2f_emu_vdev *vdev,
 static struct payload *raw_authenticate_enforce(u2f_emu_vdev *vdev,
         const uint8_t *apdu, size_t size)
 {
+    log_trace("raw_authenticate_enforce with size=%lu", size);
+
     /* Parmas */
     struct authentification_params params;
     memcpy(&params, apdu + 7, sizeof(params));
@@ -376,6 +383,9 @@ static struct payload *raw_authenticate_no_enforce(u2f_emu_vdev *vdev,
     (void)vdev;
     (void)apdu;
     (void)size;
+
+    log_trace("raw_authenticate_no_enforce with size=%lu", size);
+
     return NULL;
 }
 
@@ -384,6 +394,8 @@ struct payload *raw_authenticate(u2f_emu_vdev *vdev,
 {
     /* Get frame header */
     struct frame_header *header = (struct frame_header *)apdu;
+
+    log_trace("raw_authenticate call with size=%lu", size);
 
     /* handle request based on type */
     switch (header->p1)

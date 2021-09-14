@@ -34,9 +34,20 @@
 #define AES_KEY_SIZE        32
 #define MAX_KEY_ITERATIONS  1000
 
+#define MAX_CERT_FIELD_SIZE  64
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+struct certificate_meta {
+  long not_before;
+  long not_after;
+  char c[MAX_CERT_FIELD_SIZE];
+  char o[MAX_CERT_FIELD_SIZE];
+  char ou[MAX_CERT_FIELD_SIZE];
+  char cn[MAX_CERT_FIELD_SIZE]; 
+};
 
 /**
  * @brief Generate IV
@@ -109,11 +120,12 @@ int crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
  * @brief Generates a pair of private key and certificate strings
  * 
  * @param bits Number of bits for the private key
+ * @param meta Certificate metadata
  * @param key The private key string
  * @param cert The certificate string
  * @return int 0 on success, -1 on failure
  */
-int crypto_generate_keycert_str(int bits, char **key, char **cert);
+int crypto_generate_keycert_str(int bits, struct certificate_meta *meta, char **key, char **cert);
 
 #ifdef __cplusplus
 }

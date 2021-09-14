@@ -14,7 +14,7 @@
 
 #include "crypto.h"
 #include "utils.h"
-
+#include "log.h"
 
 /**
 ** \brief Compute the PEM length.
@@ -126,6 +126,8 @@ size_t crypto_aes_encrypt(struct crypto_core* crypto_core,
         const unsigned char *data, int data_len,
         unsigned char **buffer)
 {
+    log_trace("crypto_aes_encrypt call with data_len=%d", data_len);
+
     /* Cipher context */
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
     if (ctx == NULL)
@@ -199,6 +201,8 @@ unsigned int crypto_ec_sign_with_key(EC_KEY *key,
     int digest_len,
     unsigned char **signature)
 {
+    log_trace("crypto_ec_sign_with_key with digest_len=%d", digest_len);
+
     /* Signature length  */
     *signature = NULL;
     int ret_size = ECDSA_size(key);
@@ -654,6 +658,9 @@ bool crypto_new_from_dir(const char *dirpath,
 {
     /* Entropy */
     uint8_t entropy[48];
+
+    log_trace("crypto_new_from_dir call with dirpath=%s", dirpath);
+
     if (!crypto_entropy_from_file(dirpath, CRYPTO_ENTROPY_FILENAME,
             entropy))
         return false;

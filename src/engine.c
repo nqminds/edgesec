@@ -65,7 +65,7 @@ bool init_mac_mapper_ifnames(UT_array *connections, hmap_vlan_conn **vlan_mapper
   struct vlan_conn vlan_conn;
 
   if (connections != NULL) {
-    while(p = (struct mac_conn *) utarray_next(connections, p)) {
+    while((p = (struct mac_conn *) utarray_next(connections, p)) != NULL) {
       int ret = get_vlan_mapper(vlan_mapper, p->info.vlanid, &vlan_conn);
       os_memcpy(p->info.ifname, vlan_conn.ifname, IFNAMSIZ);
       if (ret < 0) {
@@ -103,7 +103,7 @@ bool create_mac_mapper(struct supervisor_context *ctx)
   }
   
   if (mac_conn_arr != NULL) {
-    while(p = (struct mac_conn *) utarray_next(mac_conn_arr, p)) {
+    while((p = (struct mac_conn *) utarray_next(mac_conn_arr, p)) != NULL) {
       log_trace("Adding mac=" MACSTR " with id=%s vlanid=%d ifname=%s nat=%d allow=%d label=%s status=%d",
                 MAC2STR(p->mac_addr), p->info.id, p->info.vlanid, p->info.ifname, p->info.nat,
                 p->info.allow_connection, p->info.label, p->info.status);
@@ -252,7 +252,7 @@ bool run_engine(struct app_config *app_config)
 
   log_info("Loading crypt service...");
   if ((context.crypt_ctx = load_crypt_service(app_config->crypt_db_path, app_config->crypt_key_id,
-                                              app_config->crypt_secret,
+                                              (uint8_t *)app_config->crypt_secret,
                                               os_strnlen_s(app_config->crypt_secret, MAX_USER_SECRET))) == NULL) {
     log_debug("load_crypt_service fail");
     goto run_engine_fail;

@@ -5,6 +5,7 @@
 #include "u2f-vdev.h"
 #include "usb/usb.h"
 
+#include "log.h"
 
 u2f_emu_rc u2f_emu_vdev_send(u2f_emu_vdev *vdev,
         u2f_emu_transport transport_type,
@@ -107,6 +108,8 @@ static u2f_emu_rc u2f_emu_vdev_base_new(u2f_emu_vdev **vdev_ref)
 u2f_emu_rc u2f_emu_vdev_new_from_dir(u2f_emu_vdev **vdev_ref,
         const char *pathname)
 {
+    log_trace("u2f_emu_vdev_new_from_dir with pathname=%s", pathname);
+
     /* Base instantation */
     u2f_emu_vdev *vdev = NULL;
     u2f_emu_rc rc = u2f_emu_vdev_base_new(&vdev);

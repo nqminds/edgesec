@@ -91,6 +91,7 @@ static const char *iftype_name(enum nl80211_iftype iftype, char *modebuf)
 static int error_handler(struct sockaddr_nl *nla, struct nlmsgerr *err,
 			 void *arg)
 {
+	(void) nla;
 	struct nlmsghdr *nlh = (struct nlmsghdr *)err - 1;
 	int len = nlh->nlmsg_len;
 	struct nlattr *attrs;
@@ -123,6 +124,7 @@ static int error_handler(struct sockaddr_nl *nla, struct nlmsgerr *err,
 
 static int finish_handler(struct nl_msg *msg, void *arg)
 {
+	(void) msg;
 	int *ret = arg;
 	*ret = 0;
 	return NL_SKIP;
@@ -130,6 +132,7 @@ static int finish_handler(struct nl_msg *msg, void *arg)
 
 static int ack_handler(struct nl_msg *msg, void *arg)
 {
+	(void) msg;
 	int *ret = arg;
 	*ret = 0;
 	return NL_STOP;
@@ -344,7 +347,6 @@ UT_array *get_netiw_info(void)
 	nl_socket_free(nlstate.nl_sock);
 	return arr;
 
- nla_put_failure:
 	log_trace("NLA_PUT_U32 failed");
 	nl_cb_put(cb);
 	nlmsg_free(msg);

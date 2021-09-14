@@ -114,7 +114,7 @@ void * os_memdup(const void *src, size_t len);
 #define os_memmove(d, s, n) memmove((d), (s), (n))
 #endif
 #ifndef os_memset
-#define os_memset(s, c, n) memset(s, c, n)
+#define os_memset(s, c, n) memset(s, c, (n))
 #endif
 #ifndef os_memcmp
 #define os_memcmp(s1, s2, n) memcmp((s1), (s2), (n))

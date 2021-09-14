@@ -6,6 +6,7 @@
 #include "time.h"
 #include "usb.h"
 
+#include "log.h"
 
 bool u2f_emu_vdev_usb_has_response(void *state)
 {
@@ -22,6 +23,8 @@ size_t u2f_emu_vdev_usb_get_response(void *state, uint8_t **data)
 
     /* Reset ref */
     *data = NULL;
+
+    log_trace("u2f_emu_vdev_usb_get_response call");
 
     /* Check response precense */
     if (!u2f_emu_vdev_usb_has_response(state))
@@ -125,6 +128,8 @@ void u2f_emu_vdev_usb_process(void *state,
     /* Get the channel id  */
     uint32_t cid = packet_get_cid(packet);
 
+    log_trace("u2f_emu_vdev_usb_process with cid=%lu, size=%lu", cid, size);
+
     /* Check packet size */
     if (size != PACKET_SIZE)
     {
@@ -200,6 +205,8 @@ int u2f_emu_vdev_usb_state_init(u2f_emu_vdev *vdev,
         void **state_ref)
 {
     /* Allocate */
+    log_trace("u2f_emu_vdev_usb_state_init call");
+
     struct usb_state *state = malloc(sizeof(struct usb_state));
     if (state == NULL)
         return -errno;

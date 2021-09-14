@@ -97,3 +97,4 @@ lib/libuuid-1.0.3/uuid.pc
 lib/libuuid-1.0.3/libtool
 lib/libuuid-1.0.3/MHD_config.h
 lib/libuuid-1.0.3/stamp-h1
+lib/libu2f-emu/build

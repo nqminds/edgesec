@@ -98,6 +98,8 @@ void free_ticket(struct supervisor_context *context)
 
 void eloop_ticket_timeout_handler(void *eloop_ctx, void *user_ctx)
 {
+  (void) eloop_ctx;
+
   struct supervisor_context *context = (struct supervisor_context *) user_ctx;
   log_trace("Auth ticket timeout, removing ticket");
   free_ticket(context);
@@ -528,7 +530,7 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
   // Change the bridge iptables rules
   // Get the list of all dst MACs to update the iptables
   if(get_src_mac_list(context->bridge_list, conn.mac_addr, &mac_list_arr) >= 0) {
-    while(p = (uint8_t *) utarray_next(mac_list_arr, p)) {
+    while((p = (uint8_t *) utarray_next(mac_list_arr, p)) != NULL) {
       if(get_mac_mapper(&context->mac_mapper, p, &right_info) == 1) {
         if (validate_ipv4_string(right_info.ip_addr)) {
           if (add) {
@@ -669,7 +671,7 @@ ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr
     return -1;
   }
 
-  while(p = (struct fingerprint_row *) utarray_next(rows, p)) {
+  while((p = (struct fingerprint_row *) utarray_next(rows, p)) != NULL) {
     os_memset(row_array, 0, 6);
 
     if (p->mac != NULL) {
@@ -875,7 +877,7 @@ int put_crypt_cmd(struct supervisor_context *context, char *key, char *value)
 {
   struct crypt_pair pair = {key, NULL, 0};
 
-  if ((pair.value = base64_decode(value, strlen(value), &pair.value_size)) == NULL) {
+  if ((pair.value = (uint8_t *) base64_decode((unsigned char *) value, strlen(value), (size_t*) &pair.value_size)) == NULL) {
     log_trace("base64_decode fail");
     return -1;
   }
@@ -897,7 +899,7 @@ int get_crypt_cmd(struct supervisor_context *context, char *key, char **value)
     return -1;
   }
 
-  if ((*value = base64_encode(pair->value, pair->value_size, &out_len)) == NULL) {
+  if ((*value = (char *) base64_encode(pair->value, pair->value_size, &out_len)) == NULL) {
     log_trace("base64_encode fail");
     free_crypt_pair(pair);
     return -1;

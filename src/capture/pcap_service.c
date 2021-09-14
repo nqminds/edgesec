@@ -150,7 +150,7 @@ int run_pcap(char *interface, bool immediate, bool promiscuous,
     return -1;
   }
 
-  if (pcap_set_snaplen(ctx->pd, PCAP_SNAPSHOT_LENGTH) < 0) {
+  if ((ret = pcap_set_snaplen(ctx->pd, PCAP_SNAPSHOT_LENGTH)) < 0) {
     log_trace("pcap_set_snaplen fail %d", ret);
     goto fail;
   }

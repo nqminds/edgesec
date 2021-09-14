@@ -43,6 +43,8 @@
 
 void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
 {
+  (void) eloop_ctx;
+
   char **ptr = NULL;
   UT_array *cmd_arr;
   process_cmd_fn cfn;

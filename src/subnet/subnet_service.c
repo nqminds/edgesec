@@ -46,7 +46,7 @@ uint8_t get_short_subnet(char *subnet_mask)
   uint8_t short_mask = 0;
   uint32_t shift = 0x80000000U;
 
-  if ((addr = inet_network(subnet_mask)) == -1) {
+  if ((addr = inet_network(subnet_mask)) == INADDR_NONE) {
 		log_trace("Invalid subnet mask address");
 		return -1;
 	}
@@ -63,15 +63,15 @@ uint8_t get_short_subnet(char *subnet_mask)
 bool create_subnet_ifs(UT_array *ifinfo_array, bool ignore_error)
 {
   config_ifinfo_t *p = NULL;
-  char longip[IP_LEN];
+  char longip[IP_LONG_LEN];
 
   if (ifinfo_array == NULL) {
     log_trace("ifinfo_array param is NULL");
     return false;
   }
 
-  while(p = (config_ifinfo_t*) utarray_next(ifinfo_array, p)) {
-    snprintf(longip, IP_LEN,"%s/%d", p->ip_addr, (int)get_short_subnet(p->subnet_mask));
+  while((p = (config_ifinfo_t*) utarray_next(ifinfo_array, p)) != NULL) {
+    snprintf(longip, IP_LONG_LEN, "%s/%d", p->ip_addr, (int)get_short_subnet(p->subnet_mask));
 
     log_trace("Creating ifname=%s ip_addr=%s brd_addr=%s subnet_mask=%s", p->ifname, p->ip_addr, p->brd_addr, p->subnet_mask);
 
@@ -140,7 +140,7 @@ bool create_if_mapper(UT_array *config_ifinfo_array, hmap_if_conn **hmap)
   in_addr_t addr;
 
   if (config_ifinfo_array != NULL) {
-    while(p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) {
+    while((p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) != NULL) {
       log_trace("Adding ip=%s subnet=%s ifname=%s to mapper", p->ip_addr, p->ifname, p->subnet_mask);
       if(!ip_2_nbo(p->ip_addr, p->subnet_mask, &addr)) {
         log_trace("ip_2_nbo fail");
@@ -163,7 +163,7 @@ bool create_vlan_mapper(UT_array *config_ifinfo_array, hmap_vlan_conn **hmap)
   config_ifinfo_t *p = NULL;
   struct vlan_conn vlan_conn;
   if (config_ifinfo_array != NULL) {
-    while(p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) {
+    while((p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) != NULL) {
       log_trace("Adding vlanid=%d and ifname=%s to mapper", p->vlanid, p->ifname);
       vlan_conn.vlanid = p->vlanid;
       os_memcpy(vlan_conn.ifname, p->ifname, IFNAMSIZ);
@@ -182,7 +182,7 @@ bool init_ifbridge_names(UT_array *config_ifinfo_array, char *if_bridge)
 {
   config_ifinfo_t *p = NULL;
   if (config_ifinfo_array != NULL && if_bridge != NULL) {
-    while(p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) {
+    while((p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) != NULL) {
       if (snprintf(p->ifname, IFNAMSIZ, "%s%d", if_bridge, p->vlanid) < 0) {
         return false;
       }

@@ -35,6 +35,7 @@
 
 int ndpi_serialise_dhcp(struct ndpi_flow_struct *flow, struct nDPI_flow_meta *meta)
 {
+  (void) meta;
   log_trace("dhcp_fingerprint=%s", flow->protos.dhcp.fingerprint);
   log_trace("dhcp_class_ident=%s", flow->protos.dhcp.class_ident);
   return 1;
@@ -56,11 +57,11 @@ int ndpi_serialise_dns(struct ndpi_flow_struct *flow, struct nDPI_flow_meta *met
   log_trace("dns_rsp_type=%u", flow->protos.dns.query_type);
   log_trace("dns_rsp_addr=%s", dns_rsp_addr);
 
-  size_t str_len = os_strnlen_s(flow->host_server_name, sizeof(flow->host_server_name));
+  size_t str_len = os_strnlen_s((char *)flow->host_server_name, sizeof(flow->host_server_name));
   if(str_len > 0 && str_len < sizeof(flow->host_server_name)) {
     log_trace("dns_query=%s", flow->host_server_name);
-    os_strlcpy(meta->query, flow->host_server_name, MAX_QUERY_LEN);
-    sha256_hash(meta->hash, flow->host_server_name, strlen(flow->host_server_name));
+    os_strlcpy(meta->query, (char *)flow->host_server_name, MAX_QUERY_LEN);
+    sha256_hash((uint8_t *)meta->hash, flow->host_server_name, strlen((char *)flow->host_server_name));
     return 0;
   } else {
     log_trace("Malformed host_server_name");
@@ -70,11 +71,11 @@ int ndpi_serialise_dns(struct ndpi_flow_struct *flow, struct nDPI_flow_meta *met
 
 int ndpi_serialise_mdns(struct ndpi_flow_struct *flow, struct nDPI_flow_meta *meta)
 {
-  size_t str_len = os_strnlen_s(flow->host_server_name, sizeof(flow->host_server_name));
+  size_t str_len = os_strnlen_s((char *)flow->host_server_name, sizeof(flow->host_server_name));
   if(str_len > 0 && str_len < sizeof(flow->host_server_name)) {
     log_trace("mdns_query=%s", flow->host_server_name);
-    os_strlcpy(meta->query, flow->host_server_name, MAX_QUERY_LEN);
-    sha256_hash(meta->hash, flow->host_server_name, strlen(flow->host_server_name));
+    os_strlcpy(meta->query, (char *) flow->host_server_name, MAX_QUERY_LEN);
+    sha256_hash((uint8_t *)meta->hash, flow->host_server_name, strlen((char *)flow->host_server_name));
     return 0;
   } else {
     log_trace("Malformed host_server_name");
@@ -121,7 +122,7 @@ int ndpi_serialise_tls(struct ndpi_flow_struct *flow, struct nDPI_flow_meta *met
               strcat(buf, ja3);
               strcat(buf, ja3s);
               os_strlcpy(meta->query, client_requested_server_name, MAX_QUERY_LEN);
-              sha256_hash(meta->hash, buf, str_len);
+              sha256_hash((uint8_t *)meta->hash, buf, str_len);
               os_free(buf);
               return 0;
             } else {

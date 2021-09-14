@@ -464,7 +464,6 @@ char load_delim(const char *filename)
 bool load_capture_config(const char *filename, struct capture_conf *config)
 {
   char *value = os_zalloc(INI_BUFFERSIZE);
-  int ret;
 
   // Load db param
   ini_gets("system", "dbPath", "./", value, INI_BUFFERSIZE, filename);
@@ -485,25 +484,25 @@ bool load_capture_config(const char *filename, struct capture_conf *config)
 
   // Load capture bin path
   value = os_zalloc(INI_BUFFERSIZE);
-  ret = ini_gets("capture", "captureBinPath", "", value, INI_BUFFERSIZE, filename);
+  ini_gets("capture", "captureBinPath", "", value, INI_BUFFERSIZE, filename);
   os_strlcpy(config->capture_bin_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
   // Load dhpc config file path
   value = os_zalloc(INI_BUFFERSIZE);
-  ret = ini_gets("capture", "captureInterface", "", value, INI_BUFFERSIZE, filename);
+  ini_gets("capture", "captureInterface", "", value, INI_BUFFERSIZE, filename);
   os_strlcpy(config->capture_interface, value, IFNAMSIZ);
   os_free(value);
 
   // Load the domain command value
   value = os_zalloc(INI_BUFFERSIZE);
-  ret = ini_gets("capture", "command", "", value, INI_BUFFERSIZE, filename);
+  ini_gets("capture", "command", "", value, INI_BUFFERSIZE, filename);
   os_strlcpy(config->domain_command, value, MAX_SUPERVISOR_CMD_SIZE);
   os_free(value);
 
   // Load filter param
   value = os_zalloc(INI_BUFFERSIZE);
-  ret = ini_gets("capture", "filter", "", value, INI_BUFFERSIZE, filename);
+  ini_gets("capture", "filter", "", value, INI_BUFFERSIZE, filename);
 
   os_strlcpy(config->filter, value, MAX_FILTER_SIZE);
   os_free(value);
@@ -522,7 +521,7 @@ bool load_capture_config(const char *filename, struct capture_conf *config)
 
   // Load analyser param
   value = os_zalloc(INI_BUFFERSIZE);
-  ret = ini_gets("capture", "analyser", PACKET_ANALYSER_DEFAULT, value, INI_BUFFERSIZE, filename);
+  ini_gets("capture", "analyser", PACKET_ANALYSER_DEFAULT, value, INI_BUFFERSIZE, filename);
   os_strlcpy(config->analyser, value, MAX_ANALYSER_NAME_SIZE);
   os_free(value);
 

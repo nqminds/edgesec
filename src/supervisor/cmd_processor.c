@@ -395,7 +395,7 @@ ssize_t process_get_bridges_cmd(int sock, struct client_address *client_addr,
   ssize_t bytes_sent;
   if(get_all_bridge_edges(context->bridge_list, &tuple_list_arr) >= 0) {
     log_trace("GET_BRIDGES");
-    while(p = (struct bridge_mac_tuple *) utarray_next(tuple_list_arr, p)) {
+    while((p = (struct bridge_mac_tuple *) utarray_next(tuple_list_arr, p)) != NULL) {
       int line_size = snprintf(temp, 255, MACSTR "," MACSTR "\n", MAC2STR(p->src_addr), MAC2STR(p->dst_addr));
       total += line_size + 1;
       if (reply_buf == NULL)
@@ -556,7 +556,7 @@ ssize_t process_register_ticket_cmd(int sock, struct client_address *client_addr
             errno = 0;
             vlanid = (int) strtoul(*ptr, NULL, 10);
             if (errno != ERANGE && is_number(*ptr)) {
-              passphrase = register_ticket_cmd(context, mac_addr, label, vlanid);
+              passphrase = (char *) register_ticket_cmd(context, mac_addr, label, vlanid);
 
               if (passphrase != NULL) {
                 return write_domain_data(sock, passphrase, strlen(passphrase), &client_addr->addr, client_addr->len);

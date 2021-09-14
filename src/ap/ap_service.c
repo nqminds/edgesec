@@ -75,8 +75,15 @@ int send_ap_command(char *socket_path, char *cmd_str, char **reply)
   os_memcpy(&readfds, &masterfds, sizeof(fd_set));
 
   log_trace("Sending to socket_path=%s", socket_path);
-  if ((send_count = write_domain_data_s(sfd, cmd_str, strlen(cmd_str), socket_path)) != strlen(cmd_str)) {
+  send_count = write_domain_data_s(sfd, cmd_str, strlen(cmd_str), socket_path);
+  if (send_count < 0) {
     log_err("sendto");
+    close(sfd);
+    return -1;
+  }
+
+  if ((size_t)send_count != strlen(cmd_str)) {
+    log_err("write_domain_data_s fail");
     close(sfd);
     return -1;
   }
@@ -205,6 +212,8 @@ int disconnect_ap_command(struct apconf *hconf, char *mac_addr)
     log_trace("denyacl_del_ap_command fail");
     return -1;
   }
+
+  return 0;
 }
 
 int find_ap_status(char *ap_answer, uint8_t *mac_addr, enum AP_CONNECTION_STATUS *status)
@@ -281,7 +290,8 @@ void ap_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
 
 int register_ap_event(struct supervisor_context *context, void *ap_callback_fn)
 {
-  size_t cmd_len = STRLEN(ATTACH_AP_COMMAND);
+  ssize_t cmd_len = (ssize_t) STRLEN(ATTACH_AP_COMMAND);
+
   if ((context->ap_sock = create_domain_client(NULL)) == -1) {
     log_debug("create_domain_client fail");
     return -1;

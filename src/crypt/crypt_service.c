@@ -55,20 +55,6 @@ int generate_user_key(uint8_t *user_secret, int user_secret_size,
   return 0;
 }
 
-int encrypt_master_key(uint8_t *key, int key_size, uint8_t *user_key, int user_key_size,
-                       uint8_t *out, int out_size)
-{
-  if (!user_key_size) {
-    // Use secure element key
-    log_trace("Secure element not implemented");
-    return -1;
-  } else {
-    // Use user key
-  }
-
-
-}
-
 struct secrets_row* prepare_secret_entry(char *key_id, uint8_t *key, int key_size, uint8_t *salt, int salt_size, uint8_t *iv, int iv_size)
 {
   size_t out_len;
@@ -84,15 +70,15 @@ struct secrets_row* prepare_secret_entry(char *key_id, uint8_t *key, int key_siz
   }
 
   if (key != NULL) {
-    row->value = base64_encode(key, key_size, &out_len);
+    row->value = (char *)base64_encode(key, key_size, &out_len);
   }
 
   if (salt != NULL) {
-    row->salt = base64_encode(salt, salt_size, &out_len);
+    row->salt = (char *)base64_encode(salt, salt_size, &out_len);
   }
 
   if (iv != NULL) {
-    row->iv = base64_encode(iv, iv_size, &out_len);
+    row->iv = (char *)base64_encode(iv, iv_size, &out_len);
   }
 
   return row;
@@ -107,7 +93,7 @@ int extract_secret_entry(struct secrets_row* row, uint8_t *key, int *key_size,
   if (row->value == NULL && key_size != NULL) {
     *key_size = 0;
   } else if (row->value != NULL && key != NULL && key_size != NULL) {
-    buf = base64_decode(row->value, strlen(row->value), &out_len);
+    buf = (char *)base64_decode((unsigned char *) row->value, strlen(row->value), (size_t *) &out_len);
     if (buf == NULL) {
       log_trace("base64_decode fail");
       return -1;
@@ -122,7 +108,7 @@ int extract_secret_entry(struct secrets_row* row, uint8_t *key, int *key_size,
   if (row->salt == NULL && salt_size != NULL) {
     *salt_size = 0;
   } else if (row->salt != NULL && salt != NULL && salt_size != NULL) {
-    buf = base64_decode(row->salt, strlen(row->salt), &out_len);
+    buf = (char *)base64_decode((unsigned char *) row->salt, strlen(row->salt), (size_t *)&out_len);
     if (buf == NULL) {
       log_trace("base64_decode fail");
       return -1;
@@ -136,7 +122,7 @@ int extract_secret_entry(struct secrets_row* row, uint8_t *key, int *key_size,
   if (row->iv == NULL && iv_size != NULL) {
     *iv_size = 0;
   } else if (row->iv != NULL && iv != NULL && iv_size != NULL){
-    buf = base64_decode(row->iv, strlen(row->iv), &out_len);
+    buf = (char *)base64_decode((unsigned char *)row->iv, strlen(row->iv), (size_t *)&out_len);
     if (buf == NULL) {
       log_trace("base64_decode fail");
       return -1;
@@ -235,7 +221,7 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
                                          uint8_t *user_secret, int user_secret_size)
 {
   sqlite3 *db = NULL;
-  struct crypt_context *context;
+  struct crypt_context *context = NULL;
   struct secrets_row *row_secret = NULL;
   uint8_t *crypto_buf = NULL, *decrypted_buf = NULL;
   size_t crypto_buf_size = 0, decrypted_buf_size = 0;
@@ -247,8 +233,6 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
 
   if (open_sqlite_crypt_db(crypt_db_path, &db) < 0) {
     log_trace("open_sqlite_crypt_db fail");
-    free_crypt_service(context);
-
     return NULL;
   }
 
@@ -360,7 +344,7 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
         return NULL;
       }
 
-      crypto_buf = base64_decode(row_secret->value, strlen(row_secret->value), &crypto_buf_size);
+      crypto_buf = base64_decode((unsigned char *) row_secret->value, strlen(row_secret->value), (size_t *) &crypto_buf_size);
       if (crypto_buf == NULL) {
         log_trace("base64_decode fail");
         free_sqlite_secrets_row(row_secret);
@@ -411,7 +395,7 @@ struct crypt_pair* get_crypt_pair(struct crypt_context *ctx, char *key)
   struct store_row *row;
   uint8_t *enc_value;
   uint8_t *iv;
-  size_t iv_size, value_size;
+  ssize_t iv_size, value_size;
 
   if (key == NULL) {
     log_trace("key param is NULL");
@@ -445,8 +429,8 @@ struct crypt_pair* get_crypt_pair(struct crypt_context *ctx, char *key)
   }
 
   if (row->value != NULL) {
-    iv = base64_decode(row->iv, strlen(row->iv), &iv_size);
-    enc_value = base64_decode(row->value, strlen(row->value), &value_size);
+    iv = base64_decode((unsigned char *) row->iv, strlen(row->iv), (size_t *) &iv_size);
+    enc_value = base64_decode((unsigned char *) row->value, strlen(row->value), (size_t *)&value_size);
 
     pair->value = os_malloc(value_size);
     if (pair->value == NULL) {
@@ -522,8 +506,8 @@ int put_crypt_pair(struct crypt_context *ctx, struct crypt_pair *pair)
       return -1;
     }
 
-    row.value = base64_encode(enc_value, enc_value_size, &out_len);
-    row.iv = base64_encode(iv, IV_SIZE, &out_len);
+    row.value = (char *) base64_encode(enc_value, enc_value_size, &out_len);
+    row.iv = (char *) base64_encode(iv, IV_SIZE, &out_len);
 
     os_free(enc_value);
   } else {

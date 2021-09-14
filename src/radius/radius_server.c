@@ -380,6 +380,8 @@ radius_server_macacl(struct radius_server_data *data,
 		     struct radius_session *sess,
 		     struct radius_msg *request)
 {
+	(void) data;
+
 	struct radius_msg *msg;
 	int code;
 	uint8_t *pw;
@@ -475,6 +477,8 @@ static int radius_server_reject(struct radius_server_data *data,
 				struct sockaddr *from, socklen_t fromlen,
 				const char *from_addr, int from_port)
 {
+	(void) fromlen;
+
 	struct radius_msg *msg;
 	int ret = 0;
 	struct wpabuf *buf;
@@ -589,7 +593,6 @@ static int radius_server_request(struct radius_server_data *data,
 		return -1;
 	}
 
-send_reply:
 	if (reply) {
 		struct wpabuf *buf;
 		struct radius_hdr *hdr;
@@ -646,6 +649,8 @@ send_reply:
 static void radius_server_receive_auth(int sock, void *eloop_ctx,
 				       void *sock_ctx)
 {
+	(void) sock_ctx;
+
 	struct radius_server_data *data = eloop_ctx;
 	uint8_t *buf = NULL;
 	union {

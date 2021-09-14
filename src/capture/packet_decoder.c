@@ -73,6 +73,7 @@ static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL, NULL
 bool decode_dhcp_packet(struct capture_packet *cpac)
 {
   // log_trace("DHCP");
+  (void) cpac;
   return false;
 }
 

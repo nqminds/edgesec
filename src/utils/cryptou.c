@@ -79,7 +79,7 @@ int crypto_buf2key(uint8_t *buf, int buf_size, uint8_t *salt, int salt_size,
                    uint8_t *key, int key_size)
 {
 #ifdef WITH_OPENSSL_SERVICE
-  if (PKCS5_PBKDF2_HMAC(buf, buf_size, salt, salt_size, MAX_KEY_ITERATIONS,
+  if (PKCS5_PBKDF2_HMAC((char *)buf, buf_size, salt, salt_size, MAX_KEY_ITERATIONS,
                     EVP_sha256(), key_size, key) < 1) {
     log_trace("PKCS5_PBKDF2_HMAC fail wit code=%d", ERR_get_error());
     return -1;
@@ -235,7 +235,7 @@ EVP_PKEY *crypto_generate_RSA_key(EVP_PKEY_CTX *ctx, int bits)
   return pkey;
 }
 
-char* crypto_generate_cert_str(EVP_PKEY *pkey)
+char* crypto_generate_cert_str(EVP_PKEY *pkey, struct certificate_meta *meta)
 {
   char *out;
   X509* x509 = X509_new();
@@ -243,18 +243,18 @@ char* crypto_generate_cert_str(EVP_PKEY *pkey)
   BUF_MEM *ptr = NULL;
 
   /* certificate expiration date: 365 days from now (60s * 60m * 24h * 365d) */
-  X509_gmtime_adj(X509_get_notBefore(x509), 0);
-  X509_gmtime_adj(X509_get_notAfter(x509), 31536000L);
+  X509_gmtime_adj(X509_get_notBefore(x509), meta->not_before);
+  X509_gmtime_adj(X509_get_notAfter(x509), meta->not_after);
 
   X509_set_pubkey(x509, pkey);
 
   /* set the name of the issuer to the name of the subject. */
   X509_NAME* name = X509_get_subject_name(x509);
-  X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, (unsigned char*)"IE", -1, -1, 0);
-  X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, (unsigned char*)"nqmcyber", -1, -1, 0);
-  X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, (unsigned char*)"R&D", -1, -1, 0);
-  X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, (unsigned char*)"localhost", -1, -1, 0);
-
+  X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, (unsigned char*)meta->c, -1, -1, 0);
+  X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, (unsigned char*)meta->o, -1, -1, 0);
+  X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, (unsigned char*)meta->ou, -1, -1, 0);
+  X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, (unsigned char*)meta->cn, -1, -1, 0);
+  
   X509_set_issuer_name(x509, name);
 
   /* finally sign the certificate with the key. */
@@ -284,7 +284,7 @@ char* crypto_generate_cert_str(EVP_PKEY *pkey)
 }
 #endif
 
-int crypto_generate_keycert_str(int bits, char **key, char **cert)
+int crypto_generate_keycert_str(int bits, struct certificate_meta *meta, char **key, char **cert)
 {
 #ifdef WITH_OPENSSL_SERVICE
   char *key_str = NULL, *cert_str = NULL;
@@ -298,7 +298,7 @@ int crypto_generate_keycert_str(int bits, char **key, char **cert)
     return -1;
   }
 
-  if ((ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, NULL)) <= 0) {
+  if ((ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, NULL)) == NULL) {
     log_trace("EVP_PKEY_CTX_new_id fail with code=%d", ERR_get_error());
     BIO_free(mem);
     return -1;
@@ -319,7 +319,7 @@ int crypto_generate_keycert_str(int bits, char **key, char **cert)
     return -1;
   }
 
-  if ((cert_str = crypto_generate_cert_str(pkey)) == NULL) {
+  if ((cert_str = crypto_generate_cert_str(pkey, meta)) == NULL) {
     log_trace("crypto_generate_cert_str failure");
     BIO_free(mem);
     EVP_PKEY_free(pkey);

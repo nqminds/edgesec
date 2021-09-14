@@ -57,16 +57,10 @@ if (USE_ARM_MUSL_LIBC)
 endif ()
 
 # C compiler options
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wunused-variable -Wall -Wextra")
-#if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-#  set(CMAKE_C_FLAGS -g3 -O0)
-#else()
-#  set(CMAKE_C_FLAGS INTERFACE -g0 -O2)
-#endif()
+set(CMAKE_C_FLAGS "-Wunused-variable -Wall -Wextra")
 
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs")
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ftest-coverage")
-
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_LIBNL")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")

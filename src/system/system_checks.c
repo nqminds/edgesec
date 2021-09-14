@@ -51,6 +51,8 @@
 
 hmap_str_keychar *check_systems_commands(char *commands[], UT_array *bin_path_arr, hmap_str_keychar *hmap_bin_hashes)
 {
+  (void) hmap_bin_hashes;
+
   if (commands == NULL) {
     log_debug("commands param NULL");
     return NULL;

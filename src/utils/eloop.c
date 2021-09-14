@@ -509,6 +509,7 @@ int eloop_replenish_timeout(unsigned long req_secs, unsigned long req_usecs,
 
 static void eloop_handle_alarm(int sig)
 {
+	(void) sig;
 	log_trace("eloop: could not process SIGINT or SIGTERM in "
 		   "two seconds. Looks like there\n"
 		   "is a bug that ends up in a busy loop that "

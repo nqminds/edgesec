@@ -43,6 +43,7 @@
 #define MAX_OS_PATH_LEN			4096
 #define MAX_WEB_PATH_LEN		2048
 #define IP_LEN 					20
+#define IP_LONG_LEN 			24
 #define LINK_TYPE_LEN 			64
 
 #define MAX_RANDOM_UUID_LEN		37

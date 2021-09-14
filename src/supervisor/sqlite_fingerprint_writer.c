@@ -233,7 +233,7 @@ int get_sqlite_fingerprint_rows(sqlite3 *db, char *mac, uint64_t timestamp, char
   while((rc = sqlite3_step(res)) == SQLITE_ROW) {
     os_memset(&row, 0, sizeof(row));
 
-    value = (unsigned char*) sqlite3_column_text(res, 0);
+    value = (char*) sqlite3_column_text(res, 0);
     if (value != NULL) {
       row.mac = os_strdup(value);
       if (row.mac == NULL) {
@@ -245,7 +245,7 @@ int get_sqlite_fingerprint_rows(sqlite3 *db, char *mac, uint64_t timestamp, char
       }
     }
 
-    value = (unsigned char*) sqlite3_column_text(res, 1);
+    value = (char*) sqlite3_column_text(res, 1);
     if (value != NULL) {
       row.protocol = os_strdup(value);
       if (row.protocol == NULL) {
@@ -258,7 +258,7 @@ int get_sqlite_fingerprint_rows(sqlite3 *db, char *mac, uint64_t timestamp, char
       }
     }
 
-    value = (unsigned char*) sqlite3_column_text(res, 2);
+    value = (char*) sqlite3_column_text(res, 2);
     if (value != NULL) {
       row.fingerprint = os_strdup(value);
       if (row.fingerprint == NULL) {
@@ -273,7 +273,7 @@ int get_sqlite_fingerprint_rows(sqlite3 *db, char *mac, uint64_t timestamp, char
 
     row.timestamp = sqlite3_column_int64(res, 3);
 
-    value = (unsigned char*) sqlite3_column_text(res, 4);
+    value = (char*) sqlite3_column_text(res, 4);
     if (value != NULL) {
       row.query = os_strdup(value);
       if (row.query == NULL) {

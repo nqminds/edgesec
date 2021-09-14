@@ -73,6 +73,8 @@ void construct_pcap_file_name(char *file_name)
 
 void add_packet_queue(UT_array *tp_array, int count, struct packet_queue *queue)
 {
+  (void) count;
+
   struct tuple_packet *p = NULL;
   while((p = (struct tuple_packet *) utarray_next(tp_array, p)) != NULL) {
     if (push_packet_queue(queue, *p) == NULL) {
@@ -109,6 +111,9 @@ void pcap_callback(const void *ctx, struct pcap_pkthdr *header, uint8_t *packet)
 
 void eloop_read_fd_handler(int sock, void *eloop_ctx, void *sock_ctx)
 {
+  (void) sock;
+  (void) eloop_ctx;
+
   struct capture_context *context = (struct capture_context *) sock_ctx;
   if (capture_pcap_packet(context->pc) < 0) {
     log_trace("capture_pcap_packet fail");
@@ -145,6 +150,8 @@ int save_pcap_file_data(struct pcap_pkthdr *header, uint8_t *packet, struct capt
 
 void eloop_tout_handler(void *eloop_ctx, void *user_ctx)
 {
+  (void) eloop_ctx;
+
   struct capture_context *context = (struct capture_context *) user_ctx;
   struct packet_queue *el_packet;
   struct pcap_queue *el_pcap;

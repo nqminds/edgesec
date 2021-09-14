@@ -76,12 +76,12 @@ bool generate_dnsmasq_conf(struct dhcp_conf *dconf, char *interface, UT_array *d
   log_trace("Writing into %s", dconf->dhcp_conf_path);
 
   fprintf(fp, "no-resolv\n");
-  while(p = (char**)utarray_next(dns_server_array, p)) {
+  while((p = (char**)utarray_next(dns_server_array, p)) != NULL) {
     fprintf(fp, "server=%s\n", *p);
   }
 
   fprintf(fp, "dhcp-script=%s\n", dconf->dhcp_script_path);
-  while(el = (config_dhcpinfo_t *) utarray_next(dconf->config_dhcpinfo_array, el)) {
+  while((el = (config_dhcpinfo_t *) utarray_next(dconf->config_dhcpinfo_array, el)) != NULL) {
     if (el->vlanid)
       fprintf(fp, "dhcp-range=%s.%d,%s,%s,%s,%s\n", interface, el->vlanid, el->ip_addr_low, el->ip_addr_upp, el->subnet_mask, el->lease_time);
     else

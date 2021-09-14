@@ -8,6 +8,7 @@ endif()
 
 # Sources
 set (SRC
+    log.c
     counter.c
     crypto.c
     error.c

@@ -92,7 +92,7 @@ struct iptables_columns process_rule_column(char *column)
     return row;
   }
 
-  while(p = (char **) utarray_next(column_arr, p)) {
+  while ((p = (char **) utarray_next(column_arr, p)) != NULL) {
     if (strlen(*p)) {
       switch(state) {
         case 0:
@@ -176,7 +176,7 @@ bool process_rule_lines(struct iptables_context *ctx, char *rule_str)
     p = (char **) utarray_next(line_arr, p);
     p = (char **) utarray_next(line_arr, p);
 
-    while(p = (char **) utarray_next(line_arr, p)) {
+    while ((p = (char **) utarray_next(line_arr, p)) != NULL) {
       if (strlen(*p) > 1) {
         struct iptables_columns row = process_rule_column(*p);
         if (row.num) {
@@ -275,7 +275,7 @@ bool add_baseif_rules(struct iptables_context *ctx, UT_array *ifinfo_array)
   if (ifinfo_array == NULL)
     return false;
 
-  while(p = (config_ifinfo_t*) utarray_next(ifinfo_array, p)) {
+  while ((p = (config_ifinfo_t*) utarray_next(ifinfo_array, p)) != NULL) {
     reject_rule[5] = p->ifname;
     if (!run_iptables(ctx, reject_rule, NULL)) {
       log_trace("run_iptables fail");
@@ -357,7 +357,7 @@ bool get_nat_rules(struct iptables_context *ctx)
 long find_rule(UT_array *rlist, char *sip, char *sif, char *dip, char *dif, char *target)
 {
   struct iptables_columns *el = NULL;
-  while(el = (struct iptables_columns *) utarray_next(rlist, el)) {
+  while((el = (struct iptables_columns *) utarray_next(rlist, el)) != NULL) {
     if (!strcmp(el->in, sif) && !strcmp(el->out, dif) && !strcmp(el->source, sip) &&
         !strcmp(el->destination, dip) && !strcmp(el->target, target))
       return el->num;
@@ -413,7 +413,7 @@ bool iptables_delete_bridge(struct iptables_context *ctx, char *sip, char *sif, 
 long find_baseif_rulenum(UT_array *rlist, char *ifname)
 {
   struct iptables_columns *el = NULL;
-  while(el = (struct iptables_columns *) utarray_next(rlist, el)) {
+  while((el = (struct iptables_columns *) utarray_next(rlist, el)) != NULL) {
     if (!strcmp(el->in, ifname) && !strcmp(el->out, "*") && !strcmp(el->target, "REJECT"))
       return el->num;
   }
