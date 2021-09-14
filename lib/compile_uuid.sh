@@ -2,17 +2,20 @@
 
 set -e
 
-LIBUUID_SOURCE_DIR=$1
+util_linux_SOURCE_DIR=$1
 LIBUUID_INSTALL_DIR=$2/uuid
 CONFIG_HOST=$3
 
-echo "UUID lib source dir: ${LIBUUID_SOURCE_DIR}"
+echo "util-linux source dir: ${util_linux_SOURCE_DIR}"
 echo "UUID lib install dir: ${LIBUUID_INSTALL_DIR}"
 echo "UUID lib config host: ${CONFIG_HOST}"
 
-cd "${LIBUUID_SOURCE_DIR}"
-autoreconf -f -i
-./configure --prefix=${LIBUUID_INSTALL_DIR} --host=${CONFIG_HOST}
+cd "${util_linux_SOURCE_DIR}"
+# for some reason, on Elementary OS 5, we need to manually set AL_OPTS
+AL_OPTS="-I/usr/share/aclocal" ./autogen.sh
+./configure \
+    --prefix=${LIBUUID_INSTALL_DIR} --host=${CONFIG_HOST} \
+    --disable-all-programs --enable-libuuid
 make
-make install
+make install-strip # make install, except with symbols removed
 make distclean
