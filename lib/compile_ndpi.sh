@@ -2,7 +2,7 @@
 
 set -e
 
-LIBNDPI_SOURCE_DIR=./nDPI
+LIBNDPI_SOURCE_DIR="$2"
 LIBNDPI_INSTALL_DIR=$1/ndpi
 LIBPCAP_INSTALL_DIR=$1/pcap
 LIBPCAP_INCLUDE_PATH=${LIBPCAP_INSTALL_DIR}/include
@@ -14,9 +14,6 @@ echo "NDPI lib source dir: ${LIBNDPI_SOURCE_DIR}"
 echo "NDPI lib install dir: ${LIBNDPI_INSTALL_DIR}"
 echo "NDPI lib config host: ${CONFIG_HOST}"
 
-rm -rf "${LIBNDPI_SOURCE_DIR}"
-git clone --depth 1 --branch 3.4 https://github.com/ntop/nDPI
-
 cd "${LIBNDPI_SOURCE_DIR}"
 ./autogen.sh
 
@@ -25,4 +22,3 @@ make
 make install
 make clean
 cd ../
-rm -rf "${LIBNDPI_SOURCE_DIR}"
