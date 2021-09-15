@@ -107,6 +107,16 @@ ssize_t write_domain_data_s(int sock, char *data, size_t data_len, char *addr);
  * @return int 0 on success, -1 on failure
  */
 int close_domain(int sfd);
+
+/**
+ * @brief Write and read a domain data string
+ * 
+ * @param socket_path The domain socket path
+ * @param write_str The write string
+ * @param reply The reply string
+ * @return int 0 on success, -1 on failure
+ */
+int writeread_domain_data_str(char *socket_path, char *write_str, char **reply);
 #ifdef __cplusplus
 }
 #endif

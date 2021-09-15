@@ -877,6 +877,8 @@ int put_crypt_cmd(struct supervisor_context *context, char *key, char *value)
 {
   struct crypt_pair pair = {key, NULL, 0};
 
+  log_trace("PUT_CRYPT for key=%s", key);
+
   if ((pair.value = (uint8_t *) base64_decode((unsigned char *) value, strlen(value), (size_t*) &pair.value_size)) == NULL) {
     log_trace("base64_decode fail");
     return -1;
@@ -884,9 +886,11 @@ int put_crypt_cmd(struct supervisor_context *context, char *key, char *value)
 
   if (put_crypt_pair(context->crypt_ctx, &pair) < 0) {
     log_trace("put_crypt_pair fail");
+    os_free(pair.value);
     return -1;
   }
 
+  os_free(pair.value);
   return 0;
 }
 
@@ -894,8 +898,19 @@ int get_crypt_cmd(struct supervisor_context *context, char *key, char **value)
 {
   struct crypt_pair* pair = NULL;
   size_t out_len;
+
+  log_trace("GET_CRYPT for key=%s", key);
+
+  *value = NULL;
+
   if ((pair = get_crypt_pair(context->crypt_ctx, key)) == NULL) {
     log_trace("get_crypt_pair fail");
+    return -1;
+  }
+
+  if (pair->value == NULL) {
+    log_trace("Empty value");
+    free_crypt_pair(pair);
     return -1;
   }
 
@@ -909,19 +924,95 @@ int get_crypt_cmd(struct supervisor_context *context, char *key, char **value)
   return 0;
 }
 
-int gen_randkey_cmd(struct supervisor_context *context, char *keyid, int size)
+int gen_randkey_cmd(struct supervisor_context *context, char *keyid, uint8_t size)
 {
-  return -1;
+  struct crypt_pair pair = {keyid, NULL, (ssize_t) size};
+
+  log_trace("GEN_RANDKEY for key=%s", keyid);
+
+  if ((pair.value = os_malloc(pair.value_size)) == NULL) {
+    log_err("os_malloc");
+    return -1;
+  }
+  if (crypto_genkey(pair.value, pair.value_size) < 0) {
+    log_trace("crypto_genkey fail");
+    os_free(pair.value);
+    return -1;
+  }
+
+  if (put_crypt_pair(context->crypt_ctx, &pair) < 0) {
+    log_trace("put_crypt_pair fail");
+    os_free(pair.value);
+    return -1;
+  }
+
+  os_free(pair.value);
+
+  return 0;
 }
 
-int gen_privkey_cmd(struct supervisor_context *context, char *keyid, int size)
+int gen_privkey_cmd(struct supervisor_context *context, char *keyid, uint8_t size)
 {
-  return -1;
+  struct crypt_pair pair = {keyid, NULL, (ssize_t) size};
+
+  log_trace("GEN_PRIVKEY for key=%s", keyid);
+
+  if (crypto_generate_privkey_str(size * 8, (char **)&pair.value) < 0) {
+    log_trace("crypto_generate_privkey_str fail");
+    return -1;
+  }
+
+  pair.value_size = strlen((char *)pair.value);
+
+  if (put_crypt_pair(context->crypt_ctx, &pair) < 0) {
+    log_trace("put_crypt_pair fail");
+    os_free(pair.value);
+    return -1;
+  }
+
+  os_free(pair.value);
+
+  return 0;
 }
 
 int gen_cert_cmd(struct supervisor_context *context, char *certid, char *keyid)
 {
-  return -1;
+  struct certificate_meta meta;
+  struct crypt_pair* pair = NULL;
+  struct crypt_pair cert_pair = {certid, NULL, 0};
+
+  os_memset(&meta, 0, sizeof(struct certificate_meta));
+  meta.not_before = 0;
+  meta.not_after = 31536000L;
+  strcpy(meta.c, "IE");
+  strcpy(meta.o, "nqmcyber");
+  strcpy(meta.ou, "R&D");
+  strcpy(meta.cn, "localhost"); 
+
+  log_trace("GEN_CERT for certid=%s and keyid=%s", certid, keyid);
+
+  if ((pair = get_crypt_pair(context->crypt_ctx, keyid)) == NULL) {
+    log_trace("get_crypt_pair fail");
+    return -1;
+  }
+
+  if (crypto_generate_cert_str(&meta, pair->value, pair->value_size, (char **)&cert_pair.value) < 0) {
+    log_trace("crypto_generate_cert_str fail");
+    free_crypt_pair(pair);
+    return -1;
+  }
+  free_crypt_pair(pair);
+
+  cert_pair.value_size = strlen((char *)cert_pair.value);
+
+  if (put_crypt_pair(context->crypt_ctx, &cert_pair) < 0) {
+    log_trace("put_crypt_pair fail");
+    os_free(cert_pair.value);
+    return -1;
+  }
+
+  os_free(cert_pair.value);
+  return 0;
 }
 
 char* encrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *blob)

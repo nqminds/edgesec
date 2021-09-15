@@ -33,6 +33,7 @@
         "sstream": "c",
         "typeindex": "c",
         "typeinfo": "c",
-        "errno.h": "c"
+        "errno.h": "c",
+        "cmd_processor.h": "c"
     }
 }

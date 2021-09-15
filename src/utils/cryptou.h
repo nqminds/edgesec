@@ -117,15 +117,24 @@ int crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
                    uint8_t *iv, uint8_t *out);
 
 /**
+ * @brief Generate a private RSA key string
+ * 
+ * @param bits Number of key bits
+ * @param key The output key string
+ * @return int 0 on success, -1 on failure
+ */
+int crypto_generate_privkey_str(int bits, char **key);
+
+/**
  * @brief Generates a pair of private key and certificate strings
  * 
- * @param bits Number of bits for the private key
  * @param meta Certificate metadata
- * @param key The private key string
+ * @param key The private key buffer
+ * @param key_size The private key buffer size
  * @param cert The certificate string
  * @return int 0 on success, -1 on failure
  */
-int crypto_generate_keycert_str(int bits, struct certificate_meta *meta, char **key, char **cert);
+int crypto_generate_cert_str(struct certificate_meta *meta, uint8_t *key, size_t key_size, char **cert);
 
 #ifdef __cplusplus
 }

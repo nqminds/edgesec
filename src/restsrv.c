@@ -54,18 +54,25 @@
 #include "utils/log.h"
 #include "utils/minIni.h"
 #include "utils/domain.h"
-#include "utils/cryptou.h"
+#include "utils/base64.h"
 
 #define SOCK_PACKET_SIZE 10
 
-#define OPT_STRING    ":a:s:p:z:c:u:tdvh"
-#define USAGE_STRING  "\t%s [-s address] [-a address] [-p port] [-z delim] [-c path] [-u passphrase] [-t] [-d] [-h] [-v]\n"
+#define OPT_STRING    ":a:s:p:z:tdvh"
+#define USAGE_STRING  "\t%s [-s address] [-a address] [-p port] [-z delim] [-t] [-d] [-h] [-v]\n"
 
 #define JSON_RESPONSE_OK "{\"cmd\":\"%s\",\"response\":[%s]}"
 #define JSON_RESPONSE_FAIL "{\"error\":\"invalid get request\"}"
 
 #define MESSAGE_REPLY_TIMEOUT 10  // In seceonds
 // char *socket_path = "\0hidden";
+
+#define CRYPT_KEY_ID        "restkey"
+#define CRYPT_CERT_ID       "restcert"
+#define GET_CRYPT_KEY_CMD   CMD_GET_CRYPT" "CRYPT_KEY_ID
+#define GET_CRYPT_CERT_CMD  CMD_GET_CRYPT" "CRYPT_CERT_ID
+#define GEN_PRIVKEY_CMD     CMD_GEN_PRIVKEY" "CRYPT_KEY_ID" 128"
+#define GEN_CERT_CMD        CMD_GEN_CERT" "CRYPT_CERT_ID" "CRYPT_KEY_ID
 
 static __thread char version_buf[10];
 
@@ -104,8 +111,6 @@ void show_app_help(char *app_name)
   fprintf(stdout, "\t-a address\t Path to AP socket\n");
   fprintf(stdout, "\t-p port\t\t Server port\n");
   fprintf(stdout, "\t-z delim\t\t Command delimiter\n");
-  fprintf(stdout, "\t-c path\t\t The crypt db path\n");
-  fprintf(stdout, "\t-u passphrase\t\t The user passpharse\n");
   fprintf(stdout, "\t-t\t\t Use TLS\n");
   fprintf(stdout, "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n");
   fprintf(stdout, "\t-h\t\t Show help\n");
@@ -139,19 +144,13 @@ int get_port(char *port_str)
 }
 
 void process_app_options(int argc, char *argv[], char *spath, char *apath,
-  int *port, char *delim, bool *tls, char ** db_path, char **passphrase, uint8_t *verbosity)
+  int *port, char *delim, bool *tls, uint8_t *verbosity)
 {
   int opt;
   int p;
   *tls = false;
   while ((opt = getopt(argc, argv, OPT_STRING)) != -1) {
     switch (opt) {
-    case 'c':
-      *db_path = os_strdup(optarg);
-      break;
-    case 'u':
-      *passphrase = os_strdup(optarg);
-      break;
     case 't':
       *tls = true;
       break;
@@ -322,8 +321,8 @@ static enum MHD_Result mhd_reply(void *cls, struct MHD_Connection *connection, c
     address = sad->apath;
   }
 
-  if (send_ap_command(address, cmd_str, &socket_response) < 0) {
-    log_debug("send_ap_command fail");
+  if (writeread_domain_data_str(address, cmd_str, &socket_response) < 0) {
+    log_debug("writeread_domain_data_str fail");
     sprintf(fail_response_buf, JSON_RESPONSE_FAIL);
     return create_connection_response(fail_response_buf, connection);
   }
@@ -360,18 +359,13 @@ int main(int argc, char *argv[])
   char *cert = NULL;
   bool tls = false;
   int flags;
-  char *db_path = NULL;
-  char *passphrase = NULL;
-  struct crypt_context *crypt_ctx;
-  struct crypt_pair* get_pair;
-  struct crypt_pair put_pair;
-  char *keyhttps = "keyhttps";
-  char *certhttps = "certhttps";
-  struct certificate_meta meta;
+  char *reply = NULL;
+  uint8_t *base64_buf = NULL;
+  size_t base64_buf_len;
 
   os_memset(&sad, 0, sizeof(struct socket_address));
 
-  process_app_options(argc, argv, sad.spath, sad.apath, &port, &sad.delim, &tls, &db_path, &passphrase, &verbosity); 
+  process_app_options(argc, argv, sad.spath, sad.apath, &port, &sad.delim, &tls, &verbosity); 
 
   if (optind <= 1) show_app_help(argv[0]);
 
@@ -392,85 +386,88 @@ int main(int argc, char *argv[])
   }
 
   fprintf(stdout, "Starting server with:\n");
-  fprintf(stdout, "Supervisor address --> %s\n", sad.apath);
-  fprintf(stdout, "AP address --> %s\n", sad.spath);
+  fprintf(stdout, "Supervisor address --> %s\n", sad.spath);
+  fprintf(stdout, "AP address --> %s\n", sad.apath);
   fprintf(stdout, "Port --> %d\n", port);
   fprintf(stdout, "Command delimiter --> %c\n", sad.delim);
   fprintf(stdout, "Using TLS --> %d\n", tls);
-  fprintf(stdout, "Using crypt db path --> %s\n", db_path);
 
   if (tls) {
-    if ((crypt_ctx = load_crypt_service(db_path, "microhttps", (uint8_t *)passphrase,
-                                        (passphrase == NULL) ? 0 : os_strnlen_s(passphrase, MAX_USER_SECRET))) == NULL) {
-      fprintf(stderr, "load_crypt_service fail\n");
+    if (writeread_domain_data_str(sad.spath, GET_CRYPT_KEY_CMD, &reply) < 0) {
+      fprintf(stderr, "writeread_domain_data_str fail");
       exit(EXIT_FAILURE);
     }
 
-    if ((get_pair = get_crypt_pair(crypt_ctx, keyhttps)) == NULL) {
-      fprintf(stderr, "get_crypt_pair failure\n");
+    if (strcmp(reply, FAIL_REPLY) == 0) {
+      os_free(reply);
+      fprintf(stdout, "Generating new private key\n");
+      if (writeread_domain_data_str(sad.spath, GEN_PRIVKEY_CMD, &reply) < 0) {
+        fprintf(stderr, "writeread_domain_data_str fail");
+        exit(EXIT_FAILURE);
+      }
+      if (strcmp(reply, FAIL_REPLY) == 0) {
+        fprintf(stderr, "writeread_domain_data_str fail");
+        exit(EXIT_FAILURE);
+      }
+      os_free(reply);
+
+      fprintf(stdout, "Generating new certificate key\n");
+      if (writeread_domain_data_str(sad.spath, GEN_CERT_CMD, &reply) < 0) {
+        fprintf(stderr, "writeread_domain_data_str fail");
+        exit(EXIT_FAILURE);
+      }
+      if (strcmp(reply, FAIL_REPLY) == 0) {
+        fprintf(stderr, "writeread_domain_data_str fail");
+        exit(EXIT_FAILURE);
+      }
+    }
+
+    os_free(reply);
+    fprintf(stdout, "Loading existing private key\n");
+    if (writeread_domain_data_str(sad.spath, GET_CRYPT_KEY_CMD, &reply) < 0) {
+      fprintf(stderr, "writeread_domain_data_str fail");
       exit(EXIT_FAILURE);
     }
 
-    if (!get_pair->value_size) {
-      os_memset(&meta, 0, sizeof(struct certificate_meta));
-      meta.not_before = 0;
-      meta.not_after = 31536000L;
-      strcpy(meta.c, "IE");
-      strcpy(meta.o, "nqmcyber");
-      strcpy(meta.ou, "R&D");
-      strcpy(meta.cn, "localhost"); 
-
-      if (crypto_generate_keycert_str(1024, &meta, &key, &cert) < 0) {
-        fprintf(stderr, "crypto_generate_keycert_str failure\n");
-        exit(EXIT_FAILURE);
-      }
-
-      fprintf(stdout, "Inserting new private key\n");
-      put_pair.key = keyhttps;
-      put_pair.value = (uint8_t *)key;
-      put_pair.value_size = strlen(key) + 1;
-      if (put_crypt_pair(crypt_ctx, &put_pair) < 0) {
-        fprintf(stderr, "put_crypt_pair fail");
-        exit(EXIT_FAILURE);
-      }
-
-      fprintf(stdout, "Inserting new certificate\n");
-      put_pair.key = certhttps;
-      put_pair.value = (uint8_t *)cert;
-      put_pair.value_size = strlen(cert) + 1;
-      if (put_crypt_pair(crypt_ctx, &put_pair) < 0) {
-        fprintf(stderr, "put_crypt_pair fail");
-        exit(EXIT_FAILURE);
-      }
-    } else {
-      fprintf(stdout, "Retrieving existing private key\n");
-      if ((key = os_zalloc(get_pair->value_size)) == NULL) {
-        log_err("os_zalloc");
-        exit(EXIT_FAILURE);
-      }
-
-      os_memcpy(key, get_pair->value, get_pair->value_size);
-
-      free_crypt_pair(get_pair);
-
-      if ((get_pair = get_crypt_pair(crypt_ctx, certhttps)) == NULL) {
-        fprintf(stderr, "get_crypt_pair failure\n");
-        exit(EXIT_FAILURE);
-      }
-
-      if (get_pair->value_size) {
-        fprintf(stdout, "Retrieving existing certificate\n");
-        if ((cert = os_zalloc(get_pair->value_size)) == NULL) {
-          log_err("os_zalloc");
-          exit(EXIT_FAILURE);
-        }
-        os_memcpy(cert, get_pair->value, get_pair->value_size);
-      } else {
-        fprintf(stderr, "get_crypt_pair failure\n");
-        exit(EXIT_FAILURE);
-      }
+    if (strcmp(reply, FAIL_REPLY) == 0) {
+      fprintf(stderr, "writeread_domain_data_str fail");
+      exit(EXIT_FAILURE);
     }
-    free_crypt_pair(get_pair);
+
+    if ((base64_buf = (uint8_t *) base64_decode((unsigned char *) reply, strlen(reply), &base64_buf_len)) == NULL) {
+      fprintf(stderr, "base64_decode fail");
+      exit(EXIT_FAILURE);
+    }
+    if ((key = os_zalloc(base64_buf_len + 1)) == NULL) {
+      fprintf(stderr, "os_zalloc fail");
+      exit(EXIT_FAILURE);
+    }
+    os_memcpy(key, base64_buf, base64_buf_len);
+    os_free(base64_buf);
+    os_free(reply);
+
+    fprintf(stdout, "Loading existing certificate\n");
+    if (writeread_domain_data_str(sad.spath, GET_CRYPT_CERT_CMD, &reply) < 0) {
+      fprintf(stderr, "writeread_domain_data_str fail");
+      exit(EXIT_FAILURE);
+    }
+
+    if (strcmp(reply, FAIL_REPLY) == 0) {
+      fprintf(stderr, "writeread_domain_data_str fail");
+      exit(EXIT_FAILURE);
+    }
+
+    if ((base64_buf = (uint8_t *) base64_decode((unsigned char *) reply, strlen(reply), &base64_buf_len)) == NULL) {
+      fprintf(stderr, "base64_decode fail");
+      exit(EXIT_FAILURE);
+    }
+    if ((cert = os_zalloc(base64_buf_len + 1)) == NULL) {
+      fprintf(stderr, "os_zalloc fail");
+      exit(EXIT_FAILURE);
+    }
+    os_memcpy(cert, base64_buf, base64_buf_len);
+    os_free(base64_buf);
+    os_free(reply);
   }
 
   flags = MHD_USE_THREAD_PER_CONNECTION;

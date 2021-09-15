@@ -235,18 +235,24 @@ EVP_PKEY *crypto_generate_RSA_key(EVP_PKEY_CTX *ctx, int bits)
   return pkey;
 }
 
-char* crypto_generate_cert_str(EVP_PKEY *pkey, struct certificate_meta *meta)
+X509* crypto_generate_cert(EVP_PKEY *pkey, struct certificate_meta *meta)
 {
-  char *out;
   X509* x509 = X509_new();
-  BIO *mem = BIO_new(BIO_s_mem());
-  BUF_MEM *ptr = NULL;
+
+  if (x509 == NULL) {
+    log_trace("X509_new fail");
+    return NULL;
+  }
 
   /* certificate expiration date: 365 days from now (60s * 60m * 24h * 365d) */
   X509_gmtime_adj(X509_get_notBefore(x509), meta->not_before);
   X509_gmtime_adj(X509_get_notAfter(x509), meta->not_after);
 
-  X509_set_pubkey(x509, pkey);
+  if (!X509_set_pubkey(x509, pkey)) {
+    log_trace("X509_set_pubkey fail");
+    X509_free(x509);
+    return NULL;
+  }
 
   /* set the name of the issuer to the name of the subject. */
   X509_NAME* name = X509_get_subject_name(x509);
@@ -257,37 +263,20 @@ char* crypto_generate_cert_str(EVP_PKEY *pkey, struct certificate_meta *meta)
   
   X509_set_issuer_name(x509, name);
 
-  /* finally sign the certificate with the key. */
-  X509_sign(x509, pkey, EVP_sha256());  
-
-  if (PEM_write_bio_X509(mem, x509) < 1) {
-    log_trace("PEM_write_bio_X509 fail");
-    BIO_free(mem);
+  /* sign the certificate with the key. */
+  if (!X509_sign(x509, pkey, EVP_sha256())) {
+    log_trace("X509_sign fail");
     X509_free(x509);
     return NULL;
   }
 
-  BIO_get_mem_ptr(mem, &ptr);
-  out = (char *) os_zalloc(ptr->length + 1);
-  if (out == NULL) {
-    log_trace("os_zalloc failure");
-    BIO_free(mem);
-    X509_free(x509);
-    return NULL;
-  }
-
-  os_memcpy(out, ptr->data, ptr->length);
-
-  BIO_free(mem);
-  X509_free(x509);
-  return out;
+  return x509;
 }
 #endif
 
-int crypto_generate_keycert_str(int bits, struct certificate_meta *meta, char **key, char **cert)
+int crypto_generate_privkey_str(int bits, char **key)
 {
 #ifdef WITH_OPENSSL_SERVICE
-  char *key_str = NULL, *cert_str = NULL;
   EVP_PKEY_CTX *ctx;
   EVP_PKEY *pkey = NULL;
   BUF_MEM *ptr = NULL;
@@ -319,14 +308,6 @@ int crypto_generate_keycert_str(int bits, struct certificate_meta *meta, char **
     return -1;
   }
 
-  if ((cert_str = crypto_generate_cert_str(pkey, meta)) == NULL) {
-    log_trace("crypto_generate_cert_str failure");
-    BIO_free(mem);
-    EVP_PKEY_free(pkey);
-    EVP_PKEY_CTX_free(ctx);
-    return -1;
-  }
-
   if (PEM_write_bio_PrivateKey(mem, pkey, NULL, NULL, 0, NULL, NULL) < 1) {
     log_trace("PEM_write_bio_PrivateKey fail");
     BIO_free(mem);
@@ -336,26 +317,96 @@ int crypto_generate_keycert_str(int bits, struct certificate_meta *meta, char **
   }
 
   BIO_get_mem_ptr(mem, &ptr);
-  key_str = (char *) os_zalloc(ptr->length + 1);
-  if (key_str == NULL) {
+  if ((*key = (char *) os_zalloc(ptr->length + 1)) == NULL) {
     log_err("os_zalloc");
+    *key = NULL;
     BIO_free(mem);
     EVP_PKEY_free(pkey);
     EVP_PKEY_CTX_free(ctx);
     return -1;
   }
 
-  os_memcpy(key_str, ptr->data, ptr->length);
-
-  *key = key_str;
-  *cert = cert_str;
+  os_memcpy(*key, ptr->data, ptr->length);
 
   BIO_free(mem);
   EVP_PKEY_free(pkey);
   EVP_PKEY_CTX_free(ctx);
   return 0;
 #else
-  log_trace("crypto_generate_keycert_str not implemented");
+  return -1;
+#endif
+}
+
+int crypto_generate_cert_str(struct certificate_meta *meta, uint8_t *key, size_t key_size, char **cert)
+{
+#ifdef WITH_OPENSSL_SERVICE
+  X509* x509 = NULL;
+  EVP_PKEY *pkey = NULL;
+  BUF_MEM *ptr = NULL;
+  BIO *key_mem = BIO_new_ex(NULL, BIO_s_mem());
+  BIO *cert_mem = BIO_new_ex(NULL, BIO_s_mem());
+
+  if (key_mem == NULL) {
+    log_trace("BIO_new_ex fail");
+    return -1;
+  }
+
+  if (cert_mem == NULL) {
+    log_trace("BIO_new_ex fail");
+    BIO_free(key_mem);
+    return -1;
+  }
+
+  if (BIO_write(key_mem, key, key_size) < 0) {
+    log_trace("BIO_write fail");
+    BIO_free(key_mem);
+    BIO_free(cert_mem);
+    return -1;
+  }
+
+  if ((pkey = PEM_read_bio_PrivateKey(key_mem, NULL, NULL, NULL)) == NULL) {
+    log_trace("PEM_read_bio_PrivateKey fail");
+    BIO_free(key_mem);
+    BIO_free(cert_mem);
+    EVP_PKEY_free(pkey);
+    return -1;
+  }
+
+  if ((x509 = crypto_generate_cert(pkey, meta)) == NULL) {
+    log_trace("crypto_generate_cert fail");
+    EVP_PKEY_free(pkey);
+    BIO_free(key_mem);
+    BIO_free(cert_mem);
+    return -1;
+  }
+
+  if (PEM_write_bio_X509(cert_mem, x509) < 1) {
+    log_trace("PEM_write_bio_X509 fail");
+    X509_free(x509);
+    EVP_PKEY_free(pkey);
+    BIO_free(key_mem);
+    BIO_free(cert_mem);
+    return -1;
+  }
+
+  BIO_get_mem_ptr(cert_mem, &ptr);
+  if ((*cert = (char *) os_zalloc(ptr->length + 1)) == NULL) {
+    log_err("os_zalloc");
+    X509_free(x509);
+    EVP_PKEY_free(pkey);
+    BIO_free(key_mem);
+    BIO_free(cert_mem);
+    return -1;
+  }
+
+  os_memcpy(*cert, ptr->data, ptr->length);
+
+  X509_free(x509);
+  EVP_PKEY_free(pkey);
+  BIO_free(key_mem);
+  BIO_free(cert_mem);
+  return 0;
+#else
   return -1;
 #endif
 }

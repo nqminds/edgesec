@@ -28,6 +28,7 @@
 #include <sys/socket.h>
 #include <ctype.h>
 #include <errno.h>
+#include <sys/ioctl.h>
 
 #include "domain.h"
 
@@ -36,6 +37,9 @@
 #include "log.h"
 
 #define SOCK_EXTENSION ".sock"
+
+#define DOMAIN_REPLY_TIMEOUT 10
+
 void init_domain_addr(struct sockaddr_un *unaddr, char *addr)
 {
   os_memset(unaddr, 0, sizeof(struct sockaddr_un));
@@ -216,6 +220,95 @@ int close_domain(int sfd)
   if (sfd) {
     return close(sfd);
   }
+
+  return 0;
+}
+
+int writeread_domain_data_str(char *socket_path, char *write_str, char **reply)
+{
+  int sfd;
+  uint32_t bytes_available;
+  ssize_t send_count, rec_count;
+  struct timeval timeout;
+  fd_set readfds, masterfds;
+  char *rec_data, *trimmed;
+  timeout.tv_sec = DOMAIN_REPLY_TIMEOUT;
+  timeout.tv_usec = 0;
+
+  *reply = NULL;
+
+  if ((sfd = create_domain_client(NULL)) == -1) {
+    log_debug("create_domain_client fail");
+    return -1;
+  }
+
+  FD_ZERO(&masterfds);
+  FD_SET(sfd, &masterfds);
+  os_memcpy(&readfds, &masterfds, sizeof(fd_set));
+
+  log_trace("Sending to socket_path=%s", socket_path);
+  send_count = write_domain_data_s(sfd, write_str, strlen(write_str), socket_path);
+  if (send_count < 0) {
+    log_err("sendto");
+    close(sfd);
+    return -1;
+  }
+
+  if ((size_t)send_count != strlen(write_str)) {
+    log_err("write_domain_data_s fail");
+    close(sfd);
+    return -1;
+  }
+
+  log_debug("Sent %d bytes to %s", send_count, socket_path);
+
+  errno = 0;
+  if (select(sfd + 1, &readfds, NULL, NULL, &timeout) < 0) {
+    log_err("select");
+    close(sfd);
+    return -1;
+  }
+
+  if(FD_ISSET(sfd, &readfds)) {
+    if (ioctl(sfd, FIONREAD, &bytes_available) == -1) {
+      log_err("ioctl");
+      close(sfd);
+      return -1;
+    }
+
+    log_trace("Bytes available=%u", bytes_available);
+    rec_data = os_zalloc(bytes_available + 1);
+    if (rec_data == NULL) {
+      log_err("os_zalloc");
+      close(sfd);
+      return -1;
+    }
+
+    rec_count = read_domain_data_s(sfd, rec_data, bytes_available, socket_path, MSG_DONTWAIT);
+
+    if (rec_count < 0) {
+      log_trace("read_domain_data_s fail");
+      close(sfd);
+      os_free(rec_data);
+      return -1;
+    }
+
+    if ((trimmed = rtrim(rec_data, NULL)) == NULL) {
+      log_trace("rtrim fail");
+      close(sfd);
+      os_free(rec_data);
+      return -1;
+    }
+
+    *reply = os_strdup(trimmed);
+  } else {
+    log_debug("Socket timeout");
+    close(sfd);
+    return -1;
+  }
+
+  close(sfd);
+  os_free(rec_data);
 
   return 0;
 }

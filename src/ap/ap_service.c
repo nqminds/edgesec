@@ -27,6 +27,7 @@
 #include <sys/ioctl.h>
 
 #include "ap_config.h"
+#include "ap_service.h"
 #include "hostapd.h"
 
 #include "../supervisor/supervisor_config.h"
@@ -37,8 +38,6 @@
 #include "../utils/if.h"
 #include "../utils/log.h"
 #include "../utils/domain.h"
-
-#define AP_REPLY_TIMEOUT 10
 
 #define GENERIC_AP_COMMAND_REPLY  "OK"
 #define PING_AP_COMMAND           "PING"
@@ -52,101 +51,12 @@
 
 typedef void (*ap_service_fn)(struct supervisor_context *context, uint8_t mac_addr[], enum AP_CONNECTION_STATUS status);
 
-int send_ap_command(char *socket_path, char *cmd_str, char **reply)
-{
-  int sfd;
-  uint32_t bytes_available;
-  ssize_t send_count, rec_count;
-  struct timeval timeout;
-  fd_set readfds, masterfds;
-  char *rec_data, *trimmed;
-  timeout.tv_sec = AP_REPLY_TIMEOUT;
-  timeout.tv_usec = 0;
-
-  *reply = NULL;
-
-  if ((sfd = create_domain_client(NULL)) == -1) {
-    log_debug("create_domain_client fail");
-    return -1;
-  }
-
-  FD_ZERO(&masterfds);
-  FD_SET(sfd, &masterfds);
-  os_memcpy(&readfds, &masterfds, sizeof(fd_set));
-
-  log_trace("Sending to socket_path=%s", socket_path);
-  send_count = write_domain_data_s(sfd, cmd_str, strlen(cmd_str), socket_path);
-  if (send_count < 0) {
-    log_err("sendto");
-    close(sfd);
-    return -1;
-  }
-
-  if ((size_t)send_count != strlen(cmd_str)) {
-    log_err("write_domain_data_s fail");
-    close(sfd);
-    return -1;
-  }
-
-  log_debug("Sent %d bytes to %s", send_count, socket_path);
-
-  errno = 0;
-  if (select(sfd + 1, &readfds, NULL, NULL, &timeout) < 0) {
-    log_err("select");
-    close(sfd);
-    return -1;
-  }
-
-  if(FD_ISSET(sfd, &readfds)) {
-    if (ioctl(sfd, FIONREAD, &bytes_available) == -1) {
-      log_err("ioctl");
-      close(sfd);
-      return -1;
-    }
-
-    log_trace("Bytes available=%u", bytes_available);
-    rec_data = os_zalloc(bytes_available + 1);
-    if (rec_data == NULL) {
-      log_err("os_zalloc");
-      close(sfd);
-      return -1;
-    }
-
-    rec_count = read_domain_data_s(sfd, rec_data, bytes_available, socket_path, MSG_DONTWAIT);
-
-    if (rec_count < 0) {
-      log_trace("read_domain_data_s fail");
-      close(sfd);
-      os_free(rec_data);
-      return -1;
-    }
-
-    if ((trimmed = rtrim(rec_data, NULL)) == NULL) {
-      log_trace("rtrim fail");
-      close(sfd);
-      os_free(rec_data);
-      return -1;
-    }
-
-    *reply = os_strdup(trimmed);
-  } else {
-    log_debug("Socket timeout");
-    close(sfd);
-    return -1;
-  }
-
-  close(sfd);
-  os_free(rec_data);
-
-  return 0;
-}
-
 int ping_ap_command(struct apconf *hconf)
 {
   char *reply = NULL;
 
-  if (send_ap_command(hconf->ctrl_interface_path, PING_AP_COMMAND, &reply) < 0) {
-    log_trace("send_ap_command fail");
+  if (writeread_domain_data_str(hconf->ctrl_interface_path, PING_AP_COMMAND, &reply) < 0) {
+    log_trace("writeread_domain_data_str fail");
     return -1;
   }
 
@@ -176,8 +86,8 @@ int denyacl_ap_command(struct apconf *hconf, char *cmd, char *mac_addr)
   }
 
   sprintf(buffer, "%s %s", cmd, mac_addr);
-  if (send_ap_command(hconf->ctrl_interface_path, buffer, &reply) < 0) {
-    log_trace("send_ap_command fail");
+  if (writeread_domain_data_str(hconf->ctrl_interface_path, buffer, &reply) < 0) {
+    log_trace("writeread_domain_data_str fail");
     return -1;
   }
 

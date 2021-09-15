@@ -212,7 +212,7 @@ int get_crypt_cmd(struct supervisor_context *context, char *key, char **value);
  * @param size The key size in bytes
  * @return 0 on success, -1 on failure
  */
-int gen_randkey_cmd(struct supervisor_context *context, char *keyid, int size);
+int gen_randkey_cmd(struct supervisor_context *context, char *keyid, uint8_t size);
 
 /**
  * @brief GEN_PRIVKEY command
@@ -222,7 +222,7 @@ int gen_randkey_cmd(struct supervisor_context *context, char *keyid, int size);
  * @param size The key size in bytes
  * @return 0 on success, -1 on failure
  */
-int gen_privkey_cmd(struct supervisor_context *context, char *keyid, int size);
+int gen_privkey_cmd(struct supervisor_context *context, char *keyid, uint8_t size);
 
 /**
  * @brief GEN_CERT command

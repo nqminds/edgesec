@@ -660,7 +660,7 @@ ssize_t process_gen_randkey_cmd(int sock, struct client_address *client_addr, st
 {
   char **ptr = (char**) utarray_next(cmd_arr, NULL);
   char *keyid = NULL;
-  int key_size;
+  uint8_t key_size;
 
   ptr = (char**) utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
@@ -672,7 +672,7 @@ ssize_t process_gen_randkey_cmd(int sock, struct client_address *client_addr, st
     ptr = (char**) utarray_next(cmd_arr, ptr);
     if (ptr != NULL && *ptr != NULL) {
       errno = 0;
-      key_size = (int) strtoul(*ptr, NULL, 10);
+      key_size = (uint8_t) strtoul(*ptr, NULL, 10);
       if (errno != ERANGE && is_number(*ptr)) {
         if (!gen_randkey_cmd(context, keyid, key_size)) {
           os_free(keyid);
@@ -690,7 +690,7 @@ ssize_t process_gen_privkey_cmd(int sock, struct client_address *client_addr, st
 {
   char **ptr = (char**) utarray_next(cmd_arr, NULL);
   char *keyid = NULL;
-  int key_size;
+  uint8_t key_size;
 
   ptr = (char**) utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
@@ -702,7 +702,7 @@ ssize_t process_gen_privkey_cmd(int sock, struct client_address *client_addr, st
     ptr = (char**) utarray_next(cmd_arr, ptr);
     if (ptr != NULL && *ptr != NULL) {
       errno = 0;
-      key_size = (int) strtoul(*ptr, NULL, 10);
+      key_size = (uint8_t) strtoul(*ptr, NULL, 10);
       if (errno != ERANGE && is_number(*ptr)) {
         if (!gen_privkey_cmd(context, keyid, key_size)) {
           os_free(keyid);
