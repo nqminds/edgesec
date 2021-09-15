@@ -339,7 +339,7 @@ ssize_t process_gen_cert_cmd(int sock, struct client_address *client_addr, struc
  * @param cmd_arr The array of received commands
  * @return ssize_t Size of reply written data
  */
-ssize_t process_encrypt_blob(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+ssize_t process_encrypt_blob_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Processes the DECRYPT_BLOB command
@@ -350,7 +350,7 @@ ssize_t process_encrypt_blob(int sock, struct client_address *client_addr, struc
  * @param cmd_arr The array of received commands
  * @return ssize_t Size of reply written data
  */
-ssize_t process_decrypt_blob(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+ssize_t process_decrypt_blob_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Processes the SIGN_BLOB command
@@ -361,7 +361,7 @@ ssize_t process_decrypt_blob(int sock, struct client_address *client_addr, struc
  * @param cmd_arr The array of received commands
  * @return ssize_t Size of reply written data
  */
-ssize_t process_sign_blob(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+ssize_t process_sign_blob_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Get the command function pointer

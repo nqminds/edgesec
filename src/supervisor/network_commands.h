@@ -203,4 +203,65 @@ int put_crypt_cmd(struct supervisor_context *context, char *key, char *value);
  * @return 0 on success, -1 on failure
  */
 int get_crypt_cmd(struct supervisor_context *context, char *key, char **value);
+
+/**
+ * @brief GEN_RANDKEY command
+ * 
+ * @param context The supervisor structure instance
+ * @param keyid The key id
+ * @param size The key size in bytes
+ * @return 0 on success, -1 on failure
+ */
+int gen_randkey_cmd(struct supervisor_context *context, char *keyid, int size);
+
+/**
+ * @brief GEN_PRIVKEY command
+ * 
+ * @param context The supervisor structure instance
+ * @param keyid The key id
+ * @param size The key size in bytes
+ * @return 0 on success, -1 on failure
+ */
+int gen_privkey_cmd(struct supervisor_context *context, char *keyid, int size);
+
+/**
+ * @brief GEN_CERT command
+ * 
+ * @param context The supervisor structure instance
+ * @param certid The certificate id
+ * @param keyid The private key id
+ * @return 0 on success, -1 on failure
+ */
+int gen_cert_cmd(struct supervisor_context *context, char *certid, char *keyid);
+
+/**
+ * @brief ENCRYPT_BLOB command
+ * 
+ * @param context The supervisor structure instance
+ * @param keyid The private key id
+ * @param blob The blob base64 string to encrypt
+ * @return char* the encrypted blob in base64, NULL on failure
+ */
+char* encrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *blob);
+
+/**
+ * @brief DECRYPT_BLOB command
+ * 
+ * @param context The supervisor structure instance
+ * @param keyid The private key id
+ * @param blob The blob base64 string to decrypt
+ * @return char* the decrypted blob in base64, NULL on failure
+ */
+char* decrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *blob);
+
+/**
+ * @brief SIGN_BLOB command
+ * 
+ * @param context The supervisor structure instance
+ * @param keyid The private key id
+ * @param blob The blob base64 string to sign
+ * @return char* the signed blob in base64, NULL on failure
+ */
+char* sign_blob_cmd(struct supervisor_context *context, char *keyid, char *blob);
+
 #endif

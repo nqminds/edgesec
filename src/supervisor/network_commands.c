@@ -908,3 +908,33 @@ int get_crypt_cmd(struct supervisor_context *context, char *key, char **value)
   free_crypt_pair(pair);
   return 0;
 }
+
+int gen_randkey_cmd(struct supervisor_context *context, char *keyid, int size)
+{
+  return -1;
+}
+
+int gen_privkey_cmd(struct supervisor_context *context, char *keyid, int size)
+{
+  return -1;
+}
+
+int gen_cert_cmd(struct supervisor_context *context, char *certid, char *keyid)
+{
+  return -1;
+}
+
+char* encrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *blob)
+{
+  return NULL;
+}
+
+char* decrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *blob)
+{
+  return NULL;
+}
+
+char* sign_blob_cmd(struct supervisor_context *context, char *keyid, char *blob)
+{
+  return NULL;
+}

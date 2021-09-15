@@ -13,10 +13,16 @@ add_executable(test_cmd_processor test_cmd_processor.c)
 target_include_directories(test_cmd_processor PRIVATE ${LIBSQLITE_INCLUDE_DIR})
 target_link_libraries(test_cmd_processor PRIVATE cmd_processor iptables log engine cmocka-static)
 
-set_target_properties(test_cmd_processor
-        PROPERTIES
-        LINK_FLAGS  "-Wl,--wrap=write_domain_data -Wl,--wrap=accept_mac_cmd -Wl,--wrap=deny_mac_cmd -Wl,--wrap=add_nat_cmd -Wl,--wrap=remove_nat_cmd -Wl,--wrap=assign_psk_cmd -Wl,--wrap=set_ip_cmd -Wl,--wrap=add_bridge_cmd -Wl,--wrap=remove_bridge_cmd -Wl,--wrap=set_fingerprint_cmd -Wl,--wrap=query_fingerprint_cmd -Wl,--wrap=register_ticket_cmd -Wl,--wrap=clear_psk_cmd -Wl,--wrap=get_mac_mapper -Wl,--wrap=put_crypt_cmd -Wl,--wrap=get_crypt_cmd"
-)
+set(TEST_CMD_PROPS "-Wl,--wrap=write_domain_data -Wl,--wrap=accept_mac_cmd -Wl,--wrap=deny_mac_cmd")
+set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=write_domain_data -Wl,--wrap=accept_mac_cmd -Wl,--wrap=deny_mac_cmd")
+set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=add_nat_cmd -Wl,--wrap=remove_nat_cmd -Wl,--wrap=assign_psk_cmd")
+set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=set_ip_cmd -Wl,--wrap=add_bridge_cmd -Wl,--wrap=remove_bridge_cmd")
+set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=set_fingerprint_cmd -Wl,--wrap=query_fingerprint_cmd -Wl,--wrap=register_ticket_cmd")
+set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=clear_psk_cmd -Wl,--wrap=get_mac_mapper -Wl,--wrap=put_crypt_cmd -Wl,--wrap=get_crypt_cmd")
+set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=gen_randkey_cmd -Wl,--wrap=gen_privkey_cmd -Wl,--wrap=gen_cert_cmd")
+set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=encrypt_blob_cmd -Wl,--wrap=decrypt_blob_cmd -Wl,--wrap=sign_blob_cmd")
+
+set_target_properties(test_cmd_processor PROPERTIES LINK_FLAGS ${TEST_CMD_PROPS})
 
 add_executable(test_mac_mapper test_mac_mapper.c)
 target_link_libraries(test_mac_mapper PRIVATE log system_checks os mac_mapper cmocka-static)

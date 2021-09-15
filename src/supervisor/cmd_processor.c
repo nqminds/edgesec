@@ -659,6 +659,29 @@ ssize_t process_get_crypt_cmd(int sock, struct client_address *client_addr, stru
 ssize_t process_gen_randkey_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
 {
   char **ptr = (char**) utarray_next(cmd_arr, NULL);
+  char *keyid = NULL;
+  int key_size;
+
+  ptr = (char**) utarray_next(cmd_arr, ptr);
+  if (ptr != NULL && *ptr != NULL) {
+    if ((keyid = os_strdup(*ptr)) == NULL) {
+      log_err("os_strdup");
+      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);    
+    }
+
+    ptr = (char**) utarray_next(cmd_arr, ptr);
+    if (ptr != NULL && *ptr != NULL) {
+      errno = 0;
+      key_size = (int) strtoul(*ptr, NULL, 10);
+      if (errno != ERANGE && is_number(*ptr)) {
+        if (!gen_randkey_cmd(context, keyid, key_size)) {
+          os_free(keyid);
+          return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), &client_addr->addr, client_addr->len);
+        }
+      }
+    }
+    os_free(keyid);
+  }
 
   return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
 }
@@ -666,6 +689,29 @@ ssize_t process_gen_randkey_cmd(int sock, struct client_address *client_addr, st
 ssize_t process_gen_privkey_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
 {
   char **ptr = (char**) utarray_next(cmd_arr, NULL);
+  char *keyid = NULL;
+  int key_size;
+
+  ptr = (char**) utarray_next(cmd_arr, ptr);
+  if (ptr != NULL && *ptr != NULL) {
+    if ((keyid = os_strdup(*ptr)) == NULL) {
+      log_err("os_strdup");
+      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);    
+    }
+
+    ptr = (char**) utarray_next(cmd_arr, ptr);
+    if (ptr != NULL && *ptr != NULL) {
+      errno = 0;
+      key_size = (int) strtoul(*ptr, NULL, 10);
+      if (errno != ERANGE && is_number(*ptr)) {
+        if (!gen_privkey_cmd(context, keyid, key_size)) {
+          os_free(keyid);
+          return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), &client_addr->addr, client_addr->len);
+        }
+      }
+    }
+    os_free(keyid);
+  }
 
   return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
 }
@@ -673,28 +719,120 @@ ssize_t process_gen_privkey_cmd(int sock, struct client_address *client_addr, st
 ssize_t process_gen_cert_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
 {
   char **ptr = (char**) utarray_next(cmd_arr, NULL);
+  char *certid = NULL;
+
+  ptr = (char**) utarray_next(cmd_arr, ptr);
+  if (ptr != NULL && *ptr != NULL) {
+    if ((certid = os_strdup(*ptr)) == NULL) {
+      log_err("os_strdup");
+      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);    
+    }
+
+    ptr = (char**) utarray_next(cmd_arr, ptr);
+    if (ptr != NULL && *ptr != NULL) {
+      if (strlen(*ptr)) {
+        if (!gen_cert_cmd(context, certid, *ptr)) {
+          os_free(certid);
+          return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), &client_addr->addr, client_addr->len);
+        }
+      }
+    }
+    os_free(certid);
+  }
 
   return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
 }
 
-ssize_t process_encrypt_blob(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
+ssize_t process_encrypt_blob_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
 {
   char **ptr = (char**) utarray_next(cmd_arr, NULL);
+  char *keyid = NULL;
+  char *encrypted = NULL;
+  int ret;
+
+  ptr = (char**) utarray_next(cmd_arr, ptr);
+  if (ptr != NULL && *ptr != NULL) {
+    if ((keyid = os_strdup(*ptr)) == NULL) {
+      log_err("os_strdup");
+      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);    
+    }
+
+    ptr = (char**) utarray_next(cmd_arr, ptr);
+    if (ptr != NULL && *ptr != NULL) {
+      if (strlen(*ptr)) {
+        if ((encrypted = encrypt_blob_cmd(context, keyid, *ptr)) != NULL) {
+          ret = write_domain_data(sock, encrypted, strlen(encrypted), &client_addr->addr, client_addr->len);
+          os_free(keyid);
+          os_free(encrypted);
+          return ret;
+        }
+      }
+    }
+    os_free(keyid);
+  }
 
   return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
 }
 
-ssize_t process_decrypt_blob(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
+ssize_t process_decrypt_blob_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
 {
   char **ptr = (char**) utarray_next(cmd_arr, NULL);
+  char *keyid = NULL;
+  char *decrypted = NULL;
+  int ret;
+
+  ptr = (char**) utarray_next(cmd_arr, ptr);
+  if (ptr != NULL && *ptr != NULL) {
+    if ((keyid = os_strdup(*ptr)) == NULL) {
+      log_err("os_strdup");
+      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);    
+    }
+
+    ptr = (char**) utarray_next(cmd_arr, ptr);
+    if (ptr != NULL && *ptr != NULL) {
+      if (strlen(*ptr)) {
+        if ((decrypted = decrypt_blob_cmd(context, keyid, *ptr)) != NULL) {
+          ret = write_domain_data(sock, decrypted, strlen(decrypted), &client_addr->addr, client_addr->len);
+          os_free(keyid);
+          os_free(decrypted);
+          return ret;
+        }
+      }
+    }
+    os_free(keyid);
+  }
 
   return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
 }
 
-ssize_t process_sign_blob(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
+ssize_t process_sign_blob_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
 {
   char **ptr = (char**) utarray_next(cmd_arr, NULL);
-  
+  char *keyid = NULL;
+  char *signed_str = NULL;
+  int ret;
+
+  ptr = (char**) utarray_next(cmd_arr, ptr);
+  if (ptr != NULL && *ptr != NULL) {
+    if ((keyid = os_strdup(*ptr)) == NULL) {
+      log_err("os_strdup");
+      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);    
+    }
+
+    ptr = (char**) utarray_next(cmd_arr, ptr);
+    if (ptr != NULL && *ptr != NULL) {
+      if (strlen(*ptr)) {
+        if ((signed_str = sign_blob_cmd(context, keyid, *ptr)) != NULL) {
+          ret = write_domain_data(sock, signed_str, strlen(signed_str), &client_addr->addr, client_addr->len);
+          os_free(keyid);
+          os_free(signed_str);
+          return ret;
+        }
+      }
+    }
+    os_free(keyid);
+  }
+
   return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
 }
 
@@ -745,11 +883,11 @@ process_cmd_fn get_command_function(char *cmd)
   } else if (!strcmp(cmd, CMD_GEN_CERT)){
     return process_gen_cert_cmd;
   } else if (!strcmp(cmd, CMD_ENCRYPT_BLOB)){
-    return process_encrypt_blob;
+    return process_encrypt_blob_cmd;
   } else if (!strcmp(cmd, CMD_DECRYPT_BLOB)){
-    return process_decrypt_blob;
+    return process_decrypt_blob_cmd;
   } else if (!strcmp(cmd, CMD_SIGN_BLOB)){
-    return process_sign_blob;
+    return process_sign_blob_cmd;
   }else {
     log_debug("unknown command");
   }
