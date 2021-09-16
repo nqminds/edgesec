@@ -957,7 +957,7 @@ int gen_privkey_cmd(struct supervisor_context *context, char *keyid, uint8_t siz
 
   log_trace("GEN_PRIVKEY for key=%s", keyid);
 
-  if (crypto_generate_privkey_str(size * 8, (char **)&pair.value) < 0) {
+  if (crypto_generate_privkey_str(CRYPTO_KEY_EC, size * 8, (char **)&pair.value) < 0) {
     log_trace("crypto_generate_privkey_str fail");
     return -1;
   }
@@ -1027,5 +1027,46 @@ char* decrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *bl
 
 char* sign_blob_cmd(struct supervisor_context *context, char *keyid, char *blob)
 {
-  return NULL;
+  struct crypt_pair* pair = NULL;
+  uint8_t *blob_data = NULL, *signed_data = NULL;
+  size_t blob_data_size;
+  ssize_t signed_size;
+  char *signed_str = NULL;
+  log_trace("SIGN_BLOB with keyid=%s", keyid);
+
+  if ((pair = get_crypt_pair(context->crypt_ctx, keyid)) == NULL) {
+    log_trace("get_crypt_pair fail");
+    return NULL;
+  }
+
+  if (pair->value == NULL) {
+    log_trace("value is empty");
+    free_crypt_pair(pair);
+    return NULL;  
+  }
+
+  if ((blob_data = (uint8_t *) base64_decode((unsigned char *)blob, strlen(blob), &blob_data_size)) == NULL) {
+    log_trace("base64_decode fail");
+    free_crypt_pair(pair);
+    return NULL;
+  }
+
+  if ((signed_size = crypto_sign_data(pair->value, pair->value_size, blob_data, blob_data_size, &signed_data)) < 0) {
+    log_trace("crypto_sign_data fail");
+    os_free(blob_data);
+    free_crypt_pair(pair);
+    return NULL;
+  }
+
+  os_free(blob_data);
+  free_crypt_pair(pair);
+
+  if ((signed_str = (char *) base64_encode(signed_data, signed_size, &blob_data_size)) == NULL) {
+    log_trace("base64_encode fail");
+    os_free(signed_data);
+    return NULL;
+  }
+
+  os_free(signed_data);
+  return signed_str;
 }

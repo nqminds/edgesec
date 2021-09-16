@@ -49,6 +49,12 @@ struct certificate_meta {
   char cn[MAX_CERT_FIELD_SIZE]; 
 };
 
+enum CRYPTO_KEY_TYPE {
+  CRYPTO_KEY_NONE = 0,
+  CRYPTO_KEY_RSA,
+  CRYPTO_KEY_EC
+};
+
 /**
  * @brief Generate IV
  * 
@@ -119,11 +125,12 @@ int crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
 /**
  * @brief Generate a private RSA key string
  * 
+ * @param type The key type
  * @param bits Number of key bits
  * @param key The output key string
  * @return int 0 on success, -1 on failure
  */
-int crypto_generate_privkey_str(int bits, char **key);
+int crypto_generate_privkey_str(enum CRYPTO_KEY_TYPE type, int bits, char **key);
 
 /**
  * @brief Generates a pair of private key and certificate strings
@@ -136,6 +143,17 @@ int crypto_generate_privkey_str(int bits, char **key);
  */
 int crypto_generate_cert_str(struct certificate_meta *meta, uint8_t *key, size_t key_size, char **cert);
 
+/**
+ * @brief Signs a buffer with a private key string
+ * 
+ * @param key The private key buffer
+ * @param key_size The private key buffer size
+ * @param in The input buffer
+ * @param in_size The input buffer size
+ * @param out The output signature
+ * @return ssize_t the length of the signature, -1 on failure
+ */
+ssize_t crypto_sign_data(uint8_t *key, size_t key_size, uint8_t *in, size_t in_size, uint8_t **out);
 #ifdef __cplusplus
 }
 #endif
