@@ -150,6 +150,13 @@ int __wrap_gen_privkey_cmd(struct supervisor_context *context, char *keyid, int 
   return 0;
 }
 
+int __wrap_gen_pubkey_cmd(struct supervisor_context *context, char *pubid, char *keyid)
+{
+  check_expected(pubid);
+  check_expected(keyid);
+  return 0;
+}
+
 int __wrap_gen_cert_cmd(struct supervisor_context *context, char *certid, char *keyid)
 {
   check_expected(certid);
@@ -782,6 +789,31 @@ static void test_process_gen_cert_cmd(void **state)
   utarray_free(cmd_arr);
 }
 
+static void test_process_gen_pubkey_cmd(void **state)
+{
+  (void) state; /* unused */
+
+  UT_array *cmd_arr;
+  struct client_address claddr;
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("GEN_PUBKEY pubid keyid", CMD_DELIMITER, cmd_arr), -1);
+  expect_string(__wrap_gen_pubkey_cmd, pubid, "pubid");
+  expect_string(__wrap_gen_pubkey_cmd, keyid, "keyid");
+  assert_int_equal(process_gen_pubkey_cmd(0, &claddr, NULL, cmd_arr), strlen(OK_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("GEN_PUBKEY ", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_gen_pubkey_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("GEN_PUBKEY test ", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_gen_pubkey_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+}
+
 static void test_process_encrypt_blob(void **state)
 {
   (void) state; /* unused */
@@ -881,6 +913,7 @@ int main(int argc, char *argv[])
     cmocka_unit_test(test_process_get_crypt_cmd),
     cmocka_unit_test(test_process_gen_randkey_cmd),
     cmocka_unit_test(test_process_gen_privkey_cmd),
+    cmocka_unit_test(test_process_gen_pubkey_cmd),
     cmocka_unit_test(test_process_gen_cert_cmd),
     cmocka_unit_test(test_process_encrypt_blob),
     cmocka_unit_test(test_process_decrypt_blob),

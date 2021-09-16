@@ -461,6 +461,11 @@ int crypto_generate_privkey_str(enum CRYPTO_KEY_TYPE type, int bits, char **key)
 #endif
 }
 
+int crypto_generate_pubkey_str(uint8_t *key, size_t key_size, char **pub)
+{
+  return -1;
+}
+
 int crypto_generate_cert_str(struct certificate_meta *meta, uint8_t *key, size_t key_size, char **cert)
 {
 #ifdef WITH_OPENSSL_SERVICE

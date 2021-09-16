@@ -975,6 +975,38 @@ int gen_privkey_cmd(struct supervisor_context *context, char *keyid, uint8_t siz
   return 0;
 }
 
+int gen_pubkey_cmd(struct supervisor_context *context, char *pubid, char *keyid)
+{
+  struct crypt_pair* pair = NULL;
+  struct crypt_pair pub_pair = {pubid, NULL, 0};
+
+
+  log_trace("GEN_PUBKEY for pubid=%s and keyid=%s", pubid, keyid);
+
+  if ((pair = get_crypt_pair(context->crypt_ctx, keyid)) == NULL) {
+    log_trace("get_crypt_pair fail");
+    return -1;
+  }
+
+  if (crypto_generate_pubkey_str(pair->value, pair->value_size, (char **)&pub_pair.value) < 0) {
+    log_trace("crypto_generate_pubkey_str fail");
+    free_crypt_pair(pair);
+    return -1;
+  }
+  free_crypt_pair(pair);
+
+  pub_pair.value_size = strlen((char *)pub_pair.value);
+
+  if (put_crypt_pair(context->crypt_ctx, &pub_pair) < 0) {
+    log_trace("put_crypt_pair fail");
+    os_free(pub_pair.value);
+    return -1;
+  }
+
+  os_free(pub_pair.value);
+  return 0;
+}
+
 int gen_cert_cmd(struct supervisor_context *context, char *certid, char *keyid)
 {
   struct certificate_meta meta;

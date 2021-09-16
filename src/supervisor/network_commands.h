@@ -225,6 +225,16 @@ int gen_randkey_cmd(struct supervisor_context *context, char *keyid, uint8_t siz
 int gen_privkey_cmd(struct supervisor_context *context, char *keyid, uint8_t size);
 
 /**
+ * @brief GEN_PUBKEY command
+ * 
+ * @param context The supervisor structure instance
+ * @param certid The public id
+ * @param keyid The private key id
+ * @return 0 on success, -1 on failure
+ */
+int gen_pubkey_cmd(struct supervisor_context *context, char *pubid, char *keyid);
+
+/**
  * @brief GEN_CERT command
  * 
  * @param context The supervisor structure instance

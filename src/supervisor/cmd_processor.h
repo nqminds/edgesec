@@ -56,6 +56,7 @@
 #define CMD_GET_CRYPT			    "GET_CRYPT"
 #define CMD_GEN_RANDKEY       "GEN_RANDKEY"
 #define CMD_GEN_PRIVKEY       "GEN_PRIVKEY"
+#define CMD_GEN_PUBKEY        "GEN_PUBKEY"
 #define CMD_GEN_CERT          "GEN_CERT"
 #define CMD_ENCRYPT_BLOB      "ENCRYPT_BLOB"
 #define CMD_DECRYPT_BLOB      "DECRYPT_BLOB"
@@ -318,6 +319,17 @@ ssize_t process_gen_randkey_cmd(int sock, struct client_address *client_addr, st
  * @return ssize_t Size of reply written data
  */
 ssize_t process_gen_privkey_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+
+/**
+ * @brief Processes the GEN_PUBKEY command
+ * 
+ * @param sock The domain server socket
+ * @param client_addr The client address for replies
+ * @param context The supervisor structure instance
+ * @param cmd_arr The array of received commands
+ * @return ssize_t Size of reply written data
+ */
+ssize_t process_gen_pubkey_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Processes the GEN_CERT command

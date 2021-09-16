@@ -133,6 +133,16 @@ int crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
 int crypto_generate_privkey_str(enum CRYPTO_KEY_TYPE type, int bits, char **key);
 
 /**
+ * @brief Generates a public key string from a private key
+ * 
+ * @param key The private key buffer
+ * @param key_size The private key buffer size
+ * @param pub The public key string
+ * @return int 0 on success, -1 on failure
+ */
+int crypto_generate_pubkey_str(uint8_t *key, size_t key_size, char **pub);
+
+/**
  * @brief Generates a pair of private key and certificate strings
  * 
  * @param meta Certificate metadata

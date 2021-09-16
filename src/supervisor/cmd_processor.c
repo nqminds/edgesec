@@ -716,6 +716,33 @@ ssize_t process_gen_privkey_cmd(int sock, struct client_address *client_addr, st
   return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
 }
 
+ssize_t process_gen_pubkey_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
+{
+  char **ptr = (char**) utarray_next(cmd_arr, NULL);
+  char *pubid = NULL;
+
+  ptr = (char**) utarray_next(cmd_arr, ptr);
+  if (ptr != NULL && *ptr != NULL) {
+    if ((pubid = os_strdup(*ptr)) == NULL) {
+      log_err("os_strdup");
+      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);    
+    }
+
+    ptr = (char**) utarray_next(cmd_arr, ptr);
+    if (ptr != NULL && *ptr != NULL) {
+      if (strlen(*ptr)) {
+        if (!gen_pubkey_cmd(context, pubid, *ptr)) {
+          os_free(pubid);
+          return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), &client_addr->addr, client_addr->len);
+        }
+      }
+    }
+    os_free(pubid);
+  }
+
+  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
+}
+
 ssize_t process_gen_cert_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
 {
   char **ptr = (char**) utarray_next(cmd_arr, NULL);
@@ -880,6 +907,8 @@ process_cmd_fn get_command_function(char *cmd)
     return process_gen_randkey_cmd;
   } else if (!strcmp(cmd, CMD_GEN_PRIVKEY)){
     return process_gen_privkey_cmd;
+  } else if (!strcmp(cmd, CMD_GEN_PUBKEY)){
+    return process_gen_pubkey_cmd;
   } else if (!strcmp(cmd, CMD_GEN_CERT)){
     return process_gen_cert_cmd;
   } else if (!strcmp(cmd, CMD_ENCRYPT_BLOB)){
