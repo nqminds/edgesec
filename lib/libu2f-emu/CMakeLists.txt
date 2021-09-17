@@ -8,6 +8,14 @@ project(libu2f-emu VERSION 0.0.0 LANGUAGES C CXX
 # Gnu install dirs
 include(GNUInstallDirs)
 
+
+find_library(LIBCURL_LIB NAMES curl libcurl)
+if (LIBCURL_LIB)
+  message("Found libcurl library: ${LIBCURL_LIB}")
+ELSE ()
+  message(FATAL_ERROR "Could not find libcurl library.")
+endif ()
+
 # Openssl
 find_package(OpenSSL REQUIRED)
 

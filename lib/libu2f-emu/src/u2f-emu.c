@@ -105,6 +105,42 @@ static u2f_emu_rc u2f_emu_vdev_base_new(u2f_emu_vdev **vdev_ref)
     return U2F_EMU_OK;
 }
 
+u2f_emu_rc u2f_emu_vdev_new_from_url(u2f_emu_vdev **vdev_ref,
+        const char *pathname, char *get_cert_url, char *get_pub_url,
+        char *sign_url, char *encrypt_url, char *decrypt_url
+        )
+{
+    log_trace("u2f_emu_vdev_new_from_url with pathname=%s", pathname);
+
+    /* Base instantation */
+    u2f_emu_vdev *vdev = NULL;
+    u2f_emu_rc rc = u2f_emu_vdev_base_new(&vdev);
+    if (rc != U2F_EMU_OK)
+        return rc;
+
+    /* Counter */
+    if (!counter_new_from_dir(pathname, &vdev->counter))
+    {
+        free(vdev);
+        return U2F_EMU_MEMORY_ERROR;
+    }
+    vdev->is_user_counter = false;
+
+    /* Crypto core */
+    if (!crypto_new_from_url(pathname, get_cert_url, get_pub_url, sign_url,
+                            encrypt_url, decrypt_url, &vdev->crypto_core))
+    {
+      counter_free(vdev->counter);
+      free(vdev);
+      return U2F_EMU_MEMORY_ERROR;
+    }
+
+    /* Reference */
+    *vdev_ref = vdev;
+
+    return U2F_EMU_OK;
+}
+
 u2f_emu_rc u2f_emu_vdev_new_from_dir(u2f_emu_vdev **vdev_ref,
         const char *pathname)
 {

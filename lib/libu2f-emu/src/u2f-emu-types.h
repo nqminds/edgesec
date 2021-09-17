@@ -3,7 +3,6 @@
 
 #include <stdint.h>
 
-
 /**
 ** \brief U2F-emu return code.
 */

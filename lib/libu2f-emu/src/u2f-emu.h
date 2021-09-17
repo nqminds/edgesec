@@ -18,6 +18,25 @@ const char *u2f_emu_strerror(u2f_emu_rc rc);
 
 /**
 ** \brief Instantiate a new U2F virtual emulated device from a
+**        URL.
+**
+** \param vdev_ref The virtual device reference.
+** \param pathname The pathname of the entropy file.
+** \param get_cert_url The URL link for certificate
+** \param get_pub_url The URL link for public key
+** \param sign_url The URL link for signing
+** \param encrypt_url The URL link for encryption
+** \param encrypt_url The URL link for decryption
+** \return Success: U2F_EMU_OK.
+**         Failure: - memory allocation: U2F_EMU_MEMORY_ERROR.
+**                  - not supported: U2F_EMU_SUPPORTED_ERROR.
+*/
+u2f_emu_rc u2f_emu_vdev_new_from_url(u2f_emu_vdev **vdev_ref,
+        const char *pathname, char *get_cert_url, char *get_pub_url,
+        char *sign_url, char *encrypt_url, char *decrypt_url);
+
+/**
+** \brief Instantiate a new U2F virtual emulated device from a
 **        setup dir.
 **
 ** \param vdev_ref The virtual device reference.

@@ -463,7 +463,35 @@ int crypto_generate_privkey_str(enum CRYPTO_KEY_TYPE type, int bits, char **key)
 
 int crypto_generate_pubkey_str(uint8_t *key, size_t key_size, char **pub)
 {
+#ifdef WITH_OPENSSL_SERVICE
+  EVP_PKEY* pubkey = NULL;
+  EVP_PKEY* privkey = crypto_key2evp(key, key_size);
+
+  *pub = NULL;
+
+  if (privkey == NULL) {
+    log_trace("crypto_key2evp fail");
+    return -1;
+  }
+
+  if ((pubkey = crypto_priv2pub(privkey)) == NULL) {
+    log_trace("crypto_priv2pub fail");
+    EVP_PKEY_free(privkey);
+    return -1;
+  }
+
+  if ((*pub = crypto_get_key_str(false, pubkey)) == NULL) {
+    EVP_PKEY_free(privkey);
+    EVP_PKEY_free(pubkey);
+    return 0;
+  }
+
+  EVP_PKEY_free(privkey);
+  EVP_PKEY_free(pubkey);
+  return 0;
+#else
   return -1;
+#endif
 }
 
 int crypto_generate_cert_str(struct certificate_meta *meta, uint8_t *key, size_t key_size, char **cert)

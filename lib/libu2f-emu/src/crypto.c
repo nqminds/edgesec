@@ -14,6 +14,8 @@
 
 #include "crypto.h"
 #include "utils.h"
+#include "request.h"
+#include "base64.h"
 #include "log.h"
 
 /**
@@ -252,13 +254,54 @@ unsigned int crypto_ec_sign_with_key(EC_KEY *key,
     return signature_len;
 }
 
+unsigned int crypto_ec_sign_with_url(char *url,
+    const unsigned char *digest,
+    int digest_len,
+    unsigned char **signature)
+{
+  ssize_t signature_len = 0;
+  char *encoded = NULL;
+  char *send_str = NULL;
+  size_t encoded_size;
+  log_trace("crypto_ec_sign_with_url with digest_len=%d", digest_len);
+
+  /* Signature length  */
+  *signature = NULL;
+
+  if ((encoded = (char *) base64_encode(digest, (size_t) digest_len, &encoded_size)) == NULL) {
+    log_trace("base64_encode fail");
+    return 0;
+  }
+  if ((send_str = malloc(strlen(url) + 3 + strlen(encoded) + 1)) == NULL) {
+    log_err("malloc");
+    free(encoded);
+    return 0;
+  }
+
+  sprintf(send_str, "%s%%20%s", url, encoded);
+
+  if ((signature_len = get_response(url, signature)) < 0) {
+    log_trace("get_response fail");
+    free(encoded);
+    free(send_str);
+    return 0;
+  }
+
+  free(encoded);
+  free(send_str);
+  return (unsigned char)signature_len;
+}
+
 unsigned int crypto_ec_sign(struct crypto_core *crypto_core,
     const unsigned char *digest,
     int digest_len,
     unsigned char **signature)
 {
-    return crypto_ec_sign_with_key(crypto_core->privkey,
-        digest, digest_len, signature);
+    if (crypto_core->privkey != NULL) {
+      return crypto_ec_sign_with_key(crypto_core->privkey, digest, digest_len, signature);
+    } else {
+      return crypto_ec_sign_with_url(crypto_core->sign_url, digest, digest_len, signature);
+    }
 }
 
 size_t crypto_hash(const void *data, size_t data_len,
@@ -533,6 +576,37 @@ static EC_KEY *crypto_ec_privkey_from_pem(
 }
 
 /**
+** \brief Get the ec public key from PEM.
+**
+** \param private_key_pem The ec publi key PEM.
+** \return Success: The private key.
+**         Failure: NULL.
+*/
+static EC_KEY *crypto_ec_pubkey_from_pem(
+        const char *public_key_pem)
+{
+    /* Pem length */
+    size_t pem_length = crypto_pem_length(public_key_pem);
+    if (pem_length == 0)
+        return NULL;
+
+    /* Bio needed */
+    BIO *public_bio = BIO_new(BIO_s_mem());
+    if (public_bio == NULL)
+        return NULL;
+    BIO_write(public_bio, public_key_pem, pem_length);
+
+    /* EC_Key */
+    EC_KEY *pubkey = EC_KEY_new();
+    PEM_read_bio_EC_PUBKEY(public_bio, &pubkey, NULL, NULL);
+
+    /* Free */
+    BIO_free_all(public_bio);
+
+    return pubkey;
+}
+
+/**
 ** \brief Get the entropy from file.
 **
 ** \param dirpath The path of the directory.
@@ -651,6 +725,78 @@ bool crypto_new_ephemeral(struct crypto_core **core_ref)
     *core_ref = core;
 
     return true;
+}
+
+bool crypto_new_from_url(const char *dirpath, char *get_cert_url, char *get_pub_url, char *sign_url, char *encrypt_url,
+                         char *decrypt_url, struct crypto_core **core_ref)
+{
+  /* Entropy */
+  uint8_t entropy[48];
+
+  log_trace("crypto_new_from_dir call with dirpath=%s", dirpath);
+
+  if (!crypto_entropy_from_file(dirpath, CRYPTO_ENTROPY_FILENAME, entropy)) {
+    log_trace("crypto_entropy_from_file fail");
+    return false;
+  }
+
+  char* response = get_response_str(get_cert_url);
+
+  if (response == NULL) {
+    log_trace("get_response fail");
+    return false;
+  }
+  
+  /* Certificate */
+  X509 *cert = crypto_x509_from_pem(response);
+  if (cert == NULL) {
+    log_trace("crypto_x509_from_pem fail");
+    free(response);
+    return false;
+  }
+  free(response);
+
+  response = get_response_str(get_pub_url);
+
+  if (response == NULL) {
+    log_trace("get_response fail");
+    X509_free(cert);
+    return false;
+  }
+
+  /* Pub key */
+  EC_KEY *pubkey = crypto_ec_pubkey_from_pem(response);
+  if (pubkey == NULL) {
+    log_trace("crypto_ec_pubkey_from_pem fail");
+    free(response);
+    X509_free(cert);
+    return false;
+  }
+  free(response);
+
+  /* Allocate */
+  struct crypto_core *core = malloc(sizeof(struct crypto_core));
+  if (core == NULL) {
+    log_err("malloc");
+    X509_free(cert);
+    EC_KEY_free(pubkey);
+    return false;
+  }
+  memset(core, 0, sizeof(struct crypto_core));
+
+  /* Initialize */
+  core->cert = cert;
+  core->privkey = NULL;
+  core->pubkey = pubkey;
+  strcpy(core->sign_url, sign_url);
+  strcpy(core->encrypt_url, encrypt_url);
+  strcpy(core->decrypt_url, decrypt_url);
+  memcpy(core->entropy, entropy, 48);
+
+  /* Reference */
+  *core_ref = core;
+  
+  return true;
 }
 
 bool crypto_new_from_dir(const char *dirpath,

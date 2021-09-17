@@ -15,6 +15,9 @@ set (SRC
     payload.c
     transport.c
     utils.c
+    curl_utils.c
+    request.c
+    base64.c
     u2f-emu.c
     usb/cmd.c
     usb/message.c
@@ -43,7 +46,7 @@ set_property(TARGET u2f-emu APPEND_STRING PROPERTY
     LINK_FLAGS " -Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/u2f-emu.map")
 target_compile_options(u2f-emu PRIVATE -Wall -Wextra -Werror -pedantic -std=c99 ${EXTRA_FLAGS})
 target_compile_options(u2f-emu PRIVATE -D_GNU_SOURCE)
-target_link_libraries(u2f-emu OpenSSL::SSL gcov)
+target_link_libraries(u2f-emu OpenSSL::SSL gcov ${LIBCURL_LIB})
 install(TARGETS u2f-emu LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/u2f-emu)
 

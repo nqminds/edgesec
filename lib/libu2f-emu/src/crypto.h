@@ -12,6 +12,7 @@
 #define CRYPTO_PRIVKEY_FILENAME "private-key.pem"
 #define CRYPTO_ENTROPY_FILENAME "entropy"
 
+#define MAX_WEB_PATH_LEN		2048
 
 /**
 ** \brief Crypto core of the U2F device
@@ -22,6 +23,9 @@ struct crypto_core
     EC_KEY *privkey; /**< Private key of the certificate */
     EC_KEY *pubkey; /**< Public key of the certificate */
     uint8_t entropy[48]; /**< Random bits used in encryption */
+    char sign_url[MAX_WEB_PATH_LEN];
+    char encrypt_url[MAX_WEB_PATH_LEN];
+    char decrypt_url[MAX_WEB_PATH_LEN];
 };
 
 /**
@@ -143,6 +147,23 @@ EC_KEY *crypto_ec_pubkey_from_priv(EC_KEY *privkey);
 **         Failure: NULL.
 */
 EC_KEY *crypto_ec_generate_key(void);
+
+
+/**
+** \brief Setup a crypto core from a URL.
+** \param dirpath
+** \param get_cert_url The URL link for certificate
+** \param get_pub_url The URL link for public key
+** \param sign_url The URL link for signing
+** \param encrypt_url The URL link for encryption
+** \param encrypt_url The URL link for decryption
+** \param core_ref The crypto core to setup.
+** \return Sucess: true.
+**         Failure: false.
+*/
+bool crypto_new_from_url(const char *dirpath, char *get_cert_url, char *get_pub_url, char *sign_url, char *encrypt_url,
+                         char *decrypt_url, struct crypto_core **core_ref);
+
 
 /**
 ** \brief Setup a crypto core from a dir.
