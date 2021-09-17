@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
     else
     {
         /* New U2F virtual emulated device */
+        // if (u2f_emu_vdev_new_from_dir(&vdev, argv[1]) != U2F_EMU_OK)
         if (u2f_emu_vdev_new_from_url(&vdev, argv[1], get_cert_url, get_pub_url, 
                                       sign_url, encrypt_url, decrypt_url) != U2F_EMU_OK)
         {

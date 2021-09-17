@@ -280,13 +280,13 @@ unsigned int crypto_ec_sign_with_url(char *url,
 
   sprintf(send_str, "%s%%20%s", url, encoded);
 
-  if ((signature_len = get_response(url, signature)) < 0) {
+  if ((signature_len = get_response(send_str, signature)) < 0) {
     log_trace("get_response fail");
     free(encoded);
     free(send_str);
     return 0;
   }
-
+  
   free(encoded);
   free(send_str);
   return (unsigned char)signature_len;
