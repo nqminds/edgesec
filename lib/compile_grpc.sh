@@ -2,23 +2,19 @@
 
 set -e
 
-LIBGRPC_SOURCE_DIR=./grpc
-LIBGRPC_INSTALL_DIR=$1/grpc
-CONFIG_HOST=$2
+LIBGRPC_SOURCE_DIR="$1"
+LIBGRPC_BUILD_DIR="$2"
+LIBGRPC_INSTALL_DIR="$3/grpc"
+CONFIG_HOST="$4"
 
 echo "GRPC lib source dir: ${LIBGRPC_SOURCE_DIR}"
+echo "GRPC lib build dir: ${LIBGRPC_BUILD_DIR}"
 echo "GRPC lib install dir: ${LIBGRPC_INSTALL_DIR}"
 echo "GRPC lib config host: ${CONFIG_HOST}"
 
-rm -rf "${LIBGRPC_SOURCE_DIR}"
-git clone -b v1.36.4 https://github.com/grpc/grpc
-
-cd ${LIBGRPC_SOURCE_DIR}
-git submodule update --init
-
 # Install gRPC
-mkdir -p "cmake/build"
-pushd "cmake/build"
+mkdir -p "${LIBGRPC_BUILD_DIR}"
+pushd "${LIBGRPC_BUILD_DIR}"
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
   -DBUILD_SHARED_LIBS=ON \
@@ -33,8 +29,6 @@ cmake \
   -DgRPC_ZLIB_PROVIDER=module \
   -DCMAKE_INSTALL_RPATH=\$ORIGIN \
   -DCMAKE_INSTALL_PREFIX=$LIBGRPC_INSTALL_DIR \
-  ../..
-make -j4 install
+  "${LIBGRPC_SOURCE_DIR}"
+make -j9 install
 popd
-
-rm -rf "${LIBGRPC_SOURCE_DIR}"

@@ -19,7 +19,7 @@ if (BUILD_GRPC_LIB AND NOT (BUILD_ONLY_DOCS))
   set(LIBGRPC_BIN_DIR "${LIBGRPC_INSTALL_DIR}/bin")
 
   FIND_GRPC_PATHS()
-  
+
   if (LIBGRPCPP_LIB AND LIBPROTOBUF_LIB AND LIBGRPCPP_REFLECTION_LIB AND PROTOC_BIN AND GRPC_CPP_PLUGIN_BIN)
     message("Found libgrpc_plugin_support library: ${LIBGRPC_PLUGIN_SUPPORT_LIB}")
     message("Found libgrpc library: ${LIBGRPC_LIB}")
@@ -30,7 +30,21 @@ if (BUILD_GRPC_LIB AND NOT (BUILD_ONLY_DOCS))
     message("Found protoc binary: ${PROTOC_BIN}")
     message("Found grpc_cpp_plugin binary: ${GRPC_CPP_PLUGIN_BIN}")
   ELSE ()
-    execute_process(COMMAND bash ${CMAKE_SOURCE_DIR}/lib/compile_grpc.sh ${LIBGRPC_INSTALL_ROOT})
+    FetchContent_Declare(
+      gRPC
+      GIT_REPOSITORY https://github.com/grpc/grpc
+      GIT_TAG        v1.36.4
+      GIT_SHALLOW true # only download latest commit
+      GIT_PROGRESS true # downloading loads of submodules, so we want to see progress
+    )
+    set(FETCHCONTENT_QUIET OFF)
+    FetchContent_Populate(gRPC)
+
+    execute_process(COMMAND bash ${CMAKE_SOURCE_DIR}/lib/compile_grpc.sh
+      "${grpc_SOURCE_DIR}"
+      "${grpc_BINARY_DIR}"
+      "${LIBGRPC_INSTALL_ROOT}"
+    )
 
     FIND_GRPC_PATHS()
 
@@ -67,5 +81,5 @@ if (BUILD_GRPC_LIB AND NOT (BUILD_ONLY_DOCS))
   #set(_REFLECTION grpc++_reflection)
   #set(_PROTOBUF_PROTOC $<TARGET_FILE:protoc>)
   #set(_GRPC_GRPCPP grpc++)
-  #set(_GRPC_CPP_PLUGIN_EXECUTABLE $<TARGET_FILE:grpc_cpp_plugin>)  
+  #set(_GRPC_CPP_PLUGIN_EXECUTABLE $<TARGET_FILE:grpc_cpp_plugin>)
 endif ()
