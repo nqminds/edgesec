@@ -32,12 +32,6 @@ runtime_dependencies=(
 sudo apt install -y "${build_dependencies[@]}" "${runtime_dependencies[@]}"
 ```
 
-To install grpc dependencies:
-```console
-cd lib/
-sudo ./compile_grpc_deps.sh
-```
-
 ### Compile
 
 Compiling EDGESec is done with CMake.
