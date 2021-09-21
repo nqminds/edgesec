@@ -9,7 +9,15 @@ if (BUILD_NDPI_LIB AND NOT (BUILD_ONLY_DOCS))
   if (LIBNDPI_LIB)
     message("Found libndpi library: ${LIBNDPI_LIB}")
   ELSE ()
-    execute_process(COMMAND bash ${CMAKE_SOURCE_DIR}/lib/compile_ndpi.sh ${LIBNDPI_INSTALL_ROOT})
+    FetchContent_Declare(
+      ndpi_src
+      URL https://github.com/ntop/nDPI/archive/refs/tags/3.4.tar.gz
+      URL_HASH SHA3_256=84e4710df21ffa32a68a1b6fa51ef17b22caeaa34389db3f222c02210519aa6d
+
+    )
+    FetchContent_Populate(ndpi_src)
+
+    execute_process(COMMAND bash ${CMAKE_SOURCE_DIR}/lib/compile_ndpi.sh ${LIBNDPI_INSTALL_ROOT} ${ndpi_src_SOURCE_DIR})
     find_library(LIBNDPI_LIB NAMES ndpi libndpi PATHS "${LIBNDPI_LIB_DIR}" NO_DEFAULT_PATH)
   endif ()
 endif ()
