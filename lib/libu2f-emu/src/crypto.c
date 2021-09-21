@@ -58,10 +58,12 @@ EC_KEY *crypto_ec_bytes_to_key(const unsigned char *buffer,
     return key;
 }
 
-size_t crypto_aes_decrypt(struct crypto_core* crypto_core,
+size_t crypto_aes_decrypt_with_key(uint8_t *entropy,
         const unsigned char *data, int size,
         unsigned char **buffer)
 {
+    log_trace("crypto_aes_decrypt_with_key call with data_len=%d", size);
+
     /* Cipher context */
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
     if (ctx == NULL)
@@ -77,8 +79,7 @@ size_t crypto_aes_decrypt(struct crypto_core* crypto_core,
     }
 
     /* Init and key */
-    if (EVP_DecryptInit_ex(ctx, NULL, NULL,
-            crypto_core->entropy, crypto_core->entropy + 32) != 1)
+    if (EVP_DecryptInit_ex(ctx, NULL, NULL, entropy, entropy + 32) != 1)
     {
         /* Free */
         EVP_CIPHER_CTX_free(ctx);
@@ -124,11 +125,62 @@ size_t crypto_aes_decrypt(struct crypto_core* crypto_core,
     return result_len;
 }
 
-size_t crypto_aes_encrypt(struct crypto_core* crypto_core,
+size_t crypto_aes_crypt_with_url(char *url,
         const unsigned char *data, int data_len,
         unsigned char **buffer)
 {
-    log_trace("crypto_aes_encrypt call with data_len=%d", data_len);
+  ssize_t result_len = 0;
+  char *encoded = NULL;
+  char *send_str = NULL;
+  size_t encoded_size;
+  log_trace("crypto_aes_crypt_with_url call with data_len=%d", data_len);
+
+  *buffer = NULL;
+
+  if ((encoded = (char *) base64_encode(data, (size_t) data_len, &encoded_size)) == NULL) {
+    log_trace("base64_encode fail");
+    return 0;
+  }
+
+  if ((send_str = malloc(strlen(url) + 3 + strlen(encoded) + 1)) == NULL) {
+    log_err("malloc");
+    free(encoded);
+    return 0;
+  }
+
+  sprintf(send_str, "%s%%20%s", url, encoded);
+
+  if ((result_len = get_response(send_str, buffer)) < 0) {
+    log_trace("get_response fail");
+    free(encoded);
+    free(send_str);
+    return 0;
+  }
+  
+  free(encoded);
+  free(send_str);
+  return (unsigned char)result_len;
+
+}
+
+size_t crypto_aes_decrypt(struct crypto_core* crypto_core,
+        const unsigned char *data, int size,
+        unsigned char **buffer)
+{
+    log_trace("crypto_aes_decrypt call with data_len=%d", size);
+
+    if (crypto_core->use_entropy) {
+        return crypto_aes_decrypt_with_key(crypto_core->entropy, data, size, buffer);
+    } else {
+        return crypto_aes_crypt_with_url(crypto_core->decrypt_url, data, size, buffer);
+    }
+}
+
+size_t crypto_aes_encrypt_with_key(uint8_t *entropy,
+        const unsigned char *data, int data_len,
+        unsigned char **buffer)
+{
+    log_trace("crypto_aes_encrypt_with_key call with data_len=%d", data_len);
 
     /* Cipher context */
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
@@ -145,8 +197,7 @@ size_t crypto_aes_encrypt(struct crypto_core* crypto_core,
     }
 
     /* Init and key */
-    if (EVP_EncryptInit_ex(ctx, NULL,
-        NULL, crypto_core->entropy, crypto_core->entropy + 32) != 1)
+    if (EVP_EncryptInit_ex(ctx, NULL, NULL, entropy, entropy + 32) != 1)
     {
         /* Release */
         EVP_CIPHER_CTX_free(ctx);
@@ -187,6 +238,19 @@ size_t crypto_aes_encrypt(struct crypto_core* crypto_core,
     EVP_CIPHER_CTX_free(ctx);
 
     return result_len;;
+}
+
+size_t crypto_aes_encrypt(struct crypto_core* crypto_core,
+        const unsigned char *data, int data_len,
+        unsigned char **buffer)
+{
+    log_trace("crypto_aes_encrypt call with data_len=%d", data_len);
+
+    if (crypto_core->use_entropy) {
+        return crypto_aes_encrypt_with_key(crypto_core->entropy, data, data_len, buffer);
+    } else {
+        return crypto_aes_crypt_with_url(crypto_core->encrypt_url, data, data_len, buffer);
+    }
 }
 
 int crypto_ec_key_to_bytes(EC_KEY *key, unsigned char **buffer)
@@ -681,6 +745,7 @@ bool crypto_new(const char *certificate,
     core->cert = cert;
     core->privkey = privkey;
     core->pubkey = pubkey;
+    core->use_entropy = true;
     memcpy(core->entropy, entropy, 48);
 
     /* Reference */
@@ -719,6 +784,7 @@ bool crypto_new_ephemeral(struct crypto_core **core_ref)
     core->cert = cert;
     core->privkey = privkey;
     core->pubkey = pubkey;
+    core->use_entropy = true;
     memcpy(core->entropy, entropy, 48);
 
     /* Reference */
@@ -788,10 +854,10 @@ bool crypto_new_from_url(const char *dirpath, char *get_cert_url, char *get_pub_
   core->cert = cert;
   core->privkey = NULL;
   core->pubkey = pubkey;
+  core->use_entropy = false;
   strcpy(core->sign_url, sign_url);
   strcpy(core->encrypt_url, encrypt_url);
   strcpy(core->decrypt_url, decrypt_url);
-  memcpy(core->entropy, entropy, 48);
 
   /* Reference */
   *core_ref = core;
@@ -837,6 +903,7 @@ bool crypto_new_from_dir(const char *dirpath,
     core->cert = cert;
     core->privkey = privkey;
     core->pubkey = pubkey;
+    core->use_entropy = true;
     memcpy(core->entropy, entropy, 48);
 
     /* Reference */

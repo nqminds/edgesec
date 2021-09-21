@@ -26,6 +26,7 @@ struct crypto_core
     char sign_url[MAX_WEB_PATH_LEN];
     char encrypt_url[MAX_WEB_PATH_LEN];
     char decrypt_url[MAX_WEB_PATH_LEN];
+    bool use_entropy;
 };
 
 /**

@@ -21,8 +21,8 @@ int main(int argc, char *argv[])
     char *get_cert_url = "https://localhost:8000/?cmd=GET_CRYPT&args=restcert";
     char *get_pub_url = "https://localhost:8000/?cmd=GET_CRYPT&args=restpub";
     char *sign_url = "https://localhost:8000/?cmd=SIGN_BLOB&args=restkey";
-    char *encrypt_url = "https://localhost:8000/?cmd=ENCRYPT_BLOB&args=u2fkey";
-    char *decrypt_url = "https://localhost:8000/?cmd=DECRYPT_BLOB&args=u2fkey";
+    char *encrypt_url = "https://localhost:8000/?cmd=ENCRYPT_BLOB&args=restpriv%%20restiv";
+    char *decrypt_url = "https://localhost:8000/?cmd=DECRYPT_BLOB&args=restpriv%%20restiv";
 
     /* Ephemeral */
     if (argc <= 1)
