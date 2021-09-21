@@ -92,13 +92,13 @@ int crypto_buf2key(uint8_t *buf, int buf_size, uint8_t *salt, int salt_size,
 #endif
 }
 
-int crypto_encrypt(uint8_t *in, int in_size, uint8_t *key,
+ssize_t crypto_encrypt(uint8_t *in, int in_size, uint8_t *key,
                    uint8_t *iv, uint8_t *out)
 {
 #ifdef WITH_OPENSSL_SERVICE
   EVP_CIPHER_CTX *ctx;
   int len;
-  int ciphertext_len;
+  ssize_t ciphertext_len;
 
   /* Create and initialise the context */
   if(!(ctx = EVP_CIPHER_CTX_new())) {
@@ -153,7 +153,7 @@ int crypto_encrypt(uint8_t *in, int in_size, uint8_t *key,
 #endif
 }
 
-int crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
+ssize_t crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
                    uint8_t *iv, uint8_t *out)
 {
 #ifdef WITH_OPENSSL_SERVICE
@@ -210,7 +210,7 @@ int crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
 
   return plaintext_len;
 #else
-   log_trace("crypto_decrypt not implemented");
+  log_trace("crypto_decrypt not implemented");
   return -1;
 #endif
 }

@@ -164,16 +164,18 @@ int __wrap_gen_cert_cmd(struct supervisor_context *context, char *certid, char *
   return 0;
 }
 
-char* __wrap_encrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *blob)
+char* __wrap_encrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *ivid, char *blob)
 {
   check_expected(keyid);
+  check_expected(ivid);
   check_expected(blob);
   return os_strdup(OK_REPLY);
 }
 
-char* __wrap_decrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *blob)
+char* __wrap_decrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *ivid, char *blob)
 {
   check_expected(keyid);
+  check_expected(ivid);
   check_expected(blob);
     return os_strdup(OK_REPLY);
 }
@@ -822,14 +824,20 @@ static void test_process_encrypt_blob(void **state)
   struct client_address claddr;
 
   utarray_new(cmd_arr, &ut_str_icd);
-  assert_int_not_equal(split_string_array("ENCRYPT_BLOB keyid 12345", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_not_equal(split_string_array("ENCRYPT_BLOB keyid ivid 12345", CMD_DELIMITER, cmd_arr), -1);
   expect_string(__wrap_encrypt_blob_cmd, keyid, "keyid");
+  expect_string(__wrap_encrypt_blob_cmd, ivid, "ivid");
   expect_string(__wrap_encrypt_blob_cmd, blob, "12345");
   assert_int_equal(process_encrypt_blob_cmd(0, &claddr, NULL, cmd_arr), strlen(OK_REPLY));
   utarray_free(cmd_arr);
 
   utarray_new(cmd_arr, &ut_str_icd);
-  assert_int_not_equal(split_string_array("ENCRYPT_BLOB ", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_not_equal(split_string_array("ENCRYPT_BLOB keyid ivid", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_encrypt_blob_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("ENCRYPT_BLOB keyid", CMD_DELIMITER, cmd_arr), -1);
   assert_int_equal(process_encrypt_blob_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
   utarray_free(cmd_arr);
 
@@ -847,14 +855,20 @@ static void test_process_decrypt_blob(void **state)
   struct client_address claddr;
 
   utarray_new(cmd_arr, &ut_str_icd);
-  assert_int_not_equal(split_string_array("DECRYPT_BLOB keyid 12345", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_not_equal(split_string_array("DECRYPT_BLOB keyid ivid 12345", CMD_DELIMITER, cmd_arr), -1);
   expect_string(__wrap_decrypt_blob_cmd, keyid, "keyid");
+  expect_string(__wrap_decrypt_blob_cmd, ivid, "ivid");
   expect_string(__wrap_decrypt_blob_cmd, blob, "12345");
   assert_int_equal(process_decrypt_blob_cmd(0, &claddr, NULL, cmd_arr), strlen(OK_REPLY));
   utarray_free(cmd_arr);
 
   utarray_new(cmd_arr, &ut_str_icd);
-  assert_int_not_equal(split_string_array("DECRYPT_BLOB ", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_not_equal(split_string_array("DECRYPT_BLOB keyid ivid", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_decrypt_blob_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("DECRYPT_BLOB keyid", CMD_DELIMITER, cmd_arr), -1);
   assert_int_equal(process_decrypt_blob_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
   utarray_free(cmd_arr);
 

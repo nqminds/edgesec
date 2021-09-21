@@ -928,7 +928,7 @@ int gen_randkey_cmd(struct supervisor_context *context, char *keyid, uint8_t siz
 {
   struct crypt_pair pair = {keyid, NULL, (ssize_t) size};
 
-  log_trace("GEN_RANDKEY for key=%s", keyid);
+  log_trace("GEN_RANDKEY for key=%s and size=%d", keyid, size);
 
   if ((pair.value = os_malloc(pair.value_size)) == NULL) {
     log_err("os_malloc");
@@ -955,7 +955,7 @@ int gen_privkey_cmd(struct supervisor_context *context, char *keyid, uint8_t siz
 {
   struct crypt_pair pair = {keyid, NULL, (ssize_t) size};
 
-  log_trace("GEN_PRIVKEY for key=%s", keyid);
+  log_trace("GEN_PRIVKEY for key=%s and size=%d", keyid, size);
 
   if (crypto_generate_privkey_str(CRYPTO_KEY_EC, size * 8, (char **)&pair.value) < 0) {
     log_trace("crypto_generate_privkey_str fail");
@@ -1047,14 +1047,144 @@ int gen_cert_cmd(struct supervisor_context *context, char *certid, char *keyid)
   return 0;
 }
 
-char* encrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *blob)
+char* encrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *ivid, char *blob)
 {
-  return NULL;
+  struct crypt_pair* keypair = NULL, *ivpair = NULL;
+  uint8_t *blob_data = NULL, *encrypted_data = NULL;
+  size_t blob_data_size;
+  ssize_t encrypted_size;
+  char *encrypted_str = NULL;
+  log_trace("ENCRYPT_BLOB with keyid=%s and ivid=%s", keyid, ivid);
+
+  if ((keypair = get_crypt_pair(context->crypt_ctx, keyid)) == NULL) {
+    log_trace("get_crypt_pair fail");
+    return NULL;
+  }
+
+  if (keypair->value == NULL) {
+    log_trace("value is empty");
+    free_crypt_pair(keypair);
+    return NULL;  
+  }
+
+  if ((ivpair = get_crypt_pair(context->crypt_ctx, ivid)) == NULL) {
+    log_trace("get_crypt_pair fail");
+    free_crypt_pair(keypair);
+    return NULL;
+  }
+
+  if (ivpair->value == NULL) {
+    log_trace("value is empty");
+    free_crypt_pair(keypair);
+    free_crypt_pair(ivpair);
+    return NULL;  
+  }
+
+  if ((blob_data = (uint8_t *) base64_decode((unsigned char *)blob, strlen(blob), &blob_data_size)) == NULL) {
+    log_trace("base64_decode fail");
+    free_crypt_pair(keypair);
+    free_crypt_pair(ivpair);
+    return NULL;
+  }
+
+  if ((encrypted_data = os_malloc(blob_data_size + AES_BLOCK_SIZE)) == NULL) {
+    log_err("os_malloc");
+    free_crypt_pair(keypair);
+    free_crypt_pair(ivpair);
+    os_free(blob_data);
+    return NULL;
+  }
+
+  if ((encrypted_size = crypto_encrypt(blob_data, blob_data_size, keypair->value, ivpair->value, encrypted_data)) < 0) {
+    log_trace("crypto_encrypt fail");
+    free_crypt_pair(keypair);
+    free_crypt_pair(ivpair);
+    os_free(blob_data);
+    return NULL;
+  }
+
+  free_crypt_pair(keypair);
+  free_crypt_pair(ivpair);
+  os_free(blob_data);
+
+  if ((encrypted_str = (char *) base64_encode(encrypted_data, encrypted_size, &blob_data_size)) == NULL) {
+    log_trace("base64_encode fail");
+    os_free(encrypted_data);
+    return NULL;
+  }
+
+  os_free(encrypted_data);
+  return encrypted_str;
 }
 
-char* decrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *blob)
+char* decrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *ivid, char *blob)
 {
-  return NULL;
+  struct crypt_pair* keypair = NULL, *ivpair = NULL;
+  uint8_t *blob_data = NULL, *decrypted_data = NULL;
+  size_t blob_data_size;
+  ssize_t decrypted_size;
+  char *decrypted_str = NULL;
+  log_trace("DECRYPT_BLOB with keyid=%s and ivid=%s", keyid, ivid);
+
+  if ((keypair = get_crypt_pair(context->crypt_ctx, keyid)) == NULL) {
+    log_trace("get_crypt_pair fail");
+    return NULL;
+  }
+
+  if (keypair->value == NULL) {
+    log_trace("value is empty");
+    free_crypt_pair(keypair);
+    return NULL;  
+  }
+
+  if ((ivpair = get_crypt_pair(context->crypt_ctx, ivid)) == NULL) {
+    log_trace("get_crypt_pair fail");
+    free_crypt_pair(keypair);
+    return NULL;
+  }
+
+  if (ivpair->value == NULL) {
+    log_trace("value is empty");
+    free_crypt_pair(keypair);
+    free_crypt_pair(ivpair);
+    return NULL;  
+  }
+
+  if ((blob_data = (uint8_t *) base64_decode((unsigned char *)blob, strlen(blob), &blob_data_size)) == NULL) {
+    log_trace("base64_decode fail");
+    free_crypt_pair(keypair);
+    free_crypt_pair(ivpair);
+    return NULL;
+  }
+
+  if ((decrypted_data = os_malloc(blob_data_size + AES_BLOCK_SIZE)) == NULL) {
+    log_err("os_malloc");
+    free_crypt_pair(keypair);
+    free_crypt_pair(ivpair);
+    os_free(blob_data);
+    return NULL;
+  }
+
+  if ((decrypted_size = crypto_decrypt(blob_data, blob_data_size, keypair->value, ivpair->value, decrypted_data)) < 0) {
+    log_trace("crypto_decrypt fail");
+    free_crypt_pair(keypair);
+    free_crypt_pair(ivpair);
+    os_free(blob_data);
+    return NULL;
+  }
+
+  free_crypt_pair(keypair);
+  free_crypt_pair(ivpair);
+  os_free(blob_data);
+
+  if ((decrypted_str = (char *) base64_encode(decrypted_data, decrypted_size, &blob_data_size)) == NULL) {
+    log_trace("base64_encode fail");
+    os_free(decrypted_data);
+    return NULL;
+  }
+
+  os_free(decrypted_data);
+  return decrypted_str;
 }
 
 char* sign_blob_cmd(struct supervisor_context *context, char *keyid, char *blob)

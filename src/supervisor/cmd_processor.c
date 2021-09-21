@@ -774,6 +774,7 @@ ssize_t process_encrypt_blob_cmd(int sock, struct client_address *client_addr, s
 {
   char **ptr = (char**) utarray_next(cmd_arr, NULL);
   char *keyid = NULL;
+  char *ivid = NULL;
   char *encrypted = NULL;
   int ret;
 
@@ -786,16 +787,27 @@ ssize_t process_encrypt_blob_cmd(int sock, struct client_address *client_addr, s
 
     ptr = (char**) utarray_next(cmd_arr, ptr);
     if (ptr != NULL && *ptr != NULL) {
-      if (strlen(*ptr)) {
-        if ((encrypted = encrypt_blob_cmd(context, keyid, *ptr)) != NULL) {
-          ret = write_domain_data(sock, encrypted, strlen(encrypted), &client_addr->addr, client_addr->len);
-          os_free(keyid);
-          os_free(encrypted);
-          return ret;
+      if ((ivid = os_strdup(*ptr)) == NULL) {
+        log_err("os_strdup");
+        os_free(keyid);
+        return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);    
+      }
+
+      ptr = (char**) utarray_next(cmd_arr, ptr);
+      if (ptr != NULL && *ptr != NULL) {
+        if (strlen(*ptr)) {
+          if ((encrypted = encrypt_blob_cmd(context, keyid, ivid, *ptr)) != NULL) {
+            ret = write_domain_data(sock, encrypted, strlen(encrypted), &client_addr->addr, client_addr->len);
+            os_free(ivid);
+            os_free(keyid);
+            os_free(encrypted);
+            return ret;
+          }
         }
       }
+      os_free(ivid);
+      os_free(keyid);
     }
-    os_free(keyid);
   }
 
   return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
@@ -805,6 +817,7 @@ ssize_t process_decrypt_blob_cmd(int sock, struct client_address *client_addr, s
 {
   char **ptr = (char**) utarray_next(cmd_arr, NULL);
   char *keyid = NULL;
+  char *ivid = NULL;
   char *decrypted = NULL;
   int ret;
 
@@ -817,16 +830,27 @@ ssize_t process_decrypt_blob_cmd(int sock, struct client_address *client_addr, s
 
     ptr = (char**) utarray_next(cmd_arr, ptr);
     if (ptr != NULL && *ptr != NULL) {
-      if (strlen(*ptr)) {
-        if ((decrypted = decrypt_blob_cmd(context, keyid, *ptr)) != NULL) {
-          ret = write_domain_data(sock, decrypted, strlen(decrypted), &client_addr->addr, client_addr->len);
-          os_free(keyid);
-          os_free(decrypted);
-          return ret;
+      if ((ivid = os_strdup(*ptr)) == NULL) {
+        log_err("os_strdup");
+        os_free(keyid);
+        return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);    
+      }
+
+      ptr = (char**) utarray_next(cmd_arr, ptr);
+      if (ptr != NULL && *ptr != NULL) {
+        if (strlen(*ptr)) {
+          if ((decrypted = decrypt_blob_cmd(context, keyid, ivid, *ptr)) != NULL) {
+            ret = write_domain_data(sock, decrypted, strlen(decrypted), &client_addr->addr, client_addr->len);
+            os_free(keyid);
+            os_free(ivid);
+            os_free(decrypted);
+            return ret;
+          }
         }
       }
+      os_free(keyid);
+      os_free(ivid);
     }
-    os_free(keyid);
   }
 
   return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);

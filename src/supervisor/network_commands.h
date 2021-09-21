@@ -249,20 +249,22 @@ int gen_cert_cmd(struct supervisor_context *context, char *certid, char *keyid);
  * 
  * @param context The supervisor structure instance
  * @param keyid The private key id
+ * @param ivid The iv id
  * @param blob The blob base64 string to encrypt
  * @return char* the encrypted blob in base64, NULL on failure
  */
-char* encrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *blob);
+char* encrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *ivid, char *blob);
 
 /**
  * @brief DECRYPT_BLOB command
  * 
  * @param context The supervisor structure instance
  * @param keyid The private key id
+ * @param ivid The iv id
  * @param blob The blob base64 string to decrypt
  * @return char* the decrypted blob in base64, NULL on failure
  */
-char* decrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *blob);
+char* decrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *ivid, char *blob);
 
 /**
  * @brief SIGN_BLOB command

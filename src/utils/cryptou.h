@@ -106,7 +106,7 @@ int crypto_buf2key(uint8_t *buf, int buf_size, uint8_t *salt, int salt_size,
  * @param out The output buffer
  * @return The output size, -1 on error
  */
-int crypto_encrypt(uint8_t *in, int in_size, uint8_t *key,
+ssize_t crypto_encrypt(uint8_t *in, int in_size, uint8_t *key,
                    uint8_t *iv, uint8_t *out);
 
 /**
@@ -119,7 +119,7 @@ int crypto_encrypt(uint8_t *in, int in_size, uint8_t *key,
  * @param out The output buffer
  * @return The output size, -1 on error
  */
-int crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
+ssize_t crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
                    uint8_t *iv, uint8_t *out);
 
 /**
