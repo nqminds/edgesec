@@ -53,6 +53,13 @@ Disable only for a particular wifi interface ```wlanx``` add the below line to `
 denyinterfaces wlanx
 ```
 
+
+# libmicrohttp TLS
+If libgnutls and lingcrypt not installed the restsrv doens't start in TLS mode. To install teh libraries run:
+```bash
+sudo apt-get install libgnutls-dev libgnutls28-dev
+```
+
 # iptables commands
 ```bash
 iptables -P INPUT ACCEPT
