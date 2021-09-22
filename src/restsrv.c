@@ -426,7 +426,7 @@ int main(int argc, char *argv[])
   char *key = NULL;
   char *cert = NULL;
   bool tls = false;
-  int flags;
+  int flags = MHD_USE_THREAD_PER_CONNECTION;
   char *reply = NULL;
   uint8_t *base64_buf = NULL;
   size_t base64_buf_len;
@@ -458,6 +458,10 @@ int main(int argc, char *argv[])
   fprintf(stdout, "Port --> %d\n", port);
   fprintf(stdout, "Command delimiter --> %c\n", sad.delim);
   fprintf(stdout, "Using TLS --> %d\n", tls);
+
+  flags = (tls) ? flags | MHD_USE_TLS : flags;
+
+  fprintf(stdout, "Starting server...\n");
 
   if (tls) {
     if (writeread_domain_data_str(sad.spath, GET_CRYPT_KEY_CMD, &reply) < 0) {
@@ -535,19 +539,15 @@ int main(int argc, char *argv[])
     os_memcpy(cert, base64_buf, base64_buf_len);
     os_free(base64_buf);
     os_free(reply);
+
+    d = MHD_start_daemon (flags, (uint16_t) port,
+                        NULL, NULL, &mhd_reply, (void*)&sad,
+                        MHD_OPTION_HTTPS_MEM_KEY, key,
+                        MHD_OPTION_HTTPS_MEM_CERT, cert,
+                        MHD_OPTION_END);
+  } else {
+    d = MHD_start_daemon (flags, (uint16_t) port, NULL, NULL, &mhd_reply, (void*)&sad, NULL, MHD_OPTION_END);
   }
-
-  flags = MHD_USE_THREAD_PER_CONNECTION;
-  flags = (tls) ? flags | MHD_USE_TLS : flags;
-
-  fprintf(stdout, "Starting server...\n");
-  // d = MHD_start_daemon (flags, (uint16_t) port,
-  //                       NULL, NULL, &mhd_reply, (void*)&sad,
-  //                       MHD_OPTION_HTTPS_MEM_KEY, key,
-  //                       MHD_OPTION_HTTPS_MEM_CERT, cert,
-  //                       MHD_OPTION_END);
-
-  d = MHD_start_daemon (flags, (uint16_t) port, NULL, NULL, &mhd_reply, (void*)&sad, NULL, MHD_OPTION_END);
 
   if (d == NULL) {
     fprintf(stderr, "Error: Failed to start server\n");
