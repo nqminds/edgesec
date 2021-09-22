@@ -543,7 +543,7 @@ int main(int argc, char *argv[])
     d = MHD_start_daemon (flags, (uint16_t) port,
                         NULL, NULL, &mhd_reply, (void*)&sad,
                         MHD_OPTION_HTTPS_MEM_KEY, key,
-                        MHD_OPTION_HTTPS_MEM_CERT, cert,
+                        MHD_OPTION_HTTPS_MEM_CERT, cert, NULL, 
                         MHD_OPTION_END);
   } else {
     d = MHD_start_daemon (flags, (uint16_t) port, NULL, NULL, &mhd_reply, (void*)&sad, NULL, MHD_OPTION_END);
