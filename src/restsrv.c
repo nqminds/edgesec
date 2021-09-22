@@ -547,7 +547,7 @@ int main(int argc, char *argv[])
   //                       MHD_OPTION_HTTPS_MEM_CERT, cert,
   //                       MHD_OPTION_END);
 
-  d = MHD_start_daemon (flags, (uint16_t) port, NULL, NULL, &mhd_reply, (void*)&sad);
+  d = MHD_start_daemon (flags, (uint16_t) port, NULL, NULL, &mhd_reply, (void*)&sad, NULL, MHD_OPTION_END);
 
   if (d == NULL) {
     fprintf(stderr, "Error: Failed to start server\n");
