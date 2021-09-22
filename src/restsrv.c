@@ -540,7 +540,7 @@ int main(int argc, char *argv[])
   flags = MHD_USE_THREAD_PER_CONNECTION;
   flags = (tls) ? flags | MHD_USE_TLS : flags;
 
-  fprintf(stdout, "Starting server... %s\n");
+  fprintf(stdout, "Starting server...\n");
   d = MHD_start_daemon (flags, (uint16_t) port,
                         NULL, NULL, &mhd_reply, (void*)&sad,
                         MHD_OPTION_HTTPS_MEM_KEY, key,

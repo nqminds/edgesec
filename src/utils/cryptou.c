@@ -251,7 +251,7 @@ EVP_PKEY *crypto_generate_rsa_key(int bits)
 EVP_PKEY *crypto_generate_ec_key(void)
 {
   EVP_PKEY_CTX *ctx;
-  EVP_PKEY *pkey = NULL, *params;
+  EVP_PKEY *pkey = NULL, *params = NULL;
 
   if ((ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_EC, NULL)) == NULL) {
     log_trace("EVP_PKEY_CTX_new_id fail with code=%d", ERR_get_error());
@@ -275,6 +275,8 @@ EVP_PKEY *crypto_generate_ec_key(void)
     EVP_PKEY_CTX_free(ctx);
     return NULL;    
   }
+
+
   EVP_PKEY_CTX_free(ctx);
 
   if((ctx = EVP_PKEY_CTX_new(params, NULL)) == NULL) {
