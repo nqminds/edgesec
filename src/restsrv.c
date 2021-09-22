@@ -461,7 +461,7 @@ int main(int argc, char *argv[])
 
   if (tls) {
     if (writeread_domain_data_str(sad.spath, GET_CRYPT_KEY_CMD, &reply) < 0) {
-      fprintf(stderr, "writeread_domain_data_str fail");
+      fprintf(stderr, "writeread_domain_data_str fail\n");
       exit(EXIT_FAILURE);
     }
 
@@ -469,22 +469,22 @@ int main(int argc, char *argv[])
       os_free(reply);
       fprintf(stdout, "Generating new private key\n");
       if (writeread_domain_data_str(sad.spath, GEN_PRIVKEY_CMD, &reply) < 0) {
-        fprintf(stderr, "writeread_domain_data_str fail");
+        fprintf(stderr, "writeread_domain_data_str fail\n");
         exit(EXIT_FAILURE);
       }
       if (strcmp(reply, FAIL_REPLY) == 0) {
-        fprintf(stderr, "writeread_domain_data_str fail");
+        fprintf(stderr, "writeread_domain_data_str fail\n");
         exit(EXIT_FAILURE);
       }
       os_free(reply);
 
       fprintf(stdout, "Generating new certificate key\n");
       if (writeread_domain_data_str(sad.spath, GEN_CERT_CMD, &reply) < 0) {
-        fprintf(stderr, "writeread_domain_data_str fail");
+        fprintf(stderr, "writeread_domain_data_str fail\n");
         exit(EXIT_FAILURE);
       }
       if (strcmp(reply, FAIL_REPLY) == 0) {
-        fprintf(stderr, "writeread_domain_data_str fail");
+        fprintf(stderr, "writeread_domain_data_str fail\n");
         exit(EXIT_FAILURE);
       }
     }
@@ -497,16 +497,16 @@ int main(int argc, char *argv[])
     }
 
     if (strcmp(reply, FAIL_REPLY) == 0) {
-      fprintf(stderr, "writeread_domain_data_str fail");
+      fprintf(stderr, "writeread_domain_data_str fail\n");
       exit(EXIT_FAILURE);
     }
 
     if ((base64_buf = (uint8_t *) base64_decode((unsigned char *) reply, strlen(reply), &base64_buf_len)) == NULL) {
-      fprintf(stderr, "base64_decode fail");
+      fprintf(stderr, "base64_decode fail\n");
       exit(EXIT_FAILURE);
     }
     if ((key = os_zalloc(base64_buf_len + 1)) == NULL) {
-      fprintf(stderr, "os_zalloc fail");
+      fprintf(stderr, "os_zalloc fail\n");
       exit(EXIT_FAILURE);
     }
     os_memcpy(key, base64_buf, base64_buf_len);
@@ -515,21 +515,21 @@ int main(int argc, char *argv[])
 
     fprintf(stdout, "Loading existing certificate\n");
     if (writeread_domain_data_str(sad.spath, GET_CRYPT_CERT_CMD, &reply) < 0) {
-      fprintf(stderr, "writeread_domain_data_str fail");
+      fprintf(stderr, "writeread_domain_data_str fail\n");
       exit(EXIT_FAILURE);
     }
 
     if (strcmp(reply, FAIL_REPLY) == 0) {
-      fprintf(stderr, "writeread_domain_data_str fail");
+      fprintf(stderr, "writeread_domain_data_str fail\n");
       exit(EXIT_FAILURE);
     }
 
     if ((base64_buf = (uint8_t *) base64_decode((unsigned char *) reply, strlen(reply), &base64_buf_len)) == NULL) {
-      fprintf(stderr, "base64_decode fail");
+      fprintf(stderr, "base64_decode fail\n");
       exit(EXIT_FAILURE);
     }
     if ((cert = os_zalloc(base64_buf_len + 1)) == NULL) {
-      fprintf(stderr, "os_zalloc fail");
+      fprintf(stderr, "os_zalloc fail\n");
       exit(EXIT_FAILURE);
     }
     os_memcpy(cert, base64_buf, base64_buf_len);
