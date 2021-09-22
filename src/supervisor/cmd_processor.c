@@ -597,6 +597,8 @@ ssize_t process_put_crypt_cmd(int sock, struct client_address *client_addr, stru
   char **ptr = (char**) utarray_next(cmd_arr, NULL);
   char * key = NULL;
   char *value = NULL, *trimmed;
+
+  // key id
   ptr = (char**) utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
     if ((key = os_strdup(*ptr)) == NULL) {
@@ -604,6 +606,7 @@ ssize_t process_put_crypt_cmd(int sock, struct client_address *client_addr, stru
       return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);    
     }
 
+    // value
     ptr = (char**) utarray_next(cmd_arr, ptr);
     if (ptr != NULL && *ptr != NULL) {
       if ((value = os_strdup(*ptr)) == NULL) {
@@ -633,8 +636,9 @@ ssize_t process_get_crypt_cmd(int sock, struct client_address *client_addr, stru
   char **ptr = (char**) utarray_next(cmd_arr, NULL);
   char * key = NULL, *value = NULL, *trimmed;
   ssize_t ret = -1;
-  ptr = (char**) utarray_next(cmd_arr, ptr);
 
+  // key id
+  ptr = (char**) utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
     if ((key = os_strdup(*ptr)) == NULL) {
       log_err("os_strdup");
@@ -662,6 +666,7 @@ ssize_t process_gen_randkey_cmd(int sock, struct client_address *client_addr, st
   char *keyid = NULL;
   uint8_t key_size;
 
+  //key id
   ptr = (char**) utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
     if ((keyid = os_strdup(*ptr)) == NULL) {
@@ -669,6 +674,7 @@ ssize_t process_gen_randkey_cmd(int sock, struct client_address *client_addr, st
       return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);    
     }
 
+    // key size
     ptr = (char**) utarray_next(cmd_arr, ptr);
     if (ptr != NULL && *ptr != NULL) {
       errno = 0;
@@ -692,6 +698,7 @@ ssize_t process_gen_privkey_cmd(int sock, struct client_address *client_addr, st
   char *keyid = NULL;
   uint8_t key_size;
 
+  // key id
   ptr = (char**) utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
     if ((keyid = os_strdup(*ptr)) == NULL) {
@@ -699,6 +706,7 @@ ssize_t process_gen_privkey_cmd(int sock, struct client_address *client_addr, st
       return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);    
     }
 
+    //key size
     ptr = (char**) utarray_next(cmd_arr, ptr);
     if (ptr != NULL && *ptr != NULL) {
       errno = 0;
@@ -721,6 +729,7 @@ ssize_t process_gen_pubkey_cmd(int sock, struct client_address *client_addr, str
   char **ptr = (char**) utarray_next(cmd_arr, NULL);
   char *pubid = NULL;
 
+  // public key id  
   ptr = (char**) utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
     if ((pubid = os_strdup(*ptr)) == NULL) {
@@ -728,6 +737,7 @@ ssize_t process_gen_pubkey_cmd(int sock, struct client_address *client_addr, str
       return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);    
     }
 
+    //private key id
     ptr = (char**) utarray_next(cmd_arr, ptr);
     if (ptr != NULL && *ptr != NULL) {
       if (strlen(*ptr)) {
@@ -748,6 +758,7 @@ ssize_t process_gen_cert_cmd(int sock, struct client_address *client_addr, struc
   char **ptr = (char**) utarray_next(cmd_arr, NULL);
   char *certid = NULL;
 
+  // cert id
   ptr = (char**) utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
     if ((certid = os_strdup(*ptr)) == NULL) {
@@ -755,6 +766,7 @@ ssize_t process_gen_cert_cmd(int sock, struct client_address *client_addr, struc
       return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);    
     }
 
+    //private key id
     ptr = (char**) utarray_next(cmd_arr, ptr);
     if (ptr != NULL && *ptr != NULL) {
       if (strlen(*ptr)) {
@@ -778,6 +790,7 @@ ssize_t process_encrypt_blob_cmd(int sock, struct client_address *client_addr, s
   char *encrypted = NULL;
   int ret;
 
+  // key id
   ptr = (char**) utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
     if ((keyid = os_strdup(*ptr)) == NULL) {
@@ -785,6 +798,7 @@ ssize_t process_encrypt_blob_cmd(int sock, struct client_address *client_addr, s
       return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);    
     }
 
+    // iv id
     ptr = (char**) utarray_next(cmd_arr, ptr);
     if (ptr != NULL && *ptr != NULL) {
       if ((ivid = os_strdup(*ptr)) == NULL) {
@@ -793,6 +807,7 @@ ssize_t process_encrypt_blob_cmd(int sock, struct client_address *client_addr, s
         return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);    
       }
 
+      // blob
       ptr = (char**) utarray_next(cmd_arr, ptr);
       if (ptr != NULL && *ptr != NULL) {
         if (strlen(*ptr)) {
@@ -821,6 +836,7 @@ ssize_t process_decrypt_blob_cmd(int sock, struct client_address *client_addr, s
   char *decrypted = NULL;
   int ret;
 
+  // key id
   ptr = (char**) utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
     if ((keyid = os_strdup(*ptr)) == NULL) {
@@ -828,6 +844,7 @@ ssize_t process_decrypt_blob_cmd(int sock, struct client_address *client_addr, s
       return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);    
     }
 
+    // iv id
     ptr = (char**) utarray_next(cmd_arr, ptr);
     if (ptr != NULL && *ptr != NULL) {
       if ((ivid = os_strdup(*ptr)) == NULL) {
@@ -836,6 +853,7 @@ ssize_t process_decrypt_blob_cmd(int sock, struct client_address *client_addr, s
         return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);    
       }
 
+      // blob
       ptr = (char**) utarray_next(cmd_arr, ptr);
       if (ptr != NULL && *ptr != NULL) {
         if (strlen(*ptr)) {
@@ -863,6 +881,7 @@ ssize_t process_sign_blob_cmd(int sock, struct client_address *client_addr, stru
   char *signed_str = NULL;
   int ret;
 
+  // key id
   ptr = (char**) utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
     if ((keyid = os_strdup(*ptr)) == NULL) {
@@ -870,6 +889,7 @@ ssize_t process_sign_blob_cmd(int sock, struct client_address *client_addr, stru
       return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);    
     }
 
+    // blob
     ptr = (char**) utarray_next(cmd_arr, ptr);
     if (ptr != NULL && *ptr != NULL) {
       if (strlen(*ptr)) {

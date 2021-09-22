@@ -980,7 +980,6 @@ int gen_pubkey_cmd(struct supervisor_context *context, char *pubid, char *keyid)
   struct crypt_pair* pair = NULL;
   struct crypt_pair pub_pair = {pubid, NULL, 0};
 
-
   log_trace("GEN_PUBKEY for pubid=%s and keyid=%s", pubid, keyid);
 
   if ((pair = get_crypt_pair(context->crypt_ctx, keyid)) == NULL) {

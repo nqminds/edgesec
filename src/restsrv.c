@@ -58,14 +58,35 @@
 
 #define SOCK_PACKET_SIZE 10
 
-#define OPT_STRING    ":a:s:p:z:tdvh"
-#define USAGE_STRING  "\t%s [-s address] [-a address] [-p port] [-z delim] [-t] [-d] [-h] [-v]\n"
+#define OPT_STRING    ":s:p:z:tdvh"
+#define USAGE_STRING  "\t%s [-s address] [-p port] [-z delim] [-t] [-d] [-h] [-v]\n"
 
-#define JSON_RESPONSE_OK "{\"cmd\":\"%s\",\"response\":[%s]}"
-#define JSON_RESPONSE_FAIL "{\"error\":\"invalid get request\"}"
-
-#define MESSAGE_REPLY_TIMEOUT 10  // In seceonds
-// char *socket_path = "\0hidden";
+#define JSON_RESPONSE_OK    "{\"cmd\":\"%s\",\"response\":[%s]}"
+#define JSON_RESPONSE_FAIL  "{\"error\":\"invalid get request\"}"
+#define JSON_RESPONSE_HELP  "{\"commands\": [" \
+                            "{\"PING_SUPERVISOR\":\"\"}," \
+                            "{\"ACCEPT_MAC\":\"MAC VLANID\"}," \
+                            "{\"DENY_MAC\":\"MAC\"}," \
+                            "{\"ADD_NAT\":\"MAC\"}," \
+                            "{\"REMOVE_NAT\":\"MAC\"}," \
+                            "{\"ASSIGN_PSK\":\"MAC PASS\"}," \
+                            "{\"GET_MAP\":\"MAC\"}," \
+                            "{\"GET_ALL\":\"\"}," \
+                            "{\"ADD_BRIDGE\":\"MAC MAC\"}," \
+                            "{\"REMOVE_BRIDGE\":\"MAC MAC\"}," \
+                            "{\"GET_BRIDGES\":\"\"}," \
+                            "{\"REGISTER_TICKET\":\"MAC LABEL VLANID\"}," \
+                            "{\"CLEAR_PSK\":\"MAC\"}," \
+                            "{\"PUT_CRYPT\":\"KEYID BASE64VALUE\"}," \
+                            "{\"GET_CRYPT\":\"KEYID\"}," \
+                            "{\"GEN_RANDKEY\":\"KEYID SIZE\"}," \
+                            "{\"GEN_PRIVKEY\":\"KEYID SIZE\"}," \
+                            "{\"GEN_PUBKEY\":\"PUBKEYID PRIVKEYID\"}," \
+                            "{\"GEN_CERT\":\"CERTID PRIVKEYID\"}," \
+                            "{\"ENCRYPT_BLOB\":\"KEYID IVID BASE64BLOB\"}," \
+                            "{\"DECRYPT_BLOB\":\"KEYID IVID BASE64BLOB\"}," \
+                            "{\"SIGN_BLOB\":\"KEYID BASE64BLOB\"}" \
+                            "], \"query\":\"/?cmd=name&args=arguments\"}"
 
 #define CRYPT_KEY_ID        "restkey"
 #define CRYPT_CERT_ID       "restcert"
@@ -77,7 +98,6 @@
 static __thread char version_buf[10];
 
 struct socket_address {
-  char apath[MAX_OS_PATH_LEN];
   char spath[MAX_OS_PATH_LEN];
   char delim;
 };
@@ -143,8 +163,9 @@ int get_port(char *port_str)
   return strtol(port_str, NULL, 10);
 }
 
-void process_app_options(int argc, char *argv[], char *spath, char *apath,
-  int *port, char *delim, bool *tls, uint8_t *verbosity)
+void process_app_options(int argc, char *argv[], char *spath,
+                         int *port, char *delim, bool *tls,
+                        uint8_t *verbosity)
 {
   int opt;
   int p;
@@ -166,9 +187,6 @@ void process_app_options(int argc, char *argv[], char *spath, char *apath,
       break;
     case 's':
       os_strlcpy(spath, optarg, MAX_OS_PATH_LEN);
-      break;
-    case 'a':
-      os_strlcpy(apath, optarg, MAX_OS_PATH_LEN);
       break;
     case 'z':
       errno = 0;
@@ -206,26 +224,37 @@ int print_out_key (void *cls, enum MHD_ValueKind kind,
   return MHD_YES;
 }
 
-char* create_command_string(char *cmd, char *args, char *cmd_str, char delim)
+char* create_command_string(char *cmd, char *args, char delim)
 {
-  char *cmd_tmp;
-  if (cmd == NULL || cmd_str == NULL)
+  char *cmd_upper, *cmd_str = NULL;
+  if (cmd == NULL)
     return NULL;
 
-  if (os_strnlen_s(cmd, MAX_SUPERVISOR_CMD_SIZE)) {
-    cmd_tmp = os_strdup(cmd);
-    upper_string(cmd_tmp);
-    if (args ==  NULL)
-      sprintf(cmd_str, "%s", cmd_tmp);
-    else
-      sprintf(cmd_str, "%s %s", cmd_tmp, args);
-    replace_string_char(cmd_str, ',', delim);
-    os_free(cmd_tmp);
-
-    return cmd_str;
+  if ((cmd_upper = os_strdup(cmd)) == NULL) {
+    log_err("os_strdup");
+    return NULL;
   }
 
-  return NULL;
+  upper_string(cmd_upper);
+
+  if (args ==  NULL) {
+    if ((cmd_str = os_malloc(strlen(cmd_upper) + 1)) == NULL) {
+      log_err("os_malloc");
+      os_free(cmd_upper);
+      return NULL;    
+    }
+    sprintf(cmd_str, "%s", cmd_upper);
+  } else {
+    if ((cmd_str = os_malloc(strlen(cmd_upper) + strlen(args) + 2)) == NULL) {
+      log_err("os_malloc");
+      os_free(cmd_upper);
+      return NULL;    
+    }
+    sprintf(cmd_str, "%s%c%s", cmd_upper, delim, args);
+  }
+  os_free(cmd_upper);
+
+  return cmd_str;
 }
 
 enum MHD_Result create_connection_response(char *data, struct MHD_Connection *connection)
@@ -243,7 +272,6 @@ enum MHD_Result create_connection_response(char *data, struct MHD_Connection *co
   if (ret == MHD_NO) {
     log_debug("MHD_add_response_header error");
     MHD_destroy_response(response);  
-    // os_free(me);
     return MHD_NO;
   }
   ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
@@ -279,8 +307,8 @@ static enum MHD_Result mhd_reply(void *cls, struct MHD_Connection *connection, c
 {
   static int aptr;
   struct socket_address *sad = (struct socket_address *)cls;
-  char *cmd, *args, *address = NULL, *socket_response, *json_response = NULL, *succ_response;
-  char cmd_str[255], fail_response_buf[255];
+  char *cmd, *args, *socket_response, *json_response = NULL, *succ_response;
+  char *cmd_str, *response_buf;
   UT_array *cmd_arr;
   enum MHD_Result ret;
 
@@ -307,43 +335,84 @@ static enum MHD_Result mhd_reply(void *cls, struct MHD_Connection *connection, c
   log_info("URL --> %s %s", method, url);
   log_info("PARAMS --> cmd=%s args=%s", cmd, args);
 
-  if (create_command_string(cmd, args, cmd_str, sad->delim) == NULL) {
+  if (cmd == NULL && args == NULL) {
+    if ((response_buf = os_malloc(strlen(JSON_RESPONSE_HELP) + 1)) == NULL) {
+      log_err("os_malloc");
+      return MHD_NO;
+    }
+
+    sprintf(response_buf, JSON_RESPONSE_HELP);
+    ret = create_connection_response(response_buf, connection);
+    os_free(response_buf);
+    return ret;
+  }
+
+  if ((cmd_str = create_command_string(cmd, args, sad->delim)) == NULL) {
     log_debug("create_command_string fail");
-    sprintf(fail_response_buf, JSON_RESPONSE_FAIL);
-    return create_connection_response(fail_response_buf, connection);
+    if ((response_buf = os_malloc(strlen(JSON_RESPONSE_FAIL) + 1)) == NULL) {
+      log_err("os_malloc");
+      return MHD_NO;
+    }
+
+    sprintf(response_buf, JSON_RESPONSE_FAIL);
+    ret = create_connection_response(response_buf, connection);
+    os_free(response_buf);
+    return ret;
   }
 
-  if (get_command_function(cmd) != NULL) {
-    log_debug("Supervisor command=%s", cmd);
-    address = sad->spath;
-  } else {
-    log_debug("AP command=%s", cmd);
-    address = sad->apath;
-  }
-
-  if (writeread_domain_data_str(address, cmd_str, &socket_response) < 0) {
+  if (writeread_domain_data_str(sad->spath, cmd_str, &socket_response) < 0) {
     log_debug("writeread_domain_data_str fail");
-    sprintf(fail_response_buf, JSON_RESPONSE_FAIL);
-    return create_connection_response(fail_response_buf, connection);
+    if ((response_buf = os_malloc(strlen(JSON_RESPONSE_FAIL) + 1)) == NULL) {
+      log_err("os_malloc");
+      os_free(cmd_str);
+      return MHD_NO;
+    }
+
+    sprintf(response_buf, JSON_RESPONSE_FAIL);
+    ret =  create_connection_response(response_buf, connection);
+
+    os_free(response_buf);
+    os_free(cmd_str);
+    return ret;
   }
+  os_free(cmd_str);
 
   utarray_new(cmd_arr, &ut_str_icd);
   if (!process_domain_buffer(socket_response, strlen(socket_response), cmd_arr, '\n')) {
     log_debug("process_domain_buffer fail");
-    sprintf(fail_response_buf, JSON_RESPONSE_FAIL);
+    if ((response_buf = os_malloc(strlen(JSON_RESPONSE_FAIL) + 1)) == NULL) {
+      log_err("os_malloc");
+      os_free(socket_response);
+      utarray_free(cmd_arr);
+      return MHD_NO;
+    }
+
+    sprintf(response_buf, JSON_RESPONSE_FAIL);
+    ret = create_connection_response(response_buf, connection);
     os_free(socket_response);
     utarray_free(cmd_arr);
-    return create_connection_response(fail_response_buf, connection);
+    os_free(response_buf);
+    return ret;
   }
   os_free(socket_response);
 
-  json_response = process_response_array(cmd_arr);
-  succ_response = os_malloc(strlen(JSON_RESPONSE_OK) + strlen(json_response) + strlen(cmd) + 1);
+  if ((json_response = process_response_array(cmd_arr)) == NULL) {
+    json_response = os_strdup("");
+  }
+
+  if ((succ_response = os_malloc(strlen(JSON_RESPONSE_OK) + strlen(json_response) + strlen(cmd) + 1)) == NULL) {
+    log_err("os_malloc");
+    os_free(json_response);
+    utarray_free(cmd_arr);
+    return MHD_NO;
+  }
+
   sprintf(succ_response, JSON_RESPONSE_OK, cmd, json_response);
+  ret = create_connection_response(succ_response, connection);
+
+  os_free(succ_response);
   os_free(json_response);
   utarray_free(cmd_arr);
-  ret = create_connection_response(succ_response, connection);
-  os_free(succ_response);
 
   return ret;
 }
@@ -365,7 +434,7 @@ int main(int argc, char *argv[])
 
   os_memset(&sad, 0, sizeof(struct socket_address));
 
-  process_app_options(argc, argv, sad.spath, sad.apath, &port, &sad.delim, &tls, &verbosity); 
+  process_app_options(argc, argv, sad.spath, &port, &sad.delim, &tls, &verbosity); 
 
   if (optind <= 1) show_app_help(argv[0]);
 
@@ -387,7 +456,6 @@ int main(int argc, char *argv[])
 
   fprintf(stdout, "Starting server with:\n");
   fprintf(stdout, "Supervisor address --> %s\n", sad.spath);
-  fprintf(stdout, "AP address --> %s\n", sad.apath);
   fprintf(stdout, "Port --> %d\n", port);
   fprintf(stdout, "Command delimiter --> %c\n", sad.delim);
   fprintf(stdout, "Using TLS --> %d\n", tls);
