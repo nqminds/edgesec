@@ -128,7 +128,6 @@ void show_app_help(char *app_name)
   fprintf(stdout, USAGE_STRING, basename(app_name));
   fprintf(stdout, "\nOptions:\n");
   fprintf(stdout, "\t-s address\t Path to supervisor socket\n");
-  fprintf(stdout, "\t-a address\t Path to AP socket\n");
   fprintf(stdout, "\t-p port\t\t Server port\n");
   fprintf(stdout, "\t-z delim\t\t Command delimiter\n");
   fprintf(stdout, "\t-t\t\t Use TLS\n");
@@ -541,7 +540,7 @@ int main(int argc, char *argv[])
   flags = MHD_USE_THREAD_PER_CONNECTION;
   flags = (tls) ? flags | MHD_USE_TLS : flags;
 
-  fprintf(stdout, "Starting server...\n");
+  fprintf(stdout, "Starting server... %s\n");
   d = MHD_start_daemon (flags, (uint16_t) port,
                         NULL, NULL, &mhd_reply, (void*)&sad,
                         MHD_OPTION_HTTPS_MEM_KEY, key,
