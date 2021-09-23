@@ -157,10 +157,12 @@ int __wrap_gen_pubkey_cmd(struct supervisor_context *context, char *pubid, char 
   return 0;
 }
 
-int __wrap_gen_cert_cmd(struct supervisor_context *context, char *certid, char *keyid)
+int __wrap_gen_cert_cmd(struct supervisor_context *context, char *certid, char *keyid,
+                        struct certificate_meta *meta)
 {
   check_expected(certid);
   check_expected(keyid);
+  check_expected(meta);
   return 0;
 }
 
@@ -772,11 +774,21 @@ static void test_process_gen_cert_cmd(void **state)
 
   UT_array *cmd_arr;
   struct client_address claddr;
+  struct certificate_meta meta;
+
+  os_memset(&meta, 0, sizeof(struct certificate_meta));
+  meta.not_before = 0;
+  meta.not_after = 31536000L;
+  strcpy(meta.c, "IE");
+  strcpy(meta.o, "nqmcyber");
+  strcpy(meta.ou, "R&D");
+  strcpy(meta.cn, "raspberrypi.local");
 
   utarray_new(cmd_arr, &ut_str_icd);
-  assert_int_not_equal(split_string_array("GEN_CERT certid keyid", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_not_equal(split_string_array("GEN_CERT certid keyid raspberrypi.local", CMD_DELIMITER, cmd_arr), -1);
   expect_string(__wrap_gen_cert_cmd, certid, "certid");
   expect_string(__wrap_gen_cert_cmd, keyid, "keyid");
+  expect_memory(__wrap_gen_cert_cmd, meta, &meta, sizeof(struct certificate_meta));
   assert_int_equal(process_gen_cert_cmd(0, &claddr, NULL, cmd_arr), strlen(OK_REPLY));
   utarray_free(cmd_arr);
 

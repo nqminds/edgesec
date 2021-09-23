@@ -1006,19 +1006,10 @@ int gen_pubkey_cmd(struct supervisor_context *context, char *pubid, char *keyid)
   return 0;
 }
 
-int gen_cert_cmd(struct supervisor_context *context, char *certid, char *keyid)
+int gen_cert_cmd(struct supervisor_context *context, char *certid, char *keyid, struct certificate_meta *meta)
 {
-  struct certificate_meta meta;
   struct crypt_pair* pair = NULL;
   struct crypt_pair cert_pair = {certid, NULL, 0};
-
-  os_memset(&meta, 0, sizeof(struct certificate_meta));
-  meta.not_before = 0;
-  meta.not_after = 31536000L;
-  strcpy(meta.c, "IE");
-  strcpy(meta.o, "nqmcyber");
-  strcpy(meta.ou, "R&D");
-  strcpy(meta.cn, "localhost"); 
 
   log_trace("GEN_CERT for certid=%s and keyid=%s", certid, keyid);
 
@@ -1027,7 +1018,7 @@ int gen_cert_cmd(struct supervisor_context *context, char *certid, char *keyid)
     return -1;
   }
 
-  if (crypto_generate_cert_str(&meta, pair->value, pair->value_size, (char **)&cert_pair.value) < 0) {
+  if (crypto_generate_cert_str(meta, pair->value, pair->value_size, (char **)&cert_pair.value) < 0) {
     log_trace("crypto_generate_cert_str fail");
     free_crypt_pair(pair);
     return -1;

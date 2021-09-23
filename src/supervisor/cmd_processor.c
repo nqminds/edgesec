@@ -755,8 +755,17 @@ ssize_t process_gen_pubkey_cmd(int sock, struct client_address *client_addr, str
 
 ssize_t process_gen_cert_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
 {
+  struct certificate_meta meta;
   char **ptr = (char**) utarray_next(cmd_arr, NULL);
   char *certid = NULL;
+  char *keyid = NULL;
+
+  os_memset(&meta, 0, sizeof(struct certificate_meta));
+  meta.not_before = 0;
+  meta.not_after = 31536000L;
+  strcpy(meta.c, "IE");
+  strcpy(meta.o, "nqmcyber");
+  strcpy(meta.ou, "R&D");
 
   // cert id
   ptr = (char**) utarray_next(cmd_arr, ptr);
@@ -769,12 +778,25 @@ ssize_t process_gen_cert_cmd(int sock, struct client_address *client_addr, struc
     //private key id
     ptr = (char**) utarray_next(cmd_arr, ptr);
     if (ptr != NULL && *ptr != NULL) {
-      if (strlen(*ptr)) {
-        if (!gen_cert_cmd(context, certid, *ptr)) {
-          os_free(certid);
-          return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), &client_addr->addr, client_addr->len);
+      if ((keyid = os_strdup(*ptr)) == NULL) {
+        log_err("os_strdup");
+        os_free(certid);
+        return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);    
+      }
+
+      // common name
+      ptr = (char**) utarray_next(cmd_arr, ptr);
+      if (ptr != NULL && *ptr != NULL) {
+        if (strlen(*ptr)) {
+          strcpy(meta.cn, *ptr);
+          if (!gen_cert_cmd(context, certid, keyid, &meta)) {
+            os_free(keyid);
+            os_free(certid);
+            return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), &client_addr->addr, client_addr->len);
+          }
         }
       }
+      os_free(keyid);
     }
     os_free(certid);
   }

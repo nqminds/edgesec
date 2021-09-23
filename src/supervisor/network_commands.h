@@ -240,9 +240,11 @@ int gen_pubkey_cmd(struct supervisor_context *context, char *pubid, char *keyid)
  * @param context The supervisor structure instance
  * @param certid The certificate id
  * @param keyid The private key id
+ * @param meta The certificate metadata
  * @return 0 on success, -1 on failure
  */
-int gen_cert_cmd(struct supervisor_context *context, char *certid, char *keyid);
+int gen_cert_cmd(struct supervisor_context *context, char *certid, char *keyid,
+                 struct certificate_meta *meta);
 
 /**
  * @brief ENCRYPT_BLOB command
