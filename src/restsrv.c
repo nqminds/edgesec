@@ -491,17 +491,18 @@ int main(int argc, char *argv[])
       os_free(reply);
 
       if (!strlen(cn)) {
-        fprintf(stderr, "Common name not specified\n", cn);  
+        fprintf(stderr, "Common name not specified\n");  
         exit(EXIT_FAILURE);
       }
 
       fprintf(stdout, "Generating new certificate key for cn=%s\n", cn);
-      if ((request = os_malloc(strlen(GEN_CERT_CMD) +strlen(cn) + 4)) == NULL) {
+      if ((request = os_malloc(strlen(GEN_CERT_CMD) +strlen(cn) + 2)) == NULL) {
         fprintf(stderr, "os_malloc fail");
         exit(EXIT_FAILURE);
       }
 
-      sprintf(request, "%s%%20%s", GEN_CERT_CMD, cn);
+      sprintf(request, "%s%c%s", GEN_CERT_CMD, sad.delim, cn);
+      fprintf(stdout, "%s\n", request);
       if (writeread_domain_data_str(sad.spath, request, &reply) < 0) {
         fprintf(stderr, "writeread_domain_data_str fail\n");
         os_free(request);
