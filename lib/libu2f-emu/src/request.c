@@ -95,12 +95,17 @@ ssize_t get_response(char *url, unsigned char **out)
 
   log_trace("get_reponse call");
 
+  *out = NULL;
   if ((response_base64 = get_response_base64_str(url)) == NULL) {
     log_trace("get_response_str fail");
     return -1;
   }
 
-  *out = (unsigned char *)base64_decode((unsigned char *)response_base64, strlen(response_base64), &response_len);
+  if ((*out = (unsigned char *)base64_url_decode((unsigned char *)response_base64, strlen(response_base64), &response_len)) == NULL) {
+    log_trace("base64_url_decode fail");
+    free(response_base64);  
+    return -1;
+  }
 
   free(response_base64);
   return (ssize_t)response_len;
@@ -119,7 +124,11 @@ char* get_response_str(char *url)
     return NULL;
   }
 
-  response = (char *)base64_decode((unsigned char *)response_base64, strlen(response_base64), &response_len);
+  if ((response = (char *)base64_url_decode((unsigned char *)response_base64, strlen(response_base64), &response_len)) == NULL) {
+    log_trace("base64_url_decode fail");
+    free(response_base64);
+    return NULL;  
+  }
 
   free(response_base64);
   return response;

@@ -137,8 +137,8 @@ size_t crypto_aes_crypt_with_url(char *url,
 
   *buffer = NULL;
 
-  if ((encoded = (char *) base64_encode(data, (size_t) data_len, &encoded_size)) == NULL) {
-    log_trace("base64_encode fail");
+  if ((encoded = (char *) base64_url_encode(data, (size_t) data_len, &encoded_size, 0)) == NULL) {
+    log_trace("base64_url_encode fail");
     return 0;
   }
 
@@ -147,7 +147,7 @@ size_t crypto_aes_crypt_with_url(char *url,
     free(encoded);
     return 0;
   }
-
+  
   sprintf(send_str, "%s%%20%s", url, encoded);
 
   if ((result_len = get_response(send_str, buffer)) < 0) {
@@ -332,7 +332,7 @@ unsigned int crypto_ec_sign_with_url(char *url,
   /* Signature length  */
   *signature = NULL;
 
-  if ((encoded = (char *) base64_encode(digest, (size_t) digest_len, &encoded_size)) == NULL) {
+  if ((encoded = (char *) base64_url_encode(digest, (size_t) digest_len, &encoded_size, 0)) == NULL) {
     log_trace("base64_encode fail");
     return 0;
   }

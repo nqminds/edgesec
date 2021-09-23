@@ -879,8 +879,8 @@ int put_crypt_cmd(struct supervisor_context *context, char *key, char *value)
 
   log_trace("PUT_CRYPT for key=%s", key);
 
-  if ((pair.value = (uint8_t *) base64_decode((unsigned char *) value, strlen(value), (size_t*) &pair.value_size)) == NULL) {
-    log_trace("base64_decode fail");
+  if ((pair.value = (uint8_t *) base64_url_decode((unsigned char *) value, strlen(value), (size_t*) &pair.value_size)) == NULL) {
+    log_trace("base64_url_decode fail");
     return -1;
   }
 
@@ -914,8 +914,8 @@ int get_crypt_cmd(struct supervisor_context *context, char *key, char **value)
     return -1;
   }
 
-  if ((*value = (char *) base64_encode(pair->value, pair->value_size, &out_len)) == NULL) {
-    log_trace("base64_encode fail");
+  if ((*value = (char *) base64_url_encode(pair->value, pair->value_size, &out_len, 0)) == NULL) {
+    log_trace("base64_url_encode fail");
     free_crypt_pair(pair);
     return -1;
   }
@@ -1079,8 +1079,8 @@ char* encrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *iv
     return NULL;  
   }
 
-  if ((blob_data = (uint8_t *) base64_decode((unsigned char *)blob, strlen(blob), &blob_data_size)) == NULL) {
-    log_trace("base64_decode fail");
+  if ((blob_data = (uint8_t *) base64_url_decode((unsigned char *)blob, strlen(blob), &blob_data_size)) == NULL) {
+    log_trace("base64_url_decode fail");
     free_crypt_pair(keypair);
     free_crypt_pair(ivpair);
     return NULL;
@@ -1106,8 +1106,8 @@ char* encrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *iv
   free_crypt_pair(ivpair);
   os_free(blob_data);
 
-  if ((encrypted_str = (char *) base64_encode(encrypted_data, encrypted_size, &blob_data_size)) == NULL) {
-    log_trace("base64_encode fail");
+  if ((encrypted_str = (char *) base64_url_encode(encrypted_data, encrypted_size, &blob_data_size, 0)) == NULL) {
+    log_trace("base64_url_encode fail");
     os_free(encrypted_data);
     return NULL;
   }
@@ -1149,8 +1149,8 @@ char* decrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *iv
     return NULL;  
   }
 
-  if ((blob_data = (uint8_t *) base64_decode((unsigned char *)blob, strlen(blob), &blob_data_size)) == NULL) {
-    log_trace("base64_decode fail");
+  if ((blob_data = (uint8_t *) base64_url_decode((unsigned char *)blob, strlen(blob), &blob_data_size)) == NULL) {
+    log_trace("base64_url_decode fail");
     free_crypt_pair(keypair);
     free_crypt_pair(ivpair);
     return NULL;
@@ -1176,8 +1176,8 @@ char* decrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *iv
   free_crypt_pair(ivpair);
   os_free(blob_data);
 
-  if ((decrypted_str = (char *) base64_encode(decrypted_data, decrypted_size, &blob_data_size)) == NULL) {
-    log_trace("base64_encode fail");
+  if ((decrypted_str = (char *) base64_url_encode(decrypted_data, decrypted_size, &blob_data_size, 0)) == NULL) {
+    log_trace("base64_url_encode fail");
     os_free(decrypted_data);
     return NULL;
   }
@@ -1206,8 +1206,8 @@ char* sign_blob_cmd(struct supervisor_context *context, char *keyid, char *blob)
     return NULL;  
   }
 
-  if ((blob_data = (uint8_t *) base64_decode((unsigned char *)blob, strlen(blob), &blob_data_size)) == NULL) {
-    log_trace("base64_decode fail");
+  if ((blob_data = (uint8_t *) base64_url_decode((unsigned char *)blob, strlen(blob), &blob_data_size)) == NULL) {
+    log_trace("base64_url_decode fail");
     free_crypt_pair(pair);
     return NULL;
   }
@@ -1222,8 +1222,8 @@ char* sign_blob_cmd(struct supervisor_context *context, char *keyid, char *blob)
   os_free(blob_data);
   free_crypt_pair(pair);
 
-  if ((signed_str = (char *) base64_encode(signed_data, signed_size, &blob_data_size)) == NULL) {
-    log_trace("base64_encode fail");
+  if ((signed_str = (char *) base64_url_encode(signed_data, signed_size, &blob_data_size, 0)) == NULL) {
+    log_trace("base64_url_encode fail");
     os_free(signed_data);
     return NULL;
   }

@@ -43,7 +43,6 @@
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/log.h"
-#include "../utils/base64.h"
 
 int crypto_geniv(uint8_t *buf, int iv_size)
 {

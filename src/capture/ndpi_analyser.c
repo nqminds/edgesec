@@ -372,8 +372,8 @@ int send_flow_meta(struct nDPI_reader_thread *reader_thread, struct nDPI_flow_me
     char delim = reader_thread->domain_delim;
     int ret;
 
-    if ((base64_encoding = (char *) base64_encode((unsigned char *)meta->hash, SHA256_HASH_LEN, &out_len)) == NULL) {
-      log_trace("base64_url_decode fail");
+    if ((base64_encoding = (char *) base64_url_encode((unsigned char *)meta->hash, SHA256_HASH_LEN, &out_len, 0)) == NULL) {
+      log_trace("base64_url_encode fail");
       return -1;
     }
 
