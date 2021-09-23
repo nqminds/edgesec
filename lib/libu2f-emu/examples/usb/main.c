@@ -24,11 +24,11 @@ int main(int argc, char *argv[])
     char *encrypt_url = "https://raspberrypi.local:3001/?cmd=ENCRYPT_BLOB&args=u2fpriv%20u2fiv";
     char *decrypt_url = "https://raspberrypi.local:3001/?cmd=DECRYPT_BLOB&args=u2fpriv%20u2fiv";
 
-    // char *get_cert_url = "https://localhost:8700/?cmd=GET_CRYPT&args=restcert";
-    // char *get_pub_url = "https://localhost:8700/?cmd=GET_CRYPT&args=restpub";
-    // char *sign_url = "https://localhost:8700/?cmd=SIGN_BLOB&args=restkey";
-    // char *encrypt_url = "https://localhost:8700/?cmd=ENCRYPT_BLOB&args=restpriv%20restiv";
-    // char *decrypt_url = "https://localhost:8700/?cmd=DECRYPT_BLOB&args=restpriv%20restiv";
+    // char *get_cert_url = "http://localhost:8700/?cmd=GET_CRYPT&args=u2fcert";
+    // char *get_pub_url = "http://localhost:8700/?cmd=GET_CRYPT&args=u2fpub";
+    // char *sign_url = "http://localhost:8700/?cmd=SIGN_BLOB&args=u2fkey";
+    // char *encrypt_url = "http://localhost:8700/?cmd=ENCRYPT_BLOB&args=u2fpriv%20u2fiv";
+    // char *decrypt_url = "http://localhost:8700/?cmd=DECRYPT_BLOB&args=u2fpriv%20u2fiv";
 
     /* Ephemeral */
     if (argc <= 1)

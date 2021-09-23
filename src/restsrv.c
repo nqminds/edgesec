@@ -502,7 +502,6 @@ int main(int argc, char *argv[])
       }
 
       sprintf(request, "%s%c%s", GEN_CERT_CMD, sad.delim, cn);
-      fprintf(stdout, "%s\n", request);
       if (writeread_domain_data_str(sad.spath, request, &reply) < 0) {
         fprintf(stderr, "writeread_domain_data_str fail\n");
         os_free(request);
