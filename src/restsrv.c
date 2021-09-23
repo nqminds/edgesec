@@ -58,8 +58,8 @@
 
 #define SOCK_PACKET_SIZE 10
 
-#define OPT_STRING    ":s:p:z:tdvh"
-#define USAGE_STRING  "\t%s [-s address] [-p port] [-z delim] [-t] [-d] [-h] [-v]\n"
+#define OPT_STRING    ":s:p:z:c:tdvh"
+#define USAGE_STRING  "\t%s [-s address] [-p port] [-z delim] [-c name] [-t] [-d] [-h] [-v]\n"
 
 #define JSON_RESPONSE_OK    "{\"cmd\":\"%s\",\"response\":[%s]}"
 #define JSON_RESPONSE_FAIL  "{\"error\":\"invalid get request\"}"
@@ -130,6 +130,7 @@ void show_app_help(char *app_name)
   fprintf(stdout, "\t-s address\t Path to supervisor socket\n");
   fprintf(stdout, "\t-p port\t\t Server port\n");
   fprintf(stdout, "\t-z delim\t\t Command delimiter\n");
+  fprintf(stdout, "\t-c name\t\t The common name for certificate generation\n");
   fprintf(stdout, "\t-t\t\t Use TLS\n");
   fprintf(stdout, "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n");
   fprintf(stdout, "\t-h\t\t Show help\n");
@@ -163,7 +164,7 @@ int get_port(char *port_str)
 }
 
 void process_app_options(int argc, char *argv[], char *spath,
-                         int *port, char *delim, bool *tls,
+                         int *port, char *delim, char *cn, bool *tls,
                         uint8_t *verbosity)
 {
   int opt;
@@ -186,6 +187,9 @@ void process_app_options(int argc, char *argv[], char *spath,
       break;
     case 's':
       os_strlcpy(spath, optarg, MAX_OS_PATH_LEN);
+      break;
+    case 'c':
+      os_strlcpy(cn, optarg, MAX_WEB_PATH_LEN);
       break;
     case 'z':
       errno = 0;
@@ -428,12 +432,15 @@ int main(int argc, char *argv[])
   bool tls = false;
   int flags = MHD_USE_THREAD_PER_CONNECTION | MHD_USE_DEBUG | MHD_USE_INTERNAL_POLLING_THREAD;
   char *reply = NULL;
+  char *request = NULL;
+  char cn[MAX_WEB_PATH_LEN];
   uint8_t *base64_buf = NULL;
   size_t base64_buf_len;
 
+  os_memset(cn, 0, MAX_WEB_PATH_LEN);
   os_memset(&sad, 0, sizeof(struct socket_address));
 
-  process_app_options(argc, argv, sad.spath, &port, &sad.delim, &tls, &verbosity); 
+  process_app_options(argc, argv, sad.spath, &port, &sad.delim, cn, &tls, &verbosity); 
 
   if (optind <= 1) show_app_help(argv[0]);
 
@@ -458,6 +465,7 @@ int main(int argc, char *argv[])
   fprintf(stdout, "Port --> %d\n", port);
   fprintf(stdout, "Command delimiter --> %c\n", sad.delim);
   fprintf(stdout, "Using TLS --> %d\n", tls);
+  fprintf(stdout, "Common name for certificate --> %s\n", cn);
 
   flags = (tls) ? flags | MHD_USE_SSL : flags;
 
@@ -482,11 +490,26 @@ int main(int argc, char *argv[])
       }
       os_free(reply);
 
-      fprintf(stdout, "Generating new certificate key\n");
-      if (writeread_domain_data_str(sad.spath, GEN_CERT_CMD, &reply) < 0) {
-        fprintf(stderr, "writeread_domain_data_str fail\n");
+      if (!strlen(cn)) {
+        fprintf(stderr, "Common name not specified\n", cn);  
         exit(EXIT_FAILURE);
       }
+
+      fprintf(stdout, "Generating new certificate key for cn=%s\n", cn);
+      if ((request = os_malloc(strlen(GEN_CERT_CMD) +strlen(cn) + 4)) == NULL) {
+        fprintf(stderr, "os_malloc fail");
+        exit(EXIT_FAILURE);
+      }
+
+      sprintf(request, "%s%%20%s", GEN_CERT_CMD, cn);
+      if (writeread_domain_data_str(sad.spath, request, &reply) < 0) {
+        fprintf(stderr, "writeread_domain_data_str fail\n");
+        os_free(request);
+        exit(EXIT_FAILURE);
+      }
+
+      os_free(request);
+
       if (strcmp(reply, FAIL_REPLY) == 0) {
         fprintf(stderr, "writeread_domain_data_str fail\n");
         exit(EXIT_FAILURE);

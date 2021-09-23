@@ -71,7 +71,8 @@ int get_url_data(char *url, char **out)
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_memory_callback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
-
+    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
+    
     /* Perform the request, res will get the return code */
     res = curl_easy_perform(curl);
     /* Check for errors */
