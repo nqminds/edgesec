@@ -1,0 +1,23 @@
+/**
+\page demos Demo examples
+
+
+ *\msc
+ *  "Server","Browser","Virtual HID","Gateway";
+
+ *
+ *  "Browser"=>"Server" [label="Register"];
+ *  "Server"=>"Browser" [label="Challenge"];
+ *  "Browser"=>"Virtual HID" [label="Sign challenge"];
+ *  "Virtual HID"=>"Gateway" [label="Sign challenge (blob)"];
+ *  "Gateway"=>"Virtual HID" [label="Signature"];
+ *  "Virtual HID"=>"Browser" [label="Signature"];
+ *  "Browser"=>"Server" [label="Register with signature"];
+ *\endmsc
+ *
+*/
+typedef struct IbFandangoReqTag
+{
+  TaskId reqTaskId;
+}
+IbFandangoReq;
