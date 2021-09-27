@@ -34,24 +34,23 @@
 
 #include "../ap/ap_config.h"
 
-/**
- * @brief The AP service callback
- * 
- * @param context The supervisor context
- * @param mac_addr The STA mac address
- * @param status The STA connection status
- * @return 0 on success, -1 on failure
- */
-void ap_service_callback(struct supervisor_context *context, uint8_t mac_addr[], enum AP_CONNECTION_STATUS status);
 
 /**
- * @brief Return a mac_conn_info for a given MAC address
+ * @brief Save a MAC entry into the mapper
  * 
- * @param mac_addr The input MAC adderss
- * @param mac_conn_arg The supervisor_context pointer
- * @return struct mac_conn_info 
+ * @param The supervisor context
+ * @param The MAc connection structure
+ * 
+ * @return true on success, false on failure
  */
-struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg);
+bool save_mac_mapper(struct supervisor_context *context, struct mac_conn conn);
+
+/**
+ * @brief Frees an allocated ticket
+ * 
+ * @param The supervisor context
+ */
+void free_ticket(struct supervisor_context *context);
 
 /**
  * @brief ACCEPT_MAC command
