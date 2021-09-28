@@ -40,7 +40,7 @@ jobs:
       run: cmake --build build/ --target doxydocs -j2
 
     - name: publish docs (main-branch only)
-      if: github.ref == 'ref/heads/main'
+      if: github.ref == 'refs/heads/main'
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
