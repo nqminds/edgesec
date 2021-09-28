@@ -12,24 +12,22 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build-test:
+  # This workflow contains a single job called "build-docs"
+  build-docs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    # warning! This is a shallow clone, and has no git history for docs!
     - uses: actions/checkout@v2
     
-    - name: Install package
-      run: sudo apt install -y doxygen libnl-genl-3-dev libnl-route-3-dev graphviz libpcap-dev libsqlite3-dev libtool texinfo jq libssl-dev protobuf-compiler uuid-dev
-
-    - name: Reconfigure aclocal
-      run: cd lib/libmnl-1.0.4 && autoreconf -f -i
+    - name: Install dependencies
+      run: sudo apt install -y doxygen texinfo graphviz cmake build-essential
 
     - name: configure
-      run: mkdir build && cd build && cmake ../ -DBUILD_ONLY_DOCS=ON
+      run: cmake -B build/ -S . -DBUILD_ONLY_DOCS=ON
 
     # - name: build
     #   run: cd build && make
@@ -38,9 +36,11 @@ jobs:
     #   run: cd build && make test
     
     - name: builds docs
-      run: cd build && make doxydocs
+      # Ubuntu runner has 2 vCPUs, so use 2 jobs
+      run: cmake --build build/ --target doxydocs -j2
 
-    - name: publish docs
+    - name: publish docs (main-branch only)
+      if: github.ref == 'refs/heads/main'
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -49,4 +49,3 @@ jobs:
         allow_empty_commit: false
         force_orphan: true
         publish_branch: gh-pages
-
