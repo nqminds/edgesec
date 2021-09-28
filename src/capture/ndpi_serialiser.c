@@ -91,17 +91,17 @@ int ndpi_serialise_tls(struct ndpi_flow_struct *flow, struct nDPI_flow_meta *met
   char *ja3s = NULL;
   char *buf;
   size_t str_len;
-  size_t server_name_size = sizeof(flow->protos.stun_ssl.ssl.client_requested_server_name);
-  size_t ja3_client_size = sizeof(flow->protos.stun_ssl.ssl.ja3_client);
-  size_t ja3_server_size = sizeof(flow->protos.stun_ssl.ssl.ja3_server);
+  size_t server_name_size = sizeof(flow->protos.tls_quic_stun.tls_quic.client_requested_server_name);
+  size_t ja3_client_size = sizeof(flow->protos.tls_quic_stun.tls_quic.ja3_client);
+  size_t ja3_server_size = sizeof(flow->protos.tls_quic_stun.tls_quic.ja3_server);
 
-  if(flow->protos.stun_ssl.ssl.ssl_version) {
-    char *version = ndpi_ssl_version2str(flow, flow->protos.stun_ssl.ssl.ssl_version, &unknown_tls_version);
+  if(flow->protos.tls_quic_stun.tls_quic.ssl_version) {
+    char *version = ndpi_ssl_version2str(flow, flow->protos.tls_quic_stun.tls_quic.ssl_version, &unknown_tls_version);
     if(!unknown_tls_version) {
-      client_requested_server_name = flow->protos.stun_ssl.ssl.client_requested_server_name;
+      client_requested_server_name = flow->protos.tls_quic_stun.tls_quic.client_requested_server_name;
 
-      ja3 = flow->protos.stun_ssl.ssl.ja3_client;
-      ja3s = flow->protos.stun_ssl.ssl.ja3_server;
+      ja3 = flow->protos.tls_quic_stun.tls_quic.ja3_client;
+      ja3s = flow->protos.tls_quic_stun.tls_quic.ja3_server;
       log_trace("version=%s", version);
       log_trace("hello_processed=%d", flow->l4.tcp.tls.hello_processed);
       log_trace("certificate_processed=%d", flow->l4.tcp.tls.certificate_processed);
@@ -109,9 +109,9 @@ int ndpi_serialise_tls(struct ndpi_flow_struct *flow, struct nDPI_flow_meta *met
       if (flow->l4.tcp.tls.hello_processed) {
         str_len = os_strnlen_s(client_requested_server_name, server_name_size);
         if (str_len > 0 && str_len < server_name_size) {
-          str_len = os_strnlen_s(flow->protos.stun_ssl.ssl.ja3_client, ja3_client_size);
+          str_len = os_strnlen_s(flow->protos.tls_quic_stun.tls_quic.ja3_client, ja3_client_size);
           if (str_len > 0 && str_len < ja3_client_size) {
-            str_len = os_strnlen_s(flow->protos.stun_ssl.ssl.ja3_server, ja3_server_size);
+            str_len = os_strnlen_s(flow->protos.tls_quic_stun.tls_quic.ja3_server, ja3_server_size);
             if (str_len > 0 && str_len < ja3_server_size) {
               log_trace("client_requested_server_name=%s", client_requested_server_name);
               log_trace("ja3=%s", ja3);
@@ -154,6 +154,7 @@ int ndpi_serialise_tls(struct ndpi_flow_struct *flow, struct nDPI_flow_meta *met
 int ndpi_serialise_meta(struct ndpi_detection_module_struct *ndpi_struct,
 		  struct nDPI_flow_info * flow_info, struct nDPI_flow_meta *meta)
 {
+  u_int16_t cli_score, srv_score;
   char *breed_name = NULL;
   char *category_name = NULL;
   struct ndpi_flow_struct *flow = flow_info->ndpi_flow;
@@ -171,6 +172,17 @@ int ndpi_serialise_meta(struct ndpi_detection_module_struct *ndpi_struct,
   
   if(l7_protocol.category != NDPI_PROTOCOL_CATEGORY_UNSPECIFIED)
     category_name = (char *)ndpi_category_get_name(ndpi_struct, l7_protocol.category);
+
+  log_trace("risk checked=%d", flow->risk_checked);
+
+  if(flow->risk && flow->risk_checked) {
+    for(int i=0; i< NDPI_MAX_RISK; i++) {
+      if(NDPI_ISSET_BIT(flow->risk, i)) {
+	      log_trace("risk=%s", ndpi_risk2str(i));
+      }
+    }
+    log_trace("risk score=%u", ndpi_risk2score(flow->risk, &cli_score, &srv_score));
+  }
 
   log_trace("proto=%s", meta->protocol);
   log_trace("breed=%s", breed_name);
