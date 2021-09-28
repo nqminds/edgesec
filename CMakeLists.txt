@@ -210,9 +210,8 @@ include(doxygen)
 if (NOT BUILD_ONLY_DOCS)
   add_subdirectory(src)
   add_subdirectory(tests)
+  include(install)
 endif ()
-
-include(install)
 
 add_custom_target(archive COMMAND
     ${CMAKE_COMMAND} -E tar "cvz" "${_project_lower}-${_sys}-${EDGESEC_VERSION_MAJOR}.${EDGESEC_VERSION_MINOR}.${EDGESEC_VERSION_PATCH}.tar.gz" --format=gnutar "${CMAKE_INSTALL_PREFIX}")
