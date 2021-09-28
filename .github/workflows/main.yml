@@ -39,7 +39,8 @@ jobs:
       # Ubuntu runner has 2 vCPUs, so use 2 jobs
       run: cmake --build build/ --target doxydocs -j2
 
-    - name: publish docs
+    - name: publish docs (main-branch only)
+      if: github.ref == 'ref/head/main'
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -48,4 +49,3 @@ jobs:
         allow_empty_commit: false
         force_orphan: true
         publish_branch: gh-pages
-
