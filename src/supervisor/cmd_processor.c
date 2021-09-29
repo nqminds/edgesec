@@ -35,6 +35,9 @@
 #include "cmd_processor.h"
 #include "mac_mapper.h"
 #include "network_commands.h"
+#include "monitor_commands.h"
+#include "crypt_commands.h"
+#include "system_commands.h"
 
 #include "utils/allocs.h"
 #include "utils/os.h"
@@ -75,16 +78,14 @@ ssize_t process_ping_cmd(int sock, struct client_address *client_addr, struct su
 {
   (void) context; /* unused */
   (void) cmd_arr; /* unused */
-  char *buf = "PONG";
-  return write_domain_data(sock, buf, strlen(buf), &client_addr->addr, client_addr->len);
-}
-
-ssize_t process_hostapd_ctrlif_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context,
-  UT_array *cmd_arr)
-{
-  (void) cmd_arr; /* unused */
-  return write_domain_data(sock, context->hconfig.ctrl_interface_path,
-    strlen(context->hconfig.ctrl_interface_path), &client_addr->addr, client_addr->len);
+  char *reply = NULL;
+  int ret;
+  if ((reply = ping_cmd()) != NULL) {
+    ret = write_domain_data(sock, reply, strlen(reply), &client_addr->addr, client_addr->len);
+    os_free(reply);
+    return ret;
+  }
+  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
 }
 
 ssize_t process_accept_mac_cmd(int sock, struct client_address *client_addr,
@@ -933,8 +934,6 @@ process_cmd_fn get_command_function(char *cmd)
 {
   if (!strcmp(cmd, CMD_PING)) {
     return process_ping_cmd;
-  } else if (!strcmp(cmd, CMD_HOSTAPD_CTRLIF)) {
-    return process_hostapd_ctrlif_cmd;
   } else if (!strcmp(cmd, CMD_ACCEPT_MAC)) {
     return process_accept_mac_cmd;
   } else if (!strcmp(cmd, CMD_DENY_MAC)) {
