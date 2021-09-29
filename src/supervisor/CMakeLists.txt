@@ -34,7 +34,7 @@ target_link_libraries(system_commands PRIVATE ap_service crypt_service capture_c
 
 add_library(cmd_processor cmd_processor.c)
 target_include_directories(cmd_processor PRIVATE ${LIBSQLITE_INCLUDE_DIR})
-target_link_libraries(cmd_processor PRIVATE system_commands crypt_commands monitor_commands network_commands sqlite_fingerprint_writer mac_mapper domain log os iptables if)
+target_link_libraries(cmd_processor PRIVATE system_commands crypt_commands monitor_commands network_commands sqlite_fingerprint_writer mac_mapper domain log os iptables if base64)
 
 add_library(supervisor supervisor.c)
 target_include_directories(supervisor PRIVATE ${LIBSQLITE_INCLUDE_DIR})

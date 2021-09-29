@@ -42,6 +42,7 @@
 #include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/log.h"
+#include "utils/base64.h"
 #include "utils/utarray.h"
 #include "utils/iptables.h"
 #include "utils/domain.h"
@@ -473,6 +474,53 @@ ssize_t process_set_fingerprint_cmd(int sock, struct client_address *client_addr
         }
       }
     }
+  }
+
+  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
+}
+
+ssize_t process_set_alert_cmd(int sock, struct client_address *client_addr,
+  struct supervisor_context *context, UT_array *cmd_arr)
+{
+  char **ptr = (char**) utarray_next(cmd_arr, NULL);
+  uint8_t *meta, *info = NULL;
+  size_t meta_size, info_size;
+
+  // alert meta
+  ptr = (char**) utarray_next(cmd_arr, ptr);
+  if (ptr != NULL && *ptr != NULL) {
+    if ((meta = (uint8_t *) base64_url_decode((unsigned char *) *ptr, strlen(*ptr), &meta_size)) == NULL) {
+      log_trace("base64_url_decode fail\n");
+      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
+    }
+
+    // info
+    ptr = (char**) utarray_next(cmd_arr, ptr);
+    if (ptr != NULL && *ptr != NULL) {
+      if (strlen(rtrim(*ptr, NULL))) {
+        if ((info = (uint8_t *) base64_url_decode((unsigned char *) *ptr, strlen(*ptr), &info_size)) == NULL) {
+          log_trace("base64_url_decode fail\n");
+          os_free(meta);
+          return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
+        }
+      }
+    }
+
+    if (set_alert_cmd(context, (struct alert_meta *)meta, info, info_size) < 0) {
+      log_trace("set_alert_cmd fail");
+      os_free(meta);
+      if (info != NULL) {
+        os_free(info);
+      }
+      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
+    }
+
+    os_free(meta);
+    if (info != NULL) {
+      os_free(info);
+    }
+
+    return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), &client_addr->addr, client_addr->len);  
   }
 
   return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
@@ -958,6 +1006,8 @@ process_cmd_fn get_command_function(char *cmd)
     return process_get_bridges_cmd;
   } else if (!strcmp(cmd, CMD_SET_FINGERPRINT)) {
     return process_set_fingerprint_cmd;
+  } else if (!strcmp(cmd, CMD_SET_ALERT)) {
+    return process_set_alert_cmd;
   } else if (!strcmp(cmd, CMD_QUERY_FINGERPRINT)) {
     return process_query_fingerprint_cmd;
   } else if (!strcmp(cmd, CMD_REGISTER_TICKET)) {

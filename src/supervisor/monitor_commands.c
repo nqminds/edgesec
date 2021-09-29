@@ -34,6 +34,7 @@
 #include "../ap/ap_service.h"
 #include "../crypt/crypt_service.h"
 #include "../capture/capture_service.h"
+#include "../capture/capture_config.h"
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/log.h"
@@ -247,4 +248,10 @@ ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr
 
   free_sqlite_fingerprint_rows(rows);
   return out_size;
+}
+
+int set_alert_cmd(struct supervisor_context *context, struct alert_meta *meta,
+                        uint8_t *info, size_t info_size)
+{
+  return -1;  
 }

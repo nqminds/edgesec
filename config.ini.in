@@ -34,7 +34,7 @@ dbSync = true
 dbSyncAddress = "localhost"
 dbSyncPort = 3000
 syncCaPath = "./cert/CA/CA.pem"
-command = "SET_FINGERPRINT"
+command = "SET_ALERT"
 syncStoreSize = 1000
 syncSendSize = 20
 

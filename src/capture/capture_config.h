@@ -26,6 +26,7 @@
 #ifndef CAPTURE_CONFIG_H
 #define CAPTURE_CONFIG_H
 
+#include <net/ethernet.h>
 #include <sys/types.h>
 #include <net/if.h>
 #include <stdbool.h>
@@ -333,6 +334,16 @@ struct dhcp_schema {
   char yiaddr[OS_INET_ADDRSTRLEN];                       /**< Packet IP address of this machine (offered by the DHCP server) */
   char siaddr[OS_INET_ADDRSTRLEN];                       /**< Packet IP address of DHCP server */
   char giaddr[OS_INET_ADDRSTRLEN];                       /**< Packet IP address of DHCP relay */
+};
+
+struct alert_meta {
+  uint64_t timestamp;                               /**< Alert timestamp */
+  char analyser[MAX_ANALYSER_NAME_SIZE];            /**< Alert analyser type */
+  char hostname[OS_HOST_NAME_MAX];                  /**< Alert hostname */
+  char ifname[IFNAMSIZ];                            /**< Alert monitoring interface */
+  uint8_t src_mac_addr[ETH_ALEN];                   /**< Source MAC address */
+  uint8_t dst_mac_addr[ETH_ALEN];                   /**< Destination MAC address */
+  uint8_t risk;                                     /**< Alert risk value */
 };
 
 /**

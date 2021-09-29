@@ -79,12 +79,14 @@ struct nDPI_reader_thread {
   char *domain_server_path;
   char *domain_command;
   char domain_delim;
+  char *hostname;
 };
 
 struct nDPI_context {
   char *domain_server_path;
   char *domain_command;
   char domain_delim;
+  char hostname[OS_HOST_NAME_MAX];
   struct nDPI_reader_thread *reader_threads;
 
   int reader_thread_count;
@@ -361,44 +363,70 @@ bool is_tls_protocol(struct ndpi_proto *proto)
     proto->app_protocol == NDPI_PROTOCOL_TLS);
 }
 
-int send_flow_meta(struct nDPI_reader_thread *reader_thread, struct nDPI_flow_meta *meta)
+int send_alert_meta(struct nDPI_reader_thread *reader_thread, struct alert_meta *meta, uint8_t *info, ssize_t info_size)
 {
-  if (reader_thread->sfd && strlen(reader_thread->domain_command) &&
-      strlen(reader_thread->domain_server_path))
-  {
-    char *buf;
-    char *base64_encoding;
-    size_t out_len = 0;
-    char delim = reader_thread->domain_delim;
-    int ret;
+  char *buf;
+  char *base64_meta, *base64_info;
+  size_t base64_len = 0, send_len = 0;
+  char delim = reader_thread->domain_delim;
+  int ret = -1;
 
-    if ((base64_encoding = (char *) base64_url_encode((unsigned char *)meta->hash, SHA256_HASH_LEN, &out_len, 0)) == NULL) {
+  if (reader_thread->sfd && strlen(reader_thread->domain_command) &&
+      strlen(reader_thread->domain_server_path) && meta->risk > 0)
+  {
+    if ((base64_meta = (char *) base64_url_encode((unsigned char *)meta, sizeof(struct alert_meta), &base64_len, 0)) == NULL) {
       log_trace("base64_url_encode fail");
+      if (info != NULL) {
+        os_free(info);
+      }
       return -1;
     }
 
-    out_len += strlen(reader_thread->domain_command) + 5 + 2 * strlen(meta->src_mac_addr) +
-               strlen(meta->protocol) + strlen(meta->query) + 1;
+    send_len += base64_len;
 
-    buf = os_zalloc(out_len);
-    if (buf == NULL) {
+    if (info != NULL) {
+      if ((base64_info = (char *) base64_url_encode((unsigned char *)info, info_size, &base64_len, 0)) == NULL) {
+        log_trace("base64_url_encode fail");
+        os_free(base64_meta);
+        if (info != NULL) {
+          os_free(info);
+        }
+        return -1;
+      }
+      send_len += 1 + base64_len;
+    }
+    send_len += strlen(reader_thread->domain_command) + 1;
+
+    if ((buf = os_zalloc(send_len)) == NULL) {
       log_err("os_zalloc");
-      os_free(base64_encoding);
+      os_free(base64_meta);
+      if (info != NULL) {
+        os_free(base64_info);
+        os_free(info);
+      }
       return -1;  
     }
 
-    log_trace("fingerprint=%s", base64_encoding);
-    sprintf(buf, "%s%c%s%c%s%c%s%c%s%c%s", reader_thread->domain_command, delim, meta->src_mac_addr,
-            delim, meta->dst_mac_addr, delim, meta->protocol, delim, base64_encoding, delim, meta->query);
-    log_trace("%s", buf);
+    if (info != NULL) {
+      sprintf(buf, "%s%c%s%c%s", reader_thread->domain_command, delim, base64_meta, delim, base64_info);
+    } else {
+      sprintf(buf, "%s%c%s", reader_thread->domain_command, delim, base64_meta);
+    }
 
     ret = write_domain_data_s(reader_thread->sfd, buf, strlen(buf), reader_thread->domain_server_path);
 
     os_free(buf);
-    os_free(base64_encoding);
+    os_free(base64_meta);
+    if (info != NULL) {
+      os_free(base64_info);
+      os_free(info);
+    }
     return ret;
   }
 
+  if (info != NULL) {
+    os_free(info);
+  }
   return 0;
 }
 
@@ -436,8 +464,10 @@ static void ndpi_process_packet(const void *ctx, struct pcap_pkthdr *header, uin
   int thread_index = INITIAL_THREAD_HASH; // generated with `dd if=/dev/random bs=1024 count=1 |& hd'
   uint8_t protocol_was_guessed = 0;
 
-  struct nDPI_flow_meta meta;
-  os_memset(&meta, 0, sizeof(meta));
+  struct alert_meta meta;
+  uint8_t *info = NULL;
+  ssize_t info_size;
+  os_memset(&meta, 0, sizeof(struct alert_meta));
 
   if (reader_thread == NULL) {
     log_trace("reader_thread is NULL");
@@ -817,8 +847,8 @@ static void ndpi_process_packet(const void *ctx, struct pcap_pkthdr *header, uin
           ndpi_get_proto_name(workflow->ndpi_struct, flow_to_process->detected_l7_protocol.app_protocol),
           ndpi_category_get_name(workflow->ndpi_struct, flow_to_process->detected_l7_protocol.category));
       if (!is_tls_protocol(&flow_to_process->detected_l7_protocol)) {
-        if (ndpi_serialise_meta(workflow->ndpi_struct, flow_to_process, &meta) > -1) {
-          if (send_flow_meta(reader_thread, &meta) < 0) {
+        if ((info_size = ndpi_serialise_meta(workflow->ndpi_struct, flow_to_process, &meta, &info)) > -1) {
+          if (send_alert_meta(reader_thread, &meta, info, info_size) < 0) {
             log_trace("send_flow_meta fail");
           }
         }
@@ -832,8 +862,8 @@ static void ndpi_process_packet(const void *ctx, struct pcap_pkthdr *header, uin
       if (flow_to_process->tls_client_hello_seen == 0 &&
         flow_to_process->ndpi_flow->l4.tcp.tls.hello_processed != 0)
       {
-        if (ndpi_serialise_meta(workflow->ndpi_struct, flow_to_process, &meta) > -1) {
-          if (send_flow_meta(reader_thread, &meta) < 0) {
+        if ((info_size = ndpi_serialise_meta(workflow->ndpi_struct, flow_to_process, &meta, &info)) > -1) {
+          if (send_alert_meta(reader_thread, &meta, info, info_size) < 0) {
             log_trace("send_flow_meta fail");
           }
         }
@@ -842,8 +872,8 @@ static void ndpi_process_packet(const void *ctx, struct pcap_pkthdr *header, uin
       if (flow_to_process->tls_server_hello_seen == 0 &&
         flow_to_process->ndpi_flow->l4.tcp.tls.certificate_processed != 0)
       {
-        if (ndpi_serialise_meta(workflow->ndpi_struct, flow_to_process, &meta) > -1) {
-          if (send_flow_meta(reader_thread, &meta) < 0) {
+        if ((info_size = ndpi_serialise_meta(workflow->ndpi_struct, flow_to_process, &meta, &info)) > -1) {
+          if (send_alert_meta(reader_thread, &meta, info, info_size) < 0) {
             log_trace("send_flow_meta fail");
           }
         }
@@ -950,6 +980,7 @@ static int start_reader_threads(struct nDPI_thread_arg *targs)
     reader_threads[i].domain_server_path = context->domain_server_path;
     reader_threads[i].domain_command = context->domain_command;
     reader_threads[i].domain_delim = context->domain_delim;
+    reader_threads[i].hostname = context->hostname;
 
     if ((reader_threads[i].workflow = init_workflow(&targs[i])) == NULL) {
       log_debug("init_workflow fail");
@@ -1033,6 +1064,11 @@ int start_ndpi_analyser(struct capture_conf *config)
   struct nDPI_context context = {};
   struct nDPI_thread_arg *targs;
 
+  if (get_hostname(context.hostname) < 0) {
+    log_debug("get_hostname fail");
+    return -1;
+  }
+
   context.domain_server_path = config->domain_server_path;
   context.domain_command = config->domain_command;
   context.domain_delim = config->domain_delim;
@@ -1055,6 +1091,7 @@ int start_ndpi_analyser(struct capture_conf *config)
   }
 
   log_info("nDPI version: %s, API version: %u", ndpi_revision(), ndpi_get_api_version());
+  log_info("hostname=%s", context.hostname);
   log_info("domain_server_path=%s", context.domain_server_path);
   log_info("domain_command=%s", context.domain_command);
   log_info("domain_delim=0x%x", context.domain_delim);

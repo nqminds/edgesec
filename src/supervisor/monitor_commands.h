@@ -29,6 +29,20 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
+#include "../capture/capture_config.h"
+
+/**
+ * @brief SET_ALERT command
+ * 
+ * @param context The supervisor structure instance
+ * @param meta The alert meta structure
+ * @param info The info buffer
+ * @param info_size The info buffer size
+ * @return int 0 on success, -1 on failure
+ */
+int set_alert_cmd(struct supervisor_context *context, struct alert_meta *meta,
+                        uint8_t *info, size_t info_size);
+
 /**
  * @brief SET_FINGERPRINT command
  * 
