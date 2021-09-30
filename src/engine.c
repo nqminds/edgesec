@@ -43,6 +43,7 @@
 #include "supervisor/supervisor.h"
 #include "supervisor/network_commands.h"
 #include "supervisor/sqlite_fingerprint_writer.h"
+#include "supervisor/sqlite_alert_writer.h"
 #include "supervisor/sqlite_macconn_writer.h"
 #include "radius/radius_service.h"
 #include "ap/ap_service.h"
@@ -169,6 +170,8 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
   ctx->allow_all_connections = app_config->allow_all_connections;
   ctx->allow_all_nat = app_config->allow_all_nat;
   ctx->default_open_vlanid = app_config->default_open_vlanid;
+  ctx->quarantine_vlanid = app_config->quarantine_vlanid;
+  ctx->risk_score = app_config->risk_score;
   ctx->config_ifinfo_array = app_config->config_ifinfo_array;
 
   ctx->wpa_passphrase_len = os_strnlen_s(app_config->hconfig.wpa_passphrase, AP_SECRET_LEN);
@@ -210,6 +213,21 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
 
   // Init the list of bridges
   ctx->bridge_list = init_bridge_list();
+
+  if (ctx->default_open_vlanid >= 0) {
+     if (get_vlan_mapper(&ctx->vlan_mapper, ctx->default_open_vlanid, NULL) <= 0) {
+       log_trace("default vlan id=%d doesn't exist", ctx->default_open_vlanid);
+       return false;
+     }
+  }
+
+  if (ctx->quarantine_vlanid >= 0) {
+     if (get_vlan_mapper(&ctx->vlan_mapper, ctx->quarantine_vlanid, NULL) <= 0) {
+       log_trace("quarantine vlan id=%d doesn't exist", ctx->quarantine_vlanid);
+       return false;
+     }
+  }
+  
   return true;
 }
 

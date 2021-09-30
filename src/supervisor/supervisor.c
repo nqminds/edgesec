@@ -31,6 +31,7 @@
 #include <libgen.h>
 
 #include "sqlite_fingerprint_writer.h"
+#include "sqlite_alert_writer.h"
 
 #include "utils/log.h"
 #include "utils/allocs.h"

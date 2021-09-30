@@ -64,6 +64,8 @@ struct supervisor_context {
   ssize_t         wpa_passphrase_len;                         /**< the length of @c wpa_passphrase*/
   char            nat_interface[IFNAMSIZ];                    /**< @c nat_interface param from @c struct app_config */
   int             default_open_vlanid;                        /**< @c default_open_vlanid from @c struct app_config */
+  int             quarantine_vlanid;                          /**< @c quarantine_vlanid from @c struct app_config */
+  int             risk_score;                                 /**< @c risk_score from @c struct app_config */
   char            db_path[MAX_OS_PATH_LEN];                   /**< @c db_path from @c struct app_config */
   UT_array        *config_ifinfo_array;                       /**< @c config_ifinfo_array from @c struct app_config */
   struct bridge_mac_list *bridge_list;                        /**< List of assigned bridges */

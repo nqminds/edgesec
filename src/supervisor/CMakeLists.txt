@@ -42,4 +42,4 @@ target_link_libraries(cmd_processor PRIVATE system_commands crypt_commands monit
 
 add_library(supervisor supervisor.c)
 target_include_directories(supervisor PRIVATE ${LIBSQLITE_INCLUDE_DIR})
-target_link_libraries(supervisor PRIVATE network_commands sqlite_fingerprint_writer cmd_processor domain log iptables)
+target_link_libraries(supervisor PRIVATE network_commands sqlite_alert_writer sqlite_fingerprint_writer cmd_processor domain log iptables)
