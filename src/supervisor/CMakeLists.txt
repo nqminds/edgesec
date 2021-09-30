@@ -12,6 +12,10 @@ add_library(sqlite_fingerprint_writer sqlite_fingerprint_writer.c)
 target_include_directories(sqlite_fingerprint_writer PRIVATE ${LIBSQLITE_INCLUDE_DIR})
 target_link_libraries(sqlite_fingerprint_writer PRIVATE sqliteu squeue log os ${LIBSQLITE_LIB})
 
+add_library(sqlite_alert_writer sqlite_alert_writer.c)
+target_include_directories(sqlite_alert_writer PRIVATE ${LIBSQLITE_INCLUDE_DIR})
+target_link_libraries(sqlite_alert_writer PRIVATE sqliteu squeue log os ${LIBSQLITE_LIB})
+
 add_library(sqlite_macconn_writer sqlite_macconn_writer.c)
 target_include_directories(sqlite_macconn_writer PRIVATE ${LIBSQLITE_INCLUDE_DIR})
 target_link_libraries(sqlite_macconn_writer PRIVATE sqliteu squeue log os ${LIBSQLITE_LIB})
@@ -22,7 +26,7 @@ target_link_libraries(network_commands PRIVATE ap_service crypt_service capture_
 
 add_library(monitor_commands monitor_commands.c)
 target_include_directories(monitor_commands PRIVATE ${LIBSQLITE_INCLUDE_DIR})
-target_link_libraries(monitor_commands PRIVATE ap_service crypt_service capture_config sqlite_macconn_writer mac_mapper eloop iptables base64 log os)
+target_link_libraries(monitor_commands PRIVATE sqlite_alert_writer ap_service crypt_service capture_config sqlite_macconn_writer mac_mapper eloop iptables base64 log os)
 
 add_library(crypt_commands crypt_commands.c)
 target_include_directories(crypt_commands PRIVATE ${LIBSQLITE_INCLUDE_DIR})

@@ -74,6 +74,7 @@ struct supervisor_context {
   struct apconf       hconfig;                                /**< AP service configuration. */
   struct radius_conf  rconfig;                                /**< Radius service configuration. */
   sqlite3         *fingeprint_db;                             /**< The fingerprint sqlite db structure. */
+  sqlite3         *alert_db;                                  /**< The alert sqlite db structure. */
   sqlite3         *macconn_db;                                /**< The macconn db structure. */
   struct radius_server_data *radius_srv;                      /**< The radius server context. */
   struct iptables_context *iptables_ctx;                      /**< The iptables context. */

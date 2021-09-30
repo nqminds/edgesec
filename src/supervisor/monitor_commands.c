@@ -27,6 +27,7 @@
 #include "mac_mapper.h"
 #include "supervisor.h"
 #include "sqlite_fingerprint_writer.h"
+#include "sqlite_alert_writer.h"
 #include "sqlite_macconn_writer.h"
 #include "network_commands.h"
 
@@ -253,5 +254,60 @@ ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr
 int set_alert_cmd(struct supervisor_context *context, struct alert_meta *meta,
                         uint8_t *info, size_t info_size)
 {
-  return -1;  
+  struct alert_row row;
+
+  os_memset(&row, 0, sizeof(struct alert_row));
+
+  log_trace("SET_ALERT for src_mac="MACSTR", dst_mac="MACSTR", and timestamp=%"PRIu64, MAC2STR(meta->src_mac_addr),
+            MAC2STR(meta->dst_mac_addr), meta->timestamp);
+
+  if ((row.hostname = os_strdup(meta->hostname)) == NULL) {
+    log_err("os_strdup");
+    return -1;
+  }
+
+  if ((row.analyser = os_strdup(meta->analyser)) == NULL) {
+    log_err("os_strdup");
+    free_sqlite_alert_row(&row);
+    return -1;
+  }
+
+  if ((row.ifname = os_strdup(meta->ifname)) == NULL) {
+    log_err("os_strdup");
+    free_sqlite_alert_row(&row);
+    return -1;
+  }
+
+  if ((row.src_mac_addr = os_zalloc(MACSTR_LEN)) == NULL) {
+    log_err("os_zalloc");
+    free_sqlite_alert_row(&row);
+    return -1;
+  }
+  sprintf(row.src_mac_addr, MACSTR, MAC2STR(meta->src_mac_addr));
+
+  if ((row.dst_mac_addr = os_zalloc(MACSTR_LEN)) == NULL) {
+    log_err("os_zalloc");
+    free_sqlite_alert_row(&row);
+    return -1;
+  }
+  sprintf(row.dst_mac_addr, MACSTR, MAC2STR(meta->dst_mac_addr));
+
+  row.timestamp = meta->timestamp;
+  row.risk = meta->risk;
+
+  if ((row.info = os_zalloc(info_size + 1)) == NULL) {
+    log_err("os_zalloc");
+    free_sqlite_alert_row(&row);
+    return -1;
+  }
+  os_memcpy(row.info, info, info_size);
+
+  if (save_sqlite_alert_row(context->alert_db, &row) < 0) {
+    log_trace("save_sqlite_alert_row");
+    free_sqlite_alert_row(&row);
+    return -1;
+  }
+
+  free_sqlite_alert_row(&row);
+  return 0;
 }

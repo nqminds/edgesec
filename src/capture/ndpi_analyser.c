@@ -80,6 +80,8 @@ struct nDPI_reader_thread {
   char *domain_command;
   char domain_delim;
   char *hostname;
+  char *interface;
+  char *analyser;
 };
 
 struct nDPI_context {
@@ -87,6 +89,7 @@ struct nDPI_context {
   char *domain_command;
   char domain_delim;
   char hostname[OS_HOST_NAME_MAX];
+  char *analyser;
   struct nDPI_reader_thread *reader_threads;
 
   int reader_thread_count;
@@ -374,6 +377,9 @@ int send_alert_meta(struct nDPI_reader_thread *reader_thread, struct alert_meta 
   if (reader_thread->sfd && strlen(reader_thread->domain_command) &&
       strlen(reader_thread->domain_server_path) && meta->risk > 0)
   {
+    os_strlcpy(meta->hostname, reader_thread->hostname, OS_HOST_NAME_MAX);
+    os_strlcpy(meta->ifname, reader_thread->interface, IFNAMSIZ);
+    os_strlcpy(meta->analyser, reader_thread->analyser, MAX_ANALYSER_NAME_SIZE);
     if ((base64_meta = (char *) base64_url_encode((unsigned char *)meta, sizeof(struct alert_meta), &base64_len, 0)) == NULL) {
       log_trace("base64_url_encode fail");
       if (info != NULL) {
@@ -981,6 +987,8 @@ static int start_reader_threads(struct nDPI_thread_arg *targs)
     reader_threads[i].domain_command = context->domain_command;
     reader_threads[i].domain_delim = context->domain_delim;
     reader_threads[i].hostname = context->hostname;
+    reader_threads[i].interface = context->interface;
+    reader_threads[i].analyser = context->analyser;
 
     if ((reader_threads[i].workflow = init_workflow(&targs[i])) == NULL) {
       log_debug("init_workflow fail");
@@ -1078,6 +1086,7 @@ int start_ndpi_analyser(struct capture_conf *config)
   context.buffer_timeout = config->buffer_timeout;
   context.process_interval = config->process_interval;
   context.filter = config->filter;
+  context.analyser = config->analyser;
   context.reader_thread_count = MAX_READER_THREADS;
   size_t reader_size = sizeof(struct nDPI_reader_thread) * context.reader_thread_count;
 
@@ -1092,6 +1101,7 @@ int start_ndpi_analyser(struct capture_conf *config)
 
   log_info("nDPI version: %s, API version: %u", ndpi_revision(), ndpi_get_api_version());
   log_info("hostname=%s", context.hostname);
+  log_info("analyser=%s", context.analyser);
   log_info("domain_server_path=%s", context.domain_server_path);
   log_info("domain_command=%s", context.domain_command);
   log_info("domain_delim=0x%x", context.domain_delim);

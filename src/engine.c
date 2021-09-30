@@ -162,6 +162,7 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
   ctx->ticket = NULL;
   ctx->iptables_ctx = NULL;
   ctx->fingeprint_db = NULL;
+  ctx->alert_db = NULL;
   ctx->domain_sock = -1;
   ctx->exec_capture = app_config->exec_capture;
   ctx->domain_delim = app_config->domain_delim;
@@ -382,6 +383,7 @@ bool run_engine(struct app_config *app_config)
   free_vlan_mapper(&context.vlan_mapper);
   free_bridge_list(context.bridge_list);
   free_sqlite_fingerprint_db(context.fingeprint_db);
+  free_sqlite_alert_db(context.alert_db);
   free_sqlite_macconn_db(context.macconn_db);
   free_crypt_service(context.crypt_ctx);
 
@@ -400,6 +402,7 @@ run_engine_fail:
   free_vlan_mapper(&context.vlan_mapper);
   free_bridge_list(context.bridge_list);
   free_sqlite_fingerprint_db(context.fingeprint_db);
+  free_sqlite_alert_db(context.alert_db);
   free_sqlite_macconn_db(context.macconn_db);
   free_crypt_service(context.crypt_ctx);
   return false;

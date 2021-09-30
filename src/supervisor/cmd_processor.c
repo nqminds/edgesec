@@ -494,6 +494,12 @@ ssize_t process_set_alert_cmd(int sock, struct client_address *client_addr,
       return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
     }
 
+    if (meta_size != sizeof(struct alert_meta)) {
+      log_trace("meta size not equal to alert_meta");
+      os_free(meta);
+      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
+    }
+
     // info
     ptr = (char**) utarray_next(cmd_arr, ptr);
     if (ptr != NULL && *ptr != NULL) {

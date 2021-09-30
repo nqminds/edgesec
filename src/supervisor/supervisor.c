@@ -27,6 +27,7 @@
 #include <unistd.h>
 #include <sys/un.h>
 #include <sys/socket.h>
+#include <sys/ioctl.h>
 #include <libgen.h>
 
 #include "sqlite_fingerprint_writer.h"
@@ -42,6 +43,7 @@
 #include "network_commands.h"
 
 #define FINGERPRINT_DB_NAME "fingerprint" SQLITE_EXTENSION
+#define ALERT_DB_NAME "alert" SQLITE_EXTENSION
 
 void configure_mac_info(struct mac_conn_info *info, bool allow_connection,
                         int vlanid, ssize_t pass_len, uint8_t *pass, char *label)
@@ -275,16 +277,27 @@ void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
   UT_array *cmd_arr;
   process_cmd_fn cfn;
   struct sockaddr_un caddr;
+  uint32_t bytes_available;
   int addr_len;
   struct client_address addr;
-  char buf[MAX_DOMAIN_RECEIVE_DATA];
+  char *buf;
   struct supervisor_context *context = (struct supervisor_context *) sock_ctx;
-
-  utarray_new(cmd_arr, &ut_str_icd);
 
   os_memset(&caddr, 0, sizeof(struct sockaddr_un));
 
-  ssize_t num_bytes = read_domain_data(sock, buf, MAX_DOMAIN_RECEIVE_DATA, &caddr, &addr_len, 0);
+  if (ioctl(sock, FIONREAD, &bytes_available) == -1) {
+    log_err("ioctl");
+    return;
+  }
+
+  if ((buf = os_malloc(bytes_available)) == NULL) {
+    log_err("os_malloc");
+    return;
+  }
+
+  utarray_new(cmd_arr, &ut_str_icd);
+
+  ssize_t num_bytes = read_domain_data(sock, buf, bytes_available, &caddr, &addr_len, 0);
   if (num_bytes == -1) {
     log_trace("read_domain_data fail");
     goto end;  
@@ -309,6 +322,7 @@ void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
   }
 
 end:
+  os_free(buf);
   utarray_free(cmd_arr);
 }
 
@@ -341,6 +355,18 @@ int run_supervisor(char *server_path, struct supervisor_context *context)
     return -1;
   }
 
+  os_free(db_path);
+  db_path = construct_path(context->db_path, ALERT_DB_NAME);
+  if (db_path == NULL) {
+    log_debug("construct_path fail");
+    return -1;
+  }
+
+  if (open_sqlite_alert_db(db_path, &context->alert_db) < 0) {
+    log_trace("open_sqlite_alert_db fail");
+    os_free(db_path);
+    return -1;
+  }
   os_free(db_path);
 
   if ((sock = create_domain_server(server_path)) == -1) {
