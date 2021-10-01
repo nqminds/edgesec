@@ -152,6 +152,7 @@ static void test_write_domain_data(void **state)
 {
   (void) state; /* unused */
 
+  struct client_address addr;
   struct sockaddr_un svaddr;
   struct sockaddr_un claddr;
   char *send_buf = "domain";
@@ -184,7 +185,9 @@ static void test_write_domain_data(void **state)
   client_sock = create_domain_client(NULL);
   assert_int_not_equal(client_sock, -1);
 
-  ret = write_domain_data(client_sock, send_buf, buf_len, &svaddr, len);
+  os_memcpy(&addr.addr, &svaddr, sizeof(struct sockaddr_un));
+  addr.len = len;
+  ret = write_domain_data(client_sock, send_buf, buf_len, &addr);
   assert_int_equal(ret, buf_len);
 
   len = sizeof(struct sockaddr_un);

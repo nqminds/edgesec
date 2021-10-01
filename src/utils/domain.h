@@ -68,11 +68,10 @@ int create_domain_server(char *server_path);
  * @param data Data buffer
  * @param data_len Data buffer length
  * @param claddr The sender address structure
- * @param addr_len Sender address length
  * @param flags The flags for recvfrom function
  * @return ssize_t Size of read data
  */
-ssize_t read_domain_data(int sock, char *data, size_t data_len, struct client_address *claddr, int flags);
+ssize_t read_domain_data(int sock, char *data, size_t data_len, struct client_address *addr, int flags);
 
 /**
  * @brief Read data from the domain server socket with a string address
@@ -92,11 +91,10 @@ ssize_t read_domain_data_s(int sock, char *data, size_t data_len, char *addr, in
  * @param sock Domain server socket
  * @param data Data buffer
  * @param data_len Data buffer length
- * @param addr Client address
- * @param addr_len Client address length
+ * @param addr The recipient address structure
  * @return ssize_t Size of written data
  */
-ssize_t write_domain_data(int sock, char *data, size_t data_len, struct sockaddr_un *addr, int addr_len);
+ssize_t write_domain_data(int sock, char *data, size_t data_len, struct client_address *addr);
 
 /**
  * @brief Write data to the domain server socket with a string address

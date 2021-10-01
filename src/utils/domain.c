@@ -137,21 +137,21 @@ int create_domain_server(char *server_path)
 }
 
 ssize_t read_domain_data(int sock, char *data, size_t data_len,
-                         struct client_address *claddr, int flags)
+                         struct client_address *addr, int flags)
 {
   if (data == NULL) {
     log_trace("data param is NULL");
     return -1;
   }
 
-  if (claddr == NULL) {
-    log_trace("claddr param is NULL");
+  if (addr == NULL) {
+    log_trace("addr param is NULL");
     return -1;
   }
 
-  claddr->len = sizeof(struct sockaddr_un);
+  addr->len = sizeof(struct sockaddr_un);
 
-  ssize_t num_bytes = recvfrom(sock, data, data_len, flags, (struct sockaddr *) &claddr->addr, (socklen_t *) &claddr->len);
+  ssize_t num_bytes = recvfrom(sock, data, data_len, flags, (struct sockaddr *) &addr->addr, (socklen_t *) &addr->len);
   if (num_bytes == -1) {
     log_err("recvfrom");
     return -1;
@@ -164,7 +164,6 @@ ssize_t read_domain_data_s(int sock, char *data, size_t data_len, char *addr, in
 {
   struct client_address claddr;
   ssize_t num_bytes;
-  int addr_len;
 
   if (addr == NULL) {
     log_trace("addr is NULL");
@@ -180,19 +179,20 @@ ssize_t read_domain_data_s(int sock, char *data, size_t data_len, char *addr, in
 
 ssize_t write_domain_data_s(int sock, char *data, size_t data_len, char *addr)
 {
-  struct sockaddr_un uaddr;
+  struct client_address claddr;
 
   if (addr == NULL) {
     log_trace("addr param is NULL");
     return -1;
   }
 
-  init_domain_addr(&uaddr, addr);
+  init_domain_addr(&claddr.addr, addr);
+  claddr.len = sizeof(struct sockaddr_un);
 
-  return write_domain_data(sock, data, data_len, &uaddr, sizeof(struct sockaddr_un));
+  return write_domain_data(sock, data, data_len, &claddr);
 }
 
-ssize_t write_domain_data(int sock, char *data, size_t data_len, struct sockaddr_un *addr, int addr_len)
+ssize_t write_domain_data(int sock, char *data, size_t data_len, struct client_address *addr)
 {
   ssize_t num_bytes;
 
@@ -207,7 +207,7 @@ ssize_t write_domain_data(int sock, char *data, size_t data_len, struct sockaddr
   }
 
   errno = 0;
-  if ((num_bytes = sendto(sock, data, data_len, 0, (struct sockaddr *) addr, addr_len)) < 0) {
+  if ((num_bytes = sendto(sock, data, data_len, 0, (struct sockaddr *) &addr->addr, addr->len)) < 0) {
     log_err("sendto");
     return -1;
   }
