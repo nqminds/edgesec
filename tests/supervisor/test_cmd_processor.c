@@ -83,6 +83,12 @@ int __wrap_remove_bridge_cmd(struct supervisor_context *context, uint8_t *left_m
   return 0;
 }
 
+int __wrap_clear_bridges_cmd(struct supervisor_context *context, uint8_t *mac_addr)
+{
+  check_expected(mac_addr);
+  return 0;
+}
+
 int __wrap_set_fingerprint_cmd(struct supervisor_context *context, char *src_mac_addr,
                         char *dst_mac_addr, char *protocol, char *fingerprint,
                         uint64_t timestamp, char *query)
@@ -534,6 +540,31 @@ static void test_process_remove_bridge_cmd(void **state)
   utarray_free(cmd_arr);
 }
 
+static void test_process_clear_bridges_cmd(void **state)
+{
+  (void) state; /* unused */
+
+  uint8_t addr1[ETH_ALEN] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
+  UT_array *cmd_arr;
+  struct client_address claddr;
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("CLEAR_BRIDGES 11:22:33:44:55:66", CMD_DELIMITER, cmd_arr), -1);
+  expect_memory(__wrap_clear_bridges_cmd, mac_addr, addr1, ETH_ALEN);
+  assert_int_equal(process_clear_bridges_cmd(0, &claddr, NULL, cmd_arr), strlen(OK_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("CLEAR_BRIDGES 11:22:33:44:55:", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_clear_bridges_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("CLEAR_BRIDGES", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_clear_bridges_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+}
+
 static void test_process_set_fingerprint_cmd(void **state)
 {
   (void) state; /* unused */
@@ -931,6 +962,7 @@ int main(int argc, char *argv[])
     cmocka_unit_test(test_process_set_ip_cmd),
     cmocka_unit_test(test_process_add_bridge_cmd),
     cmocka_unit_test(test_process_remove_bridge_cmd),
+    cmocka_unit_test(test_process_clear_bridges_cmd),
     cmocka_unit_test(test_process_set_fingerprint_cmd),
     cmocka_unit_test(test_process_query_fingerprint_cmd),
     cmocka_unit_test(test_process_register_ticket_cmd),

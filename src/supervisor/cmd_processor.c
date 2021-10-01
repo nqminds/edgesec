@@ -89,6 +89,16 @@ ssize_t process_ping_cmd(int sock, struct client_address *client_addr, struct su
   return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
 }
 
+ssize_t process_subscribe_events_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
+{
+  if (subscribe_events_cmd(context, &client_addr->addr, client_addr->len) < 0) {
+    log_trace("subscribe_events_cmd fail");
+    return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
+  }
+
+  return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), &client_addr->addr, client_addr->len);
+}
+
 ssize_t process_accept_mac_cmd(int sock, struct client_address *client_addr,
   struct supervisor_context *context, UT_array *cmd_arr)
 {
@@ -379,6 +389,27 @@ ssize_t process_remove_bridge_cmd(int sock, struct client_address *client_addr,
           return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), &client_addr->addr, client_addr->len);
         }
       }
+    }
+  }
+
+  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
+}
+
+ssize_t process_clear_bridges_cmd(int sock, struct client_address *client_addr,
+  struct supervisor_context *context, UT_array *cmd_arr)
+{
+  char **ptr = (char**) utarray_next(cmd_arr, NULL);
+  uint8_t left_addr[ETH_ALEN];
+
+  // MAC address source
+  ptr = (char**) utarray_next(cmd_arr, ptr);
+  if (ptr != NULL && *ptr != NULL) {
+    if (hwaddr_aton2(*ptr, left_addr) != -1) {
+      if (clear_bridges_cmd(context, left_addr) < 0) {
+        log_trace("remove_bridge_cmd fail");
+        return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), &client_addr->addr, client_addr->len);
+      }
+      return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), &client_addr->addr, client_addr->len);
     }
   }
 
@@ -988,6 +1019,8 @@ process_cmd_fn get_command_function(char *cmd)
 {
   if (!strcmp(cmd, CMD_PING)) {
     return process_ping_cmd;
+  } else if (!strcmp(cmd, CMD_SUBSCRIBE_EVENTS)) {
+    return process_subscribe_events_cmd;
   } else if (!strcmp(cmd, CMD_ACCEPT_MAC)) {
     return process_accept_mac_cmd;
   } else if (!strcmp(cmd, CMD_DENY_MAC)) {
@@ -1008,6 +1041,8 @@ process_cmd_fn get_command_function(char *cmd)
     return process_add_bridge_cmd;
   } else if (!strcmp(cmd, CMD_REMOVE_BRIDGE)) {
     return process_remove_bridge_cmd;
+  } else if (!strcmp(cmd, CMD_CLEAR_BRIDGES)) {
+    return process_clear_bridges_cmd;
   } else if (!strcmp(cmd, CMD_GET_BRIDGES)) {
     return process_get_bridges_cmd;
   } else if (!strcmp(cmd, CMD_SET_FINGERPRINT)) {

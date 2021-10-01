@@ -256,8 +256,9 @@ int add_bridge_cmd(struct supervisor_context *context, uint8_t *left_mac_addr, u
 {
   struct mac_conn_info left_info, right_info;
 
+  log_trace("ADD_BRIDGE left_mac=" MACSTR ", right_mac="MACSTR, MAC2STR(left_mac_addr), MAC2STR(right_mac_addr));
+
   if (add_bridge_mac(context->bridge_list, left_mac_addr, right_mac_addr) >= 0) {
-    log_trace("ADD_BRIDGE left_mac=" MACSTR " right_mac=" MACSTR, MAC2STR(left_mac_addr), MAC2STR(right_mac_addr));
     if (get_mac_mapper(&context->mac_mapper, left_mac_addr, &left_info) == 1 &&
         get_mac_mapper(&context->mac_mapper, right_mac_addr, &right_info) == 1
     ) {
@@ -281,8 +282,9 @@ int remove_bridge_cmd(struct supervisor_context *context, uint8_t *left_mac_addr
 {
   struct mac_conn_info left_info, right_info;
 
+  log_trace("REMOVE_BRIDGE left_mac=" MACSTR ", right_mac="MACSTR, MAC2STR(left_mac_addr), MAC2STR(right_mac_addr));
+
   if (remove_bridge_mac(context->bridge_list, left_mac_addr, right_mac_addr) >= 0) {
-    log_trace("REMOVE_BRIDGE left_mac=" MACSTR " right_mac=" MACSTR, MAC2STR(left_mac_addr), MAC2STR(right_mac_addr));
     if (get_mac_mapper(&context->mac_mapper, left_mac_addr, &left_info) == 1 &&
         get_mac_mapper(&context->mac_mapper, right_mac_addr, &right_info) == 1
     ) {
@@ -297,6 +299,25 @@ int remove_bridge_cmd(struct supervisor_context *context, uint8_t *left_mac_addr
   } else {
     log_trace("remove_bridge_mac fail");
     return -1;
+  }
+
+  return 0;
+}
+
+int clear_bridges_cmd(struct supervisor_context *context, uint8_t *mac_addr)
+{
+  struct mac_conn *mac_list = NULL;
+  int mac_list_len = get_mac_list(&context->mac_mapper, &mac_list);
+
+  log_trace("CLEAR_BRIDGES mac=" MACSTR, MAC2STR(mac_addr));
+
+  if (mac_list != NULL) {
+    for (int count = 0; count < mac_list_len; count ++) {
+      struct mac_conn el = mac_list[count];
+      remove_bridge_cmd(context, mac_addr, el.mac_addr);
+    }
+
+    os_free(mac_list);
   }
 
   return 0;

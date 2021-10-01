@@ -310,11 +310,17 @@ int set_alert_cmd(struct supervisor_context *context, struct alert_meta *meta,
   free_sqlite_alert_row(&row);
 
   if (meta->risk >= context->risk_score) {
+    if (clear_bridges_cmd(context, meta->src_mac_addr) < 0) {
+      log_trace("clear_bridges_cmd fail");
+      return -1;
+    }
+
     log_trace("Moving mac="MACSTR" to quarantine vlanid=%d", MAC2STR(meta->src_mac_addr), context->quarantine_vlanid);
     if (accept_mac_cmd(context, meta->src_mac_addr, context->quarantine_vlanid) < 0) {
       log_trace("accept_mac_cmd fail");
       return -1;
     }
+
   }
   return 0;
 }

@@ -129,3 +129,8 @@ char* ping_cmd(void)
 {
   return os_strdup(PING_REPLY);
 }
+
+int subscribe_events_cmd(struct supervisor_context *context, struct sockaddr_un *addr, int addr_len)
+{
+  return -1;
+}

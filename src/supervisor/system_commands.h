@@ -26,6 +26,7 @@
 #ifndef SYSTEM_COMMANDS_H
 #define SYSTEM_COMMANDS_H
 
+#include <sys/un.h>
 #include <inttypes.h>
 #include <stdbool.h>
 
@@ -47,4 +48,15 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
  * @return char* the ping reply string, NULL on failure
  */
 char* ping_cmd(void);
+
+/**
+ * @brief SUBSCRIBE_EVENTS command
+ * 
+ * @param context The supervisor structure instance
+ * @param addr Client address
+ * @param addr_len Client address length
+ * @return 0 on success, -1 on failure
+ */
+int subscribe_events_cmd(struct supervisor_context *context, struct sockaddr_un *addr, int addr_len);
+
 #endif
