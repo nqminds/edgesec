@@ -137,21 +137,21 @@ int create_domain_server(char *server_path)
 }
 
 ssize_t read_domain_data(int sock, char *data, size_t data_len,
-  struct sockaddr_un *addr, int *addr_len, int flags)
+                         struct client_address *claddr, int flags)
 {
-  *addr_len = sizeof(struct sockaddr_un);
-
   if (data == NULL) {
     log_trace("data param is NULL");
     return -1;
   }
 
-  if (addr == NULL) {
-    log_trace("addr param is NULL");
+  if (claddr == NULL) {
+    log_trace("claddr param is NULL");
     return -1;
   }
 
-  ssize_t num_bytes = recvfrom(sock, data, data_len, flags, (struct sockaddr *) addr, (socklen_t *)addr_len);
+  claddr->len = sizeof(struct sockaddr_un);
+
+  ssize_t num_bytes = recvfrom(sock, data, data_len, flags, (struct sockaddr *) &claddr->addr, (socklen_t *) &claddr->len);
   if (num_bytes == -1) {
     log_err("recvfrom");
     return -1;
@@ -162,7 +162,7 @@ ssize_t read_domain_data(int sock, char *data, size_t data_len,
 
 ssize_t read_domain_data_s(int sock, char *data, size_t data_len, char *addr, int flags)
 {
-  struct sockaddr_un unaddr;
+  struct client_address claddr;
   ssize_t num_bytes;
   int addr_len;
 
@@ -171,9 +171,9 @@ ssize_t read_domain_data_s(int sock, char *data, size_t data_len, char *addr, in
     return -1;
   }
 
-  num_bytes = read_domain_data(sock, data, data_len, &unaddr, &addr_len, flags);
+  num_bytes = read_domain_data(sock, data, data_len, &claddr, flags);
 
-  strcpy(addr, unaddr.sun_path);
+  strcpy(addr, claddr.addr.sun_path);
 
   return num_bytes;
 }

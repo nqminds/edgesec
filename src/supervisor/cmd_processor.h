@@ -31,6 +31,7 @@
 #include <stdbool.h>
 
 #include "../utils/utarray.h"
+#include "../utils/domain.h"
 
 #include "supervisor_config.h"
 
@@ -74,15 +75,6 @@
 #define FAIL_REPLY            "FAIL"
 
 #define MAX_QUERY_OP_LEN      3
-
-/**
- * @brief Client address structure definition
- * 
- */
-struct client_address {
-  struct sockaddr_un addr;
-  int len;
-};
 
 typedef ssize_t (*process_cmd_fn)(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 

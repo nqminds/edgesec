@@ -37,6 +37,15 @@ extern "C" {
 #endif
 
 /**
+ * @brief Client address structure definition
+ * 
+ */
+struct client_address {
+  struct sockaddr_un addr;
+  int len;
+};
+
+/**
  * @brief Create a domain client object
  * 
  * @param addr The socket addr, if NULL is auto genereated and hidden
@@ -58,12 +67,12 @@ int create_domain_server(char *server_path);
  * @param sock Domain Server socket
  * @param data Data buffer
  * @param data_len Data buffer length
- * @param addr Sender address
+ * @param claddr The sender address structure
  * @param addr_len Sender address length
  * @param flags The flags for recvfrom function
  * @return ssize_t Size of read data
  */
-ssize_t read_domain_data(int sock, char *data, size_t data_len, struct sockaddr_un *addr, int *addr_len, int flags);
+ssize_t read_domain_data(int sock, char *data, size_t data_len, struct client_address *claddr, int flags);
 
 /**
  * @brief Read data from the domain server socket with a string address

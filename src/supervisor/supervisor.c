@@ -277,14 +277,12 @@ void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
   char **ptr = NULL;
   UT_array *cmd_arr;
   process_cmd_fn cfn;
-  struct sockaddr_un caddr;
   uint32_t bytes_available;
-  int addr_len;
-  struct client_address addr;
+  struct client_address claddr;
   char *buf;
   struct supervisor_context *context = (struct supervisor_context *) sock_ctx;
 
-  os_memset(&caddr, 0, sizeof(struct sockaddr_un));
+  os_memset(&claddr, 0, sizeof(struct client_address));
 
   if (ioctl(sock, FIONREAD, &bytes_available) == -1) {
     log_err("ioctl");
@@ -298,16 +296,13 @@ void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
 
   utarray_new(cmd_arr, &ut_str_icd);
 
-  ssize_t num_bytes = read_domain_data(sock, buf, bytes_available, &caddr, &addr_len, 0);
+  ssize_t num_bytes = read_domain_data(sock, buf, bytes_available, &claddr, 0);
   if (num_bytes == -1) {
     log_trace("read_domain_data fail");
     goto end;  
   }
 
-  addr.addr = caddr;
-  addr.len = addr_len;
-
-  log_trace("Supervisor received %ld bytes from socket length=%d", (long) num_bytes, addr_len);
+  log_trace("Supervisor received %ld bytes from socket length=%d", (long) num_bytes, claddr.len);
   if (process_domain_buffer(buf, num_bytes, cmd_arr, context->domain_delim) == false) {
     log_trace("process_domain_buffer fail");
     goto end;
@@ -316,7 +311,7 @@ void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
   ptr = (char**) utarray_next(cmd_arr, ptr);
 
   if ((cfn = get_command_function(*ptr)) != NULL) {
-    if (cfn(sock, &addr, context, cmd_arr) == -1) {
+    if (cfn(sock, &claddr, context, cmd_arr) == -1) {
       log_trace("%s fail", *ptr);
       goto end;
     }
