@@ -22,7 +22,7 @@
  * @author Alexandru Mereacre 
  * @brief File containing the implementation of the system commands.
  */
-
+#include <sys/un.h>
 #include <libgen.h>
 
 #include "mac_mapper.h"
