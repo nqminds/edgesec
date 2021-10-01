@@ -30,6 +30,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
+#include "../utils/domain.h"
 /**
  * @brief SET_IP command
  * 
@@ -53,10 +54,9 @@ char* ping_cmd(void);
  * @brief SUBSCRIBE_EVENTS command
  * 
  * @param context The supervisor structure instance
- * @param addr Client address
- * @param addr_len Client address length
+ * @param addr The subscriber address
  * @return 0 on success, -1 on failure
  */
-int subscribe_events_cmd(struct supervisor_context *context, struct sockaddr_un *addr, int addr_len);
+int subscribe_events_cmd(struct supervisor_context *context, struct client_address *addr);
 
 #endif

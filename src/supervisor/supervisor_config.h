@@ -68,6 +68,7 @@ struct supervisor_context {
   int             risk_score;                                 /**< @c risk_score from @c struct app_config */
   char            db_path[MAX_OS_PATH_LEN];                   /**< @c db_path from @c struct app_config */
   UT_array        *config_ifinfo_array;                       /**< @c config_ifinfo_array from @c struct app_config */
+  UT_array        *subscribers_array;                         /**< The array of events subscribers */
   struct bridge_mac_list *bridge_list;                        /**< List of assigned bridges */
   char            domain_delim;                               /**< Control server command delimiter */
   int             domain_sock;                                /**< The domain socket */

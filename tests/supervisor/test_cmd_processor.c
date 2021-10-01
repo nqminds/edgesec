@@ -27,6 +27,12 @@ ssize_t __wrap_write_domain_data(int sock, char *data, size_t data_len, struct s
   return data_len;
 }
 
+int __wrap_subscribe_events_cmd(struct supervisor_context *context, struct client_address *addr)
+{
+  check_expected(addr);
+  return 0;
+}
+
 int __wrap_accept_mac_cmd(struct supervisor_context *context, uint8_t *mac_addr, int vlanid)
 {
   check_expected(mac_addr);
@@ -238,6 +244,20 @@ static void test_process_domain_buffer(void **state)
   assert_string_equal(*p, "PING");
 
   utarray_free(arr);
+}
+
+static void test_process_subscribe_events_cmd(void **state)
+{
+  (void) state; /* unused */
+
+  UT_array *cmd_arr;
+  struct client_address claddr;
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("SUBSCRIBE_EVENTS", CMD_DELIMITER, cmd_arr), -1); 
+  expect_any(__wrap_subscribe_events_cmd, addr);
+  assert_int_equal(process_subscribe_events_cmd(0, &claddr, NULL, cmd_arr), strlen(OK_REPLY));
+  utarray_free(cmd_arr);
 }
 
 static void test_process_accept_mac_cmd(void **state)
@@ -952,6 +972,7 @@ int main(int argc, char *argv[])
 
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_process_domain_buffer),
+    cmocka_unit_test(test_process_subscribe_events_cmd),
     cmocka_unit_test(test_process_accept_mac_cmd),
     cmocka_unit_test(test_process_deny_mac_cmd),
     cmocka_unit_test(test_process_add_nat_cmd),

@@ -41,6 +41,7 @@
 #include "../utils/base64.h"
 #include "../utils/eloop.h"
 #include "../utils/iptables.h"
+#include "../utils/domain.h"
 
 #define PING_REPLY  "PONG"
 
@@ -130,7 +131,8 @@ char* ping_cmd(void)
   return os_strdup(PING_REPLY);
 }
 
-int subscribe_events_cmd(struct supervisor_context *context, struct sockaddr_un *addr, int addr_len)
+int subscribe_events_cmd(struct supervisor_context *context, struct client_address *addr)
 {
-  return -1;
+  utarray_push_back(context->subscribers_array, addr);
+  return 0;
 }

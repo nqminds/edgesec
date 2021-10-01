@@ -156,6 +156,7 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
     return false;
   }
 
+  ctx->subscribers_array = NULL;
   ctx->ap_sock = -1;
   ctx->hmap_bin_paths = NULL;
   ctx->radius_srv = NULL;
@@ -347,7 +348,7 @@ bool run_engine(struct app_config *app_config)
   }
 
   log_info("Creating supervisor on %s", app_config->domain_server_path);
-  if ((context.domain_sock = run_supervisor(app_config->domain_server_path, &context)) == -1) {
+  if (run_supervisor(app_config->domain_server_path, &context) < 0) {
     log_debug("run_supervisor fail");
     goto run_engine_fail;
   }
@@ -389,7 +390,7 @@ bool run_engine(struct app_config *app_config)
   log_info("++++++++++++++++++");
   eloop_run();
 
-  close_supervisor(context.domain_sock);
+  close_supervisor(&context);
   close_ap(&context);
   close_dhcp();
   close_radius(context.radius_srv);
@@ -400,15 +401,13 @@ bool run_engine(struct app_config *app_config)
   free_if_mapper(&context.if_mapper);
   free_vlan_mapper(&context.vlan_mapper);
   free_bridge_list(context.bridge_list);
-  free_sqlite_fingerprint_db(context.fingeprint_db);
-  free_sqlite_alert_db(context.alert_db);
   free_sqlite_macconn_db(context.macconn_db);
   free_crypt_service(context.crypt_ctx);
 
   return true;
 
 run_engine_fail:
-  close_supervisor(context.domain_sock);
+  close_supervisor(&context);
   close_ap(&context);
   close_dhcp();
   close_radius(context.radius_srv);
@@ -419,8 +418,6 @@ run_engine_fail:
   free_if_mapper(&context.if_mapper);
   free_vlan_mapper(&context.vlan_mapper);
   free_bridge_list(context.bridge_list);
-  free_sqlite_fingerprint_db(context.fingeprint_db);
-  free_sqlite_alert_db(context.alert_db);
   free_sqlite_macconn_db(context.macconn_db);
   free_crypt_service(context.crypt_ctx);
   return false;

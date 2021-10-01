@@ -46,6 +46,8 @@
 #define FINGERPRINT_DB_NAME "fingerprint" SQLITE_EXTENSION
 #define ALERT_DB_NAME "alert" SQLITE_EXTENSION
 
+static const UT_icd client_address_icd = {sizeof(struct client_address), NULL, NULL, NULL};
+
 void configure_mac_info(struct mac_conn_info *info, bool allow_connection,
                         int vlanid, ssize_t pass_len, uint8_t *pass, char *label)
 {
@@ -322,21 +324,28 @@ end:
   utarray_free(cmd_arr);
 }
 
-bool close_supervisor(int sock)
+void close_supervisor(struct supervisor_context *context)
 {
-  if (sock != -1) {
-    if (close(sock) == -1) {
+  if (context == NULL) {
+    log_trace("context param is NULL");
+    return;
+  }
+
+  if (context->domain_sock != -1) {
+    if (close(context->domain_sock) == -1) {
       log_err("close");
-      return false;
     }
   }
 
-  return true;
+  free_sqlite_fingerprint_db(context->fingeprint_db);
+  free_sqlite_alert_db(context->alert_db);
+  if (context->subscribers_array != NULL) {
+    utarray_free(context->subscribers_array);
+  }
 }
 
 int run_supervisor(char *server_path, struct supervisor_context *context)
 {
-  int sock;
   char *db_path = NULL;
 
   db_path = construct_path(context->db_path, FINGERPRINT_DB_NAME);
@@ -365,16 +374,19 @@ int run_supervisor(char *server_path, struct supervisor_context *context)
   }
   os_free(db_path);
 
-  if ((sock = create_domain_server(server_path)) == -1) {
+  utarray_new(context->subscribers_array, &client_address_icd);
+
+  if ((context->domain_sock = create_domain_server(server_path)) == -1) {
     log_trace("create_domain_server fail");
+    close_supervisor(context);
     return -1;
   }
 
-  if (eloop_register_read_sock(sock, eloop_read_sock_handler, NULL, (void *)context) ==  -1) {
+  if (eloop_register_read_sock(context->domain_sock, eloop_read_sock_handler, NULL, (void *)context) ==  -1) {
     log_trace("eloop_register_read_sock fail");
-    close_supervisor(sock);
+    close_supervisor(context);
     return -1;
   }
 
-  return sock;
+  return 0;
 }
