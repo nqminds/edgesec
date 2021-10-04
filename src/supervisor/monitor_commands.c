@@ -30,6 +30,7 @@
 #include "sqlite_alert_writer.h"
 #include "sqlite_macconn_writer.h"
 #include "network_commands.h"
+#include "subscriber_events.h"
 
 #include "../ap/ap_config.h"
 #include "../ap/ap_service.h"
@@ -321,6 +322,12 @@ int set_alert_cmd(struct supervisor_context *context, struct alert_meta *meta,
       return -1;
     }
 
+    if (send_events_subscriber(context, SUBSCRIBER_EVENT_ALERT, MACSTR" "MACSTR" %d %"PRIu64,
+                               MAC2STR(meta->src_mac_addr), MAC2STR(meta->dst_mac_addr),
+                               meta->risk, meta->timestamp) < 0) {
+      log_trace("send_events_subscriber fail");
+      return -1;
+    }
   }
   return 0;
 }

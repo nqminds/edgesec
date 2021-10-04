@@ -91,6 +91,8 @@ ssize_t process_ping_cmd(int sock, struct client_address *client_addr, struct su
 
 ssize_t process_subscribe_events_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr)
 {
+  (void) cmd_arr; /* unused */
+
   if (subscribe_events_cmd(context, client_addr) < 0) {
     log_trace("subscribe_events_cmd fail");
     return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);

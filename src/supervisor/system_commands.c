@@ -30,6 +30,7 @@
 #include "sqlite_fingerprint_writer.h"
 #include "sqlite_macconn_writer.h"
 #include "network_commands.h"
+#include "subscriber_events.h"
 
 #include "../ap/ap_config.h"
 #include "../ap/ap_service.h"
@@ -42,6 +43,7 @@
 #include "../utils/eloop.h"
 #include "../utils/iptables.h"
 #include "../utils/domain.h"
+#include "../utils/utarray.h"
 
 #define PING_REPLY  "PONG"
 
@@ -78,6 +80,12 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
   log_trace("SET_IP type=%d mac=" MACSTR " ip=%s if=%s", add, MAC2STR(mac_addr), ip_addr, ifname);
   if (!save_mac_mapper(context, conn)) {
     log_trace("save_mac_mapper fail");
+    return -1;
+  }
+
+  if (send_events_subscriber(context, SUBSCRIBER_EVENT_IP, MACSTR" %s %d",
+                             MAC2STR(mac_addr), ip_addr, add) < 0) {
+    log_trace("send_events_subscriber fail");
     return -1;
   }
 
@@ -133,6 +141,6 @@ char* ping_cmd(void)
 
 int subscribe_events_cmd(struct supervisor_context *context, struct client_address *addr)
 {
-  utarray_push_back(context->subscribers_array, addr);
-  return 0;
+  log_trace("SUBSCRIBE_EVENTS with size=%d", addr->len);
+  return add_events_subscriber(context, addr);
 }

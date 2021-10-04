@@ -32,6 +32,7 @@
 
 #include "sqlite_fingerprint_writer.h"
 #include "sqlite_alert_writer.h"
+#include "subscriber_events.h"
 
 #include "utils/log.h"
 #include "utils/allocs.h"
@@ -269,6 +270,11 @@ void ap_service_callback(struct supervisor_context *context, uint8_t mac_addr[],
     if (!put_mac_mapper(&context->mac_mapper, conn)) {
       log_trace("put_mac_mapper fail");
     }
+  }
+
+  if (send_events_subscriber(context, SUBSCRIBER_EVENT_AP, MACSTR" %d",
+                             MAC2STR(mac_addr), status) < 0) {
+    log_trace("send_events_subscriber fail");
   }
 }
 
