@@ -23,7 +23,7 @@ if (BUILD_REVERSE_SERVICE)
 endif ()
 
 # usually /usr/local/lib/edgesec (or /usr/lib/edgesec for .deb)
-set(EDGESEC_private_lib_dir "${CMAKE_INSTALL_LIBDIR}/${_project_lower}" CACHE PATH "Directory of private EDGESec shared libs")
+# EDGESEC_private_lib_dir is set in main CMakeLists.txt, as we need it to set RPATH before targets
 # currently only hostapd, so it doesn't conflict with other hostapds
 set(EDGESEC_libexec_dir "${CMAKE_INSTALL_FULL_LIBEXECDIR}/${_project_lower}" CACHE PATH "Directory of private EDGESec bins")
 set(EDGESEC_config_dir "${CMAKE_INSTALL_FULL_SYSCONFDIR}/${_project_lower}" CACHE PATH "Directory of EDGESec config files")
@@ -38,12 +38,6 @@ configure_file(
   ESCAPE_QUOTES # values are quoted, so we need to escape quotes
   @ONLY # we only use @VAR_NAME@ syntax
 )
-
-# $ORIGIN is so that shared libs can view other shared libs (e.g. libgrpc++ can see libxxx)
-# $ORIGIN/lib is to support where we used to store shared libs
-# ${EDGESEC_private_lib_dir} is where private shared libs will be stored after `make install`
-set(CMAKE_INSTALL_RPATH "$ORIGIN" "$ORIGIN/lib" "${EDGESEC_private_lib_dir}")
-
 
 # /etc/edgesec/config.ini folder
 install(FILES "${PROJECT_BINARY_DIR}/config.ini" DESTINATION "${EDGESEC_config_dir}")
