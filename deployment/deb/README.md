@@ -6,7 +6,7 @@
 
 #### Podman
 
-If you want to use podman (e.g. since you're using elementary OS), you can
+If you want to use podman (e.g. since you're using elementary OS), you can setup a new image
 
 Install .deb build dependencies, as well as the build depenencies for EDGESec (see README.md)
 
@@ -14,15 +14,15 @@ Install .deb build dependencies, as well as the build depenencies for EDGESec (s
 sudo apt install gnupg linux-headers-generic ubuntu-dev-tools apt-file -y
 ```
 
-Replace `-j9` with how many threads you want to use.
-This will automatically call `cmake` in the background.
+This will automatically call `cmake` in the background, using multiple threads (e.g. no need for `j6`)
 
 ```bash
-debuild -us -uc -j9
+debuild -us -uc
 ```
 
 - Add the `--no-pre-clean` to prevent `debuild` from recompiling everything.
   This saves a lot of time during testing.
+- `-us -uc` means do not sign the source package and `.changes` file.
 
 Now the deb should exist in the folder above this folder, e.g. `cd ..`.
 
@@ -37,14 +37,23 @@ sudo apt install gnupg pbuilder fakechroot ubuntu-dev-tools apt-file -y
 ```
 
 Then create a pbuild environment (basically a chroot jail).
-
-We use `fakechroot fakeroot` to make this work in `podman`.
+This lets us install apt packages without affecting our OS.
 
 Replace `--distribution focal` with the OS you are using.
 
 ```bash
-pbuilder create --debootstrapopts --variant=buildd --distribution focal
+sudo pbuilder create --debootstrapopts --variant=buildd --distribution focal
 ```
+
+Finally, you can build the `.deb` file with:
+
+```bash
+pdebuild --debbuildopts -us -uc
+```
+
+The meaning of the options are:
+- `-debbuildopts ...`: Options to pass to `debbuild`. See `debbuild` options above in the [**Podman**](#podman) section.
+  - `-us -uc` means do not sign the source package and `.changes` file.
 
 #### Cross-compiling
 
