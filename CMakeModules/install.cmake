@@ -39,6 +39,12 @@ configure_file(
   @ONLY # we only use @VAR_NAME@ syntax
 )
 
+# $ORIGIN is so that shared libs can view other shared libs (e.g. libgrpc++ can see libxxx)
+# $ORIGIN/lib is to support where we used to store shared libs
+# ${EDGESEC_private_lib_dir} is where private shared libs will be stored after `make install`
+set(CMAKE_INSTALL_RPATH "$ORIGIN" "$ORIGIN/lib" "${EDGESEC_private_lib_dir}")
+
+
 # /etc/edgesec/config.ini folder
 install(FILES "${PROJECT_BINARY_DIR}/config.ini" DESTINATION "${EDGESEC_config_dir}")
 get_filename_component(EDGESEC_cert_directory ${EDGESEC_cert_location} DIRECTORY)

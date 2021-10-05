@@ -16,8 +16,6 @@ string(TOLOWER ${CMAKE_HOST_SYSTEM_PROCESSOR} _sys)
 string(TOLOWER ${PROJECT_NAME} _project_lower)
 
 # Installation options
-#set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
-set(CMAKE_INSTALL_RPATH "$ORIGIN" "$ORIGIN/lib" "$ORIGIN/../lib/EDGESec")
 # creating the .deb would use set their own CMAKE_INSTALL_PREFIX
 set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/${_project_lower}-dist" CACHE BOOL "Installation path")
 
