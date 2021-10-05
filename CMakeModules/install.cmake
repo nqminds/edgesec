@@ -23,12 +23,27 @@ if (BUILD_REVERSE_SERVICE)
 endif ()
 
 # usually /usr/local/lib/edgesec (or /usr/lib/edgesec for .deb)
-set(EDGESEC_private_lib_dir "${CMAKE_INSTALL_LIBDIR}/${_project_lower}" CACHE PATH "Path to where private EDGESec shared libs are stored")
+set(EDGESEC_private_lib_dir "${CMAKE_INSTALL_LIBDIR}/${_project_lower}" CACHE PATH "Directory of private EDGESec shared libs")
 # currently only hostapd, so it doesn't conflict with other hostapds
-set(EDGESEC_libexec_dir "${CMAKE_INSTALL_FULL_LIBEXECDIR}/${_project_lower}" CACHE PATH "Path to where private EDGESec bins are stored")
+set(EDGESEC_libexec_dir "${CMAKE_INSTALL_FULL_LIBEXECDIR}/${_project_lower}" CACHE PATH "Directory of private EDGESec bins")
+set(EDGESEC_config_dir "${CMAKE_INSTALL_FULL_SYSCONFDIR}/${_project_lower}" CACHE PATH "Directory of EDGESec config files")
+set(EDGESEC_log_dir "${CMAKE_INSTALL_FULL_LOCALSTATEDIR}/log/${_project_lower}" CACHE PATH "Directory of EDGESec log files")
+set(EDGESEC_local_lib_dir "${CMAKE_INSTALL_FULL_LOCALSTATEDIR}/lib/${_project_lower}" CACHE PATH "Directory of EDGESec persistant files (e.g. databases)")
+set(EDGESEC_runstate_dir "${CMAKE_INSTALL_FULL_RUNSTATEDIR}/${_project_lower}" CACHE PATH "Directory of EDGESec run-state files (.pid and socket files)")
+
+set(EDGESEC_cert_location "${EDGESEC_config_dir}/CA/CA.pem" CACHE FILEPATH "Path to edgesec certificate authority file")
+configure_file(
+  "config.ini.in"
+  "${PROJECT_BINARY_DIR}/config.ini"
+  ESCAPE_QUOTES # values are quoted, so we need to escape quotes
+  @ONLY # we only use @VAR_NAME@ syntax
+)
 
 # /etc/edgesec/config.ini folder
-install(FILES "${PROJECT_BINARY_DIR}/config.ini" DESTINATION "${CMAKE_INSTALL_SYSCONFDIR}/${_project_lower}")
+install(FILES "${PROJECT_BINARY_DIR}/config.ini" DESTINATION "${EDGESEC_config_dir}")
+get_filename_component(EDGESEC_cert_directory ${EDGESEC_cert_location} DIRECTORY)
+get_filename_component(EDGESEC_cert_filename ${EDGESEC_cert_location} NAME)
+install(FILES "${CMAKE_SOURCE_DIR}/scripts/deployments/rpi/CA.pem" DESTINATION "${EDGESEC_cert_directory}" RENAME "${EDGESEC_cert_filename}")
 
 # for install /lib directories, we need to add a trailing "/" to avoid
 # installing into ${EDGESEC_private_lib_dir}/lib
