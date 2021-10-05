@@ -1,3 +1,4 @@
+include(GNUInstallDirs) # automagically setup install dir locations
 install(
   TARGETS edgesec capsrv
   RUNTIME
@@ -24,7 +25,7 @@ endif ()
 # usually /usr/local/lib/edgesec (or /usr/lib/edgesec for .deb)
 set(EDGESEC_private_lib_dir "${CMAKE_INSTALL_LIBDIR}/${_project_lower}" CACHE PATH "Path to where private EDGESec shared libs are stored")
 # currently only hostapd, so it doesn't conflict with other hostapds
-set(EDGESEC_libexec_dir "${CMAKE_INSTALL_LIBEXECDIR}/${_project_lower}" CACHE PATH "Path to where private EDGESec bins are stored")
+set(EDGESEC_libexec_dir "${CMAKE_INSTALL_FULL_LIBEXECDIR}/${_project_lower}" CACHE PATH "Path to where private EDGESec bins are stored")
 
 # /etc/edgesec/config.ini folder
 install(FILES "${PROJECT_BINARY_DIR}/config.ini" DESTINATION "${CMAKE_INSTALL_SYSCONFDIR}/${_project_lower}")
