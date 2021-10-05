@@ -201,9 +201,11 @@ configure_file(
 )
 
 # Copy the default configuration file to the build folder
+# This config file is for local testing, not for `make install` use
 configure_file(
-  "config.ini.in"
-  "${PROJECT_BINARY_DIR}/config.ini"
+  "local-config.ini"
+  "${PROJECT_BINARY_DIR}/local-config.ini"
+  COPYONLY # does not edit the file
 )
 
 include(doxygen)
