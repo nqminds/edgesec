@@ -9,7 +9,8 @@ add_library(mac_mapper mac_mapper.c)
 target_link_libraries(mac_mapper PRIVATE bridge_list log os)
 
 add_library(subscriber_events subscriber_events.c)
-target_link_libraries(subscriber_events PRIVATE log os domain)
+target_include_directories(subscriber_events PRIVATE ${LIBSQLITE_INCLUDE_DIR})
+target_link_libraries(subscriber_events PRIVATE log os domain ${LIBSQLITE_LIB})
 
 add_library(sqlite_fingerprint_writer sqlite_fingerprint_writer.c)
 target_include_directories(sqlite_fingerprint_writer PRIVATE ${LIBSQLITE_INCLUDE_DIR})
