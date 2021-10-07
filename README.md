@@ -16,6 +16,7 @@ build_dependencies=(
     build-essential # C and C++ compilers
     libnl-genl-3-dev libnl-route-3-dev # netlink dependencies
     automake # required by libmicrohttpd for some reason?
+    autopoint gettext # required by libuuid
     autoconf # required by compile_sqlite.sh
     libtool-bin # required by autoconf somewhere
     pkg-config # seems to be required by nDPI

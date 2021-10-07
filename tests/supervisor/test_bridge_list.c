@@ -111,7 +111,7 @@ static void test_remove_bridge_mac(void **state)
   hwaddr_aton2(mac_str_4, mac_addr_4);
 
   int ret = remove_bridge_mac(bridge_list, mac_addr_1, mac_addr_2);
-  assert_int_equal(ret, -1);
+  assert_int_equal(ret, 0);
 
   struct bridge_mac_list_tuple e = get_bridge_mac(bridge_list, mac_addr_1, mac_addr_2);
   assert_null(e.left_edge);

@@ -39,12 +39,14 @@
 #include "../utils/log.h"
 #include "../utils/domain.h"
 
-#define GENERIC_AP_COMMAND_REPLY  "OK"
-#define PING_AP_COMMAND           "PING"
-#define PING_AP_COMMAND_REPLY     "PONG"
-#define ATTACH_AP_COMMAND         "ATTACH"
-#define DENYACL_ADD_COMMAND       "DENY_ACL ADD_MAC"
-#define DENYACL_DEL_COMMAND       "DENY_ACL DEL_MAC"
+#define GENERIC_AP_COMMAND_OK_REPLY     "OK"
+#define GENERIC_AP_COMMAND_FAIL_REPLY   "FAIL"
+#define PING_AP_COMMAND                 "PING"
+#define PING_AP_COMMAND_REPLY           "PONG"
+#define STA_AP_COMMAND                  "STA"
+#define ATTACH_AP_COMMAND               "ATTACH"
+#define DENYACL_ADD_COMMAND             "DENY_ACL ADD_MAC"
+#define DENYACL_DEL_COMMAND             "DENY_ACL DEL_MAC"
 
 #define AP_STA_DISCONNECTED       "AP-STA-DISCONNECTED"
 #define AP_STA_CONNECTED          "AP-STA-CONNECTED"
@@ -91,8 +93,8 @@ int denyacl_ap_command(struct apconf *hconf, char *cmd, char *mac_addr)
     return -1;
   }
 
-  if (strcmp(reply, GENERIC_AP_COMMAND_REPLY) != 0) {
-    log_trace(GENERIC_AP_COMMAND_REPLY" reply doesn't match %s", reply);
+  if (strcmp(reply, GENERIC_AP_COMMAND_OK_REPLY) != 0) {
+    log_trace(GENERIC_AP_COMMAND_OK_REPLY" reply doesn't match %s", reply);
     os_free(reply);
     return -1;
   }
@@ -123,6 +125,43 @@ int disconnect_ap_command(struct apconf *hconf, char *mac_addr)
     return -1;
   }
 
+  return 0;
+}
+
+int check_sta_ap_command(struct apconf *hconf, char *mac_addr)
+{
+  char *buffer;
+  char *reply = NULL;
+
+  if (mac_addr == NULL) {
+    log_trace("mac_addr is NULL");
+    return -1;
+  }
+
+  if ((buffer = os_zalloc(strlen(STA_AP_COMMAND) + strlen(mac_addr) + 1)) == NULL) {
+    log_err("os_zalloc");
+    return -1;
+  }
+
+  sprintf(buffer, STA_AP_COMMAND" %s", mac_addr);
+  if (writeread_domain_data_str(hconf->ctrl_interface_path, buffer, &reply) < 0) {
+    log_trace("writeread_domain_data_str fail");
+    return -1;
+  }
+
+  if (strcmp(reply, GENERIC_AP_COMMAND_FAIL_REPLY) == 0) {
+    log_trace("no STA registered with mac=%s", mac_addr);
+    os_free(reply);
+    return -1;
+  }
+
+  if (!strlen(reply)) {
+    log_trace("no reply for mac=%s", mac_addr);
+    os_free(reply);
+    return -1;
+  }
+
+  os_free(reply);
   return 0;
 }
 

@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (C) 2020 by NQMCyber Ltd                                       *
+ * Copyright (C) 2021 by NQMCyber Ltd                                       *
  *                                                                          *
  * This file is part of EDGESec.                                            *
  *                                                                          *
@@ -18,50 +18,45 @@
  ****************************************************************************/
 
 /**
- * @file supervisor.c
+ * @file system_commands.h 
  * @author Alexandru Mereacre 
- * @brief File containing the definition of the supervisor service.
+ * @brief File containing the definition of the system commands.
  */
 
-#ifndef SUPERVISOR_H
-#define SUPERVISOR_H
+#ifndef SYSTEM_COMMANDS_H
+#define SYSTEM_COMMANDS_H
 
-#include "supervisor_config.h"
+#include <sys/un.h>
+#include <inttypes.h>
+#include <stdbool.h>
 
+#include "../utils/domain.h"
 /**
- * @brief Return a mac_conn_info for a given MAC address
+ * @brief SET_IP command
  * 
- * @param mac_addr The input MAC adderss
- * @param mac_conn_arg The supervisor_context pointer
- * @return struct mac_conn_info 
+ * @param context The supervisor structure instance
+ * @param mac_addr The MAC address
+ * @param ip_addr The IP address
+ * @param add if add = true then add IP to MAC entry, otherwise remove
+ * @return int 0 on success, -1 on failure
  */
-struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg);
+int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
+  char *ip_addr, bool add);
 
 /**
- * @brief The AP service callback
+ * @brief SUPERVISOR_PING command
  * 
- * @param context The supervisor context
- * @param mac_addr The STA mac address
- * @param status The STA connection status
+ * @return char* the ping reply string, NULL on failure
+ */
+char* ping_cmd(void);
+
+/**
+ * @brief SUBSCRIBE_EVENTS command
+ * 
+ * @param context The supervisor structure instance
+ * @param addr The subscriber address
  * @return 0 on success, -1 on failure
  */
-void ap_service_callback(struct supervisor_context *context, uint8_t mac_addr[], enum AP_CONNECTION_STATUS status);
-
-/**
- * @brief Executes the supervisor service
- * 
- * @param server_path The domain socket path
- * @param context The supervisor structure
- * @return int The domain socket
- */
-int run_supervisor(char *server_path, struct supervisor_context *context);
-
-/**
- * @brief Closes the supervisor service
- * 
- * @param context The supervisor structure
- * @return true on success, false otherwise
- */
-void close_supervisor(struct supervisor_context *context);
+int subscribe_events_cmd(struct supervisor_context *context, struct client_address *addr);
 
 #endif
