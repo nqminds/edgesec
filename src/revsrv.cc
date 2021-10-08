@@ -49,8 +49,8 @@
 #include "version.h"
 #include "revcmd.h"
 
-#define OPT_STRING              ":f:p:dvh"
-#define USAGE_STRING            "\t%s [-f path] [-p port] [-d] [-h] [-v]"
+#define OPT_STRING              ":p:dvh"
+#define USAGE_STRING            "\t%s [-p port] [-d] [-h] [-v]"
 #define CONTROL_INTERFACE_NAME  "revcontrol"
 #define COMMAND_SEPARATOR       0x20
 #define FAIL_RESPONSE           "FAIL"
@@ -127,7 +127,6 @@ void show_app_help(char *app_name)
   fprintf(stdout, "Usage:\n");
   fprintf(stdout, USAGE_STRING, basename(app_name));
   fprintf(stdout, "\nOptions:\n");
-  fprintf(stdout, "\t-f folder\t Folder to save synced files\n");
   fprintf(stdout, "\t-p port\t\t Server port\n");
   fprintf(stdout, "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n");
   fprintf(stdout, "\t-h\t\t Show help\n");
@@ -504,6 +503,9 @@ int process_command(std::vector<std::string> &cmd_list, int sock, std::string cl
     if (strcmp(cmd.c_str(), REVERSE_CMD_STR_LIST) == 0 && client_timestamp) {
       wait_reverse_command(id, REVERSE_CMD_LIST, client_timestamp, args);
       return 0;
+    } else if (strcmp(cmd.c_str(), REVERSE_CMD_STR_CLIENT_EXIT) == 0 && client_timestamp) {
+      wait_reverse_command(id, REVERSE_CMD_CLIENT_EXIT, client_timestamp, args);
+      return 0;
     } else if (strcmp(cmd.c_str(), REVERSE_CMD_STR_GET) == 0 && client_timestamp) {
       wait_reverse_command(id, REVERSE_CMD_GET, client_timestamp, args);
       return 0;
@@ -636,7 +638,7 @@ int main(int argc, char** argv) {
 
   fprintf(stdout, "Starting reverse client with:\n");
   fprintf(stdout, "Port --> %d\n", port);
-
+  fprintf(stdout, "Control interface --> %s\n", ctrlif.c_str());
   std::thread control_thread(run_control_socket, std::ref(ctrlif));
   run_grpc_server(port);
 

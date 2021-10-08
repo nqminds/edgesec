@@ -287,6 +287,7 @@ class ReverseClient {
 
     std::thread reader_thread([&]() {
       CommandReply reply;
+      log_trace("Subscribing to commands.");
       while (reader->Read(&reply)) {
         // Process the reply
         // List command
@@ -318,6 +319,10 @@ class ReverseClient {
                 SendStringResource(reply.id(), REVERSE_CMD_GET, "\n");
             }
             break;
+          case REVERSE_CMD_CLIENT_EXIT:
+            SendStringResource(reply.id(), REVERSE_CMD_CLIENT_EXIT, "OK\n");
+            log_trace("Exiting client");
+            exit(0);
           default:
             log_trace("Unknown command");
         }
@@ -327,8 +332,9 @@ class ReverseClient {
     reader_thread.join();
     Status status = reader->Finish();
 
-    if (!status.ok())
+    if (!status.ok()) {
       return -1;
+    }
 
     return 0;
   }
@@ -351,9 +357,9 @@ int run_grpc_client(char *path, int port, char *address)
 
   log_info("Connecting to %s... with id=%s", grpc_address, rid);
   ReverseClient reverser(grpc::CreateChannel(grpc_address, grpc::InsecureChannelCredentials()), path, id); 
-  if (reverser.SubscribeCommand() < 0) {
+  while (reverser.SubscribeCommand() < 0) {
     log_debug("grpc SubscribeCommand failed");
-    return -1;
+    sleep(2);
   }
 
   return 0;
