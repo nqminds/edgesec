@@ -2,7 +2,7 @@ Source: edgesec-0.9.9-alpha1
 Section: unknown
 Priority: optional
 Maintainer: Alois Klink <alois@nquiringminds.com>
-Build-Depends: git, cmake (>=3.11.0), debhelper-compat (= 12), doxygen, graphviz, texinfo, libnl-genl-3-dev, libnl-route-3-dev, automake, autoconf, libtool-bin, pkg-config, libjson-c-dev, libssl-dev, flex, bison, libmnl0
+Build-Depends: git, ca-certificates, cmake (>=3.11.0), debhelper-compat (= 12), doxygen, graphviz, texinfo, libnl-genl-3-dev, libnl-route-3-dev, automake, autoconf, libtool-bin, pkg-config, libjson-c-dev, libssl-dev, flex, bison, libmnl0
 Standards-Version: 3.9.8
 Homepage: https://github.com/nqminds/EDGESec
 

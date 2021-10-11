@@ -12,6 +12,7 @@ sudo apt update
 build_dependencies=(
     cmake # build-tool
     git # required to download dependencies
+    ca-certificates # required for git+https downloads
     doxygen texinfo graphviz # documentation
     build-essential # C and C++ compilers
     libnl-genl-3-dev libnl-route-3-dev # netlink dependencies
