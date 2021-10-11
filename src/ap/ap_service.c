@@ -260,12 +260,23 @@ int register_ap_event(struct supervisor_context *context, void *ap_callback_fn)
   return 0;
 }
 
-int run_ap(struct supervisor_context *context, bool exec_ap, void *ap_callback_fn)
+int run_ap(struct supervisor_context *context, bool exec_ap, bool generate_ssid,
+           void *ap_callback_fn)
 {
+  char hostname[OS_HOST_NAME_MAX];
   int res;
   if (!generate_vlan_conf(context->hconfig.vlan_file, context->hconfig.interface)) {
     log_trace("generate_vlan_conf fail");
     return -1;
+  }
+
+  if (generate_ssid) {
+    if (get_hostname(hostname) < 0) {
+      log_debug("get_hostname fail");
+      return -1;
+    }
+    os_strlcpy(context->hconfig.ssid, hostname, AP_NAME_LEN);
+    log_info("Regenarating SSID=%s", context->hconfig.ssid);
   }
 
   if (!generate_hostapd_conf(&context->hconfig, &context->rconfig)) {
