@@ -12,6 +12,7 @@ sudo apt update
 build_dependencies=(
     cmake # build-tool
     git # required to download dependencies
+    ca-certificates # required for git+https downloads
     doxygen texinfo graphviz # documentation
     build-essential # C and C++ compilers
     libnl-genl-3-dev libnl-route-3-dev # netlink dependencies
@@ -62,16 +63,20 @@ cmake --build build/ --target install -j4
 
 ## Running
 
-To run ```edgesec``` tool with a configuration file ```config.ini``` located in ```./build``` folder use:
+To run ```edgesec``` tool with the configuration file ```local-config.ini``` located in ```./build``` folder use:
 
 ```console
-./build/src/edgesec -c ./build/config.ini
+./build/src/edgesec -c ./build/local-config.ini
 ```
 
 To enable verbose debug mode use:
 ```console
-./build/src/edgesec -c ./build/config.ini -ddddd
+./build/src/edgesec -c ./build/local-config.ini -ddddd
 ```
+
+The configuration file `config.ini` has been setup to work by default only when:
+  - running on Raspberry Pi (e.g. `wlan1` is the name of Wifi USB AP and `eth0` is the ethernet port)
+  - running after `make install` has been run
 
 ## Testing
 

@@ -16,9 +16,16 @@ string(TOLOWER ${CMAKE_HOST_SYSTEM_PROCESSOR} _sys)
 string(TOLOWER ${PROJECT_NAME} _project_lower)
 
 # Installation options
-#set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
-set(CMAKE_INSTALL_RPATH "$ORIGIN" "$ORIGIN/lib")
-set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/${_project_lower}-dist" CACHE BOOL "Installation path" FORCE)
+# creating the .deb would use set their own CMAKE_INSTALL_PREFIX
+set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/${_project_lower}-dist" CACHE BOOL "Installation path")
+
+include(GNUInstallDirs)
+set(EDGESEC_private_lib_dir "${CMAKE_INSTALL_LIBDIR}/${_project_lower}" CACHE PATH "Directory of private EDGESec shared libs")
+# RPATH must be set before defining targets
+# $ORIGIN is so that shared libs can view other shared libs (e.g. libgrpc++ can see libxxx)
+# $ORIGIN/lib is to support where we used to store shared libs
+# ${EDGESEC_private_lib_dir} is where private shared libs will be stored after `make install`
+set(CMAKE_INSTALL_RPATH "$ORIGIN" "$ORIGIN/lib" "${EDGESEC_private_lib_dir}")
 
 option(USE_ARM_MUSL_LIBC "Use arm musl standard C library" OFF)
 option(BUILD_ONLY_DOCS "Build only docs" OFF)
@@ -200,9 +207,11 @@ configure_file(
 )
 
 # Copy the default configuration file to the build folder
+# This config file is for local testing, not for `make install` use
 configure_file(
-  "config.ini.in"
-  "${PROJECT_BINARY_DIR}/config.ini"
+  "local-config.ini"
+  "${PROJECT_BINARY_DIR}/local-config.ini"
+  COPYONLY # does not edit the file
 )
 
 include(doxygen)
