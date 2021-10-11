@@ -239,8 +239,8 @@ ssize_t read_file(const char *name, char **data)
 
 class ReverseClient {
  public:
-  ReverseClient(std::shared_ptr<Channel> channel, std::string path, std::string id)
-      : stub_(Reverser::NewStub(channel)), path_(path), id_(id) {}
+  ReverseClient(std::shared_ptr<Channel> channel, std::string path, std::string id, std::string hostname)
+      : stub_(Reverser::NewStub(channel)), path_(path), id_(id), hostname_(hostname) {}
 
   int SendStringResource(std::string command_id, const uint32_t command, const std::string& data) {
     ResourceRequest request;
@@ -285,6 +285,7 @@ class ReverseClient {
     CommandRequest request;
     ClientContext context;
 
+    request.set_hostname(hostname_);
     context.AddMetadata(METADATA_KEY, id_);
 
     std::unique_ptr<ClientReader<CommandReply>> reader(stub_->SubscribeCommand(&context, request));
@@ -348,18 +349,24 @@ class ReverseClient {
   std::unique_ptr<Reverser::Stub> stub_;
   std::string path_;
   std::string id_;
-
+  std::string hostname_;
 };
 
 int run_grpc_client(char *path, int port, char *address, char *ca)
 {
   char grpc_address[MAX_WEB_PATH_LEN];
   char rid[MAX_RANDOM_UUID_LEN];
+  char hostname[OS_HOST_NAME_MAX];
   generate_radom_uuid(rid);
   std::string id(rid);
   snprintf(grpc_address, MAX_WEB_PATH_LEN, "%s:%d", address, port);
 
-  fprintf(stdout, "Connecting to %s... with id=%s\n", grpc_address, rid);
+  if (get_hostname(hostname) < 0) {
+    log_debug("get_hostname fail");
+    return -1;
+  }
+
+  fprintf(stdout, "Connecting to %s... with id=%s and hostname=%s\n", grpc_address, rid, hostname);
 
   std::shared_ptr<grpc::ChannelCredentials> creds;
   if (ca != NULL) {
@@ -372,7 +379,7 @@ int run_grpc_client(char *path, int port, char *address, char *ca)
     fprintf(stdout, "Configured unsecured connection\n");
   }
 
-  ReverseClient reverser(grpc::CreateChannel(grpc_address, creds), path, id); 
+  ReverseClient reverser(grpc::CreateChannel(grpc_address, creds), path, id, hostname); 
   while (reverser.SubscribeCommand() < 0) {
     log_debug("grpc SubscribeCommand failed");
     sleep(2);
