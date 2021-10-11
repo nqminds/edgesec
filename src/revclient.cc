@@ -43,8 +43,8 @@
 #include "version.h"
 #include "revcmd.h"
 
-#define OPT_STRING    ":f:a:p:dvh"
-#define USAGE_STRING  "\t%s [-f path] [-a address] [-p port] [-d] [-h] [-v]"
+#define OPT_STRING    ":f:a:p:c:dvh"
+#define USAGE_STRING  "\t%s [-f path] [-a address] [-p port] [-c path] [-d] [-h] [-v]"
 
 using grpc::Channel;
 using grpc::ClientContext;
@@ -90,6 +90,7 @@ void show_app_help(char *app_name)
   fprintf(stdout, "\t-f folder\t Folder to sync\n");
   fprintf(stdout, "\t-a address\t Server address\n");
   fprintf(stdout, "\t-p port\t\t Server port\n");
+  fprintf(stdout, "\t-c path\t\t The certificate authority path\n");
   fprintf(stdout, "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n");
   fprintf(stdout, "\t-h\t\t Show help\n");
   fprintf(stdout, "\t-v\t\t Show app version\n\n");
@@ -121,8 +122,8 @@ int get_port(char *port_str)
   return strtol(port_str, NULL, 10);
 }
 
-void process_app_options(int argc, char *argv[], int *port,
-                        char *path, char *address, uint8_t *verbosity)
+void process_app_options(int argc, char *argv[], int *port, char *path,
+                        char *address, char *ca_path,  uint8_t *verbosity)
 {
   int opt;
   int p;
@@ -148,6 +149,9 @@ void process_app_options(int argc, char *argv[], int *port,
         exit(EXIT_FAILURE);
       }
       *port = p;
+      break;
+    case 'c':
+      os_strlcpy(ca_path, optarg, MAX_OS_PATH_LEN);
       break;
     case 'f':
       os_strlcpy(path, optarg, MAX_OS_PATH_LEN);
@@ -347,7 +351,7 @@ class ReverseClient {
 
 };
 
-int run_grpc_client(char *path, int port, char *address)
+int run_grpc_client(char *path, int port, char *address, char *ca)
 {
   char grpc_address[MAX_WEB_PATH_LEN];
   char rid[MAX_RANDOM_UUID_LEN];
@@ -355,8 +359,20 @@ int run_grpc_client(char *path, int port, char *address)
   std::string id(rid);
   snprintf(grpc_address, MAX_WEB_PATH_LEN, "%s:%d", address, port);
 
-  log_info("Connecting to %s... with id=%s", grpc_address, rid);
-  ReverseClient reverser(grpc::CreateChannel(grpc_address, grpc::InsecureChannelCredentials()), path, id); 
+  fprintf(stdout, "Connecting to %s... with id=%s\n", grpc_address, rid);
+
+  std::shared_ptr<grpc::ChannelCredentials> creds;
+  if (ca != NULL) {
+    grpc::SslCredentialsOptions ssl_opts;
+    ssl_opts.pem_root_certs = ca;
+    creds = grpc::SslCredentials(ssl_opts);
+    fprintf(stdout, "Configured TLS connection\n");
+  } else {
+    creds = grpc::InsecureChannelCredentials();
+    fprintf(stdout, "Configured unsecured connection\n");
+  }
+
+  ReverseClient reverser(grpc::CreateChannel(grpc_address, creds), path, id); 
   while (reverser.SubscribeCommand() < 0) {
     log_debug("grpc SubscribeCommand failed");
     sleep(2);
@@ -371,10 +387,13 @@ int main(int argc, char** argv) {
   int port = -1;
   char path[MAX_OS_PATH_LEN];
   char address[MAX_WEB_PATH_LEN];
+  char ca_path[MAX_OS_PATH_LEN];
+  char *ca = NULL;  
 
+  os_memset(ca_path, 0, MAX_OS_PATH_LEN);
   os_memset(path, 0, MAX_OS_PATH_LEN);
 
-  process_app_options(argc, argv, &port, path, address, &verbosity); 
+  process_app_options(argc, argv, &port, path, address, ca_path, &verbosity); 
 
   if (optind <= 1) show_app_help(argv[0]);
 
@@ -408,11 +427,22 @@ int main(int argc, char** argv) {
   fprintf(stdout, "Address --> %s\n", address);
   fprintf(stdout, "Port --> %d\n", port);
   fprintf(stdout, "DB save path --> %s\n", path);
+  fprintf(stdout, "Cert authority path --> %s\n", ca_path);
 
-  if (run_grpc_client(path, port, address) == -1) {
+  if (strlen(ca_path)) {
+    if (read_file_string(ca_path, &ca) < 0) {
+      fprintf(stderr, "read_file_string fail\n");
+      exit(1);
+    }
+  }
+
+  if (run_grpc_client(path, port, address, ca) == -1) {
     fprintf(stderr, "run_grpc_server fail\n");
     exit(EXIT_FAILURE);
   } 
+
+  if (ca != NULL)
+    os_free(ca);
 
   return 0;
 }
