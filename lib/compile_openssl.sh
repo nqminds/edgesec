@@ -2,24 +2,17 @@
 
 set -e
 
-LIBOPENSSL_SOURCE_DIR=./openssl
-LIBOPENSSL_INSTALL_DIR=$1/openssl
-CONFIG_HOST=$3
+LIBOPENSSL_SOURCE_DIR="$1"
+LIBOPENSSL_INSTALL_DIR="$2"
+CONFIG_HOST="$3"
 
 echo "OPENSSL lib source dir: ${LIBOPENSSL_SOURCE_DIR}"
 echo "OPENSSL lib install dir: ${LIBOPENSSL_INSTALL_DIR}"
-echo "OPENSSL lib config host: ${CONFIG_HOST}"
-
-rm -rf "${LIBOPENSSL_SOURCE_DIR}"
-
-git clone --depth 1 --branch openssl-3.0.0-beta1 https://github.com/openssl/openssl
+echo "OPENSSL lib cross-compile config host: ${CONFIG_HOST}"
 
 cd "${LIBOPENSSL_SOURCE_DIR}"
 
-./Configure --prefix=${LIBOPENSSL_INSTALL_DIR} --openssldir=${LIBOPENSSL_INSTALL_DIR} -lpthread no-dtls no-dtls1 no-psk no-srp no-ec2m no-weak-ssl-ciphers no-dso no-engine no-threads
+# CONFIG_HOST is UNQUOTED, so that OpenSSL picks default if it's not set
+./Configure ${CONFIG_HOST} --prefix=${LIBOPENSSL_INSTALL_DIR} --openssldir=${LIBOPENSSL_INSTALL_DIR} -lpthread no-dtls no-dtls1 no-psk no-srp no-ec2m no-weak-ssl-ciphers no-dso no-engine no-threads
 make
 make install
-make clean
-
-cd ../
-rm -rf "${LIBOPENSSL_SOURCE_DIR}"
