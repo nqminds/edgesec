@@ -15,9 +15,7 @@ echo "NDPI lib install dir: ${LIBNDPI_INSTALL_DIR}"
 echo "NDPI lib config host: ${CONFIG_HOST}"
 
 cd "${LIBNDPI_SOURCE_DIR}"
-./autogen.sh
-
-CFLAGS="-I$LIBPCAP_INCLUDE_PATH" LDFLAGS="-L$LIBPCAP_LIB_PATH" ./configure --prefix=${LIBNDPI_INSTALL_DIR} --host=${CONFIG_HOST}
+CFLAGS="-I$LIBPCAP_INCLUDE_PATH" LDFLAGS="-L$LIBPCAP_LIB_PATH"  ./autogen.sh --prefix=${LIBNDPI_INSTALL_DIR} --host=${CONFIG_HOST}
 make
 make install
 make clean
