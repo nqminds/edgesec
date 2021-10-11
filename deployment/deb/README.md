@@ -45,19 +45,47 @@ Replace `--distribution focal` with the OS you are using.
 sudo pbuilder create --debootstrapopts --variant=buildd --distribution focal
 ```
 
+Next, you must have `USENETWORK=yes` enabled in your `/etc/pbuilderrc` file.
+This is so that cmake can download files while building.
+
+```ini
+# Enable network access, since `cmake` downloads dependencies
+USENETWORK=yes
+```
+
 Finally, you can build the `.deb` file with:
 
 ```bash
-pdebuild --debbuildopts -us -uc
+pdebuild --debbuildopts "-us -uc"
 ```
 
 The meaning of the options are:
-- `-debbuildopts ...`: Options to pass to `debbuild`. See `debbuild` options above in the [**Podman**](#podman) section.
-  - `-us -uc` means do not sign the source package and `.changes` file.
+- `-debbuildopts <debbuild_opts>`: Options to pass to `debbuild`. See `debbuild` options above in the [**Podman**](#podman) section.
+  - `"-us -uc"` means do not sign the source package and `.changes` file.
 
 #### Cross-compiling
 
-Here? https://wiki.debian.org/Multiarch/Implementation
+First of all, edit your `/etc
+
+Follow the instuctions in `PBuild`, using your desired architecture in:
+
+```bash
+OTHER_MIRROR_LIST=(
+  "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports focal main universe"
+  # Ubuntu splits up amd64 and arm64 repos
+  "deb [arch=amd64] http://gb.archive.ubuntu.com/ubuntu focal main universe"
+)
+OTHER_MIRROR=$(IFS='|' ; echo "${OTHER_MIRROR_LIST[*]}")
+pdebuild --debbuildopts "-us -uc" -- --override-config --distribution focal --mirror "" --othermirror "$OTHER_MIRROR" --host-arch arm64
+```
+
+- `-- ...`: Options to pass to `pbuilder`:
+  - `--host-arch arm64`: Cross-compile for the `arm64` architecture.
+  - `--override-config`: Needed to regenerate `apt` settings, since we're setting `--othermirror`
+  - `--mirror ""`: Leave blank, since we need to specify `[arch=xxx]` in `--othermirror`.
+  - `--othermirror "$OTHER_MIRROR"`:
+    The deb `sources.list` entries for both `arm64` (host) and `amd64` (build).
+  - `--distribution focal`: Needed since we're regenerating `apt` settings.
 
 ## Editing the deb
 
