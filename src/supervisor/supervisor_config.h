@@ -64,8 +64,11 @@ struct supervisor_context {
   ssize_t         wpa_passphrase_len;                         /**< the length of @c wpa_passphrase*/
   char            nat_interface[IFNAMSIZ];                    /**< @c nat_interface param from @c struct app_config */
   int             default_open_vlanid;                        /**< @c default_open_vlanid from @c struct app_config */
+  int             quarantine_vlanid;                          /**< @c quarantine_vlanid from @c struct app_config */
+  int             risk_score;                                 /**< @c risk_score from @c struct app_config */
   char            db_path[MAX_OS_PATH_LEN];                   /**< @c db_path from @c struct app_config */
   UT_array        *config_ifinfo_array;                       /**< @c config_ifinfo_array from @c struct app_config */
+  UT_array        *subscribers_array;                         /**< The array of events subscribers */
   struct bridge_mac_list *bridge_list;                        /**< List of assigned bridges */
   char            domain_delim;                               /**< Control server command delimiter */
   int             domain_sock;                                /**< The domain socket */
@@ -74,6 +77,7 @@ struct supervisor_context {
   struct apconf       hconfig;                                /**< AP service configuration. */
   struct radius_conf  rconfig;                                /**< Radius service configuration. */
   sqlite3         *fingeprint_db;                             /**< The fingerprint sqlite db structure. */
+  sqlite3         *alert_db;                                  /**< The alert sqlite db structure. */
   sqlite3         *macconn_db;                                /**< The macconn db structure. */
   struct radius_server_data *radius_srv;                      /**< The radius server context. */
   struct iptables_context *iptables_ctx;                      /**< The iptables context. */

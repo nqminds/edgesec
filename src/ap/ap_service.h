@@ -92,4 +92,12 @@ int denyacl_del_ap_command(struct apconf *hconf, char *mac_addr);
  */
 int disconnect_ap_command(struct apconf *hconf, char *mac_addr);
 
+/**
+ * @brief Check if a station is registered on the AP
+ * 
+ * @param hconf AP config structure
+ * @param mac_addr The mac address of the station
+ * @return int 0 on success, -1 on failure
+ */
+int check_sta_ap_command(struct apconf *hconf, char *mac_addr);
 #endif

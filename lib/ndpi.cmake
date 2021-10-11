@@ -11,9 +11,7 @@ if (BUILD_NDPI_LIB AND NOT (BUILD_ONLY_DOCS))
   ELSE ()
     FetchContent_Declare(
       ndpi_src
-      URL https://github.com/ntop/nDPI/archive/refs/tags/3.4.tar.gz
-      URL_HASH SHA3_256=84e4710df21ffa32a68a1b6fa51ef17b22caeaa34389db3f222c02210519aa6d
-
+      URL https://github.com/ntop/nDPI/archive/refs/tags/4.0.tar.gz
     )
     FetchContent_Populate(ndpi_src)
 

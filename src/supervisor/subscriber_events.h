@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (C) 2020 by NQMCyber Ltd                                       *
+ * Copyright (C) 2021 by NQMCyber Ltd                                       *
  *                                                                          *
  * This file is part of EDGESec.                                            *
  *                                                                          *
@@ -18,50 +18,51 @@
  ****************************************************************************/
 
 /**
- * @file supervisor.c
+ * @file subscriber_events.c
  * @author Alexandru Mereacre 
- * @brief File containing the definition of the supervisor service.
+ * @brief File containing the definition of the subscriber events structure.
  */
 
-#ifndef SUPERVISOR_H
-#define SUPERVISOR_H
+#ifndef SUBSCRIBER_EVENTS_H
+#define SUBSCRIBER_EVENTS_H
+
+#include <sys/un.h>
+#include <inttypes.h>
+#include <stdbool.h>
 
 #include "supervisor_config.h"
 
-/**
- * @brief Return a mac_conn_info for a given MAC address
- * 
- * @param mac_addr The input MAC adderss
- * @param mac_conn_arg The supervisor_context pointer
- * @return struct mac_conn_info 
- */
-struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg);
+#include "../utils/domain.h"
+#include "../utils/utarray.h"
+
+enum SUBSCRIBER_EVENT {
+  SUBSCRIBER_EVENT_NONE = 0,
+  SUBSCRIBER_EVENT_ALERT,
+  SUBSCRIBER_EVENT_IP,
+  SUBSCRIBER_EVENT_AP,
+};
+
+#define EVENT_ALERT_TEXT            "ALERT"
+#define EVENT_IP_TEXT               "IP"
+#define EVENT_AP_TEXT               "AP"
 
 /**
- * @brief The AP service callback
+ * @brief Add a subscriber to the subscriber events array
  * 
  * @param context The supervisor context
- * @param mac_addr The STA mac address
- * @param status The STA connection status
+ * @param addr The subscriber address
  * @return 0 on success, -1 on failure
  */
-void ap_service_callback(struct supervisor_context *context, uint8_t mac_addr[], enum AP_CONNECTION_STATUS status);
+int add_events_subscriber(struct supervisor_context *context, struct client_address *addr);
 
 /**
- * @brief Executes the supervisor service
+ * @brief Send an event to the subscribers array
  * 
- * @param server_path The domain socket path
- * @param context The supervisor structure
- * @return int The domain socket
+ * @param context The supervisor context
+ * @param type The event type
+ * @param format The event text
+ * @return 0 on success, -1 on failure
  */
-int run_supervisor(char *server_path, struct supervisor_context *context);
-
-/**
- * @brief Closes the supervisor service
- * 
- * @param context The supervisor structure
- * @return true on success, false otherwise
- */
-void close_supervisor(struct supervisor_context *context);
-
+int send_events_subscriber(struct supervisor_context *context,
+                           enum SUBSCRIBER_EVENT type, const char *format, ...);
 #endif
