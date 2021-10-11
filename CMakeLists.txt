@@ -63,6 +63,34 @@ if (USE_ARM_MUSL_LIBC)
   set(CMAKE_CXX_COMPILER /usr/local/bin/arm-linux-musleabihf-g++)
 endif ()
 
+# Convert CMAKE_SYSTEM_NAME to os specifier that autoconf understands
+function(get_autoconf_os system_name output_var)
+  if (system_name STREQUAL "Linux")
+    set(${output_var} "linux-gnu" PARENT_SCOPE)
+  else (system_name STREQUAL "Linux")
+    message(FATAL_ERROR "'$system_name' could not be converted to an autoconf os specifier")
+  endif(system_name STREQUAL "Linux")
+endfunction(get_autoconf_os)
+
+get_autoconf_os(${CMAKE_HOST_SYSTEM_NAME} build_autoconf_os)
+string(TOLOWER "${CMAKE_HOST_SYSTEM_PROCESSOR}-${build_autoconf_os}" build_autoconf_triple)
+get_autoconf_os(${CMAKE_SYSTEM_NAME} target_autoconf_os)
+string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}-${target_autoconf_os}" target_autoconf_triple)
+
+if (NOT target_autoconf_triple STREQUAL CMAKE_LIBRARY_ARCHITECTURE)
+  message(FATAL_ERROR "CMake target_autoconf_triple=${target_autoconf_triple}, not the same as CMAKE_LIBRARY_ARCHITECTURE=${CMAKE_LIBRARY_ARCHITECTURE}")
+endif (NOT target_autoconf_triple STREQUAL CMAKE_LIBRARY_ARCHITECTURE)
+
+message("Build (autoconf --build) autoconf triple is ${build_autoconf_triple}")
+message("Target (autoconf --host) autoconf triple is ${CMAKE_LIBRARY_ARCHITECTURE}")
+message("CROSSCOMPILING ${CMAKE_CROSSCOMPILING}")
+if(NOT CMAKE_CROSSCOMPILING)
+  # unset so that sqlite.cmake and etc. do not activate this
+  unset(target_autoconf_triple)
+endif(NOT CMAKE_CROSSCOMPILING)
+
+message("PKG_CONFIG_LIBDIR is $ENV{PKG_CONFIG_LIBDIR}")
+
 # C compiler options
 set(CMAKE_C_FLAGS "-Wunused-variable -Wall -Wextra")
 
