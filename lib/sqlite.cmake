@@ -16,7 +16,12 @@ if (BUILD_SQLITE_LIB AND NOT (BUILD_ONLY_DOCS))
     )
     FetchContent_Populate(libsqlite)
 
-    execute_process(COMMAND bash ${CMAKE_SOURCE_DIR}/lib/compile_sqlite.sh ${libsqlite_SOURCE_DIR} ${LIBSQLITE_INSTALL_ROOT})
+    execute_process(COMMAND
+      bash ${CMAKE_SOURCE_DIR}/lib/compile_sqlite.sh
+      ${libsqlite_SOURCE_DIR}
+      ${LIBSQLITE_INSTALL_ROOT}
+      ${target_autoconf_triple}
+    )
     find_library(LIBSQLITE_LIB NAMES sqlite3 libsqlite3 PATHS "${LIBSQLITE_LIB_DIR}" NO_DEFAULT_PATH)
   endif ()
 endif ()

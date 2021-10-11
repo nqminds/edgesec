@@ -17,7 +17,13 @@ if (BUILD_UUID_LIB AND NOT (BUILD_ONLY_DOCS))
     )
 
     FetchContent_Populate(util_linux)
-    execute_process(COMMAND bash ${CMAKE_SOURCE_DIR}/lib/compile_uuid.sh ${util_linux_SOURCE_DIR} ${LIBUUID_INSTALL_ROOT})
+    execute_process(COMMAND
+      bash
+      ${CMAKE_SOURCE_DIR}/lib/compile_uuid.sh
+      ${util_linux_SOURCE_DIR}
+      ${LIBUUID_INSTALL_ROOT}
+      ${target_autoconf_triple}
+    )
     find_library(LIBUUID_LIB NAMES uuid libuuid PATHS "${LIBUUID_LIB_DIR}" NO_DEFAULT_PATH)
   endif ()
 endif ()
