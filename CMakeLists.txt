@@ -84,12 +84,14 @@ endif (NOT target_autoconf_triple STREQUAL CMAKE_LIBRARY_ARCHITECTURE)
 message("Build (autoconf --build) autoconf triple is ${build_autoconf_triple}")
 message("Target (autoconf --host) autoconf triple is ${CMAKE_LIBRARY_ARCHITECTURE}")
 message("CROSSCOMPILING ${CMAKE_CROSSCOMPILING}")
-if(NOT CMAKE_CROSSCOMPILING)
+if (CMAKE_CROSSCOMPILING)
+  # tell PKG_CONFIG (required by hostap) to search correct folders when cross-compiling
+  set(ENV{PKG_CONFIG_LIBDIR} "/usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}/pkgconfig:/usr/share/pkgconfig")
+  message("PKG_CONFIG_LIBDIR is $ENV{PKG_CONFIG_LIBDIR}")
+else(CMAKE_CROSSCOMPILING)
   # unset so that sqlite.cmake and etc. do not activate this
   unset(target_autoconf_triple)
-endif(NOT CMAKE_CROSSCOMPILING)
-
-message("PKG_CONFIG_LIBDIR is $ENV{PKG_CONFIG_LIBDIR}")
+endif(CMAKE_CROSSCOMPILING)
 
 # C compiler options
 set(CMAKE_C_FLAGS "-Wunused-variable -Wall -Wextra")
