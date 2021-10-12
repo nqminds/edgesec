@@ -24,7 +24,6 @@
  */
 
 #include <iostream>
-#include <sstream>
 #include <memory>
 #include <string>
 #include <thread>
@@ -53,7 +52,7 @@
 #define OPT_STRING              ":p:a:c:k:dvh"
 #define USAGE_STRING            "\t%s [-p port] [-a path] [-c path] [-k path] [-d] [-h] [-v]"
 #define CONTROL_INTERFACE_NAME  "revcontrol"
-#define COMMAND_SEPARATOR       0x20
+
 #define FAIL_RESPONSE           "FAIL"
 
 const std::string METADATA_KEY = "client-id";
@@ -213,18 +212,6 @@ void process_app_options(int argc, char *argv[], int *port, char *key_path,
   }
 }
 
-std::size_t split_string(std::vector<std::string> &string_list, std::string &str, char delim)
-{
-  std::stringstream str_stream(str);
-  std::string out;
-
-  while (std::getline(str_stream, out, delim)) {
-    string_list.push_back(out);
-  }
-
-  return string_list.size();
-}
-
 void wait_reverse_command(std::string id, REVERSE_COMMANDS cmd, uint64_t client_timestamp, std::string args)
 {
   log_trace("Storing reverse command.");
@@ -360,15 +347,31 @@ void clear_command_vars(void)
   command_args.clear();
 }
 
+ssize_t get_fail_response(char **buf)
+{
+  ssize_t buf_size = STRLEN(FAIL_RESPONSE) + 1;
+  *buf = (char *)os_zalloc(buf_size);
+
+  if (*buf == NULL) {
+    log_err("os_zalloc");
+    return -1;
+  }
+
+  strcpy(*buf, FAIL_RESPONSE);
+
+  return buf_size;
+}
+
 class ReverserServiceImpl final : public Reverser::Service {
  public:
   explicit ReverserServiceImpl() {}
 
   Status SubscribeCommand(ServerContext* context, const CommandRequest* request, ServerWriter<CommandReply>* writer) override {
-    char rid[MAX_RANDOM_UUID_LEN];
-
     const std::multimap<grpc::string_ref, grpc::string_ref> metadata =
       context->client_metadata();
+
+    ssize_t buf_size = 0;
+    char *response_buf = NULL;
 
     const std::string id = find_key_val(metadata, METADATA_KEY);
     const std::string client_hostname = request->hostname();
@@ -378,7 +381,6 @@ class ReverserServiceImpl final : public Reverser::Service {
 
     while(true) {
       CommandReply reply;
-      generate_radom_uuid(rid);
 
       std::unique_lock<std::mutex> lk(command_lock);
       command_v.wait(lk, [client_timestamp]{
@@ -387,6 +389,15 @@ class ReverserServiceImpl final : public Reverser::Service {
 
       if (context->IsCancelled()) {
         log_trace("Client closed");
+
+        if ((buf_size = get_fail_response(&response_buf)) >= 0 ) {
+          log_trace("Sending command to %s", control_command_id.c_str());
+          if (write_command_data(control_command_id, response_buf, buf_size) < 0) {
+            clear_domain_context(control_command_id);
+            log_trace("write_command_data error");
+          }
+          os_free(response_buf);
+        }
 
         clear_command_vars();
 
@@ -417,15 +428,22 @@ class ReverserServiceImpl final : public Reverser::Service {
     const std::multimap<grpc::string_ref, grpc::string_ref> metadata =
       context->client_metadata();
 
-    char *buf;
+    ssize_t buf_size = 0;
+    char *buf = NULL;
     const std::string id = find_key_val(metadata, METADATA_KEY);
 
-    log_trace("Received command id=%s", request->id().c_str());
+    log_trace("Received command %d with id=%s", request->command(), request->id().c_str());
 
-    ssize_t buf_size = process_response(request->data(), &buf);
+    if (request->command() == REVERSE_CMD_ERROR) {
+      buf_size = get_fail_response(&buf);
+    } else {
+      buf_size = process_response(request->data(), &buf);
+    }
+
     if (buf == NULL) {
       reply->set_status(1);
     } else {
+      log_trace("Sending command to %s", request->id().c_str());
       if (write_command_data(request->id(), buf, buf_size) < 0) {
         reply->set_status(1);
       } else {
@@ -487,21 +505,6 @@ ssize_t get_client_list_buf(char **buf)
   return buf_size;
 }
 
-ssize_t get_fail_response(char **buf)
-{
-  ssize_t buf_size = STRLEN(FAIL_RESPONSE) + 1;
-  *buf = (char *)os_zalloc(buf_size);
-
-  if (*buf == NULL) {
-    log_err("os_zalloc");
-
-    return 0;
-  }
-  strcpy(*buf, FAIL_RESPONSE);
-
-  return buf_size;
-}
-
 int get_client_id(std::string encoded_str, std::string &id)
 {
   if (!encoded_str.length()) return -1;
@@ -510,15 +513,17 @@ int get_client_id(std::string encoded_str, std::string &id)
   id = encoded_str.substr(1, encoded_str.length() - 2);
   return 0;
 }
+
 int process_command(std::vector<std::string> &cmd_list, int sock, std::string domain_client_addr)
 {
   ssize_t buf_size = 0;
   uint64_t client_timestamp = 0;
   std::string args;
   char *response_buf = NULL;
+  int idx = 2;
 
   if (cmd_list.size() > 1) {
-    std::string encoded_client_id = cmd_list.front();
+    std::string encoded_client_id = cmd_list.at(0);
     std::string client_id;
     std::string cmd = cmd_list.at(1);
     std::string domain_client_id = save_domain_context(sock, domain_client_addr);
@@ -535,9 +540,8 @@ int process_command(std::vector<std::string> &cmd_list, int sock, std::string do
     log_trace("Processing command %s with domain id=%s and client_id=%s", cmd.c_str(),
               domain_client_id.c_str(), client_id.c_str());
 
-    if (cmd_list.size() > 2) {
-      args = cmd_list.at(2);
-    }
+    while (idx < cmd_list.size())
+      args += cmd_list.at(idx++) + " ";
 
     if (strcmp(cmd.c_str(), REVERSE_CMD_STR_LIST) == 0 && client_timestamp) {
       wait_reverse_command(domain_client_id, REVERSE_CMD_LIST, client_timestamp, args);
@@ -548,6 +552,9 @@ int process_command(std::vector<std::string> &cmd_list, int sock, std::string do
     } else if (strcmp(cmd.c_str(), REVERSE_CMD_STR_GET) == 0 && client_timestamp) {
       wait_reverse_command(domain_client_id, REVERSE_CMD_GET, client_timestamp, args);
       return 0;
+    } else if (strcmp(cmd.c_str(), REVERSE_CMD_STR_SQL_EXECUTE) == 0) {
+      wait_reverse_command(domain_client_id, REVERSE_CMD_SQL_EXECUTE, client_timestamp, args);
+      return 0;
     } else if (strcmp(cmd.c_str(), REVERSE_CMD_STR_LIST_CLIENTS) == 0) {
       buf_size = get_client_list_buf(&response_buf);
     } else {
@@ -556,10 +563,11 @@ int process_command(std::vector<std::string> &cmd_list, int sock, std::string do
     }
 
     if (response_buf) {
-      log_trace("Sending command");
+      log_trace("Sending command to %s", domain_client_id.c_str());
       if (write_command_data(domain_client_id, response_buf, buf_size) < 0) {
         clear_domain_context(domain_client_id);
         log_trace("write_command_data error");
+        os_free(response_buf);
         return -1;
       }
       os_free(response_buf);

@@ -44,8 +44,8 @@ endif ()
 
 if (BUILD_REVERSE_SERVICE)
   add_executable(revclient revclient.cc)
-  target_include_directories(revclient PRIVATE ${PROJECT_BINARY_DIR} ${LIBGRPC_INCLUDE_PATH})
-  target_link_libraries(revclient os log reverse_grpc_proto ${LIBGRPCPP_REFLECTION_LIB} ${LIBGRPCPP_LIB} ${LIBPROTOBUF_LIB} ${LIBPTHREAD_LIB})
+  target_include_directories(revclient PRIVATE ${PROJECT_BINARY_DIR} ${LIBGRPC_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
+  target_link_libraries(revclient PRIVATE base64 os log reverse_grpc_proto ${LIBGRPCPP_REFLECTION_LIB} ${LIBGRPCPP_LIB} ${LIBPROTOBUF_LIB} ${LIBPTHREAD_LIB} ${LIBSQLITE_LIB})
 
   add_executable(revsrv revsrv.cc)
   target_include_directories(revsrv PRIVATE ${PROJECT_BINARY_DIR} ${LIBGRPC_INCLUDE_PATH})

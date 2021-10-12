@@ -31,20 +31,25 @@
 #include <random>
 #include <string>
 #include <thread>
+#include <sqlite3.h>
 
 #include <grpcpp/grpcpp.h>
-#include <thread>
+
 
 #include "reverse_access.grpc.pb.h"
 
 #include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/log.h"
+#include "utils/base64.h"
 #include "version.h"
 #include "revcmd.h"
 
 #define OPT_STRING    ":f:a:p:c:dvh"
 #define USAGE_STRING  "\t%s [-f path] [-a address] [-p port] [-c path] [-d] [-h] [-v]"
+
+#define FAIL_REPLY  "FAIL"
+#define OK_REPLY   "OK"
 
 using grpc::Channel;
 using grpc::ClientContext;
@@ -237,6 +242,48 @@ ssize_t read_file(const char *name, char **data)
   fclose(fp);
 }
 
+int process_sql_execute(std::string db_path, std::string args, std::string &out)
+{
+  sqlite3 *db = NULL;
+  char *file_path, *decoded_statement;
+  std::vector<std::string> arg_list;
+  split_string(arg_list, args, COMMAND_SEPARATOR);
+
+  if (arg_list.size() < 2) {
+    log_trace("Not enough arguments");
+    return -1;
+  }
+
+  std::string filename = arg_list.at(0);
+  std::string sql_statement = arg_list.at(1);
+  size_t statement_len = 0;
+  file_path = construct_path((char *)db_path.c_str(), (char *)filename.c_str());
+  if (file_path == NULL) {
+    log_trace("construct_path fail");
+    return -1;
+  }
+
+  log_trace("Opening sqlite db=%s", file_path);
+  if (sqlite3_open(file_path, &db) != SQLITE_OK) {     
+    log_debug("Cannot open database: %s", sqlite3_errmsg(db));
+    sqlite3_close(db);
+    os_free(file_path);
+    return -1;
+  }
+
+  os_free(file_path);
+  unsigned char *ptr = (unsigned char *)sql_statement.c_str();
+  if ((decoded_statement = (char *)base64_url_decode(ptr, strlen((char *)ptr), &statement_len)) == NULL) {
+    log_trace("base64_url_decode");
+    sqlite3_close(db);
+    return 0;    
+  }
+  log_trace("Executing statement %s", decoded_statement);
+  os_free(decoded_statement);
+  sqlite3_close(db);
+  return 0;
+}
+
 class ReverseClient {
  public:
   ReverseClient(std::shared_ptr<Channel> channel, std::string path, std::string id, std::string hostname)
@@ -300,32 +347,45 @@ class ReverseClient {
         char *file_path;
         char *file_data = NULL;
         ssize_t file_size;
-        log_trace("Processing command=%d with id=%s", reply.command(), reply.id().c_str());
-        switch(reply.command()) {
+        uint32_t cmd = reply.command();
+        std::string args = reply.args();
+        std::string reply_id = reply.id();
+        std::string exec_out;
+
+        log_trace("Processing command=%d with id=%s", cmd, reply_id.c_str());
+        switch(cmd) {
           case REVERSE_CMD_LIST:
             if (get_folder_list(path_, folder_list) != -1) {
               std::string acc = accumulate_string(folder_list);
-              SendStringResource(reply.id(), REVERSE_CMD_LIST, acc);
-            } else SendStringResource(reply.id(), 0, "\n");
+              SendStringResource(reply_id, REVERSE_CMD_LIST, acc);
+            } else SendStringResource(reply_id, REVERSE_CMD_ERROR, "");
             break;
           case REVERSE_CMD_GET:
-            log_trace("Received args=%s", reply.args().c_str());
-            file_path = construct_path((char *)path_.c_str(), (char *)reply.args().c_str());
+            log_trace("Received args=%s", args.c_str());
+            file_path = construct_path((char *)path_.c_str(), (char *)args.c_str());
             if (file_path == NULL) {
               log_trace("construct_path fail");
-              SendStringResource(reply.id(), REVERSE_CMD_GET, "\n");
+              SendStringResource(reply_id, REVERSE_CMD_ERROR, "");
             } else {
               file_size = read_file(file_path, &file_data);
               os_free(file_path);
               if (file_data != NULL) {
-                SendBinaryResource(reply.id(), REVERSE_CMD_GET, file_data, file_size);
+                SendBinaryResource(reply_id, REVERSE_CMD_GET, file_data, file_size);
                 os_free(file_data);
               } else
-                SendStringResource(reply.id(), REVERSE_CMD_GET, "\n");
+                SendStringResource(reply_id, REVERSE_CMD_ERROR, "");
+            }
+            break;
+          case REVERSE_CMD_SQL_EXECUTE:
+            log_trace("Received args=%s", args.c_str());
+            if (process_sql_execute(path_, args, exec_out) < 0) {
+              SendStringResource(reply_id, REVERSE_CMD_ERROR, "");
+            } else {
+              SendStringResource(reply_id, REVERSE_CMD_SQL_EXECUTE, exec_out);
             }
             break;
           case REVERSE_CMD_CLIENT_EXIT:
-            SendStringResource(reply.id(), REVERSE_CMD_CLIENT_EXIT, "OK\n");
+            SendStringResource(reply_id, REVERSE_CMD_CLIENT_EXIT, "");
             log_trace("Exiting client");
             exit(0);
           default:
