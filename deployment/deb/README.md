@@ -63,6 +63,8 @@ The meaning of the options are:
 - `-debbuildopts <debbuild_opts>`: Options to pass to `debbuild`. See `debbuild` options above in the [**Podman**](#podman) section.
   - `"-us -uc"` means do not sign the source package and `.changes` file.
 
+By default, the `.deb` file will be located in `/var/cache/pbuilder/result/`.
+
 #### Cross-compiling
 
 First of all, install `pbuilder`, which automatically downloads dependencies
@@ -100,6 +102,8 @@ pdebuild --debbuildopts "-us -uc" -- --override-config --distribution focal --mi
   - `--othermirror "$OTHER_MIRROR"`:
     The deb `sources.list` entries for both `arm64` (host) and `amd64` (build).
   - `--distribution focal`: Needed since we're regenerating `apt` settings.
+
+By default, the `.deb` file will be located in `/var/cache/pbuilder/result/`.
 
 ## Editing the deb
 
