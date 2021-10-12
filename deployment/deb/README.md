@@ -65,9 +65,23 @@ The meaning of the options are:
 
 #### Cross-compiling
 
-First of all, edit your `/etc
+First of all, install `pbuilder`, which automatically downloads dependencies
+and does the cross-compiling for you.
 
-Follow the instuctions in `PBuild`, using your desired architecture in:
+```bash
+sudo apt install gnupg pbuilder -y
+```
+
+Then, edit `/etc/pbuilderrc` and enable the following settings:
+
+```ini
+# Enable network access, since `cmake` downloads dependencies
+USENETWORK=yes
+# Faster than default, and is requried if we want to do cross-compiling
+PBUILDERSATISFYDEPENDSCMD="/usr/lib/pbuilder/pbuilder-satisfydepends-apt"
+```
+
+Follow the instuctions in `PBuild`, using your desired architecture:
 
 ```bash
 OTHER_MIRROR_LIST=(
