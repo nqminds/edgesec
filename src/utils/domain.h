@@ -29,7 +29,6 @@
 #include <sys/un.h>
 #include <sys/types.h>
 
-#define MAX_DOMAIN_RECEIVE_DATA 4095
 #define DOMAIN_SOCKET_NAME_SIZE 14
 
 #ifdef __cplusplus

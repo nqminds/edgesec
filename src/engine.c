@@ -354,7 +354,7 @@ bool run_engine(struct app_config *app_config)
   }
 
   log_info("Running the ap service...");
-  if (run_ap(&context, app_config->exec_ap, ap_service_callback) < 0) {
+  if (run_ap(&context, app_config->exec_ap, app_config->generate_ssid, ap_service_callback) < 0) {
     log_debug("run_ap fail");
     goto run_engine_fail;
   }

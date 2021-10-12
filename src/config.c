@@ -594,6 +594,9 @@ bool load_app_config(const char *filename, struct app_config *config)
   // Load the exec ap flag
   config->exec_ap = ini_getbool("system", "execAp", 0, filename);
 
+  // Load the generateSsid flag
+  config->generate_ssid = ini_getbool("system", "generateSsid", 0, filename);
+
   // Load the exec radius flag
   config->exec_radius = ini_getbool("system", "execRadius", 0, filename);
 

@@ -294,9 +294,9 @@ int run_grpc_server(char *path, uint16_t port, char *key, char *cert, char *ca) 
   grpc::reflection::InitProtoReflectionServerBuilderPlugin();
   ServerBuilder builder;
 
-  if (key == NULL && cert == NULL) {
+  if (key == NULL && cert == NULL && ca == NULL) {
     builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
-    fprintf(stdout, "Configured unsecured\n");
+    fprintf(stdout, "Configured unsecured connection\n");
   } else {
     grpc::SslServerCredentialsOptions::PemKeyCertPair pkcp = {key, cert};
     grpc::SslServerCredentialsOptions ssl_opts(GRPC_SSL_DONT_REQUEST_CLIENT_CERTIFICATE);
@@ -304,7 +304,7 @@ int run_grpc_server(char *path, uint16_t port, char *key, char *cert, char *ca) 
     ssl_opts.pem_key_cert_pairs.push_back(pkcp);
     std::shared_ptr<grpc::ServerCredentials> creds = grpc::SslServerCredentials(ssl_opts);
     builder.AddListeningPort(server_address, creds);
-    fprintf(stdout, "Configured TLS\n");
+    fprintf(stdout, "Configured TLS connection\n");
   }
 
   builder.RegisterService(&service);

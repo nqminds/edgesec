@@ -34,10 +34,11 @@
 #include <condition_variable>
 #include <sys/un.h>
 #include <sys/socket.h>
+#include <sys/ioctl.h>
 
-
-
+#include <grpcpp/ext/proto_server_reflection_plugin.h>
 #include <grpcpp/grpcpp.h>
+#include <grpcpp/health_check_service_interface.h>
 
 #include "reverse_access.grpc.pb.h"
 
@@ -49,8 +50,8 @@
 #include "version.h"
 #include "revcmd.h"
 
-#define OPT_STRING              ":f:p:dvh"
-#define USAGE_STRING            "\t%s [-f path] [-p port] [-d] [-h] [-v]"
+#define OPT_STRING              ":p:a:c:k:dvh"
+#define USAGE_STRING            "\t%s [-p port] [-a path] [-c path] [-k path] [-d] [-h] [-v]"
 #define CONTROL_INTERFACE_NAME  "revcontrol"
 #define COMMAND_SEPARATOR       0x20
 #define FAIL_RESPONSE           "FAIL"
@@ -72,14 +73,19 @@ using reverse_access::ResourceReply;
 
 static __thread char version_buf[10];
 
-struct client_context {
-  std::string client_address;
+struct domain_client_context {
+  std::string domain_client_addr;
   int sock;
 };
 
+struct client_tuple {
+  uint64_t timestamp;
+  std::string hostname;
+};
+
 // Lock control variables
-std::map<std::string, struct client_context> command_mapper;
-std::map<std::string, uint64_t> client_mapper;
+std::map<std::string, struct domain_client_context> command_mapper;
+std::map<std::string, struct client_tuple> client_mapper;
 static REVERSE_COMMANDS control_command;
 std::string control_command_id;
 uint64_t command_client_timestamp;
@@ -127,8 +133,10 @@ void show_app_help(char *app_name)
   fprintf(stdout, "Usage:\n");
   fprintf(stdout, USAGE_STRING, basename(app_name));
   fprintf(stdout, "\nOptions:\n");
-  fprintf(stdout, "\t-f folder\t Folder to save synced files\n");
   fprintf(stdout, "\t-p port\t\t Server port\n");
+  fprintf(stdout, "\t-a path\t\t The certificate authority path\n");
+  fprintf(stdout, "\t-c path\t\t The certificate path\n");
+  fprintf(stdout, "\t-k path\t\t The private key path\n");
   fprintf(stdout, "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n");
   fprintf(stdout, "\t-h\t\t Show help\n");
   fprintf(stdout, "\t-v\t\t Show app version\n\n");
@@ -160,7 +168,8 @@ int get_port(char *port_str)
   return strtol(port_str, NULL, 10);
 }
 
-void process_app_options(int argc, char *argv[], int *port, uint8_t *verbosity)
+void process_app_options(int argc, char *argv[], int *port, char *key_path,
+                         char *cert_path, char *ca_path, uint8_t *verbosity)
 {
   int opt;
   int p;
@@ -183,6 +192,15 @@ void process_app_options(int argc, char *argv[], int *port, uint8_t *verbosity)
         exit(EXIT_FAILURE);
       }
       *port = p;
+      break;
+    case 'k':
+      os_strlcpy(key_path, optarg, MAX_OS_PATH_LEN);
+      break;
+    case 'c':
+      os_strlcpy(cert_path, optarg, MAX_OS_PATH_LEN);
+      break;
+    case 'a':
+      os_strlcpy(ca_path, optarg, MAX_OS_PATH_LEN);
       break;
     case ':':
       log_cmdline_error("Missing argument for -%c\n", optopt);
@@ -231,14 +249,16 @@ void wait_reverse_command(std::string id, REVERSE_COMMANDS cmd, uint64_t client_
   log_trace("Processed reverse command.");
 }
 
-uint64_t save_client_id(std:: string id)
+uint64_t save_client_id(std::string id, std::string hostname)
 {
   const std::lock_guard<std::mutex> lock(client_map_lock);
-  uint64_t timestamp;
-  os_get_timestamp(&timestamp);
-  client_mapper[id] = timestamp;
+  struct client_tuple tuple;
 
-  return client_mapper[id];
+  os_get_timestamp(&tuple.timestamp);
+  tuple.hostname = hostname;
+  client_mapper[id] = tuple;
+
+  return tuple.timestamp;
 }
 
 void clear_client_id(std:: string id)
@@ -252,7 +272,7 @@ uint64_t get_client_timestamp(std::string id)
   const std::lock_guard<std::mutex> lock(client_map_lock);
   auto found = client_mapper.find(id);
   if (found != client_mapper.end())
-    return client_mapper[id];
+    return client_mapper[id].timestamp;
 
   return 0;
 }
@@ -268,30 +288,30 @@ std::string find_key_val(const std::multimap<grpc::string_ref, grpc::string_ref>
   return "";
 }
 
-std::string save_client_context(int sock, std::string client_address)
+std::string save_domain_context(int sock, std::string domain_client_addr)
 {
-  struct client_context ctx;
+  struct domain_client_context ctx;
   char rid[MAX_RANDOM_UUID_LEN];
   generate_radom_uuid(rid);
   std::string id(rid);
 
   const std::lock_guard<std::mutex> lock(command_map_lock);
   ctx.sock =  sock;
-  ctx.client_address = client_address;
+  ctx.domain_client_addr = domain_client_addr;
   command_mapper[id] = ctx;
 
   return id;
 }
 
-void clear_client_context(std::string id)
+void clear_domain_context(std::string id)
 {
   const std::lock_guard<std::mutex> lock(command_map_lock);
   command_mapper.erase(id);
 }
 
-struct client_context get_client_context(std::string id)
+struct domain_client_context get_domain_context(std::string id)
 {
-  struct client_context ctx;
+  struct domain_client_context ctx;
   const std::lock_guard<std::mutex> lock(command_map_lock);
   ctx.sock = -1;
 
@@ -307,10 +327,10 @@ struct client_context get_client_context(std::string id)
 
 int write_command_data(std::string id, char *buf, ssize_t buf_size)
 {
-  struct client_context ctx = get_client_context(id);
+  struct domain_client_context ctx = get_domain_context(id);
   if (ctx.sock>= 0) {
     log_trace("Writing command with id=%s", id.c_str());
-    return write_domain_data_s(ctx.sock, buf, buf_size, (char *)(ctx.client_address).c_str());
+    return write_domain_data_s(ctx.sock, buf, buf_size, (char *)(ctx.domain_client_addr).c_str());
   }
 
   return -1;
@@ -351,8 +371,10 @@ class ReverserServiceImpl final : public Reverser::Service {
       context->client_metadata();
 
     const std::string id = find_key_val(metadata, METADATA_KEY);
-    uint64_t client_timestamp = save_client_id(id);
-    log_trace("Subscribed client with id=%s and timestamp=%llu", id.c_str(), client_timestamp);
+    const std::string client_hostname = request->hostname();
+    uint64_t client_timestamp = save_client_id(id, client_hostname);
+    log_trace("Subscribed client with id=%s, timestamp=%llu and hostname=%s", id.c_str(),
+              client_timestamp, client_hostname.c_str());
 
     while(true) {
       CommandReply reply;
@@ -413,7 +435,7 @@ class ReverserServiceImpl final : public Reverser::Service {
       os_free(buf);
     }
 
-    clear_client_context(request->id());
+    clear_domain_context(request->id());
 
     return Status::OK;
   }
@@ -447,8 +469,8 @@ ssize_t get_client_list_buf(char **buf)
   const std::lock_guard<std::mutex> lock(client_map_lock);
 
   for (auto it = client_mapper.begin(); it != client_mapper.end(); ++it) {
-    if (it->second) {
-      ret += it->first;
+    if (it->second.timestamp) {
+      ret += it->first + " " + it->second.hostname;
       ret += "\n";
     }
   }
@@ -480,32 +502,51 @@ ssize_t get_fail_response(char **buf)
   return buf_size;
 }
 
-int process_command(std::vector<std::string> &cmd_list, int sock, std::string client_address)
+int get_client_id(std::string encoded_str, std::string &id)
+{
+  if (!encoded_str.length()) return -1;
+  if (encoded_str[0] != '[') return -1;
+  if (encoded_str[encoded_str.length() - 1] != ']') return -1;
+  id = encoded_str.substr(1, encoded_str.length() - 2);
+  return 0;
+}
+int process_command(std::vector<std::string> &cmd_list, int sock, std::string domain_client_addr)
 {
   ssize_t buf_size = 0;
   uint64_t client_timestamp = 0;
   std::string args;
   char *response_buf = NULL;
 
-  if (cmd_list.size()) {
-    std::string cmd = cmd_list.front();
-    std::string id = save_client_context(sock, client_address);
+  if (cmd_list.size() > 1) {
+    std::string encoded_client_id = cmd_list.front();
+    std::string client_id;
+    std::string cmd = cmd_list.at(1);
+    std::string domain_client_id = save_domain_context(sock, domain_client_addr);
 
-    log_trace("Processing command %s with id=%s", cmd.c_str(), id.c_str());
-
-    if (cmd_list.size() > 1) {
-      client_timestamp = get_client_timestamp(cmd_list.at(1));
+    if (get_client_id(encoded_client_id, client_id) < 0) {
+      log_trace("get_client_id fail");
+      return -1;
     }
+
+    if (client_id.length()) {
+      client_timestamp = get_client_timestamp(client_id);
+    }
+
+    log_trace("Processing command %s with domain id=%s and client_id=%s", cmd.c_str(),
+              domain_client_id.c_str(), client_id.c_str());
 
     if (cmd_list.size() > 2) {
       args = cmd_list.at(2);
     }
 
     if (strcmp(cmd.c_str(), REVERSE_CMD_STR_LIST) == 0 && client_timestamp) {
-      wait_reverse_command(id, REVERSE_CMD_LIST, client_timestamp, args);
+      wait_reverse_command(domain_client_id, REVERSE_CMD_LIST, client_timestamp, args);
+      return 0;
+    } else if (strcmp(cmd.c_str(), REVERSE_CMD_STR_CLIENT_EXIT) == 0 && client_timestamp) {
+      wait_reverse_command(domain_client_id, REVERSE_CMD_CLIENT_EXIT, client_timestamp, args);
       return 0;
     } else if (strcmp(cmd.c_str(), REVERSE_CMD_STR_GET) == 0 && client_timestamp) {
-      wait_reverse_command(id, REVERSE_CMD_GET, client_timestamp, args);
+      wait_reverse_command(domain_client_id, REVERSE_CMD_GET, client_timestamp, args);
       return 0;
     } else if (strcmp(cmd.c_str(), REVERSE_CMD_STR_LIST_CLIENTS) == 0) {
       buf_size = get_client_list_buf(&response_buf);
@@ -516,15 +557,15 @@ int process_command(std::vector<std::string> &cmd_list, int sock, std::string cl
 
     if (response_buf) {
       log_trace("Sending command");
-      if (write_command_data(id, response_buf, buf_size) < 0) {
-        clear_client_context(id);
+      if (write_command_data(domain_client_id, response_buf, buf_size) < 0) {
+        clear_domain_context(domain_client_id);
         log_trace("write_command_data error");
         return -1;
       }
       os_free(response_buf);
     }
 
-    clear_client_context(id);
+    clear_domain_context(domain_client_id);
   } else {
     return -1;
   }
@@ -534,16 +575,33 @@ int process_command(std::vector<std::string> &cmd_list, int sock, std::string cl
 
 void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
 {
-  char buf[MAX_DOMAIN_RECEIVE_DATA];
+  char *buf, *domain_client_addr, *cmd_line;
+  uint32_t bytes_available = 0;
+  ssize_t num_bytes;
 
-  char *client_addr = (char *)os_malloc(sizeof(struct sockaddr_un));
-  ssize_t num_bytes = read_domain_data_s(sock, buf, MAX_DOMAIN_RECEIVE_DATA, client_addr, 0);
-  if (num_bytes == -1) {
-    log_trace("read_domain_data_s fail");
-    os_free(client_addr);
+  if (ioctl(sock, FIONREAD, &bytes_available) == -1) {
+    log_err("ioctl");
+    return;
   }
 
-  char *cmd_line = process_cmd_str(buf, num_bytes);
+  if ((buf = (char*)os_zalloc((size_t)(bytes_available + 1))) == NULL) {
+    log_err("os_malloc");
+    return;
+  }
+
+  if ((domain_client_addr = (char *)os_zalloc(sizeof(struct sockaddr_un))) == NULL) {
+    log_err("os_zalloc");
+    os_free(buf);
+    return;  
+  }
+
+  if ((num_bytes = read_domain_data_s(sock, buf, bytes_available, domain_client_addr, 0)) == -1) {
+    log_trace("read_domain_data_s fail");
+    os_free(buf);
+    os_free(domain_client_addr);
+  }
+
+  cmd_line = process_cmd_str(buf, num_bytes);
   log_trace("%s", cmd_line);
 
   std::string cmd_str(cmd_line);
@@ -552,9 +610,12 @@ void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
   std::vector<std::string> cmd_list;
 
   split_string(cmd_list, cmd_str, COMMAND_SEPARATOR);
-  process_command(cmd_list, sock, client_addr);
+  if (process_command(cmd_list, sock, domain_client_addr) < 0) {
+    log_trace("process_command fail");
+  }
 
-  os_free(client_addr);
+  os_free(buf);
+  os_free(domain_client_addr);
 }
 
 void run_control_socket(std::string &name)
@@ -588,21 +649,33 @@ void run_control_socket(std::string &name)
   eloop_destroy();
 }
 
-void run_grpc_server(int port)
+void run_grpc_server(int port, char *key, char *cert, char *ca)
 {
   ReverserServiceImpl reverser;
   std::string server_address("0.0.0.0:");
   server_address += std::to_string(port);
 
   grpc::EnableDefaultHealthCheckService(true);
+  grpc::reflection::InitProtoReflectionServerBuilderPlugin();
   ServerBuilder builder;
 
-  builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
+  if (key == NULL && cert == NULL && ca == NULL) {
+    builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
+    fprintf(stdout, "Configured unsecured connection\n");
+  } else {
+    grpc::SslServerCredentialsOptions::PemKeyCertPair pkcp = {key, cert};
+    grpc::SslServerCredentialsOptions ssl_opts(GRPC_SSL_DONT_REQUEST_CLIENT_CERTIFICATE);
+    ssl_opts.pem_root_certs = ca;
+    ssl_opts.pem_key_cert_pairs.push_back(pkcp);
+    std::shared_ptr<grpc::ServerCredentials> creds = grpc::SslServerCredentials(ssl_opts);
+    builder.AddListeningPort(server_address, creds);
+    fprintf(stdout, "Configured TLS connection\n");
+  }
 
   builder.RegisterService(&reverser);
 
   std::unique_ptr<Server> server(builder.BuildAndStart());
-  log_info("Server listening on %s", server_address.c_str());
+  fprintf(stdout, "Server listening on %s", server_address.c_str());
 
   server->Wait();
 }
@@ -611,9 +684,20 @@ int main(int argc, char** argv) {
   uint8_t verbosity = 0;
   uint8_t level = 0;
   int port = -1;
+  char key_path[MAX_OS_PATH_LEN];
+  char cert_path[MAX_OS_PATH_LEN];
+  char ca_path[MAX_OS_PATH_LEN];
+  char *key = NULL;
+  char *cert = NULL;
+  char *ca = NULL;
+
+  os_memset(key_path, 0, MAX_OS_PATH_LEN);
+  os_memset(cert_path, 0, MAX_OS_PATH_LEN);
+  os_memset(ca_path, 0, MAX_OS_PATH_LEN);
+
   std::string ctrlif(CONTROL_INTERFACE_NAME);
 
-  process_app_options(argc, argv, &port, &verbosity); 
+  process_app_options(argc, argv, &port, key_path, cert_path, ca_path, &verbosity); 
 
   if (optind <= 1) show_app_help(argv[0]);
 
@@ -636,9 +720,41 @@ int main(int argc, char** argv) {
 
   fprintf(stdout, "Starting reverse client with:\n");
   fprintf(stdout, "Port --> %d\n", port);
+  fprintf(stdout, "Control interface --> %s\n", ctrlif.c_str());
+  fprintf(stdout, "Key path --> %s\n", key_path);
+  fprintf(stdout, "Cert path --> %s\n", cert_path);
+  fprintf(stdout, "Cert authority path --> %s\n", ca_path);
+
+  if (strlen(key_path)) {
+    if (read_file_string(key_path, &key) < 0) {
+      fprintf(stderr, "read_file_string fail\n");
+      exit(1);
+    }
+  }
+
+  if (strlen(cert_path)) {
+    if (read_file_string(cert_path, &cert) < 0) {
+      fprintf(stderr, "read_file_string fail\n");
+      exit(1);
+    }
+  }
+
+  if (strlen(ca_path)) {
+    if (read_file_string(ca_path, &ca) < 0) {
+      fprintf(stderr, "read_file_string fail\n");
+      exit(1);
+    }
+  }
 
   std::thread control_thread(run_control_socket, std::ref(ctrlif));
-  run_grpc_server(port);
+  run_grpc_server(port, key, cert, ca);
+
+  if (key != NULL)
+    os_free(key);
+  if (cert != NULL)
+    os_free(cert);
+  if (ca != NULL)
+    os_free(ca);
 
   return 0;
 }

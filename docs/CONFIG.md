@@ -393,4 +393,14 @@ sudo ./src/restsrv -s /tmp/edgesec-domain-server -p 8080 -z 32 -c localhost -t -
 ```bash
 sudo ./src/restsrv -s /tmp/edgesec-domain-server -p 8080 -z 32 -c localhost -t
 ```
-When creating the services ```capsrv``` and ```resrsrv``` should depend on ```edgesec```.
+
+## Running restclient to ```localhost:8080``` with grpc CA located in ```/cert/CA/CA.pem``` and data stored in ```./db``` folder, with debug
+```bash
+sudo ./src/revclient -f ./db -a localhost -p 8080 -c ./cert/CA/CA.pem -dddddddd
+```
+
+## Running restclient to ```localhost:8080``` without grpc CA and data stored in ```./db``` folder, without debug
+```bash
+sudo ./src/revclient -f ./db -a localhost -p 8080
+```
+When creating the services ```capsrv```, ```resrsrv``` and ```revclient``` should depend on ```edgesec```.

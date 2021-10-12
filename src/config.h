@@ -48,6 +48,7 @@ struct app_config {
   UT_array            *bin_path_array;                      /**< The array including the paths of systems binaries. */
   bool                ap_detect;                            /**< Flag to detect an existing wifi interface to create the access point. */
   bool                exec_ap;                              /**< Flag to execute the ap service. */
+  bool                generate_ssid;                        /**< Flag to generate the SSID for AP. */
   bool                exec_radius;                          /**< Flag to execute the radius service. */
   bool                exec_dhcp;                            /**< Flag to execute the dhcp service. */
   bool                exec_capture;                         /**< Flag to execute the capture service. */
