@@ -242,11 +242,51 @@ ssize_t read_file(const char *name, char **data)
   fclose(fp);
 }
 
+int sqlite_exec_callback(void* ptr ,int argc, char **argv, char **colname)
+{
+  char **out = (char **)ptr, *str;
+  size_t out_size;
+  std::string row, column;
+  if (*out == NULL) {
+    for (int i = 0; i < argc; i++) {
+      std::string val = colname[i];
+      if (i == argc - 1)
+        column += val + '\n';
+      else column += val + ',';
+    }
+    str = (char *)column.c_str();
+    if ((*out = (char *)os_zalloc(strlen(str) + 1)) == NULL) {
+      log_err("os_zalloc");
+      return -1;
+    }
+    strcpy(*out, column.c_str());
+  }
+
+  for (int i = 0; i < argc; i++) {
+    std::string val = (argv[i] ? argv[i] : "NULL");
+    if (i == argc - 1)
+      row += val + '\n';
+    else row += val + ',';
+  }
+  str = (char *)row.c_str();
+  if (*out != NULL && strlen(str)) {
+    out_size = strlen(*out) + strlen(str) + 1;
+    if ((*out = (char *)os_realloc(*out, out_size)) == NULL) {
+      log_err("os_realloc");
+      return -1;
+    }
+    strcat(*out, str);
+  }
+  return 0;
+}
+
 int process_sql_execute(std::string db_path, std::string args, std::string &out)
 {
+  int rc;
   sqlite3 *db = NULL;
-  char *file_path, *decoded_statement;
+  char *file_path, *decoded_statement, *err = NULL;
   std::vector<std::string> arg_list;
+  char *sqlite_out = NULL;
   split_string(arg_list, args, COMMAND_SEPARATOR);
 
   if (arg_list.size() < 2) {
@@ -279,6 +319,18 @@ int process_sql_execute(std::string db_path, std::string args, std::string &out)
     return 0;    
   }
   log_trace("Executing statement %s", decoded_statement);
+
+  if (sqlite3_exec(db, decoded_statement, sqlite_exec_callback, &sqlite_out, &err) != SQLITE_OK) {
+    log_trace("sqlite3_exec error %s", err);
+    os_free(decoded_statement);
+    if (sqlite_out != NULL) os_free(sqlite_out);
+    sqlite3_free(err);
+    sqlite3_close(db);
+    return -1;
+  }
+
+  out = std::string(sqlite_out);
+  if (sqlite_out != NULL) os_free(sqlite_out);
   os_free(decoded_statement);
   sqlite3_close(db);
   return 0;
