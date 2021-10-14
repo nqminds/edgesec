@@ -63,15 +63,15 @@ cmake --build build/ --target install -j4
 
 ## Running
 
-To run ```edgesec``` tool with the configuration file ```local-config.ini``` located in ```./build``` folder use:
+To run ```edgesec``` tool with the configuration file ```dev-config.ini``` located in ```./build``` folder use:
 
 ```console
-./build/src/edgesec -c ./build/local-config.ini
+./build/src/edgesec -c ./build/dev-config.ini
 ```
 
 To enable verbose debug mode use:
 ```console
-./build/src/edgesec -c ./build/local-config.ini -ddddd
+./build/src/edgesec -c ./build/dev-config.ini -ddddd
 ```
 
 The configuration file `config.ini` has been setup to work by default only when:

@@ -33,7 +33,7 @@ promiscuous = false
 bufferTimeout = 10
 processInterval = 10
 immediate = false
-analyser = "ndpi"
+analyser = "default"
 fileWrite = false
 dbWrite = false
 dbSync = false
@@ -43,6 +43,7 @@ syncCaPath = "@EDGESEC_cert_location@"
 command = "SET_ALERT"
 syncStoreSize = 1000
 syncSendSize = 20
+fileStoreSize = 1000000
 
 [supervisor]
 domainServerPath = "@EDGESEC_runstate_dir@/edgesec-domain-server"
