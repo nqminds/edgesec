@@ -42,7 +42,7 @@ option(BUILD_MICROHTTPD_LIB "Build microhttpd library" ON)
 option(BUILD_UUID_LIB "Build uuid library" ON)
 option(BUILD_PCAP_LIB "Build pcap library" ON)
 option(BUILD_NDPI_LIB "Build nDPI library" ON)
-option(BUILD_GRPC_LIB "Build gRPC library" ON)
+option(BUILD_GRPC_LIB "Build gRPC library (warning, cross-compiling does not work well)" OFF)
 option(BUILD_SQLSYNC_SERVICE "Build sqlsync service" ON)
 option(BUILD_REVERSE_SERVICE "Build Reverse service" ON)
 
@@ -158,13 +158,12 @@ if (BUILD_SQLSYNC_SERVICE AND NOT (BUILD_ONLY_DOCS))
     ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}"
       --cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
       -I "${sqlite_proto_path}"
-      --plugin=protoc-gen-grpc="${GRPC_CPP_PLUGIN_SH}"
+      --plugin=protoc-gen-grpc="${GRPC_CPP_PLUGIN}"
       "${sqlite_proto}"
-    DEPENDS "${sqlite_proto}")
+    DEPENDS "${sqlite_proto}" ${PROTOC_BIN} ${GRPC_CPP_PLUGIN})
 
   add_library(sqlite_grpc_proto ${sqlite_grpc_srcs} ${sqlite_grpc_hdrs} ${sqlite_proto_srcs} ${sqlite_proto_hdrs})
-  target_include_directories(sqlite_grpc_proto PUBLIC ${LIBGRPC_INCLUDE_PATH})
-  target_link_libraries(sqlite_grpc_proto PUBLIC ${LIBGRPC_LIB} ${LIBGRPCPP_LIB} ${LIBGRPC_PLUGIN_SUPPORT_LIB})
+  target_link_libraries(sqlite_grpc_proto PUBLIC grpc++ grpc_plugin_support)
 endif ()
 
 if (BUILD_REVERSE_SERVICE AND NOT (BUILD_ONLY_DOCS))
@@ -182,17 +181,16 @@ if (BUILD_REVERSE_SERVICE AND NOT (BUILD_ONLY_DOCS))
     ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}"
       --cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
       -I "${reverse_proto_path}"
-      --plugin=protoc-gen-grpc="${GRPC_CPP_PLUGIN_SH}"
+      --plugin=protoc-gen-grpc="${GRPC_CPP_PLUGIN}"
       "${reverse_proto}"
-    DEPENDS "${reverse_proto}")
+    DEPENDS "${reverse_proto}" ${PROTOC_BIN} ${GRPC_CPP_PLUGIN})
 
   # Include generated *.pb.h files
   # include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
   # Compile grpc protobuf sources
   add_library(reverse_grpc_proto ${reverse_grpc_srcs} ${reverse_grpc_hdrs} ${reverse_proto_srcs} ${reverse_proto_hdrs})
-  target_include_directories(reverse_grpc_proto PUBLIC ${LIBGRPC_INCLUDE_PATH})
-  target_link_libraries(reverse_grpc_proto PUBLIC ${LIBGRPC_LIB} ${LIBGRPCPP_LIB} ${LIBGRPC_PLUGIN_SUPPORT_LIB})
+  target_link_libraries(reverse_grpc_proto PUBLIC grpc++ grpc_plugin_support)
 endif ()
 
 if (USE_OW_DNSMASQ)
