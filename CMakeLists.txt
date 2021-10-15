@@ -17,10 +17,10 @@ string(TOLOWER ${PROJECT_NAME} _project_lower)
 
 # Installation options
 # creating the .deb would use set their own CMAKE_INSTALL_PREFIX
-set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/${_project_lower}-dist" CACHE BOOL "Installation path")
+set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/${_project_lower}-dist" CACHE PATH "Installation path")
 
 include(GNUInstallDirs)
-set(EDGESEC_private_lib_dir "${CMAKE_INSTALL_LIBDIR}/${_project_lower}" CACHE PATH "Directory of private EDGESec shared libs")
+set(EDGESEC_private_lib_dir "${CMAKE_INSTALL_FULL_LIBDIR}/${_project_lower}" CACHE PATH "Directory of private EDGESec shared libs")
 # RPATH must be set before defining targets
 # $ORIGIN is so that shared libs can view other shared libs (e.g. libgrpc++ can see libxxx)
 # $ORIGIN/lib is to support where we used to store shared libs
