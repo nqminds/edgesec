@@ -15,7 +15,13 @@ if (BUILD_NDPI_LIB AND NOT (BUILD_ONLY_DOCS))
     )
     FetchContent_Populate(ndpi_src)
 
-    execute_process(COMMAND bash ${CMAKE_SOURCE_DIR}/lib/compile_ndpi.sh ${LIBNDPI_INSTALL_ROOT} ${ndpi_src_SOURCE_DIR})
+    execute_process(COMMAND
+      bash
+      ${CMAKE_SOURCE_DIR}/lib/compile_ndpi.sh
+      ${LIBNDPI_INSTALL_ROOT}
+      ${ndpi_src_SOURCE_DIR}
+      ${target_autoconf_triple}
+    )
     find_library(LIBNDPI_LIB NAMES ndpi libndpi PATHS "${LIBNDPI_LIB_DIR}" NO_DEFAULT_PATH)
   endif ()
 endif ()
