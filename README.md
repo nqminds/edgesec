@@ -22,10 +22,10 @@ build_dependencies=(
     libtool-bin # required by autoconf somewhere
     pkg-config # seems to be required by nDPI
     libjson-c-dev # mystery requirement
-    protobuf-compiler
     flex bison # required by pcap
     libssl-dev # required by hostapd only. GRPC uses own version, and we compile OpenSSL 3 for EDGESec
     libmnl0 # we compile our own version of mnl, but we have a linking issue, so temporarily install a system version
+    protobuf-compiler-grpc libgrpc++-dev # GRPC, can be removed if -DBUILD_GRPC_LIB=ON
 )
 runtime_dependencies=(
     dnsmasq
@@ -63,15 +63,15 @@ cmake --build build/ --target install -j4
 
 ## Running
 
-To run ```edgesec``` tool with the configuration file ```local-config.ini``` located in ```./build``` folder use:
+To run ```edgesec``` tool with the configuration file ```dev-config.ini``` located in ```./build``` folder use:
 
 ```console
-./build/src/edgesec -c ./build/local-config.ini
+./build/src/edgesec -c ./build/dev-config.ini
 ```
 
 To enable verbose debug mode use:
 ```console
-./build/src/edgesec -c ./build/local-config.ini -ddddd
+./build/src/edgesec -c ./build/dev-config.ini -ddddd
 ```
 
 The configuration file `config.ini` has been setup to work by default only when:
