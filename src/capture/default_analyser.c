@@ -51,9 +51,6 @@
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 
-#define MAX_PCAP_FILE_NAME_LENGTH     MAX_RANDOM_UUID_LEN + STRLEN(PCAP_EXTENSION)
-#define PCAP_DB_NAME                  "pcap-meta" SQLITE_EXTENSION
-
 #ifdef WITH_SQLSYNC_SERVICE
 uint32_t run_register_db(char *ca, char *address, char *name);
 uint32_t run_sync_db_statement(char *ca, char *address, char *name, bool default_db, char *statement);
@@ -129,7 +126,11 @@ int save_pcap_file_data(struct pcap_pkthdr *header, uint8_t *packet, struct capt
   os_to_timestamp(header->ts, &timestamp);
   construct_pcap_file_name(file_name);
 
-  path = construct_path(context->db_path, file_name);
+  if ((path = construct_path(context->pcap_path, file_name)) == NULL) {
+    log_trace("construct_path fail");
+    return -1;
+  }
+
   if (dump_file_pcap(context->pc, path, header, packet) < 0) {
     log_trace("dump_file_pcap fail");
     os_free(path);
@@ -138,8 +139,7 @@ int save_pcap_file_data(struct pcap_pkthdr *header, uint8_t *packet, struct capt
 
   os_free(path);
 
-  if (save_sqlite_pcap_entry(context->pcap_db, context->cap_id, file_name,
-        timestamp,
+  if (save_sqlite_pcap_entry(context->pcap_db, file_name, timestamp,
         header->caplen, header->len, context->interface, context->filter) < 0) {
     log_trace("save_sqlite_pcap_entry fail");
     return -1;
@@ -211,8 +211,23 @@ int start_default_analyser(struct capture_conf *config)
   struct capture_context context;
   char *header_db_path = NULL;
   char *pcap_db_path = NULL;
+  char *pcap_subfolder_path = NULL;
 
   os_memset(&context, 0, sizeof(context));
+
+  if ((pcap_subfolder_path = construct_path(config->db_path, PCAP_SUBFOLDER_NAME)) == NULL) {
+    log_trace("construct_path fail");
+    return -1;
+  }
+
+  strcpy(context.pcap_path, pcap_subfolder_path);
+  os_free(pcap_subfolder_path);
+
+  if (create_dir(context.pcap_path, S_IRWXU | S_IRWXG) < 0) {
+    log_debug("create_dir fail");
+    return -1;
+  }
+
   generate_radom_uuid(context.cap_id);
 
   if (get_hostname(context.hostname) < 0) {
@@ -235,15 +250,12 @@ int start_default_analyser(struct capture_conf *config)
   }
 
   construct_header_db_name(context.cap_id, context.db_name);
-  header_db_path = construct_path(context.db_path, context.db_name);
-
-  if (header_db_path == NULL) {
+  if ((header_db_path = construct_path(context.db_path, context.db_name)) == NULL) {
     log_debug("construct_path fail");
     return -1;
   }
 
-  pcap_db_path = construct_path(context.db_path, PCAP_DB_NAME);
-  if (pcap_db_path == NULL) {
+  if ((pcap_db_path = construct_path(context.db_path, PCAP_DB_NAME)) == NULL) {
     log_debug("construct_path fail");
     os_free(header_db_path);
     return -1;
@@ -260,6 +272,7 @@ int start_default_analyser(struct capture_conf *config)
 
   log_info("Capturing hostname=%s", context.hostname);
   log_info("Capturing id=%s", context.cap_id);
+  log_info("Capturing pcap_path=%s", context.pcap_path);
   log_info("Capturing interface=%s", context.interface);
   log_info("Capturing filter=%s", context.filter);
   log_info("Promiscuous mode=%d", config->promiscuous);

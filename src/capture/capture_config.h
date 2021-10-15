@@ -34,6 +34,9 @@
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 
+#define PCAP_DB_NAME                  "pcap-meta" SQLITE_EXTENSION
+#define PCAP_SUBFOLDER_NAME           "./pcap"                
+
 #define MAX_ANALYSER_NAME_SIZE      64
 #define MAX_FILTER_SIZE             4094
 
@@ -50,10 +53,10 @@
 
 #define CAPTURE_MAX_OPT       26
                               
-#define CAPTURE_OPT_STRING    ":c:i:q:f:t:n:p:y:a:o:x:z:r:k:dvhmewus"   // pgjlb
+#define CAPTURE_OPT_STRING    ":c:i:q:f:t:n:p:y:a:o:x:z:r:k:b:dvhmewus"   // gjl
 #define CAPTURE_USAGE_STRING  "\t%s [-c config] [-d] [-h] [-v] [-i interface] [-q domain]" \
                               "[-f filter] [-m] [-t timeout] [-n interval] " \
-                              "[-e] [-y engine][-w] [-u] [-s] [-p path] [-a address] [-o port] [-k path] [-r params]\n"
+                              "[-e] [-y engine][-w] [-u] [-s] [-p path] [-a address] [-o port] [-k path] [-r params] [-b size]\n"
 #define CAPTURE_OPT_DEFS      "\t-c config\t Path to the config file name\n" \
                               "\t-q domain\t The UNIX domain path\n" \
                               "\t-x command\t The UNIX domain command\n" \
@@ -73,6 +76,7 @@
                               "\t-w\t\t Write to db\n" \
                               "\t-s\t\t Sync the db\n" \
                               "\t-r\t\t Sync store size and send size (val1,val2)\n" \
+                              "\t-b\t\t Capture store size (in Kb)\n" \
                               "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n" \
                               "\t-h\t\t Show help\n" \
                               "\t-v\t\t Show app version\n\n"
@@ -122,6 +126,7 @@ struct capture_conf {
   char filter[MAX_FILTER_SIZE];                               /**< Specifies the filter expression or pcap lib */
   ssize_t sync_store_size;                                    /**< Specifies the sync store size */
   ssize_t sync_send_size;                                     /**< Specifies the sync send size */
+  uint32_t capture_store_size;                                /**< Specifies the capture store size in Kb */
 };
 
 struct tuple_packet {

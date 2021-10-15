@@ -18,61 +18,22 @@
  ****************************************************************************/
 
 /**
- * @file default_analyser.h 
+ * @file capture_cleaner.h 
  * @author Alexandru Mereacre 
- * @brief File containing the definition of the default analyser service.
+ * @brief File containing the definition of the capture cleaner service structures.
  */
 
-#ifndef DEFAULT_ANALYSER_H
-#define DEFAULT_ANALYSER_H
-
-#include <sqlite3.h>
-#include <pcap.h>
+#ifndef CAPTURE_CLEANER_H
+#define CAPTURE_CLEANER_H
 
 #include "capture_config.h"
 
-#define MAX_DB_NAME_LENGTH            MAX_RANDOM_UUID_LEN + STRLEN(SQLITE_EXTENSION)
-#define MAX_PCAP_FILE_NAME_LENGTH     MAX_RANDOM_UUID_LEN + STRLEN(PCAP_EXTENSION)
-
-struct capture_context {
-  uint32_t process_interval;
-  struct pcap_context *pc;
-  struct packet_queue *pqueue;
-  struct pcap_queue *cqueue;
-  struct string_queue *squeue;
-  struct sqlite_header_context *header_db;
-  sqlite3 *pcap_db;
-  bool file_write;
-  bool db_write;
-  bool db_sync;
-  char grpc_srv_addr[MAX_WEB_PATH_LEN];
-  char db_name[MAX_DB_NAME_LENGTH];
-  char *db_path;
-  char pcap_path[MAX_OS_PATH_LEN];
-  char *interface;
-  char *filter;
-  char cap_id[MAX_RANDOM_UUID_LEN];
-  char hostname[OS_HOST_NAME_MAX];
-  ssize_t sync_store_size;
-  ssize_t sync_send_size;
-  char *ca;
-};
-
 /**
- * @brief Callback for pcap packet module
+ * @brief Executes the capture cleaner service
  * 
- * @param ctx The capture context
- * @param header pcap header structure
- * @param packet Returned pcap packet
+ * @param config The capture service config structure
+ * @return int 0 on success, -1 on error
  */
-void pcap_callback(const void *ctx, struct pcap_pkthdr *header, uint8_t *packet);
-
-/**
- * @brief Starts the default analyser engine
- * 
- * @param config The capture config structure
- * @return int 0 on success, -1 on failure
- */
-int start_default_analyser(struct capture_conf *config);
+int start_capture_cleaner(struct capture_conf *config);
 
 #endif
