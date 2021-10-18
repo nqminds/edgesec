@@ -1,39 +1,26 @@
-# Creating the .deb
+# Creating a .deb
 
 ## Creating Deb
 
 ### Build Environment
 
-#### Podman
+The recommended way of building a `.deb` is using the software `pbuilder`.
 
-If you want to use podman (e.g. since you're using elementary OS), you can setup a new image
+This will automatically run `sudo apt install [...<dependencies>]`
+in a `chroot` environment.
 
-Install .deb build dependencies, as well as the build depenencies for EDGESec (see README.md)
+However, this does mean you need `sudo` access, even though you are only
+installing into a `chroot` environment.
 
-```bash
-sudo apt install gnupg linux-headers-generic ubuntu-dev-tools apt-file -y
-```
-
-This will automatically call `cmake` in the background, using multiple threads (e.g. no need for `j6`)
-
-```bash
-debuild -us -uc
-```
-
-- Add the `--no-pre-clean` to prevent `debuild` from recompiling everything.
-  This saves a lot of time during testing.
-- `-us -uc` means do not sign the source package and `.changes` file.
-
-Now the deb should exist in the folder above this folder, e.g. `cd ..`.
+Additionally, you also need access to `chroot`, so `pbuilder` does not work
+in a container like `docker`/`podman`.
 
 #### PBuild
 
-**WARNING** NOT FULLY TESTED YET
-
-Install build dependencies
+Install build dependencies:
 
 ```bash
-sudo apt install gnupg pbuilder fakechroot ubuntu-dev-tools apt-file -y
+sudo apt install gnupg pbuilder -y
 ```
 
 Then create a pbuild environment (basically a chroot jail).
@@ -83,7 +70,11 @@ USENETWORK=yes
 PBUILDERSATISFYDEPENDSCMD="/usr/lib/pbuilder/pbuilder-satisfydepends-apt"
 ```
 
-Follow the instuctions in `PBuild`, using your desired architecture:
+First of all, we need to overwrite our apt-sources list.
+Ubuntu places x86 sources seperately from ARM sources, so we need
+to do some jiggarypokery to get it working.
+
+Otherwise, it's just the same command as in [PBuild](#pbuild).
 
 ```bash
 OTHER_MIRROR_LIST=(
@@ -104,6 +95,30 @@ pdebuild --debbuildopts "-us -uc" -- --override-config --distribution focal --mi
   - `--distribution focal`: Needed since we're regenerating `apt` settings.
 
 By default, the `.deb` file will be located in `/var/cache/pbuilder/result/`.
+
+#### Podman
+
+If you want to use podman
+(e.g. since you're using elementary OS, or `pbuilder` doesn't work since you don't have `chroot` support),
+you can use `debuild` manually.
+
+Install .deb build dependencies, as well as the build depenencies for EDGESec (see README.md)
+
+```bash
+sudo apt install gnupg linux-headers-generic ubuntu-dev-tools apt-file -y
+```
+
+This will automatically call `cmake` in the background, using multiple threads (e.g. no need for `j6`)
+
+```bash
+debuild -us -uc
+```
+
+- Add the `--no-pre-clean` to prevent `debuild` from recompiling everything.
+  This saves a lot of time during testing.
+- `-us -uc` means do not sign the source package and `.changes` file.
+
+Now the deb should exist in the folder above this folder, e.g. `cd ..`.
 
 ## Editing the deb
 
