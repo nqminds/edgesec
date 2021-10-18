@@ -995,7 +995,32 @@ int exist_dir(char *dirpath)
   return 1;
 }
 
-int create_dir(char *dirpath, mode_t mode)
+// Adapted from https://stackoverflow.com/a/9210960
+// No need for license, since falls under fair use.
+int make_dirs_to_path(const char* file_path, mode_t mode) {
+    if (!(file_path && *file_path)) {
+      log_err("invalid file_path given to make_dirs_to_path");
+      return -1;
+    }
+
+    char file_path_tmp[MAX_OS_PATH_LEN+1];
+    strcpy(file_path_tmp, file_path);
+
+    // Loops over every "/" in file_path
+    for (char* p = strchr(file_path_tmp + 1, '/'); p; p = strchr(p + 1, '/')) {
+        *p = '\0';
+        if (mkdir(file_path_tmp, mode) == -1) {
+            if (errno != EEXIST) {
+                *p = '/';
+                return -1;
+            }
+        }
+        *p = '/';
+    }
+    return 0;
+}
+
+int create_dir(const char *dirpath, mode_t mode)
 {
   int ret;
   ret = exist_dir(dirpath);
@@ -1005,9 +1030,14 @@ int create_dir(char *dirpath, mode_t mode)
   } else if (ret == 0) {
     log_debug("creating dir path=%s", dirpath);
     errno = 0;
+    if (make_dirs_to_path(dirpath, mode) < 0) {
+      log_err("creating dir path=%s failed", dirpath);
+      return -1;
+    }
+    // make_dirs_to_path doesn't create the final file, so make it ourselves
     if (mkdir(dirpath, mode) < 0) {
       if (errno != EEXIST) {
-        log_err("mkdir");
+        log_err("mkdir path=%s failed with errno=%d", dirpath, errno);
         return -1;
       }
     }
