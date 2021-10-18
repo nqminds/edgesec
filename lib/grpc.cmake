@@ -41,6 +41,8 @@ if (BUILD_GRPC_LIB AND NOT (BUILD_ONLY_DOCS))
     set(CARES_INSTALL OFF CACHE INTERNAL "Disable CARES Installation") # no need to install, since it's static lib
   endif (CUSTOM_GRPC_INSTALL_LIBS)
 
+  set(RE2_BUILD_TESTING OFF CACHE INTERNAL "Disable super slow RE2 tests")
+
   FetchContent_MakeAvailable(gRPC)
 
   #if cross-compiling, find host plugin
