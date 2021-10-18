@@ -49,7 +49,7 @@ int open_sqlite_pcap_db(char *db_path, sqlite3** sql)
   int rc;
 
   if ((rc = sqlite3_open(db_path, &db)) != SQLITE_OK) {     
-    log_debug("Cannot open database: %s", sqlite3_errmsg(db));
+    log_debug("Cannot open database: %s %s", sqlite3_errmsg(db), db_path);
     sqlite3_close(db);
     return -1;
   }
@@ -138,14 +138,13 @@ int get_first_pcap_entry(sqlite3 *db, uint64_t *timestamp)
   int rc;
   sqlite3_stmt *res = NULL;
 
-  log_trace("%s", PCAP_SELECT_FIRST_ENTRY);
   if (sqlite3_prepare_v2(db, PCAP_SELECT_FIRST_ENTRY, -1, &res, 0) != SQLITE_OK) {
     log_trace("Failed to prepare statement: %s", sqlite3_errmsg(db));
     return -1;
   }
   rc = sqlite3_step(res);
   if(rc == SQLITE_ROW) {
-    timestamp = sqlite3_column_int64(res, 0);
+    *timestamp = sqlite3_column_int64(res, 0);
   } else if (rc == SQLITE_OK || rc == SQLITE_DONE) {
     log_trace("No rows");
     sqlite3_finalize(res);

@@ -30,30 +30,41 @@
 
 #include "../utils/eloop.h"
 
-#define CLEANER_CHECK_INTERVAL 1       // Interval in sec
+#define CLEANER_CHECK_INTERVAL 3       // Interval in sec
+#define CLEANER_GROUP_INTERVAL  1000   // Interval in usec
 
 struct cleaner_context {
   sqlite3 *pcap_db;
   char pcap_path[MAX_OS_PATH_LEN];
   uint64_t store_size;
+  uint64_t curr_timestamp;
 };
 
 void eloop_cleaner_handler(void *eloop_ctx, void *user_ctx)
 {
   (void) eloop_ctx;
   int res = 0;
-  uint64_t timestamp = 0;
+  uint64_t timestamp = 0, low_timestamp, high_timestamp;
   struct cleaner_context *context = (struct cleaner_context *) user_ctx;
 
-  res = get_first_pcap_entry(context->pcap_db, &timestamp);
-  if (res < 0) {
-    log_trace("get_first_pcap_entry fail");
-  } else if (res > 0) {
-    log_trace("No rows");
+  low_timestamp = context->curr_timestamp;
+
+  if (!low_timestamp) {
+    res = get_first_pcap_entry(context->pcap_db, &low_timestamp);
+    if (res < 0) {
+      log_trace("get_first_pcap_entry fail");
+    } else if (res > 0) {
+      log_trace("No rows");
+    }
+
+    context->curr_timestamp = low_timestamp;
   }
   
+  if (low_timestamp) {
+    high_timestamp = low_timestamp + CLEANER_GROUP_INTERVAL;
+  }
   log_trace("timestamp=%llu", timestamp);
-  if (eloop_register_timeout(CLEANER_CHECK_INTERVAL, 0, eloop_cleaner_handler, (void *)NULL, (void *)&context) == -1) {
+  if (eloop_register_timeout(CLEANER_CHECK_INTERVAL, 0, eloop_cleaner_handler, (void *)NULL, (void *)user_ctx) == -1) {
     log_debug("eloop_register_timeout fail");
   }
 }
@@ -94,8 +105,9 @@ int start_capture_cleaner(struct capture_conf *config)
   }
 
   log_info("Cleaning db_path=%s", config->db_path);
-  log_info("Cleaning pcap_path=%s", context.pcap_path);
+  log_info("Cleaning pcap_db_path=%s", pcap_db_path);
   log_info("Cleaning store_size=%llu", context.store_size);
+
   if (open_sqlite_pcap_db(pcap_db_path, (sqlite3**)&context.pcap_db) < 0) {
     log_trace("open_sqlite_pcap_db fail");
     os_free(pcap_db_path);

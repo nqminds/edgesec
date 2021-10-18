@@ -37,8 +37,8 @@
 #define PCAP_CREATE_TABLE "CREATE TABLE " PCAP_TABLE_NAME " (timestamp INTEGER NOT NULL, name TEXT, interface TEXT, filter TEXT, caplen INTEGER, length INTEGER, " \
                          "PRIMARY KEY (timestamp));"
 #define PCAP_INSERT_INTO "INSERT INTO " PCAP_TABLE_NAME " VALUES(@timestamp, @name, @interface, @filter, @caplen, @length);"
-#define PCAP_SELECT_FIRST_ENTRY "SELECT * FROM " PCAP_TABLE_NAME ";"
-// #define PCAP_SELECT_FIRST_ENTRY "SELECT timestamp FROM " PCAP_TABLE_NAME " ORDER BY timestamp ASC LIMIT 1;"
+#define PCAP_SELECT_FIRST_ENTRY "SELECT timestamp FROM " PCAP_TABLE_NAME " ORDER BY timestamp ASC LIMIT 1;"
+
 /**
  * @brief Opens the sqlite pcap db
  * 
@@ -79,4 +79,16 @@ int save_sqlite_pcap_entry(sqlite3 *db, char *name, uint64_t timestamp,
  * @return int 0 on success, 1 for no data and -1 on failure
  */
 int get_first_pcap_entry(sqlite3 *db, uint64_t *timestamp);
+
+/**
+ * @brief Calculates the sum of the group of a pcap
+ * 
+ * @param db The sqlite db structure pointer
+ * @param lt The lower bound timestamp
+ * @param ht The upper bound timestamp
+ * @param sum The returned sum
+ * @return int 0 on success, 1 for no data and -1 on failure
+ */
+int sum_pcap_group(sqlite3 *db, uint64_t lt, uint64_t ht, uint64_t *sum);
+
 #endif
