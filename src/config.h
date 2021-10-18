@@ -48,6 +48,7 @@ struct app_config {
   UT_array            *bin_path_array;                      /**< The array including the paths of systems binaries. */
   bool                ap_detect;                            /**< Flag to detect an existing wifi interface to create the access point. */
   bool                exec_ap;                              /**< Flag to execute the ap service. */
+  bool                generate_ssid;                        /**< Flag to generate the SSID for AP. */
   bool                exec_radius;                          /**< Flag to execute the radius service. */
   bool                exec_dhcp;                            /**< Flag to execute the dhcp service. */
   bool                exec_capture;                         /**< Flag to execute the capture service. */
@@ -56,6 +57,8 @@ struct app_config {
   bool                create_interfaces;                    /**< Flag to create the WiFi subnet interfaces. */
   bool                ignore_if_error;                      /**< Flag if set ignores the errors if subnet already exists. */
   int                 default_open_vlanid;                  /**< Sets the default vlan index for open connections or if MAC is not in the list of connections. */
+  int                 quarantine_vlanid;                    /**< Sets the vlan index for the quarantine MACs. */
+  int                 risk_score;                           /**< Sets the risk score. */
   UT_array            *config_ifinfo_array;                 /**< Interface list mapping bridge interface name and IP address range. */
   char                domain_server_path[MAX_OS_PATH_LEN];  /**< Path to the control server. */
   char                db_path[MAX_OS_PATH_LEN];             /**< Specifies the path to the sqlite3 dbs */

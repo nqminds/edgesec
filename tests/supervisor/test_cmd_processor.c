@@ -27,6 +27,12 @@ ssize_t __wrap_write_domain_data(int sock, char *data, size_t data_len, struct s
   return data_len;
 }
 
+int __wrap_subscribe_events_cmd(struct supervisor_context *context, struct client_address *addr)
+{
+  check_expected(addr);
+  return 0;
+}
+
 int __wrap_accept_mac_cmd(struct supervisor_context *context, uint8_t *mac_addr, int vlanid)
 {
   check_expected(mac_addr);
@@ -80,6 +86,12 @@ int __wrap_remove_bridge_cmd(struct supervisor_context *context, uint8_t *left_m
 {
   check_expected(left_mac_addr);
   check_expected(right_mac_addr);
+  return 0;
+}
+
+int __wrap_clear_bridges_cmd(struct supervisor_context *context, uint8_t *mac_addr)
+{
+  check_expected(mac_addr);
   return 0;
 }
 
@@ -232,6 +244,20 @@ static void test_process_domain_buffer(void **state)
   assert_string_equal(*p, "PING");
 
   utarray_free(arr);
+}
+
+static void test_process_subscribe_events_cmd(void **state)
+{
+  (void) state; /* unused */
+
+  UT_array *cmd_arr;
+  struct client_address claddr;
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("SUBSCRIBE_EVENTS", CMD_DELIMITER, cmd_arr), -1); 
+  expect_any(__wrap_subscribe_events_cmd, addr);
+  assert_int_equal(process_subscribe_events_cmd(0, &claddr, NULL, cmd_arr), strlen(OK_REPLY));
+  utarray_free(cmd_arr);
 }
 
 static void test_process_accept_mac_cmd(void **state)
@@ -531,6 +557,31 @@ static void test_process_remove_bridge_cmd(void **state)
   utarray_new(cmd_arr, &ut_str_icd);
   assert_int_not_equal(split_string_array("REMOVE_BRIDGE", CMD_DELIMITER, cmd_arr), -1);
   assert_int_equal(process_remove_bridge_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+}
+
+static void test_process_clear_bridges_cmd(void **state)
+{
+  (void) state; /* unused */
+
+  uint8_t addr1[ETH_ALEN] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
+  UT_array *cmd_arr;
+  struct client_address claddr;
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("CLEAR_BRIDGES 11:22:33:44:55:66", CMD_DELIMITER, cmd_arr), -1);
+  expect_memory(__wrap_clear_bridges_cmd, mac_addr, addr1, ETH_ALEN);
+  assert_int_equal(process_clear_bridges_cmd(0, &claddr, NULL, cmd_arr), strlen(OK_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("CLEAR_BRIDGES 11:22:33:44:55:", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_clear_bridges_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("CLEAR_BRIDGES", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_clear_bridges_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
   utarray_free(cmd_arr);
 }
 
@@ -921,6 +972,7 @@ int main(int argc, char *argv[])
 
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_process_domain_buffer),
+    cmocka_unit_test(test_process_subscribe_events_cmd),
     cmocka_unit_test(test_process_accept_mac_cmd),
     cmocka_unit_test(test_process_deny_mac_cmd),
     cmocka_unit_test(test_process_add_nat_cmd),
@@ -931,6 +983,7 @@ int main(int argc, char *argv[])
     cmocka_unit_test(test_process_set_ip_cmd),
     cmocka_unit_test(test_process_add_bridge_cmd),
     cmocka_unit_test(test_process_remove_bridge_cmd),
+    cmocka_unit_test(test_process_clear_bridges_cmd),
     cmocka_unit_test(test_process_set_fingerprint_cmd),
     cmocka_unit_test(test_process_query_fingerprint_cmd),
     cmocka_unit_test(test_process_register_ticket_cmd),

@@ -32,6 +32,7 @@
 #include "capture_config.h"
 
 #define MAX_DB_NAME_LENGTH            MAX_RANDOM_UUID_LEN + STRLEN(SQLITE_EXTENSION)
+#define MAX_PCAP_FILE_NAME_LENGTH     MAX_RANDOM_UUID_LEN + STRLEN(PCAP_EXTENSION)
 
 struct capture_context {
   uint32_t process_interval;
@@ -47,6 +48,7 @@ struct capture_context {
   char grpc_srv_addr[MAX_WEB_PATH_LEN];
   char db_name[MAX_DB_NAME_LENGTH];
   char *db_path;
+  char pcap_path[MAX_OS_PATH_LEN];
   char *interface;
   char *filter;
   char cap_id[MAX_RANDOM_UUID_LEN];

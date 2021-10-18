@@ -52,7 +52,7 @@ struct bridge_mac_list *init_bridge_list(void)
 
 void bridge_mac_list_free(struct bridge_mac_list *e)
 {
-	if (e) {
+	if (e != NULL) {
     dl_list_del(&e->list);
 	  os_free(e);
   }
@@ -188,7 +188,6 @@ int remove_bridge_mac(struct bridge_mac_list *ml, const uint8_t *mac_addr_left, 
   struct bridge_mac_list_tuple e = get_bridge_mac(ml, mac_addr_left, mac_addr_right);
 	if (e.left_edge == NULL || e.right_edge == NULL) {
     log_trace("Missing edge");
-    return -1;
   }
   
   bridge_mac_list_free(e.left_edge);

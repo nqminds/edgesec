@@ -59,9 +59,9 @@ int run_supervisor(char *server_path, struct supervisor_context *context);
 /**
  * @brief Closes the supervisor service
  * 
- * @param sock The domain socket
+ * @param context The supervisor structure
  * @return true on success, false otherwise
  */
-bool close_supervisor(int sock);
+void close_supervisor(struct supervisor_context *context);
 
 #endif

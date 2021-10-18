@@ -16,10 +16,16 @@ string(TOLOWER ${CMAKE_HOST_SYSTEM_PROCESSOR} _sys)
 string(TOLOWER ${PROJECT_NAME} _project_lower)
 
 # Installation options
-#set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
-set(CMAKE_INSTALL_RPATH "$ORIGIN" "$ORIGIN/lib" "$ORIGIN/../lib/EDGESec")
 # creating the .deb would use set their own CMAKE_INSTALL_PREFIX
-set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/${_project_lower}-dist" CACHE BOOL "Installation path")
+set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/${_project_lower}-dist" CACHE PATH "Installation path")
+
+include(GNUInstallDirs)
+set(EDGESEC_private_lib_dir "${CMAKE_INSTALL_FULL_LIBDIR}/${_project_lower}" CACHE PATH "Directory of private EDGESec shared libs")
+# RPATH must be set before defining targets
+# $ORIGIN is so that shared libs can view other shared libs (e.g. libgrpc++ can see libxxx)
+# $ORIGIN/lib is to support where we used to store shared libs
+# ${EDGESEC_private_lib_dir} is where private shared libs will be stored after `make install`
+set(CMAKE_INSTALL_RPATH "$ORIGIN" "$ORIGIN/lib" "${EDGESEC_private_lib_dir}")
 
 option(USE_ARM_MUSL_LIBC "Use arm musl standard C library" OFF)
 option(BUILD_ONLY_DOCS "Build only docs" OFF)
@@ -36,7 +42,7 @@ option(BUILD_MICROHTTPD_LIB "Build microhttpd library" ON)
 option(BUILD_UUID_LIB "Build uuid library" ON)
 option(BUILD_PCAP_LIB "Build pcap library" ON)
 option(BUILD_NDPI_LIB "Build nDPI library" ON)
-option(BUILD_GRPC_LIB "Build gRPC library" ON)
+option(BUILD_GRPC_LIB "Build gRPC library (warning, cross-compiling does not work well)" OFF)
 option(BUILD_SQLSYNC_SERVICE "Build sqlsync service" ON)
 option(BUILD_REVERSE_SERVICE "Build Reverse service" ON)
 
@@ -56,6 +62,36 @@ if (USE_ARM_MUSL_LIBC)
   set(CMAKE_C_COMPILER /usr/local/bin/arm-linux-musleabihf-gcc)
   set(CMAKE_CXX_COMPILER /usr/local/bin/arm-linux-musleabihf-g++)
 endif ()
+
+# Convert CMAKE_SYSTEM_NAME to os specifier that autoconf understands
+function(get_autoconf_os system_name output_var)
+  if (system_name STREQUAL "Linux")
+    set(${output_var} "linux-gnu" PARENT_SCOPE)
+  else (system_name STREQUAL "Linux")
+    message(FATAL_ERROR "'$system_name' could not be converted to an autoconf os specifier")
+  endif(system_name STREQUAL "Linux")
+endfunction(get_autoconf_os)
+
+get_autoconf_os(${CMAKE_HOST_SYSTEM_NAME} build_autoconf_os)
+string(TOLOWER "${CMAKE_HOST_SYSTEM_PROCESSOR}-${build_autoconf_os}" build_autoconf_triple)
+get_autoconf_os(${CMAKE_SYSTEM_NAME} target_autoconf_os)
+string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}-${target_autoconf_os}" target_autoconf_triple)
+
+if (NOT target_autoconf_triple STREQUAL CMAKE_LIBRARY_ARCHITECTURE)
+  message(FATAL_ERROR "CMake target_autoconf_triple=${target_autoconf_triple}, not the same as CMAKE_LIBRARY_ARCHITECTURE=${CMAKE_LIBRARY_ARCHITECTURE}")
+endif (NOT target_autoconf_triple STREQUAL CMAKE_LIBRARY_ARCHITECTURE)
+
+message("Build (autoconf --build) autoconf triple is ${build_autoconf_triple}")
+message("Target (autoconf --host) autoconf triple is ${CMAKE_LIBRARY_ARCHITECTURE}")
+message("CROSSCOMPILING ${CMAKE_CROSSCOMPILING}")
+if (CMAKE_CROSSCOMPILING)
+  # tell PKG_CONFIG (required by hostap) to search correct folders when cross-compiling
+  set(ENV{PKG_CONFIG_LIBDIR} "/usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}/pkgconfig:/usr/share/pkgconfig")
+  message("PKG_CONFIG_LIBDIR is $ENV{PKG_CONFIG_LIBDIR}")
+else(CMAKE_CROSSCOMPILING)
+  # unset so that sqlite.cmake and etc. do not activate this
+  unset(target_autoconf_triple)
+endif(CMAKE_CROSSCOMPILING)
 
 # C compiler options
 set(CMAKE_C_FLAGS "-Wunused-variable -Wall -Wextra")
@@ -152,13 +188,12 @@ if (BUILD_SQLSYNC_SERVICE AND NOT (BUILD_ONLY_DOCS))
     ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}"
       --cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
       -I "${sqlite_proto_path}"
-      --plugin=protoc-gen-grpc="${GRPC_CPP_PLUGIN_SH}"
+      --plugin=protoc-gen-grpc="${GRPC_CPP_PLUGIN}"
       "${sqlite_proto}"
-    DEPENDS "${sqlite_proto}")
+    DEPENDS "${sqlite_proto}" ${PROTOC_BIN} ${GRPC_CPP_PLUGIN})
 
   add_library(sqlite_grpc_proto ${sqlite_grpc_srcs} ${sqlite_grpc_hdrs} ${sqlite_proto_srcs} ${sqlite_proto_hdrs})
-  target_include_directories(sqlite_grpc_proto PUBLIC ${LIBGRPC_INCLUDE_PATH})
-  target_link_libraries(sqlite_grpc_proto PUBLIC ${LIBGRPC_LIB} ${LIBGRPCPP_LIB} ${LIBGRPC_PLUGIN_SUPPORT_LIB})
+  target_link_libraries(sqlite_grpc_proto PUBLIC grpc++ grpc_plugin_support)
 endif ()
 
 if (BUILD_REVERSE_SERVICE AND NOT (BUILD_ONLY_DOCS))
@@ -176,17 +211,16 @@ if (BUILD_REVERSE_SERVICE AND NOT (BUILD_ONLY_DOCS))
     ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}"
       --cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
       -I "${reverse_proto_path}"
-      --plugin=protoc-gen-grpc="${GRPC_CPP_PLUGIN_SH}"
+      --plugin=protoc-gen-grpc="${GRPC_CPP_PLUGIN}"
       "${reverse_proto}"
-    DEPENDS "${reverse_proto}")
+    DEPENDS "${reverse_proto}" ${PROTOC_BIN} ${GRPC_CPP_PLUGIN})
 
   # Include generated *.pb.h files
   # include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
   # Compile grpc protobuf sources
   add_library(reverse_grpc_proto ${reverse_grpc_srcs} ${reverse_grpc_hdrs} ${reverse_proto_srcs} ${reverse_proto_hdrs})
-  target_include_directories(reverse_grpc_proto PUBLIC ${LIBGRPC_INCLUDE_PATH})
-  target_link_libraries(reverse_grpc_proto PUBLIC ${LIBGRPC_LIB} ${LIBGRPCPP_LIB} ${LIBGRPC_PLUGIN_SUPPORT_LIB})
+  target_link_libraries(reverse_grpc_proto PUBLIC grpc++ grpc_plugin_support)
 endif ()
 
 if (USE_OW_DNSMASQ)
@@ -201,10 +235,10 @@ configure_file(
 )
 
 # Copy the default configuration file to the build folder
-# This config file is for local testing, not for `make install` use
+# This config file is for development, not for `make install` use
 configure_file(
-  "local-config.ini"
-  "${PROJECT_BINARY_DIR}/local-config.ini"
+  "dev-config.ini"
+  "${PROJECT_BINARY_DIR}/dev-config.ini"
   COPYONLY # does not edit the file
 )
 
@@ -213,9 +247,8 @@ include(doxygen)
 if (NOT BUILD_ONLY_DOCS)
   add_subdirectory(src)
   add_subdirectory(tests)
+  include(install)
 endif ()
-
-include(install)
 
 add_custom_target(archive COMMAND
     ${CMAKE_COMMAND} -E tar "cvz" "${_project_lower}-${_sys}-${EDGESEC_VERSION_MAJOR}.${EDGESEC_VERSION_MINOR}.${EDGESEC_VERSION_PATCH}.tar.gz" --format=gnutar "${CMAKE_INSTALL_PREFIX}")

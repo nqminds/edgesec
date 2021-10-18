@@ -2,6 +2,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,6 +12,8 @@
 #include <unistd.h>
 #include <setjmp.h>
 #include <cmocka.h>
+// used to delete directory recursively
+#include <ftw.h>
 
 #include "utils/log.h"
 #include "utils/os.h"
@@ -479,6 +482,89 @@ static void test_list_dir(void **state)
   assert_int_equal(is_uname, 1);
 }
 
+typedef struct {
+  char tmp_dir[256];
+} make_dirs_to_path_t;
+
+
+static int test_make_dirs_to_path_setup(void **state) {
+  make_dirs_to_path_t* test_state = test_calloc(1, sizeof(make_dirs_to_path_t));
+  *state = test_state;
+
+  // ignore return value if directory creation failed
+  mkdir("/tmp/edgesec_tests", 0755);
+  char template[] = "/tmp/edgesec_tests/os_tests.XXXXXX";
+  char* tmp_dir = mkdtemp(template);
+
+  // check to see if tmp_dir was built correctly
+  assert_non_null(tmp_dir);
+
+  strcpy(test_state->tmp_dir, tmp_dir);
+  return 0;
+}
+
+// recursively delete folder using ftw
+static int rm_file(const char *pathname, const struct stat *sbuf, int type, struct FTW *ftwb)
+{
+    if(remove(pathname) < 0)
+    {
+        perror("ERROR: remove");
+        return -1;
+    }
+    return 0;
+}
+static int rm_dir_recursive(const char *directory) {
+    int ret_val = nftw(directory, rm_file, 10, FTW_DEPTH|FTW_MOUNT|FTW_PHYS);
+    if (ret_val) {
+      printf("Error when trying to delete '%s'", directory);
+      perror("ERROR: rm_dir_recursive for directory");
+    }
+    return ret_val;
+}
+
+
+static int test_make_dirs_to_path_teardown(void **state) {
+  make_dirs_to_path_t* test_state = *state;
+  if (test_state == NULL) {
+    return 0;
+  }
+
+  if (test_state->tmp_dir || false) {
+    int ret_val = rm_dir_recursive(test_state->tmp_dir);
+    assert_int_equal(ret_val, 0);
+    strcpy(test_state->tmp_dir, "");
+  }
+
+  test_free(*state);
+  *state = NULL;
+  return 0;
+}
+
+static void test_make_dirs_to_path(void **state) {
+  make_dirs_to_path_t* test_state = *state;
+  char* directories_to_build = construct_path(test_state->tmp_dir, "should/create/these/dirs");
+  char* path = construct_path(directories_to_build, "not_a_dir.txt");
+
+  int ret = make_dirs_to_path(path, 0755);
+  // should return no error code
+  assert_int_equal(ret, 0);
+
+  struct stat file_stats;
+  int file_exists = check_file_exists(path, &file_stats);
+  // should not exist
+  assert_int_equal(file_exists, -1);
+  assert_int_equal(errno, ENOENT);
+
+  // directories should exist
+  int dir_exists = exist_dir(directories_to_build);
+  assert_int_equal(dir_exists, 1); // true if dir exists
+
+  // should return no error when directories already exist
+  ret = make_dirs_to_path(path, 0755);
+  // should return no error code
+  assert_int_equal(ret, 0);
+}
+
 int main(int argc, char *argv[])
 {  
   log_set_quiet(false);
@@ -493,6 +579,7 @@ int main(int argc, char *argv[])
     cmocka_unit_test(test_construct_path),
     cmocka_unit_test(test_get_secure_path),
     cmocka_unit_test(test_list_dir),
+    cmocka_unit_test_setup_teardown(test_make_dirs_to_path, test_make_dirs_to_path_setup, test_make_dirs_to_path_teardown)
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

@@ -23,9 +23,8 @@ if (BUILD_CMOCKA_LIB AND NOT (BUILD_ONLY_DOCS))
 
   FetchContent_Declare(
     cmocka
-    GIT_REPOSITORY https://git.cryptomilk.org/projects/cmocka.git
-    GIT_TAG        cmocka-1.1.5
-    GIT_SHALLOW    1
+    URL https://cmocka.org/files/1.1/cmocka-1.1.5.tar.xz
+    URL_HASH SHA256=f0ccd8242d55e2fd74b16ba518359151f6f8383ff8aef4976e48393f77bba8b6
   )
 
   set(WITH_STATIC_LIB ON CACHE BOOL "CMocka: Build with a static library" FORCE)

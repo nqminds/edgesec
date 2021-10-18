@@ -27,9 +27,12 @@
 #include <unistd.h>
 #include <sys/un.h>
 #include <sys/socket.h>
+#include <sys/ioctl.h>
 #include <libgen.h>
 
 #include "sqlite_fingerprint_writer.h"
+#include "sqlite_alert_writer.h"
+#include "subscriber_events.h"
 
 #include "utils/log.h"
 #include "utils/allocs.h"
@@ -42,6 +45,9 @@
 #include "network_commands.h"
 
 #define FINGERPRINT_DB_NAME "fingerprint" SQLITE_EXTENSION
+#define ALERT_DB_NAME "alert" SQLITE_EXTENSION
+
+static const UT_icd client_address_icd = {sizeof(struct client_address), NULL, NULL, NULL};
 
 void configure_mac_info(struct mac_conn_info *info, bool allow_connection,
                         int vlanid, ssize_t pass_len, uint8_t *pass, char *label)
@@ -265,6 +271,11 @@ void ap_service_callback(struct supervisor_context *context, uint8_t mac_addr[],
       log_trace("put_mac_mapper fail");
     }
   }
+
+  if (send_events_subscriber(context, SUBSCRIBER_EVENT_AP, MACSTR" %d",
+                             MAC2STR(mac_addr), status) < 0) {
+    log_trace("send_events_subscriber fail");
+  }
 }
 
 void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
@@ -274,26 +285,32 @@ void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
   char **ptr = NULL;
   UT_array *cmd_arr;
   process_cmd_fn cfn;
-  struct sockaddr_un caddr;
-  int addr_len;
-  struct client_address addr;
-  char buf[MAX_DOMAIN_RECEIVE_DATA];
+  uint32_t bytes_available;
+  struct client_address claddr;
+  char *buf;
   struct supervisor_context *context = (struct supervisor_context *) sock_ctx;
+
+  os_memset(&claddr, 0, sizeof(struct client_address));
+
+  if (ioctl(sock, FIONREAD, &bytes_available) == -1) {
+    log_err("ioctl");
+    return;
+  }
+
+  if ((buf = os_malloc(bytes_available)) == NULL) {
+    log_err("os_malloc");
+    return;
+  }
 
   utarray_new(cmd_arr, &ut_str_icd);
 
-  os_memset(&caddr, 0, sizeof(struct sockaddr_un));
-
-  ssize_t num_bytes = read_domain_data(sock, buf, MAX_DOMAIN_RECEIVE_DATA, &caddr, &addr_len, 0);
+  ssize_t num_bytes = read_domain_data(sock, buf, bytes_available, &claddr, 0);
   if (num_bytes == -1) {
     log_trace("read_domain_data fail");
     goto end;  
   }
 
-  addr.addr = caddr;
-  addr.len = addr_len;
-
-  log_trace("Supervisor received %ld bytes from socket length=%d", (long) num_bytes, addr_len);
+  log_trace("Supervisor received %ld bytes from socket length=%d", (long) num_bytes, claddr.len);
   if (process_domain_buffer(buf, num_bytes, cmd_arr, context->domain_delim) == false) {
     log_trace("process_domain_buffer fail");
     goto end;
@@ -302,31 +319,39 @@ void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
   ptr = (char**) utarray_next(cmd_arr, ptr);
 
   if ((cfn = get_command_function(*ptr)) != NULL) {
-    if (cfn(sock, &addr, context, cmd_arr) == -1) {
+    if (cfn(sock, &claddr, context, cmd_arr) == -1) {
       log_trace("%s fail", *ptr);
       goto end;
     }
   }
 
 end:
+  os_free(buf);
   utarray_free(cmd_arr);
 }
 
-bool close_supervisor(int sock)
+void close_supervisor(struct supervisor_context *context)
 {
-  if (sock != -1) {
-    if (close(sock) == -1) {
+  if (context == NULL) {
+    log_trace("context param is NULL");
+    return;
+  }
+
+  if (context->domain_sock != -1) {
+    if (close(context->domain_sock) == -1) {
       log_err("close");
-      return false;
     }
   }
 
-  return true;
+  free_sqlite_fingerprint_db(context->fingeprint_db);
+  free_sqlite_alert_db(context->alert_db);
+  if (context->subscribers_array != NULL) {
+    utarray_free(context->subscribers_array);
+  }
 }
 
 int run_supervisor(char *server_path, struct supervisor_context *context)
 {
-  int sock;
   char *db_path = NULL;
 
   db_path = construct_path(context->db_path, FINGERPRINT_DB_NAME);
@@ -342,17 +367,32 @@ int run_supervisor(char *server_path, struct supervisor_context *context)
   }
 
   os_free(db_path);
+  db_path = construct_path(context->db_path, ALERT_DB_NAME);
+  if (db_path == NULL) {
+    log_debug("construct_path fail");
+    return -1;
+  }
 
-  if ((sock = create_domain_server(server_path)) == -1) {
+  if (open_sqlite_alert_db(db_path, &context->alert_db) < 0) {
+    log_trace("open_sqlite_alert_db fail");
+    os_free(db_path);
+    return -1;
+  }
+  os_free(db_path);
+
+  utarray_new(context->subscribers_array, &client_address_icd);
+
+  if ((context->domain_sock = create_domain_server(server_path)) == -1) {
     log_trace("create_domain_server fail");
+    close_supervisor(context);
     return -1;
   }
 
-  if (eloop_register_read_sock(sock, eloop_read_sock_handler, NULL, (void *)context) ==  -1) {
+  if (eloop_register_read_sock(context->domain_sock, eloop_read_sock_handler, NULL, (void *)context) ==  -1) {
     log_trace("eloop_register_read_sock fail");
-    close_supervisor(sock);
+    close_supervisor(context);
     return -1;
   }
 
-  return sock;
+  return 0;
 }

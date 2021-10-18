@@ -477,16 +477,42 @@ bool find_dir_proc_fn(char *path, void *args);
  * @param dirpath The folder path
  * @return int 1 if exists, 0 otherwise, -1 on failure
  */
-int exist_dir(char *dirpath);
+int exist_dir(const char *dirpath);
 
 /**
- * @brief Creates a fodler
- * 
- * @param dirpath The folder path
+ * @brief Recurisvely create directories to the given path
+ *
+ * Creates the directories recursively to the given path.
+ *
+ * Does **NOT** create the final file, use create_dir()
+ * if you want if you want to create the entire path
+ * as dirs.
+ *
+ * Example:
+ *
+ * ```cpp
+ * // will create the directories /var/run/exampledir/
+ * make_dirs_to_path("/var/run/exampledir/example.pid", 0755);
+ * ```
+ *
+ * @param[in] file_path The directories to create to the path.
+ * @param mode The folder create mode.
+ * @return 0 on success, -1 on failure.
+ * @see Original source-code used under fair-use from
+ *   https://stackoverflow.com/a/9210960
+ */
+int make_dirs_to_path(const char* file_path, mode_t mode);
+
+/**
+ * @brief Creates a folder recursively.
+ *
+ * If the parent folders do not exist, creates them too.
+ *
+ * @param[in] dirpath The folder path
  * @param mode The folder creation mode
  * @return 0 on success, -1 on failure 
  */
-int create_dir(char *dirpath, mode_t mode);
+int create_dir(const char *dirpath, mode_t mode);
 
 /**
  * @brief Check if a file exists

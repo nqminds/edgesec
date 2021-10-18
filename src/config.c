@@ -594,6 +594,9 @@ bool load_app_config(const char *filename, struct app_config *config)
   // Load the exec ap flag
   config->exec_ap = ini_getbool("system", "execAp", 0, filename);
 
+  // Load the generateSsid flag
+  config->generate_ssid = ini_getbool("system", "generateSsid", 0, filename);
+
   // Load the exec radius flag
   config->exec_radius = ini_getbool("system", "execRadius", 0, filename);
 
@@ -608,6 +611,12 @@ bool load_app_config(const char *filename, struct app_config *config)
 
   // Load the default open vlanid
   config->default_open_vlanid = (int) ini_getl("system", "defaultOpenVlanId", 0, filename);
+
+  // Load the quarantine vlanid
+  config->quarantine_vlanid = (int) ini_getl("system", "quarantineVlanId", -1, filename);
+
+  // Load the risk score
+  config->risk_score = (int) ini_getl("system", "riskScore", 100, filename);
 
   // Load NAT interface
   value = os_malloc(INI_BUFFERSIZE);

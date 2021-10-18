@@ -31,12 +31,12 @@
 #include "../utils/os.h"
 #include "../utils/utarray.h"
 
-long get_opt_num(char *port_str)
+long get_opt_num(char *num)
 {
-  if (!is_number(port_str))
+  if (!is_number(num))
     return -1;
   
-  return strtol(port_str, NULL, 10);
+  return strtol(num, NULL, 10);
 }
 
 int process_sync_params(char *param_str, struct capture_conf *config)
@@ -176,6 +176,15 @@ int capture_opt2config(char key, char *value, struct capture_conf *config)
         return -1;
       }
       break;
+    case 'b':
+      conversion = get_opt_num(value);
+      if (conversion < 0) {
+        return -1;
+      }
+
+      config->capture_store_size = (uint32_t) conversion;
+      break;
+
     default: return 1;
   }
 
@@ -369,6 +378,16 @@ char** capture_config2opt(struct capture_conf *config)
   sprintf(buf, "%ld,%ld", config->sync_store_size, config->sync_send_size);
   opt_str[idx] = os_zalloc(3);
   strcpy(opt_str[idx], "-r");
+  idx ++;
+
+  opt_str[idx] = os_zalloc(strlen(buf) + 1);
+  strcpy(opt_str[idx], buf);
+  idx ++;
+
+  //capture_store_size, -b
+  sprintf(buf, "%u", config->capture_store_size);
+  opt_str[idx] = os_zalloc(3);
+  strcpy(opt_str[idx], "-b");
   idx ++;
 
   opt_str[idx] = os_zalloc(strlen(buf) + 1);

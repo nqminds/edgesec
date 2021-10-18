@@ -31,27 +31,36 @@
 #include <stdbool.h>
 
 #include "../utils/utarray.h"
+#include "../utils/domain.h"
 
 #include "supervisor_config.h"
 
-#define CMD_PING        		    "PING_SUPERVISOR"
-#define CMD_HOSTAPD_CTRLIF          "HOSTAPD_IF"
-#define CMD_ACCEPT_MAC			    "ACCEPT_MAC"
+// SYSTEM commands
+#define CMD_PING        		  "PING_SUPERVISOR"
+#define CMD_SET_IP				    "SET_IP"
+#define CMD_SUBSCRIBE_EVENTS	"SUBSCRIBE_EVENTS"
+
+// NETCON commands
+#define CMD_ACCEPT_MAC			  "ACCEPT_MAC"
 #define CMD_DENY_MAC			    "DENY_MAC"
 #define CMD_ADD_NAT				    "ADD_NAT"
-#define CMD_REMOVE_NAT			    "REMOVE_NAT"
-#define CMD_ASSIGN_PSK			    "ASSIGN_PSK"
+#define CMD_REMOVE_NAT			  "REMOVE_NAT"
+#define CMD_ASSIGN_PSK			  "ASSIGN_PSK"
 #define CMD_GET_MAP				    "GET_MAP"
 #define CMD_GET_ALL				    "GET_ALL"
-#define CMD_SAVE_ALL			    "SAVE_ALL"
-#define CMD_SET_IP				    "SET_IP"
-#define CMD_ADD_BRIDGE			    "ADD_BRIDGE"
-#define CMD_REMOVE_BRIDGE		    "REMOVE_BRIDGE"
-#define CMD_GET_BRIDGES		        "GET_BRIDGES"
-#define CMD_SET_FINGERPRINT		    "SET_FINGERPRINT"
-#define CMD_QUERY_FINGERPRINT		"QUERY_FINGERPRINT"
-#define CMD_REGISTER_TICKET		    "REGISTER_TICKET"
+#define CMD_ADD_BRIDGE			  "ADD_BRIDGE"
+#define CMD_REMOVE_BRIDGE		  "REMOVE_BRIDGE"
+#define CMD_CLEAR_BRIDGES		  "CLEAR_BRIDGE"
+#define CMD_GET_BRIDGES		    "GET_BRIDGES"
+#define CMD_REGISTER_TICKET		"REGISTER_TICKET"
 #define CMD_CLEAR_PSK			    "CLEAR_PSK"
+
+// NETMON commands
+#define CMD_SET_ALERT		      "SET_ALERT"
+#define CMD_SET_FINGERPRINT		"SET_FINGERPRINT"
+#define CMD_QUERY_FINGERPRINT	"QUERY_FINGERPRINT"
+
+// CRYPT commands
 #define CMD_PUT_CRYPT			    "PUT_CRYPT"
 #define CMD_GET_CRYPT			    "GET_CRYPT"
 #define CMD_GEN_RANDKEY       "GEN_RANDKEY"
@@ -66,15 +75,6 @@
 #define FAIL_REPLY            "FAIL"
 
 #define MAX_QUERY_OP_LEN      3
-
-/**
- * @brief Client address structure definition
- * 
- */
-struct client_address {
-  struct sockaddr_un addr;
-  int len;
-};
 
 typedef ssize_t (*process_cmd_fn)(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
@@ -101,7 +101,7 @@ bool process_domain_buffer(char *domain_buffer, size_t domain_buffer_len, UT_arr
 ssize_t process_ping_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
- * @brief Processes the HOSTAPD_IF command
+ * @brief Processes the SUBSCRIBE_EVENTS command
  * 
  * @param sock The domain server socket
  * @param client_addr The client address for replies
@@ -109,7 +109,7 @@ ssize_t process_ping_cmd(int sock, struct client_address *client_addr, struct su
  * @param cmd_arr The array of received commands
  * @return ssize_t Size of reply written data
  */
-ssize_t process_hostapd_ctrlif_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+ssize_t process_subscribe_events_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Processes the ACCEPT_MAC command
@@ -220,6 +220,17 @@ ssize_t process_add_bridge_cmd(int sock, struct client_address *client_addr, str
  * @return ssize_t Size of reply written data
  */
 ssize_t process_remove_bridge_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
+
+/**
+ * @brief Processes the CLEAR_BRIDGES command
+ * 
+ * @param sock The domain server socket
+ * @param client_addr The client address for replies
+ * @param context The supervisor structure instance
+ * @param cmd_arr The array of received commands
+ * @return ssize_t Size of reply written data
+ */
+ssize_t process_clear_bridges_cmd(int sock, struct client_address *client_addr, struct supervisor_context *context, UT_array *cmd_arr);
 
 /**
  * @brief Processes the GET_BRIDGES command

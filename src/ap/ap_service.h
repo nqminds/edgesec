@@ -42,10 +42,12 @@
  * 
  * @param context The supervisor context structure
  * @param exec_ap Flag to execute the AP process
+ * @param generate_ssid Flag to generate the SSID for AP
  * @param ap_callback_fn The callback for AP service
  * @return int 0 on success, -1 on failure
  */
-int run_ap(struct supervisor_context *context, bool exec_ap, void *ap_callback_fn);
+int run_ap(struct supervisor_context *context, bool exec_ap, bool generate_ssid,
+           void *ap_callback_fn);
 
 /**
  * @brief Closes (terminates) AP process
@@ -92,4 +94,12 @@ int denyacl_del_ap_command(struct apconf *hconf, char *mac_addr);
  */
 int disconnect_ap_command(struct apconf *hconf, char *mac_addr);
 
+/**
+ * @brief Check if a station is registered on the AP
+ * 
+ * @param hconf AP config structure
+ * @param mac_addr The mac address of the station
+ * @return int 0 on success, -1 on failure
+ */
+int check_sta_ap_command(struct apconf *hconf, char *mac_addr);
 #endif

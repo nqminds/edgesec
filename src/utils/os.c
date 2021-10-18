@@ -977,7 +977,7 @@ bool find_dir_proc_fn(char *path, void *args)
   return true;
 }
 
-int exist_dir(char *dirpath)
+int exist_dir(const char *dirpath)
 {
   DIR *dirp;
 
@@ -995,7 +995,34 @@ int exist_dir(char *dirpath)
   return 1;
 }
 
-int create_dir(char *dirpath, mode_t mode)
+// Adapted from https://stackoverflow.com/a/9210960
+// No need for license, since falls under fair use.
+int make_dirs_to_path(const char* file_path, mode_t mode) {
+    if (!(file_path && *file_path)) {
+      log_trace("invalid file_path given to make_dirs_to_path");
+      return -1;
+    }
+
+    char file_path_tmp[MAX_OS_PATH_LEN+1];
+    strcpy(file_path_tmp, file_path);
+
+    // Loops over every "/" in file_path
+    for (char* p = strchr(file_path_tmp + 1, '/'); p; p = strchr(p + 1, '/')) {
+        *p = '\0';
+        errno = 0;
+        if (mkdir(file_path_tmp, mode) == -1) {
+            if (errno != EEXIST) {
+                log_err("mkdir");
+                *p = '/';
+                return -1;
+            }
+        }
+        *p = '/';
+    }
+    return 0;
+}
+
+int create_dir(const char *dirpath, mode_t mode)
 {
   int ret;
   ret = exist_dir(dirpath);
@@ -1003,7 +1030,12 @@ int create_dir(char *dirpath, mode_t mode)
     log_trace("dir path=%s open fail", dirpath);
     return -1;
   } else if (ret == 0) {
-    log_debug("creating dir path=%s", dirpath);
+    log_trace("creating dir path=%s", dirpath);
+    if (make_dirs_to_path(dirpath, mode) < 0) {
+      log_trace("make_dirs_to_path fail");
+      return -1;
+    }
+    // make_dirs_to_path doesn't create the final file, so make it ourselves
     errno = 0;
     if (mkdir(dirpath, mode) < 0) {
       if (errno != EEXIST) {
@@ -1081,6 +1113,15 @@ int create_pid_file(const char *pid_file, int flags)
   char buf[100];
   ssize_t write_bytes;
   fd = open(pid_file, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+
+  if (fd == -1 && errno == ENOENT) {
+    int ret = make_dirs_to_path(pid_file, 0755);
+    if (ret) {
+      log_err("create_pid_file failed to create directories to path");
+      return -1;
+    }
+    fd = open(pid_file, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+  }
 
   if (fd == -1) {
     log_err("open");

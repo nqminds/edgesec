@@ -33,6 +33,7 @@
 #endif
 #include "capture_config.h"
 #include "capture_service.h"
+#include "capture_cleaner.h"
 
 #include "../utils/log.h"
 #include "../utils/allocs.h"
@@ -52,5 +53,5 @@ int run_capture(struct capture_conf *config)
 #endif
   }
 
-  return -1;
+  return start_capture_cleaner(config);
 }

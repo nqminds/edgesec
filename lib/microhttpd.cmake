@@ -10,7 +10,12 @@ if (BUILD_MICROHTTPD_LIB AND NOT (BUILD_ONLY_DOCS))
   if (LIBMICROHTTPD_LIB)
     message("Found libmicrohttpd library: ${LIBMICROHTTPD_LIB}")
   ELSE ()
-    execute_process(COMMAND bash ${CMAKE_SOURCE_DIR}/lib/compile_microhttpd.sh ${LIBMICROHTTPD_SOURCE_DIR} ${LIBMICROHTTPD_INSTALL_ROOT})
+    execute_process(COMMAND
+      bash ${CMAKE_SOURCE_DIR}/lib/compile_microhttpd.sh
+      ${LIBMICROHTTPD_SOURCE_DIR}
+      ${LIBMICROHTTPD_INSTALL_ROOT}
+      ${target_autoconf_triple}
+    )
     find_library(LIBMICROHTTPD_LIB NAMES microhttpd PATHS "${LIBMICROHTTPD_LIB_DIR}" NO_DEFAULT_PATH)
   endif ()
 endif ()

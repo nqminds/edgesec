@@ -10,7 +10,13 @@ if (BUILD_MNL_LIB AND NOT (BUILD_ONLY_DOCS))
   if (LIBMNL_LIB)
     message("Found libmnl library: ${LIBMNL_LIB}")
   ELSE ()
-    execute_process(COMMAND bash ${CMAKE_SOURCE_DIR}/lib/compile_mnl.sh ${LIBMNL_SOURCE_DIR} ${LIBMNL_INSTALL_ROOT})
+    execute_process(COMMAND
+      bash
+      ${CMAKE_SOURCE_DIR}/lib/compile_mnl.sh
+      ${LIBMNL_SOURCE_DIR}
+      ${LIBMNL_INSTALL_ROOT}
+      ${target_autoconf_triple}
+    )
     find_library(LIBMNL_LIB NAMES mnl libmnl PATHS "${LIBMNL_LIB_DIR}" NO_DEFAULT_PATH)
   endif ()
 endif ()

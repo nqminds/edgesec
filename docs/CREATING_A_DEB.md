@@ -129,3 +129,6 @@ Now the deb should exist in the folder above this folder, e.g. `cd ..`.
   However, since we bundle in some shared libs, we must ignore these in `debian/control`,
   using the `-l` flag to `dh_shlibdeps`.
   This will tell `dh_shlibdeps` that a folder is our own private shared libs folder.
+- Build dependencies:
+  - If we use `git`, make sure you also add `ca-certificates`, otherwise you'll get
+    invalid certificate errors when doing git clones with `https`.

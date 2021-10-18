@@ -9,7 +9,12 @@ if (BUILD_PCAP_LIB AND NOT (BUILD_ONLY_DOCS))
   if (LIBPCAP_LIB)
     message("Found libpcap library: ${LIBPCAP_LIB}")
   ELSE ()
-    execute_process(COMMAND bash ${CMAKE_SOURCE_DIR}/lib/compile_pcap.sh ${LIBPCAP_INSTALL_ROOT})
+    execute_process(COMMAND
+      bash
+      ${CMAKE_SOURCE_DIR}/lib/compile_pcap.sh
+      ${LIBPCAP_INSTALL_ROOT}
+      ${target_autoconf_triple}
+    )
     find_library(LIBPCAP_LIB NAMES pcap libpcap PATHS "${LIBPCAP_LIB_DIR}" NO_DEFAULT_PATH)
   endif ()
 endif ()

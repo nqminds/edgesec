@@ -1,85 +1,116 @@
-MACRO (FIND_GRPC_PATHS)
-  find_library(LIBGRPC_PLUGIN_SUPPORT_LIB NAMES grpc_plugin_support libgrpc_plugin_support PATHS "${LIBGRPC_LIB_DIR}" NO_DEFAULT_PATH)
-  find_library(LIBGRPC_LIB NAMES grpc libgrpc PATHS "${LIBGRPC_LIB_DIR}" NO_DEFAULT_PATH)
-  find_library(LIBGRPC_CRYPTO_LIB NAMES crypto libcrypto PATHS "${LIBGRPC_LIB_DIR}" NO_DEFAULT_PATH)
-  find_library(LIBGRPCPP_LIB NAMES grpc++ libgrpc++ PATHS "${LIBGRPC_LIB_DIR}" NO_DEFAULT_PATH)
-  find_library(LIBPROTOBUF_LIB NAMES protobuf libprotobuf PATHS "${LIBGRPC_LIB_DIR}" NO_DEFAULT_PATH)
-  find_library(LIBGRPCPP_REFLECTION_LIB NAMES grpc++_reflection libgrpc++_reflection PATHS "${LIBGRPC_LIB_DIR}" NO_DEFAULT_PATH)
-  find_program(PROTOC_BIN NAMES protoc PATHS "${LIBGRPC_BIN_DIR}" NO_DEFAULT_PATH)
-  find_program(GRPC_CPP_PLUGIN_BIN NAMES grpc_cpp_plugin PATHS "${LIBGRPC_BIN_DIR}" NO_DEFAULT_PATH)
-  find_program(GRPC_CPP_PLUGIN_SH NAMES grpc_cpp_plugin.sh PATHS "${LIBGRPC_BIN_DIR}" NO_DEFAULT_PATH)
-ENDMACRO()
+cmake_minimum_required(VERSION 3.15.0)
+# v3.15 required for add_library(grpc ALIAS)
+# due to https://gitlab.kitware.com/cmake/cmake/-/issues/18327
+
+# This file provides the following libraries (with appropriate INCLUDE_DIRS set)
+#   grpc++ grpc++_reflection grpc_plugin_support
+#
+# Additionally, the following variables point to their appropriate binary:
+#   GRPC_CPP_PLUGIN PROTOC_BIN
 
 # Fetch and Compile libgrpc
 if (BUILD_GRPC_LIB AND NOT (BUILD_ONLY_DOCS))
-  set(LIBGRPC_INSTALL_ROOT ${CMAKE_CURRENT_BINARY_DIR}/lib)
-  set(LIBGRPC_INSTALL_DIR ${LIBGRPC_INSTALL_ROOT}/grpc)
-  set(LIBGRPC_INCLUDE_PATH ${LIBGRPC_INSTALL_DIR}/include)
-  set(LIBGRPC_LIB_DIR "${LIBGRPC_INSTALL_DIR}/lib")
-  set(LIBGRPC_BIN_DIR "${LIBGRPC_INSTALL_DIR}/bin")
+  FetchContent_Declare(
+    gRPC
+    GIT_REPOSITORY https://github.com/grpc/grpc
+    GIT_TAG        v1.36.4
+    GIT_SHALLOW true # only download latest commit
+    GIT_PROGRESS true # downloading loads of submodules, so we want to see progress
+  )
+  set(FETCHCONTENT_QUIET OFF)
 
-  FIND_GRPC_PATHS()
+  # Warning, overriding default GRPC install directories doesn't fully work
+  # GRPC pkgconfig still installs into /usr/share
+  # Protobuf still installs into /usr/lib, as well as some other submodules.
+  set(CUSTOM_GRPC_INSTALL_LIBS OFF)
+  if (CUSTOM_GRPC_INSTALL_LIBS)
+    set(LIBGRPC_INSTALL_ROOT ${CMAKE_CURRENT_BINARY_DIR}/lib)
+    set(LIBGRPC_INSTALL_DIR ${LIBGRPC_INSTALL_ROOT}/grpc)
+    set(LIBGRPC_INCLUDE_PATH ${LIBGRPC_INSTALL_DIR}/include)
+    set(LIBGRPC_LIB_DIR "${LIBGRPC_INSTALL_DIR}/lib")
+    set(LIBGRPC_BIN_DIR "${LIBGRPC_INSTALL_DIR}/bin")
+    # tell GRPC to install all files in ./build/lib/grpc, except shared libs
+    set(gRPC_INSTALL_BINDIR ${LIBGRPC_BIN_DIR} CACHE INTERNAL "GRPC bin dir")
+    set(gRPC_INSTALL_CMAKEDIR "${LIBGRPC_LIB_DIR}/cmake/grpc" CACHE INTERNAL "GRPC cmake dir")
+    # LIBDIR is the only one we install in /usr/lib/x86_64/edgesec
+    set(gRPC_INSTALL_LIBDIR "${EDGESEC_private_lib_dir}" CACHE INTERNAL "GRPC shared lib dir")
+    set(gRPC_INSTALL_INCLUDEDIR ${LIBGRPC_INCLUDE_PATH} CACHE INTERNAL "GRPC include dir")
+    set(gRPC_INSTALL_SHAREDIR "${LIBGRPC_INSTALL_DIR}/share/grpc" CACHE INTERNAL "GRPC share dir (holds CA keys)")
 
-  if (LIBGRPCPP_LIB AND LIBPROTOBUF_LIB AND LIBGRPCPP_REFLECTION_LIB AND PROTOC_BIN AND GRPC_CPP_PLUGIN_BIN)
-    message("Found libgrpc_plugin_support library: ${LIBGRPC_PLUGIN_SUPPORT_LIB}")
-    message("Found libgrpc library: ${LIBGRPC_LIB}")
-    message("Found grpc libcrypto library: ${LIBGRPC_CRYPTO_LIB}")
-    message("Found libgrpc++ library: ${LIBGRPCPP_LIB}")
-    message("Found libprotobuf library: ${LIBPROTOBUF_LIB}")
-    message("Found grpc++_reflection library: ${LIBGRPCPP_REFLECTION_LIB}")
-    message("Found protoc binary: ${PROTOC_BIN}")
-    message("Found grpc_cpp_plugin binary: ${GRPC_CPP_PLUGIN_BIN}")
-  ELSE ()
-    FetchContent_Declare(
-      gRPC
-      GIT_REPOSITORY https://github.com/grpc/grpc
-      GIT_TAG        v1.36.4
-      GIT_SHALLOW true # only download latest commit
-      GIT_PROGRESS true # downloading loads of submodules, so we want to see progress
+    # GRPC Submodules
+    set(CARES_INSTALL OFF CACHE INTERNAL "Disable CARES Installation") # no need to install, since it's static lib
+  endif (CUSTOM_GRPC_INSTALL_LIBS)
+
+  set(RE2_BUILD_TESTING OFF CACHE INTERNAL "Disable super slow RE2 tests")
+
+  FetchContent_MakeAvailable(gRPC)
+
+  #if cross-compiling, find host plugin
+  if(CMAKE_CROSSCOMPILING)
+    find_program(
+      GRPC_CPP_PLUGIN grpc_cpp_plugin
+      DOC "Path to grpc_cpp_plugin (not needed when building grpc and not cross-compiling)"
+      REQUIRED
     )
-    set(FETCHCONTENT_QUIET OFF)
-    FetchContent_Populate(gRPC)
+  else()
+    set(GRPC_CPP_PLUGIN $<TARGET_FILE:grpc_cpp_plugin>)
+  endif()
 
-    execute_process(COMMAND bash ${CMAKE_SOURCE_DIR}/lib/compile_grpc.sh
-      "${grpc_SOURCE_DIR}"
-      "${grpc_BINARY_DIR}"
-      "${LIBGRPC_INSTALL_ROOT}"
+  if(CMAKE_CROSSCOMPILING)
+    find_program(
+      PROTOC_BIN protoc
+      DOC "Path to protobuf compiler (not needed when building grpc and not cross-compiling)"
+      REQUIRED
     )
-
-    FIND_GRPC_PATHS()
-
-    file(WRITE ${LIBGRPC_INSTALL_DIR}/grpc_cpp_plugin.tmp
-    "#!/bin/bash
-    set -e
-    LD_LIBRARY_PATH=${LIBGRPC_LIB_DIR} ${GRPC_CPP_PLUGIN_BIN} \"$@\"
-    "
+  elseif (TARGET protobuf::protoc)
+    set(PROTOC_BIN $<TARGET_FILE:protobuf::protoc>)
+  else()
+    find_program(
+      PROTOC_BIN protoc
+      DOC "Path to protobuf compiler (not needed when building grpc and not cross-compiling)"
+      REQUIRED
     )
+  endif()
+elseif (NOT (BUILD_ONLY_DOCS))
+  # Find pre-installed grpc
+  message("Trying to find pre-installed GRPC and Protobuf")
+  find_package(gRPC REQUIRED)
 
-    file(
-      COPY ${LIBGRPC_INSTALL_DIR}/grpc_cpp_plugin.tmp
-      DESTINATION ${LIBGRPC_BIN_DIR}
-      FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-    )
+  add_library(grpc ALIAS gRPC::grpc)
+  add_library(grpc++ ALIAS gRPC::grpc++)
+  add_library(grpc++_reflection ALIAS gRPC::grpc++_reflection)
 
-    file(RENAME ${LIBGRPC_BIN_DIR}/grpc_cpp_plugin.tmp ${LIBGRPC_BIN_DIR}/grpc_cpp_plugin.sh)
-    file(REMOVE  ${LIBGRPC_INSTALL_DIR}/grpc_cpp_plugin.tmp)
-    find_program(GRPC_CPP_PLUGIN_SH NAMES grpc_cpp_plugin.sh PATHS "${LIBGRPC_BIN_DIR}" NO_DEFAULT_PATH)
-  endif ()
+  add_executable(grpc_cpp_plugin ALIAS gRPC::grpc_cpp_plugin)
+  set(GRPC_CPP_PLUGIN $<TARGET_FILE:grpc_cpp_plugin>)
 
+  find_package(Protobuf REQUIRED)
+  set(PROTOC_BIN $<TARGET_FILE:protobuf::protoc>)
 
-
-  #set(RE2_BUILD_TESTING OFF CACHE BOOL "RE2 test flag" FORCE)
-  #FetchContent_Declare(
-  #  gRPC
-  #  GIT_REPOSITORY https://github.com/grpc/grpc
-  #  GIT_TAG        v1.36.4
-  #)
-  #set(FETCHCONTENT_QUIET OFF)
-  #FetchContent_MakeAvailable(gRPC)
-  #FetchContent_GetProperties(gRPC SOURCE_DIR GRPC_SOURCE_DIR)
-  #set(_PROTOBUF_LIBPROTOBUF libprotobuf)
-  #set(_REFLECTION grpc++_reflection)
-  #set(_PROTOBUF_PROTOC $<TARGET_FILE:protoc>)
-  #set(_GRPC_GRPCPP grpc++)
-  #set(_GRPC_CPP_PLUGIN_EXECUTABLE $<TARGET_FILE:grpc_cpp_plugin>)
+  # grpc_plugin_support library is just a virtual lib pointing to libprotobuf
+  add_library(grpc_plugin_support INTERFACE)
+  target_link_libraries(grpc_plugin_support
+    # INTERFACE protobuf::libprotoc
+    INTERFACE protobuf::libprotobuf
+  )
 endif ()
+
+function(check_targets_exists ARGV)
+  foreach(TARGET ${ARGV})
+    if (NOT TARGET ${TARGET})
+      message(FATAL_ERROR "Target ${TARGET} must exist")
+    endif ()
+  endforeach()
+endfunction()
+
+function(check_vars_defined ARGV)
+  foreach(VAR ${ARGV})
+    if (NOT DEFINED ${VAR})
+      message(FATAL_ERROR "Variable ${VAR} must be defined")
+    endif ()
+  endforeach()
+endfunction()
+
+if (NOT BUILD_ONLY_DOCS)
+  check_targets_exists(grpc++ grpc++_reflection grpc_plugin_support)
+  check_vars_defined(GRPC_CPP_PLUGIN PROTOC_BIN)
+endif (NOT BUILD_ONLY_DOCS)
