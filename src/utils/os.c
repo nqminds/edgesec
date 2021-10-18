@@ -1114,6 +1114,15 @@ int create_pid_file(const char *pid_file, int flags)
   ssize_t write_bytes;
   fd = open(pid_file, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 
+  if (fd == -1 && errno == ENOENT) {
+    int ret = make_dirs_to_path(pid_file, 0755);
+    if (ret) {
+      log_err("create_pid_file failed to create directories to path");
+      return -1;
+    }
+    fd = open(pid_file, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+  }
+
   if (fd == -1) {
     log_err("open");
     return -1;
