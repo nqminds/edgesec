@@ -193,7 +193,7 @@ if (BUILD_SQLSYNC_SERVICE AND NOT (BUILD_ONLY_DOCS))
     DEPENDS "${sqlite_proto}" ${PROTOC_BIN} ${GRPC_CPP_PLUGIN})
 
   add_library(sqlite_grpc_proto ${sqlite_grpc_srcs} ${sqlite_grpc_hdrs} ${sqlite_proto_srcs} ${sqlite_proto_hdrs})
-  target_link_libraries(sqlite_grpc_proto PUBLIC grpc++ grpc_plugin_support)
+  target_link_libraries(sqlite_grpc_proto PUBLIC GRPC::grpc++ GRPC::grpc_plugin_support)
 endif ()
 
 if (BUILD_REVERSE_SERVICE AND NOT (BUILD_ONLY_DOCS))
@@ -220,7 +220,7 @@ if (BUILD_REVERSE_SERVICE AND NOT (BUILD_ONLY_DOCS))
 
   # Compile grpc protobuf sources
   add_library(reverse_grpc_proto ${reverse_grpc_srcs} ${reverse_grpc_hdrs} ${reverse_proto_srcs} ${reverse_proto_hdrs})
-  target_link_libraries(reverse_grpc_proto PUBLIC grpc++ grpc_plugin_support)
+  target_link_libraries(reverse_grpc_proto PUBLIC GRPC::grpc++ GRPC::grpc_plugin_support)
 endif ()
 
 if (USE_OW_DNSMASQ)
