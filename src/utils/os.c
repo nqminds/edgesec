@@ -1009,7 +1009,7 @@ int make_dirs_to_path(const char* file_path, mode_t mode) {
     // Loops over every "/" in file_path
     for (char* p = strchr(file_path_tmp + 1, '/'); p; p = strchr(p + 1, '/')) {
         *p = '\0';
-        if (create_dir(file_path_tmp, mode) == -1) {
+        if (mkdir(file_path_tmp, mode) == -1) {
             if (errno != EEXIST) {
                 *p = '/';
                 return -1;
@@ -1020,7 +1020,7 @@ int make_dirs_to_path(const char* file_path, mode_t mode) {
     return 0;
 }
 
-int create_dir(char *dirpath, mode_t mode)
+int create_dir(const char *dirpath, mode_t mode)
 {
   int ret;
   ret = exist_dir(dirpath);
@@ -1030,9 +1030,14 @@ int create_dir(char *dirpath, mode_t mode)
   } else if (ret == 0) {
     log_debug("creating dir path=%s", dirpath);
     errno = 0;
+    if (make_dirs_to_path(dirpath, mode) < 0) {
+      log_err("creating dir path=%s failed", dirpath);
+      return -1;
+    }
+    // make_dirs_to_path doesn't create the final file, so make it ourselves
     if (mkdir(dirpath, mode) < 0) {
       if (errno != EEXIST) {
-        log_err("mkdir");
+        log_err("mkdir path=%s failed with errno=%d", dirpath, errno);
         return -1;
       }
     }

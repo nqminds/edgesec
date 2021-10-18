@@ -483,8 +483,10 @@ int exist_dir(char *dirpath);
  * @brief Recurisvely create directories to the given path
  *
  * Creates the directories recursively to the given path.
- * Assumes that the path will point to a file, not to a directory
- * (unless there is a trailing `/`).
+ *
+ * Does **NOT** create the final file, use create_dir()
+ * if you want if you want to create the entire path
+ * as dirs.
  *
  * Example:
  *
@@ -493,7 +495,7 @@ int exist_dir(char *dirpath);
  * make_dirs_to_path("/var/run/exampledir/example.pid", 0755);
  * ```
  *
- * @param[in] file_path The directories to create in the path.
+ * @param[in] file_path The directories to create to the path.
  * @param mode The folder create mode.
  * @return 0 on success, -1 on failure.
  * @see Original source-code used under fair-use from
@@ -502,13 +504,15 @@ int exist_dir(char *dirpath);
 int make_dirs_to_path(const char* file_path, mode_t mode);
 
 /**
- * @brief Creates a fodler
- * 
- * @param dirpath The folder path
+ * @brief Creates a folder recursively.
+ *
+ * If the parent folders do not exist, creates them too.
+ *
+ * @param[in] dirpath The folder path
  * @param mode The folder creation mode
  * @return 0 on success, -1 on failure 
  */
-int create_dir(char *dirpath, mode_t mode);
+int create_dir(const char *dirpath, mode_t mode);
 
 /**
  * @brief Check if a file exists
