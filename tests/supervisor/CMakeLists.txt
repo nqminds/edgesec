@@ -1,17 +1,16 @@
 include_directories(
   "${EDGESEC_SOURCE_DIR}/src"
-  "${CMOCKA_INCLUDE_DIR}"
 )
 
 add_executable(test_bridge_list test_bridge_list.c)
-target_link_libraries(test_bridge_list PRIVATE bridge_list log cmocka-static)
+target_link_libraries(test_bridge_list PRIVATE bridge_list log cmocka::cmocka)
 
 add_executable(test_domain_server test_domain_server.c)
-target_link_libraries(test_domain_server PRIVATE domain os log cmocka-static)
+target_link_libraries(test_domain_server PRIVATE domain os log cmocka::cmocka)
 
 add_executable(test_cmd_processor test_cmd_processor.c)
 target_include_directories(test_cmd_processor PRIVATE ${LIBSQLITE_INCLUDE_DIR})
-target_link_libraries(test_cmd_processor PRIVATE cmd_processor iptables log engine cmocka-static)
+target_link_libraries(test_cmd_processor PRIVATE cmd_processor iptables log engine cmocka::cmocka)
 
 set(TEST_CMD_PROPS "-Wl,--wrap=write_domain_data -Wl,--wrap=accept_mac_cmd -Wl,--wrap=deny_mac_cmd")
 set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=write_domain_data -Wl,--wrap=accept_mac_cmd -Wl,--wrap=deny_mac_cmd")
@@ -26,11 +25,11 @@ set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=subscribe_events_cmd")
 set_target_properties(test_cmd_processor PROPERTIES LINK_FLAGS ${TEST_CMD_PROPS})
 
 add_executable(test_mac_mapper test_mac_mapper.c)
-target_link_libraries(test_mac_mapper PRIVATE log system_checks os mac_mapper cmocka-static)
+target_link_libraries(test_mac_mapper PRIVATE log system_checks os mac_mapper cmocka::cmocka)
 
 add_executable(test_sqlite_fingerprint_writer test_sqlite_fingerprint_writer.c)
 target_include_directories(test_sqlite_fingerprint_writer PRIVATE ${LIBSQLITE_INCLUDE_DIR})
-target_link_libraries(test_sqlite_fingerprint_writer PRIVATE sqlite_fingerprint_writer sqliteu os log cmocka-static)
+target_link_libraries(test_sqlite_fingerprint_writer PRIVATE sqlite_fingerprint_writer sqliteu os log cmocka::cmocka)
 set_target_properties(test_sqlite_fingerprint_writer
   PROPERTIES
   LINK_FLAGS  "-Wl,--wrap=sqlite3_open"
@@ -38,7 +37,7 @@ set_target_properties(test_sqlite_fingerprint_writer
 
 add_executable(test_sqlite_macconn_writer test_sqlite_macconn_writer.c)
 target_include_directories(test_sqlite_macconn_writer PRIVATE ${LIBSQLITE_INCLUDE_DIR})
-target_link_libraries(test_sqlite_macconn_writer PRIVATE sqlite_macconn_writer sqliteu os log cmocka-static)
+target_link_libraries(test_sqlite_macconn_writer PRIVATE sqlite_macconn_writer sqliteu os log cmocka::cmocka)
 set_target_properties(test_sqlite_macconn_writer
   PROPERTIES
   LINK_FLAGS  "-Wl,--wrap=sqlite3_open"
