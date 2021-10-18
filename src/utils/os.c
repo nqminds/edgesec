@@ -977,7 +977,7 @@ bool find_dir_proc_fn(char *path, void *args)
   return true;
 }
 
-int exist_dir(char *dirpath)
+int exist_dir(const char *dirpath)
 {
   DIR *dirp;
 
@@ -999,7 +999,7 @@ int exist_dir(char *dirpath)
 // No need for license, since falls under fair use.
 int make_dirs_to_path(const char* file_path, mode_t mode) {
     if (!(file_path && *file_path)) {
-      log_err("invalid file_path given to make_dirs_to_path");
+      log_trace("invalid file_path given to make_dirs_to_path");
       return -1;
     }
 
@@ -1009,8 +1009,10 @@ int make_dirs_to_path(const char* file_path, mode_t mode) {
     // Loops over every "/" in file_path
     for (char* p = strchr(file_path_tmp + 1, '/'); p; p = strchr(p + 1, '/')) {
         *p = '\0';
+        errno = 0;
         if (mkdir(file_path_tmp, mode) == -1) {
             if (errno != EEXIST) {
+                log_err("mkdir");
                 *p = '/';
                 return -1;
             }
@@ -1028,16 +1030,16 @@ int create_dir(const char *dirpath, mode_t mode)
     log_trace("dir path=%s open fail", dirpath);
     return -1;
   } else if (ret == 0) {
-    log_debug("creating dir path=%s", dirpath);
-    errno = 0;
+    log_trace("creating dir path=%s", dirpath);
     if (make_dirs_to_path(dirpath, mode) < 0) {
-      log_err("creating dir path=%s failed", dirpath);
+      log_trace("make_dirs_to_path fail");
       return -1;
     }
     // make_dirs_to_path doesn't create the final file, so make it ourselves
+    errno = 0;
     if (mkdir(dirpath, mode) < 0) {
       if (errno != EEXIST) {
-        log_err("mkdir path=%s failed with errno=%d", dirpath, errno);
+        log_err("mkdir");
         return -1;
       }
     }

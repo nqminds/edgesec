@@ -477,7 +477,7 @@ bool find_dir_proc_fn(char *path, void *args);
  * @param dirpath The folder path
  * @return int 1 if exists, 0 otherwise, -1 on failure
  */
-int exist_dir(char *dirpath);
+int exist_dir(const char *dirpath);
 
 /**
  * @brief Recurisvely create directories to the given path
