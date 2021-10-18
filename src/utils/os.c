@@ -997,15 +997,19 @@ int exist_dir(char *dirpath)
 
 // Adapted from https://stackoverflow.com/a/9210960
 // No need for license, since falls under fair use.
-int make_dirs_to_path(char* file_path, mode_t mode) {
+int make_dirs_to_path(const char* file_path, mode_t mode) {
     if (!(file_path && *file_path)) {
       log_err("invalid file_path given to make_dirs_to_path");
       return -1;
     }
+
+    char file_path_tmp[MAX_OS_PATH_LEN+1];
+    strcpy(file_path_tmp, file_path);
+
     // Loops over every "/" in file_path
-    for (char* p = strchr(file_path + 1, '/'); p; p = strchr(p + 1, '/')) {
+    for (char* p = strchr(file_path_tmp + 1, '/'); p; p = strchr(p + 1, '/')) {
         *p = '\0';
-        if (create_dir(file_path, mode) == -1) {
+        if (create_dir(file_path_tmp, mode) == -1) {
             if (errno != EEXIST) {
                 *p = '/';
                 return -1;

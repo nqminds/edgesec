@@ -494,15 +494,12 @@ int exist_dir(char *dirpath);
  * ```
  *
  * @param[in] file_path The directories to create in the path.
- *   This is not `const`, as we edit the string while
- *   creating the file_path. However, it's reset the original
- *   state when the function exists.
  * @param mode The folder create mode.
  * @return 0 on success, -1 on failure.
  * @see Original source-code used under fair-use from
  *   https://stackoverflow.com/a/9210960
  */
-int make_dirs_to_path(char* file_path, mode_t mode);
+int make_dirs_to_path(const char* file_path, mode_t mode);
 
 /**
  * @brief Creates a fodler
