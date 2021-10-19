@@ -472,6 +472,11 @@ int main(int argc, char *argv[])
   fprintf(stdout, "Starting server...\n");
 
   if (tls) {
+    if(MHD_NO == MHD_is_feature_supported(MHD_FEATURE_TLS)) {
+      fprintf(stderr, "restsrv was not compiled with a microhttpd with TLS support\n");
+      exit(EXIT_FAILURE);
+    }
+
     if (writeread_domain_data_str(sad.spath, GET_CRYPT_KEY_CMD, &reply) < 0) {
       fprintf(stderr, "writeread_domain_data_str fail\n");
       exit(EXIT_FAILURE);

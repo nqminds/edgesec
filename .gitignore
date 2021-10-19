@@ -80,17 +80,6 @@ lib/libmnl-1.0.4/src/.deps/**
 lib/libmnl-1.0.4/src/.libs/**
 lib/libmnl-1.0.4/examples/.libs/**
 lib/libmnl-1.0.4/autom4te.cache/**
-lib/libmicrohttpd-0.9.72/build/**
-lib/libmicrohttpd-0.9.72/src/*.o
-lib/libmicrohttpd-0.9.72/**/.deps
-lib/libmicrohttpd-0.9.72/**/.libs
-lib/libmicrohttpd-0.9.72/**/Makefile
-lib/libmicrohttpd-0.9.72/config.status
-lib/libmicrohttpd-0.9.72/config.log
-lib/libmicrohttpd-0.9.72/libmicrohttpd.pc
-lib/libmicrohttpd-0.9.72/libtool
-lib/libmicrohttpd-0.9.72/MHD_config.h
-lib/libmicrohttpd-0.9.72/stamp-h1
 lib/libuuid-1.0.3/build/**
 lib/libuuid-1.0.3/*.o
 lib/libuuid-1.0.3/*.deps
