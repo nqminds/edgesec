@@ -17,7 +17,7 @@ print_help() {
 	echo "ARGS:"
 	echo "  HOSTNAME"
 	echo "    If given, set the hostname of the device to this."
-	echo "    Else, pick a random hostname in form [adjective]-unitializedhub"
+	echo "    Else, pick a random hostname in form edgesec-[adjective]-[noun]"
 }
 
 while test $# -gt 0; do
@@ -54,8 +54,14 @@ function randomHostname() {
 	RANDOM_LINE=$(( $RANDOM % $LINES )) # get a random val between 0 and $LINES
 	# sed hax https://stackoverflow.com/a/6022431/10149169
 	ADJECTIVE=$(sed "${RANDOM_LINE}q;d" "$ADJECTIVE_LIST") # picks a line
-	HOSTNAME="${ADJECTIVE}-unitializedhub"
-	echo "$HOSTNAME"
+
+	NOUN_LIST="${THIS_DIR}/nouns.list"
+	LINES=$(wc -l < "$NOUN_LIST") # line count
+	RANDOM_LINE=$(( $RANDOM % $LINES )) # get a random val between 0 and $LINES
+	# sed hax https://stackoverflow.com/a/6022431/10149169
+	NOUN=$(sed "${RANDOM_LINE}q;d" "$NOUN_LIST") # picks a line
+	HOSTNAME="edgesec-${ADJECTIVE}-${NOUN}"
+	echo "${HOSTNAME:0:63}" # truncate to 63 chars
 }
 
 # copy a new ssh key to the server

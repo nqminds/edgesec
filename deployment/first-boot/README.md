@@ -2,6 +2,8 @@
 
 Instructions adapted from: https://github.com/nqminds/nqm-iot-hub-industrial/tree/master/installing_ubuntu/disk-image#make-os-initialize-on-next-boot
 
+`nouns.list` from https://raw.githubusercontent.com/aaronbassett/Pass-phrase
+
 ## Setting up First Boot setup
 
 Make sure you have installed the following:
@@ -10,6 +12,7 @@ Make sure you have installed the following:
 - `~/.ssh/config` - Config file for SSH tunnel.
 - `/usr/local/EDGESec/deploy/reset-hostname.bash` - Will setup the hostname/ssh-key on first boot.
 - `/usr/local/EDGESec/deploy/adjectives.list` - Used to generate random hostname.
+- `/usr/local/EDGESec/deploy/nouns.list` - Used to generate random hostname.
 - `/etc/systemd/system/reset-hostname.service` - Used to generate random hostname on boot.
 - `~/.config/systemd/user` - Used to create SSH tunnel.
 
@@ -23,7 +26,7 @@ sudo apt install systemd-container
 chmod 600 ~/edgesec-deploy-key.pem
 # warning, will overwrite old ssh config
 mkdir -p ~/.ssh && cp ../ssh/nqm-ssh-tunnel/config ~/.ssh/config
-sudo mkdir -p /usr/local/EDGESec/deploy && sudo cp ./reset-hostname.bash ./adjectives.list /usr/local/EDGESec/deploy
+sudo mkdir -p /usr/local/EDGESec/deploy && sudo cp ./reset-hostname.bash ./adjectives.list ./nouns.list /usr/local/EDGESec/deploy
 sudo cp ./reset-hostname.service /etc/systemd/system
 mkdir -p ~/.config/systemd/user && cp ./ssh-tunnel-key-update.service ~/.config/systemd/user
 
