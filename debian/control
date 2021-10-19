@@ -1,12 +1,12 @@
-Source: edgesec-0.9.9-alpha1
+Source: edgesec
 Section: unknown
 Priority: optional
 Maintainer: Alois Klink <alois@nquiringminds.com>
-Build-Depends: git, ca-certificates, cmake (>=3.15.0), debhelper-compat (= 12), doxygen, graphviz, texinfo, libnl-genl-3-dev, libnl-route-3-dev, automake, autoconf, libtool-bin, pkg-config, libjson-c-dev, libgnutls28-dev, libssl-dev, flex, bison, libmnl0, protobuf-compiler-grpc:native, libprotobuf-dev, libgrpc++-dev
+Build-Depends: git, ca-certificates, cmake (>=3.15.0), debhelper-compat (= 12), doxygen, graphviz, texinfo, libnl-genl-3-dev, libnl-route-3-dev, automake, autoconf, libtool-bin, pkg-config, libjson-c-dev, libgnutls28-dev, libssl-dev, flex, bison, libmnl0, protobuf-compiler-grpc:native, libprotobuf-dev, libgrpc++-dev, libcmocka-dev (>=1.1.5)
 Standards-Version: 4.5.0
 Homepage: https://github.com/nqminds/EDGESec
 
-Package: edgesec-0.9.9-alpha1
+Package: edgesec
 Architecture: any
 Multi-Arch: foreign
 Depends: ${shlibs:Depends}, ${misc:Depends}, dnsmasq, jq, libmnl0

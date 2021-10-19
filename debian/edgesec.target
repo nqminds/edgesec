@@ -1,0 +1,7 @@
+[Unit]
+Description=EDGESec Target
+After=network.target
+Conflicts=shutdown.target
+
+[Install]
+WantedBy=multi-user.target
