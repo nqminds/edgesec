@@ -29,41 +29,101 @@
 #include "capture_config.h"
 
 #include "../utils/eloop.h"
+#include "../utils/utarray.h"
 
-#define CLEANER_CHECK_INTERVAL 3       // Interval in sec
-#define CLEANER_GROUP_INTERVAL  1000   // Interval in usec
+#define CLEANER_CHECK_INTERVAL 3        // Interval in sec
+#define CLEANER_GROUP_INTERVAL  5      // Number of rows to sum
+
+static const UT_icd pcap_file_meta_icd = {sizeof(struct pcap_file_meta), NULL, NULL, NULL};
 
 struct cleaner_context {
   sqlite3 *pcap_db;
   char pcap_path[MAX_OS_PATH_LEN];
   uint64_t store_size;
-  uint64_t curr_timestamp;
+  uint64_t low_timestamp;
+  uint64_t store_sum;
+  uint64_t next_timestamp;
 };
+
+int clean_capture(struct cleaner_context *context)
+{
+  struct pcap_file_meta *p = NULL;
+  UT_array *pcap_meta_arr = NULL;
+  uint64_t timestamp = context->low_timestamp, lt;
+
+  utarray_new(pcap_meta_arr, &pcap_file_meta_icd);
+  
+  while(timestamp <= context->next_timestamp) {
+    log_trace("First timestamp=%llu", timestamp);
+    lt = timestamp;
+    if (get_pcap_meta_array(context->pcap_db, timestamp, CLEANER_GROUP_INTERVAL, pcap_meta_arr) < 0) {
+      log_trace("get_pcap_array fail");
+      utarray_free(pcap_meta_arr);
+      return -1;
+    }
+
+    while((p = (struct pcap_file_meta *) utarray_next(pcap_meta_arr, p)) != NULL) {
+      log_trace("deleting %s at timestamp=%llu", p->name, p->timestamp);
+      timestamp = p->timestamp;
+    }
+    utarray_clear(pcap_meta_arr);
+
+    if (delete_pcap_entries(context->pcap_db, lt, timestamp) < 0) {
+      log_trace("delete_pcap_entries fail");
+      utarray_free(pcap_meta_arr);
+      return -1;    
+    }
+  }
+
+  utarray_free(pcap_meta_arr);
+  return 0;
+}
 
 void eloop_cleaner_handler(void *eloop_ctx, void *user_ctx)
 {
   (void) eloop_ctx;
   int res = 0;
-  uint64_t timestamp = 0, low_timestamp, high_timestamp;
+  uint64_t lt, ht, sum = 0;
+  uint64_t caplen = 0;
   struct cleaner_context *context = (struct cleaner_context *) user_ctx;
 
-  low_timestamp = context->curr_timestamp;
+  lt = context->next_timestamp;
 
-  if (!low_timestamp) {
-    res = get_first_pcap_entry(context->pcap_db, &low_timestamp);
+  if (!lt) {
+    res = get_first_pcap_entry(context->pcap_db, &lt, &caplen);
     if (res < 0) {
       log_trace("get_first_pcap_entry fail");
     } else if (res > 0) {
       log_trace("No rows");
     }
 
-    context->curr_timestamp = low_timestamp;
+    context->low_timestamp = lt;
+    context->store_sum = caplen;
   }
   
-  if (low_timestamp) {
-    high_timestamp = low_timestamp + CLEANER_GROUP_INTERVAL;
+  ht = lt;
+
+  if (lt) {
+    if (sum_pcap_group(context->pcap_db, lt, CLEANER_GROUP_INTERVAL, &ht, &sum) < 0) {
+      log_trace("sum_pcap_group fail");
+    } else {
+      if (ht != lt) {
+        context->store_sum += sum;
+        context->next_timestamp = ht;
+      }
+    }
   }
-  log_trace("timestamp=%llu", timestamp);
+
+  log_trace("timestamp=%llu and sum=%llu", context->next_timestamp, context->store_sum);
+
+  if (context->store_sum >= context->store_size) {
+    log_trace("Started cleanup...");
+    clean_capture(context);
+    context->low_timestamp = 0;
+    context->store_sum = 0;
+    context->next_timestamp = 0;
+  }
+
   if (eloop_register_timeout(CLEANER_CHECK_INTERVAL, 0, eloop_cleaner_handler, (void *)NULL, (void *)user_ctx) == -1) {
     log_debug("eloop_register_timeout fail");
   }
