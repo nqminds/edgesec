@@ -16,11 +16,12 @@ if (BUILD_MICROHTTPD_LIB AND NOT (BUILD_ONLY_DOCS))
     )
     FetchContent_Populate(microhttpd_src)
 
-    execute_process(COMMAND
-      bash ${CMAKE_SOURCE_DIR}/lib/compile_microhttpd.sh
-      ${microhttpd_src_SOURCE_DIR}
-      ${LIBMICROHTTPD_INSTALL_ROOT}
-      ${target_autoconf_triple}
+    execute_process(
+      COMMAND bash ${CMAKE_SOURCE_DIR}/lib/compile_microhttpd.sh
+        ${microhttpd_src_SOURCE_DIR}
+        ${LIBMICROHTTPD_INSTALL_ROOT}
+        ${target_autoconf_triple}
+      WORKING_DIRECTORY ${microhttpd_src_BINARY_DIR}
     )
     find_library(LIBMICROHTTPD_LIB NAMES microhttpd PATHS "${LIBMICROHTTPD_LIB_DIR}" NO_DEFAULT_PATH)
   endif ()
