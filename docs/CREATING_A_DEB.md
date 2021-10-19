@@ -132,3 +132,6 @@ Now the deb should exist in the folder above this folder, e.g. `cd ..`.
 - Build dependencies:
   - If we use `git`, make sure you also add `ca-certificates`, otherwise you'll get
     invalid certificate errors when doing git clones with `https`.
+- Creating a new version of the `.deb`:
+  - To create a new version number for the `.deb`, add a new entry to `debian/changelog`
+    with the version you want, then rebuild the `.deb`.
