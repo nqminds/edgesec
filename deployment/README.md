@@ -13,6 +13,8 @@ These claim to have 85 MB/s write speeds, with strong random RW performance
 
 ## Instructions
 
+### Flashing Image
+
 - [Ubuntu Raspberry Pi][1] page.
 - [Raspberry Pi Ubuntu 20.04.2 64-bit Server Download][2]
 
@@ -25,6 +27,37 @@ These claim to have 85 MB/s write speeds, with strong random RW performance
   ```
   31884b07837099a5e819527af66848a9f4f92c1333e3ef0693d6d77af66d6832  ubuntu-20.04.2-preinstalled-server-arm64+raspi.img.xz
   ```
+
+We recommend using Ether Electron to flash the SD card. It can be installed via:
+
+```bash
+sudo mkdir -p /usr/local/share/keyrings/
+sudo wget https://dl.cloudsmith.io/public/balena/etcher/gpg.70528471AFF9A051.key -O /usr/local/share/keyrings/balena-etcher-gpg.70528471AFF9A051.key
+```
+
+Then add the following to `/etc/apt/sources.list.d/etcher.sources`:
+
+```sources
+Types: deb
+URIs: https://dl.cloudsmith.io/public/balena/etcher/deb/ubuntu
+Suites: focal
+Components: main
+Signed-By: /usr/local/share/keyrings/balena-etcher-gpg.70528471AFF9A051.key
+```
+
+Then finally, you can do:
+
+```bash
+sudo apt update && sudo apt install balena-etcher-electron -y
+# start etcher electron
+/opt/balenaEtcher/balena-etcher-electron.bin
+```
+
+You can then use `gnome-disks` to resize the flashed SD card, to use up all the space in the card:
+
+```bash
+gnome-disks
+```
 
 You can then scan via `nmap -sV -p 22 192.168.1.*` to find devices on the local
 network that have an open SSH port. One of them should be the Ubuntu Raspberry Pi.
