@@ -53,8 +53,15 @@ option(USE_M_LIB "Use m library" ON)
 option(USE_OW_DNSMASQ "Use the OpenWrt dnsmasq service" OFF)
 option(USE_ZYMKEY4_HSM "Use the Zymkey4 HSM" OFF)
 
-set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_SYSTEM_NAME Linux)
+# Set a default build type if none was specified
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  message(STATUS "Setting build type to 'Debug' as none was specified.")
+  set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
+  # Set the possible values of build type for cmake-gui
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release"
+    "MinSizeRel" "RelWithDebInfo")
+endif()
+
 if (USE_ARM_MUSL_LIBC)
   set(CMAKE_SYSTEM_PROCESSOR arm)
   # set(tools /usr/local/arm-linux-musleabihf)
@@ -100,7 +107,10 @@ set(CMAKE_C_FLAGS "-Wunused-variable -Wall -Wextra")
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ftest-coverage")
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_LIBNL")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# use -std=c++11 rather than -std=gnu++11
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # The edgesec version number.
 set(EDGESEC_VERSION_MAJOR 0)
