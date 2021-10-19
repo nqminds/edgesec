@@ -59,10 +59,61 @@ You can then use `gnome-disks` to resize the flashed SD card, to use up all the 
 gnome-disks
 ```
 
+### Connecting to the Pi
+
 You can then scan via `nmap -sV -p 22 192.168.1.*` to find devices on the local
 network that have an open SSH port. One of them should be the Ubuntu Raspberry Pi.
 
 The default login details are username `ubuntu` and password `ubuntu`.
+
+After logging in, you can do the following:
+
+- Install avahi-daemon, this lets you find the pi on the network by doing:
+  `ping <hostname>.local`.
+
+  ```bash
+  sudo apt update && sudo apt install avahi-daemon -y
+  ````
+- Add admin SSH keys:
+
+  ```bash
+  # add admin SSH keys (these must be FIDO2 keys!)
+  cp ./ssh/authorized_keys ~/.ssh/authorized_keys
+  ```
+- Clone the EDGESec Repo.
+  
+  ```bash
+  git clone --recurse-submodules --depth 1 https://github.com/nqminds/EDGESec.git --branch deployment
+  ```
+- Follow instructions in `first-boot`.
+- Follow instruction in https://nqminds.github.io/edgesec-packages/ to install edgesec:
+  
+  ```bash
+  # make a key store dir if it doesn't exist
+  sudo mkdir -p /usr/local/share/keyrings
+  # download our public key
+  sudo wget https://nqminds.github.io/edgesec-packages/edgesec_rootkey_pub.gpg -O /usr/local/share/keyrings/edgesec_rootkey_pub.gpg
+  # download our edgesec.sources file
+  sudo wget https://nqminds.github.io/edgesec-packages/edgesec.sources -O /etc/apt/sources.list.d/edgesec.sources
+  sudo apt update && sudo apt install edgesec
+  ```
+- Setup unattended updates.
+  
+  It should already be installed, you just need to edit and add the following line
+  in `/etc/apt/apt.conf.d/50unattended-upgrades` under `Unattended-Upgrade::Allowed-Origins`.
+
+  ```
+  Unattended-Upgrade::Allowed-Origins {
+    // edgesec
+    "nqminds.github.io/edgesec-packages:${distro_codename}";
+  };
+  ```
+
+  This can be tested via doing a dry-run:
+
+  ```bash
+  sudo unattended-upgrades --dry-run --debug
+  ```
 
 ## Generating FIDO2 SSH Keys
 
