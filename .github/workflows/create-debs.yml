@@ -11,6 +11,7 @@ jobs:
     strategy:
       matrix:
         architecture: [arm64]
+        distribution: [focal]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -20,7 +21,7 @@ jobs:
         with:
           path: |
             /var/cache/pbuilder/base.tgz
-          key: ${{ runner.os }}-focal
+          key: ${{ runner.os }}-${{ matrix.distribution }}
       - name: Install dependencies
         run: |
           sudo apt-get update && sudo apt-get install pbuilder debhelper -y
@@ -36,13 +37,13 @@ jobs:
       - name: Build pbuilder base.tgz
         if: steps.cache-pbuilder-base.outputs.cache-hit != 'true'
         run: |
-          sudo pbuilder create --debootstrapopts --variant=buildd --distribution focal
+          sudo pbuilder create --debootstrapopts --variant=buildd --distribution ${{ matrix.distribution }}
       - name: Build .deb
         env:
           OTHER_MIRROR:
-            deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports focal main universe | deb [arch=amd64] http://gb.archive.ubuntu.com/ubuntu focal main universe
+            deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${{ matrix.distribution }} main universe | deb [arch=amd64] http://gb.archive.ubuntu.com/ubuntu ${{ matrix.distribution }} main universe
         run: |
-          pdebuild --debbuildopts "-us -uc" -- --override-config --distribution focal --mirror "" --othermirror "$OTHER_MIRROR" --host-arch arm64
+          pdebuild --debbuildopts "-us -uc" -- --override-config --distribution ${{ matrix.distribution }} --mirror "" --othermirror "$OTHER_MIRROR" --host-arch ${{ matrix.architecture }}
       - name: Load output .deb name
         id: load-deb-name
         run: |
