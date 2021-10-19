@@ -10,9 +10,9 @@ echo "MICROHTTPD lib source dir: ${LIBMICROHTTPD_SOURCE_DIR}"
 echo "MICROHTTPD lib install dir: ${LIBMICROHTTPD_INSTALL_DIR}"
 echo "MICROHTTPD lib config host: ${CONFIG_HOST}"
 
-# Enable --with-gnutls to force HTTPS support
+# Set --enable-https to force HTTPS support
 # Requires that gnutls is installed
-"${LIBMICROHTTPD_SOURCE_DIR}"/configure --prefix="${LIBMICROHTTPD_INSTALL_DIR}" --host="${CONFIG_HOST}" --with-gnutls
+"${LIBMICROHTTPD_SOURCE_DIR}"/configure --prefix="${LIBMICROHTTPD_INSTALL_DIR}" --host="${CONFIG_HOST}" --enable-https
 make
 make install
 make distclean
