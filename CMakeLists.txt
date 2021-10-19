@@ -107,7 +107,10 @@ set(CMAKE_C_FLAGS "-Wunused-variable -Wall -Wextra")
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ftest-coverage")
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_LIBNL")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# use -std=c++11 rather than -std=gnu++11
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # The edgesec version number.
 set(EDGESEC_VERSION_MAJOR 0)
