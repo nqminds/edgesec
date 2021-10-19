@@ -14,6 +14,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Cache pbuilder base
+        id: cache-pbuilder-base
+        uses: actions/cache@v2
+        with:
+          path: |
+            /var/cache/pbuilder/base.tgz
+          key: ${{ runner.os }}-focal
       - name: Install dependencies
         run: |
           sudo apt-get update && sudo apt-get install pbuilder debhelper -y
@@ -26,6 +33,10 @@ jobs:
             PBUILDERSATISFYDEPENDSCMD="/usr/lib/pbuilder/pbuilder-satisfydepends-apt"
         run: |
           echo "$PBUILDER_RC" | sudo tee -a /etc/pbuilderrc
+      - name: Build pbuilder base.tgz
+        if: steps.cache-pbuilder-base.outputs.cache-hit != 'true'
+        run: |
+          sudo pbuilder create --debootstrapopts --variant=buildd --distribution focal
       - name: Build .deb
         env:
           OTHER_MIRROR:
