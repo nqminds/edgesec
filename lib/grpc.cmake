@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.15.0)
 # due to https://gitlab.kitware.com/cmake/cmake/-/issues/18327
 
 # This file provides the following libraries (with appropriate INCLUDE_DIRS set)
-#   grpc++ grpc++_reflection grpc_plugin_support
+#   GRPC::grpc++ GRPC::grpc++_reflection GRPC::grpc_plugin_support GRPC::grpc_cpp_plugin
 #
 # Additionally, the following variables point to their appropriate binary:
 #   GRPC_CPP_PLUGIN PROTOC_BIN
@@ -71,24 +71,26 @@ if (BUILD_GRPC_LIB AND NOT (BUILD_ONLY_DOCS))
       REQUIRED
     )
   endif()
+
+  add_library(GRPC::grpc++ ALIAS grpc++)
+  add_library(GRPC::grpc++_reflection ALIAS grpc++_reflection)
+  add_library(GRPC::grpc_plugin_support ALIAS grpc_plugin_support)
+
+  add_executable(GRPC::grpc_cpp_plugin ALIAS grpc_cpp_plugin)
+
 elseif (NOT (BUILD_ONLY_DOCS))
   # Find pre-installed grpc
   message("Trying to find pre-installed GRPC and Protobuf")
-  find_package(gRPC REQUIRED)
+  find_package(GRPC REQUIRED)
 
-  add_library(grpc ALIAS gRPC::grpc)
-  add_library(grpc++ ALIAS gRPC::grpc++)
-  add_library(grpc++_reflection ALIAS gRPC::grpc++_reflection)
-
-  add_executable(grpc_cpp_plugin ALIAS gRPC::grpc_cpp_plugin)
-  set(GRPC_CPP_PLUGIN $<TARGET_FILE:grpc_cpp_plugin>)
+  set(GRPC_CPP_PLUGIN $<TARGET_FILE:GRPC::grpc_cpp_plugin>)
 
   find_package(Protobuf REQUIRED)
   set(PROTOC_BIN $<TARGET_FILE:protobuf::protoc>)
 
   # grpc_plugin_support library is just a virtual lib pointing to libprotobuf
-  add_library(grpc_plugin_support INTERFACE)
-  target_link_libraries(grpc_plugin_support
+  add_library(GRPC::grpc_plugin_support INTERFACE IMPORTED)
+  target_link_libraries(GRPC::grpc_plugin_support
     # INTERFACE protobuf::libprotoc
     INTERFACE protobuf::libprotobuf
   )
@@ -111,6 +113,6 @@ function(check_vars_defined ARGV)
 endfunction()
 
 if (NOT BUILD_ONLY_DOCS)
-  check_targets_exists(grpc++ grpc++_reflection grpc_plugin_support)
+  check_targets_exists(GRPC::grpc++ GRPC::grpc++_reflection GRPC::grpc_plugin_support)
   check_vars_defined(GRPC_CPP_PLUGIN PROTOC_BIN)
 endif (NOT BUILD_ONLY_DOCS)

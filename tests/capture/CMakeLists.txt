@@ -4,7 +4,7 @@ include_directories (
 
 add_executable(test_default_analyser test_default_analyser.c)
 target_include_directories(test_default_analyser PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
-target_link_libraries(test_default_analyser PRIVATE default_analyser packet_queue os log cmocka-static grpc++)
+target_link_libraries(test_default_analyser PRIVATE default_analyser packet_queue os log cmocka-static GRPC::grpc++)
 set_target_properties(test_default_analyser
   PROPERTIES
   LINK_FLAGS  "-Wl,--wrap=open_sqlite_header_db -Wl,--wrap=open_sqlite_pcap_db -Wl,--wrap=free_sqlite_header_db -Wl,--wrap=free_sqlite_pcap_db -Wl,--wrap=run_pcap -Wl,--wrap=close_pcap -Wl,--wrap=eloop_init -Wl,--wrap=eloop_register_read_sock -Wl,--wrap=eloop_register_timeout -Wl,--wrap=eloop_run -Wl,--wrap=eloop_destroy -Wl,--wrap=run_register_db -Wl,--wrap=extract_packets -Wl,--wrap=push_packet_queue -Wl,--wrap=push_pcap_queue"
