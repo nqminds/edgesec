@@ -14,7 +14,8 @@ defaultOpenVlanId = 0
 quarantineVlanId = 10
 riskScore = 100
 killRunningProcess = false
-execAp = false
+# Set to `true` to let edgesec process start hostapd
+execAp = true
 execRadius = true
 execDhcp = true
 execCapture = true
