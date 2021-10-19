@@ -3,6 +3,9 @@
 
 ## Build
 
+Instructions to create `.deb` file are located in
+[`./docs/CREATING_A_DEB.md`](./docs/CREATING_A_DEB.md).
+
 ### Installing Dependencies
 
 On Ubuntu, we need a C compiler, CMake, Doxygen, and libnl libraries:

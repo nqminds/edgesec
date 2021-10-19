@@ -1,1 +1,37 @@
-# Temporarily left blank since this is not being distributed
+Files: *
+Copyright: 2020-2021, NquiringMinds Ltd.
+License: LGPL-3+
+
+Files: lib/hostapd/*
+Copyright: 2002-2014, Jouni Malinen <j@w1.fi>
+License: BSD-3-clause
+
+Files: lib/libmicrohttpd-*/*
+Copyright: 2006-2021, Christian Grothoff <christian@grothoff.org>
+           2006-2021, other contributing authors
+License: LGPL-2.1+
+
+Files: lib/mnl-*/*
+Copyright: 2010-2021, Pablo Neira Ayuso <pablo@netfilter.org>
+           2010-2021, other contributing authors
+License: LGPL-2.1+
+
+Files: lib/netlink/*
+Copyright: 2010, see individual files for details
+License: GPL-2+
+
+Files: lib/libu2f-emu/*
+Copyright: 2020, César `MattGorko` Belley <cesar.belley@lse.epita.fr>
+License: GPL-2+
+
+Files: lib/sqlite/*
+Copyright: Public Domain
+License: public-domain
+
+Files: lib/tlpi-dist/*
+Copyright: 2010-2020, Michael Kerrisk
+License: GPL-3
+
+Files: lib/tlpi-dist/lib/*
+Copyright: 2010-2020, Michael Kerrisk
+License: LGPL-3

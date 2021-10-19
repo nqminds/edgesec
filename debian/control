@@ -3,7 +3,7 @@ Section: unknown
 Priority: optional
 Maintainer: Alois Klink <alois@nquiringminds.com>
 Build-Depends: git, ca-certificates, cmake (>=3.15.0), debhelper-compat (= 12), doxygen, graphviz, texinfo, libnl-genl-3-dev, libnl-route-3-dev, automake, autoconf, libtool-bin, pkg-config, libjson-c-dev, libssl-dev, flex, bison, libmnl0, protobuf-compiler-grpc:native, libprotobuf-dev, libgrpc++-dev
-Standards-Version: 3.9.8
+Standards-Version: 4.5.0
 Homepage: https://github.com/nqminds/EDGESec
 
 Package: edgesec-0.9.9-alpha1
