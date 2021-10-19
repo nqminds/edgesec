@@ -34,6 +34,14 @@ if (BUILD_CMOCKA_LIB AND NOT (BUILD_ONLY_DOCS))
   set(PICKY_DEVELOPER OFF CACHE BOOL "CMocka: Build with picky developer flags" FORCE)
 
   FetchContent_MakeAvailable(cmocka)
-  FetchContent_GetProperties(cmocka SOURCE_DIR CMOCKA_SOURCE_DIR)
-  set(CMOCKA_INCLUDE_DIR "${CMOCKA_SOURCE_DIR}/include")
+  if (NOT TARGET cmocka::cmocka)
+    add_library(cmocka::cmocka ALIAS cmocka)
+  endif(NOT TARGET cmocka::cmocka)
+elseif (NOT BUILD_ONLY_DOCS)
+  find_package(cmocka 1.1.5 REQUIRED)
+  add_library(cmocka::cmocka UNKNOWN IMPORTED)
+  set_target_properties(cmocka::cmocka PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES ${CMOCKA_INCLUDE_DIR}
+    IMPORTED_LOCATION ${CMOCKA_LIBRARY}
+)
 endif ()

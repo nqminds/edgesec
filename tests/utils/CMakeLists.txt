@@ -1,25 +1,24 @@
 include_directories(
   "${EDGESEC_SOURCE_DIR}/src"
-  "${CMOCKA_INCLUDE_DIR}"
 )
 
 add_executable(test_if test_if.c)
-target_link_libraries(test_if PRIVATE if cmocka-static)
+target_link_libraries(test_if PRIVATE if cmocka::cmocka)
 
 add_executable(test_os test_os.c)
-target_link_libraries(test_os PRIVATE os cmocka-static)
+target_link_libraries(test_os PRIVATE os cmocka::cmocka)
 
 add_executable(test_hashmap test_hashmap.c)
-target_link_libraries(test_hashmap PRIVATE hashmap cmocka-static)
+target_link_libraries(test_hashmap PRIVATE hashmap cmocka::cmocka)
 
 add_executable(test_utarray test_utarray.c)
-target_link_libraries(test_utarray PRIVATE log cmocka-static)
+target_link_libraries(test_utarray PRIVATE log cmocka::cmocka)
 
 add_executable(test_minIni test_minIni.c)
-target_link_libraries(test_minIni PRIVATE minIni cmocka-static)
+target_link_libraries(test_minIni PRIVATE minIni cmocka::cmocka)
 
 add_executable(test_squeue test_squeue.c)
-target_link_libraries(test_squeue PRIVATE squeue os cmocka-static)
+target_link_libraries(test_squeue PRIVATE squeue os cmocka::cmocka)
 
 add_executable(test_log_thread_safe test_log_thread_safe.c)
 target_link_libraries(test_log_thread_safe log pthread)
