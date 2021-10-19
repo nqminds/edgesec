@@ -16,8 +16,9 @@ jobs:
         PBUILDERSATISFYDEPENDSCMD="/usr/lib/pbuilder/pbuilder-satisfydepends-apt"
     name: Upload built .deb
     runs-on: ubuntu-latest
-    matrix:
-      architecture: [arm64]
+    strategy:
+      matrix:
+        architecture: [arm64]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
