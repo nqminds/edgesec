@@ -9,6 +9,7 @@ Type=oneshot
 ExecStart=%h/EDGESec/deployment/ssh/nqm-ssh-tunnel/install.bash %h/edgesec-deploy-key.pem
 # gets disabled by itself as long as the previous command works
 ExecStart=/bin/systemctl --user disable ssh-tunnel-key-update.service
+ExecStart=/bin/rm %h/edgesec-deploy-key.pem
 
 [Install]
 # stop sshtunnel.service if this fails
