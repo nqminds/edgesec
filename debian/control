@@ -1,4 +1,4 @@
-Source: edgesec-0.9.9-alpha1
+Source: edgesec
 Section: unknown
 Priority: optional
 Maintainer: Alois Klink <alois@nquiringminds.com>
@@ -6,7 +6,7 @@ Build-Depends: git, ca-certificates, cmake (>=3.15.0), debhelper-compat (= 12), 
 Standards-Version: 4.5.0
 Homepage: https://github.com/nqminds/EDGESec
 
-Package: edgesec-0.9.9-alpha1
+Package: edgesec
 Architecture: any
 Multi-Arch: foreign
 Depends: ${shlibs:Depends}, ${misc:Depends}, dnsmasq, jq, libmnl0
