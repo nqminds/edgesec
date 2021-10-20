@@ -219,27 +219,65 @@ std::string accumulate_string(std::vector<std::string> &string_list)
   return acc;
 }
 
-ssize_t read_file(const char *name, char **data)
+ssize_t read_file(const char *name, char **encoded)
 {
-  ssize_t file_size = 0;
-  *data = NULL;
+  ssize_t file_size = 0, read_size;
+  unsigned char *file_data;
+  size_t out_len;
+  *encoded = NULL;
 
-  if (name == NULL)
-    return 0;
-
-  FILE *fp = fopen(name, "r");
-  if (fp == NULL) {
-    log_err("fopen");
-    return 0;
+  if (name == NULL) {
+    return -1;
   }
 
-  fseek(fp, 0 , SEEK_END);
-  file_size = ftell(fp);
-  rewind(fp);
-  *data = (char*) os_malloc(file_size);
+  FILE *fp = fopen(name, "r");
 
-  return fread(*data, 1, file_size, fp);
+  log_trace("Opening %s", name);
+
+  if (fp == NULL) {
+    log_err("fopen");
+    return -1;
+  }
+
+  if (fseek(fp, 0 , SEEK_END) < 0) {
+    log_err("fseek");
+    fclose(fp);
+    return -1; 
+  }
+
+  if ((file_size = ftell(fp)) == -1L) {
+    log_err("ftell");
+    fclose(fp);
+    return -1;
+  }
+
+  rewind(fp);
+
+  if ((file_data = (unsigned char*) os_malloc(file_size)) == NULL) {
+    fclose(fp);
+    return -1; 
+  }
+
+  read_size = fread(file_data, 1, file_size, fp);
+
+  if (read_size != file_size) {
+    log_trace("fread fail");
+    os_free(file_data);
+    fclose(fp);
+    return -1;
+  }
+
   fclose(fp);
+
+  if ((*encoded = (char *) base64_encode(file_data, file_size, &out_len)) == NULL) {
+    log_trace("base64_encode");
+    os_free(file_data);
+    return -1;
+  }
+
+  os_free(file_data);
+
+  return out_len;
 }
 
 int sqlite_exec_callback(void* ptr ,int argc, char **argv, char **colname)
@@ -413,19 +451,19 @@ class ReverseClient {
             } else SendStringResource(reply_id, REVERSE_CMD_ERROR, "");
             break;
           case REVERSE_CMD_GET:
-            log_trace("Received args=%s", args.c_str());
+            log_trace("Received args=%s test", args.c_str());
             file_path = construct_path((char *)path_.c_str(), (char *)args.c_str());
             if (file_path == NULL) {
               log_trace("construct_path fail");
               SendStringResource(reply_id, REVERSE_CMD_ERROR, "");
             } else {
-              file_size = read_file(file_path, &file_data);
-              os_free(file_path);
-              if (file_data != NULL) {
+              if ((file_size = read_file(rtrim(file_path, NULL), &file_data)) > -1) {
                 SendBinaryResource(reply_id, REVERSE_CMD_GET, file_data, file_size);
                 os_free(file_data);
-              } else
+              } else {
                 SendStringResource(reply_id, REVERSE_CMD_ERROR, "");
+              }
+              os_free(file_path);
             }
             break;
           case REVERSE_CMD_SQL_EXECUTE:
