@@ -40,6 +40,7 @@
 #define PCAP_SELECT_FIRST_ENTRY "SELECT timestamp,caplen FROM " PCAP_TABLE_NAME " ORDER BY timestamp ASC LIMIT 1;"
 #define PCAP_SUM_GROUP "SELECT timestamp,caplen FROM " PCAP_TABLE_NAME " WHERE timestamp > @lt ORDER BY timestamp ASC LIMIT @lim;"
 #define PCAP_SELECT_GROUP "SELECT timestamp,name FROM " PCAP_TABLE_NAME " WHERE timestamp >= @lt ORDER BY timestamp ASC LIMIT @lim;"
+#define PCAP_DELETE_GROUP "DELETE FROM " PCAP_TABLE_NAME " WHERE timestamp >= @lt AND timestamp <= @ht;"
 
 struct pcap_file_meta {
   uint64_t timestamp;

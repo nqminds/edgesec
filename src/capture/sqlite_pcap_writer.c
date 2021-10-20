@@ -254,5 +254,36 @@ int get_pcap_meta_array(sqlite3 *db, uint64_t lt, uint32_t lim, UT_array *pcap_m
 
 int delete_pcap_entries(sqlite3 *db, uint64_t lt, uint64_t ht)
 {
+  int rc;
+  sqlite3_stmt *res = NULL;
+  int column_idx;
+
+  if (sqlite3_prepare_v2(db, PCAP_DELETE_GROUP, -1, &res, 0) != SQLITE_OK) {
+    log_trace("Failed to prepare statement: %s", sqlite3_errmsg(db));
+    return -1;
+  }
+
+  column_idx = sqlite3_bind_parameter_index(res, "@lt");
+  if(sqlite3_bind_int64(res, column_idx, lt) != SQLITE_OK) {
+    log_trace("sqlite3_bind_int64 fail");
+    sqlite3_finalize(res);
+    return -1;
+  }
+
+  column_idx = sqlite3_bind_parameter_index(res, "@ht");
+  if(sqlite3_bind_int64(res, column_idx, ht) != SQLITE_OK) {
+    log_trace("sqlite3_bind_int64 fail");
+    sqlite3_finalize(res);
+    return -1;
+  }
+
+  rc = sqlite3_step(res);
+
+  if (rc != SQLITE_OK && rc != SQLITE_DONE) {
+    sqlite3_finalize(res);
+    return -1;
+  }
+
+  sqlite3_finalize(res);
   return 0;
 }

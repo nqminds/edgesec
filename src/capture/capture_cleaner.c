@@ -31,8 +31,8 @@
 #include "../utils/eloop.h"
 #include "../utils/utarray.h"
 
-#define CLEANER_CHECK_INTERVAL 3        // Interval in sec
-#define CLEANER_GROUP_INTERVAL  5      // Number of rows to sum
+#define CLEANER_CHECK_INTERVAL  5        // Interval in sec
+#define CLEANER_GROUP_INTERVAL  1000     // Number of rows to sum
 
 static const UT_icd pcap_file_meta_icd = {sizeof(struct pcap_file_meta), NULL, NULL, NULL};
 
@@ -50,11 +50,10 @@ int clean_capture(struct cleaner_context *context)
   struct pcap_file_meta *p = NULL;
   UT_array *pcap_meta_arr = NULL;
   uint64_t timestamp = context->low_timestamp, lt;
-
+  char *path; 
   utarray_new(pcap_meta_arr, &pcap_file_meta_icd);
   
   while(timestamp <= context->next_timestamp) {
-    log_trace("First timestamp=%llu", timestamp);
     lt = timestamp;
     if (get_pcap_meta_array(context->pcap_db, timestamp, CLEANER_GROUP_INTERVAL, pcap_meta_arr) < 0) {
       log_trace("get_pcap_array fail");
@@ -63,7 +62,22 @@ int clean_capture(struct cleaner_context *context)
     }
 
     while((p = (struct pcap_file_meta *) utarray_next(pcap_meta_arr, p)) != NULL) {
-      log_trace("deleting %s at timestamp=%llu", p->name, p->timestamp);
+      if ((path = construct_path(context->pcap_path, p->name)) == NULL) {
+        log_err("os_malloc");
+      }
+
+      log_trace("deleting %s at timestamp=%llu", path, p->timestamp);
+      if (remove(path) < 0) {
+        log_err("remove");
+      }
+
+      if (path != NULL) {
+        os_free(path);
+      }
+
+      if (p->name != NULL) {
+        os_free(p->name);
+      }
       timestamp = p->timestamp;
     }
     utarray_clear(pcap_meta_arr);
@@ -113,8 +127,6 @@ void eloop_cleaner_handler(void *eloop_ctx, void *user_ctx)
       }
     }
   }
-
-  log_trace("timestamp=%llu and sum=%llu", context->next_timestamp, context->store_sum);
 
   if (context->store_sum >= context->store_size) {
     log_trace("Started cleanup...");
@@ -166,7 +178,7 @@ int start_capture_cleaner(struct capture_conf *config)
 
   log_info("Cleaning db_path=%s", config->db_path);
   log_info("Cleaning pcap_db_path=%s", pcap_db_path);
-  log_info("Cleaning store_size=%llu", context.store_size);
+  log_info("Cleaning store_size=%llu bytes", context.store_size);
 
   if (open_sqlite_pcap_db(pcap_db_path, (sqlite3**)&context.pcap_db) < 0) {
     log_trace("open_sqlite_pcap_db fail");
