@@ -285,6 +285,7 @@ int sqlite_exec_callback(void* ptr ,int argc, char **argv, char **colname)
   char **out = (char **)ptr, *str;
   size_t out_size;
   std::string row, column;
+
   if (*out == NULL) {
     for (int i = 0; i < argc; i++) {
       std::string val = colname[i];
@@ -352,9 +353,9 @@ int process_sql_execute(std::string db_path, std::string args, std::string &out)
   os_free(file_path);
   unsigned char *ptr = (unsigned char *)sql_statement.c_str();
   if ((decoded_statement = (char *)base64_url_decode(ptr, strlen((char *)ptr), &statement_len)) == NULL) {
-    log_trace("base64_url_decode");
+    log_trace("base64_url_decode fail");
     sqlite3_close(db);
-    return 0;    
+    return -1;
   }
   log_trace("Executing statement %s", decoded_statement);
 
@@ -367,8 +368,11 @@ int process_sql_execute(std::string db_path, std::string args, std::string &out)
     return -1;
   }
 
-  out = std::string(sqlite_out);
-  if (sqlite_out != NULL) os_free(sqlite_out);
+  if (sqlite_out != NULL) {
+    out = std::string(sqlite_out);
+    os_free(sqlite_out);
+  }
+
   os_free(decoded_statement);
   sqlite3_close(db);
   return 0;
@@ -388,26 +392,6 @@ class ReverseClient {
     request.set_command(command);
     request.set_id(command_id);
     request.set_data(data);
-    Status status = stub_->SendResource(&context, request, &reply);
-
-    if (status.ok()) {
-      return 0;
-    } else {
-      log_debug("Error code=%d, %s", (int)status.error_code(), status.error_message().c_str());
-      return -1;
-    }
-  }
-
-  int SendBinaryResource(std::string command_id, const uint32_t command, const char *data, ssize_t len) {
-    ResourceRequest request;
-    ResourceReply reply;
-    ClientContext context;
-
-    context.AddMetadata(METADATA_KEY, id_);
-    request.set_command(command);
-    request.set_id(command_id);
-    request.set_data(data, len);
-
     Status status = stub_->SendResource(&context, request, &reply);
 
     if (status.ok()) {
@@ -451,14 +435,14 @@ class ReverseClient {
             } else SendStringResource(reply_id, REVERSE_CMD_ERROR, "");
             break;
           case REVERSE_CMD_GET:
-            log_trace("Received args=%s test", args.c_str());
+            log_trace("Received args=%s", args.c_str());
             file_path = construct_path((char *)path_.c_str(), (char *)args.c_str());
             if (file_path == NULL) {
               log_trace("construct_path fail");
               SendStringResource(reply_id, REVERSE_CMD_ERROR, "");
             } else {
               if ((file_size = read_file(rtrim(file_path, NULL), &file_data)) > -1) {
-                SendBinaryResource(reply_id, REVERSE_CMD_GET, file_data, file_size);
+                SendStringResource(reply_id, REVERSE_CMD_GET, file_data);
                 os_free(file_data);
               } else {
                 SendStringResource(reply_id, REVERSE_CMD_ERROR, "");
@@ -469,6 +453,7 @@ class ReverseClient {
           case REVERSE_CMD_SQL_EXECUTE:
             log_trace("Received args=%s", args.c_str());
             if (process_sql_execute(path_, args, exec_out) < 0) {
+              log_trace("process_sql_execute fail");
               SendStringResource(reply_id, REVERSE_CMD_ERROR, "");
             } else {
               SendStringResource(reply_id, REVERSE_CMD_SQL_EXECUTE, exec_out);

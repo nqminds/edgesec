@@ -51,7 +51,7 @@
 
 #define OPT_STRING              ":p:a:c:k:dvh"
 #define USAGE_STRING            "\t%s [-p port] [-a path] [-c path] [-k path] [-d] [-h] [-v]"
-#define CONTROL_INTERFACE_NAME  "revcontrol"
+#define CONTROL_INTERFACE_NAME  "/tmp/revcontrol"
 
 #define FAIL_RESPONSE           "FAIL"
 
@@ -323,22 +323,6 @@ int write_command_data(std::string id, char *buf, ssize_t buf_size)
   return -1;
 }
 
-ssize_t process_response(std::string response, char **buf)
-{
-  ssize_t buf_size = 0;
-  buf_size = response.size() + 1;
-  *buf = (char *)os_zalloc(buf_size);
-
-  if (*buf == NULL) {
-    log_err("os_zalloc");
-    return 0;
-  }
-
-  os_memcpy(*buf, response.data(), response.size());
-
-  return buf_size;
-}
-
 void clear_command_vars(void)
 {
   control_command_id = "";
@@ -437,7 +421,12 @@ class ReverserServiceImpl final : public Reverser::Service {
     if (request->command() == REVERSE_CMD_ERROR) {
       buf_size = get_fail_response(&buf);
     } else {
-      buf_size = process_response(request->data(), &buf);
+      if ((buf = os_strdup(request->data().c_str())) == NULL) {
+        log_err("os_strdup");
+        buf_size = get_fail_response(&buf);
+      } else {
+        buf_size = strlen(buf);
+      }
     }
 
     if (buf == NULL) {
@@ -505,6 +494,18 @@ ssize_t get_client_list_buf(char **buf)
   return buf_size;
 }
 
+bool is_client(std::string client_id)
+{
+  const std::lock_guard<std::mutex> lock(client_map_lock);
+
+  for (auto it = client_mapper.begin(); it != client_mapper.end(); ++it) {
+    if (it->second.timestamp) {
+      if (it->first == client_id) return true;
+    }
+  }
+
+  return false;
+}
 int get_client_id(std::string encoded_str, std::string &id)
 {
   if (!encoded_str.length()) return -1;
@@ -530,11 +531,28 @@ int process_command(std::vector<std::string> &cmd_list, int sock, std::string do
 
     if (get_client_id(encoded_client_id, client_id) < 0) {
       log_trace("get_client_id fail");
+      buf_size = get_fail_response(&response_buf);
+      if (write_command_data(domain_client_id, response_buf, buf_size) < 0) {
+        log_trace("write_command_data error");
+      }
+      clear_domain_context(domain_client_id);
+      os_free(response_buf);
       return -1;
     }
 
     if (client_id.length()) {
       client_timestamp = get_client_timestamp(client_id);
+
+      if (!is_client(client_id)) {
+        log_trace("Client %s doesn't exist", client_id.c_str());
+        buf_size = get_fail_response(&response_buf);
+        if (write_command_data(domain_client_id, response_buf, buf_size) < 0) {
+          log_trace("write_command_data error");
+        }
+        clear_domain_context(domain_client_id);
+        os_free(response_buf);
+        return -1;
+      }
     }
 
     log_trace("Processing command %s with domain id=%s and client_id=%s", cmd.c_str(),
