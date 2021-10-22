@@ -10,13 +10,20 @@ import bodyParser from "body-parser";
 import methodOverride from "method-override";
 import session from "express-session";
 import URLSafeBase64 from "urlsafe-base64";
+import fs from "fs";
+import https from "https";
+import http from "http";
 
 import config from "./config.js";
 
 const LocalStrategy = localApiKey.Strategy;
 const log = Debug("rest");
 const app = express();
-const {port, serverSocketname, clientSocketname, users} = config;
+
+const {port, serverSocketname, clientSocketname, users, keyFile, certFile} = config;
+
+const keyFileData = (keyFile !== "") ? fs.readFileSync(keyFile) : null;
+const certFileData = (certFile !== "") ? fs.readFileSync(certFile) : null;
 
 function findById(id, fn) {
   const idx = id - 1;
@@ -126,16 +133,27 @@ function getDomainData(command, callback) {
 
 log(`Domain socket path=${serverSocketname}`);
 
-app.get("/", ensureAuthenticated, (req, res) => {
-  getDomainData("[] CLIENTS", (data, error) => {
-    if (error) {
-      res.json({ error: error.message });
-    } else {
-      res.json({response: data});
-    }
-  });
+app.get("/", (req, res) => {
+  res.json({response: [
+    'curl -v -d \"apikey=thekey\" --cookie cookie.txt --cookie-jar cookie.txt --insecure "https://127.0.0.1:3000/authenticate"',
+    'curl -v --cookie cookie.txt --cookie-jar cookie.txt --insecure "https://127.0.0.1:3000/get/?id=586caf9e-66ef-4f51-b967-02542ba1d8c2&file=428b6961-5789-4b65-8ef3-06567b1dd1d2.pcap"',
+    'curl -v --cookie cookie.txt --cookie-jar cookie.txt --insecure "https://127.0.0.1:3000/query/?id=586caf9e-66ef-4f51-b967-02542ba1d8c2&lt=1634646712967249&ht=1635646814967249"',
+    'curl -v --cookie cookie.txt --cookie-jar cookie.txt --insecure "https://127.0.0.1:3000/first/?id=586caf9e-66ef-4f51-b967-02542ba1d8c2"',
+    'curl -v --cookie cookie.txt --cookie-jar cookie.txt --insecure "https://127.0.0.1:3000/account"',
+    'curl -v --cookie cookie.txt --cookie-jar cookie.txt --insecure "https://127.0.0.1:3000/logout"',
+  ]});
 })
 
+app.get("/clients", ensureAuthenticated, (req, res) => {
+    getDomainData("[] CLIENTS", (data, error) => {
+      if (error) {
+        res.json({ error: error.message });
+      } else {
+        res.json({response: data});
+      }
+    });
+  })
+  
 app.get("/first", ensureAuthenticated, (req, res) => {
   const id = req.query.id || "";
   const sqlQuery = URLSafeBase64.encode(Buffer.from("SELECT * FROM pcap ORDER BY timestamp ASC LIMIT 1;"));
@@ -201,6 +219,9 @@ app.get("/logout", function(req, res){
   res.redirect("/");
 });
 
-app.listen(port, "0.0.0.0", () => {
+const server = (keyFileData && certFileData) ? https.createServer({key: keyFileData, cert: certFileData}, app)
+                : http.createServer(app);
+
+server.listen(port, "0.0.0.0", () => {
   log(`Example app listening at http://0.0.0.0:${port}`);
-})
+});

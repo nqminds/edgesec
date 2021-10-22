@@ -2,6 +2,8 @@
 
 set -e
 
+[ -z "$1" ] && echo "Host not specified!" && exit 1
+
 rm -rf cert
 mkdir cert
 cd cert
@@ -21,10 +23,10 @@ subjectAltName = @alt_names
 
 [alt_names]
 DNS.1 = $1
-IP.1 = $2
+#IP.1 = $2
 EOF
 
-openssl genrsa -out server.key -des3 2048
-openssl req -new -key server.key -out server.csr
+openssl genrsa -out server.encrypted.key -des3 2048
+openssl req -new -key server.encrypted.key -out server.csr
 openssl x509 -req -in server.csr -CA ../CA.pem -CAkey ../CA.key -CAcreateserial -days 3650 -sha256 -extfile server.ext -out server.crt
-openssl rsa -in server.key -out server.decrypted.key
+openssl rsa -in server.encrypted.key -out server.key
