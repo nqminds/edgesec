@@ -17,12 +17,12 @@ target_link_libraries(iptables os log)
 
 add_library(if if.c)
 target_include_directories(if PRIVATE ${LIBNETLINK_UAPI_INCLUDE_PATH} ${LIBNETLINK_INCLUDE_PATH})
-target_link_libraries(if ${LIBNL_LIBRARY} ${LIBNL_GENL_LIBRARY} ${LIBNETLINK_LIB} ${LIBMNL_LIB} ${LL_MAP_LIB} ${UTILS_LIB} ${RT_NAMES_LIB} ${LL_TYPES_LIB} log os)
+target_link_libraries(if ${LIBNL_LIBRARY} ${LIBNL_GENL_LIBRARY} ${LIBNETLINK_LIB} MNL::mnl ${LL_MAP_LIB} ${UTILS_LIB} ${RT_NAMES_LIB} ${LL_TYPES_LIB} log os)
 
 if (BUILD_NL_LIB)
   add_library(iw iw.c)
   target_include_directories(iw PRIVATE ${LIBNL_INCLUDE_DIR})
-  target_link_libraries(iw ${LIBNL_LIBRARY} ${LIBNL_GENL_LIBRARY} ${LIBNETLINK_LIB} ${LIBMNL_LIB} ${LL_MAP_LIB} ${UTILS_LIB} ${RT_NAMES_LIB} ${LL_TYPES_LIB} log)
+  target_link_libraries(iw ${LIBNL_LIBRARY} ${LIBNL_GENL_LIBRARY} ${LIBNETLINK_LIB} MNL::mnl ${LL_MAP_LIB} ${UTILS_LIB} ${RT_NAMES_LIB} ${LL_TYPES_LIB} log)
 endif ()
 
 add_library(hashmap hashmap.c)
