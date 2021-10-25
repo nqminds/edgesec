@@ -74,16 +74,19 @@ After logging in, you can do the following:
   ```bash
   sudo apt update && sudo apt install avahi-daemon -y
   ````
+
+- Clone the EDGESec Repo.
+
+  ```bash
+  git clone --recurse-submodules --depth 1 https://github.com/nqminds/EDGESec.git --branch deployment
+  ```
+
 - Add admin SSH keys:
 
   ```bash
+  cd ~/EDGESec/deployment/
   # add admin SSH keys (these must be FIDO2 keys!)
   cp ./ssh/authorized_keys ~/.ssh/authorized_keys
-  ```
-- Clone the EDGESec Repo.
-  
-  ```bash
-  git clone --recurse-submodules --depth 1 https://github.com/nqminds/EDGESec.git --branch deployment
   ```
 - Follow instructions in `first-boot`.
 - Follow instruction in https://nqminds.github.io/edgesec-packages/ to install edgesec:

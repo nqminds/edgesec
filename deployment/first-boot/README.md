@@ -21,7 +21,8 @@ Make sure you have installed the following:
 Setup:
 
 ```bash
-sudo apt install systemd-container
+# required for machinectl
+sudo apt install systemd-container -y
 # create ~/edgesec-deploy-key.pem yourself!
 chmod 600 ~/edgesec-deploy-key.pem
 # warning, will overwrite old ssh config
@@ -37,5 +38,6 @@ sudo loginctl enable-linger # allow user systemd
 systemctl --user daemon-reload
 sudo systemctl daemon-reload
 touch ~/.resetHostname
+# run now for testing purposes only
 sudo systemctl start reset-hostname.service && sudo systemctl enable reset-hostname.service
 ```
