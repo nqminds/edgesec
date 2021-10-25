@@ -1,5 +1,5 @@
 let config = {
-  "port": 3000,
+  "port": 8512,
   "keyFile": "/home/alexandru/Projects/EDGESec/build/cert/CA/server/server.key",
   "certFile": "/home/alexandru/Projects/EDGESec/build/cert/CA/server/server.crt",
   "serverSocketname": "/tmp/revcontrol",

@@ -135,12 +135,12 @@ log(`Domain socket path=${serverSocketname}`);
 
 app.get("/", (req, res) => {
   res.json({response: [
-    'curl -v -d \"apikey=thekey\" --cookie cookie.txt --cookie-jar cookie.txt --insecure "https://127.0.0.1:3000/authenticate"',
-    'curl -v --cookie cookie.txt --cookie-jar cookie.txt --insecure "https://127.0.0.1:3000/get/?id=586caf9e-66ef-4f51-b967-02542ba1d8c2&file=428b6961-5789-4b65-8ef3-06567b1dd1d2.pcap"',
-    'curl -v --cookie cookie.txt --cookie-jar cookie.txt --insecure "https://127.0.0.1:3000/query/?id=586caf9e-66ef-4f51-b967-02542ba1d8c2&lt=1634646712967249&ht=1635646814967249"',
-    'curl -v --cookie cookie.txt --cookie-jar cookie.txt --insecure "https://127.0.0.1:3000/first/?id=586caf9e-66ef-4f51-b967-02542ba1d8c2"',
-    'curl -v --cookie cookie.txt --cookie-jar cookie.txt --insecure "https://127.0.0.1:3000/account"',
-    'curl -v --cookie cookie.txt --cookie-jar cookie.txt --insecure "https://127.0.0.1:3000/logout"',
+    'curl -v -d \"apikey=thekey\" --cookie cookie.txt --cookie-jar cookie.txt --insecure "https://127.0.0.1:8512/authenticate"',
+    'curl -v --cookie cookie.txt --cookie-jar cookie.txt --insecure "https://127.0.0.1:8512/get/?id=586caf9e-66ef-4f51-b967-02542ba1d8c2&file=428b6961-5789-4b65-8ef3-06567b1dd1d2.pcap"',
+    'curl -v --cookie cookie.txt --cookie-jar cookie.txt --insecure "https://127.0.0.1:8512/query/?id=586caf9e-66ef-4f51-b967-02542ba1d8c2&lt=1634646712967249&ht=1635646814967249"',
+    'curl -v --cookie cookie.txt --cookie-jar cookie.txt --insecure "https://127.0.0.1:8512/first/?id=586caf9e-66ef-4f51-b967-02542ba1d8c2"',
+    'curl -v --cookie cookie.txt --cookie-jar cookie.txt --insecure "https://127.0.0.1:8512/account"',
+    'curl -v --cookie cookie.txt --cookie-jar cookie.txt --insecure "https://127.0.0.1:8512/logout"',
   ]});
 })
 
