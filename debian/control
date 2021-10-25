@@ -11,7 +11,7 @@ Architecture: any
 Multi-Arch: foreign
 Depends: libedgesec (= ${binary:Version}),
     edgesec-common (= ${binary:Version}),
-    edgesec-restsrv (= ${binary:Version}),
+    edgesec-capsrv (= ${binary:Version}),
     edgesec-revclient (= ${binary:Version}),
     ${shlibs:Depends},
     ${misc:Depends},
