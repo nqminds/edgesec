@@ -10,8 +10,8 @@ if (BUILD_OPENSSL_LIB AND NOT (BUILD_ONLY_DOCS))
   ELSE ()
     FetchContent_Declare(
       openssl_src
-      URL https://github.com/openssl/openssl/archive/refs/tags/openssl-3.0.0-beta1.tar.gz
-      URL_HASH SHA256=4ba637257737a3bcdf059ceb6db8424698afca89de7bed1c189853253097d0f2
+      URL https://www.openssl.org/source/openssl-3.0.0.tar.gz
+      URL_HASH SHA256=59eedfcb46c25214c9bd37ed6078297b4df01d012267fe9e9eee31f61bc70536
     )
     FetchContent_Populate(openssl_src)
 
