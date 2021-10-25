@@ -11,6 +11,8 @@ Architecture: any
 Multi-Arch: foreign
 Depends: libedgesec (= ${binary:Version}),
     edgesec-common (= ${binary:Version}),
+    edgesec-restsrv (= ${binary:Version}),
+    edgesec-revclient (= ${binary:Version}),
     ${shlibs:Depends},
     ${misc:Depends},
     dnsmasq, jq, libmnl0
@@ -25,7 +27,7 @@ Description: NquiringMinds EDGESec common files.
  This includes config files and certificates
  that may be shared with all binaries.
 
-Package: restsrv
+Package: edgesec-restsrv
 Architecture: any
 Multi-Arch: foreign
 Depends: libedgesec (= ${binary:Version}),
@@ -34,7 +36,7 @@ Depends: libedgesec (= ${binary:Version}),
     ${misc:Depends}
 Description: NquiringMinds EDGESEC restsrv.
 
-Package: capsrv
+Package: edgesec-capsrv
 Architecture: any
 Multi-Arch: foreign
 Depends: libedgesec (= ${binary:Version}),
@@ -43,7 +45,7 @@ Depends: libedgesec (= ${binary:Version}),
     ${misc:Depends}
 Description: NquiringMinds EDGESEC capsrv.
 
-Package: revclient
+Package: edgesec-revclient
 Architecture: any
 Multi-Arch: foreign
 Depends: libedgesec (= ${binary:Version}),
