@@ -9,7 +9,7 @@ Restart=always
 RestartSec=60
 # Using /etc/edgesec/config.ini is currently not yet supported
 # ExecStart=/usr/bin/capsrv -c /etc/edgesec/config.ini -ddd
-ExecStart=/usr/bin/revclient -f /var/lib/edgesec/db -a localhost -p 8080 -c /etc/edgesec/CA/CA.pem -ddd
+ExecStart=/usr/bin/revclient -f /var/lib/edgesec/db -a localhost -p 8513 -c /etc/edgesec/CA/CA.pem -ddd
 
 [Install]
 WantedBy=edgesec.target
