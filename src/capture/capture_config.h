@@ -76,7 +76,7 @@
                               "\t-w\t\t Write to db\n" \
                               "\t-s\t\t Sync the db\n" \
                               "\t-r\t\t Sync store size and send size (val1,val2)\n" \
-                              "\t-b\t\t Capture store size (in Kb)\n" \
+                              "\t-b size\t\t Maximum capture store size before cleanup (in KiB)\n" \
                               "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n" \
                               "\t-h\t\t Show help\n" \
                               "\t-v\t\t Show app version\n\n"
@@ -126,7 +126,7 @@ struct capture_conf {
   char filter[MAX_FILTER_SIZE];                               /**< Specifies the filter expression or pcap lib */
   ssize_t sync_store_size;                                    /**< Specifies the sync store size */
   ssize_t sync_send_size;                                     /**< Specifies the sync send size */
-  uint32_t capture_store_size;                                /**< Specifies the capture store size in Kb */
+  uint32_t capture_store_size;                                /**< Specifies the capture store size in KiB */
 };
 
 struct tuple_packet {

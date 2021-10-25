@@ -9,7 +9,8 @@ Restart=always
 RestartSec=60
 # Using /etc/edgesec/config.ini is currently not yet supported
 # ExecStart=/usr/bin/capsrv -c /etc/edgesec/config.ini -ddd
-ExecStart=/usr/bin/capsrv -i br10 -t 10 -n 10 -y default -w -s -p /var/lib/edgesec/db -a localhost -o 8512 -k /etc/edgesec/CA/CA.pem -r 1000000,100 -ddd
+# -b 20971520 KiB = 20 GiB
+ExecStart=/usr/bin/capsrv -b 20971520 -i br10 -t 10 -n 10 -y default -w -s -p /var/lib/edgesec/db -a localhost -o 8512 -k /etc/edgesec/CA/CA.pem -r 1000000,100 -ddd
 
 [Install]
 WantedBy=edgesec.target
