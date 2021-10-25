@@ -1,7 +1,8 @@
 [Unit]
 Description=EDGESec capture server.
 After=edgesec.service
-Requires=edgesec.service
+# Optional, since edgesec might not be installed on seperate capsrv
+Wants=edgesec.service
 
 [Service]
 Type=simple
