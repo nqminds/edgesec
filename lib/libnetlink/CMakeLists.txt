@@ -8,6 +8,10 @@ SET(LIBMNL_INSTALL_ROOT "" CACHE STRING "lib path")
 SET(C_COMPILER "" CACHE STRING "c compiler")
 SET(CXX_COMPILER "" CACHE STRING "c++ compiler")
 
+# libmnl0 linking doesn't work properly, unless we setup RPATHs
+SET(CMAKE_INSTALL_RPATH "$ORIGIN")
+SET(BUILD_RPATH_USE_ORIGIN true)
+
 message("LIBMNL_INSTALL_ROOT=${LIBMNL_INSTALL_ROOT}")
 message("C_COMPILER=${C_COMPILER}")
 message("CXX_COMPILER=${CXX_COMPILER}")
