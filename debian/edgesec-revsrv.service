@@ -1,0 +1,12 @@
+[Unit]
+Description=EDGESec Reverse Connection Server.
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=60
+ExecStart=/usr/bin/revsrv -p 8513 -a /etc/edgesec/CA/CA.pem -c /etc/edgesec/revsrv/server.crt -k /etc/edgesec/revsrv/server.key -dddddd
+
+[Install]
+WantedBy=multi-user.target

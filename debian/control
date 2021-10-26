@@ -56,7 +56,18 @@ Depends: libedgesec (= ${binary:Version}),
     edgesec-common (= ${binary:Version}),
     ${shlibs:Depends},
     ${misc:Depends}
-Description: NquiringMinds EDGESEC revclient.
+Description: NquiringMinds EDGESEC reverse connection client.
+
+Package: edgesec-revsrv
+Architecture: any
+Multi-Arch: foreign
+Depends: libedgesec (= ${binary:Version}),
+    edgesec-common (= ${binary:Version}),
+    ${shlibs:Depends},
+    ${misc:Depends}
+Description: NquiringMinds EDGESEC reverse connection server.
+  Can be run on a cloud server in order to create
+  a reverse connection to a non-publically accessible EDGESEC device.
 
 Package: libedgesec
 Section: libs
