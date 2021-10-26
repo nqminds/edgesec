@@ -44,10 +44,13 @@ Compiling EDGESec is done with CMake.
 
 First, configure `cmake` in the `build/` directory by running the following.
 (equivalent to `mkdir build && cd build && cmake ..`)
-This is currently very slow, as it compiles all the C programs single-core.
+
+Setting MAKEFLAGS=`--jobs=$(nproc)` will mean
+that embedded `make` commands will run using all CPU cores, greatly speeding
+this building (set a lower number if you have less RAM).
 
 ```bash
-cmake -B build/ -S .
+MAKEFLAGS="--jobs=$(nproc)" cmake -B build/ -S .
 ```
 
 To build, you can then run (`-j4` means 4 jobs/threads, replace `4` with the amount of cores you want to use):
