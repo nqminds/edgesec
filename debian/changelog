@@ -2,8 +2,9 @@ edgesec (0.9.9-alpha3) UNRELEASED; urgency=low
 
   * restsrv is now a dependency on `edgesec`.
   * fixes restsrv systemd service bug, so it should now run correctly
+  * added `revsrv` and `sqlsyncsrv`. These debs should be run on an cloud server.
 
- -- Alois Klink <alois@nquiringminds.com>  Tue, 25 Oct 2021 20:58:38 +0100
+ -- Alois Klink <alois@nquiringminds.com>  Tue, 26 Oct 2021 20:24:09 +0100
 
 edgesec (0.9.9-alpha2) UNRELEASED; urgency=low
 
