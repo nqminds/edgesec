@@ -31,6 +31,7 @@
 
 #include "sqlite_fingerprint_writer.h"
 
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/log.h"
 #include "../utils/sqliteu.h"
@@ -73,7 +74,7 @@ int open_sqlite_fingerprint_db(char *db_path, sqlite3** sql)
   return 0;
 }
 
-int save_sqlite_fingerprint_entry(sqlite3 *db, struct fingerprint_row *row)
+int save_sqlite_fingerprint_row(sqlite3 *db, struct fingerprint_row *row)
 {
   sqlite3_stmt *res = NULL;
   int column_idx;
@@ -129,7 +130,7 @@ int save_sqlite_fingerprint_entry(sqlite3 *db, struct fingerprint_row *row)
   return 0;
 }
 
-void free_sqlite_fingerprint_row_els(struct fingerprint_row *row)
+void free_sqlite_fingerprint_row(struct fingerprint_row *row)
 {
   if (row != NULL) {
     if (row->mac != NULL) os_free(row->mac);
@@ -139,8 +140,18 @@ void free_sqlite_fingerprint_row_els(struct fingerprint_row *row)
   }
 }
 
-int get_sqlite_fingerprint_entries(sqlite3 *db, char *mac, uint64_t timestamp, char *op,
-                                   char *protocol, UT_array *entries)
+void free_sqlite_fingerprint_rows(UT_array *rows)
+{
+  struct fingerprint_row *row = NULL;
+  while((row = (struct fingerprint_row *) utarray_next(rows, row)) != NULL) {
+    free_sqlite_fingerprint_row(row);
+  }
+
+  utarray_free(rows);
+}
+
+int get_sqlite_fingerprint_rows(sqlite3 *db, char *mac, uint64_t timestamp, char *op,
+                                   char *protocol, UT_array *rows)
 {
   sqlite3_stmt *res = NULL;
   struct fingerprint_row row;
@@ -151,8 +162,8 @@ int get_sqlite_fingerprint_entries(sqlite3 *db, char *mac, uint64_t timestamp, c
   char *proto;
   char *value;
 
-  if (entries == NULL) {
-    log_trace("entries param is NULL");
+  if (rows == NULL) {
+    log_trace("rows param is NULL");
     return -1;
   }
 
@@ -222,7 +233,7 @@ int get_sqlite_fingerprint_entries(sqlite3 *db, char *mac, uint64_t timestamp, c
   while((rc = sqlite3_step(res)) == SQLITE_ROW) {
     os_memset(&row, 0, sizeof(row));
 
-    value = (unsigned char*) sqlite3_column_text(res, 0);
+    value = (char*) sqlite3_column_text(res, 0);
     if (value != NULL) {
       row.mac = os_strdup(value);
       if (row.mac == NULL) {
@@ -234,12 +245,12 @@ int get_sqlite_fingerprint_entries(sqlite3 *db, char *mac, uint64_t timestamp, c
       }
     }
 
-    value = (unsigned char*) sqlite3_column_text(res, 1);
+    value = (char*) sqlite3_column_text(res, 1);
     if (value != NULL) {
       row.protocol = os_strdup(value);
       if (row.protocol == NULL) {
         log_err("os_strdup");
-        free_sqlite_fingerprint_row_els(&row);
+        free_sqlite_fingerprint_row(&row);
         os_free(statement);
         if (proto != NULL) os_free(proto);
         sqlite3_finalize(res);
@@ -247,12 +258,12 @@ int get_sqlite_fingerprint_entries(sqlite3 *db, char *mac, uint64_t timestamp, c
       }
     }
 
-    value = (unsigned char*) sqlite3_column_text(res, 2);
+    value = (char*) sqlite3_column_text(res, 2);
     if (value != NULL) {
       row.fingerprint = os_strdup(value);
       if (row.fingerprint == NULL) {
         log_err("os_strdup");
-        free_sqlite_fingerprint_row_els(&row);
+        free_sqlite_fingerprint_row(&row);
         os_free(statement);
         if (proto != NULL) os_free(proto);
         sqlite3_finalize(res);
@@ -262,12 +273,12 @@ int get_sqlite_fingerprint_entries(sqlite3 *db, char *mac, uint64_t timestamp, c
 
     row.timestamp = sqlite3_column_int64(res, 3);
 
-    value = (unsigned char*) sqlite3_column_text(res, 4);
+    value = (char*) sqlite3_column_text(res, 4);
     if (value != NULL) {
       row.query = os_strdup(value);
       if (row.query == NULL) {
         log_err("os_strdup");
-        free_sqlite_fingerprint_row_els(&row);
+        free_sqlite_fingerprint_row(&row);
         os_free(statement);
         if (proto != NULL) os_free(proto);
         sqlite3_finalize(res);
@@ -275,7 +286,7 @@ int get_sqlite_fingerprint_entries(sqlite3 *db, char *mac, uint64_t timestamp, c
       }
     }
 
-    utarray_push_back(entries, &row);
+    utarray_push_back(rows, &row);
   }
 
 

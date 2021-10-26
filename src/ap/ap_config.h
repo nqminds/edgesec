@@ -30,6 +30,7 @@
 #include <net/if.h>
 #include <stdbool.h>
 
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../radius/radius_server.h"
 
@@ -40,6 +41,12 @@
 #define AP_WPA_KEY_MGMT_LEN   20
 #define AP_RSN_PAIRWISE_LEN   20
 
+enum AP_CONNECTION_STATUS {
+  AP_DEFAULT_STATUS = 0,
+  AP_CONNECTED_STATUS,
+  AP_DISCONNECTED_STATUS
+};
+
 /**
  * @brief The hostapd configuration structure
  * 
@@ -48,6 +55,7 @@ struct apconf {
   char ap_bin_path[MAX_OS_PATH_LEN];             /**< The AP binary path string */
   char ap_file_path[MAX_OS_PATH_LEN];            /**< The AP file configuration path string */
   char ap_log_path[MAX_OS_PATH_LEN];             /**< The AP log path string */
+  char ctrl_interface_path[MAX_OS_PATH_LEN];     /**< The path constructed as ctrl_interface/interface  */
   char interface[IFNAMSIZ];                           /**< The hostapd @c interface param @see https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf */
   char ssid[AP_NAME_LEN];                     /**< The hostapd @c ssid param @see https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf */
   char wpa_passphrase[AP_SECRET_LEN];         /**< WiFi AP password if @c struct app_config::allow_all_connections flag is set */

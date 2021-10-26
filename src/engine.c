@@ -35,6 +35,7 @@
 #include "utils/hashmap.h"
 #include "utils/utarray.h"
 #include "utils/hashmap.h"
+#include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/eloop.h"
 #include "utils/iptables.h"
@@ -42,6 +43,7 @@
 #include "supervisor/supervisor.h"
 #include "supervisor/network_commands.h"
 #include "supervisor/sqlite_fingerprint_writer.h"
+#include "supervisor/sqlite_alert_writer.h"
 #include "supervisor/sqlite_macconn_writer.h"
 #include "radius/radius_service.h"
 #include "ap/ap_service.h"
@@ -58,27 +60,13 @@
 
 static const UT_icd mac_conn_icd = {sizeof(struct mac_conn), NULL, NULL, NULL};
 
-bool construct_hostapd_ctrlif(char *ctrl_interface, char *interface, char *hostapd_ctrl_if_path)
-{
-  char *ctrl_if_path = construct_path(ctrl_interface, interface);
-  if (ctrl_if_path == NULL) {
-    log_trace("construct_path fail");
-    return false;
-  }
-
-  os_strlcpy(hostapd_ctrl_if_path, ctrl_if_path, AP_SECRET_LEN);
-  os_free(ctrl_if_path);
-
-  return true;
-}
-
 bool init_mac_mapper_ifnames(UT_array *connections, hmap_vlan_conn **vlan_mapper)
 {
   struct mac_conn *p = NULL;
   struct vlan_conn vlan_conn;
 
   if (connections != NULL) {
-    while(p = (struct mac_conn *) utarray_next(connections, p)) {
+    while((p = (struct mac_conn *) utarray_next(connections, p)) != NULL) {
       int ret = get_vlan_mapper(vlan_mapper, p->info.vlanid, &vlan_conn);
       os_memcpy(p->info.ifname, vlan_conn.ifname, IFNAMSIZ);
       if (ret < 0) {
@@ -116,7 +104,7 @@ bool create_mac_mapper(struct supervisor_context *ctx)
   }
   
   if (mac_conn_arr != NULL) {
-    while(p = (struct mac_conn *) utarray_next(mac_conn_arr, p)) {
+    while((p = (struct mac_conn *) utarray_next(mac_conn_arr, p)) != NULL) {
       log_trace("Adding mac=" MACSTR " with id=%s vlanid=%d ifname=%s nat=%d allow=%d label=%s status=%d",
                 MAC2STR(p->mac_addr), p->info.id, p->info.vlanid, p->info.ifname, p->info.nat,
                 p->info.allow_connection, p->info.label, p->info.status);
@@ -143,6 +131,20 @@ bool create_mac_mapper(struct supervisor_context *ctx)
   return true;
 }
 
+bool construct_ap_ctrlif(char *ctrl_interface, char *interface, char *ap_ctrl_if_path)
+{
+  char *ctrl_if_path = construct_path(ctrl_interface, interface);
+  if (ctrl_if_path == NULL) {
+    log_trace("construct_path fail");
+    return false;
+  }
+
+  os_strlcpy(ap_ctrl_if_path, ctrl_if_path, MAX_OS_PATH_LEN);
+  os_free(ctrl_if_path);
+
+  return true;
+}
+
 bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
 {
   char *db_path = NULL;
@@ -154,15 +156,23 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
     return false;
   }
 
+  ctx->subscribers_array = NULL;
+  ctx->ap_sock = -1;
+  ctx->hmap_bin_paths = NULL;
+  ctx->radius_srv = NULL;
   ctx->crypt_ctx = NULL;
   ctx->ticket = NULL;
   ctx->iptables_ctx = NULL;
   ctx->fingeprint_db = NULL;
+  ctx->alert_db = NULL;
+  ctx->domain_sock = -1;
   ctx->exec_capture = app_config->exec_capture;
   ctx->domain_delim = app_config->domain_delim;
   ctx->allow_all_connections = app_config->allow_all_connections;
   ctx->allow_all_nat = app_config->allow_all_nat;
   ctx->default_open_vlanid = app_config->default_open_vlanid;
+  ctx->quarantine_vlanid = app_config->quarantine_vlanid;
+  ctx->risk_score = app_config->risk_score;
   ctx->config_ifinfo_array = app_config->config_ifinfo_array;
 
   ctx->wpa_passphrase_len = os_strnlen_s(app_config->hconfig.wpa_passphrase, AP_SECRET_LEN);
@@ -171,7 +181,9 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
   os_memcpy(ctx->nat_interface, app_config->nat_interface, IFNAMSIZ);
   os_memcpy(ctx->db_path, app_config->db_path, MAX_OS_PATH_LEN);
 
-  os_memcpy(&ctx->capture_config, &app_config->capture_config, sizeof(ctx->capture_config));
+  os_memcpy(&ctx->capture_config, &app_config->capture_config, sizeof(struct capture_conf));
+  os_memcpy(&ctx->hconfig, &app_config->hconfig, sizeof(struct apconf));
+  os_memcpy(&ctx->rconfig, &app_config->rconfig, sizeof(struct radius_conf));
 
   db_path = construct_path(ctx->db_path, MACCONN_DB_NAME);
   if (db_path == NULL) {
@@ -181,9 +193,12 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
 
   log_info("Opening the macconn db...");
   if (open_sqlite_macconn_db(db_path, &ctx->macconn_db) < 0) {
+    os_free(db_path);
     log_debug("open_sqlite_macconn_db fail");
     return false;
   }
+
+  os_free(db_path);
 
   log_info("Creating subnet to interface mapper...");
   if (!create_if_mapper(app_config->config_ifinfo_array, &ctx->if_mapper)) {
@@ -200,21 +215,30 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
   // Init the list of bridges
   ctx->bridge_list = init_bridge_list();
 
+  if (ctx->default_open_vlanid >= 0) {
+     if (get_vlan_mapper(&ctx->vlan_mapper, ctx->default_open_vlanid, NULL) <= 0) {
+       log_trace("default vlan id=%d doesn't exist", ctx->default_open_vlanid);
+       return false;
+     }
+  }
+
+  if (ctx->quarantine_vlanid >= 0) {
+     if (get_vlan_mapper(&ctx->vlan_mapper, ctx->quarantine_vlanid, NULL) <= 0) {
+       log_trace("quarantine vlan id=%d doesn't exist", ctx->quarantine_vlanid);
+       return false;
+     }
+  }
+  
   return true;
 }
 
-bool run_engine(struct app_config *app_config, uint8_t log_level)
+bool run_engine(struct app_config *app_config)
 {
   struct supervisor_context context;
 
-  struct radius_server_data *radius_srv = NULL;
-  int domain_sock = -1;
   char *commands[] = {"ip", "iw", "iptables", "dnsmasq", "sysctl", NULL};
-  char *nat_ip = NULL;
   int ret;
 
-  // Set the log level
-  log_set_level(log_level);
   if (create_dir(app_config->db_path, S_IRWXU | S_IRWXG) < 0) {
     log_debug("create_dir fail");
     return false;
@@ -225,21 +249,17 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
     goto run_engine_fail;
   }
 
-  log_info("AP name: %s", app_config->hconfig.ssid);  
-  log_info("AP interface: %s", app_config->hconfig.interface);
+  log_info("AP name: %s", context.hconfig.ssid);
+  log_info("AP interface: %s", context.hconfig.interface);
   log_info("DB path: %s", context.db_path);
 
   log_info("Checking system commands...");
-  hmap_str_keychar *hmap_bin_paths = check_systems_commands(
-    commands, app_config->bin_path_array, NULL
-  );
-
-  if (hmap_bin_paths == NULL) {
+  if ((context.hmap_bin_paths = check_systems_commands(commands, app_config->bin_path_array, NULL)) == NULL) {
     log_debug("check_systems_commands fail (no bin paths found)");
     goto run_engine_fail;
   }
 
-  char *iptables_path = hmap_str_keychar_get(&hmap_bin_paths, "iptables");
+  char *iptables_path = hmap_str_keychar_get(&context.hmap_bin_paths, "iptables");
   if (iptables_path == NULL) {
     log_debug("Couldn't find xtables-multi binary");
     goto run_engine_fail;
@@ -252,7 +272,7 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
 
   log_info("Loading crypt service...");
   if ((context.crypt_ctx = load_crypt_service(app_config->crypt_db_path, app_config->crypt_key_id,
-                                              app_config->crypt_secret,
+                                              (uint8_t *)app_config->crypt_secret,
                                               os_strnlen_s(app_config->crypt_secret, MAX_USER_SECRET))) == NULL) {
     log_debug("load_crypt_service fail");
     goto run_engine_fail;
@@ -266,7 +286,6 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
     }
   }
 
-
   log_info("Adding default mac mappers...");
   if (!create_mac_mapper(&context)) {
     log_debug("create_mac_mapper fail");
@@ -276,9 +295,9 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
   log_info("Checking wifi interface...");
   if (!app_config->ap_detect) {
 #ifdef WITH_IW_SERVICE
-    ret = is_iw_vlan(app_config->hconfig.interface);
+    ret = is_iw_vlan(context.hconfig.interface);
     if(ret > 0) {
-      log_debug("interface %s not VLAN capable", app_config->hconfig.interface);
+      log_debug("interface %s not VLAN capable", context.hconfig.interface);
       goto run_engine_fail;
     } else if (ret < 0) {
       log_debug("is_iw_vlan fail");
@@ -287,8 +306,9 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
   log_warn("iw service not implemented");
 #endif
   } else {
+    log_info("Looking for VLAN capable wifi interface...");
 #ifdef WITH_IW_SERVICE
-    if(get_valid_iw(app_config->hconfig.interface) == NULL) {
+    if(get_valid_iw(context.hconfig.interface) == NULL) {
       log_debug("get_valid_iw fail");
       goto run_engine_fail;
     }
@@ -298,21 +318,23 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
 #endif
   }
 
-  log_info("Found wifi interface %s", app_config->hconfig.interface);
-  if(!construct_hostapd_ctrlif(app_config->hconfig.ctrl_interface, app_config->hconfig.interface, context.hostapd_ctrl_if_path)) {
-    log_debug("construct_hostapd_ctrlif fail");
+  log_info("Found wifi interface %s", context.hconfig.interface);
+
+  if(!construct_ap_ctrlif(context.hconfig.ctrl_interface, context.hconfig.interface,
+                          context.hconfig.ctrl_interface_path)) {
+    log_debug("construct_ap_ctrlif fail");
     goto run_engine_fail;
   }
 
-  if (os_strnlen_s(app_config->nat_interface, IFNAMSIZ)) {
-    log_info("Checking nat interface %s", app_config->nat_interface);
-    if (!get_nat_if_ip(app_config->nat_interface, &nat_ip)) {
+  if (os_strnlen_s(context.nat_interface, IFNAMSIZ)) {
+    log_info("Checking nat interface %s", context.nat_interface);
+    if (!get_nat_if_ip(context.nat_interface, context.nat_ip)) {
       log_debug("get_nat_if_ip fail");
       goto run_engine_fail;
     }
-    log_info("Found nat interface %s", app_config->nat_interface);
-    if (nat_ip != NULL)
-      log_info("Found nat IP %s", nat_ip);
+    log_info("Found nat interface %s", context.nat_interface);
+    if (validate_ipv4_string(context.nat_ip))
+      log_info("Found nat IP %s", context.nat_ip);
 
   } else
     log_info("Not using any nat interface");
@@ -325,29 +347,24 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
     }
   }
 
-  if (eloop_init()) {
-		log_debug("Failed to initialize event loop");
-		goto run_engine_fail;
-	}
-
   log_info("Creating supervisor on %s", app_config->domain_server_path);
-  if ((domain_sock = run_supervisor(app_config->domain_server_path, &context)) == -1) {
+  if (run_supervisor(app_config->domain_server_path, &context) < 0) {
     log_debug("run_supervisor fail");
     goto run_engine_fail;
   }
 
   log_info("Running the ap service...");
-  if (run_ap(&app_config->hconfig, &app_config->rconfig, context.hostapd_ctrl_if_path, app_config->exec_ap) < 0) {
+  if (run_ap(&context, app_config->exec_ap, app_config->generate_ssid, ap_service_callback) < 0) {
     log_debug("run_ap fail");
     goto run_engine_fail;
   }
 
   if (app_config->exec_radius) {
     log_info("Creating the radius server on port %d with client ip %s",
-      app_config->rconfig.radius_port, app_config->rconfig.radius_client_ip);
+      context.rconfig.radius_port, context.rconfig.radius_client_ip);
 
-    radius_srv = run_radius(&app_config->rconfig, (void*) get_mac_conn_cmd, &context);
-    if (radius_srv == NULL) {
+    if ((context.radius_srv = run_radius(&context.rconfig,
+                                        (void*) get_mac_conn_cmd, &context)) == NULL) {
       log_debug("run_radius fail");
       goto run_engine_fail;
     }
@@ -355,13 +372,13 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
 
   if (app_config->exec_dhcp) {
     log_info("Running the dhcp service...");
-    char *dnsmasq_path = hmap_str_keychar_get(&hmap_bin_paths, "dnsmasq");
+    char *dnsmasq_path = hmap_str_keychar_get(&context.hmap_bin_paths, "dnsmasq");
     if (dnsmasq_path == NULL) {
       log_debug("Couldn't find dnsmasq binary");
       goto run_engine_fail;
     }
 
-    if (run_dhcp(dnsmasq_path, &app_config->dhcp_config, app_config->hconfig.interface,
+    if (run_dhcp(dnsmasq_path, &app_config->dhcp_config, context.hconfig.interface,
           app_config->dns_config.server_array, app_config->domain_server_path) == -1) {
       log_debug("run_dhcp fail");
       goto run_engine_fail;
@@ -373,37 +390,34 @@ bool run_engine(struct app_config *app_config, uint8_t log_level)
   log_info("++++++++++++++++++");
   eloop_run();
 
-  close_supervisor(domain_sock);
-  close_ap();
+  close_supervisor(&context);
+  close_ap(&context);
   close_dhcp();
-  close_radius(radius_srv);
+  close_radius(context.radius_srv);
   eloop_destroy();
-  if (nat_ip != NULL) os_free(nat_ip);
-  hmap_str_keychar_free(&hmap_bin_paths);
+  hmap_str_keychar_free(&context.hmap_bin_paths);
   iptables_free(context.iptables_ctx);
   free_mac_mapper(&context.mac_mapper);
   free_if_mapper(&context.if_mapper);
   free_vlan_mapper(&context.vlan_mapper);
   free_bridge_list(context.bridge_list);
-  free_sqlite_fingerprint_db(context.fingeprint_db);
   free_sqlite_macconn_db(context.macconn_db);
   free_crypt_service(context.crypt_ctx);
+
   return true;
 
 run_engine_fail:
-  close_supervisor(domain_sock);
-  close_ap();
+  close_supervisor(&context);
+  close_ap(&context);
   close_dhcp();
-  close_radius(radius_srv);
+  close_radius(context.radius_srv);
   eloop_destroy();
-  if (nat_ip != NULL) os_free(nat_ip);
-  hmap_str_keychar_free(&hmap_bin_paths);
+  hmap_str_keychar_free(&context.hmap_bin_paths);
   iptables_free(context.iptables_ctx);
   free_mac_mapper(&context.mac_mapper);
   free_if_mapper(&context.if_mapper);
   free_vlan_mapper(&context.vlan_mapper);
   free_bridge_list(context.bridge_list);
-  free_sqlite_fingerprint_db(context.fingeprint_db);
   free_sqlite_macconn_db(context.macconn_db);
   free_crypt_service(context.crypt_ctx);
   return false;

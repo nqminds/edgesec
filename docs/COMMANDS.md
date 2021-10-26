@@ -180,3 +180,15 @@ DENY_ACL DEL_MAC mac_address
 DENY_ACL SHOW
 DENY_ACL CLEAR
 ```
+
+### ATTACH
+Usage:
+```
+ATTACH
+```
+
+### DETTACH
+Usage:
+```
+DETTACH
+```

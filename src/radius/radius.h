@@ -23,6 +23,7 @@
 #include <asm/types.h>
 #include <arpa/inet.h>
 
+#include "utils/allocs.h"
 #include "utils/os.h"
 
 /* RFC 2865 - RADIUS */

@@ -31,19 +31,25 @@
 #include <random>
 #include <string>
 #include <thread>
+#include <sqlite3.h>
 
 #include <grpcpp/grpcpp.h>
-#include <thread>
+
 
 #include "reverse_access.grpc.pb.h"
 
+#include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/log.h"
+#include "utils/base64.h"
 #include "version.h"
 #include "revcmd.h"
 
-#define OPT_STRING    ":f:a:p:dvh"
-#define USAGE_STRING  "\t%s [-f path] [-a address] [-p port] [-d] [-h] [-v]"
+#define OPT_STRING    ":f:a:p:c:dvh"
+#define USAGE_STRING  "\t%s [-f path] [-a address] [-p port] [-c path] [-d] [-h] [-v]"
+
+#define FAIL_REPLY  "FAIL"
+#define OK_REPLY   "OK"
 
 using grpc::Channel;
 using grpc::ClientContext;
@@ -89,6 +95,7 @@ void show_app_help(char *app_name)
   fprintf(stdout, "\t-f folder\t Folder to sync\n");
   fprintf(stdout, "\t-a address\t Server address\n");
   fprintf(stdout, "\t-p port\t\t Server port\n");
+  fprintf(stdout, "\t-c path\t\t The certificate authority path\n");
   fprintf(stdout, "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n");
   fprintf(stdout, "\t-h\t\t Show help\n");
   fprintf(stdout, "\t-v\t\t Show app version\n\n");
@@ -120,8 +127,8 @@ int get_port(char *port_str)
   return strtol(port_str, NULL, 10);
 }
 
-void process_app_options(int argc, char *argv[], int *port,
-                        char *path, char *address, uint8_t *verbosity)
+void process_app_options(int argc, char *argv[], int *port, char *path,
+                        char *address, char *ca_path,  uint8_t *verbosity)
 {
   int opt;
   int p;
@@ -147,6 +154,9 @@ void process_app_options(int argc, char *argv[], int *port,
         exit(EXIT_FAILURE);
       }
       *port = p;
+      break;
+    case 'c':
+      os_strlcpy(ca_path, optarg, MAX_OS_PATH_LEN);
       break;
     case 'f':
       os_strlcpy(path, optarg, MAX_OS_PATH_LEN);
@@ -209,33 +219,169 @@ std::string accumulate_string(std::vector<std::string> &string_list)
   return acc;
 }
 
-ssize_t read_file(const char *name, char **data)
+ssize_t read_file(const char *name, char **encoded)
 {
-  ssize_t file_size = 0;
-  *data = NULL;
+  ssize_t file_size = 0, read_size;
+  unsigned char *file_data;
+  size_t out_len;
+  *encoded = NULL;
 
-  if (name == NULL)
-    return 0;
-
-  FILE *fp = fopen(name, "r");
-  if (fp == NULL) {
-    log_err("fopen");
-    return 0;
+  if (name == NULL) {
+    return -1;
   }
 
-  fseek(fp, 0 , SEEK_END);
-  file_size = ftell(fp);
-  rewind(fp);
-  *data = (char*) os_malloc(file_size);
+  FILE *fp = fopen(name, "r");
 
-  return fread(*data, 1, file_size, fp);
+  log_trace("Opening %s", name);
+
+  if (fp == NULL) {
+    log_err("fopen");
+    return -1;
+  }
+
+  if (fseek(fp, 0 , SEEK_END) < 0) {
+    log_err("fseek");
+    fclose(fp);
+    return -1; 
+  }
+
+  if ((file_size = ftell(fp)) == -1L) {
+    log_err("ftell");
+    fclose(fp);
+    return -1;
+  }
+
+  rewind(fp);
+
+  if ((file_data = (unsigned char*) os_malloc(file_size)) == NULL) {
+    fclose(fp);
+    return -1; 
+  }
+
+  read_size = fread(file_data, 1, file_size, fp);
+
+  if (read_size != file_size) {
+    log_trace("fread fail");
+    os_free(file_data);
+    fclose(fp);
+    return -1;
+  }
+
   fclose(fp);
+
+  if ((*encoded = (char *) base64_encode(file_data, file_size, &out_len)) == NULL) {
+    log_trace("base64_encode");
+    os_free(file_data);
+    return -1;
+  }
+
+  os_free(file_data);
+
+  return out_len;
+}
+
+int sqlite_exec_callback(void* ptr ,int argc, char **argv, char **colname)
+{
+  char **out = (char **)ptr, *str;
+  size_t out_size;
+  std::string row, column;
+
+  if (*out == NULL) {
+    for (int i = 0; i < argc; i++) {
+      std::string val = colname[i];
+      if (i == argc - 1)
+        column += val + '\n';
+      else column += val + ',';
+    }
+    str = (char *)column.c_str();
+    if ((*out = (char *)os_zalloc(strlen(str) + 1)) == NULL) {
+      log_err("os_zalloc");
+      return -1;
+    }
+    strcpy(*out, column.c_str());
+  }
+
+  for (int i = 0; i < argc; i++) {
+    std::string val = (argv[i] ? argv[i] : "NULL");
+    if (i == argc - 1)
+      row += val + '\n';
+    else row += val + ',';
+  }
+  str = (char *)row.c_str();
+  if (*out != NULL && strlen(str)) {
+    out_size = strlen(*out) + strlen(str) + 1;
+    if ((*out = (char *)os_realloc(*out, out_size)) == NULL) {
+      log_err("os_realloc");
+      return -1;
+    }
+    strcat(*out, str);
+  }
+  return 0;
+}
+
+int process_sql_execute(std::string db_path, std::string args, std::string &out)
+{
+  int rc;
+  sqlite3 *db = NULL;
+  char *file_path, *decoded_statement, *err = NULL;
+  std::vector<std::string> arg_list;
+  char *sqlite_out = NULL;
+  split_string(arg_list, args, COMMAND_SEPARATOR);
+
+  if (arg_list.size() < 2) {
+    log_trace("Not enough arguments");
+    return -1;
+  }
+
+  std::string filename = arg_list.at(0);
+  std::string sql_statement = arg_list.at(1);
+  size_t statement_len = 0;
+  file_path = construct_path((char *)db_path.c_str(), (char *)filename.c_str());
+  if (file_path == NULL) {
+    log_trace("construct_path fail");
+    return -1;
+  }
+
+  log_trace("Opening sqlite db=%s", file_path);
+  if (sqlite3_open(file_path, &db) != SQLITE_OK) {     
+    log_debug("Cannot open database: %s", sqlite3_errmsg(db));
+    sqlite3_close(db);
+    os_free(file_path);
+    return -1;
+  }
+
+  os_free(file_path);
+  unsigned char *ptr = (unsigned char *)sql_statement.c_str();
+  if ((decoded_statement = (char *)base64_url_decode(ptr, strlen((char *)ptr), &statement_len)) == NULL) {
+    log_trace("base64_url_decode fail");
+    sqlite3_close(db);
+    return -1;
+  }
+  log_trace("Executing statement %s", decoded_statement);
+
+  if (sqlite3_exec(db, decoded_statement, sqlite_exec_callback, &sqlite_out, &err) != SQLITE_OK) {
+    log_trace("sqlite3_exec error %s", err);
+    os_free(decoded_statement);
+    if (sqlite_out != NULL) os_free(sqlite_out);
+    sqlite3_free(err);
+    sqlite3_close(db);
+    return -1;
+  }
+
+  if (sqlite_out != NULL) {
+    out = std::string(sqlite_out);
+    os_free(sqlite_out);
+  }
+
+  os_free(decoded_statement);
+  sqlite3_close(db);
+  return 0;
 }
 
 class ReverseClient {
  public:
-  ReverseClient(std::shared_ptr<Channel> channel, std::string path, std::string id)
-      : stub_(Reverser::NewStub(channel)), path_(path), id_(id) {}
+  ReverseClient(std::shared_ptr<Channel> channel, std::string path, std::string id, std::string hostname)
+      : stub_(Reverser::NewStub(channel)), path_(path), id_(id), hostname_(hostname) {}
 
   int SendStringResource(std::string command_id, const uint32_t command, const std::string& data) {
     ResourceRequest request;
@@ -256,36 +402,18 @@ class ReverseClient {
     }
   }
 
-  int SendBinaryResource(std::string command_id, const uint32_t command, const char *data, ssize_t len) {
-    ResourceRequest request;
-    ResourceReply reply;
-    ClientContext context;
-
-    context.AddMetadata(METADATA_KEY, id_);
-    request.set_command(command);
-    request.set_id(command_id);
-    request.set_data(data, len);
-
-    Status status = stub_->SendResource(&context, request, &reply);
-
-    if (status.ok()) {
-      return 0;
-    } else {
-      log_debug("Error code=%d, %s", (int)status.error_code(), status.error_message().c_str());
-      return -1;
-    }
-  }
-
   int SubscribeCommand(void) {
     CommandRequest request;
     ClientContext context;
 
+    request.set_hostname(hostname_);
     context.AddMetadata(METADATA_KEY, id_);
 
     std::unique_ptr<ClientReader<CommandReply>> reader(stub_->SubscribeCommand(&context, request));
 
     std::thread reader_thread([&]() {
       CommandReply reply;
+      log_trace("Subscribing to commands.");
       while (reader->Read(&reply)) {
         // Process the reply
         // List command
@@ -293,30 +421,48 @@ class ReverseClient {
         char *file_path;
         char *file_data = NULL;
         ssize_t file_size;
-        log_trace("Processing command=%d with id=%s", reply.command(), reply.id().c_str());
-        switch(reply.command()) {
+        uint32_t cmd = reply.command();
+        std::string args = reply.args();
+        std::string reply_id = reply.id();
+        std::string exec_out;
+
+        log_trace("Processing command=%d with id=%s", cmd, reply_id.c_str());
+        switch(cmd) {
           case REVERSE_CMD_LIST:
             if (get_folder_list(path_, folder_list) != -1) {
               std::string acc = accumulate_string(folder_list);
-              SendStringResource(reply.id(), REVERSE_CMD_LIST, acc);
-            } else SendStringResource(reply.id(), 0, "\n");
+              SendStringResource(reply_id, REVERSE_CMD_LIST, acc);
+            } else SendStringResource(reply_id, REVERSE_CMD_ERROR, "");
             break;
           case REVERSE_CMD_GET:
-            log_trace("Received args=%s", reply.args().c_str());
-            file_path = construct_path((char *)path_.c_str(), (char *)reply.args().c_str());
+            log_trace("Received args=%s", args.c_str());
+            file_path = construct_path((char *)path_.c_str(), (char *)args.c_str());
             if (file_path == NULL) {
               log_trace("construct_path fail");
-              SendStringResource(reply.id(), REVERSE_CMD_GET, "\n");
+              SendStringResource(reply_id, REVERSE_CMD_ERROR, "");
             } else {
-              file_size = read_file(file_path, &file_data);
-              os_free(file_path);
-              if (file_data != NULL) {
-                SendBinaryResource(reply.id(), REVERSE_CMD_GET, file_data, file_size);
+              if ((file_size = read_file(rtrim(file_path, NULL), &file_data)) > -1) {
+                SendStringResource(reply_id, REVERSE_CMD_GET, file_data);
                 os_free(file_data);
-              } else
-                SendStringResource(reply.id(), REVERSE_CMD_GET, "\n");
+              } else {
+                SendStringResource(reply_id, REVERSE_CMD_ERROR, "");
+              }
+              os_free(file_path);
             }
             break;
+          case REVERSE_CMD_SQL_EXECUTE:
+            log_trace("Received args=%s", args.c_str());
+            if (process_sql_execute(path_, args, exec_out) < 0) {
+              log_trace("process_sql_execute fail");
+              SendStringResource(reply_id, REVERSE_CMD_ERROR, "");
+            } else {
+              SendStringResource(reply_id, REVERSE_CMD_SQL_EXECUTE, exec_out);
+            }
+            break;
+          case REVERSE_CMD_CLIENT_EXIT:
+            SendStringResource(reply_id, REVERSE_CMD_CLIENT_EXIT, "");
+            log_trace("Exiting client");
+            exit(0);
           default:
             log_trace("Unknown command");
         }
@@ -326,8 +472,9 @@ class ReverseClient {
     reader_thread.join();
     Status status = reader->Finish();
 
-    if (!status.ok())
+    if (!status.ok()) {
       return -1;
+    }
 
     return 0;
   }
@@ -337,22 +484,40 @@ class ReverseClient {
   std::unique_ptr<Reverser::Stub> stub_;
   std::string path_;
   std::string id_;
-
+  std::string hostname_;
 };
 
-int run_grpc_client(char *path, int port, char *address)
+int run_grpc_client(char *path, int port, char *address, char *ca)
 {
   char grpc_address[MAX_WEB_PATH_LEN];
   char rid[MAX_RANDOM_UUID_LEN];
+  char hostname[OS_HOST_NAME_MAX];
   generate_radom_uuid(rid);
   std::string id(rid);
   snprintf(grpc_address, MAX_WEB_PATH_LEN, "%s:%d", address, port);
 
-  log_info("Connecting to %s... with id=%s", grpc_address, rid);
-  ReverseClient reverser(grpc::CreateChannel(grpc_address, grpc::InsecureChannelCredentials()), path, id); 
-  if (reverser.SubscribeCommand() < 0) {
-    log_debug("grpc SubscribeCommand failed");
+  if (get_hostname(hostname) < 0) {
+    log_debug("get_hostname fail");
     return -1;
+  }
+
+  fprintf(stdout, "Connecting to %s... with id=%s and hostname=%s\n", grpc_address, rid, hostname);
+
+  std::shared_ptr<grpc::ChannelCredentials> creds;
+  if (ca != NULL) {
+    grpc::SslCredentialsOptions ssl_opts;
+    ssl_opts.pem_root_certs = ca;
+    creds = grpc::SslCredentials(ssl_opts);
+    fprintf(stdout, "Configured TLS connection\n");
+  } else {
+    creds = grpc::InsecureChannelCredentials();
+    fprintf(stdout, "Configured unsecured connection\n");
+  }
+
+  ReverseClient reverser(grpc::CreateChannel(grpc_address, creds), path, id, hostname); 
+  while (reverser.SubscribeCommand() < 0) {
+    log_debug("grpc SubscribeCommand failed");
+    sleep(2);
   }
 
   return 0;
@@ -364,10 +529,13 @@ int main(int argc, char** argv) {
   int port = -1;
   char path[MAX_OS_PATH_LEN];
   char address[MAX_WEB_PATH_LEN];
+  char ca_path[MAX_OS_PATH_LEN];
+  char *ca = NULL;  
 
+  os_memset(ca_path, 0, MAX_OS_PATH_LEN);
   os_memset(path, 0, MAX_OS_PATH_LEN);
 
-  process_app_options(argc, argv, &port, path, address, &verbosity); 
+  process_app_options(argc, argv, &port, path, address, ca_path, &verbosity); 
 
   if (optind <= 1) show_app_help(argv[0]);
 
@@ -401,11 +569,22 @@ int main(int argc, char** argv) {
   fprintf(stdout, "Address --> %s\n", address);
   fprintf(stdout, "Port --> %d\n", port);
   fprintf(stdout, "DB save path --> %s\n", path);
+  fprintf(stdout, "Cert authority path --> %s\n", ca_path);
 
-  if (run_grpc_client(path, port, address) == -1) {
+  if (strlen(ca_path)) {
+    if (read_file_string(ca_path, &ca) < 0) {
+      fprintf(stderr, "read_file_string fail\n");
+      exit(1);
+    }
+  }
+
+  if (run_grpc_client(path, port, address, ca) == -1) {
     fprintf(stderr, "run_grpc_server fail\n");
     exit(EXIT_FAILURE);
   } 
+
+  if (ca != NULL)
+    os_free(ca);
 
   return 0;
 }

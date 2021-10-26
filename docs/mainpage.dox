@@ -38,5 +38,5 @@ We plan to tackle the mentioned IoT gateway solutions as follows:
 2. [\ref networkcapture] To monitor the IoT device traffic we will use packet sniffers and advanced algorithms to detect compromised IoT devices.
 3. [\ref securediscovery] For secure discovery and connectivity between IoT devices and IoT gateway we plan to use the efficient gRPC protocol.
 5. [\ref securestorage] To store the encryption keys and to implement IoT gateway attestation we plan to leverage the existing hardware implementations of Trusted execution and secure memory storage. We will consider verified u-boot, UEFI, HAB secure boot technology from NXP and similar.
-
+6. [\ref demos] Demo examples
 */

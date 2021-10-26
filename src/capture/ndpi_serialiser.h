@@ -33,6 +33,7 @@
 
 #include "capture_config.h"
 
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/hash.h"
 
@@ -83,15 +84,7 @@ struct nDPI_flow_info {
   struct ndpi_id_struct * ndpi_dst;
 };
 
-struct nDPI_flow_meta {
-  char src_mac_addr[MACSTR_LEN];
-  char dst_mac_addr[MACSTR_LEN];
-  char protocol[MAX_PROTOCOL_NAME_LEN];
-  char hash[SHA256_HASH_LEN];
-  char query[MAX_QUERY_LEN];
-};
-
-int ndpi_serialise_meta(struct ndpi_detection_module_struct *ndpi_struct,
-		  struct nDPI_flow_info * flow_info, struct nDPI_flow_meta *meta);
+ssize_t ndpi_serialise_meta(struct ndpi_detection_module_struct *ndpi_struct,
+		  struct nDPI_flow_info * flow_info, struct alert_meta *meta, uint8_t **info);
 
 #endif

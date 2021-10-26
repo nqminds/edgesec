@@ -24,6 +24,7 @@
 #include "md5_internal.h"
 
 #include "utils/log.h"
+#include "utils/allocs.h"
 #include "utils/os.h"
 
 /**
@@ -294,6 +295,9 @@ static void radius_msg_dump_attr(struct radius_attr_hdr *hdr)
 	int len;
 	unsigned char *pos;
 	char buf[1000];
+
+	if (hdr == NULL)
+	  return;
 
 	attr = radius_get_attr_type(hdr->type);
 

@@ -1,34 +1,43 @@
 include_directories(
   "${EDGESEC_SOURCE_DIR}/src"
-  "${CMOCKA_INCLUDE_DIR}"
 )
 
 add_executable(test_bridge_list test_bridge_list.c)
-target_link_libraries(test_bridge_list PRIVATE bridge_list log cmocka-static)
+target_link_libraries(test_bridge_list PRIVATE bridge_list log cmocka::cmocka)
 
 add_executable(test_domain_server test_domain_server.c)
-target_link_libraries(test_domain_server PRIVATE domain os log cmocka-static)
+target_link_libraries(test_domain_server PRIVATE domain os log cmocka::cmocka)
 
 add_executable(test_cmd_processor test_cmd_processor.c)
-target_link_libraries(test_cmd_processor PRIVATE cmd_processor iptables log engine cmocka-static)
+target_include_directories(test_cmd_processor PRIVATE ${LIBSQLITE_INCLUDE_DIR})
+target_link_libraries(test_cmd_processor PRIVATE cmd_processor iptables log engine cmocka::cmocka)
 
-set_target_properties(test_cmd_processor
-        PROPERTIES
-        LINK_FLAGS  "-Wl,--wrap=write_domain_data -Wl,--wrap=accept_mac_cmd -Wl,--wrap=deny_mac_cmd -Wl,--wrap=add_nat_cmd -Wl,--wrap=remove_nat_cmd -Wl,--wrap=assign_psk_cmd -Wl,--wrap=set_ip_cmd -Wl,--wrap=add_bridge_cmd -Wl,--wrap=remove_bridge_cmd -Wl,--wrap=set_fingerprint_cmd -Wl,--wrap=query_fingerprint_cmd -Wl,--wrap=register_ticket_cmd -Wl,--wrap=clear_psk_cmd -Wl,--wrap=get_mac_mapper"
-)
+set(TEST_CMD_PROPS "-Wl,--wrap=write_domain_data -Wl,--wrap=accept_mac_cmd -Wl,--wrap=deny_mac_cmd")
+set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=write_domain_data -Wl,--wrap=accept_mac_cmd -Wl,--wrap=deny_mac_cmd")
+set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=add_nat_cmd -Wl,--wrap=remove_nat_cmd -Wl,--wrap=assign_psk_cmd")
+set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=set_ip_cmd -Wl,--wrap=add_bridge_cmd -Wl,--wrap=remove_bridge_cmd")
+set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=set_fingerprint_cmd -Wl,--wrap=query_fingerprint_cmd -Wl,--wrap=register_ticket_cmd")
+set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=clear_psk_cmd -Wl,--wrap=get_mac_mapper -Wl,--wrap=put_crypt_cmd -Wl,--wrap=get_crypt_cmd")
+set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=gen_randkey_cmd -Wl,--wrap=gen_privkey_cmd  -Wl,--wrap=gen_pubkey_cmd -Wl,--wrap=gen_cert_cmd")
+set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=encrypt_blob_cmd -Wl,--wrap=decrypt_blob_cmd -Wl,--wrap=sign_blob_cmd -Wl,--wrap=clear_bridges_cmd")
+set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=subscribe_events_cmd")
+
+set_target_properties(test_cmd_processor PROPERTIES LINK_FLAGS ${TEST_CMD_PROPS})
 
 add_executable(test_mac_mapper test_mac_mapper.c)
-target_link_libraries(test_mac_mapper PRIVATE log system_checks os mac_mapper cmocka-static)
+target_link_libraries(test_mac_mapper PRIVATE log system_checks os mac_mapper cmocka::cmocka)
 
 add_executable(test_sqlite_fingerprint_writer test_sqlite_fingerprint_writer.c)
-target_link_libraries(test_sqlite_fingerprint_writer PRIVATE sqlite_fingerprint_writer sqliteu os log cmocka-static)
+target_include_directories(test_sqlite_fingerprint_writer PRIVATE ${LIBSQLITE_INCLUDE_DIR})
+target_link_libraries(test_sqlite_fingerprint_writer PRIVATE sqlite_fingerprint_writer sqliteu os log cmocka::cmocka)
 set_target_properties(test_sqlite_fingerprint_writer
   PROPERTIES
   LINK_FLAGS  "-Wl,--wrap=sqlite3_open"
 )
 
 add_executable(test_sqlite_macconn_writer test_sqlite_macconn_writer.c)
-target_link_libraries(test_sqlite_macconn_writer PRIVATE sqlite_macconn_writer sqliteu os log cmocka-static)
+target_include_directories(test_sqlite_macconn_writer PRIVATE ${LIBSQLITE_INCLUDE_DIR})
+target_link_libraries(test_sqlite_macconn_writer PRIVATE sqlite_macconn_writer sqliteu os log cmocka::cmocka)
 set_target_properties(test_sqlite_macconn_writer
   PROPERTIES
   LINK_FLAGS  "-Wl,--wrap=sqlite3_open"

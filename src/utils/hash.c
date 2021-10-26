@@ -30,6 +30,7 @@
 #include <string.h>
 
 #include "hash.h"
+#include "allocs.h"
 #include "os.h"
 
 #define CHUNK_SIZE 64

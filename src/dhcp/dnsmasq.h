@@ -28,6 +28,8 @@
 #include <net/if.h>
 
 #include "dhcp_config.h"
+
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/utarray.h"
 

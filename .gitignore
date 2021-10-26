@@ -1,3 +1,8 @@
+# Debian
+/debian/.debhelper
+/debian/*.log
+
+##--------- C++.gitignore ---------##
 # Prerequisites
 *.d
 
@@ -51,6 +56,11 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
+# ignore folder so it doesn't
+# get re-commited
+/lib/libmicrohttpd-0.9.72
+
+apps/**/node_modules
 build/**
 docs/html/**
 docs/latex/**
@@ -74,18 +84,6 @@ lib/libmnl-1.0.4/src/.deps/**
 lib/libmnl-1.0.4/src/.libs/**
 lib/libmnl-1.0.4/examples/.libs/**
 lib/libmnl-1.0.4/autom4te.cache/**
-lib/libmicrohttpd-0.9.72/build/**
-lib/libmicrohttpd-0.9.72/src/*.o
-lib/libmicrohttpd-0.9.72/**/.deps
-lib/libmicrohttpd-0.9.72/**/.libs
-lib/libmicrohttpd-0.9.72/**/Makefile
-lib/libmicrohttpd-0.9.72/config.status
-lib/libmicrohttpd-0.9.72/config.log
-lib/libmicrohttpd-0.9.72/libmicrohttpd.pc
-lib/libmicrohttpd-0.9.72/libtool
-lib/libmicrohttpd-0.9.72/MHD_config.h
-lib/libmicrohttpd-0.9.72/stamp-h1
-lib/grpc/cmake/build/**
 lib/libuuid-1.0.3/build/**
 lib/libuuid-1.0.3/*.o
 lib/libuuid-1.0.3/*.deps
@@ -96,3 +94,4 @@ lib/libuuid-1.0.3/uuid.pc
 lib/libuuid-1.0.3/libtool
 lib/libuuid-1.0.3/MHD_config.h
 lib/libuuid-1.0.3/stamp-h1
+lib/libu2f-emu/build

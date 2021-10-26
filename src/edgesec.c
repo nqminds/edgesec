@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <signal.h>
 #include <fcntl.h>
 #include <ctype.h>
 #include <unistd.h>
@@ -37,38 +38,33 @@
 
 #include "version.h"
 #include "utils/log.h"
+#include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/minIni.h"
 #include "utils/utarray.h"
 #include "utils/if.h"
+#include "utils/eloop.h"
 #include "dhcp/dhcp_config.h"
 #include "engine.h"
 #include "config.h"
 
-#define OPT_STRING    ":c:s:dvh"
-#define USAGE_STRING  "\t%s [-c filename] [-s secret] [-d] [-h] [-v]\n"
-
-static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
+#define OPT_STRING    ":c:s:f:dvh"
+#define USAGE_STRING  "\t%s [-c filename] [-s secret] [-f filename] [-d] [-h] [-v]\n"
 
 static const UT_icd config_ifinfo_icd = {sizeof(config_ifinfo_t), NULL, NULL, NULL};
 static const UT_icd config_dhcpinfo_icd = {sizeof(config_dhcpinfo_t), NULL, NULL, NULL};
 
 static __thread char version_buf[10];
 
-static void lock_fn(bool lock)
+void eloop_sighup_handler(int sig, void *ctx)
 {
-  int res;
+  (void) sig;
 
-  if (lock) {
-    res = pthread_mutex_lock(&mtx);
-    if (res != 0) {
-      log_err_exp("pthread_mutex_lock\n");
-    }
-  } else {
-    res = pthread_mutex_unlock(&mtx);
-    if (res != 0) {
-      log_err_exp("pthread_mutex_unlock\n");
-    }
+  char *log_filename = (char *) ctx;
+
+  if (log_filename != NULL) {
+    log_close_file();
+    log_open_file(log_filename);
   }
 }
 
@@ -98,6 +94,7 @@ void show_app_help(char *app_name)
   fprintf(stdout, "\nOptions:\n");
   fprintf(stdout, "\t-c filename\t Path to the config file name\n");
   fprintf(stdout, "\t-s secret\t Master key\n");
+  fprintf(stdout, "\t-f filename\t Log file name\n");
   fprintf(stdout, "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n");
   fprintf(stdout, "\t-h\t\t Show help\n");
   fprintf(stdout, "\t-v\t\t Show app version\n\n");
@@ -123,7 +120,7 @@ void log_cmdline_error(const char *format, ...)
 }
 
 void process_app_options(int argc, char *argv[], uint8_t *verbosity,
-                          char **config_filename, char *secret)
+                          char **config_filename, char *secret, char **log_filename)
 {
   int opt;
 
@@ -141,6 +138,9 @@ void process_app_options(int argc, char *argv[], uint8_t *verbosity,
       break;
     case 's':
       os_strlcpy(secret, optarg, MAX_USER_SECRET);
+      break;
+    case 'f':
+      *log_filename = os_strdup(optarg);
       break;
     case 'd':
       (*verbosity)++;
@@ -164,7 +164,7 @@ int main(int argc, char *argv[])
 {
   uint8_t verbosity = 0;
   uint8_t level = 0;
-  char *filename = NULL;
+  char *config_filename = NULL, *log_filename = NULL;
   UT_array *bin_path_arr;
   UT_array *config_ifinfo_arr;
   UT_array *config_dhcpinfo_arr;
@@ -190,7 +190,7 @@ int main(int argc, char *argv[])
   utarray_new(server_arr, &ut_str_icd);
   config.dns_config.server_array = server_arr;
 
-  process_app_options(argc, argv, &verbosity, &filename, config.crypt_secret);
+  process_app_options(argc, argv, &verbosity, &config_filename, config.crypt_secret, &log_filename);
 
   if (verbosity > MAX_LOG_LEVELS) {
     level = 0;
@@ -200,9 +200,19 @@ int main(int argc, char *argv[])
     level = MAX_LOG_LEVELS - verbosity;
   }
   
+  // Set the log level
+  log_set_level(level);
+
   if (optind <= 1) show_app_help(argv[0]);
 
-  if (!load_app_config(filename, &config)) {
+  if (log_filename != NULL) {
+    if (log_open_file(log_filename) < 0) {
+      fprintf(stderr, "log_open_file fail");
+      exit(1);
+    }
+  }
+
+  if (!load_app_config(config_filename, &config)) {
     fprintf(stderr, "load_app_config fail\n");
     exit(1);
   }
@@ -215,7 +225,22 @@ int main(int argc, char *argv[])
     }
   }
 
-  if (!run_engine(&config, level)) {
+  if (create_pid_file(config.pid_file_path, FD_CLOEXEC) < 0) {
+    fprintf(stderr, "create_pid_file fail");
+    exit(1);
+  }
+
+  if (eloop_init() < 0) {
+		fprintf(stderr, "Failed to initialize event loop");
+		exit(1);
+	}
+
+  if (eloop_register_signal_reconfig(eloop_sighup_handler, (void *)log_filename) < 0) {
+    fprintf(stderr, "Failed to register signal");
+    exit(1);
+  }
+
+  if (!run_engine(&config)) {
     fprintf(stderr, "Failed to start edgesec engine.\n");
   } else
     fprintf(stderr, "Edgesec engine stopped.\n");
@@ -224,7 +249,10 @@ int main(int argc, char *argv[])
   utarray_free(config_ifinfo_arr);
   utarray_free(config_dhcpinfo_arr);
   utarray_free(server_arr);
-  if (filename != NULL)
-    os_free(filename);
+  if (config_filename != NULL)
+    os_free(config_filename);
+  if (log_filename != NULL)
+    os_free(log_filename);
+
   exit(0);
 }

@@ -29,6 +29,7 @@
 #include <net/ethernet.h>
 
 #include "../utils/list.h"
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 
 /**

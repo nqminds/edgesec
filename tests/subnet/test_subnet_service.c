@@ -51,16 +51,26 @@ bool __wrap_iwace_isvlan(uint32_t wiphy)
 
 bool __wrap_create_interface(char *if_name, char *type)
 {
+  (void) if_name;
+  (void) type;
+
   return true;
 }
 
 bool __wrap_set_interface_ip(char *ip_addr, char *brd_addr, char *if_name)
 {
+  (void) ip_addr;
+  (void) brd_addr;
+  (void) if_name;
+
   return true;
 }
 
 bool __wrap_set_interface_state(char *if_name, bool state)
 {
+  (void) if_name;
+  (void) state;
+
   return true;
 }
 
@@ -73,6 +83,8 @@ unsigned int __wrap_if_nametoindex (const char *__ifname)
 
 UT_array *__wrap_get_interfaces(int if_id)
 {
+  (void) if_id;
+
   UT_array *arr = NULL;
   netif_info_t el;
   strcpy(el.ifname, "nat_test");
@@ -89,25 +101,24 @@ static void test_1_get_nat_if_ip(void **state)
 {
   (void) state; /* unused */
 
-  char *ip_buf = NULL;
-  bool ret = get_nat_if_ip("nat_test", &ip_buf);
+  char ip_buf[OS_INET_ADDRSTRLEN];
+  os_memset(ip_buf, 0, OS_INET_ADDRSTRLEN);
+  bool ret = get_nat_if_ip("nat_test", ip_buf);
 
   assert_true(ret);
   assert_string_equal(ip_buf, "127.0.0.1");
-
-  free(ip_buf);  
 }
 
 static void test_2_get_nat_if_ip(void **state)
 {
   (void) state; /* unused */
 
-  char *ip_buf = NULL;
-  bool ret = get_nat_if_ip("wlan0", &ip_buf);
+  char ip_buf[OS_INET_ADDRSTRLEN];
+  os_memset(ip_buf, 0, OS_INET_ADDRSTRLEN);
+
+  bool ret = get_nat_if_ip("wlan0", ip_buf);
 
   assert_false(ret);
-
-  free(ip_buf);  
 }
 
 static void test_create_subnet_ifs(void **state)
@@ -243,6 +254,9 @@ static void test_create_vlan_mapper(void **state)
 
 int main(int argc, char *argv[])
 {  
+  (void) argc;
+  (void) argv;
+
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {

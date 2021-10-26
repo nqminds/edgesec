@@ -34,6 +34,27 @@
 #define AES_KEY_SIZE        32
 #define MAX_KEY_ITERATIONS  1000
 
+#define MAX_CERT_FIELD_SIZE  64
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+struct certificate_meta {
+  long not_before;
+  long not_after;
+  char c[MAX_CERT_FIELD_SIZE];
+  char o[MAX_CERT_FIELD_SIZE];
+  char ou[MAX_CERT_FIELD_SIZE];
+  char cn[MAX_CERT_FIELD_SIZE]; 
+};
+
+enum CRYPTO_KEY_TYPE {
+  CRYPTO_KEY_NONE = 0,
+  CRYPTO_KEY_RSA,
+  CRYPTO_KEY_EC
+};
+
 /**
  * @brief Generate IV
  * 
@@ -85,7 +106,7 @@ int crypto_buf2key(uint8_t *buf, int buf_size, uint8_t *salt, int salt_size,
  * @param out The output buffer
  * @return The output size, -1 on error
  */
-int crypto_encrypt(uint8_t *in, int in_size, uint8_t *key,
+ssize_t crypto_encrypt(uint8_t *in, int in_size, uint8_t *key,
                    uint8_t *iv, uint8_t *out);
 
 /**
@@ -98,16 +119,53 @@ int crypto_encrypt(uint8_t *in, int in_size, uint8_t *key,
  * @param out The output buffer
  * @return The output size, -1 on error
  */
-int crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
+ssize_t crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
                    uint8_t *iv, uint8_t *out);
+
+/**
+ * @brief Generate a private RSA key string
+ * 
+ * @param type The key type
+ * @param bits Number of key bits
+ * @param key The output key string
+ * @return int 0 on success, -1 on failure
+ */
+int crypto_generate_privkey_str(enum CRYPTO_KEY_TYPE type, int bits, char **key);
+
+/**
+ * @brief Generates a public key string from a private key
+ * 
+ * @param key The private key buffer
+ * @param key_size The private key buffer size
+ * @param pub The public key string
+ * @return int 0 on success, -1 on failure
+ */
+int crypto_generate_pubkey_str(uint8_t *key, size_t key_size, char **pub);
 
 /**
  * @brief Generates a pair of private key and certificate strings
  * 
- * @param bits Number of bits for the private key
- * @param key The private key string
+ * @param meta Certificate metadata
+ * @param key The private key buffer
+ * @param key_size The private key buffer size
  * @param cert The certificate string
  * @return int 0 on success, -1 on failure
  */
-int crypto_generate_keycert_str(int bits, char **key, char **cert);
+int crypto_generate_cert_str(struct certificate_meta *meta, uint8_t *key, size_t key_size, char **cert);
+
+/**
+ * @brief Signs a buffer with a private key string
+ * 
+ * @param key The private key buffer
+ * @param key_size The private key buffer size
+ * @param in The input buffer
+ * @param in_size The input buffer size
+ * @param out The output signature
+ * @return ssize_t the length of the signature, -1 on failure
+ */
+ssize_t crypto_sign_data(uint8_t *key, size_t key_size, uint8_t *in, size_t in_size, uint8_t **out);
+#ifdef __cplusplus
+}
+#endif
+
 #endif

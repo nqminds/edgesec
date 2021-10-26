@@ -44,12 +44,15 @@
 #include "utils/log.h"
 #include "utils/if.h"
 #include "utils/iw.h"
+#include "utils/allocs.h"
 #include "utils/os.h"
 
 #define IP_FORWARD_PATH "/proc/sys/net/ipv4/ip_forward"
 
 hmap_str_keychar *check_systems_commands(char *commands[], UT_array *bin_path_arr, hmap_str_keychar *hmap_bin_hashes)
 {
+  (void) hmap_bin_hashes;
+
   if (commands == NULL) {
     log_debug("commands param NULL");
     return NULL;

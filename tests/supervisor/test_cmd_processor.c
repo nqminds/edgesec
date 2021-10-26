@@ -27,6 +27,12 @@ ssize_t __wrap_write_domain_data(int sock, char *data, size_t data_len, struct s
   return data_len;
 }
 
+int __wrap_subscribe_events_cmd(struct supervisor_context *context, struct client_address *addr)
+{
+  check_expected(addr);
+  return 0;
+}
+
 int __wrap_accept_mac_cmd(struct supervisor_context *context, uint8_t *mac_addr, int vlanid)
 {
   check_expected(mac_addr);
@@ -83,6 +89,12 @@ int __wrap_remove_bridge_cmd(struct supervisor_context *context, uint8_t *left_m
   return 0;
 }
 
+int __wrap_clear_bridges_cmd(struct supervisor_context *context, uint8_t *mac_addr)
+{
+  check_expected(mac_addr);
+  return 0;
+}
+
 int __wrap_set_fingerprint_cmd(struct supervisor_context *context, char *src_mac_addr,
                         char *dst_mac_addr, char *protocol, char *fingerprint,
                         uint64_t timestamp, char *query)
@@ -103,7 +115,7 @@ ssize_t __wrap_query_fingerprint_cmd(struct supervisor_context *context, char *m
   check_expected(timestamp);
   check_expected(op);
   check_expected(protocol);
-  check_expected(out);
+  *out = os_malloc(sizeof(char));
   return strlen(OK_REPLY);
 }
 
@@ -120,6 +132,73 @@ int __wrap_clear_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr)
 {
   check_expected(mac_addr);
   return 0;
+}
+
+int __wrap_put_crypt_cmd(struct supervisor_context *context, char *key, char *value)
+{
+  check_expected(key);
+  check_expected(value);
+  return 0;
+}
+
+int __wrap_get_crypt_cmd(struct supervisor_context *context, char *key, char **value)
+{
+  check_expected(key);
+  *value = os_strdup(OK_REPLY);
+  return 0;
+}
+
+int __wrap_gen_randkey_cmd(struct supervisor_context *context, char *keyid, int size)
+{
+  check_expected(keyid);
+  check_expected(size);
+  return 0;
+}
+
+int __wrap_gen_privkey_cmd(struct supervisor_context *context, char *keyid, int size)
+{
+  check_expected(keyid);
+  check_expected(size);
+  return 0;
+}
+
+int __wrap_gen_pubkey_cmd(struct supervisor_context *context, char *pubid, char *keyid)
+{
+  check_expected(pubid);
+  check_expected(keyid);
+  return 0;
+}
+
+int __wrap_gen_cert_cmd(struct supervisor_context *context, char *certid, char *keyid,
+                        struct certificate_meta *meta)
+{
+  check_expected(certid);
+  check_expected(keyid);
+  check_expected(meta);
+  return 0;
+}
+
+char* __wrap_encrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *ivid, char *blob)
+{
+  check_expected(keyid);
+  check_expected(ivid);
+  check_expected(blob);
+  return os_strdup(OK_REPLY);
+}
+
+char* __wrap_decrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *ivid, char *blob)
+{
+  check_expected(keyid);
+  check_expected(ivid);
+  check_expected(blob);
+    return os_strdup(OK_REPLY);
+}
+
+char* __wrap_sign_blob_cmd(struct supervisor_context *context, char *keyid, char *blob)
+{
+  check_expected(keyid);
+  check_expected(blob);
+    return os_strdup(OK_REPLY);
 }
 
 int __wrap_get_mac_mapper(hmap_mac_conn **hmap, uint8_t mac_addr[ETH_ALEN], struct mac_conn_info *info)
@@ -165,6 +244,20 @@ static void test_process_domain_buffer(void **state)
   assert_string_equal(*p, "PING");
 
   utarray_free(arr);
+}
+
+static void test_process_subscribe_events_cmd(void **state)
+{
+  (void) state; /* unused */
+
+  UT_array *cmd_arr;
+  struct client_address claddr;
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("SUBSCRIBE_EVENTS", CMD_DELIMITER, cmd_arr), -1); 
+  expect_any(__wrap_subscribe_events_cmd, addr);
+  assert_int_equal(process_subscribe_events_cmd(0, &claddr, NULL, cmd_arr), strlen(OK_REPLY));
+  utarray_free(cmd_arr);
 }
 
 static void test_process_accept_mac_cmd(void **state)
@@ -296,6 +389,8 @@ static void test_process_get_map_cmd(void **state)
   uint8_t addr[ETH_ALEN] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
   UT_array *cmd_arr;
   struct client_address claddr;
+  struct supervisor_context context;
+  os_memset(&context, 0, sizeof(struct supervisor_context));
 
   utarray_new(cmd_arr, &ut_str_icd);
 
@@ -303,14 +398,14 @@ static void test_process_get_map_cmd(void **state)
   expect_memory(__wrap_get_mac_mapper, mac_addr, addr, ETH_ALEN);
   expect_any(__wrap_get_mac_mapper, info);
 
-  int ret = process_get_map_cmd(0, &claddr, NULL, cmd_arr);
+  int ret = process_get_map_cmd(0, &claddr, &context, cmd_arr);
   bool comp = ret > STRLEN("11:22:33:44:55:66");
   assert_true(comp);
   utarray_free(cmd_arr);
 
   utarray_new(cmd_arr, &ut_str_icd);
   assert_int_not_equal(split_string_array("GET_MAP 11:22:33:44:55:", CMD_DELIMITER, cmd_arr), -1);
-  assert_int_equal(process_get_map_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  assert_int_equal(process_get_map_cmd(0, &claddr, &context, cmd_arr), strlen(FAIL_REPLY));
   utarray_free(cmd_arr);
 }
 
@@ -465,6 +560,31 @@ static void test_process_remove_bridge_cmd(void **state)
   utarray_free(cmd_arr);
 }
 
+static void test_process_clear_bridges_cmd(void **state)
+{
+  (void) state; /* unused */
+
+  uint8_t addr1[ETH_ALEN] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
+  UT_array *cmd_arr;
+  struct client_address claddr;
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("CLEAR_BRIDGES 11:22:33:44:55:66", CMD_DELIMITER, cmd_arr), -1);
+  expect_memory(__wrap_clear_bridges_cmd, mac_addr, addr1, ETH_ALEN);
+  assert_int_equal(process_clear_bridges_cmd(0, &claddr, NULL, cmd_arr), strlen(OK_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("CLEAR_BRIDGES 11:22:33:44:55:", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_clear_bridges_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("CLEAR_BRIDGES", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_clear_bridges_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+}
+
 static void test_process_set_fingerprint_cmd(void **state)
 {
   (void) state; /* unused */
@@ -517,7 +637,6 @@ static void test_process_query_fingerprint_cmd(void **state)
   expect_value(__wrap_query_fingerprint_cmd, timestamp, 12345);
   expect_string(__wrap_query_fingerprint_cmd, op, ">=");
   expect_string(__wrap_query_fingerprint_cmd, protocol, "IP4");
-  expect_any(__wrap_query_fingerprint_cmd, out);
   assert_int_equal(process_query_fingerprint_cmd(0, &claddr, NULL, cmd_arr), strlen(OK_REPLY));
   utarray_free(cmd_arr);
 
@@ -592,7 +711,259 @@ static void test_process_clear_psk_cmd(void **state)
   assert_int_not_equal(split_string_array("CLEAR_PSK 11:22:33:44:55:", CMD_DELIMITER, cmd_arr), -1);
   assert_int_equal(process_clear_psk_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
   utarray_free(cmd_arr);
+}
 
+static void test_process_put_crypt_cmd(void **state)
+{
+  (void) state; /* unused */
+
+  UT_array *cmd_arr;
+  struct client_address claddr;
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("PUT_CRYPT 12345 54321", CMD_DELIMITER, cmd_arr), -1);
+  expect_string(__wrap_put_crypt_cmd, key, "12345");
+  expect_string(__wrap_put_crypt_cmd, value, "54321");
+  assert_int_equal(process_put_crypt_cmd(0, &claddr, NULL, cmd_arr), strlen(OK_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("PUT_CRYPT 12345 ", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_put_crypt_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("PUT_CRYPT ", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_put_crypt_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+}
+
+static void test_process_get_crypt_cmd(void **state)
+{
+  (void) state; /* unused */
+
+  UT_array *cmd_arr;
+  struct client_address claddr;
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("GET_CRYPT 12345", CMD_DELIMITER, cmd_arr), -1);
+  expect_string(__wrap_get_crypt_cmd, key, "12345");
+  assert_int_equal(process_get_crypt_cmd(0, &claddr, NULL, cmd_arr), strlen(OK_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("GET_CRYPT ", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_get_crypt_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+}
+
+static void test_process_gen_randkey_cmd(void **state)
+{
+  (void) state; /* unused */
+
+  UT_array *cmd_arr;
+  struct client_address claddr;
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("GEN_RANDKEY test 32", CMD_DELIMITER, cmd_arr), -1);
+  expect_string(__wrap_gen_randkey_cmd, keyid, "test");
+  expect_value(__wrap_gen_randkey_cmd, size, 32);
+  assert_int_equal(process_gen_randkey_cmd(0, &claddr, NULL, cmd_arr), strlen(OK_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("GEN_RANDKEY ", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_gen_randkey_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("GEN_RANDKEY test ", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_gen_randkey_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("GEN_RANDKEY test 32a", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_gen_randkey_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+}
+
+static void test_process_gen_privkey_cmd(void **state)
+{
+  (void) state; /* unused */
+
+  UT_array *cmd_arr;
+  struct client_address claddr;
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("GEN_PRIVKEY test 32", CMD_DELIMITER, cmd_arr), -1);
+  expect_string(__wrap_gen_privkey_cmd, keyid, "test");
+  expect_value(__wrap_gen_privkey_cmd, size, 32);
+  assert_int_equal(process_gen_privkey_cmd(0, &claddr, NULL, cmd_arr), strlen(OK_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("GEN_PRIVKEY ", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_gen_privkey_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("GEN_PRIVKEY test ", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_gen_privkey_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("GEN_PRIVKEY test 32a", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_gen_privkey_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+}
+
+static void test_process_gen_cert_cmd(void **state)
+{
+  (void) state; /* unused */
+
+  UT_array *cmd_arr;
+  struct client_address claddr;
+  struct certificate_meta meta;
+
+  os_memset(&meta, 0, sizeof(struct certificate_meta));
+  meta.not_before = 0;
+  meta.not_after = 31536000L;
+  strcpy(meta.c, "IE");
+  strcpy(meta.o, "nqmcyber");
+  strcpy(meta.ou, "R&D");
+  strcpy(meta.cn, "raspberrypi.local");
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("GEN_CERT certid keyid raspberrypi.local", CMD_DELIMITER, cmd_arr), -1);
+  expect_string(__wrap_gen_cert_cmd, certid, "certid");
+  expect_string(__wrap_gen_cert_cmd, keyid, "keyid");
+  expect_memory(__wrap_gen_cert_cmd, meta, &meta, sizeof(struct certificate_meta));
+  assert_int_equal(process_gen_cert_cmd(0, &claddr, NULL, cmd_arr), strlen(OK_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("GEN_CERT ", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_gen_cert_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("GEN_CERT test ", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_gen_cert_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+}
+
+static void test_process_gen_pubkey_cmd(void **state)
+{
+  (void) state; /* unused */
+
+  UT_array *cmd_arr;
+  struct client_address claddr;
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("GEN_PUBKEY pubid keyid", CMD_DELIMITER, cmd_arr), -1);
+  expect_string(__wrap_gen_pubkey_cmd, pubid, "pubid");
+  expect_string(__wrap_gen_pubkey_cmd, keyid, "keyid");
+  assert_int_equal(process_gen_pubkey_cmd(0, &claddr, NULL, cmd_arr), strlen(OK_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("GEN_PUBKEY ", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_gen_pubkey_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("GEN_PUBKEY test ", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_gen_pubkey_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+}
+
+static void test_process_encrypt_blob(void **state)
+{
+  (void) state; /* unused */
+
+  UT_array *cmd_arr;
+  struct client_address claddr;
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("ENCRYPT_BLOB keyid ivid 12345", CMD_DELIMITER, cmd_arr), -1);
+  expect_string(__wrap_encrypt_blob_cmd, keyid, "keyid");
+  expect_string(__wrap_encrypt_blob_cmd, ivid, "ivid");
+  expect_string(__wrap_encrypt_blob_cmd, blob, "12345");
+  assert_int_equal(process_encrypt_blob_cmd(0, &claddr, NULL, cmd_arr), strlen(OK_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("ENCRYPT_BLOB keyid ivid", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_encrypt_blob_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("ENCRYPT_BLOB keyid", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_encrypt_blob_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("ENCRYPT_BLOB ", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_encrypt_blob_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+}
+
+static void test_process_decrypt_blob(void **state)
+{
+  (void) state; /* unused */
+
+  UT_array *cmd_arr;
+  struct client_address claddr;
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("DECRYPT_BLOB keyid ivid 12345", CMD_DELIMITER, cmd_arr), -1);
+  expect_string(__wrap_decrypt_blob_cmd, keyid, "keyid");
+  expect_string(__wrap_decrypt_blob_cmd, ivid, "ivid");
+  expect_string(__wrap_decrypt_blob_cmd, blob, "12345");
+  assert_int_equal(process_decrypt_blob_cmd(0, &claddr, NULL, cmd_arr), strlen(OK_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("DECRYPT_BLOB keyid ivid", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_decrypt_blob_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("DECRYPT_BLOB keyid", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_decrypt_blob_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("DECRYPT_BLOB ", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_decrypt_blob_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+}
+
+static void test_process_sign_blob(void **state)
+{
+  (void) state; /* unused */
+
+  UT_array *cmd_arr;
+  struct client_address claddr;
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("SIGN_BLOB keyid 12345", CMD_DELIMITER, cmd_arr), -1);
+  expect_string(__wrap_sign_blob_cmd, keyid, "keyid");
+  expect_string(__wrap_sign_blob_cmd, blob, "12345");
+  assert_int_equal(process_sign_blob_cmd(0, &claddr, NULL, cmd_arr), strlen(OK_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("SIGN_BLOB ", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_sign_blob_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("SIGN_BLOB ", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_sign_blob_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
 }
 
 int main(int argc, char *argv[])
@@ -601,6 +972,7 @@ int main(int argc, char *argv[])
 
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_process_domain_buffer),
+    cmocka_unit_test(test_process_subscribe_events_cmd),
     cmocka_unit_test(test_process_accept_mac_cmd),
     cmocka_unit_test(test_process_deny_mac_cmd),
     cmocka_unit_test(test_process_add_nat_cmd),
@@ -611,11 +983,20 @@ int main(int argc, char *argv[])
     cmocka_unit_test(test_process_set_ip_cmd),
     cmocka_unit_test(test_process_add_bridge_cmd),
     cmocka_unit_test(test_process_remove_bridge_cmd),
+    cmocka_unit_test(test_process_clear_bridges_cmd),
     cmocka_unit_test(test_process_set_fingerprint_cmd),
     cmocka_unit_test(test_process_query_fingerprint_cmd),
     cmocka_unit_test(test_process_register_ticket_cmd),
-    cmocka_unit_test(test_process_clear_psk_cmd)
+    cmocka_unit_test(test_process_clear_psk_cmd),
+    cmocka_unit_test(test_process_put_crypt_cmd),
+    cmocka_unit_test(test_process_get_crypt_cmd),
+    cmocka_unit_test(test_process_gen_randkey_cmd),
+    cmocka_unit_test(test_process_gen_privkey_cmd),
+    cmocka_unit_test(test_process_gen_pubkey_cmd),
+    cmocka_unit_test(test_process_gen_cert_cmd),
+    cmocka_unit_test(test_process_encrypt_blob),
+    cmocka_unit_test(test_process_decrypt_blob),
+    cmocka_unit_test(test_process_sign_blob)
   };
-
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

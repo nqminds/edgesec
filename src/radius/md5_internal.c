@@ -16,6 +16,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "utils/allocs.h"
 #include "utils/os.h"
 
 #include "md5_internal.h"

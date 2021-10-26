@@ -41,34 +41,65 @@
 #include <net/if.h>
 #include <string.h>
 #include <inttypes.h>
+// Used for signal handlers
+#include <signal.h>
 
 #include "config.h"
 
 #include "crypt/crypt_service.h"
 #include "supervisor/cmd_processor.h"
+#include "ap/ap_service.h"
 #include "microhttpd.h"
 #include "version.h"
+#include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/log.h"
 #include "utils/minIni.h"
 #include "utils/domain.h"
-#include "utils/cryptou.h"
+#include "utils/base64.h"
 
 #define SOCK_PACKET_SIZE 10
 
-#define OPT_STRING    ":a:s:p:z:c:u:tdvh"
-#define USAGE_STRING  "\t%s [-s address] [-a address] [-p port] [-z delim] [-c path] [-u passphrase] [-t] [-d] [-h] [-v]\n"
+#define OPT_STRING    ":s:p:z:c:tdvh"
+#define USAGE_STRING  "\t%s [-s address] [-p port] [-z delim] [-c name] [-t] [-d] [-h] [-v]\n"
 
-#define JSON_RESPONSE_OK "{\"cmd\":\"%s\",\"response\":[%s]}"
-#define JSON_RESPONSE_FAIL "{\"error\":\"invalid get request\"}"
+#define JSON_RESPONSE_OK    "{\"cmd\":\"%s\",\"response\":[%s]}"
+#define JSON_RESPONSE_FAIL  "{\"error\":\"invalid get request\"}"
+#define JSON_RESPONSE_HELP  "{\"commands\": [" \
+                            "{\"PING_SUPERVISOR\":\"\"}," \
+                            "{\"ACCEPT_MAC\":\"MAC VLANID\"}," \
+                            "{\"DENY_MAC\":\"MAC\"}," \
+                            "{\"ADD_NAT\":\"MAC\"}," \
+                            "{\"REMOVE_NAT\":\"MAC\"}," \
+                            "{\"ASSIGN_PSK\":\"MAC PASS\"}," \
+                            "{\"GET_MAP\":\"MAC\"}," \
+                            "{\"GET_ALL\":\"\"}," \
+                            "{\"ADD_BRIDGE\":\"MAC MAC\"}," \
+                            "{\"REMOVE_BRIDGE\":\"MAC MAC\"}," \
+                            "{\"GET_BRIDGES\":\"\"}," \
+                            "{\"REGISTER_TICKET\":\"MAC LABEL VLANID\"}," \
+                            "{\"CLEAR_PSK\":\"MAC\"}," \
+                            "{\"PUT_CRYPT\":\"KEYID BASE64VALUE\"}," \
+                            "{\"GET_CRYPT\":\"KEYID\"}," \
+                            "{\"GEN_RANDKEY\":\"KEYID SIZE\"}," \
+                            "{\"GEN_PRIVKEY\":\"KEYID SIZE\"}," \
+                            "{\"GEN_PUBKEY\":\"PUBKEYID PRIVKEYID\"}," \
+                            "{\"GEN_CERT\":\"CERTID PRIVKEYID\"}," \
+                            "{\"ENCRYPT_BLOB\":\"KEYID IVID BASE64BLOB\"}," \
+                            "{\"DECRYPT_BLOB\":\"KEYID IVID BASE64BLOB\"}," \
+                            "{\"SIGN_BLOB\":\"KEYID BASE64BLOB\"}" \
+                            "], \"query\":\"/?cmd=name&args=arguments\"}"
 
-#define MESSAGE_REPLY_TIMEOUT 10  // In seceonds
-// char *socket_path = "\0hidden";
+#define CRYPT_KEY_ID        "restkey"
+#define CRYPT_CERT_ID       "restcert"
+#define GET_CRYPT_KEY_CMD   CMD_GET_CRYPT" "CRYPT_KEY_ID
+#define GET_CRYPT_CERT_CMD  CMD_GET_CRYPT" "CRYPT_CERT_ID
+#define GEN_PRIVKEY_CMD     CMD_GEN_PRIVKEY" "CRYPT_KEY_ID" 128"
+#define GEN_CERT_CMD        CMD_GEN_CERT" "CRYPT_CERT_ID" "CRYPT_KEY_ID
 
 static __thread char version_buf[10];
 
 struct socket_address {
-  char apath[MAX_OS_PATH_LEN];
   char spath[MAX_OS_PATH_LEN];
   char delim;
 };
@@ -99,11 +130,9 @@ void show_app_help(char *app_name)
   fprintf(stdout, USAGE_STRING, basename(app_name));
   fprintf(stdout, "\nOptions:\n");
   fprintf(stdout, "\t-s address\t Path to supervisor socket\n");
-  fprintf(stdout, "\t-a address\t Path to AP socket\n");
   fprintf(stdout, "\t-p port\t\t Server port\n");
   fprintf(stdout, "\t-z delim\t\t Command delimiter\n");
-  fprintf(stdout, "\t-c path\t\t The crypt db path\n");
-  fprintf(stdout, "\t-u passphrase\t\t The user passpharse\n");
+  fprintf(stdout, "\t-c name\t\t The common name for certificate generation\n");
   fprintf(stdout, "\t-t\t\t Use TLS\n");
   fprintf(stdout, "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n");
   fprintf(stdout, "\t-h\t\t Show help\n");
@@ -136,20 +165,15 @@ int get_port(char *port_str)
   return strtol(port_str, NULL, 10);
 }
 
-void process_app_options(int argc, char *argv[], char *spath, char *apath,
-  int *port, char *delim, bool *tls, char ** db_path, char **passphrase, uint8_t *verbosity)
+void process_app_options(int argc, char *argv[], char *spath,
+                         int *port, char *delim, char *cn, bool *tls,
+                        uint8_t *verbosity)
 {
   int opt;
   int p;
   *tls = false;
   while ((opt = getopt(argc, argv, OPT_STRING)) != -1) {
     switch (opt) {
-    case 'c':
-      *db_path = os_strdup(optarg);
-      break;
-    case 'u':
-      *passphrase = os_strdup(optarg);
-      break;
     case 't':
       *tls = true;
       break;
@@ -166,8 +190,8 @@ void process_app_options(int argc, char *argv[], char *spath, char *apath,
     case 's':
       os_strlcpy(spath, optarg, MAX_OS_PATH_LEN);
       break;
-    case 'a':
-      os_strlcpy(apath, optarg, MAX_OS_PATH_LEN);
+    case 'c':
+      os_strlcpy(cn, optarg, MAX_WEB_PATH_LEN);
       break;
     case 'z':
       errno = 0;
@@ -199,30 +223,43 @@ void process_app_options(int argc, char *argv[], char *spath, char *apath,
 int print_out_key (void *cls, enum MHD_ValueKind kind, 
                    const char *key, const char *value)
 {
+  (void) cls;
+  (void) kind;
   log_info("HEADER --> key=%s value=%s", key, value);
   return MHD_YES;
 }
 
-char* create_command_string(char *cmd, char *args, char *cmd_str, char delim)
+char* create_command_string(char *cmd, char *args, char delim)
 {
-  char *cmd_tmp;
-  if (cmd == NULL || cmd_str == NULL)
+  char *cmd_upper, *cmd_str = NULL;
+  if (cmd == NULL)
     return NULL;
 
-  if (os_strnlen_s(cmd, MAX_SUPERVISOR_CMD_SIZE)) {
-    cmd_tmp = os_strdup(cmd);
-    upper_string(cmd_tmp);
-    if (args ==  NULL)
-      sprintf(cmd_str, "%s", cmd_tmp);
-    else
-      sprintf(cmd_str, "%s %s", cmd_tmp, args);
-    replace_string_char(cmd_str, ',', delim);
-    os_free(cmd_tmp);
-
-    return cmd_str;
+  if ((cmd_upper = os_strdup(cmd)) == NULL) {
+    log_err("os_strdup");
+    return NULL;
   }
 
-  return NULL;
+  upper_string(cmd_upper);
+
+  if (args ==  NULL) {
+    if ((cmd_str = os_malloc(strlen(cmd_upper) + 1)) == NULL) {
+      log_err("os_malloc");
+      os_free(cmd_upper);
+      return NULL;    
+    }
+    sprintf(cmd_str, "%s", cmd_upper);
+  } else {
+    if ((cmd_str = os_malloc(strlen(cmd_upper) + strlen(args) + 2)) == NULL) {
+      log_err("os_malloc");
+      os_free(cmd_upper);
+      return NULL;    
+    }
+    sprintf(cmd_str, "%s%c%s", cmd_upper, delim, args);
+  }
+  os_free(cmd_upper);
+
+  return cmd_str;
 }
 
 enum MHD_Result create_connection_response(char *data, struct MHD_Connection *connection)
@@ -240,7 +277,6 @@ enum MHD_Result create_connection_response(char *data, struct MHD_Connection *co
   if (ret == MHD_NO) {
     log_debug("MHD_add_response_header error");
     MHD_destroy_response(response);  
-    // os_free(me);
     return MHD_NO;
   }
   ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
@@ -249,76 +285,12 @@ enum MHD_Result create_connection_response(char *data, struct MHD_Connection *co
   return ret;
 }
 
-int forward_command(char *cmd_str, char *socket_path, char **sresponse)
-{
-  int sfd;
-  uint32_t bytes_available;
-  ssize_t send_count;
-  struct timeval timeout;
-  fd_set readfds, masterfds;
-  char *rec_data;
-  timeout.tv_sec = MESSAGE_REPLY_TIMEOUT;
-  timeout.tv_usec = 0;
-
-  if ((sfd = create_domain_client(NULL)) == -1) {
-    log_debug("create_domain_client fail");
-    return -1;
-  }
-
-  FD_ZERO(&masterfds);
-  FD_SET(sfd, &masterfds);
-  os_memcpy(&readfds, &masterfds, sizeof(fd_set));
-
-  log_trace("socket_path=%s", socket_path);
-  if ((send_count = write_domain_data_s(sfd, cmd_str, strlen(cmd_str), socket_path)) != strlen(cmd_str)) {
-    log_err("sendto");
-    goto fail;
-  }
-
-  log_debug("Sent %d bytes to %s", send_count, socket_path);
-
-  errno = 0;
-  if (select(sfd + 1, &readfds, NULL, NULL, &timeout) < 0) {
-    log_err("select");
-    goto fail;
-  }
-
-  if(FD_ISSET(sfd, &readfds)) {
-    if (ioctl(sfd, FIONREAD, &bytes_available) == -1) {
-      log_err("ioctl");
-      goto fail;
-    }
-
-    log_trace("Bytes available=%u", bytes_available);
-    rec_data = os_zalloc(bytes_available + 1);
-    if (rec_data == NULL) {
-      log_err("os_zalloc");
-      goto fail;
-    }
-
-    read_domain_data_s(sfd, rec_data, bytes_available, socket_path, MSG_DONTWAIT);
-
-    *sresponse = rtrim(rec_data, NULL);
-  } else {
-    log_debug("Socket timeout");
-    goto fail;
-  }
-
-  close(sfd);
-  return 0;
-
-fail:
-  *sresponse = NULL;
-  close(sfd);
-  return -1;
-}
-
 char* process_response_array(UT_array *cmd_arr)
 {
   char **p = NULL;
   char *json_response = NULL;
   ssize_t len = 0; 
-  while(p = (char**) utarray_next(cmd_arr, p)) {
+  while((p = (char**) utarray_next(cmd_arr, p)) != NULL) {
     len += strlen(*p) + 2 + 1;
     if (json_response == NULL) {
       json_response = os_malloc(len);
@@ -340,8 +312,8 @@ static enum MHD_Result mhd_reply(void *cls, struct MHD_Connection *connection, c
 {
   static int aptr;
   struct socket_address *sad = (struct socket_address *)cls;
-  char *cmd, *args, *address = NULL, *socket_response, *json_response = NULL, *succ_response;
-  char cmd_str[255], fail_response_buf[255];
+  char *cmd, *args, *socket_response, *json_response = NULL, *succ_response;
+  char *cmd_str, *response_buf;
   UT_array *cmd_arr;
   enum MHD_Result ret;
 
@@ -368,69 +340,145 @@ static enum MHD_Result mhd_reply(void *cls, struct MHD_Connection *connection, c
   log_info("URL --> %s %s", method, url);
   log_info("PARAMS --> cmd=%s args=%s", cmd, args);
 
-  if (create_command_string(cmd, args, cmd_str, sad->delim) == NULL) {
+  if (cmd == NULL && args == NULL) {
+    if ((response_buf = os_malloc(strlen(JSON_RESPONSE_HELP) + 1)) == NULL) {
+      log_err("os_malloc");
+      return MHD_NO;
+    }
+
+    sprintf(response_buf, JSON_RESPONSE_HELP);
+    ret = create_connection_response(response_buf, connection);
+    os_free(response_buf);
+    return ret;
+  }
+
+  if ((cmd_str = create_command_string(cmd, args, sad->delim)) == NULL) {
     log_debug("create_command_string fail");
-    sprintf(fail_response_buf, JSON_RESPONSE_FAIL);
-    return create_connection_response(fail_response_buf, connection);
+    if ((response_buf = os_malloc(strlen(JSON_RESPONSE_FAIL) + 1)) == NULL) {
+      log_err("os_malloc");
+      return MHD_NO;
+    }
+
+    sprintf(response_buf, JSON_RESPONSE_FAIL);
+    ret = create_connection_response(response_buf, connection);
+    os_free(response_buf);
+    return ret;
   }
 
-  if (get_command_function(cmd) != NULL) {
-    log_debug("Supervisor command=%s", cmd);
-    address = sad->spath;
-  } else {
-    log_debug("AP command=%s", cmd);
-    address = sad->apath;
-  }
+  if (writeread_domain_data_str(sad->spath, cmd_str, &socket_response) < 0) {
+    log_debug("writeread_domain_data_str fail");
+    if ((response_buf = os_malloc(strlen(JSON_RESPONSE_FAIL) + 1)) == NULL) {
+      log_err("os_malloc");
+      os_free(cmd_str);
+      return MHD_NO;
+    }
 
-  if (forward_command(cmd_str, address, &socket_response) == -1) {
-    log_debug("forward_command fail");
-    sprintf(fail_response_buf, JSON_RESPONSE_FAIL);
-    return create_connection_response(fail_response_buf, connection);
+    sprintf(response_buf, JSON_RESPONSE_FAIL);
+    ret =  create_connection_response(response_buf, connection);
+
+    os_free(response_buf);
+    os_free(cmd_str);
+    return ret;
   }
+  os_free(cmd_str);
 
   utarray_new(cmd_arr, &ut_str_icd);
   if (!process_domain_buffer(socket_response, strlen(socket_response), cmd_arr, '\n')) {
     log_debug("process_domain_buffer fail");
-    sprintf(fail_response_buf, JSON_RESPONSE_FAIL);
+    if ((response_buf = os_malloc(strlen(JSON_RESPONSE_FAIL) + 1)) == NULL) {
+      log_err("os_malloc");
+      os_free(socket_response);
+      utarray_free(cmd_arr);
+      return MHD_NO;
+    }
+
+    sprintf(response_buf, JSON_RESPONSE_FAIL);
+    ret = create_connection_response(response_buf, connection);
     os_free(socket_response);
     utarray_free(cmd_arr);
-    return create_connection_response(fail_response_buf, connection);
+    os_free(response_buf);
+    return ret;
   }
   os_free(socket_response);
 
-  json_response = process_response_array(cmd_arr);
-  succ_response = os_malloc(strlen(JSON_RESPONSE_OK) + strlen(json_response) + strlen(cmd) + 1);
+  if ((json_response = process_response_array(cmd_arr)) == NULL) {
+    json_response = os_strdup("");
+  }
+
+  if ((succ_response = os_malloc(strlen(JSON_RESPONSE_OK) + strlen(json_response) + strlen(cmd) + 1)) == NULL) {
+    log_err("os_malloc");
+    os_free(json_response);
+    utarray_free(cmd_arr);
+    return MHD_NO;
+  }
+
   sprintf(succ_response, JSON_RESPONSE_OK, cmd, json_response);
+  ret = create_connection_response(succ_response, connection);
+
+  os_free(succ_response);
   os_free(json_response);
   utarray_free(cmd_arr);
-  ret = create_connection_response(succ_response, connection);
-  os_free(succ_response);
 
   return ret;
 }
 
+// static vars since atexit and signal handler should clean them up
+static char* key = NULL;
+static char* cert = NULL;
+static struct MHD_Daemon* mhd_daemon = NULL;
+
+
+/**
+ * Cleanup function.
+ *
+ * Frees memory and stops the MHD Daemon.
+ *
+ * Designed to be used as part of a exit handler.
+ */
+void cleanup() {
+  if (key != NULL) {
+    os_free(key);
+    key = NULL;
+  }
+  if (cert != NULL) {
+    os_free(cert);
+    cert = NULL;
+  }
+  if (mhd_daemon != NULL) {
+    MHD_stop_daemon (mhd_daemon);
+    mhd_daemon = NULL;
+  }
+
+  fprintf(stderr, "Server stopped\n");
+}
+
+void signal_handler() {
+  return exit(0); // call atexit() exit handlers
+}
+
 int main(int argc, char *argv[])
 {
-  struct MHD_Daemon *d;
   uint8_t verbosity = 0;
   uint8_t level = 0;
   struct socket_address sad;
   int port = -1;
-  char *key;
-  char *cert;
   bool tls = false;
-  int flags;
-  char *db_path = NULL;
-  char *passphrase = NULL;
-  struct crypt_context *crypt_ctx;
-  struct crypt_pair* get_pair;
-  struct crypt_pair put_pair;
-  char *keyhttps = "keyhttps";
-  char *certhttps = "certhttps";
+  int flags = MHD_USE_THREAD_PER_CONNECTION | MHD_USE_DEBUG | MHD_USE_INTERNAL_POLLING_THREAD;
+  char *reply = NULL;
+  char *request = NULL;
+  char cn[MAX_WEB_PATH_LEN];
+  uint8_t *base64_buf = NULL;
+  size_t base64_buf_len;
 
+  // add exit/signal handlers
+  atexit(&cleanup);
+  signal(SIGINT, &signal_handler);
+  signal(SIGTERM, &signal_handler);
+
+  os_memset(cn, 0, MAX_WEB_PATH_LEN);
   os_memset(&sad, 0, sizeof(struct socket_address));
 
-  process_app_options(argc, argv, sad.spath, sad.apath, &port, &sad.delim, &tls, &db_path, &passphrase, &verbosity); 
+  process_app_options(argc, argv, sad.spath, &port, &sad.delim, cn, &tls, &verbosity); 
 
   if (optind <= 1) show_app_help(argv[0]);
 
@@ -451,83 +499,134 @@ int main(int argc, char *argv[])
   }
 
   fprintf(stdout, "Starting server with:\n");
-  fprintf(stdout, "Supervisor address --> %s\n", sad.apath);
-  fprintf(stdout, "AP address --> %s\n", sad.spath);
+  fprintf(stdout, "Supervisor address --> %s\n", sad.spath);
   fprintf(stdout, "Port --> %d\n", port);
   fprintf(stdout, "Command delimiter --> %c\n", sad.delim);
   fprintf(stdout, "Using TLS --> %d\n", tls);
-  fprintf(stdout, "Using crypt db path --> %s\n", db_path);
+  fprintf(stdout, "Common name for certificate --> %s\n", cn);
 
-  if (crypto_generate_keycert_str(1024, &key, &cert) < 0) {
-    fprintf(stderr, "crypto_generate_keycert_str failure\n");
-    exit(EXIT_FAILURE);
-  }
-
-  if ((crypt_ctx = load_crypt_service(db_path, "microhttps", passphrase,
-                                      (passphrase == NULL) ? 0 : os_strnlen_s(passphrase, MAX_USER_SECRET))) == NULL) {
-    fprintf(stderr, "load_crypt_service fail\n");
-    exit(EXIT_FAILURE);
-  }
-
-  get_pair = get_crypt_pair(crypt_ctx, keyhttps);
-
-  if (get_pair == NULL) {
-    fprintf(stderr, "get_crypt_pair failure\n");
-    exit(EXIT_FAILURE);
-  }
-
-  if (!get_pair->value_size) {
-    fprintf(stdout, "Inserting new key\n");
-    put_pair.key = keyhttps;
-    put_pair.value = key;
-    put_pair.value_size = strlen(key) + 1;
-    put_crypt_pair(crypt_ctx, &put_pair);
-  } else {
-    fprintf(stdout, "Retrieving existing key\n");
-    os_free(key);
-    key = os_zalloc(get_pair->value_size);
-    os_memcpy(key, get_pair->value, get_pair->value_size);
-  }
-  free_crypt_pair(get_pair);
-
-  get_pair = get_crypt_pair(crypt_ctx, certhttps);
-
-  if (get_pair == NULL) {
-    fprintf(stderr, "get_crypt_pair failure\n");
-    exit(EXIT_FAILURE);
-  }
-  if (!get_pair->value_size) {
-    fprintf(stdout, "Inserting new certificate\n");
-    put_pair.key = certhttps;
-    put_pair.value = cert;
-    put_pair.value_size = strlen(cert) + 1;
-    put_crypt_pair(crypt_ctx, &put_pair);
-  } else {
-    os_free(cert);
-    fprintf(stdout, "Retrieving existing certificate\n");
-    cert = os_zalloc(get_pair->value_size);
-    os_memcpy(cert, get_pair->value, get_pair->value_size);
-  }
-  free_crypt_pair(get_pair);
-
-
-  flags = MHD_USE_THREAD_PER_CONNECTION;
-  flags = (tls) ? flags | MHD_USE_TLS : flags;
+  flags = (tls) ? flags | MHD_USE_SSL : flags;
 
   fprintf(stdout, "Starting server...\n");
-  d = MHD_start_daemon (flags, (uint16_t) port,
+
+  if (tls) {
+    if(MHD_NO == MHD_is_feature_supported(MHD_FEATURE_TLS)) {
+      fprintf(stderr, "restsrv was not compiled with a microhttpd with TLS support\n");
+      exit(EXIT_FAILURE);
+    }
+
+    if (writeread_domain_data_str(sad.spath, GET_CRYPT_KEY_CMD, &reply) < 0) {
+      fprintf(stderr, "writeread_domain_data_str fail\n");
+      exit(EXIT_FAILURE);
+    }
+
+    if (strcmp(reply, FAIL_REPLY) == 0) {
+      os_free(reply);
+      fprintf(stdout, "Generating new private key\n");
+      if (writeread_domain_data_str(sad.spath, GEN_PRIVKEY_CMD, &reply) < 0) {
+        fprintf(stderr, "writeread_domain_data_str fail\n");
+        exit(EXIT_FAILURE);
+      }
+      if (strcmp(reply, FAIL_REPLY) == 0) {
+        fprintf(stderr, "writeread_domain_data_str fail\n");
+        exit(EXIT_FAILURE);
+      }
+      os_free(reply);
+
+      if (!strlen(cn)) {
+        fprintf(stderr, "Common name not specified\n");  
+        exit(EXIT_FAILURE);
+      }
+
+      fprintf(stdout, "Generating new certificate key for cn=%s\n", cn);
+      if ((request = os_malloc(strlen(GEN_CERT_CMD) +strlen(cn) + 2)) == NULL) {
+        fprintf(stderr, "os_malloc fail");
+        exit(EXIT_FAILURE);
+      }
+
+      sprintf(request, "%s%c%s", GEN_CERT_CMD, sad.delim, cn);
+      if (writeread_domain_data_str(sad.spath, request, &reply) < 0) {
+        fprintf(stderr, "writeread_domain_data_str fail\n");
+        os_free(request);
+        exit(EXIT_FAILURE);
+      }
+
+      os_free(request);
+
+      if (strcmp(reply, FAIL_REPLY) == 0) {
+        fprintf(stderr, "writeread_domain_data_str fail\n");
+        exit(EXIT_FAILURE);
+      }
+    }
+
+    os_free(reply);
+    fprintf(stdout, "Loading existing private key\n");
+    if (writeread_domain_data_str(sad.spath, GET_CRYPT_KEY_CMD, &reply) < 0) {
+      fprintf(stderr, "writeread_domain_data_str fail");
+      exit(EXIT_FAILURE);
+    }
+
+    if (strcmp(reply, FAIL_REPLY) == 0) {
+      fprintf(stderr, "writeread_domain_data_str fail\n");
+      exit(EXIT_FAILURE);
+    }
+
+    if ((base64_buf = (uint8_t *) base64_url_decode((unsigned char *) reply, strlen(reply), &base64_buf_len)) == NULL) {
+      fprintf(stderr, "base64_url_decode fail\n");
+      exit(EXIT_FAILURE);
+    }
+    if ((key = os_zalloc(base64_buf_len + 1)) == NULL) {
+      fprintf(stderr, "os_zalloc fail\n");
+      exit(EXIT_FAILURE);
+    }
+    os_memcpy(key, base64_buf, base64_buf_len);
+    os_free(base64_buf);
+    os_free(reply);
+
+    fprintf(stdout, "Loading existing certificate\n");
+    if (writeread_domain_data_str(sad.spath, GET_CRYPT_CERT_CMD, &reply) < 0) {
+      fprintf(stderr, "writeread_domain_data_str fail\n");
+      exit(EXIT_FAILURE);
+    }
+
+    if (strcmp(reply, FAIL_REPLY) == 0) {
+      fprintf(stderr, "writeread_domain_data_str fail\n");
+      exit(EXIT_FAILURE);
+    }
+
+    if ((base64_buf = (uint8_t *) base64_url_decode((unsigned char *) reply, strlen(reply), &base64_buf_len)) == NULL) {
+      fprintf(stderr, "base64_url_decode fail\n");
+      exit(EXIT_FAILURE);
+    }
+    if ((cert = os_zalloc(base64_buf_len + 1)) == NULL) {
+      fprintf(stderr, "os_zalloc fail\n");
+      exit(EXIT_FAILURE);
+    }
+    os_memcpy(cert, base64_buf, base64_buf_len);
+    os_free(base64_buf);
+    os_free(reply);
+
+    mhd_daemon = MHD_start_daemon (flags, (uint16_t) port,
                         NULL, NULL, &mhd_reply, (void*)&sad,
                         MHD_OPTION_HTTPS_MEM_KEY, key,
-                        MHD_OPTION_HTTPS_MEM_CERT, cert,
+                        MHD_OPTION_HTTPS_MEM_CERT, cert,  
                         MHD_OPTION_END);
+  } else {
+    mhd_daemon = MHD_start_daemon (flags, (uint16_t) port, NULL, NULL, &mhd_reply, (void*)&sad, NULL, MHD_OPTION_END);
+  }
 
-  if (d == NULL) {
+  if (mhd_daemon == NULL) {
     fprintf(stderr, "Error: Failed to start server\n");
     exit(EXIT_FAILURE);
   }
 
-  (void) getc (stdin);
-  MHD_stop_daemon (d);
-  fprintf(stdout, "Server stopped\n");
-  exit(EXIT_SUCCESS);
+  fprintf(stderr, "Server started, press CTRL+C to exit.\n");
+
+  // wait forever until we get CTRL+C (SIGINT) or other closing signal
+  sigset_t mask;
+  sigemptyset(&mask);
+  if(sigsuspend(&mask)) {
+    // should never happen, since we call exit() in signal handler
+    fprintf(stderr, "Error: sigsuspend failed\n");
+  };
 }

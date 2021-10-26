@@ -28,13 +28,18 @@
 #include <sys/socket.h>
 #include <ctype.h>
 #include <errno.h>
+#include <sys/ioctl.h>
 
 #include "domain.h"
 
+#include "allocs.h"
 #include "os.h"
 #include "log.h"
 
 #define SOCK_EXTENSION ".sock"
+
+#define DOMAIN_REPLY_TIMEOUT 10
+
 void init_domain_addr(struct sockaddr_un *unaddr, char *addr)
 {
   os_memset(unaddr, 0, sizeof(struct sockaddr_un));
@@ -132,10 +137,8 @@ int create_domain_server(char *server_path)
 }
 
 ssize_t read_domain_data(int sock, char *data, size_t data_len,
-  struct sockaddr_un *addr, int *addr_len, int flags)
+                         struct client_address *addr, int flags)
 {
-  *addr_len = sizeof(struct sockaddr_un);
-
   if (data == NULL) {
     log_trace("data param is NULL");
     return -1;
@@ -146,7 +149,9 @@ ssize_t read_domain_data(int sock, char *data, size_t data_len,
     return -1;
   }
 
-  ssize_t num_bytes = recvfrom(sock, data, data_len, flags, (struct sockaddr *) addr, addr_len);
+  addr->len = sizeof(struct sockaddr_un);
+
+  ssize_t num_bytes = recvfrom(sock, data, data_len, flags, (struct sockaddr *) &addr->addr, (socklen_t *) &addr->len);
   if (num_bytes == -1) {
     log_err("recvfrom");
     return -1;
@@ -157,37 +162,37 @@ ssize_t read_domain_data(int sock, char *data, size_t data_len,
 
 ssize_t read_domain_data_s(int sock, char *data, size_t data_len, char *addr, int flags)
 {
-  struct sockaddr_un unaddr;
+  struct client_address claddr;
   ssize_t num_bytes;
-  int addr_len;
 
   if (addr == NULL) {
     log_trace("addr is NULL");
     return -1;
   }
 
-  num_bytes = read_domain_data(sock, data, data_len, &unaddr, &addr_len, flags);
+  num_bytes = read_domain_data(sock, data, data_len, &claddr, flags);
 
-  strcpy(addr, unaddr.sun_path);
+  strcpy(addr, claddr.addr.sun_path);
 
   return num_bytes;
 }
 
 ssize_t write_domain_data_s(int sock, char *data, size_t data_len, char *addr)
 {
-  struct sockaddr_un uaddr;
+  struct client_address claddr;
 
   if (addr == NULL) {
     log_trace("addr param is NULL");
     return -1;
   }
 
-  init_domain_addr(&uaddr, addr);
+  init_domain_addr(&claddr.addr, addr);
+  claddr.len = sizeof(struct sockaddr_un);
 
-  return write_domain_data(sock, data, data_len, &uaddr, sizeof(struct sockaddr_un));
+  return write_domain_data(sock, data, data_len, &claddr);
 }
 
-ssize_t write_domain_data(int sock, char *data, size_t data_len, struct sockaddr_un *addr, int addr_len)
+ssize_t write_domain_data(int sock, char *data, size_t data_len, struct client_address *addr)
 {
   ssize_t num_bytes;
 
@@ -202,7 +207,7 @@ ssize_t write_domain_data(int sock, char *data, size_t data_len, struct sockaddr
   }
 
   errno = 0;
-  if ((num_bytes = sendto(sock, data, data_len, 0, (struct sockaddr *) addr, addr_len)) < 0) {
+  if ((num_bytes = sendto(sock, data, data_len, 0, (struct sockaddr *) &addr->addr, addr->len)) < 0) {
     log_err("sendto");
     return -1;
   }
@@ -215,6 +220,95 @@ int close_domain(int sfd)
   if (sfd) {
     return close(sfd);
   }
+
+  return 0;
+}
+
+int writeread_domain_data_str(char *socket_path, char *write_str, char **reply)
+{
+  int sfd;
+  uint32_t bytes_available;
+  ssize_t send_count, rec_count;
+  struct timeval timeout;
+  fd_set readfds, masterfds;
+  char *rec_data, *trimmed;
+  timeout.tv_sec = DOMAIN_REPLY_TIMEOUT;
+  timeout.tv_usec = 0;
+
+  *reply = NULL;
+
+  if ((sfd = create_domain_client(NULL)) == -1) {
+    log_debug("create_domain_client fail");
+    return -1;
+  }
+
+  FD_ZERO(&masterfds);
+  FD_SET(sfd, &masterfds);
+  os_memcpy(&readfds, &masterfds, sizeof(fd_set));
+
+  log_trace("Sending to socket_path=%s", socket_path);
+  send_count = write_domain_data_s(sfd, write_str, strlen(write_str), socket_path);
+  if (send_count < 0) {
+    log_err("sendto");
+    close(sfd);
+    return -1;
+  }
+
+  if ((size_t)send_count != strlen(write_str)) {
+    log_err("write_domain_data_s fail");
+    close(sfd);
+    return -1;
+  }
+
+  log_debug("Sent %d bytes to %s", send_count, socket_path);
+
+  errno = 0;
+  if (select(sfd + 1, &readfds, NULL, NULL, &timeout) < 0) {
+    log_err("select");
+    close(sfd);
+    return -1;
+  }
+
+  if(FD_ISSET(sfd, &readfds)) {
+    if (ioctl(sfd, FIONREAD, &bytes_available) == -1) {
+      log_err("ioctl");
+      close(sfd);
+      return -1;
+    }
+
+    log_trace("Bytes available=%u", bytes_available);
+    rec_data = os_zalloc(bytes_available + 1);
+    if (rec_data == NULL) {
+      log_err("os_zalloc");
+      close(sfd);
+      return -1;
+    }
+
+    rec_count = read_domain_data_s(sfd, rec_data, bytes_available, socket_path, MSG_DONTWAIT);
+
+    if (rec_count < 0) {
+      log_trace("read_domain_data_s fail");
+      close(sfd);
+      os_free(rec_data);
+      return -1;
+    }
+
+    if ((trimmed = rtrim(rec_data, NULL)) == NULL) {
+      log_trace("rtrim fail");
+      close(sfd);
+      os_free(rec_data);
+      return -1;
+    }
+
+    *reply = os_strdup(trimmed);
+  } else {
+    log_debug("Socket timeout");
+    close(sfd);
+    return -1;
+  }
+
+  close(sfd);
+  os_free(rec_data);
 
   return 0;
 }

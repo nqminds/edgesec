@@ -29,6 +29,7 @@
 #include <stdint.h>
 #include <sqlite3.h>
 
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/squeue.h"
 
@@ -70,13 +71,13 @@ int open_sqlite_fingerprint_db(char *db_path, sqlite3** sql);
 void free_sqlite_fingerprint_db(sqlite3 *db);
 
 /**
- * @brief Save a fingerprint entry into the sqlite db
+ * @brief Save a fingerprint row into the sqlite db
  * 
  * @param db The sqlite db structure pointer
  * @param row The entry row
  * @return int 0 on success, -1 on failure
  */
-int save_sqlite_fingerprint_entry(sqlite3 *db, struct fingerprint_row *row);
+int save_sqlite_fingerprint_row(sqlite3 *db, struct fingerprint_row *row);
 
 
 /**
@@ -87,17 +88,17 @@ int save_sqlite_fingerprint_entry(sqlite3 *db, struct fingerprint_row *row);
  * @param timestamp The timestamp value
  * @param op The timestamp operator value
  * @param protocol The protocol value (if NULL returns all the protocols)
- * @param entries The output entries
+ * @param rows The output rows
  * @return int 0 on success, -1 on failure
  */
-int get_sqlite_fingerprint_entries(sqlite3 *db, char *mac, uint64_t timestamp, char *op,
-                                   char *protocol, UT_array *entries);
+int get_sqlite_fingerprint_rows(sqlite3 *db, char *mac, uint64_t timestamp, char *op,
+                                   char *protocol, UT_array *rows);
 
 /**
- * @brief Frees the elements of a fingerprint row
+ * @brief Frees all the rows an an array of rows
  * 
- * @param column The store row value
+ * @param rows The array of rows
  */
-void free_sqlite_fingerprint_row_els(struct fingerprint_row *row);
+void free_sqlite_fingerprint_rows(UT_array *rows);
 
 #endif

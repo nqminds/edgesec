@@ -31,6 +31,7 @@
 #include <uuid/uuid.h>
 
 #include "utarray.h"
+#include "allocs.h"
 #include "os.h"
 #include "log.h"
 
@@ -43,10 +44,18 @@ struct proc_signal_arg {
 
 bool is_number(const char *ptr)
 {
+  int offset = 0;
   if (ptr == NULL)
     return false;
 
-  for (int i = 0; i < MAX_64BIT_DIGITS, ptr[i] != '\0'; i++) {
+  if (ptr[0] == '-' || ptr[0] == '+')
+    offset = 1;
+
+  if (strlen(ptr) && offset && ptr[1] == '\0') {
+    return false;
+  }
+
+  for (int i = offset; i < MAX_64BIT_DIGITS && ptr[i] != '\0'; i++) {
     if (!isdigit(ptr[i]))
       return false;
   }
@@ -161,23 +170,6 @@ size_t os_strlcpy(char *dest, const char *src, size_t siz)
 	return s - src - 1;
 }
 
-void * os_zalloc(size_t size)
-{
-	void *n = os_malloc(size);
-	if (n != NULL)
-		os_memset(n, 0, size);
-	return n;
-}
-
-void * os_memdup(const void *src, size_t len)
-{
-	void *r = os_malloc(len);
-
-	if (r && src)
-		os_memcpy(r, src, len);
-	return r;
-}
-
 int os_memcmp_const(const void *a, const void *b, size_t len)
 {
 	const uint8_t *aa = a;
@@ -210,7 +202,7 @@ int os_get_random(unsigned char *buf, size_t len)
 
 int os_get_random_number_s(unsigned char *buf, size_t len)
 {
-  int idx = 0;
+  size_t idx = 0;
   if (os_get_random(buf, len) < 0) {
     log_trace("os_get_random fail");
     return -1;
@@ -258,10 +250,22 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn fn, 
   int status;
   int exit_code = 0;
   int pfd[2];                      /* Pipe file descriptors */
+  char *command = NULL;
 
   if (argv ==  NULL) {
     log_trace("argv is NULL");
     return 1;
+  }
+
+  command = argv[0];
+  if (command == NULL) {
+    log_trace("run command is NULL");
+    return 1;
+  }
+
+  if (check_file_exists(command, NULL) < 0) {
+    log_trace("check_file_exists fail");
+    return -1;
   }
 
   /* Create pipe */
@@ -269,8 +273,6 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn fn, 
     log_err("pipe");
     return 1;
   }
-
-  char *command = argv[0];
 
   fflush(stdout);
   fflush(stderr);
@@ -358,7 +360,7 @@ int fn_split_string_array(const char *str, size_t len, void *data)
 
 ssize_t split_string(const char *str, char sep, split_string_fn fun, void *data)
 {
-  size_t start = 0, stop, count = 0;
+  ssize_t start = 0, stop, count = 0;
 
   if (fun == NULL) {
     log_trace("fun is NULL");
@@ -371,11 +373,11 @@ ssize_t split_string(const char *str, char sep, split_string_fn fun, void *data)
   }
 
   for (stop = 0; str[stop]; stop++) {
-      if (str[stop] == sep) {
-          fun(str + start, stop - start, data);
-          start = stop + 1;
-          count++;
-      }
+    if (str[stop] == sep) {
+      fun(str + start, stop - start, data);
+      start = stop + 1;
+      count++;
+    }
   }
 
   if (stop - start < 0) {
@@ -390,7 +392,7 @@ ssize_t split_string(const char *str, char sep, split_string_fn fun, void *data)
     }
   }
 
-  return (ssize_t)(count + 1);
+  return count + 1;
 }
 
 ssize_t split_string_array(const char *str, char sep, UT_array *arr)
@@ -401,24 +403,6 @@ ssize_t split_string_array(const char *str, char sep, UT_array *arr)
   }
 
   return split_string(str, sep, fn_split_string_array, (void *)arr);
-}
-
-char * os_strdup(const char *s)
-{
-	char *dest = NULL;
-  size_t len = strlen(s) + 1;
-
-	if (s != NULL) {
-  	dest = (char *) os_malloc(len);
-		if (dest == NULL) {
-			log_err("os_malloc");
-      return NULL;
-		}
-
-		strcpy(dest, s);
-	}
-
-	return dest;
 }
 
 char *  concat_paths(char *path_left, char *path_right)
@@ -478,16 +462,17 @@ char *get_valid_path(char *path)
   char *path_dirname = dirname(dir);
   char *path_basename = basename(base);
 
-  if (!strlen(path))
+  if (!strlen(path)) {
     concat = concat_paths(path_dirname, NULL);
-  else if (strlen(path) &&
+  } else if (strlen(path) &&
           (strcmp(path, ".") == 0 ||
            strcmp(path, "..") == 0 ||
            strcmp(path, "/") == 0||
-           strcmp(path, "//") == 0))
+           strcmp(path, "//") == 0)) {
     concat = concat_paths(path, NULL);
-  else
+  } else {
     concat = concat_paths(path_dirname, path_basename);
+  }
 
   os_free(dir);
   os_free(base);
@@ -496,15 +481,20 @@ char *get_valid_path(char *path)
 
 char *construct_path(char *path_left, char *path_right)
 {
+  char *path = NULL;
   if (path_left == NULL || path_right == NULL)
     return NULL;
 
-  if (!strlen(path_right) && strlen(path_left))
-    return get_valid_path(path_left);
-  else if (strlen(path_right) && !strlen(path_left))
-    return get_valid_path(path_right);
-  else if (!strlen(path_right) && !strlen(path_left))
-    return get_valid_path("");
+  if (!strlen(path_right) && strlen(path_left)) {
+    path = get_valid_path(path_left);
+    return path;
+  } else if (strlen(path_right) && !strlen(path_left)) {
+    path = get_valid_path(path_right);
+    return path;
+  } else if (!strlen(path_right) && !strlen(path_left)) {
+    path = get_valid_path("");
+    return path;
+  }
 
   char *valid_left = get_valid_path(path_left);
   char *valid_right = get_valid_path(path_right);
@@ -519,7 +509,7 @@ char *construct_path(char *path_left, char *path_right)
   os_free(valid_left);
   os_free(valid_right);
 
-  char *path = get_valid_path(concat);
+  path = get_valid_path(concat);
   os_free(concat);
 
   return path;
@@ -527,6 +517,9 @@ char *construct_path(char *path_left, char *path_right)
 
 bool check_file_hash(char *filename, const char *filehash)
 {
+  (void) filename;
+  (void) filehash;
+
   if (filehash == NULL)
     return true;
   else
@@ -569,6 +562,18 @@ char* get_secure_path(UT_array *bin_path_arr, char *filename, char *filehash)
   }
 
   return NULL;
+}
+
+int is_proc_running(char *name)
+{
+  struct find_dir_type dir_args = {.proc_running = 0, .proc_name = name};
+
+  if (list_dir("/proc", find_dir_proc_fn, (void *)&dir_args) == -1) {
+    log_trace("list_dir fail");
+    return -1;
+  }
+
+  return dir_args.proc_running;
 }
 
 int list_dir(char *dirpath, list_dir_fn fun, void *args)
@@ -655,7 +660,7 @@ long is_proc_app(char *path, char *proc_name)
   char cmdline_path[MAX_OS_PATH_LEN];
   char *resolved_path;
 
-  unsigned long pid = strtoul(basename(path), NULL, 10);
+  pid_t pid = strtoul(basename(path), NULL, 10);
 
   if (errno != ERANGE && pid != 0L) {
     snprintf(exe_path, MAX_OS_PATH_LEN - 1, "%s/exe", path);
@@ -675,7 +680,7 @@ long is_proc_app(char *path, char *proc_name)
 
 bool kill_dir_fn(char *path, void *args)
 {
-  unsigned long pid;
+  pid_t pid;
   pid_t current_pid = getpid();
   pid_t current_pid_group = getpgid(current_pid);
   if ((pid = is_proc_app(path, args)) != 0) {
@@ -696,7 +701,7 @@ bool signal_dir_fn(char *path, void *args)
 {
   struct proc_signal_arg *sarg = (struct proc_signal_arg *) args;
 
-  unsigned long pid;
+  pid_t pid;
   pid_t current_pid = getpid();
   pid_t current_pid_group = getpgid(current_pid);
 
@@ -747,7 +752,7 @@ char* string_array2string(char *strings[])
 {
   int idx = 0;
   ssize_t total = 0;
-  size_t len = 0;
+  ssize_t len = 0;
 
   char *buf = NULL;
 
@@ -797,6 +802,11 @@ int run_process(char *argv[], pid_t *child_pid)
 
   if (!strlen(argv[0])) {
     log_trace("process name is empty");
+    return -1;
+  }
+
+  if (check_file_exists(argv[0], NULL) < 0) {
+    log_trace("check_file_exists fail for path=%s", argv[0]);
     return -1;
   }
 
@@ -917,17 +927,26 @@ void replace_string_char(char *s, char in, char out)
   }
 }
 
-uint64_t os_to_timestamp(struct timeval ts)
+void os_to_timestamp(struct timeval ts, uint64_t *timestamp)
 {
-  return (uint64_t)(1000000 * ts.tv_sec + ts.tv_usec);
+  uint64_t sec, usec;
+  sec = (uint64_t)1000000 * ts.tv_sec;
+  usec = (uint64_t)ts.tv_usec;
+  *timestamp = sec + usec;
 }
 
-uint64_t os_get_timestamp(void)
+int os_get_timestamp(uint64_t *timestamp)
 {
-	struct timeval ts;
+  struct timeval ts;
 	int res = gettimeofday(&ts, NULL);
+  *timestamp = 0;
 
-  return (res == 0) ? os_to_timestamp(ts) : 0;
+  if (res == 0) {
+    os_to_timestamp(ts, timestamp);
+    return 0;
+  };
+
+  return -1;
 }
 
 void generate_radom_uuid(char *rid)
@@ -954,13 +973,11 @@ bool find_dir_proc_fn(char *path, void *args)
 
   if ((pid = is_proc_app(path, dir_args->proc_name)) != 0)
     dir_args->proc_running = 1;
-  else
-    dir_args->proc_running = 0;
 
   return true;
 }
 
-int exist_dir(char *dirpath)
+int exist_dir(const char *dirpath)
 {
   DIR *dirp;
 
@@ -978,7 +995,34 @@ int exist_dir(char *dirpath)
   return 1;
 }
 
-int create_dir(char *dirpath, mode_t mode)
+// Adapted from https://stackoverflow.com/a/9210960
+// No need for license, since falls under fair use.
+int make_dirs_to_path(const char* file_path, mode_t mode) {
+    if (!(file_path && *file_path)) {
+      log_trace("invalid file_path given to make_dirs_to_path");
+      return -1;
+    }
+
+    char file_path_tmp[MAX_OS_PATH_LEN+1];
+    strcpy(file_path_tmp, file_path);
+
+    // Loops over every "/" in file_path
+    for (char* p = strchr(file_path_tmp + 1, '/'); p; p = strchr(p + 1, '/')) {
+        *p = '\0';
+        errno = 0;
+        if (mkdir(file_path_tmp, mode) == -1) {
+            if (errno != EEXIST) {
+                log_err("mkdir");
+                *p = '/';
+                return -1;
+            }
+        }
+        *p = '/';
+    }
+    return 0;
+}
+
+int create_dir(const char *dirpath, mode_t mode)
 {
   int ret;
   ret = exist_dir(dirpath);
@@ -986,7 +1030,12 @@ int create_dir(char *dirpath, mode_t mode)
     log_trace("dir path=%s open fail", dirpath);
     return -1;
   } else if (ret == 0) {
-    log_debug("creating dir path=%s", dirpath);
+    log_trace("creating dir path=%s", dirpath);
+    if (make_dirs_to_path(dirpath, mode) < 0) {
+      log_trace("make_dirs_to_path fail");
+      return -1;
+    }
+    // make_dirs_to_path doesn't create the final file, so make it ourselves
     errno = 0;
     if (mkdir(dirpath, mode) < 0) {
       if (errno != EEXIST) {
@@ -999,11 +1048,25 @@ int create_dir(char *dirpath, mode_t mode)
   return 0;
 }
 
+int check_file_exists(char *path, struct stat *sb)
+{
+  struct stat sb_in;
+  int res;
+
+  if (sb == NULL) {
+    res = stat(path, &sb_in);
+  } else {
+    res = stat(path, sb);
+  }
+
+  return res;
+}
+
 int check_sock_file_exists(char *path)
 {
   struct stat sb;
 
-  if (stat(path, &sb) == -1) {
+  if (check_file_exists(path, &sb) < 0) {
     log_err("stat %s", path);
     return -1;
   }
@@ -1014,6 +1077,189 @@ int check_sock_file_exists(char *path)
   return 0;
 }
 
+int get_hostname(char *buf)
+{
+  if (gethostname(buf, OS_HOST_NAME_MAX) < 0) {
+    log_err("gethostname");
+    return -1;
+  }
+
+  return 0;
+}
+
+static int lock_reg(int fd, int cmd, int type, int whence, int start, off_t len)
+{
+  struct flock fl;
+  fl.l_type = type;
+  fl.l_whence = whence;
+  fl.l_start = start;
+  fl.l_len = len;
+  return fcntl(fd, cmd, &fl);
+}
+
+int lock_region(int fd, int type, int whence, int start, int len)
+{
+  return lock_reg(fd, F_SETLK, type, whence, start, len);
+}
+
+int lock_region_block(int fd, int type, int whence, int start, int len)
+{
+  return lock_reg(fd, F_SETLKW, type, whence, start, len);
+}
+
+int create_pid_file(const char *pid_file, int flags)
+{
+  int fd;
+  char buf[100];
+  ssize_t write_bytes;
+  fd = open(pid_file, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+
+  if (fd == -1 && errno == ENOENT) {
+    int ret = make_dirs_to_path(pid_file, 0755);
+    if (ret) {
+      log_err("create_pid_file failed to create directories to path");
+      return -1;
+    }
+    fd = open(pid_file, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+  }
+
+  if (fd == -1) {
+    log_err("open");
+    return -1;
+  }
+
+  if (flags & FD_CLOEXEC) {
+    /* Set the close-on-exec file descriptor flag */
+    /* Instead of the following steps, we could (on Linux) have opened the
+       file with O_CLOEXEC flag. However, not all systems support open()
+       O_CLOEXEC (which was standardized only in SUSv4), so instead we use
+       fcntl() to set the close-on-exec flag after opening the file */
+    flags = fcntl(fd, F_GETFD);                     /* Fetch flags */
+
+    if (flags == -1) {
+      log_err("fcntl");
+      close(fd);
+      return -1;
+    }
+
+    flags |= FD_CLOEXEC;                            /* Turn on FD_CLOEXEC */
+    if (fcntl(fd, F_SETFD, flags) == -1){            /* Update flags */
+      log_err("fcntl");
+      close(fd);
+      return -1;
+    }
+  }
+
+  if (lock_region(fd, F_WRLCK, SEEK_SET, 0, 0) == -1) {
+    if (errno  == EAGAIN || errno == EACCES) {
+      log_err("PID file '%s' is locked", pid_file);
+      close(fd);
+      return -1;
+    }else {
+      log_err("lock_region");
+      close(fd);
+      return -1;
+    }
+  }
+
+  if (ftruncate(fd, 0) == -1) {
+    log_err("ftruncate");
+    close(fd);
+    return -1;
+  }
+
+  snprintf(buf, 100, "%ld\n", (long) getpid());
+  if ((write_bytes = write(fd, buf, strlen(buf))) < 0) {
+    log_err("write");
+    close(fd);
+    return -1;
+  }
+
+  if ((size_t)write_bytes != strlen(buf)) {
+    log_trace("write fail");
+    close(fd);
+    return -1;
+  }
+
+  return fd;
+}
+
+ssize_t read_file(char *path, uint8_t **out)
+{
+  long int read_size;
+  long int file_size;
+  uint8_t *buffer;
+
+  *out = NULL;
+
+  errno = 0;
+
+  FILE *fp = fopen(path, "rb");
+
+  if (fp == NULL) {
+    log_err("fopen");
+    return -1;
+  }
+
+  if (fseek(fp, 0 , SEEK_END) < 0) {
+    log_err("fseek");
+    fclose(fp);
+    return -1;
+  }
+
+  if ((file_size = ftell(fp)) == -1L) {
+    log_err("ftell");
+    fclose(fp);
+    return -1;
+  }
+
+  rewind(fp);
+
+  if ((buffer = (uint8_t *) os_malloc(sizeof(char) * file_size)) == NULL) {
+    log_err("os_malloc");
+    fclose(fp);
+    return -1;
+  }
+
+  read_size = (long int) fread(buffer, sizeof(char), file_size, fp);
+
+  if (read_size != file_size) {
+    log_trace("fread fail");
+    os_free(buffer);
+    fclose(fp);
+  }
+
+  *out = buffer;
+
+  fclose(fp);
+  return read_size;
+}
+
+int read_file_string(char *path, char **out)
+{
+  uint8_t *data = NULL;
+  ssize_t data_size = 0;
+  char *buffer;
+
+  *out = NULL;
+
+  if ((data_size = read_file(path, &data)) < 0) {
+    log_trace("read_file fail");
+    return -1;
+  }
+
+  if ((buffer = (char *)os_zalloc(data_size + 1)) == NULL) {
+    log_err("os_zalloc");
+    return -1;
+  }
+
+  os_memcpy(buffer, data, data_size);
+
+  *out = buffer;
+
+  os_free(data);
+  return 0;
+}
 // void *os_malloc(size_t size)
 // {
 //   void *ptr = malloc(size);

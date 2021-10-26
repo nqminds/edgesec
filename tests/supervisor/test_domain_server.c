@@ -19,6 +19,7 @@
 #include "utils/hashmap.h"
 #include "utils/utarray.h"
 #include "utils/log.h"
+#include "utils/allocs.h"
 #include "utils/os.h"
 
 #define TMP_PFX "tdoms"
@@ -89,6 +90,7 @@ static void test_read_domain_data_s(void **state)
 {
   (void) state; /* unused */
 
+  struct client_address addr;
   struct sockaddr_un svaddr;
   struct sockaddr_un claddr;
   char *send_buf = "domain";
@@ -127,15 +129,16 @@ static void test_read_domain_data_s(void **state)
   ret = sendto(client_sock, send_buf, buf_len, 0, (struct sockaddr *) &svaddr, sizeof(struct sockaddr_un));
   assert_int_equal(ret, buf_len);
 
-  os_memset(&claddr, 0, sizeof(struct sockaddr_un));
-  ret = read_domain_data(server_sock, read_buf, 100, &claddr, &addr_len, 0);
+  os_memset(&addr, 0, sizeof(struct client_address));
+  ret = read_domain_data(server_sock, read_buf, 100, &addr, 0);
   assert_int_equal(ret, buf_len);
   assert_string_equal(send_buf, read_buf);
 
-  ret = sendto(server_sock, send_buf, buf_len, 0, (struct sockaddr *) &claddr, addr_len);
+  ret = sendto(server_sock, send_buf, buf_len, 0, (struct sockaddr *) &addr.addr, addr.len);
   assert_int_equal(ret, buf_len);
 
-  ret = read_domain_data(client_sock, read_buf, 100, &svaddr, &addr_len, 0);
+  os_memset(&addr, 0, sizeof(struct client_address));
+  ret = read_domain_data(client_sock, read_buf, 100, &addr, 0);
   assert_int_equal(ret, buf_len);
   assert_string_equal(send_buf, read_buf);
 
@@ -149,6 +152,7 @@ static void test_write_domain_data(void **state)
 {
   (void) state; /* unused */
 
+  struct client_address addr;
   struct sockaddr_un svaddr;
   struct sockaddr_un claddr;
   char *send_buf = "domain";
@@ -181,7 +185,9 @@ static void test_write_domain_data(void **state)
   client_sock = create_domain_client(NULL);
   assert_int_not_equal(client_sock, -1);
 
-  ret = write_domain_data(client_sock, send_buf, buf_len, &svaddr, len);
+  os_memcpy(&addr.addr, &svaddr, sizeof(struct sockaddr_un));
+  addr.len = len;
+  ret = write_domain_data(client_sock, send_buf, buf_len, &addr);
   assert_int_equal(ret, buf_len);
 
   len = sizeof(struct sockaddr_un);

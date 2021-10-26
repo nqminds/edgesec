@@ -13,6 +13,7 @@
 #include <cmocka.h>
 
 #include "utils/utarray.h"
+#include "utils/log.h"
 
 static void test_utarray(void **state)
 {

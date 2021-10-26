@@ -6,6 +6,7 @@
  * See README for more details.
  */
 
+#include "utils/allocs.h"
 #include "utils/os.h"
 
 #include "ip_addr.h"

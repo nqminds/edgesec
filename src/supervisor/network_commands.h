@@ -32,14 +32,25 @@
 #define TICKET_PASSPHRASE_SIZE  16
 #define TICKET_TIMEOUT          60  // In seconds
 
+#include "../ap/ap_config.h"
+
+
 /**
- * @brief Return a mac_conn_info for a given MAC address
+ * @brief Save a MAC entry into the mapper
  * 
- * @param mac_addr The input MAC adderss
- * @param mac_conn_arg The supervisor_context pointer
- * @return struct mac_conn_info 
+ * @param The supervisor context
+ * @param The MAc connection structure
+ * 
+ * @return true on success, false on failure
  */
-struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg);
+bool save_mac_mapper(struct supervisor_context *context, struct mac_conn conn);
+
+/**
+ * @brief Frees an allocated ticket
+ * 
+ * @param The supervisor context
+ */
+void free_ticket(struct supervisor_context *context);
 
 /**
  * @brief ACCEPT_MAC command
@@ -91,18 +102,6 @@ int assign_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr,
   char *pass, int pass_len);
 
 /**
- * @brief SET_IP command
- * 
- * @param context The supervisor structure instance
- * @param mac_addr The MAC address
- * @param ip_addr The IP address
- * @param add if add = true then add IP to MAC entry, otherwise remove
- * @return int 0 on success, -1 on failure
- */
-int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
-  char *ip_addr, bool add);
-
-/**
  * @brief ADD_BRIDGE command
  * 
  * @param context The supervisor structure instance
@@ -123,34 +122,14 @@ int add_bridge_cmd(struct supervisor_context *context, uint8_t *left_mac_addr, u
 int remove_bridge_cmd(struct supervisor_context *context, uint8_t *left_mac_addr, uint8_t *right_mac_addr);
 
 /**
- * @brief SET_FINGERPRINT command
+ * @brief CLEAR_BRIDGES command
  * 
  * @param context The supervisor structure instance
- * @param src_mac_addr The source MAC address string
- * @param dst_mac_addr The destination MAC address string
- * @param protocol The protocol string
- * @param fingerprint The fingerprint string
- * @param timestamp The timestamp 64 bit value
- * @param query The query string
+ * @param mac_addr The MAC address
  * @return int 0 on success, -1 on failure
  */
-int set_fingerprint_cmd(struct supervisor_context *context, char *src_mac_addr,
-                        char *dst_mac_addr, char *protocol, char *fingerprint,
-                        uint64_t timestamp, char *query);
+int clear_bridges_cmd(struct supervisor_context *context, uint8_t *left_mac_addr);
 
-/**
- * @brief QUERY_FINGERPRINT command
- * 
- * @param context The supervisor structure instance
- * @param mac_addr The MAC address string
- * @param timestamp The timestamp 64 bit value
- * @param op The operator string
- * @param protocol The protocol string
- * @param out The output string
- * @return ssize_t the sizeo fo the output buffer, -1 on failure
- */
-ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr, uint64_t timestamp,
-                        char *op, char *protocol, char **out);
 /**
  * @brief REGISTER_TICKET command
  * 
@@ -171,4 +150,5 @@ uint8_t* register_ticket_cmd(struct supervisor_context *context, uint8_t *mac_ad
  * @return 0 on success, -1 on failure
  */
 int clear_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr);
+
 #endif

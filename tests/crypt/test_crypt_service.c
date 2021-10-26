@@ -20,17 +20,9 @@ static sqlite3 *global_db = NULL;
 
 int __wrap_sqlite3_open(const char *filename, sqlite3 **ppDb)
 {
-  int rc;
-  
   if (strcmp(filename, "global_db") == 0) {
-    if (global_db != NULL) {
-      *ppDb = global_db;
-      return SQLITE_OK;
-    } else {
-      rc = __real_sqlite3_open(":memory:", &global_db);
-      *ppDb = global_db;
-      return rc;
-    }
+    *ppDb = global_db;
+    return SQLITE_OK;
   } else return __real_sqlite3_open(":memory:", ppDb);
 }
 
@@ -43,14 +35,16 @@ int __wrap_crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
 
 int __wrap_sqlite3_close(sqlite3* db)
 {
-  int rc;
   if (db == global_db) {
-    rc = __real_sqlite3_close(db);
-    global_db = NULL;
-    return rc;
+    return SQLITE_OK;
   }
 
   return __real_sqlite3_close(db);
+}
+
+struct hsm_context* __wrap_init_hsm(void)
+{
+  return NULL;
 }
 
 static void test_load_crypt_service(void **state)
@@ -58,7 +52,8 @@ static void test_load_crypt_service(void **state)
   (void) state; /* unused */
   uint8_t secret[4] = {'u', 's', 'e', 'r'};
   uint8_t secret1[4] = {'s', 's', 'e', 'r'};
-  struct crypt_context* ctx = load_crypt_service("", "key", secret, 4), *ctx1;
+  struct crypt_context *ctx1, *ctx;
+  ctx = load_crypt_service("", "key", secret, 4), *ctx1;
 
   assert_non_null(ctx);
 
@@ -70,6 +65,7 @@ static void test_load_crypt_service(void **state)
   ctx = load_crypt_service("", "key", secret, 0);
   assert_null(ctx);
 
+  __real_sqlite3_open(":memory:", &global_db);
   ctx = load_crypt_service("global_db", "key", secret, 4);
   assert_non_null(ctx);
 
@@ -78,7 +74,10 @@ static void test_load_crypt_service(void **state)
   assert_non_null(ctx1);
   free_crypt_service(ctx);
   free_crypt_service(ctx1);
+  __real_sqlite3_close(global_db);
+  global_db = NULL;
 
+  __real_sqlite3_open(":memory:", &global_db);
   ignore_function_calls(__wrap_crypto_decrypt);
   ctx = load_crypt_service("global_db", "key", secret, 4);
   assert_non_null(ctx);
@@ -87,6 +86,8 @@ static void test_load_crypt_service(void **state)
   assert_null(ctx1);
   free_crypt_service(ctx);
   free_crypt_service(ctx1);
+  __real_sqlite3_close(global_db);
+  global_db = NULL;
 }
 
 static void test_put_crypt_pair(void **state)
@@ -122,6 +123,7 @@ static void test_get_crypt_pair(void **state)
   assert_non_null(out);
   assert_memory_equal(out->value, value, strlen(value));
   free_crypt_service(ctx);
+  free_crypt_pair(out);
 }
 
 int main(int argc, char *argv[])

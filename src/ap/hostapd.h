@@ -31,6 +31,7 @@
 #include <stdbool.h>
 
 #include "ap_config.h"
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../radius/radius_server.h"
 
@@ -56,18 +57,17 @@ bool generate_vlan_conf(char *vlan_file, char *interface);
  * @brief Executes the hostapd process
  * 
  * @param hconf The hostapd process config structure
- * @param ctrl_if_path The hostpad control interface
  * @return int 0 on success, -1 on failure
  */
-int run_ap_process(struct apconf *hconf, char *ctrl_if_path);
+int run_ap_process(struct apconf *hconf);
 
 /**
  * @brief Signal the AP process to reload the config
  * 
- * @param ap_bin_path The AP process binary path
+ * @param hconf The hostapd process config structure
  * @return int 0 on success, -1 on failure
  */
-int signal_ap_process(char *ap_bin_path);
+int signal_ap_process(struct apconf *hconf);
 
 /**
  * @brief Terminate the AP service

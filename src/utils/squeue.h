@@ -39,32 +39,52 @@
  */
 struct string_queue {
   char *str;                    /**< String value */
-  struct dl_list list;          /**< List defintion */
+  ssize_t max_length;           /**< Maximum length of the queue */
+  struct dl_list list;          /**< List definition */
 };
 
 /**
  * @brief Initialises and empty string queue
  * 
+ * @param max_length Maximum queue size, -1 for unlimited
  * @return struct string_queue* Returned initialised empty string queue
  */
-struct string_queue* init_string_queue(void);
+struct string_queue* init_string_queue(ssize_t max_length);
 
 /**
  * @brief Pushes a string in the string queue
  * 
  * @param queue The string queue
  * @param str The string value
- * @return struct string_queue* Returned added string queue element
+ * @return 0 on success, -1 on failure
  */
-struct string_queue* push_string_queue(struct string_queue* queue, char *str);
+int push_string_queue(struct string_queue* queue, char *str);
 
 /**
  * @brief Extract the first string from the string queueu
  * 
  * @param queue The string queue
- * @return struct string_queue* The returned string (NULL if queue is empty)
+ * @param str The returned string
+ * @return int 0 on success, -1 on failure
  */
-struct string_queue* pop_string_queue(struct string_queue* queue);
+int pop_string_queue(struct string_queue* queue, char **str);
+
+/**
+ * @brief Peekt the first string from the string queueu
+ * 
+ * @param queue The string queue
+ * @param str The returned string
+ * @return int 0 on success, -1 on failure
+ */
+int peek_string_queue(struct string_queue* queue, char **str);
+
+/**
+ * @brief Empty a string entry
+ * 
+ * @param queue The string queue
+ * @param count NUmber of elements to remove, -1 for all
+ */
+void empty_string_queue(struct string_queue* queue, ssize_t count);
 
 /**
  * @brief Delete a string entry
@@ -89,10 +109,11 @@ ssize_t get_string_queue_length(struct string_queue* queue);
 void free_string_queue(struct string_queue* queue);
 
 /**
- * @brief Concat all the string ain the queue
+ * @brief Concat teh first count string in the queue
  * 
- * @param The pointer to the string queue
+ * @param queue The pointer to the string queue
+ * @param count Number of queue strings to concat, if -1 concat the entire queue
  * @return char* The pointer to the concatenated string, NULL for failure or empty queue
  */
-char* concat_string_queue(struct string_queue *queue);
+char* concat_string_queue(struct string_queue *queue, ssize_t count);
 #endif

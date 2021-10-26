@@ -47,7 +47,7 @@ bool create_subnet_ifs(UT_array *ifinfo_array, bool ignore_error);
  * @param ip_buf Allocated NAT interface IP address
  * @return true if IP saved to ip_buf, false otherwise
  */
-bool get_nat_if_ip(const char *nat_interface, char **ip_buf);
+bool get_nat_if_ip(const char *nat_interface, char *ip_buf);
 
 /**
  * @brief Create the subnet to interface mapper

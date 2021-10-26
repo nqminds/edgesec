@@ -1,0 +1,12 @@
+[Unit]
+Description=EDGESec main app.
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=60
+ExecStart=/usr/bin/edgesec -c /etc/edgesec/config.ini -ddd -s 12345
+
+[Install]
+WantedBy=edgesec.target

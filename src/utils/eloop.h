@@ -23,6 +23,7 @@
 #ifndef ELOOP_H
 #define ELOOP_H
 
+#include "allocs.h"
 #include "os.h"
 
 /**

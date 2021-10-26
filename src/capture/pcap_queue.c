@@ -29,6 +29,7 @@
 #include <pcap.h>
 
 #include "pcap_queue.h"
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/log.h"
 
@@ -95,7 +96,7 @@ struct pcap_queue* pop_pcap_queue(struct pcap_queue* queue)
 
 void free_pcap_queue_el(struct pcap_queue* el)
 {
-  if (el) {
+  if (el != NULL) {
     dl_list_del(&el->list);
     os_free(el->packet);
 	  os_free(el);
@@ -115,4 +116,14 @@ void free_pcap_queue(struct pcap_queue* queue)
 ssize_t get_pcap_queue_length(struct pcap_queue* queue)
 {
   return (queue != NULL) ? dl_list_len(&queue->list) : 0;
+}
+
+int is_pcap_queue_empty(struct pcap_queue* queue)
+{
+  if (queue == NULL) {
+    log_trace("queue param is NULL");
+    return -1;
+  }
+
+  return dl_list_empty(&queue->list);
 }

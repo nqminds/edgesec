@@ -40,22 +40,10 @@
 #include <pcap.h>
 
 #include "../utils/utarray.h"
+#include "../utils/allocs.h"
 #include "../utils/os.h"
 
-typedef enum packet_types {
-  PACKET_NONE = 0,
-  PACKET_ETHERNET,
-  PACKET_ARP,
-  PACKET_IP4,
-  PACKET_IP6,
-  PACKET_TCP,
-  PACKET_UDP,
-  PACKET_ICMP4,
-  PACKET_ICMP6,
-  PACKET_DNS,
-  PACKET_MDNS,
-  PACKET_DHCP
-} PACKET_TYPES;
+#include "capture_config.h"
 
 /**
  * @brief DNS header definition
@@ -102,24 +90,49 @@ struct dhcp_header {
 };
 
 /**
- * @brief Meta packet structure definition
+ * @brief Capture structure definition
  * 
  */
-struct meta_packet {
-  PACKET_TYPES type;                /**< Packet type */
-  uint32_t hash;                    /**< Packet header hash */
-  uint32_t ethh_hash;               /**< Packet ethernet header hash */
-  uint64_t timestamp;               /**< Packet timestamp */
-  uint32_t caplen;                  /**< Packet caplen */
-  uint32_t length;                  /**< Packet length */
-  char interface[IFNAMSIZ];         /**< Packet interface name */
-  char hostname[MAX_HOSTNAME_LEN];  /**< Packet hostname name */
-  char id[MAX_RANDOM_UUID_LEN];     /**< Packet id */
-};
-
-struct tuple_packet {
-  uint8_t *packet;                  /**< Packet data */
-  struct meta_packet mp;            /**< Packet metadata */
+struct capture_packet {
+  struct ether_header *ethh;           /**< Ethernet header.  */
+  struct ether_arp *arph;              /**< Embedded ARP header.  */
+  struct ip *ip4h;
+  struct ip6_hdr *ip6h;
+  struct tcphdr *tcph;
+  struct udphdr *udph;
+  struct icmphdr *icmp4h;
+  struct icmp6_hdr *icmp6h;
+  struct dns_header *dnsh;
+  struct mdns_header *mdnsh;
+  struct dhcp_header *dhcph;
+  struct eth_schema eths;
+  struct arp_schema arps;
+  struct ip4_schema ip4s;
+  struct ip6_schema ip6s;
+  struct tcp_schema tcps;
+  struct udp_schema udps;
+  struct icmp4_schema icmp4s;
+  struct icmp6_schema icmp6s;
+  struct dns_schema dnss;
+  struct mdns_schema mdnss;
+  struct dhcp_schema dhcps;
+  uint64_t timestamp;
+  uint32_t caplen;
+  uint32_t length;
+  char ifname[IFNAMSIZ];
+  char hostname[OS_HOST_NAME_MAX];
+  char id[MAX_RANDOM_UUID_LEN];
+  uint32_t ethh_hash;
+  uint32_t arph_hash;
+  uint32_t ip4h_hash;
+  uint32_t ip6h_hash;
+  uint32_t tcph_hash;
+  uint32_t udph_hash;
+  uint32_t icmp4h_hash;
+  uint32_t icmp6h_hash;
+  uint32_t dnsh_hash;
+  uint32_t mdnsh_hash;
+  uint32_t dhcph_hash;
 };
 
 /**
@@ -136,10 +149,4 @@ struct tuple_packet {
 int extract_packets(const struct pcap_pkthdr *header, const uint8_t *packet,
                     char *interface, char *hostname, char *id, UT_array **tp_array);
 
-/**
- * @brief Frees an allocated packet tuple
- * 
- * @param tp The pointer to the packet tuple
- */
-void free_packet_tuple(struct tuple_packet *tp);
 #endif
