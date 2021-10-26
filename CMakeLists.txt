@@ -15,17 +15,29 @@ include(glibc)
 string(TOLOWER ${CMAKE_HOST_SYSTEM_PROCESSOR} _sys)
 string(TOLOWER ${PROJECT_NAME} _project_lower)
 
-# Installation options
-# creating the .deb would use set their own CMAKE_INSTALL_PREFIX
-set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/${_project_lower}-dist" CACHE PATH "Installation path")
+include(EdgesecInstallLocations)
 
-include(GNUInstallDirs)
-set(EDGESEC_private_lib_dir "${CMAKE_INSTALL_FULL_LIBDIR}/${_project_lower}" CACHE PATH "Directory of private EDGESec shared libs")
+# Installation options
+# Only overwrite CMAKE_INSTALL_PREFIX if there is no -DCMAKE_INSTALL_PREFIX
+IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/${_project_lower}-dist" CACHE PATH "Installation path" FORCE)
+ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+
 # RPATH must be set before defining targets
 # $ORIGIN is so that shared libs can view other shared libs (e.g. libgrpc++ can see libxxx)
 # $ORIGIN/lib is to support where we used to store shared libs
-# ${EDGESEC_private_lib_dir} is where private shared libs will be stored after `make install`
-set(CMAKE_INSTALL_RPATH "$ORIGIN" "$ORIGIN/lib" "${EDGESEC_private_lib_dir}")
+# ${EDGESEC_full_private_lib_dir} is where private shared libs will be stored after `make install`
+file(
+  RELATIVE_PATH
+  "EDGESec_relative_private_lib_dir"
+  ${CMAKE_INSTALL_FULL_BINDIR} ${EDGESEC_full_private_lib_dir}
+)
+message("Relative path to libdir from bin dir is ${EDGESec_relative_private_lib_dir}")
+set(
+  CMAKE_INSTALL_RPATH
+  "$ORIGIN" "$ORIGIN/lib" "${EDGESEC_full_private_lib_dir}"
+  "$ORIGIN/${EDGESec_relative_private_lib_dir}"
+)
 
 option(USE_ARM_MUSL_LIBC "Use arm musl standard C library" OFF)
 option(BUILD_ONLY_DOCS "Build only docs" OFF)

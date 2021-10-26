@@ -22,13 +22,13 @@ execDhcp = true
 execCapture = true
 execIptables = true
 setIpForward = true
-dbPath = "@EDGESEC_local_lib_dir@/db"
-cryptDbPath = "@EDGESEC_local_lib_dir@/crypt.sqlite"
+dbPath = "@EDGESEC_full_local_lib_dir@/db"
+cryptDbPath = "@EDGESEC_full_local_lib_dir@/crypt.sqlite"
 cryptKeyId = "master"
-pidFilePath = "@EDGESEC_runstate_dir@/edgesec.pid"
+pidFilePath = "@EDGESEC_full_runstate_dir@/edgesec.pid"
 
 [capture]
-captureBinPath = "@CMAKE_INSTALL_FULL_BINDIR@/capsrv"
+captureBinPath = "@EDGESEC_full_bin_dir@/capsrv"
 captureInterface = ""
 filter = "" 
 promiscuous = false
@@ -41,20 +41,20 @@ dbWrite = false
 dbSync = false
 dbSyncAddress = "localhost"
 dbSyncPort = 8512
-syncCaPath = "@EDGESEC_cert_location@"
+syncCaPath = "@EDGESEC_full_cert_location@"
 command = "SET_ALERT"
 syncStoreSize = 1000
 syncSendSize = 20
 captureStoreSize = 1000000
 
 [supervisor]
-domainServerPath = "@EDGESEC_runstate_dir@/edgesec-domain-server"
+domainServerPath = "@EDGESEC_full_runstate_dir@/edgesec-domain-server"
 delim = 32
 
 [ap]
-apBinPath = "@EDGESEC_libexec_dir@/hostapd"
-apFilePath = "@EDGESEC_config_dir@/hostapd.conf"
-apLogPath = "@EDGESEC_log_dir@/hostapd.log"
+apBinPath = "@EDGESEC_full_libexec_dir@/hostapd"
+apFilePath = "@EDGESEC_full_config_dir@/hostapd.conf"
+apLogPath = "@EDGESEC_full_log_dir@/hostapd.log"
 interface = "wlan1" # name of Wifi USB AP on Raspberry Pi
 vlanTaggedInterface = ""
 ssid = "IOTH_PI"
@@ -68,11 +68,11 @@ authAlgs = 1
 wpa = 2
 wpaKeyMgmt = "WPA-PSK"
 rsnPairwise = "CCMP"
-ctrlInterface = "@EDGESEC_runstate_dir@/hostapd"
+ctrlInterface = "@EDGESEC_full_runstate_dir@/hostapd"
 macaddrAcl = 2
 dynamicVlan = 1
 vlanBridge = "br"
-vlanFile = "@EDGESEC_config_dir@/hostapd.vlan"
+vlanFile = "@EDGESEC_full_config_dir@/hostapd.vlan"
 loggerStdout = -1
 loggerStdoutLevel = 0
 loggerSyslog = -1
@@ -96,8 +96,8 @@ servers="8.8.4.4,8.8.8.8"
 
 [dhcp]
 dhcpBinPath = "/usr/sbin/dnsmasq"
-dhcpConfigPath = "@EDGESEC_config_dir@/dnsmasq.conf"
-dhcpScriptPath = "@EDGESEC_config_dir@/dnsmasq_exec.sh"
+dhcpConfigPath = "@EDGESEC_full_config_dir@/dnsmasq.conf"
+dhcpScriptPath = "@EDGESEC_full_config_dir@/dnsmasq_exec.sh"
 dhcpRange0 = "0,10.0.0.2,10.0.0.254,255.255.255.0,24h"
 dhcpRange1 = "1,10.0.1.2,10.0.1.254,255.255.255.0,24h"
 dhcpRange2 = "2,10.0.2.2,10.0.2.254,255.255.255.0,24h"
