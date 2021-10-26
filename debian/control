@@ -35,7 +35,10 @@ Depends: libedgesec (= ${binary:Version}),
     edgesec-common (= ${binary:Version}),
     ${shlibs:Depends},
     ${misc:Depends}
-Description: NquiringMinds EDGESEC restsrv.
+Description: NquiringMinds EDGESEC RESTful server.
+  Provides a HTTP/HTTPS RESTful Server that can
+  be used to communicate with the `edgesec` process,
+  as it only provides an Unix Domain Socket.
 
 Package: edgesec-capsrv
 Architecture: any
