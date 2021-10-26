@@ -362,7 +362,12 @@ where
  - ```ipn``` - the subnet ending IP address with format ```x.y.z.q``` and
  - ```mask``` - the subnet mask IP address with format ```x.y.z.q```.
 
-# Running edgesec services
+# Running edgesec
+
+## Recommended ports:
+
+- `8512` for `capsrv`
+- `8513` for `restsrv`
 
 ## Running edgesec tool with debug info and master password ```12345```
 ```bash
@@ -374,33 +379,33 @@ sudo ./src/edgesec -c config.ini -s 12345 -ddddddddd
 sudo ./src/edgesec -c config.ini -s 12345
 ```
 
-## Running capsrv with syncing of ```br10``` interface to ```localhost:3000``` with grpc CA located in ```/cert/CA/CA.pem``` and data stored in ```./db``` folder, with debug
+## Running capsrv with syncing of ```br10``` interface to ```localhost:8512``` with grpc CA located in ```/cert/CA/CA.pem``` and data stored in ```./db``` folder, with debug
 ```bash
-sudo ./src/capsrv -i br10 -t 10 -n 10 -y default -w -s -p ./db -a localhost -o 3000 -k ./cert/CA/CA.pem -r 1000000,100 -dddddddddd
+sudo ./src/capsrv -i br10 -t 10 -n 10 -y default -w -s -p ./db -a localhost -o 8512 -k ./cert/CA/CA.pem -r 1000000,100 -dddddddddd
 ```
 
-## Running capsrv with syncing of ```br10``` interface to ```localhost:3000``` with grpc CA located in ```/cert/CA/CA.pem``` and data stored in ```./db``` folder, without debug
+## Running capsrv with syncing of ```br10``` interface to ```localhost:8512``` with grpc CA located in ```/cert/CA/CA.pem``` and data stored in ```./db``` folder, without debug
 ```bash
-sudo ./src/capsrv -i br10 -t 10 -n 10 -y default -w -s -p ./db -a localhost -o 3000 -k ./cert/CA/CA.pem -r 1000000,100
+sudo ./src/capsrv -i br10 -t 10 -n 10 -y default -w -s -p ./db -a localhost -o 8512 -k ./cert/CA/CA.pem -r 1000000,100
 ```
 
-## Running restsrv on port ```8080``` with TLS certificate generation for ```localhost``` in debug mode:
+## Running restsrv on port ```8513``` with TLS certificate generation for ```localhost``` in debug mode:
 ```bash
-sudo ./src/restsrv -s /tmp/edgesec-domain-server -p 8080 -z 32 -c localhost -t -dddddddd
+sudo ./src/restsrv -s /tmp/edgesec-domain-server -p 8513 -z 32 -c localhost -t -dddddddd
 ```
 
-## Running restsrv on port ```8080``` with TLS certificate generation for ```localhost``` in non debug:
+## Running restsrv on port ```8513``` with TLS certificate generation for ```localhost``` in non debug:
 ```bash
-sudo ./src/restsrv -s /tmp/edgesec-domain-server -p 8080 -z 32 -c localhost -t
+sudo ./src/restsrv -s /tmp/edgesec-domain-server -p 8513 -z 32 -c localhost -t
 ```
 
-## Running restclient to ```localhost:8080``` with grpc CA located in ```/cert/CA/CA.pem``` and data stored in ```./db``` folder, with debug
+## Running restclient to ```localhost:8513``` with grpc CA located in ```/cert/CA/CA.pem``` and data stored in ```./db``` folder, with debug
 ```bash
-sudo ./src/revclient -f ./db -a localhost -p 8080 -c ./cert/CA/CA.pem -dddddddd
+sudo ./src/revclient -f ./db -a localhost -p 8513 -c ./cert/CA/CA.pem -dddddddd
 ```
 
-## Running restclient to ```localhost:8080``` without grpc CA and data stored in ```./db``` folder, without debug
+## Running restclient to ```localhost:8513``` without grpc CA and data stored in ```./db``` folder, without debug
 ```bash
-sudo ./src/revclient -f ./db -a localhost -p 8080
+sudo ./src/revclient -f ./db -a localhost -p 8513
 ```
 When creating the services ```capsrv```, ```resrsrv``` and ```revclient``` should depend on ```edgesec```.

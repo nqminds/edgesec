@@ -9,8 +9,55 @@ Homepage: https://github.com/nqminds/EDGESec
 Package: edgesec
 Architecture: any
 Multi-Arch: foreign
-Depends: ${shlibs:Depends}, ${misc:Depends}, dnsmasq, jq
+Depends: libedgesec (= ${binary:Version}),
+    edgesec-common (= ${binary:Version}),
+    edgesec-capsrv (= ${binary:Version}),
+    edgesec-revclient (= ${binary:Version}),
+    ${shlibs:Depends},
+    ${misc:Depends},
+    dnsmasq, jq, libmnl0
 Description: NquiringMinds EDGESec Network Security Router.
  This is NquiringMind's EDGESec Network Analyser.
  It usually creates a secure and paritioned Wifi access point, using vlans,
  and can analyse network traffic.
+
+Package: edgesec-common
+Architecture: all
+Description: NquiringMinds EDGESec common files.
+ This includes config files and certificates
+ that may be shared with all binaries.
+
+Package: edgesec-restsrv
+Architecture: any
+Multi-Arch: foreign
+Depends: libedgesec (= ${binary:Version}),
+    edgesec-common (= ${binary:Version}),
+    ${shlibs:Depends},
+    ${misc:Depends}
+Description: NquiringMinds EDGESEC restsrv.
+
+Package: edgesec-capsrv
+Architecture: any
+Multi-Arch: foreign
+Depends: libedgesec (= ${binary:Version}),
+    edgesec-common (= ${binary:Version}),
+    ${shlibs:Depends},
+    ${misc:Depends}
+Description: NquiringMinds EDGESEC capsrv.
+
+Package: edgesec-revclient
+Architecture: any
+Multi-Arch: foreign
+Depends: libedgesec (= ${binary:Version}),
+    edgesec-common (= ${binary:Version}),
+    ${shlibs:Depends},
+    ${misc:Depends}
+Description: NquiringMinds EDGESEC revclient.
+
+Package: libedgesec
+Section: libs
+Architecture: any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Shared library files required for edgesec.

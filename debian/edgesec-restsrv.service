@@ -1,14 +1,15 @@
 [Unit]
 Description=EDGESec RESTful server.
 After=edgesec.service
-BindsTo=edgesec.service
+# Wants is Optional, restful server might be installed somewhere else.
+Wants=edgesec.service
 
 [Service]
 Type=simple
 Restart=always
 RestartSec=60
 # Using /etc/edgesec/config.ini is currently not yet supported
-ExecStart=/usr/bin/restsrv -s /var/run/edgesec/edgesec-domain-server -p 8080 -z 32 -c localhost -t -ddd
+ExecStart=/usr/bin/restsrv -s /var/run/edgesec/edgesec-domain-server -p 8513 -z 32 -c localhost -t -ddd
 
 [Install]
 WantedBy=edgesec.target

@@ -1,5 +1,5 @@
 [Unit]
-Description=EDGESec capture server.
+Description=EDGESec Rev client.
 After=edgesec.service
 Requires=edgesec.service
 
@@ -9,7 +9,7 @@ Restart=always
 RestartSec=60
 # Using /etc/edgesec/config.ini is currently not yet supported
 # ExecStart=/usr/bin/capsrv -c /etc/edgesec/config.ini -ddd
-ExecStart=/usr/bin/capsrv -i br10 -t 10 -n 10 -y default -w -s -p /var/lib/edgesec/db -a localhost -o 3000 -k /etc/edgesec/CA/CA.pem -r 1000000,100 -ddd
+ExecStart=/usr/bin/revclient -f /var/lib/edgesec/db -a localhost -p 8513 -c /etc/edgesec/CA/CA.pem -ddd
 
 [Install]
 WantedBy=edgesec.target
