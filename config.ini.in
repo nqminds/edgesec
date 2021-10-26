@@ -12,7 +12,8 @@ apDetect = false
 generateSsid = true
 defaultOpenVlanId = 0
 quarantineVlanId = 10
-riskScore = 100
+# @mereacre, can you add a short comment of what this means?
+riskScore = -1
 killRunningProcess = false
 # Set to `true` to let edgesec process start hostapd
 execAp = true
