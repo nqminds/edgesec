@@ -32,7 +32,7 @@ file(
   "EDGESec_relative_private_lib_dir"
   ${CMAKE_INSTALL_FULL_BINDIR} ${EDGESEC_full_private_lib_dir}
 )
-message("Relative path to libdir from bin dir is ${EDGESec_relative_private_lib_dir}")
+message("Adding RPATH $ORIGIN relative path to: ${EDGESec_relative_private_lib_dir}")
 set(
   CMAKE_INSTALL_RPATH
   "$ORIGIN" "$ORIGIN/lib" "${EDGESEC_full_private_lib_dir}"
@@ -100,13 +100,14 @@ if (NOT target_autoconf_triple STREQUAL CMAKE_LIBRARY_ARCHITECTURE)
   message(FATAL_ERROR "CMake target_autoconf_triple=${target_autoconf_triple}, not the same as CMAKE_LIBRARY_ARCHITECTURE=${CMAKE_LIBRARY_ARCHITECTURE}")
 endif (NOT target_autoconf_triple STREQUAL CMAKE_LIBRARY_ARCHITECTURE)
 
-message("Build (autoconf --build) autoconf triple is ${build_autoconf_triple}")
-message("Target (autoconf --host) autoconf triple is ${CMAKE_LIBRARY_ARCHITECTURE}")
-message("CROSSCOMPILING ${CMAKE_CROSSCOMPILING}")
+
 if (CMAKE_CROSSCOMPILING)
+  message("Cross-compiling, setting cross-compiling autoconf/pkg-config vars")
+  message("Build (autoconf --build) autoconf triple is ${build_autoconf_triple}")
+  message("Target (autoconf --host) autoconf triple is ${CMAKE_LIBRARY_ARCHITECTURE}")
   # tell PKG_CONFIG (required by hostap) to search correct folders when cross-compiling
   set(ENV{PKG_CONFIG_LIBDIR} "/usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}/pkgconfig:/usr/share/pkgconfig")
-  message("PKG_CONFIG_LIBDIR is $ENV{PKG_CONFIG_LIBDIR}")
+  message("Setting cross-compiling PKG_CONFIG_LIBDIR to $ENV{PKG_CONFIG_LIBDIR")
 else(CMAKE_CROSSCOMPILING)
   # unset so that sqlite.cmake and etc. do not activate this
   unset(target_autoconf_triple)

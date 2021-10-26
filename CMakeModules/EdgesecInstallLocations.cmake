@@ -1,8 +1,10 @@
-# Defines locations to install files
-# Needs to be placed in a seperate file
+# Defines locations to install EDGESEC files
+#
+# It's in a seperate file
 # so it can be used both during:
 # - configure step (e.g. cmake ..)
 # - install step (e.g. cmake --install ..)
+
 cmake_minimum_required(VERSION 3.7.0)
 
 foreach(required_var IN ITEMS _project_lower CMAKE_INSTALL_PREFIX)
@@ -41,6 +43,3 @@ foreach(dir in private_lib_dir libexec_dir config_dir log_dir local_lib_dir runs
     endif()
     set(EDGESEC_full_${dir} "${with_destdir}")
 endforeach()
-
-message("CMAKE_INSTALL_PREFIX is ${CMAKE_INSTALL_PREFIX}")
-message("EDGESEC_full_libexec_dir is ${EDGESEC_full_libexec_dir}")
