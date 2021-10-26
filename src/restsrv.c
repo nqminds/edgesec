@@ -41,6 +41,8 @@
 #include <net/if.h>
 #include <string.h>
 #include <inttypes.h>
+// Used for signal handlers
+#include <signal.h>
 
 #include "config.h"
 
@@ -420,15 +422,46 @@ static enum MHD_Result mhd_reply(void *cls, struct MHD_Connection *connection, c
   return ret;
 }
 
+// static vars since atexit and signal handler should clean them up
+static char* key = NULL;
+static char* cert = NULL;
+static struct MHD_Daemon* mhd_daemon = NULL;
+
+
+/**
+ * Cleanup function.
+ *
+ * Frees memory and stops the MHD Daemon.
+ *
+ * Designed to be used as part of a exit handler.
+ */
+void cleanup() {
+  if (key != NULL) {
+    os_free(key);
+    key = NULL;
+  }
+  if (cert != NULL) {
+    os_free(cert);
+    cert = NULL;
+  }
+  if (mhd_daemon != NULL) {
+    MHD_stop_daemon (mhd_daemon);
+    mhd_daemon = NULL;
+  }
+
+  fprintf(stderr, "Server stopped\n");
+}
+
+void signal_handler() {
+  return exit(0); // call atexit() exit handlers
+}
+
 int main(int argc, char *argv[])
 {
-  struct MHD_Daemon *d;
   uint8_t verbosity = 0;
   uint8_t level = 0;
   struct socket_address sad;
   int port = -1;
-  char *key = NULL;
-  char *cert = NULL;
   bool tls = false;
   int flags = MHD_USE_THREAD_PER_CONNECTION | MHD_USE_DEBUG | MHD_USE_INTERNAL_POLLING_THREAD;
   char *reply = NULL;
@@ -436,6 +469,11 @@ int main(int argc, char *argv[])
   char cn[MAX_WEB_PATH_LEN];
   uint8_t *base64_buf = NULL;
   size_t base64_buf_len;
+
+  // add exit/signal handlers
+  atexit(&cleanup);
+  signal(SIGINT, &signal_handler);
+  signal(SIGTERM, &signal_handler);
 
   os_memset(cn, 0, MAX_WEB_PATH_LEN);
   os_memset(&sad, 0, sizeof(struct socket_address));
@@ -568,26 +606,27 @@ int main(int argc, char *argv[])
     os_free(base64_buf);
     os_free(reply);
 
-    d = MHD_start_daemon (flags, (uint16_t) port,
+    mhd_daemon = MHD_start_daemon (flags, (uint16_t) port,
                         NULL, NULL, &mhd_reply, (void*)&sad,
                         MHD_OPTION_HTTPS_MEM_KEY, key,
                         MHD_OPTION_HTTPS_MEM_CERT, cert,  
                         MHD_OPTION_END);
   } else {
-    d = MHD_start_daemon (flags, (uint16_t) port, NULL, NULL, &mhd_reply, (void*)&sad, NULL, MHD_OPTION_END);
+    mhd_daemon = MHD_start_daemon (flags, (uint16_t) port, NULL, NULL, &mhd_reply, (void*)&sad, NULL, MHD_OPTION_END);
   }
 
-  if (d == NULL) {
+  if (mhd_daemon == NULL) {
     fprintf(stderr, "Error: Failed to start server\n");
     exit(EXIT_FAILURE);
   }
 
-  (void) getc (stdin);
+  fprintf(stderr, "Server started, press CTRL+C to exit.\n");
 
-  if (key != NULL) os_free(key);
-  if (cert != NULL) os_free(cert);
-
-  MHD_stop_daemon (d);
-  fprintf(stdout, "Server stopped\n");
-  exit(EXIT_SUCCESS);
+  // wait forever until we get CTRL+C (SIGINT) or other closing signal
+  sigset_t mask;
+  sigemptyset(&mask);
+  if(sigsuspend(&mask)) {
+    // should never happen, since we call exit() in signal handler
+    fprintf(stderr, "Error: sigsuspend failed\n");
+  };
 }
