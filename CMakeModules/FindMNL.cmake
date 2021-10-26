@@ -65,16 +65,16 @@ find_package_handle_standard_args(MNL
 )
 
 if(MNL_FOUND AND NOT TARGET MNL::mnl)
-  if (NOT TARGET MNL:mnl)
+  if (NOT TARGET MNL::mnl)
     add_library(MNL::mnl UNKNOWN IMPORTED)
     set_target_properties(MNL::mnl PROPERTIES
         IMPORTED_LOCATION "${MNL_LIBRARY}"
         INTERFACE_COMPILE_OPTIONS "${PC_MNL_CFLAGS_OTHER}"
         INTERFACE_INCLUDE_DIRECTORIES "${MNL_INCLUDE_DIR}"
     )
-  endif(NOT TARGET MNL:mnl)
+  endif(NOT TARGET MNL::mnl)
 
-  set(MNL_LIBRARIES MNL:mnl)
+  set(MNL_LIBRARIES MNL::mnl)
   set(MNL_INCLUDE_DIRS ${MNL_INCLUDE_DIR})
   set(MNL_DEFINITIONS ${PC_MNL_CFLAGS_OTHER})
 endif()
