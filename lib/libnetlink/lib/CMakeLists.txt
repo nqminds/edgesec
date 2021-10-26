@@ -1,7 +1,6 @@
 include_directories(
   "${SRC_INCLUDE_DIR}"
   "${UAPI_INCLUDE_DIR}"
-  "${LIBMNL_INCLUDE_DIR}"
 )
 add_library(mpls_ntop mpls_ntop.c)
 add_library(mpls_pton mpls_pton.c)
@@ -23,7 +22,7 @@ add_library(utils SHARED utils.c)
 target_link_libraries(utils color json_print mpls_ntop ll_addr mpls_pton)
 
 add_library(libnetlink SHARED libnetlink.c)
-target_link_libraries(libnetlink ${LIBMNL_LIB})
+target_link_libraries(libnetlink MNL::mnl)
 
 add_library(ll_types SHARED ll_types.c)
 
