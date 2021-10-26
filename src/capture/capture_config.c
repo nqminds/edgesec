@@ -23,6 +23,8 @@
  * @brief File containing the implementation of the capture config structures.
  */
 #include <errno.h>
+// Use to check whether long is same size as uint32_t
+#include <limits.h>
 
 #include "capture_config.h"
 
@@ -179,6 +181,10 @@ int capture_opt2config(char key, char *value, struct capture_conf *config)
     case 'b':
       conversion = get_opt_num(value);
       if (conversion < 0) {
+        return -1;
+      }
+      if (UINT32_MAX != ULONG_MAX && conversion > UINT32_MAX) {
+        log_err("Overflow, byte size %s exceeds uint32", value);
         return -1;
       }
 

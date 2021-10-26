@@ -1,22 +1,23 @@
 project(LIBNETLINK)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMakeModules")
+
 # at least v3.13 is required for install(x) where x is from add_subdirectory()
 cmake_minimum_required(VERSION 3.13)
-SET(LIB_PATH "" CACHE STRING "lib path")
+SET(LIBMNL_INSTALL_ROOT "" CACHE STRING "lib path")
 SET(C_COMPILER "" CACHE STRING "c compiler")
 SET(CXX_COMPILER "" CACHE STRING "c++ compiler")
 
-message("LIB_PATH=${LIB_PATH}")
+# libmnl0 linking doesn't work properly, unless we setup RPATHs
+SET(CMAKE_INSTALL_RPATH "$ORIGIN")
+SET(BUILD_RPATH_USE_ORIGIN true)
+
+message("LIBMNL_INSTALL_ROOT=${LIBMNL_INSTALL_ROOT}")
 message("C_COMPILER=${C_COMPILER}")
 message("CXX_COMPILER=${CXX_COMPILER}")
 
-set(LIBMNL_INCLUDE_DIR "${LIB_PATH}/include")
-find_library(LIBMNL_LIB NAMES mnl PATHS "${LIB_PATH}/lib")
-if (LIBMNL_LIB)
-    message("Found libmnl library: ${LIBMNL_LIB}")
-else ()
-    message(FATAL_ERROR "Could not find libmnl library.")
-endif ()
+list(APPEND CMAKE_PREFIX_PATH ${LIBMNL_INSTALL_ROOT})
+find_package(MNL REQUIRED)
 
 set(CMAKE_BUILD_TYPE Debug)
 

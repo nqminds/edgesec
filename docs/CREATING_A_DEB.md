@@ -20,7 +20,7 @@ in a container like `docker`/`podman`.
 Install build dependencies:
 
 ```bash
-sudo apt install gnupg pbuilder -y
+sudo apt install gnupg pbuilder debhelper -y
 ```
 
 Then create a pbuild environment (basically a chroot jail).
@@ -58,7 +58,7 @@ First of all, install `pbuilder`, which automatically downloads dependencies
 and does the cross-compiling for you.
 
 ```bash
-sudo apt install gnupg pbuilder -y
+sudo apt install gnupg pbuilder debhelper -y
 ```
 
 Then, edit `/etc/pbuilderrc` and enable the following settings:
