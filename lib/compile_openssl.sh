@@ -13,7 +13,8 @@ echo "OPENSSL lib cross-compile config host: ${CONFIG_HOST}"
 cd "${LIBOPENSSL_SOURCE_DIR}"
 
 # CONFIG_HOST is UNQUOTED, so that OpenSSL picks default if it's not set
-./Configure ${CONFIG_HOST} --prefix=${LIBOPENSSL_INSTALL_DIR} --openssldir=${LIBOPENSSL_INSTALL_DIR} -lpthread no-dtls no-dtls1 no-psk no-srp no-ec2m no-weak-ssl-ciphers no-dso no-engine no-threads no-unit-test
+# Set --libdir=lib, since otherwise sometimes OpenSSL installs in /lib64
+./Configure ${CONFIG_HOST} --prefix=${LIBOPENSSL_INSTALL_DIR} --libdir=lib --openssldir=${LIBOPENSSL_INSTALL_DIR} -lpthread no-dtls no-dtls1 no-psk no-srp no-ec2m no-weak-ssl-ciphers no-dso no-engine no-threads
 make
 # only install software, don't install or build docs
 make install_sw
