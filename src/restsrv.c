@@ -133,7 +133,7 @@ void show_app_help(char *app_name)
   fprintf(stdout, "Usage:\n");
   fprintf(stdout, USAGE_STRING, basename(app_name));
   fprintf(stdout, "\nOptions:\n");
-  fprintf(stdout, "\t-s address\t Path to supervisor socket\n");
+  fprintf(stdout, "\t-s address\t Path to edgesec supervisor socket\n");
   fprintf(stdout, "\t-p port\t\t Server port\n");
   fprintf(stdout, "\t-z delim\t\t Command delimiter\n");
   fprintf(stdout, "\t-c name\t\t The common name for certificate generation\n");
@@ -141,7 +141,7 @@ void show_app_help(char *app_name)
   fprintf(stdout, "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n");
   fprintf(stdout, "\t-h\t\t Show help\n");
   fprintf(stdout, "\t-v\t\t Show app version\n\n");
-  fprintf(stdout, "Copyright NQMCyber Ltd\n\n");
+  fprintf(stdout, "Copyright NQMCyber Ltd\n");
   exit(EXIT_SUCCESS);
 }
 
