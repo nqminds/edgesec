@@ -61,6 +61,7 @@
 #define SOCK_PACKET_SIZE 10
 
 #define OPT_STRING    ":s:p:z:c:tdvh"
+#define DESCRIPTION_STRING "HTTP/HTTPS RESTful server for communicating with the edgesec process.\n"
 #define USAGE_STRING  "\t%s [-s address] [-p port] [-z delim] [-c name] [-t] [-d] [-h] [-v]\n"
 
 #define JSON_RESPONSE_OK    "{\"cmd\":\"%s\",\"response\":[%s]}"
@@ -126,6 +127,9 @@ void show_app_version(void)
 void show_app_help(char *app_name)
 {
   show_app_version();
+  fprintf(stdout, "\n");
+  fprintf(stdout, DESCRIPTION_STRING);
+  fprintf(stdout, "\n");
   fprintf(stdout, "Usage:\n");
   fprintf(stdout, USAGE_STRING, basename(app_name));
   fprintf(stdout, "\nOptions:\n");
