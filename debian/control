@@ -15,7 +15,7 @@ Depends: libedgesec (= ${binary:Version}),
     edgesec-revclient (= ${binary:Version}),
     ${shlibs:Depends},
     ${misc:Depends},
-    dnsmasq, jq, libmnl0
+    dnsmasq, jq
 Description: NquiringMinds EDGESec Network Security Router.
  This is NquiringMind's EDGESec Network Analyser.
  It usually creates a secure and paritioned Wifi access point, using vlans,
