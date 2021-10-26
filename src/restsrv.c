@@ -61,6 +61,7 @@
 #define SOCK_PACKET_SIZE 10
 
 #define OPT_STRING    ":s:p:z:c:tdvh"
+#define DESCRIPTION_STRING "HTTP/HTTPS RESTful server for communicating with the edgesec process.\n"
 #define USAGE_STRING  "\t%s [-s address] [-p port] [-z delim] [-c name] [-t] [-d] [-h] [-v]\n"
 
 #define JSON_RESPONSE_OK    "{\"cmd\":\"%s\",\"response\":[%s]}"
@@ -126,10 +127,13 @@ void show_app_version(void)
 void show_app_help(char *app_name)
 {
   show_app_version();
+  fprintf(stdout, "\n");
+  fprintf(stdout, DESCRIPTION_STRING);
+  fprintf(stdout, "\n");
   fprintf(stdout, "Usage:\n");
   fprintf(stdout, USAGE_STRING, basename(app_name));
   fprintf(stdout, "\nOptions:\n");
-  fprintf(stdout, "\t-s address\t Path to supervisor socket\n");
+  fprintf(stdout, "\t-s address\t Path to edgesec supervisor socket\n");
   fprintf(stdout, "\t-p port\t\t Server port\n");
   fprintf(stdout, "\t-z delim\t\t Command delimiter\n");
   fprintf(stdout, "\t-c name\t\t The common name for certificate generation\n");
@@ -137,7 +141,7 @@ void show_app_help(char *app_name)
   fprintf(stdout, "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n");
   fprintf(stdout, "\t-h\t\t Show help\n");
   fprintf(stdout, "\t-v\t\t Show app version\n\n");
-  fprintf(stdout, "Copyright NQMCyber Ltd\n\n");
+  fprintf(stdout, "Copyright NQMCyber Ltd\n");
   exit(EXIT_SUCCESS);
 }
 
@@ -470,11 +474,6 @@ int main(int argc, char *argv[])
   uint8_t *base64_buf = NULL;
   size_t base64_buf_len;
 
-  // add exit/signal handlers
-  atexit(&cleanup);
-  signal(SIGINT, &signal_handler);
-  signal(SIGTERM, &signal_handler);
-
   os_memset(cn, 0, MAX_WEB_PATH_LEN);
   os_memset(&sad, 0, sizeof(struct socket_address));
 
@@ -497,6 +496,11 @@ int main(int argc, char *argv[])
     log_cmdline_error("Unrecognized port value -%d\n", port);
     exit(EXIT_FAILURE); 
   }
+
+  // add exit/signal handlers
+  atexit(&cleanup);
+  signal(SIGINT, &signal_handler);
+  signal(SIGTERM, &signal_handler);
 
   fprintf(stdout, "Starting server with:\n");
   fprintf(stdout, "Supervisor address --> %s\n", sad.spath);
