@@ -13,6 +13,7 @@ Depends: libedgesec (= ${binary:Version}),
     edgesec-common (= ${binary:Version}),
     edgesec-capsrv (= ${binary:Version}),
     edgesec-revclient (= ${binary:Version}),
+    edgesec-restsrv (= ${binary:Version}),
     ${shlibs:Depends},
     ${misc:Depends},
     dnsmasq, jq
@@ -43,7 +44,7 @@ Depends: libedgesec (= ${binary:Version}),
     edgesec-common (= ${binary:Version}),
     ${shlibs:Depends},
     ${misc:Depends}
-Description: NquiringMinds EDGESEC capsrv.
+Description: NquiringMinds EDGESEC capture server.
 
 Package: edgesec-revclient
 Architecture: any
