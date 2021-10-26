@@ -5,6 +5,8 @@ Maintainer: Alois Klink <alois@nquiringminds.com>
 Build-Depends: git, ca-certificates, cmake (>=3.15.0), debhelper-compat (= 12), doxygen, graphviz, texinfo, libnl-genl-3-dev, libnl-route-3-dev, automake, autoconf, libtool-bin, pkg-config, libjson-c-dev, libgnutls28-dev, libssl-dev, flex, bison, protobuf-compiler-grpc:native, libprotobuf-dev, libgrpc++-dev, libcmocka-dev (>=1.1.5)
 Standards-Version: 4.5.0
 Homepage: https://github.com/nqminds/EDGESec
+Vcs-Browser: https://github.com/nqminds/EDGESec
+Vcs-Git: https://github.com/nqminds/EDGESec.git
 
 Package: edgesec
 Architecture: any
@@ -69,10 +71,21 @@ Description: NquiringMinds EDGESEC reverse connection server.
   Can be run on a cloud server in order to create
   a reverse connection to a non-publically accessible EDGESEC device.
 
+Package: edgesec-sqlsyncsrv
+Architecture: any
+Multi-Arch: foreign
+Depends: libedgesec (= ${binary:Version}),
+    edgesec-common (= ${binary:Version}),
+    ${shlibs:Depends},
+    ${misc:Depends}
+Description: NquiringMinds EDGESEC SQL Sync Server.
+  Can be run on a cloud server to store
+  synchronised data from an EDGESEC device.
+
 Package: libedgesec
 Section: libs
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends}, ${shlibs:Depends}
-Description: Shared library files required for edgesec.
+Description: Shared library files required for edgesec packages.
