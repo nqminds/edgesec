@@ -474,11 +474,6 @@ int main(int argc, char *argv[])
   uint8_t *base64_buf = NULL;
   size_t base64_buf_len;
 
-  // add exit/signal handlers
-  atexit(&cleanup);
-  signal(SIGINT, &signal_handler);
-  signal(SIGTERM, &signal_handler);
-
   os_memset(cn, 0, MAX_WEB_PATH_LEN);
   os_memset(&sad, 0, sizeof(struct socket_address));
 
@@ -501,6 +496,11 @@ int main(int argc, char *argv[])
     log_cmdline_error("Unrecognized port value -%d\n", port);
     exit(EXIT_FAILURE); 
   }
+
+  // add exit/signal handlers
+  atexit(&cleanup);
+  signal(SIGINT, &signal_handler);
+  signal(SIGTERM, &signal_handler);
 
   fprintf(stdout, "Starting server with:\n");
   fprintf(stdout, "Supervisor address --> %s\n", sad.spath);
