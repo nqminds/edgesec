@@ -6,36 +6,50 @@ name: Upload Debs to Release
 
 jobs:
   build:
-    env:
-      OTHER_MIRROR:
-        deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports focal main universe | deb [arch=amd64] http://gb.archive.ubuntu.com/ubuntu focal main universe
-      PBUILDER_RC: |
-        # Enable network access, since `cmake` downloads dependencies
-        USENETWORK=yes
-        # Faster than default, and is requried if we want to do cross-compiling
-        PBUILDERSATISFYDEPENDSCMD="/usr/lib/pbuilder/pbuilder-satisfydepends-apt"
     name: Upload built .deb
     runs-on: ubuntu-latest
-    matrix:
-      architecture: [arm64]
+    strategy:
+      matrix:
+        architecture: [arm64, amd64]
+        distribution: [focal]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Cache pbuilder base
+        id: cache-pbuilder-base
+        uses: actions/cache@v2
+        with:
+          path: |
+            /var/cache/pbuilder/base.tgz
+          key: ${{ runner.os }}-${{ matrix.distribution }}
       - name: Install dependencies
         run: |
-          sudo apt update && sudo apt install pbuilder -y
+          sudo apt-get update && sudo apt-get install pbuilder debhelper -y
       - name: Setup pdebuilderrc for cross-compiling
+        env:
+          PBUILDER_RC: |
+            # Enable network access, since `cmake` downloads dependencies
+            USENETWORK=yes
+            # Faster than default, and is requried if we want to do cross-compiling
+            PBUILDERSATISFYDEPENDSCMD="/usr/lib/pbuilder/pbuilder-satisfydepends-apt"
         run: |
           echo "$PBUILDER_RC" | sudo tee -a /etc/pbuilderrc
-      - name: Build .deb
+      - name: Build pbuilder base.tgz
+        if: steps.cache-pbuilder-base.outputs.cache-hit != 'true'
         run: |
-          pdebuild --debbuildopts "-us -uc" -- --override-config --distribution focal --mirror "" --othermirror "$OTHER_MIRROR" --host-arch arm64
+          sudo pbuilder create --debootstrapopts --variant=buildd --distribution ${{ matrix.distribution }}
+      - name: Build .deb
+        env:
+          OTHER_MIRROR:
+            deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${{ matrix.distribution }} main universe | deb [arch=amd64] http://gb.archive.ubuntu.com/ubuntu ${{ matrix.distribution }} main universe
+        run: |
+          pdebuild --debbuildopts "-us -uc" -- --override-config --distribution ${{ matrix.distribution }} --mirror "" --othermirror "$OTHER_MIRROR" --host-arch ${{ matrix.architecture }}
       - name: Load output .deb name
         id: load-deb-name
         run: |
           DEB_PATH="$(ls -rt /var/cache/pbuilder/result/edgesec*.deb | head -1)"
           echo " ::set-output name=deb-path::${DEB_PATH}"
-          echo " ::set-output name=deb-name::$(basename "${DEB_PATH}"")"
+          echo " ::set-output name=deb-name::$(basename "${DEB_PATH}")"
       - name: Upload .deb as Release Asset
         id: upload-release-asset 
         uses: actions/upload-release-asset@v1
