@@ -62,11 +62,39 @@ cmake --build build/ -j4
 
 After succesful compilation the binary will be located in ```./build/src``` folder.
 
-You can use the following to also install files into `build/edgesec-dist` (equivalent to `make install`):
+### Installation
+
+You can use the following to also install files into `build/edgesec-dist`:
 
 ```bash
+# Can do make and install in one step with
+# `cmake --build build/ --target install -j4`
+cmake --install build/
+```
+
+#### Installing to custom location
+
+Set `-DCMAKE_INSTALL_PREFIX=<YOUR-LOCATION-HERE>` to build for a different location:
+
+```bash
+MAKEFLAGS="--jobs=$(nproc)" cmake -B build/ -S . -DCMAKE_INSTALL_PREFIX=/tmp/example-build
 cmake --build build/ --target install -j4
 ```
+
+This will also automatically update `config.ini` to have all paths point to the installed location.
+
+You can also use the following to install to a different location than the one you built for.
+
+```bash
+# Will update config.ini, but will not update RPATHS!!!
+cmake --install build/ --prefix <new-location>
+```
+
+This will not update the `RPATHs` (since they have to be known at compile time).
+However, as we use relative `RPATHs`, as long as you don't change the folder structure,
+it will be fine.
+
+Please configure cmake with `-DCMAKE_INSTALL_PREFIX` and recompile if you want to change the RPATH.
 
 ## Running
 
@@ -90,11 +118,12 @@ The configuration file `config.ini` has been setup to work by default only when:
 To compile the tests use:
 
 ```bash
-cmake -B build/ -S .
+cmake -B build/ -S . # configure CMAKE
+cmake --build build/ -j4 # or make -j4
 cmake --build build/ --target test -j4 # or `make test`
 ```
 
-To run each test individually the test binaries can be located in ```./build/tests``` folder.
+To run each test individually, the test binaries can be located in ```./build/tests``` folder.
 
 ## Developer Documentation
 

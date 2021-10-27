@@ -8,15 +8,15 @@ SET(LIBMNL_INSTALL_ROOT "" CACHE STRING "lib path")
 SET(C_COMPILER "" CACHE STRING "c compiler")
 SET(CXX_COMPILER "" CACHE STRING "c++ compiler")
 
-# libmnl0 linking doesn't work properly, unless we setup RPATHs
-SET(CMAKE_INSTALL_RPATH "$ORIGIN")
-SET(BUILD_RPATH_USE_ORIGIN true)
-
 message("LIBMNL_INSTALL_ROOT=${LIBMNL_INSTALL_ROOT}")
 message("C_COMPILER=${C_COMPILER}")
 message("CXX_COMPILER=${CXX_COMPILER}")
 
 list(APPEND CMAKE_PREFIX_PATH ${LIBMNL_INSTALL_ROOT})
+find_package(MNL REQUIRED)
+
+# libmnl0 linking doesn't work properly, unless we setup RPATHs
+SET(CMAKE_INSTALL_RPATH "$ORIGIN" "$<TARGET_LINKER_FILE_DIR:MNL::mnl>")
 find_package(MNL REQUIRED)
 
 set(CMAKE_BUILD_TYPE Debug)
@@ -42,9 +42,7 @@ set(UAPI_INCLUDE_DIR "${CMAKE_HOME_DIRECTORY}/include/uapi")
 
 add_subdirectory(lib)
 
-install(TARGETS libnetlink DESTINATION lib)
-install(TARGETS ll_map DESTINATION lib)
-install(TARGETS utils DESTINATION lib)
-install(TARGETS rt_names DESTINATION lib)
-install(TARGETS ll_types DESTINATION lib)
-install(TARGETS ll_proto DESTINATION lib)
+install(TARGETS
+    libnetlink utils ll_map rt_names color json_print json_writer
+    LIBRARY PUBLIC_HEADER
+)
