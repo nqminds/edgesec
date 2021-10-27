@@ -80,7 +80,6 @@ if (BUILD_GRPC_LIB AND NOT (BUILD_ONLY_DOCS))
 
 elseif (NOT (BUILD_ONLY_DOCS))
   # Find pre-installed grpc
-  message("Trying to find pre-installed GRPC and Protobuf")
   find_package(GRPC REQUIRED)
 
   set(GRPC_CPP_PLUGIN $<TARGET_FILE:GRPC::grpc_cpp_plugin>)

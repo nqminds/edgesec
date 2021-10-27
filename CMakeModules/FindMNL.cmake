@@ -51,8 +51,6 @@ find_library(MNL_LIBRARY
   PATHS ${PC_MNL_LIBRARY_DIRS}
 )
 
-message("MNL_LIBRARY found was ${MNL_LIBRARY}")
-
 set(MNL_VERSION ${PC_MNL_VERSION})
 
 include(FindPackageHandleStandardArgs)
