@@ -84,6 +84,8 @@ int show_app_help(char *app_name)
   show_app_version();
   fprintf(stdout, "Usage:\n");
   fprintf(stdout, CAPTURE_USAGE_STRING, basename(app_name));
+  fprintf(stdout, "\n");
+  fprintf(stdout, CAPTURE_DESC_STRING);
   fprintf(stdout, "\nOptions:\n");
   fprintf(stdout, "%s", CAPTURE_OPT_DEFS);
   fprintf(stdout, "Copyright NQMCyber Ltd\n\n");
