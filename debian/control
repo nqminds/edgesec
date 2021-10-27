@@ -1,18 +1,21 @@
 Source: edgesec
-Section: unknown
+Section: net
 Priority: optional
 Maintainer: Alois Klink <alois@nquiringminds.com>
 Build-Depends: git, ca-certificates, cmake (>=3.15.0), debhelper-compat (= 12), doxygen, graphviz, texinfo, libnl-genl-3-dev, libnl-route-3-dev, automake, autoconf, libtool-bin, pkg-config, libjson-c-dev, libgnutls28-dev, libssl-dev, flex, bison, protobuf-compiler-grpc:native, libprotobuf-dev, libgrpc++-dev, libcmocka-dev (>=1.1.5)
 Standards-Version: 4.5.0
 Homepage: https://github.com/nqminds/EDGESec
+Vcs-Browser: https://github.com/nqminds/EDGESec
+Vcs-Git: https://github.com/nqminds/EDGESec.git
 
 Package: edgesec
 Architecture: any
 Multi-Arch: foreign
 Depends: libedgesec (= ${binary:Version}),
-    edgesec-common (= ${binary:Version}),
+    edgesec-common (= ${source:Version}),
     edgesec-capsrv (= ${binary:Version}),
     edgesec-revclient (= ${binary:Version}),
+    edgesec-restsrv (= ${binary:Version}),
     ${shlibs:Depends},
     ${misc:Depends},
     dnsmasq, jq
@@ -31,28 +34,56 @@ Package: edgesec-restsrv
 Architecture: any
 Multi-Arch: foreign
 Depends: libedgesec (= ${binary:Version}),
-    edgesec-common (= ${binary:Version}),
+    edgesec-common (= ${source:Version}),
     ${shlibs:Depends},
     ${misc:Depends}
-Description: NquiringMinds EDGESEC restsrv.
+Description: NquiringMinds EDGESEC RESTful server.
+ Provides a HTTP/HTTPS RESTful Server that can
+ be used to communicate with the `edgesec` process,
+ as it only provides an Unix Domain Socket.
 
 Package: edgesec-capsrv
 Architecture: any
 Multi-Arch: foreign
 Depends: libedgesec (= ${binary:Version}),
-    edgesec-common (= ${binary:Version}),
+    edgesec-common (= ${source:Version}),
     ${shlibs:Depends},
     ${misc:Depends}
-Description: NquiringMinds EDGESEC capsrv.
+Description: NquiringMinds EDGESEC capture server.
+ Captures EDGESEC network traffic using PCAP.
 
 Package: edgesec-revclient
 Architecture: any
 Multi-Arch: foreign
 Depends: libedgesec (= ${binary:Version}),
-    edgesec-common (= ${binary:Version}),
+    edgesec-common (= ${source:Version}),
     ${shlibs:Depends},
     ${misc:Depends}
-Description: NquiringMinds EDGESEC revclient.
+Description: NquiringMinds EDGESEC reverse connection client.
+ Should be used to connect an EDGESec edge device to
+ a server running `edgesec-revsrv`.
+
+Package: edgesec-revsrv
+Architecture: any
+Multi-Arch: foreign
+Depends: libedgesec (= ${binary:Version}),
+    edgesec-common (= ${source:Version}),
+    ${shlibs:Depends},
+    ${misc:Depends}
+Description: NquiringMinds EDGESEC reverse connection server.
+ Can be run on a cloud server in order to create
+ a reverse connection to a non-publically accessible EDGESEC device.
+
+Package: edgesec-sqlsyncsrv
+Architecture: any
+Multi-Arch: foreign
+Depends: libedgesec (= ${binary:Version}),
+    edgesec-common (= ${source:Version}),
+    ${shlibs:Depends},
+    ${misc:Depends}
+Description: NquiringMinds EDGESEC SQL Sync Server.
+ Can be run on a cloud server to store
+ synchronised data from an EDGESEC device.
 
 Package: libedgesec
 Section: libs
@@ -60,4 +91,4 @@ Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends}, ${shlibs:Depends}
-Description: Shared library files required for edgesec.
+Description: Shared library files required for edgesec packages.

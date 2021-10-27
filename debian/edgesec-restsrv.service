@@ -1,8 +1,8 @@
 [Unit]
 Description=EDGESec RESTful server.
 After=edgesec.service
-# Wants is Optional, restful server might be installed somewhere else.
-Wants=edgesec.service
+# REST server binds to edgesec's domain socket
+BindsTo=edgesec.service
 
 [Service]
 Type=simple
