@@ -1,7 +1,5 @@
 #!/bin/bash
-
 set -e
-
 
 LIBNETLINK_SOURCE_DIR=$1
 LIBNETLINK_INSTALL_ROOT=$2
@@ -17,22 +15,13 @@ echo "NETLINK lib config CXX compiler: ${CXX_COMPILER}"
 
 cd "${LIBNETLINK_SOURCE_DIR}"
 
-rm -rf build/
-
-mkdir build
-mkdir "${LIBNETLINK_INSTALL_DIR}"
-
-cd build/
-
-cmake -DLIBMNL_INSTALL_ROOT:STRING=${LIBMNL_INSTALL_DIR} -DC_COMPILER:STRING=${C_COMPILER} -DCXX_COMPILER:STRING=${CXX_COMPILER} ../
-
-make
-
-
-cmake --install . --prefix "${LIBNETLINK_INSTALL_DIR}"
-
-cd ../
-
-cp -a include/ "${LIBNETLINK_INSTALL_DIR}"
-
-rm -rf build/
+# configure step
+cmake -B build/ -S "${LIBNETLINK_SOURCE_DIR}" \
+    -DCMAKE_INSTALL_PREFIX="${LIBNETLINK_INSTALL_DIR}" \
+    -DLIBMNL_INSTALL_ROOT:STRING=${LIBMNL_INSTALL_DIR} \
+    -DC_COMPILER:STRING=${C_COMPILER} \
+    -DCXX_COMPILER:STRING=${CXX_COMPILER}
+# build step
+cmake --build build/
+# install step
+cmake --install build/
