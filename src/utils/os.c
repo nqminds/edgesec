@@ -200,6 +200,16 @@ int os_get_random(unsigned char *buf, size_t len)
 	return rc != len ? -1 : 0;
 }
 
+int os_get_random_int_range(int low, int up)
+{
+  return rand() % (up - low + 1) + low;
+}
+
+void os_init_random_seed(void)
+{
+  srand(time(NULL));
+}
+
 int os_get_random_number_s(unsigned char *buf, size_t len)
 {
   size_t idx = 0;

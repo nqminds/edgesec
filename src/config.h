@@ -56,8 +56,9 @@ struct app_config {
   char                nat_interface[IFNAMSIZ];              /**< The NAT interface string. */
   bool                create_interfaces;                    /**< Flag to create the WiFi subnet interfaces. */
   bool                ignore_if_error;                      /**< Flag if set ignores the errors if subnet already exists. */
+  bool                allocate_vlans;                       /**< Flag if set allocates a random vlan for a device. */
   int                 default_open_vlanid;                  /**< Sets the default vlan index for open connections or if MAC is not in the list of connections. */
-  int                 quarantine_vlanid;                    /**< Sets the vlan index for the quarantine MACs. */
+  int                 quarantine_vlanid;                    /**< Sets the vlan index for the quarantine MACs, -1 if there's no quarantine vlan. */
   int                 risk_score;                           /**< Sets the risk score. */
   UT_array            *config_ifinfo_array;                 /**< Interface list mapping bridge interface name and IP address range. */
   char                domain_server_path[MAX_OS_PATH_LEN];  /**< Path to the control server. */

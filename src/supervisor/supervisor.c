@@ -29,6 +29,7 @@
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <libgen.h>
+#include <time.h>
 
 #include "sqlite_fingerprint_writer.h"
 #include "sqlite_alert_writer.h"
@@ -124,13 +125,78 @@ int schedule_analyser(struct supervisor_context *context, int vlanid)
   return 0;
 }
 
+int allocate_vlan(struct supervisor_context *context)
+{
+  int *vlan_arr = NULL;
+  int vlanid, idx = 0, len;
+  config_ifinfo_t *p = NULL;
+  UT_array *config_ifinfo_array = context->config_ifinfo_array;
+  
+  if (!context->allocate_vlans) {
+    return context->default_open_vlanid;
+  }
+
+  // Exclude the quarantine vlanid
+  if (utarray_len(config_ifinfo_array) <= 2 && context->quarantine_vlanid >= 0) {
+    return context->default_open_vlanid;
+  }
+
+  len = utarray_len(config_ifinfo_array) - 1;
+  if ((vlan_arr = (int*) os_malloc(len)) == NULL) {
+    log_err("os_malloc");
+    return -1;
+  }
+
+  while((p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) != NULL) {
+    if (p->vlanid != context->quarantine_vlanid) {
+      vlan_arr[idx++] = p->vlanid;
+    }
+  }
+
+  vlanid = vlan_arr[os_get_random_int_range(0, len - 1)];
+  os_free(vlan_arr);
+
+  return vlanid;
+}
+
+struct mac_conn_info assign_device_vlan(struct supervisor_context *context, uint8_t mac_addr[], struct mac_conn_info info)
+{
+  struct mac_conn conn;
+
+  if (context->exec_capture) {
+    if (schedule_analyser(context, info.vlanid) < 0) {
+      log_trace("execute_capture fail");
+      log_trace("REJECTING mac=" MACSTR, MAC2STR(mac_addr));
+      info.vlanid = -1;
+      return info;
+    }
+  }
+
+  if (os_get_timestamp(&info.join_timestamp) < 0) {
+    log_trace("os_get_timestamp fail");
+    info.vlanid = -1;
+    return info;
+  }
+
+  log_trace("ALLOWING mac=" MACSTR " on vlanid=%d", MAC2STR(mac_addr), info.vlanid);
+  os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
+  conn.info = info;
+  if (!save_mac_mapper(context, conn)) {
+    log_trace("save_mac_mapper fail");
+    info.vlanid = -1;
+    return info;
+  }
+
+  return info;
+}
+
 struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg)
 {
   struct supervisor_context *context = (struct supervisor_context *) mac_conn_arg;
-  struct mac_conn conn;
   struct mac_conn_info info;
+  int allocated_vlanid = allocate_vlan(context);
 
-  init_default_mac_info(&info, context->default_open_vlanid, context->allow_all_nat);
+  init_default_mac_info(&info, allocated_vlanid, context->allow_all_nat);
 
   log_trace("REQUESTED vland id for mac=" MACSTR, MAC2STR(mac_addr));
 
@@ -150,107 +216,39 @@ struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg)
 
   if (context->allow_all_connections && (find_mac == 0 || (find_mac == 1 && info.allow_connection))) {
     if (find_mac == 0) {
-      configure_mac_info(&info, true, context->default_open_vlanid, context->wpa_passphrase_len, context->wpa_passphrase, NULL);
+      configure_mac_info(&info, true, allocated_vlanid, context->wpa_passphrase_len, context->wpa_passphrase, NULL);
+      log_trace("Allowing default connection for mac=" MACSTR " and vlanid=%d", MAC2STR(mac_addr), info.vlanid);
     } else if (find_mac == 1 && !info.pass_len) {
+      log_trace("Found mac=" MACSTR " on vlanid=%d and default wpa key", MAC2STR(mac_addr), info.vlanid);
       info.pass_len = context->wpa_passphrase_len;
       os_memcpy(info.pass, context->wpa_passphrase, context->wpa_passphrase_len);
+    } else if (find_mac == 1 && info.pass_len) {
+      log_trace("Found mac=" MACSTR " on vlanid=%d", MAC2STR(mac_addr), info.vlanid);
     }
 
-    if (context->exec_capture) {
-      if (schedule_analyser(context, info.vlanid) < 0) {
-        log_trace("execute_capture fail");
-        log_trace("REJECTING mac=" MACSTR, MAC2STR(mac_addr));
-        info.vlanid = -1;
-        return info;
-      }
-    }
-
-    if (os_get_timestamp(&info.join_timestamp) < 0) {
-      log_trace("os_get_timestamp fail");
-        info.vlanid = -1;
-        return info;
-    }
-
-    log_trace("ALLOWING mac=" MACSTR " on default vlanid=%d", MAC2STR(mac_addr), info.vlanid);
-    os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
-    conn.info = info;
-    if (!save_mac_mapper(context, conn)) {
-      log_trace("save_mac_mapper fail");
-      info.vlanid = -1;
-    }
-
-    return info;
+    return assign_device_vlan(context, mac_addr, info);
   } else if (!context->allow_all_connections && (find_mac == 1 && info.allow_connection && info.pass_len)) {
-    if (context->exec_capture) {
-      if (schedule_analyser(context, info.vlanid) < 0) {
-        log_trace("execute_capture fail");
-        log_trace("REJECTING mac=" MACSTR, MAC2STR(mac_addr));
-        info.vlanid = -1;
-        return info;
-      }
-    }
-
-    if (os_get_timestamp(&info.join_timestamp) < 0) {
-      log_trace("os_get_timestamp fail");
-        info.vlanid = -1;
-        return info;
-    }
-
-    log_trace("ALLOWING mac=" MACSTR " on vlanid=%d", MAC2STR(mac_addr), info.vlanid);
-    os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
-    conn.info = info;
-    if (!save_mac_mapper(context, conn)) {
-      log_trace("save_mac_mapper fail");
-      info.vlanid = -1;
-    }
-
-    return info;
+    log_trace("Found mac=" MACSTR " on vlanid=%d", MAC2STR(mac_addr), info.vlanid);
+    return assign_device_vlan(context, mac_addr, info);
   } else if (!context->allow_all_connections && find_mac == -1) {
     log_trace("get_mac_mapper fail");
   } else if (!context->allow_all_connections && (find_mac == 0 || (find_mac == 1 && info.allow_connection && !info.pass_len))) {
-    log_trace("mac=" MACSTR " not assigned, checking for the active tickets", MAC2STR(mac_addr));
-    info.allow_connection = true;
+    configure_mac_info(&info, true, allocated_vlanid, context->wpa_passphrase_len, context->wpa_passphrase, NULL);
 
     if (context->ticket != NULL) {
       // Use ticket
-      log_trace("Assigning auth ticket");
       info.vlanid = context->ticket->vlanid;
       info.pass_len = context->ticket->passphrase_len;
       os_memcpy(info.pass, context->ticket->passphrase, info.pass_len);
       os_memcpy(info.label, context->ticket->device_label, MAX_DEVICE_LABEL_SIZE);
       free_ticket(context);
+
+      log_trace("Assigning auth ticket for mac=" MACSTR " and vlanid=%d", MAC2STR(mac_addr), info.vlanid);
     } else {
-      // Assign to default VLAN ID
-      log_trace("Assigning default connection");
-      info.vlanid = context->default_open_vlanid;
-      info.pass_len = context->wpa_passphrase_len;
-      os_memcpy(info.pass, context->wpa_passphrase, info.pass_len);
+      log_trace("Assigning default connection for mac=" MACSTR " and vlanid=%d", MAC2STR(mac_addr), info.vlanid);
     }
 
-    if (context->exec_capture) {
-      if (schedule_analyser(context, info.vlanid) < 0) {
-        log_trace("execute_capture fail");
-        log_trace("REJECTING mac=" MACSTR, MAC2STR(mac_addr));
-        info.vlanid = -1;
-        return info;
-      }
-    }
-
-    if (os_get_timestamp(&info.join_timestamp) < 0) {
-      log_trace("os_get_timestamp fail");
-        info.vlanid = -1;
-        return info;
-    }
-
-    log_trace("ALLOWING mac=" MACSTR " on vlanid=%d", MAC2STR(mac_addr), info.vlanid);
-    os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
-    conn.info = info;
-    if (!save_mac_mapper(context, conn)) {
-      log_trace("save_mac_mapper fail");
-      info.vlanid = -1;
-    }
-
-    return info;
+    return assign_device_vlan(context, mac_addr, info);
   }
   
   log_trace("REJECTING mac=" MACSTR, MAC2STR(mac_addr));
@@ -354,6 +352,7 @@ int run_supervisor(char *server_path, struct supervisor_context *context)
 {
   char *db_path = NULL;
 
+  allocate_vlan(context);
   db_path = construct_path(context->db_path, FINGERPRINT_DB_NAME);
   if (db_path == NULL) {
     log_debug("construct_path fail");

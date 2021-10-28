@@ -168,6 +168,7 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
   ctx->domain_sock = -1;
   ctx->exec_capture = app_config->exec_capture;
   ctx->domain_delim = app_config->domain_delim;
+  ctx->allocate_vlans = app_config->allocate_vlans;
   ctx->allow_all_connections = app_config->allow_all_connections;
   ctx->allow_all_nat = app_config->allow_all_nat;
   ctx->default_open_vlanid = app_config->default_open_vlanid;
@@ -184,6 +185,11 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
   os_memcpy(&ctx->capture_config, &app_config->capture_config, sizeof(struct capture_conf));
   os_memcpy(&ctx->hconfig, &app_config->hconfig, sizeof(struct apconf));
   os_memcpy(&ctx->rconfig, &app_config->rconfig, sizeof(struct radius_conf));
+
+  if (ctx->default_open_vlanid == ctx->quarantine_vlanid) {
+    log_trace("default and quarantine vlans have the same id");
+    return false;
+  }
 
   db_path = construct_path(ctx->db_path, MACCONN_DB_NAME);
   if (db_path == NULL) {
@@ -215,11 +221,9 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
   // Init the list of bridges
   ctx->bridge_list = init_bridge_list();
 
-  if (ctx->default_open_vlanid >= 0) {
-     if (get_vlan_mapper(&ctx->vlan_mapper, ctx->default_open_vlanid, NULL) <= 0) {
-       log_trace("default vlan id=%d doesn't exist", ctx->default_open_vlanid);
-       return false;
-     }
+  if (get_vlan_mapper(&ctx->vlan_mapper, ctx->default_open_vlanid, NULL) <= 0) {
+    log_trace("default vlan id=%d doesn't exist", ctx->default_open_vlanid);
+    return false;
   }
 
   if (ctx->quarantine_vlanid >= 0) {

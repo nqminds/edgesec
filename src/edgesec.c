@@ -240,6 +240,8 @@ int main(int argc, char *argv[])
     exit(1);
   }
 
+  os_init_random_seed();
+
   if (!run_engine(&config)) {
     fprintf(stderr, "Failed to start edgesec engine.\n");
   } else

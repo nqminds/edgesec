@@ -191,6 +191,22 @@ void os_to_timestamp(struct timeval ts, uint64_t *timestamp);
  */
 int os_get_random(unsigned char *buf, size_t len);
 
+
+/**
+ * @brief Return a random int from a give range
+ * 
+ * @param low The range lower bound
+ * @param up The range upper bound
+ * @return int The returned random int
+ */
+int os_get_random_int_range(int low, int up);
+
+/**
+ * @brief Initialises the random seed
+ * 
+ */
+void os_init_random_seed(void);
+
 /**
  * @brief Get a random number string
  * 

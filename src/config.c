@@ -609,6 +609,9 @@ bool load_app_config(const char *filename, struct app_config *config)
   // Load the exec iptables flag
   config->exec_iptables = ini_getbool("system", "execIptables", 1, filename);
 
+  // Load the allocateVlans flag
+  config->allocate_vlans = ini_getbool("system", "allocateVlans", 0, filename);
+
   // Load the default open vlanid
   config->default_open_vlanid = (int) ini_getl("system", "defaultOpenVlanId", 0, filename);
 
