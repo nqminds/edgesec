@@ -39,10 +39,12 @@
  * @param interface The WiFi AP interface name.
  * @param dns_server_array The array including the DNS servers IP addresses.
  * @param domain_server_path The UNIX domain server path.
+ * @param exec_dhcp Flag to execute/signal the DHCP process.
  * @return int 0 on success, -1 on error
  */
 int run_dhcp(char *dhcp_bin_path, struct dhcp_conf *dconf,
-  char *interface, UT_array *dns_server_array, char *domain_server_path);
+  char *interface, UT_array *dns_server_array, char *domain_server_path,
+  bool exec_dhcp);
 
 /**
  * @brief Closes (terminates) dhcp process
@@ -51,4 +53,12 @@ int run_dhcp(char *dhcp_bin_path, struct dhcp_conf *dconf,
  */
 bool close_dhcp(void);
 
+/**
+ * @brief Clear the DHCP lease for a MAC addrress
+ * 
+ * @param mac_addr The MAC address string
+ * @param dconf The dhcp configuration structures
+ * @return int 0 on success, -1 on failure
+ */
+int clear_dhcp_lease(char *mac_addr, struct dhcp_conf *dconf);
 #endif

@@ -41,7 +41,7 @@
  * @brief Runs the AP service
  * 
  * @param context The supervisor context structure
- * @param exec_ap Flag to execute the AP process
+ * @param exec_ap Flag to execute/signal the AP process
  * @param generate_ssid Flag to generate the SSID for AP
  * @param ap_callback_fn The callback for AP service
  * @return int 0 on success, -1 on failure

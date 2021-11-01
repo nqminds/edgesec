@@ -30,6 +30,7 @@
 #include <sqlite3.h>
 
 #include "../ap/ap_config.h"
+#include "../dhcp/dhcp_config.h"
 #include "../utils/if.h"
 #include "../capture/capture_config.h"
 #include "../crypt/crypt_config.h"
@@ -77,6 +78,7 @@ struct supervisor_context {
   struct capture_conf capture_config;                         /**< Capture service configuration. */
   struct apconf       hconfig;                                /**< AP service configuration. */
   struct radius_conf  rconfig;                                /**< Radius service configuration. */
+  struct dhcp_conf  dconfig;                                  /**< DHCP service configuration. */
   sqlite3         *fingeprint_db;                             /**< The fingerprint sqlite db structure. */
   sqlite3         *alert_db;                                  /**< The alert sqlite db structure. */
   sqlite3         *macconn_db;                                /**< The macconn db structure. */

@@ -249,3 +249,94 @@ bool kill_dhcp_process(void)
 
   return true;
 }
+
+int signal_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path)
+{
+  char *process_argv[5] = {NULL, NULL, NULL, NULL, NULL};
+  char *conf_arg;
+
+  os_strlcpy(dnsmasq_proc_name, basename(dhcp_bin_path), MAX_OS_PATH_LEN);
+
+  if ((conf_arg = get_dnsmasq_args(dhcp_bin_path, dhcp_conf_path, process_argv)) == NULL) {
+    log_trace("get_dnsmasq_args fail");
+    return -1;
+  }
+
+  log_trace("Checking dnsmasq proc running...");
+  if (check_dhcp_running(basename(process_argv[0]), 1) <= 0) {
+    log_trace("check_dhcp_running or process not running");
+    os_free(conf_arg);
+    return -1;
+  }
+
+  os_free(conf_arg);
+
+  // Signal any running hostapd process to reload the config
+  if (!signal_process(dnsmasq_proc_name, SIGHUP)) {
+    log_trace("signal_process fail");
+    return -1;
+  }
+
+  return 0;
+}
+
+int clear_dhcp_lease_entry(char *mac_addr, char *dhcp_leasefile_path)
+{
+  char *out = NULL, *end = NULL;
+  char *start = NULL, *finish = NULL;
+
+  FILE *fp;
+
+  if (mac_addr == NULL) {
+    log_trace("mac_addr paramn is NULL");
+    return -1;
+  }
+
+  if (dhcp_leasefile_path == NULL) {
+    log_trace("dhcp_leasefile_path paramn is NULL");
+    return -1;
+  }
+
+  log_trace("Removing %s from %s", mac_addr, dhcp_leasefile_path);
+
+  if (read_file_string(dhcp_leasefile_path, &out) < 0) {
+    log_trace("read_file_string fail");
+    return -1;
+  }
+
+  if ((start = strstr(out, mac_addr)) == NULL || !strlen(mac_addr)) {
+    log_trace("lease entry not found");
+    os_free(out);
+    return 0;
+  }
+
+  finish = start + 1;
+  end = out + strlen(out);
+
+  while(start > out) {
+    if (*(start - 1) == '\n') {
+      break;
+    }
+    start --;
+  }
+
+  *start = '\0';
+  while(finish < end) {
+    if (*finish == '\n') {
+      finish ++;
+      break;
+    }
+    finish ++;
+  }
+
+  if ((fp = fopen(dhcp_leasefile_path, "w+")) == NULL) {
+    log_err("fopen");
+    os_free(out);
+    return -1;
+  }
+
+  fprintf(fp,"%s%s", out, finish);
+  os_free(out);
+  fclose(fp);
+  return 0;
+}

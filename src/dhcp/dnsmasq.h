@@ -79,4 +79,23 @@ char* run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path);
  * @return bool true on success, false otherwise 
  */
 bool kill_dhcp_process(void);
+
+/**
+ * @brief Signal the DHCP process to reload the config
+ * 
+ * @param dhcp_bin_path The DHCP server binary path
+ * @param dhcp_conf_path The DHCP server config path
+ * @return int 0 on success, -1 on failure
+ */
+int signal_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path);
+
+
+/**
+ * @brief Clear the DHCP lease entry for a MAC addrress
+ * 
+ * @param mac_addr The MAC address string
+ * @param dhcp_leasefile_path The DHCP file path
+ * @return int 0 on success, -1 on failure
+ */
+int clear_dhcp_lease_entry(char *mac_addr, char *dhcp_leasefile_path);
 #endif

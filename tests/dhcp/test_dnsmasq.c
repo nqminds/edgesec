@@ -22,13 +22,13 @@ static const UT_icd config_dhcpinfo_icd = {sizeof(config_dhcpinfo_t), NULL, NULL
 
 static char *test_dhcp_conf_path = "/tmp/dnsmasq-test.conf";
 static char *test_dhcp_script_path = "/tmp/dnsmasq_exec-test.sh";
-static char *test_dhcp_leasefile_path = "/var/lib/misc/dnsmasq.leases";
+static char *test_dhcp_leasefile_path = "/tmp/dnsmasq.leases";
 static char *test_domain_server_path = "/tmp/edgesec-domain-server";
 static char *test_dhcp_conf_content =
 "no-resolv\n"
 "server=8.8.4.4\n"
 "server=8.8.8.8\n"
-"dhcp-leasefile=/var/lib/misc/dnsmasq.leases\n"
+"dhcp-leasefile=/tmp/dnsmasq.leases\n"
 "dhcp-script=/tmp/dnsmasq_exec-test.sh\n"
 "dhcp-range=wifi_if,10.0.0.2,10.0.0.254,255.255.255.0,24h\n"
 "dhcp-range=wifi_if.1,10.0.1.2,10.0.1.254,255.255.255.0,24h\n"
@@ -40,6 +40,11 @@ static char *test_dhcp_script_content =
 "str=\"SET_IP $1 $2 $3\"\n"
 "echo \"Sending $str ...\"\n"
 "echo $str | nc -uU /tmp/edgesec-domain-server -w2 -W1\n";
+
+static char *test_dhcp_leasefile_content =
+"1635860140 11:22:33:44:55:66 10.0.1.10 pc 11:22:33:44:55:66\n"
+"1635860148 44:2a:60:db:f3:91 10.0.1.209 iMac 01:44:2a:60:db:f3:91\n"
+"1635860076 1c:bf:ce:17:1f:1c 10.0.2.178 * 01:1c:bf:ce:17:1f:1c\n";
 
 static char *interface="wifi_if";
 static char *dns_server="8.8.4.4,8.8.8.8";
@@ -183,13 +188,52 @@ static void test_generate_script_conf(void **state)
   free(buffer);
 }
 
+static void test_clear_dhcp_lease_entry(void **state)
+{
+  (void) state; /* unused */
+  char *out = NULL;
+  FILE *fp = fopen(test_dhcp_leasefile_path, "w");
+
+  assert_non_null(fp);
+  fprintf(fp, "%s", test_dhcp_leasefile_content);
+  fclose(fp);
+
+  assert_int_equal(clear_dhcp_lease_entry("", test_dhcp_leasefile_path), 0);
+
+  assert_int_equal(clear_dhcp_lease_entry("11:22:33:44:55:66", test_dhcp_leasefile_path), 0);
+  assert_int_equal(read_file_string(test_dhcp_leasefile_path, &out), 0);
+  assert_null(strstr(out, "11:22:33:44:55:66"));
+  assert_non_null(strstr(out, "44:2a:60:db:f3:91"));
+  os_free(out);
+
+  assert_int_equal(clear_dhcp_lease_entry("11:22:33:44:55:66", test_dhcp_leasefile_path), 0);
+  assert_int_equal(read_file_string(test_dhcp_leasefile_path, &out), 0);
+  assert_null(strstr(out, "11:22:33:44:55:66"));
+  assert_non_null(strstr(out, "44:2a:60:db:f3:91"));
+  os_free(out);
+
+  assert_int_equal(clear_dhcp_lease_entry("44:2a:60:db:f3:91", test_dhcp_leasefile_path), 0);
+  assert_int_equal(read_file_string(test_dhcp_leasefile_path, &out), 0);
+  assert_null(strstr(out, "44:2a:60:db:f3:91"));
+  assert_non_null(strstr(out, "1c:bf:ce:17:1f:1c"));
+  os_free(out);
+
+  assert_int_equal(clear_dhcp_lease_entry("1c:bf:ce:17:1f:1c", test_dhcp_leasefile_path), 0);
+  assert_int_equal(read_file_string(test_dhcp_leasefile_path, &out), 0);
+  assert_null(strstr(out, "1c:bf:ce:17:1f:1c"));
+  os_free(out);
+}
+
 int main(int argc, char *argv[])
 {  
+  (void) argc; /* unused */
+  (void) argv; /* unused */
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_generate_dhcp_conf),
-    cmocka_unit_test(test_generate_script_conf)
+    cmocka_unit_test(test_generate_script_conf),
+    cmocka_unit_test(test_clear_dhcp_lease_entry)
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

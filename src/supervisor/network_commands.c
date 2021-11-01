@@ -120,6 +120,11 @@ int accept_mac_cmd(struct supervisor_context *context, uint8_t *mac_addr, int vl
     return -1;
   }
 
+  if (clear_dhcp_lease(mac_str, context->dconfig) < 0) {
+    log_trace("clear_dhcp_lease fail");
+    return -1;
+  }
+
   if (check_sta_ap_command(&context->hconfig, mac_str) == 0) {
     if (disconnect_ap_command(&context->hconfig, mac_str) < 0) {
       log_trace("disconnect_ap_command fail");

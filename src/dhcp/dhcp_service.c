@@ -31,17 +31,26 @@
 #include "../utils/utarray.h"
 
 int run_dhcp(char *dhcp_bin_path, struct dhcp_conf *dconf,
-  char *interface, UT_array *dns_server_array, char *domain_server_path)
+  char *interface, UT_array *dns_server_array, char *domain_server_path,
+  bool exec_dhcp)
 {
   if (!generate_dhcp_configs(dconf, interface, dns_server_array, domain_server_path)) {
     log_trace("generate_dhcp_configs fail");
     return -1;
   }
 
-  return (run_dhcp_process(dhcp_bin_path, dconf->dhcp_conf_path) == NULL) ? -1 : 0;
+  if (exec_dhcp)
+    return (run_dhcp_process(dhcp_bin_path, dconf->dhcp_conf_path) == NULL) ? -1 : 0;
+  else
+    return signal_dhcp_process(dhcp_bin_path, dconf->dhcp_conf_path);
 }
 
 bool close_dhcp(void)
 {
   return kill_dhcp_process();
+}
+
+int clear_dhcp_lease(char *mac_addr, struct dhcp_conf *dconf)
+{
+  return clear_dhcp_lease_entry(mac_addr, dconf->dhcp_leasefile_path);
 }
