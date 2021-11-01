@@ -30,6 +30,7 @@ build_dependencies=(
     libssl-dev # required by hostapd only. GRPC uses own version, and we compile OpenSSL 3 for EDGESec
     protobuf-compiler-grpc libprotobuf-dev libgrpc++-dev # GRPC, can be removed if -DBUILD_GRPC_LIB=ON
     libcmocka-dev # cmocka, can be removed if -DBUILD_CMOCKA_LIB=ON
+    libmnl-dev # libmnl, can be removed if -DBUILD_LIBMNL_LIB=ON
 )
 runtime_dependencies=(
     dnsmasq
