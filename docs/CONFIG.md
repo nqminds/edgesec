@@ -1,6 +1,6 @@
 # Configuration file structure
 
-Below is an example of the configuration file that is passed as a parameter to ```edgesec``` tool:
+Below is an example of the configuration file that is passed as a parameter to `edgesec` tool:
 ```ini
 [system]
 binPath = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"
@@ -110,7 +110,7 @@ if9 = "9,10.0.9.1,10.0.9.255,255.255.255.0"
 if10 = "10,10.0.10.1,10.0.10.255,255.255.255.0"
 ```
 
-The configuration file is based on the ```ini``` file type format. Each parameter in the file is set using a key and a value pair. The ```edgesec``` configuration file is composed of the following groups:
+The configuration file is based on the `ini` file type format. Each parameter in the file is set using a key and a value pair. The `edgesec` configuration file is composed of the following groups:
 * *[system]*
 * *[capture]*
 * *[supervisor]*
@@ -123,46 +123,46 @@ The configuration file is based on the ```ini``` file type format. Each paramete
 * *[interfaces]*
 
 ## [system] group
-The system group contains all the parameters that are reponsible to configure the ```edgesec``` system tool paths, the hashes of the system binaries and tool flags.
+The system group contains all the parameters that are reponsible to configure the `edgesec` system tool paths, the hashes of the system binaries and tool flags.
 
 ### binPath (string)
-A list of systems binary paths separated with ":" used by the ```edgesec``` tool to configure interfaces, etc.
+A list of systems binary paths separated with ":" used by the `edgesec` tool to configure interfaces, etc.
 
 ### hashIpCommand (string)
 A list of hashes for each system binary used by the tool. [WIP]
 
 ### createInterfaces (boolean)
-```edgesec``` will create subnetnetwork interfaces if the flag is set to ```true```. If set to ```false``` one will have to use a similar service to ```dhcpcd``` to preconfigure the network interfaces.
+`edgesec` will create subnetnetwork interfaces if the flag is set to `true`. If set to `false` one will have to use a similar service to `dhcpcd` to preconfigure the network interfaces.
 
 ### ignoreErrorOnIfCreate (boolean)
-If set to ```true```, ```edgesec``` will ignore the "network interface already exists" error. This flag is to be used if the network interfaces are already preconfigured.
+If set to `true`, `edgesec` will ignore the "network interface already exists" error. This flag is to be used if the network interfaces are already preconfigured.
 
 ### allowAllConnections (boolean)
-If set to ```true```, ```edgesec``` will allow all WiFi connection requests regarding of the MAC value.
+If set to `true`, `edgesec` will allow all WiFi connection requests regarding of the MAC value.
 
 ### apDetect (boolean)
-If set to ```true```, ```edgesec``` will try to detect the WiFi network interfaces that supports VLAN capability. The detected network interface will be used by ```hostapd``` service to create an AP.
+If set to `true`, `edgesec` will try to detect the WiFi network interfaces that supports VLAN capability. The detected network interface will be used by `hostapd` service to create an AP.
 
 ### defaultOpenVlanId (integer)
-The default VLAN ID positive integer number assigned to new devices if ```allowAllConnections``` flag is set to ```true```.
+The default VLAN ID positive integer number assigned to new devices if `allowAllConnections` flag is set to `true`.
 
 ### killRunningProcess (boolean)
-If set to true the current running ```edgesec``` will terminate exisiting running ```edgesec``` processes.
+If set to true the current running `edgesec` will terminate exisiting running `edgesec` processes.
 
 ### setIpForward (boolean)
-If set to true ```edgesec``` will set the ip forward os system param.
+If set to true `edgesec` will set the ip forward os system param.
 
 ### execHostapd (boolean)
-If set to ```true```, ```edgesec``` will execute the ```hostapd``` service using ```excve``` system command. If set to ```false``` the ```hostapd``` service has to be run before executing ```edgesec```.
+If set to `true`, `edgesec` will execute the `hostapd` service using `excve` system command. If set to `false` the `hostapd` service has to be run before executing `edgesec`.
 
 ### execRadius (boolean)
-If set to ```true```, ```edgesec``` will execute the ```radius``` service.
+If set to `true`, `edgesec` will execute the `radius` service.
 
 ### execDhcp (boolean)
-If set to ```true```, ```edgesec``` will execute the ```dhcp``` service.
+If set to `true`, `edgesec` will execute the `dhcp` service.
 
 ## [capture] group
-The capture group contains all the parameters that are reponsible to configure the ```capture``` app service.
+The capture group contains all the parameters that are reponsible to configure the `capture` app service.
 
 ### captureInterface (string)
 The name of the capture interface. If set to "any" the service will traffic from all interfaces.
@@ -171,10 +171,10 @@ The name of the capture interface. If set to "any" the service will traffic from
 The pcap lib capture filter.
 
 ### promiscuous (boolean)
-If set to ```true``` the capture interface is set to promiscuous mode. The default value is ```false```.
+If set to `true` the capture interface is set to promiscuous mode. The default value is `false`.
 
 ### immediate (boolean)
-If set to ```true``` the capture interface is set to immediate mode. The default value is ```false```.
+If set to `true` the capture interface is set to immediate mode. The default value is `false`.
 
 ### bufferTimeout (number)
 The timeout in milliseconds to read a packet. The default value is 10.
@@ -207,16 +207,16 @@ The supervisor group defines the parameters to run the supervisor service.
 The absolute path to the UNIX domain socket used by the supervisor service.
 
 ## [hostapd] group
-The hostapd groups defines all the paremeters to run ```hostapd``` service. Most of the parameters are inherited from the ```hostapd``` config file.
+The hostapd groups defines all the paremeters to run `hostapd` service. Most of the parameters are inherited from the `hostapd` config file.
 
 ### hostapdBinPath (string)
-Absolute path to the ```hostapd``` binary.
+Absolute path to the `hostapd` binary.
 
 ### hostapdFilePath (string)
-Absolute path to the ```hostapd``` configuration file.
+Absolute path to the `hostapd` configuration file.
 
 ### hostapdLogPath (string)
-Absolute path to the ```hostapd``` log file. If empty no log file is generated
+Absolute path to the `hostapd` log file. If empty no log file is generated
 
 ### interface (string)
 Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
@@ -294,13 +294,13 @@ The radius group defines the port, IP and network mask for creating the RADIUS s
 The port value for the RADIUS server.
 
 ### clientIP (string)
-The connecting client IP with format ```x.y.z.q```. Current config uses ```localhost``` (127.0.0.1).
+The connecting client IP with format `x.y.z.q`. Current config uses `localhost` (127.0.0.1).
 
 ### clientMask (integer)
 The client IP network mask encoding bit-length of the prefix.
 
 ### serverIP (string)
-The RADIUS server IP. Current config uses ```localhost``` (127.0.0.1).
+The RADIUS server IP. Current config uses `localhost` (127.0.0.1).
 
 ### serverMask (integer)
 The server IP network mask encoding bit-length of the prefix.
@@ -318,7 +318,7 @@ The NAT interface name.
 The dns groups defines the parameters for the DNS server configuration.
 
 ### servers (string)
-A comma delimited string of dns server IP addresses with the format ```x.y.z.q,a.b.c.d,...```.
+A comma delimited string of dns server IP addresses with the format `x.y.z.q,a.b.c.d,...`.
 
 ## [dhcp] group
 The dhpc groups defines the parameters for the DHCP server configuration.
@@ -333,34 +333,34 @@ The absolute path to the DHCP server aditional executable script.
 The connections groups defines the parameters for devices that connect to the WiFi AP.
 
 ### con(idx) (string)
-The ```con``` indexed by ```idx≥0``` defines all the MAC addresses and WiFi passwords for devices that are allowed to connect to the WiFi AP. It has the following format:
+The `con` indexed by `idx≥0` defines all the MAC addresses and WiFi passwords for devices that are allowed to connect to the WiFi AP. It has the following format:
 ```
 d|a,aa:bb:cc:dd:ee:ff,x,y,pass
 ```
 where:
 
- - ```d|a``` - (d)eny or (a)llow the device with the given MAC to connect to the WiFi AP,
- - ```aa:bb:cc:dd:ee:ff``` - the given MAC address of the device,
- - ```x``` - denotes the VLAN ID integer assigned to the device,
- - ```y``` - if ```1``` the device is allowed NAT, ```0``` otherwise,
- - ```pass``` - the WiFi password used by the device to connect to the WiFi AP.
+ - `d|a` - (d)eny or (a)llow the device with the given MAC to connect to the WiFi AP,
+ - `aa:bb:cc:dd:ee:ff` - the given MAC address of the device,
+ - `x` - denotes the VLAN ID integer assigned to the device,
+ - `y` - if `1` the device is allowed NAT, `0` otherwise,
+ - `pass` - the WiFi password used by the device to connect to the WiFi AP.
 
 ## [interfaces] groups
 The interfaces group defines the parameters for WiFi subnet interfaces.
 
 ### subnetMask (string)
-The WiFi subnet mask with format ```x.y.z.q```.
+The WiFi subnet mask with format `x.y.z.q`.
 
 ### if(idx) (string)
-The ```if``` indexed by ```idx≥0``` defines the network interfaces for a particular subnet. It has the following format:
+The `if` indexed by `idx≥0` defines the network interfaces for a particular subnet. It has the following format:
 ```
 vlanid,ip0,ipn,mask
 ```
 where
- - ```vlanid``` - is the VLAN ID,
- - ```ip0``` - the subnet starting IP address with format ```x.y.z.q```,
- - ```ipn``` - the subnet ending IP address with format ```x.y.z.q``` and
- - ```mask``` - the subnet mask IP address with format ```x.y.z.q```.
+ - `vlanid` - is the VLAN ID,
+ - `ip0` - the subnet starting IP address with format `x.y.z.q`,
+ - `ipn` - the subnet ending IP address with format `x.y.z.q` and
+ - `mask` - the subnet mask IP address with format `x.y.z.q`.
 
 # Running edgesec
 
