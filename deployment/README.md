@@ -108,7 +108,7 @@ After logging in, you can do the following:
   ```
   Unattended-Upgrade::Allowed-Origins {
     // edgesec
-    "nqminds.github.io/edgesec-packages:${distro_codename}";
+    "nqminds.github.io/edgesec-packages:";
   };
   ```
 
