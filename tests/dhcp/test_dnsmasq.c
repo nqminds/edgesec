@@ -22,11 +22,13 @@ static const UT_icd config_dhcpinfo_icd = {sizeof(config_dhcpinfo_t), NULL, NULL
 
 static char *test_dhcp_conf_path = "/tmp/dnsmasq-test.conf";
 static char *test_dhcp_script_path = "/tmp/dnsmasq_exec-test.sh";
+static char *test_dhcp_leasefile_path = "/var/lib/misc/dnsmasq.leases";
 static char *test_domain_server_path = "/tmp/edgesec-domain-server";
 static char *test_dhcp_conf_content =
 "no-resolv\n"
 "server=8.8.4.4\n"
 "server=8.8.8.8\n"
+"dhcp-leasefile=/var/lib/misc/dnsmasq.leases\n"
 "dhcp-script=/tmp/dnsmasq_exec-test.sh\n"
 "dhcp-range=wifi_if,10.0.0.2,10.0.0.254,255.255.255.0,24h\n"
 "dhcp-range=wifi_if.1,10.0.1.2,10.0.1.254,255.255.255.0,24h\n"
@@ -113,6 +115,7 @@ static void test_generate_dhcp_conf(void **state)
 
   strcpy(dconf.dhcp_conf_path, test_dhcp_conf_path);
   strcpy(dconf.dhcp_script_path, test_dhcp_script_path);
+  strcpy(dconf.dhcp_leasefile_path, test_dhcp_leasefile_path);
 
   assert_true(get_config_dhcpinfo("0,10.0.0.2,10.0.0.254,255.255.255.0,24h", &el));
   utarray_push_back(dconf.config_dhcpinfo_array, &el);

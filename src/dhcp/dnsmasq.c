@@ -80,6 +80,7 @@ bool generate_dnsmasq_conf(struct dhcp_conf *dconf, char *interface, UT_array *d
     fprintf(fp, "server=%s\n", *p);
   }
 
+  fprintf(fp, "dhcp-leasefile=%s\n", dconf->dhcp_leasefile_path);
   fprintf(fp, "dhcp-script=%s\n", dconf->dhcp_script_path);
   while((el = (config_dhcpinfo_t *) utarray_next(dconf->config_dhcpinfo_array, el)) != NULL) {
     if (el->vlanid)

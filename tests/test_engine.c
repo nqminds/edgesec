@@ -29,7 +29,7 @@ static void test_init_context(void **state)
   memset(&app_config, 0, sizeof(struct app_config));
   app_config.default_open_vlanid = -1;
   app_config.quarantine_vlanid = -1;
-  assert_true(init_context(&app_config, &context));
+  assert_false(init_context(&app_config, &context));
   free_bridge_list(context.bridge_list);
   free_sqlite_macconn_db(context.macconn_db);
 }

@@ -447,6 +447,18 @@ bool load_dhcp_conf(const char *filename, struct app_config *config)
   os_strlcpy(config->dhcp_config.dhcp_script_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
+  // Load dhpc lease file path
+  value = os_malloc(INI_BUFFERSIZE);
+  ret = ini_gets("dhcp", "dhcpLeasefilePath", "", value, INI_BUFFERSIZE, filename);
+  if (!ret) {
+    fprintf(stderr, "dhcp dhcpLeasefilePath was not specified\n");
+    os_free(value);
+    return false;
+  }
+
+  os_strlcpy(config->dhcp_config.dhcp_leasefile_path, value, MAX_OS_PATH_LEN);
+  os_free(value);
+
   // Load the dhcprange params
   if (!load_dhcp_list(filename, config)) {
     fprintf(stderr, "load_dhcp_list parsing error\n");
