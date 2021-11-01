@@ -1,3 +1,9 @@
+edgesec (0.9.9-alpha4) UNRELEASED; urgency=low
+
+  * Use `libmnl0` instead of building our own libmnl.
+
+ -- Alois Klink <alois@nquiringminds.com>  Mon, 01 Nov 2021 18:54:09 +0000
+
 edgesec (0.9.9-alpha3) UNRELEASED; urgency=low
 
   * `restsrv` is now a dependency on `edgesec`.
