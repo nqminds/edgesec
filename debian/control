@@ -23,11 +23,44 @@ Description: NquiringMinds EDGESec Network Security Router.
  This is NquiringMind's EDGESec Network Analyser.
  It usually creates a secure and paritioned Wifi access point, using vlans,
  and can analyse network traffic.
+ .
+ The management of each service is controlled by the tool engine,
+ which has the ability to configure and start the execution process.
+ .
+ First, the engine executes the supervisor service, which has the role
+ of registering network joining and DHCP requests.
+ It also exposes a command interface in the form of a UNIX domain socket
+ that can be used by other application or services the control the connected
+ network devices.
+ .
+ Second, the engine executes the software access point (AP) service that
+ creates a managed AP, which allows every network device to connect to it.
+ The AP allows setting individual network-joining credentials for each
+ connecting device.
+ .
+ Third, the engine executes the subnet service which creates subnets for
+ give virtual LAN (VLAN) IDs and IP ranges. The software AP service maps
+ subsequently a connected network device to a subnet.
+ .
+ Fourth, the engine executes the DHCP service that has the role of assigning
+ IP addresses to connected devices.
+ .
+ Fifth, the engine executes the RADIUS server, which sends access control
+ information to the software AP. The access information contains the network
+ joining credentials and the accept/deny MAC address information.
+ .
+ Sixth, the engine execute the state machine service,
+ which represents the core of the network monitoring and management process.
+ The state machine monitors the state of each connected network device by
+ employing information from the supevisor service.
+ It also uses the capture service, which executes self contained traffic
+ capturing routines to monitor the flow of packet and disect identify the
+ device types.
 
 Package: edgesec-common
 Architecture: all
 Description: NquiringMinds EDGESec common files.
- This includes config files and certificates
+ This includes config files and CA certificates
  that may be shared with all binaries.
 
 Package: edgesec-restsrv
@@ -50,7 +83,9 @@ Depends: libedgesec (= ${binary:Version}),
     ${shlibs:Depends},
     ${misc:Depends}
 Description: NquiringMinds EDGESEC capture server.
- Captures EDGESEC network traffic using PCAP.
+ Monitors and captures EDGESEC network traffic for each connected device.
+ The resulting traffic analytics is sent to the network controller
+ for device management.
 
 Package: edgesec-revclient
 Architecture: any
@@ -60,8 +95,10 @@ Depends: libedgesec (= ${binary:Version}),
     ${shlibs:Depends},
     ${misc:Depends}
 Description: NquiringMinds EDGESEC reverse connection client.
- Should be used to connect an EDGESec edge device to
- a server running `edgesec-revsrv`.
+ Connects to a `edgesec-revsrv` cloud endpoint to
+ create a reverse connection to the EDGESEC device.
+ This is especially useful when the device is non-publically
+ accessible due to NAT/router firewalls.
 
 Package: edgesec-revsrv
 Architecture: any
@@ -71,8 +108,9 @@ Depends: libedgesec (= ${binary:Version}),
     ${shlibs:Depends},
     ${misc:Depends}
 Description: NquiringMinds EDGESEC reverse connection server.
- Can be run on a cloud server in order to create
- a reverse connection to a non-publically accessible EDGESEC device.
+ Creates a cloud endpoint that EDGESec client devices can
+ use to create a reverse connection to a
+ non-publically accessible EDGESEC device.
 
 Package: edgesec-sqlsyncsrv
 Architecture: any
@@ -82,8 +120,9 @@ Depends: libedgesec (= ${binary:Version}),
     ${shlibs:Depends},
     ${misc:Depends}
 Description: NquiringMinds EDGESEC SQL Sync Server.
- Can be run on a cloud server to store
- synchronised data from an EDGESEC device.
+ A GRPC synchronization server that lets devices
+ synchonise EDGESEC data to the cloud, including
+ both stored packet data as well as other tool data.
 
 Package: libedgesec
 Section: libs
