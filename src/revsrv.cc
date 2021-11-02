@@ -51,6 +51,13 @@
 
 #define OPT_STRING              ":p:a:c:k:dvh"
 #define USAGE_STRING            "\t%s [-p port] [-a path] [-c path] [-k path] [-d] [-h] [-v]"
+const char* description_string = R"--(
+  NquiringMinds EDGESEC reverse connection server.
+
+  A GRPC synchronization server that lets devices synchonise EDGESEC
+  data to the cloud, including both stored packet data as well as other
+  tool data.
+)--";
 #define CONTROL_INTERFACE_NAME  "/tmp/revcontrol"
 
 #define FAIL_RESPONSE           "FAIL"
@@ -131,6 +138,7 @@ void show_app_help(char *app_name)
   show_app_version();
   fprintf(stdout, "Usage:\n");
   fprintf(stdout, USAGE_STRING, basename(app_name));
+  fprintf(stdout, "\n%s", description_string);
   fprintf(stdout, "\nOptions:\n");
   fprintf(stdout, "\t-p port\t\t Server port\n");
   fprintf(stdout, "\t-a path\t\t The certificate authority path\n");
@@ -139,7 +147,7 @@ void show_app_help(char *app_name)
   fprintf(stdout, "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n");
   fprintf(stdout, "\t-h\t\t Show help\n");
   fprintf(stdout, "\t-v\t\t Show app version\n\n");
-  fprintf(stdout, "Copyright NQMCyber Ltd\n\n");
+  fprintf(stdout, "Copyright NQMCyber Ltd\n");
   exit(EXIT_SUCCESS);
 }
 

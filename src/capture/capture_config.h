@@ -57,15 +57,8 @@
 #define CAPTURE_USAGE_STRING  "\t%s [-c config] [-d] [-h] [-v] [(-y engine [-w] [-u] [-s -a address -o port -k path]) | (-b size)] [-i interface] [-q domain]" \
                               "[-f filter] [-m] [-t timeout] [-n interval] " \
                               "[-e] [-r params]\n"
-#define CAPTURE_DESC_STRING   "EDGESec Capture Server\n" \
-                              "\n" \
-                              "EDGESec can be run in two different modes:\n" \
-                              "\tCapture Mode:\n" \
-                              "\t\tPass [-y engine] to enable capture mode.\n" \
-                              "\tCleaning Mode:\n" \
-                              "\t\tPass [-b SIZE] to enable cleaning mode\n" \
-                              "\t\tThe capture server will wait until SIZE KiB of PCAP data has been saved.\n" \
-                              "\t\tThen it will cleanup the PCAP data.\n"
+extern const char* const capture_description_string;
+
 #define CAPTURE_OPT_DEFS      "\t-c config\t Path to the config file name\n" \
                               "\t-q domain\t The UNIX domain path\n" \
                               "\t-x command\t The UNIX domain command\n" \

@@ -50,6 +50,22 @@
 
 #define OPT_STRING    ":c:s:f:dvh"
 #define USAGE_STRING  "\t%s [-c filename] [-s secret] [-f filename] [-d] [-h] [-v]\n"
+const char description_string[] = R"==(
+  NquiringMinds EDGESec Network Security Router.
+
+  Creates a secure and paritioned Wifi access point, using vlans,
+  and can analyse network traffic.
+
+  Contains multiple services controlled by the tool engine:
+    1. Supervisor: registers network joining and DHCP requests.
+       Exposes a command interface via a UNIX domain socket.
+    2. WiFi Access Point: Manages WiFi AP.
+    3. Subnet: Creates subnets, virtual LANs, and IP ranges.
+    4. DHCP: Assigns IP addresses to connected devices.
+    5. RADIUS: Access control for the WiFi AP using
+       credentials/MAC address.
+    6. State machine: Networking monitoring and management.
+)==";
 
 static const UT_icd config_ifinfo_icd = {sizeof(config_ifinfo_t), NULL, NULL, NULL};
 static const UT_icd config_dhcpinfo_icd = {sizeof(config_dhcpinfo_t), NULL, NULL, NULL};
@@ -91,6 +107,7 @@ void show_app_help(char *app_name)
   show_app_version();
   fprintf(stdout, "Usage:\n");
   fprintf(stdout, USAGE_STRING, basename(app_name));
+  fprintf(stdout, "%s", description_string);
   fprintf(stdout, "\nOptions:\n");
   fprintf(stdout, "\t-c filename\t Path to the config file name\n");
   fprintf(stdout, "\t-s secret\t Master key\n");

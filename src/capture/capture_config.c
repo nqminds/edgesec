@@ -33,6 +33,23 @@
 #include "../utils/os.h"
 #include "../utils/utarray.h"
 
+const char* const capture_description_string = R"--(
+  NquiringMinds EDGESEC capture server.
+
+  Monitors and captures EDGESEC network traffic for each connected
+  device.
+  The resulting traffic analytics is sent to the network controller
+  for device management.
+
+  EDGESec can be run in two different modes:
+    - Capture Mode:
+      Pass [-y engine] to enable capture mode.
+    - Cleaning Mode:
+      Pass [-b SIZE] to enable cleaning mode
+      The capture server will wait until SIZE KiB of PCAP data has been
+      saved. Then it will cleanup the PCAP data.
+)--";
+
 long get_opt_num(char *num)
 {
   if (!is_number(num))

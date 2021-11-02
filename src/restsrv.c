@@ -61,7 +61,14 @@
 #define SOCK_PACKET_SIZE 10
 
 #define OPT_STRING    ":s:p:z:c:tdvh"
-#define DESCRIPTION_STRING "HTTP/HTTPS RESTful server for communicating with the edgesec process.\n"
+const char description_string[] = R"==(
+  NquiringMinds EDGESEC RESTful server.
+
+  Provides a HTTP/HTTPS RESTful Server that can be used to communicate
+  with the `edgesec` process,
+  as it only provides an Unix Domain Socket.
+)==";
+
 #define USAGE_STRING  "\t%s [-s address] [-p port] [-z delim] [-c name] [-t] [-d] [-h] [-v]\n"
 
 #define JSON_RESPONSE_OK    "{\"cmd\":\"%s\",\"response\":[%s]}"
@@ -128,10 +135,9 @@ void show_app_help(char *app_name)
 {
   show_app_version();
   fprintf(stdout, "\n");
-  fprintf(stdout, DESCRIPTION_STRING);
-  fprintf(stdout, "\n");
   fprintf(stdout, "Usage:\n");
   fprintf(stdout, USAGE_STRING, basename(app_name));
+  fprintf(stdout, "%s\n", description_string);
   fprintf(stdout, "\nOptions:\n");
   fprintf(stdout, "\t-s address\t Path to edgesec supervisor socket\n");
   fprintf(stdout, "\t-p port\t\t Server port\n");
