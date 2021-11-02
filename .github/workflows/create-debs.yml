@@ -1,6 +1,8 @@
 on:
   release:
-    types: [created]
+    types:
+      - created
+      - edited # can remove once CI is confirmed working
 
 name: Upload Debs to Release
 
