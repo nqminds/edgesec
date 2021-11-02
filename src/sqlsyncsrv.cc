@@ -45,6 +45,14 @@
 #define OPT_STRING    ":f:p:a:c:k:dvh"
 #define USAGE_STRING  "\t%s [-f path] [-p port] [-a path] [-c path] [-k path] [-d] [-h] [-v]"
 
+const char* description_string = R"--(
+  NquiringMinds EDGESEC SQL Sync Server.
+
+  A GRPC synchronization server that lets devices synchonise EDGESEC
+  data to the cloud, including both stored packet data as well as other
+  tool data.
+)--";
+
 #define DEFAULT_DB_NAME "sync.sqlite"
 
 using grpc::Server;
@@ -83,6 +91,7 @@ void show_app_help(char *app_name)
   show_app_version();
   fprintf(stdout, "Usage:\n");
   fprintf(stdout, USAGE_STRING, basename(app_name));
+  fprintf(stdout, "\n%s", description_string);
   fprintf(stdout, "\nOptions:\n");
   fprintf(stdout, "\t-f folder\t\t Folder where to save the databases\n");
   fprintf(stdout, "\t-p port\t\t Server port\n");
