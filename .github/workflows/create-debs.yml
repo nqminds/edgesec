@@ -52,13 +52,35 @@ jobs:
           DEB_PATH="$(ls -rt /var/cache/pbuilder/result/edgesec*.deb | head -1)"
           echo " ::set-output name=deb-path::${DEB_PATH}"
           echo " ::set-output name=deb-name::$(basename "${DEB_PATH}")"
-      - name: Upload .deb as Release Asset
-        id: upload-release-asset 
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload debs as Release Assets
+        uses: actions/github-script@v2
         with:
-          upload_url: ${{ github.event.release.upload_url }} # This will only exist if this action was started by a GitHub Release Event
-          asset_path: ${{ steps.load-deb-name.output.deb-path }}
-          asset_name: ${{ steps.load-deb-name.output.deb-name }}
-          asset_content_type: application/vnd.debian.binary-package
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const fs = require('fs').promises;
+            const {basename} = require("path");
+            
+            const globber = await glob.create("/var/cache/pbuilder/result/*.deb");
+            const files = await globber.glob();
+            
+            for (const filePath of files) {
+              console.log(`Uploading ${filePath}`);
+              const filePromise = fs.readFile(filePath);
+              // Determine content-length for header to upload asset
+              const {size: contentLength} = await fs.stat(filePath);
+              // Setup headers for API call, see Octokit Documentation:
+              // https://octokit.github.io/rest.js/#octokit-routes-repos-upload-release-asset for more information
+              const headers = {
+                'content-type': "application/vnd.debian.binary-package",
+                'content-length': contentLength,
+              };
+              // Upload a release asset
+              // API Documentation: https://developer.github.com/v3/repos/releases/#upload-a-release-asset
+              // Octokit Documentation: https://octokit.github.io/rest.js/#octokit-routes-repos-upload-release-asset
+              const uploadAssetResponse = await github.repos.uploadReleaseAsset({
+                url: context.payload.release.upload_url,
+                headers,
+                name: basename(filePath),
+                file: await filePromise,
+              });
+            }
