@@ -46,12 +46,13 @@ Compiling EDGESec is done with CMake.
 First, configure `cmake` in the `build/` directory by running the following.
 (equivalent to `mkdir build && cd build && cmake ..`)
 
-Setting MAKEFLAGS=`--jobs=$(nproc)` will mean
-that embedded `make` commands will run using all CPU cores, greatly speeding
+Setting `-DLIB_MAKEFLAGS="--jobs=$(nproc)"` will mean
+that while compiling library dependencies,
+`make` commands will run using all CPU cores, greatly speeding
 this building (set a lower number if you have less RAM).
 
 ```bash
-MAKEFLAGS="--jobs=$(nproc)" cmake -B build/ -S .
+cmake -B build/ -S . -DLIB_MAKEFLAGS="--jobs=$(nproc)"
 ```
 
 To build, you can then run (`-j4` means 4 jobs/threads, replace `4` with the amount of cores you want to use):
@@ -129,6 +130,7 @@ To run each test individually, the test binaries can be located in ```./build/te
 ## Developer Documentation
 
 To compile the docs from ```./build``` folder:
+
 ```console
 make doxydocs
 ```

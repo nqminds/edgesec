@@ -15,6 +15,10 @@ git clone --depth 1 --branch libpcap-1.10.1 https://github.com/the-tcpdump-group
 
 cd "${LIBPCAP_SOURCE_DIR}"
 ./configure --prefix=${LIBPCAP_INSTALL_DIR} --host=${CONFIG_HOST}
+
+# Load LIB_MAKEFLAGS from CMake if set
+export MAKEFLAGS="${MAKEFLAGS-""} ${LIB_MAKEFLAGS-""}"
+
 make
 make install
 make clean

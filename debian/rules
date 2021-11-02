@@ -11,10 +11,10 @@
 	dh $@
 
 override_dh_auto_configure:
-	MAKEFLAGS="--jobs=$(nproc)" \
 	dh_auto_configure -- \
 	     -DCMAKE_LIBRARY_ARCHITECTURE="$(DEB_TARGET_MULTIARCH)" \
-		 -DCMAKE_BUILD_TYPE=Release
+		 -DCMAKE_BUILD_TYPE=Release \
+		 -DLIB_MAKEFLAGS="--jobs=$(nproc)"
 
 # make sure to tell dh_shlibdeps about our private shared libs
 override_dh_shlibdeps:

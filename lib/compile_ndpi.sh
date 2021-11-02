@@ -16,6 +16,10 @@ echo "NDPI lib config host: ${CONFIG_HOST}"
 
 cd "${LIBNDPI_SOURCE_DIR}"
 CFLAGS="-I$LIBPCAP_INCLUDE_PATH" LDFLAGS="-L$LIBPCAP_LIB_PATH"  ./autogen.sh --prefix=${LIBNDPI_INSTALL_DIR} --host=${CONFIG_HOST}
+
+# Load LIB_MAKEFLAGS from CMake if set
+export MAKEFLAGS="${MAKEFLAGS-""} ${LIB_MAKEFLAGS-""}"
+
 make
 make install
 make clean

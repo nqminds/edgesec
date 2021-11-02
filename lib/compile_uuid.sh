@@ -16,6 +16,10 @@ AL_OPTS="-I/usr/share/aclocal" ./autogen.sh
 ./configure \
     --prefix=${LIBUUID_INSTALL_DIR} --host=${CONFIG_HOST} \
     --disable-all-programs --enable-libuuid
+
+# Load LIB_MAKEFLAGS from CMake if set
+export MAKEFLAGS="${MAKEFLAGS-""} ${LIB_MAKEFLAGS-""}"
+
 make
 make install-strip # make install, except with symbols removed
 make distclean
