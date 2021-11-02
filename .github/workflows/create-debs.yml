@@ -77,10 +77,25 @@ jobs:
               // Upload a release asset
               // API Documentation: https://developer.github.com/v3/repos/releases/#upload-a-release-asset
               // Octokit Documentation: https://octokit.github.io/rest.js/v18#repos-upload-release-asset
-              const uploadAssetResponse = await github.rest.repos.uploadReleaseAsset({
-                url: context.payload.release.upload_url,
-                headers,
-                name: basename(filePath),
-                file: await filePromise,
-              });
+              try {
+                const uploadAssetResponse = await github.rest.repos.uploadReleaseAsset({
+                  url: context.payload.release.upload_url,
+                  headers,
+                  name: basename(filePath),
+                  file: await filePromise,
+                });
+              } catch (error) {
+                if (error?.response?.data?.message === 'Validation Failed') {
+                  const apiErrors = error.response.data.errors;
+                  console.log(`Uploading ${basename(filePath)} failed due to ${JSON.stringify(apiErrors)}`);
+                  const [apiError] = apiErrors;
+                  if (apiError.code === "already_exists" && apiError.file === "name") {
+                    // edgesec-common is for all archs, so likely it was already uploaded
+                    console.info(`Skipped ${basename(filePath)} as it was already uploaded`);
+                    continue;
+                  }
+                }
+                // if no continue, throw error
+                throw error;
+              }
             }
