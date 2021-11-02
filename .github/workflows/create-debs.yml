@@ -86,7 +86,7 @@ jobs:
                   file: await filePromise,
                 });
               } catch (error) {
-                if (error?.response?.data?.message === 'Validation Failed') {
+                if (error.name === "HttpError" && error.response.data.message === 'Validation Failed') {
                   const apiErrors = error.response.data.errors;
                   console.log(`Uploading ${basename(filePath)} failed due to ${JSON.stringify(apiErrors)}`);
                   const [apiError] = apiErrors;
