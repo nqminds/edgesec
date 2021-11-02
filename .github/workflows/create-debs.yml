@@ -53,7 +53,7 @@ jobs:
           echo " ::set-output name=deb-path::${DEB_PATH}"
           echo " ::set-output name=deb-name::$(basename "${DEB_PATH}")"
       - name: Upload debs as Release Assets
-        uses: actions/github-script@v2
+        uses: actions/github-script@v5
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
