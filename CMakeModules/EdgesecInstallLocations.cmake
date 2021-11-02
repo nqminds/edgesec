@@ -31,10 +31,10 @@ set(EDGESEC_cert_location "${EDGESEC_config_dir}/CA/CA.pem") # CACHE FILEPATH "P
 # makes dirs like EDGESEC_full_libexec_dir
 foreach(dir in private_lib_dir libexec_dir config_dir log_dir local_lib_dir runstate_dir cert_location)
     GNUInstallDirs_get_absolute_install_dir(
-        EDGESEC_full_${dir} EDGESEC_${dir} ${dir}
+        EDGESEC_full_no_destdir_${dir} EDGESEC_${dir} ${dir}
     )
     # FULL_PATH isn't actually always absolute due to destdir
-    set(with_destdir "$ENV{DESTDIR}${EDGESEC_full_${dir}}")
+    set(with_destdir "$ENV{DESTDIR}${EDGESEC_full_no_destdir_${dir}}")
     if (NOT IS_ABSOLUTE "${with_destdir}")
         # make paths in config.ini absolute, so we can call them from different working dir
         get_filename_component(with_destdir
