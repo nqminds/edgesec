@@ -44,7 +44,7 @@ jobs:
       - name: Build .deb
         env:
           OTHER_MIRROR:
-            deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${{ matrix.distribution }} main universe | deb [arch=amd64] mirror://mirrors.ubuntu.com/mirrors.txt ${{ matrix.distribution }} main universe
+            deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${{ matrix.distribution }} main universe | deb [arch=amd64] http://archive.ubuntu.com/ubuntu ${{ matrix.distribution }} main universe
         run: |
           pdebuild --debbuildopts "-us -uc" -- --override-config --distribution ${{ matrix.distribution }} --mirror "" --othermirror "$OTHER_MIRROR" --host-arch ${{ matrix.architecture }}
       - name: Load output .deb name
