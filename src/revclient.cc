@@ -47,6 +47,17 @@
 
 #define OPT_STRING    ":f:a:p:c:dvh"
 #define USAGE_STRING  "\t%s [-f path] [-a address] [-p port] [-c path] [-d] [-h] [-v]"
+const char* description_string = R"--(
+  NquiringMinds EDGESEC reverse connection client.
+
+  Connects to a `edgesec-revsrv` cloud endpoint to create a reverse
+  connection to the EDGESEC device.
+  This is especially useful when the device is non-publically
+  accessible due to NAT/router firewalls.
+
+  Warning, make sure that hostname you use matches the hostname
+  of the revsrv certificate! IP address and DNS are not interchangable!
+)--";
 
 #define FAIL_REPLY  "FAIL"
 #define OK_REPLY   "OK"
@@ -91,6 +102,7 @@ void show_app_help(char *app_name)
   show_app_version();
   fprintf(stdout, "Usage:\n");
   fprintf(stdout, USAGE_STRING, basename(app_name));
+  fprintf(stdout, "\n%s", description_string);
   fprintf(stdout, "\nOptions:\n");
   fprintf(stdout, "\t-f folder\t Folder to sync\n");
   fprintf(stdout, "\t-a address\t Server address\n");
