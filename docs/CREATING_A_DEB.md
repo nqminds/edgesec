@@ -2,6 +2,16 @@
 
 ## Creating Deb
 
+### Using GitHub Actions (recommended)
+
+1. Update [`debian/changelog`](../debian/changelog) and make a new version.
+2. [Create a new GitHub Release](https://github.com/nqminds/EDGESec/releases/new),
+  using the branch where you pushed the updated changelog.
+3. After creating a Release (and when it's **NOT** a draft),
+  the [create-debs.yml](https://github.com/nqminds/EDGESec/actions/workflows/create-debs.yml)
+  will automatically compile the `.deb` files, and upload them as
+  part of the Release you made.
+
 ### Build Environment
 
 The recommended way of building a `.deb` is using the software `pbuilder`.
