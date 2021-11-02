@@ -115,6 +115,9 @@ else(CMAKE_CROSSCOMPILING)
 endif(CMAKE_CROSSCOMPILING)
 
 # C compiler options
+set(CMAKE_C_STANDARD 11) # we use C11 raw-strings
+set(CMAKE_C_STANDARD_REQUIRED TRUE)
+set(CMAKE_C_EXTENSIONS ON) # We use GNU C specific features
 set(CMAKE_C_FLAGS "-Wunused-variable -Wall -Wextra")
 
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs")
