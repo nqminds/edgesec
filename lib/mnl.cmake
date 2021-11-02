@@ -2,6 +2,7 @@
 if (BUILD_MNL_LIB AND NOT (BUILD_ONLY_DOCS))
   set(LIBMNL_INSTALL_ROOT "${CMAKE_CURRENT_BINARY_DIR}/lib/mnl")
 
+  # Tell find_package(MNL) to search in local built mnl dir
   list(APPEND CMAKE_PREFIX_PATH ${LIBMNL_INSTALL_ROOT})
   if ((DEFINED MNL_INCLUDE_DIR) AND (DEFINED MNL_LIBRARY))
     find_package(MNL REQUIRED)
@@ -23,5 +24,9 @@ if (BUILD_MNL_LIB AND NOT (BUILD_ONLY_DOCS))
     )
     find_package(MNL REQUIRED)
   endif ()
+  message("Found libmnl library: ${MNL_LIBRARIES}")
+elseif(NOT BUILD_ONLY_DOCS)
+  # finding system install libmnl (e.g. installed via apt)
+  find_package(MNL REQUIRED)
   message("Found libmnl library: ${MNL_LIBRARIES}")
 endif ()
