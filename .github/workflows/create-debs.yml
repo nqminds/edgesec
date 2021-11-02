@@ -9,7 +9,8 @@ name: Upload Debs to Release
 jobs:
   build:
     name: Upload built .deb
-    runs-on: ubuntu-latest
+    # building a deb is super slow, so do it on our self-hosted machines
+    runs-on: [self-hosted, linux]
     strategy:
       matrix:
         architecture: [arm64, amd64]
