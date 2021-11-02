@@ -15,6 +15,9 @@ jobs:
       matrix:
         architecture: [arm64, amd64]
         distribution: [focal]
+    env:
+      OTHER_MIRROR:
+        deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${{ matrix.distribution }} main universe | deb [arch=amd64] http://archive.ubuntu.com/ubuntu ${{ matrix.distribution }} main universe
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -40,11 +43,8 @@ jobs:
       - name: Build pbuilder base.tgz
         if: steps.cache-pbuilder-base.outputs.cache-hit != 'true'
         run: |
-          sudo pbuilder create --debootstrapopts --variant=buildd --distribution ${{ matrix.distribution }}
+          sudo pbuilder create --debootstrapopts --variant=buildd --distribution ${{ matrix.distribution }} --mirror "" --othermirror "$OTHER_MIRROR"
       - name: Build .deb
-        env:
-          OTHER_MIRROR:
-            deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${{ matrix.distribution }} main universe | deb [arch=amd64] http://archive.ubuntu.com/ubuntu ${{ matrix.distribution }} main universe
         run: |
           pdebuild --debbuildopts "-us -uc" -- --override-config --distribution ${{ matrix.distribution }} --mirror "" --othermirror "$OTHER_MIRROR" --host-arch ${{ matrix.architecture }}
       - name: Load output .deb name
