@@ -86,17 +86,7 @@ jobs:
                   file: await filePromise,
                 });
               } catch (error) {
-                if (error.name === "HttpError" && error.response.data.message === 'Validation Failed') {
-                  const apiErrors = error.response.data.errors;
-                  console.log(`Uploading ${basename(filePath)} failed due to ${JSON.stringify(apiErrors)}`);
-                  const [apiError] = apiErrors;
-                  if (apiError.code === "already_exists" && apiError.file === "name") {
-                    // edgesec-common is for all archs, so likely it was already uploaded
-                    console.info(`Skipped ${basename(filePath)} as it was already uploaded`);
-                    continue;
-                  }
-                }
-                // if no continue, throw error
-                throw error;
+                // upload errors are usually since the file already exists
+                console.error(`[skipped] Uploading ${basename(filePath)} failed: ${error}`);
               }
             }
