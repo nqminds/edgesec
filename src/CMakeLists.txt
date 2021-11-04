@@ -6,6 +6,7 @@ add_subdirectory(dhcp)
 add_subdirectory(subnet)
 add_subdirectory(system)
 add_subdirectory(crypt)
+add_subdirectory(dns)
 
 if (BUILD_CAPTURE_SERVICE)
   add_subdirectory(capture)
