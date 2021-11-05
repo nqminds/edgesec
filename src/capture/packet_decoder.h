@@ -72,6 +72,15 @@ struct mdns_header {
 };
 
 /**
+ * @brief mDNS query meta definition
+ * 
+ */
+struct mdns_query_meta {
+  uint16_t qtype;                       /**< The type of the query, i.e. the type of RR which should be returned in response */
+  uint16_t qclass;                      /**< Boolean flag indicating whether a unicast-response is desired Class code, 1 a.k.a. "IN" for the Internet and IP networks */
+};
+
+/**
  * @brief DHCP header definition (truncated)
  * 
  */

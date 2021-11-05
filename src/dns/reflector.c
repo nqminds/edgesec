@@ -30,6 +30,9 @@
 #include <signal.h>
 
 #include "../utils/log.h"
+#include "../utils/eloop.h"
+#include "../utils/domain.h"
+#include "../capture/mdns_decoder.h"
 
 #include "reflector.h"
 #include "reflection_list.h"
@@ -243,33 +246,30 @@ int new_send_socket(const struct sockaddr_storage *sa, socklen_t sa_len, uint32_
     return -1;
 }
 
-static const char *sockaddr_storage_to_string(const struct sockaddr_storage *sa) {
-    static __thread char buffer[INET6_ADDRSTRLEN + 2 + 1 + 5 + 1 + 10];
-    uint16_t port;
-    if (sa->ss_family == AF_INET6) {
-        struct sockaddr_in6 *sa6 = (struct sockaddr_in6 *) sa;
-        char addr_buf[INET6_ADDRSTRLEN];
-        if (inet_ntop(AF_INET6, &sa6->sin6_addr, addr_buf, sizeof(addr_buf)) == NULL) {
-            return NULL;
-        }
-        port = ntohs(sa6->sin6_port);
-        if (IN6_IS_ADDR_LINKLOCAL(&sa6->sin6_addr) || IN6_IS_ADDR_MC_LINKLOCAL(&sa6->sin6_addr)) {
-            snprintf(buffer, sizeof(buffer), "[%s%%%u]:%u", addr_buf, sa6->sin6_scope_id, port);
-        } else {
-            snprintf(buffer, sizeof(buffer), "[%s]:%u", addr_buf, port);
-        }
-    } else if (sa->ss_family == AF_INET) {
-        struct sockaddr_in *sa4 = (struct sockaddr_in *) sa;
-        char addr_buf[INET_ADDRSTRLEN];
-        if (inet_ntop(AF_INET, &sa4->sin_addr, addr_buf, sizeof(addr_buf)) == NULL) {
-            return NULL;
-        }
-        port = ntohs(sa4->sin_port);
-        snprintf(buffer, sizeof(buffer), "%s:%u", addr_buf, port);
-    } else {
-        return NULL;
+int sockaddr2str(struct sockaddr_storage *sa, char *buffer, uint16_t *port) {
+  if (sa->ss_family == AF_INET6) {
+    struct sockaddr_in6 *sa6 = (struct sockaddr_in6 *) sa;
+    if (inet_ntop(AF_INET6, &sa6->sin6_addr, buffer, INET6_ADDRSTRLEN) == NULL) {
+      log_err("inet_ntop");
+      return -1;
     }
-    return buffer;
+
+    *port = ntohs(sa6->sin6_port);
+  } else if (sa->ss_family == AF_INET) {
+    struct sockaddr_in *sa4 = (struct sockaddr_in *) sa;
+
+    if (inet_ntop(AF_INET, &sa4->sin_addr, buffer, INET_ADDRSTRLEN) == NULL) {
+      log_err("inet_ntop");
+      return -1;
+    }
+
+    *port = ntohs(sa4->sin_port);
+  } else {
+    log_trace("Unknown ss_family");
+    return -1;
+  }
+
+  return 0;
 }
 
 static void signal_handler(int sig) {
@@ -293,10 +293,73 @@ void close_reflector_if(struct reflection_list *rif)
   }
 }
 
-int register_reflector_if6(int epoll_fd, struct reflection_list *rif)
+void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
 {
-  struct epoll_event ev;
-  ev.events = EPOLLIN;
+  struct client_address peer_addr;
+  uint32_t bytes_available, payload_len;
+  char *buf;
+  ssize_t num_bytes;
+  uint16_t port;
+  char peer_addr_str[INET6_ADDRSTRLEN];
+  struct mdns_header header;
+  uint8_t *payload;
+  char *qname = NULL;
+
+  os_memset(&peer_addr, 0, sizeof(struct client_address));
+
+  if (ioctl(sock, FIONREAD, &bytes_available) == -1) {
+    log_err("ioctl");
+    return;
+  }
+
+  if ((buf = os_malloc(bytes_available)) == NULL) {
+    log_err("os_malloc");
+    return;
+  }
+
+  if ((num_bytes = read_domain_data(sock, buf, bytes_available, &peer_addr, 0)) == -1) {
+    log_trace("read_domain_data fail");
+    os_free(buf);
+    return;
+  }
+
+  if (sockaddr2str((struct sockaddr_storage *)&peer_addr.addr, peer_addr_str, &port) < 0) {
+    log_trace("sockaddr2str fail");
+    os_free(buf);
+    return;
+  }
+
+  log_trace("Received %u bytes from IP=%s and port=%d", num_bytes, peer_addr_str, port);
+  if (decode_mdns_header((uint8_t *)buf, &header) < 0) {
+    log_trace("decode_mdns_header fail");
+    os_free(buf);
+    return;
+  }
+
+  payload = (void *) buf + sizeof(struct mdns_header);
+
+  if (decode_mdns_queries(payload, num_bytes - sizeof(struct mdns_header), header.nqueries, &qname) < 0) {
+    log_trace("decode_mdns_questions fail");
+    os_free(buf);
+    return;  
+  }
+
+  char buff[1000];
+  printf_hex(buff, 1000, payload, num_bytes - sizeof(struct mdns_header), 1);
+  log_trace("%s", buff);
+
+  log_trace("mDNS id=%d flags=0x%x nqueries=%d nanswers=%d nauth=%d nother=%d qname=%s",
+    header.tid, header.flags, header.nqueries, header.nanswers,
+    header.nauth, header.nother, qname);
+
+  os_free(buf);
+  os_free(qname);
+}
+
+int register_reflector_if6(/*int epoll_fd, */struct reflection_list *rif)
+{
+  // struct epoll_event ev;
+  // ev.events = EPOLLIN;
   
   struct reflection_list *el;
   struct sockaddr_in6 sa6 = {
@@ -324,11 +387,16 @@ int register_reflector_if6(int epoll_fd, struct reflection_list *rif)
       return -1;
     }
 
-    ev.data.ptr = el;
-    if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, el->recv_fd, &ev) == -1) {
-      log_err("epoll_ctl EPOLL_CTL_ADD");
+    if (eloop_register_read_sock(el->recv_fd, eloop_reflector_handler, (void *) el, (void *) rif) < 0) {
+      log_trace("eloop_register_read_sock fail");
       return -1;
     }
+
+    // ev.data.ptr = el;
+    // if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, el->recv_fd, &ev) == -1) {
+    //   log_err("epoll_ctl EPOLL_CTL_ADD");
+    //   return -1;
+    // }
 
     sa_group6.sin6_scope_id = el->ifindex;
     if (mcast_join(el->recv_fd, (struct sockaddr_storage *) &sa_group6, sizeof(sa_group6), el->ifindex) < 0) {
@@ -339,10 +407,10 @@ int register_reflector_if6(int epoll_fd, struct reflection_list *rif)
   return 0;
 }
 
-int register_reflector_if4(int epoll_fd, struct reflection_list *rif)
+int register_reflector_if4(/*int epoll_fd, */struct reflection_list *rif)
 {
-  struct epoll_event ev;
-  ev.events = EPOLLIN;
+  // struct epoll_event ev;
+  // ev.events = EPOLLIN;
 
   struct reflection_list *el;
   struct sockaddr_in sa4 = {
@@ -364,17 +432,23 @@ int register_reflector_if4(int epoll_fd, struct reflection_list *rif)
       log_trace("new_send_socket fail for interface %s", el->ifname);
       return -1;
     }
+
     el->recv_fd = new_recv_socket((struct sockaddr_storage *) &sa4, sizeof(sa4), el->ifindex);
     if (el->recv_fd < 0) {
       log_trace("new_send_socket fail for interface %s", el->ifname);
       return -1;
     }
 
-    ev.data.ptr = el;
-    if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, el->recv_fd, &ev) == -1) {
-      log_err("epoll_ctl EPOLL_CTL_ADD");
+    if (eloop_register_read_sock(el->recv_fd, eloop_reflector_handler, (void *) el, (void *) rif) < 0) {
+      log_trace("eloop_register_read_sock fail");
       return -1;
     }
+
+    // ev.data.ptr = el;
+    // if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, el->recv_fd, &ev) == -1) {
+    //   log_err("epoll_ctl EPOLL_CTL_ADD");
+    //   return -1;
+    // }
 
     if (mcast_join(el->recv_fd, (struct sockaddr_storage *) &sa_group4, sizeof(sa_group4), el->ifindex) < 0) {
       log_err("Failed to join interface %s to IPv4 multicast group", el->ifname);
@@ -386,151 +460,152 @@ int register_reflector_if4(int epoll_fd, struct reflection_list *rif)
 }
 
 int run_event_loop(struct options *options) {
-    int r = -1;
-    struct reflection_list *rif, *drif;
-    signal(SIGTERM, signal_handler);
+  int r = -1;
+  struct reflection_list *rif, *drif;
 
-    int epoll_fd = epoll_create1(0);
-    if (epoll_fd == -1) {
-      log_err("epoll_create1");
-      return -1;
-    }
-    struct epoll_event ev, events[MAX_EVENTS];
-    ev.events = EPOLLIN;
+  // signal(SIGTERM, signal_handler);
+  // int epoll_fd = epoll_create1(0);
+  // if (epoll_fd == -1) {
+  //   log_err("epoll_create1");
+  //   return -1;
+  // }
+  // struct epoll_event ev, events[MAX_EVENTS];
+  // ev.events = EPOLLIN;
 
-    // Create recv_socks and send_socks for IPv6 reflection zones.
-    struct sockaddr_in6 sa_group6 = {
-      .sin6_family=AF_INET6,
-      .sin6_port = htons(MDNS_PORT),
-      .sin6_addr = MDNS_ADDR6_INIT,
-    };
+  // Create recv_socks and send_socks for IPv6 reflection zones.
+  struct sockaddr_in6 sa_group6 = {
+    .sin6_family=AF_INET6,
+    .sin6_port = htons(MDNS_PORT),
+    .sin6_addr = MDNS_ADDR6_INIT,
+  };
 
-    struct sockaddr_in sa_group4 = {
-      .sin_family = AF_INET,
-      .sin_port = htons(MDNS_PORT),
-      .sin_addr.s_addr = htonl(MDNS_ADDR4),
-    };
+  struct sockaddr_in sa_group4 = {
+    .sin_family = AF_INET,
+    .sin_port = htons(MDNS_PORT),
+    .sin_addr.s_addr = htonl(MDNS_ADDR4),
+  };
 
-    if (register_reflector_if6(epoll_fd, options->rif6) < 0) {
-      log_trace("register_reflector_if6 fail");
-      close_reflector_if(options->rif6);
-      return -1;
-    }
+  if (register_reflector_if6(/*epoll_fd, */options->rif6) < 0) {
+    log_trace("register_reflector_if6 fail");
+    close_reflector_if(options->rif6);
+    return -1;
+  }
 
-    if (register_reflector_if4(epoll_fd, options->rif4) < 0) {
-      log_trace("register_reflector_if4 fail");
-      close_reflector_if(options->rif6);
-      close_reflector_if(options->rif4);
-      return -1;
-    }
+  if (register_reflector_if4(/*epoll_fd, */options->rif4) < 0) {
+    log_trace("register_reflector_if4 fail");
+    close_reflector_if(options->rif6);
+    close_reflector_if(options->rif4);
+    return -1;
+  }
 
-    struct sockaddr_storage peer_addr;
-    char peer_addr_str[INET6_ADDRSTRLEN + 2 + 1 + 5 + 1 + 10];
-    char buffer[PACKET_MAX];
-    char cmbuf[0x100];
-    struct iovec iov = {
-      .iov_base = buffer,
-      .iov_len = sizeof(buffer),
-    };
-    struct msghdr mh = {
-      .msg_name = &peer_addr,
-      .msg_namelen = sizeof(peer_addr),
-      .msg_iov = &iov,
-      .msg_iovlen = 1,
-      .msg_control = cmbuf,
-      .msg_controllen = sizeof(cmbuf),
-    };
+  eloop_run();
+    // struct sockaddr_storage peer_addr;
+    // char peer_addr_str[INET6_ADDRSTRLEN + 2 + 1 + 5 + 1 + 10];
+    // char buffer[PACKET_MAX];
+    // char cmbuf[0x100];
+    // struct iovec iov = {
+    //   .iov_base = buffer,
+    //   .iov_len = sizeof(buffer),
+    // };
+    // struct msghdr mh = {
+    //   .msg_name = &peer_addr,
+    //   .msg_namelen = sizeof(peer_addr),
+    //   .msg_iov = &iov,
+    //   .msg_iovlen = 1,
+    //   .msg_control = cmbuf,
+    //   .msg_controllen = sizeof(cmbuf),
+    // };
 
-    while (!stopping) {
-      log_trace("epoll_wait");
-      int nevents = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
-      if (nevents == -1) {
-        log_err("epoll_wait");
-        goto end;
-      }
+    // while (!stopping) {
+    //   log_trace("epoll_wait");
+    //   int nevents = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
+    //   if (nevents == -1) {
+    //     log_err("epoll_wait");
+    //     goto end;
+    //   }
 
-      for (int i = 0; i < nevents; ++i) {
-        struct reflection_list *rif = events[i].data.ptr;
-        int fd = rif->recv_fd;
+    //   for (int i = 0; i < nevents; ++i) {
+    //     struct reflection_list *rif = events[i].data.ptr;
+    //     int fd = rif->recv_fd;
 
-        for (;;) {
-          log_trace("recvmsg");
-          ssize_t recv_size = recvmsg(fd, &mh, 0);
-          if (recv_size == -1) {
-            if (errno == EWOULDBLOCK)
-              break;
-            log_err("recvfrom");
-            goto end;
-          }
+    //     for (;;) {
+    //       log_trace("recvmsg");
+    //       ssize_t recv_size = recvmsg(fd, &mh, 0);
+    //       if (recv_size == -1) {
+    //         if (errno == EWOULDBLOCK)
+    //           break;
+    //         log_err("recvfrom");
+    //         goto end;
+    //       }
 
-          snprintf(peer_addr_str, sizeof(peer_addr_str), "%s", sockaddr_storage_to_string(&peer_addr));
-          log_trace("received %u bytes from interface %s with source IP %s", recv_size, rif->ifname, peer_addr_str);
+    //       snprintf(peer_addr_str, sizeof(peer_addr_str), "%s", sockaddr_storage_to_string(&peer_addr));
+    //       log_trace("received %u bytes from interface %s with source IP %s", recv_size, rif->ifname, peer_addr_str);
 
-          if (recv_size >= PACKET_MAX) {
-            log_trace("ignoring because it is too large (limit is %d bytes)", PACKET_MAX);
-            continue;
-          }
+    //       if (recv_size >= PACKET_MAX) {
+    //         log_trace("ignoring because it is too large (limit is %d bytes)", PACKET_MAX);
+    //         continue;
+    //       }
 
-          // Send to other interfaces.
-          struct sockaddr *dst;
-          socklen_t dst_len;
-          if (peer_addr.ss_family == AF_INET6) {
-            dst = (struct sockaddr *) &sa_group6;
-            dst_len = sizeof(sa_group6);
-          } else if (peer_addr.ss_family == AF_INET) {
-            dst = (struct sockaddr *) &sa_group4;
-            dst_len = sizeof(sa_group4);
-          } else {
-            log_trace("ignoring packet from unknown address family: %d", peer_addr.ss_family);
-            continue;
-          }
+    //       // Send to other interfaces.
+    //       struct sockaddr *dst;
+    //       socklen_t dst_len;
+    //       if (peer_addr.ss_family == AF_INET6) {
+    //         dst = (struct sockaddr *) &sa_group6;
+    //         dst_len = sizeof(sa_group6);
+    //       } else if (peer_addr.ss_family == AF_INET) {
+    //         dst = (struct sockaddr *) &sa_group4;
+    //         dst_len = sizeof(sa_group4);
+    //       } else {
+    //         log_trace("ignoring packet from unknown address family: %d", peer_addr.ss_family);
+    //         continue;
+    //       }
           
-          if (peer_addr.ss_family == AF_INET6) {
-            dl_list_for_each(drif, &(options->rif6)->list, struct reflection_list, list) {
-              if (drif == rif){
-                continue;
-              }
-              sa_group6.sin6_scope_id = drif->ifindex;
-              log_trace("forwarding to interface %s", drif->ifname);
+    //       if (peer_addr.ss_family == AF_INET6) {
+    //         dl_list_for_each(drif, &(options->rif6)->list, struct reflection_list, list) {
+    //           if (drif == rif){
+    //             continue;
+    //           }
+    //           sa_group6.sin6_scope_id = drif->ifindex;
+    //           log_trace("forwarding to interface %s", drif->ifname);
 
-              if (sendto(drif->send_fd, buffer, (size_t) recv_size, 0, dst, dst_len) == -1) {
-                if (errno == EWOULDBLOCK) {
-                  continue;  // send queue overwhelmed; skipping
-                }
-                log_err("sendto");
-                goto end;
-              }
+    //           if (sendto(drif->send_fd, buffer, (size_t) recv_size, 0, dst, dst_len) == -1) {
+    //             if (errno == EWOULDBLOCK) {
+    //               continue;  // send queue overwhelmed; skipping
+    //             }
+    //             log_err("sendto");
+    //             goto end;
+    //           }
 
-              log_trace("sent");
-            }
-          } else {
-            dl_list_for_each(drif, &(options->rif4)->list, struct reflection_list, list) {
-              if (drif == rif)
-                continue;
+    //           log_trace("sent");
+    //         }
+    //       } else {
+    //         dl_list_for_each(drif, &(options->rif4)->list, struct reflection_list, list) {
+    //           if (drif == rif)
+    //             continue;
 
-              log_trace("forwarding to interface %s", drif->ifname);
+    //           log_trace("forwarding to interface %s", drif->ifname);
 
-              if (sendto(drif->send_fd, buffer, (size_t) recv_size, 0, dst, dst_len) == -1) {
-                if (errno == EWOULDBLOCK) {
-                  continue;  // send queue overwhelmed; skipping
-                }
-                log_err("sendto");
-                goto end;
-              }
+    //           if (sendto(drif->send_fd, buffer, (size_t) recv_size, 0, dst, dst_len) == -1) {
+    //             if (errno == EWOULDBLOCK) {
+    //               continue;  // send queue overwhelmed; skipping
+    //             }
+    //             log_err("sendto");
+    //             goto end;
+    //           }
 
-              log_trace("sent");
-            }
-          }
-        }
-      }
-    }
+    //           log_trace("sent");
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
 
-    r = 0;
+    // r = 0;
 
 end:
   close_reflector_if(options->rif6);
   close_reflector_if(options->rif4);
 
-  close(epoll_fd);
+  // close(epoll_fd);
   return r;
 }

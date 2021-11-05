@@ -70,7 +70,7 @@ int push_string_queue(struct string_queue* queue, char *str);
 int pop_string_queue(struct string_queue* queue, char **str);
 
 /**
- * @brief Peekt the first string from the string queueu
+ * @brief Peek the first string from the string queueu
  * 
  * @param queue The string queue
  * @param str The returned string

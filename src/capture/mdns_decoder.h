@@ -30,6 +30,26 @@
 #include "packet_decoder.h"
 
 /**
+ * @brief Decodes the mdns queries
+ * 
+ * @param payload The mdns payload
+ * @param len The mdns payload length
+ * @param nqueries The number of queries
+ * @param qname The output questions array
+ * @return 0 Success, -1 on failure
+ */
+int decode_mdns_queries(uint8_t *payload, size_t len, uint16_t nqueries, char **qname);
+
+/**
+ * @brief Decodes the mdns header
+ * 
+ * @param packet The mdns packet
+ * @param out The output mdns decoded header
+ * @return 0 Success, -1 on failure
+ */
+int decode_mdns_header(uint8_t *packet, struct mdns_header *out);
+
+/**
  * @brief Decode mdns packet
  * 
  * @param cpac The capture packet structure

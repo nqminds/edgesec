@@ -296,6 +296,7 @@ void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
   UT_array *cmd_arr;
   process_cmd_fn cfn;
   uint32_t bytes_available;
+  ssize_t num_bytes;
   struct client_address claddr;
   char *buf;
   struct supervisor_context *context = (struct supervisor_context *) sock_ctx;
@@ -314,8 +315,7 @@ void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
 
   utarray_new(cmd_arr, &ut_str_icd);
 
-  ssize_t num_bytes = read_domain_data(sock, buf, bytes_available, &claddr, 0);
-  if (num_bytes == -1) {
+  if ((num_bytes = read_domain_data(sock, buf, bytes_available, &claddr, 0)) == -1) {
     log_trace("read_domain_data fail");
     goto end;  
   }

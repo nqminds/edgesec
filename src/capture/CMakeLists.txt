@@ -8,7 +8,7 @@ target_link_libraries(capture_config PRIVATE log os)
 if (BUILD_PCAP_LIB)
   add_library(mdns_decoder mdns_decoder.c)
   target_include_directories(mdns_decoder PRIVATE ${LIBPCAP_INCLUDE_PATH})
-  target_link_libraries(mdns_decoder PRIVATE log os hash)
+  target_link_libraries(mdns_decoder PRIVATE squeue log os hash)
 
   add_library(dns_decoder dns_decoder.c)
   target_include_directories(dns_decoder PRIVATE ${LIBPCAP_INCLUDE_PATH})
