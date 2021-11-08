@@ -10,11 +10,22 @@
 %:
 	dh $@
 
+# Add --jobs=x/ parallel flag to MAKEFLAGS
+# This is used both in the build step,
+# but we additionally pass it to cmake configure using
+# -DLIB_MAKEFLAGS, so that dependent libs (e.g. OpenSSL)
+# are compiled with parallel jobs,
+# as cmake configure ignores the MAKEFLAGS variable
+ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+    NUMJOBS = $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+    MAKEFLAGS += --jobs=$(NUMJOBS)
+endif
+
 override_dh_auto_configure:
 	dh_auto_configure -- \
 	     -DCMAKE_LIBRARY_ARCHITECTURE="$(DEB_TARGET_MULTIARCH)" \
 		 -DCMAKE_BUILD_TYPE=Release \
-		 -DLIB_MAKEFLAGS="--jobs=$(nproc)"
+		 "-DLIB_MAKEFLAGS=--jobs=$(NUMJOBS)"
 
 # make sure to tell dh_shlibdeps about our private shared libs
 override_dh_shlibdeps:
