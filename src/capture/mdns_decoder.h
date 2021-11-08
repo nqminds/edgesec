@@ -34,11 +34,25 @@
  * 
  * @param payload The mdns payload
  * @param len The mdns payload length
+ * @param first The starting index to the queries field
  * @param nqueries The number of queries
+ * @param out The output questions array
+ * @param last The index to the end of the queries field
+ * @return 0 Success, -1 on failure
+ */
+int decode_mdns_queries(uint8_t *payload, size_t len, size_t first, uint16_t nqueries, char **out, size_t *last);
+
+/**
+ * @brief Decodes the mdns answers
+ * 
+ * @param payload The mdns payload
+ * @param len The mdns payload length
+ * @param first The starting index to the answers field
+ * @param nanswers The number of answers
  * @param qname The output questions array
  * @return 0 Success, -1 on failure
  */
-int decode_mdns_queries(uint8_t *payload, size_t len, uint16_t nqueries, char **qname);
+int decode_mdns_answers(uint8_t *payload, size_t len, size_t first, uint16_t nanswers, char **out);
 
 /**
  * @brief Decodes the mdns header

@@ -28,6 +28,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <signal.h>
+#include <inttypes.h>
 
 #include "../utils/log.h"
 #include "../utils/eloop.h"
@@ -296,13 +297,15 @@ void close_reflector_if(struct reflection_list *rif)
 void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
 {
   struct client_address peer_addr;
-  uint32_t bytes_available, payload_len;
+  uint32_t bytes_available;
   char *buf;
   ssize_t num_bytes;
+  size_t last = 0;
+  int32_t payload_len;
   uint16_t port;
   char peer_addr_str[INET6_ADDRSTRLEN];
   struct mdns_header header;
-  uint8_t *payload;
+  uint8_t *payload, *answers = NULL;
   char *qname = NULL;
 
   os_memset(&peer_addr, 0, sizeof(struct client_address));
@@ -337,23 +340,35 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
   }
 
   payload = (void *) buf + sizeof(struct mdns_header);
+  if ((payload_len = num_bytes - sizeof(struct mdns_header)) < 0) {
+    log_trace("Not enough bytes to process mdns");
+    os_free(buf);
+    return;
+  }
 
-  if (decode_mdns_queries(payload, num_bytes - sizeof(struct mdns_header), header.nqueries, &qname) < 0) {
+  if (decode_mdns_queries((uint8_t *)buf, num_bytes, sizeof(struct mdns_header), header.nqueries, &qname, &last) < 0) {
     log_trace("decode_mdns_questions fail");
     os_free(buf);
     return;  
   }
 
-  char buff[1000];
-  printf_hex(buff, 1000, payload, num_bytes - sizeof(struct mdns_header), 1);
-  log_trace("%s", buff);
+  // if (decode_mdns_answers(payload, (size_t) payload_len, last, header.nanswers, NULL) < 0) {
+  //   log_trace("decode_mdns_questions fail");
+  //   os_free(buf);
+  //   if (qname != NULL) {
+  //     os_free(qname);
+  //   }
+  //   return;  
+  // }
 
   log_trace("mDNS id=%d flags=0x%x nqueries=%d nanswers=%d nauth=%d nother=%d qname=%s",
     header.tid, header.flags, header.nqueries, header.nanswers,
     header.nauth, header.nother, qname);
 
   os_free(buf);
-  os_free(qname);
+  if (qname != NULL) {
+    os_free(qname);
+  }
 }
 
 int register_reflector_if6(/*int epoll_fd, */struct reflection_list *rif)
