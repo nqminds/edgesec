@@ -13,6 +13,10 @@ echo "SQLITE lib config host: ${CONFIG_HOST}"
 cd "${LIBSQLITE_SOURCE_DIR}"
 autoreconf -f -i
 ./configure --prefix=${LIBSQLITE_INSTALL_DIR} --host=${CONFIG_HOST}
+
+# Load LIB_MAKEFLAGS from CMake if set
+export MAKEFLAGS="${MAKEFLAGS-""} ${LIB_MAKEFLAGS-""}"
+
 make
 make install
 make clean

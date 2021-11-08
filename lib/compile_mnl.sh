@@ -13,5 +13,9 @@ echo "MNL lib config host: ${CONFIG_HOST}"
 cd "${LIBMNL_SOURCE_DIR}"
 autoreconf -f -i
 ./configure --prefix=${LIBMNL_INSTALL_DIR} --host=${CONFIG_HOST}
+
+# Load LIB_MAKEFLAGS from CMake if set
+export MAKEFLAGS="${MAKEFLAGS-""} ${LIB_MAKEFLAGS-""}"
+
 make
 make install
