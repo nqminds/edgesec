@@ -7,19 +7,20 @@ target_link_libraries(capture_config PRIVATE log os)
 
 if (BUILD_PCAP_LIB)
   add_library(mdns_decoder mdns_decoder.c)
-  target_include_directories(mdns_decoder PRIVATE ${LIBPCAP_INCLUDE_PATH})
-  target_link_libraries(mdns_decoder PRIVATE squeue log os hash)
+  # we include packet_decoder.h, so need to include its dependencies
+  target_include_directories(mdns_decoder PUBLIC $<TARGET_PROPERTY:packet_decoder,INCLUDE_DIRECTORIES>)
+  target_link_libraries(mdns_decoder PRIVATE squeue log os hash PUBLIC packet_decoder)
 
   add_library(dns_decoder dns_decoder.c)
   target_include_directories(dns_decoder PRIVATE ${LIBPCAP_INCLUDE_PATH})
   target_link_libraries(dns_decoder PRIVATE log os hash)
 
   add_library(packet_decoder packet_decoder.c)
-  target_include_directories(packet_decoder PRIVATE ${LIBPCAP_INCLUDE_PATH})
-  target_link_libraries(packet_decoder PRIVATE mdns_decoder dns_decoder hash if log os hashmap ${LIBPCAP_LIB})
+  # packet_decoder.h has an #include <pcap.h>, so need to make it PUBLIC include
+  target_include_directories(packet_decoder PUBLIC ${LIBPCAP_INCLUDE_PATH})
+  target_link_libraries(packet_decoder PUBLIC ${LIBPCAP_LIB} PRIVATE mdns_decoder dns_decoder hash if log os hashmap)
 
   add_library(packet_queue packet_queue.c)
-  target_include_directories(packet_queue PRIVATE ${LIBPCAP_INCLUDE_PATH})
   target_link_libraries(packet_queue PRIVATE packet_decoder log os)
 
   add_library(pcap_service pcap_service.c)
@@ -78,4 +79,3 @@ else ()
     target_link_libraries(capture_service PRIVATE capture_cleaner log)
   endif ()
 endif ()
-
