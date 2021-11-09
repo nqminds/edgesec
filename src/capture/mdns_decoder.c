@@ -44,9 +44,11 @@
 #include "capture_config.h"
 #include "packet_decoder.h"
 
-#define COMPRESSION_FLAG 0xC0
+#define COMPRESSION_FLAG      0xC0
+#define COMPRESSION_FLAG_BIT7 0x80
+#define COMPRESSION_FLAG_BIT6 0x40
 
-int decode_mdns_subquery(uint8_t *start, char **out)
+int copy_mdns_query_name(uint8_t *start, char **out)
 {
   char *qname = NULL;
 
@@ -61,14 +63,7 @@ int decode_mdns_subquery(uint8_t *start, char **out)
     return -1;
   }
 
-  if (start[0] > 1 || (start[0] == 1 && start[1] >= 30 && start[1] <= 126)) {
-    strncpy(qname, (char *)&start[1], start[0]);
-  }
-
-  for (int i = 0; i<start[0] + 1; i++)
-    log_trace("%c=>%x", start[i], start[i]);
-
-  log_trace("\tsub %d %d", start[0], start[1]);
+  strncpy(qname, (char *)&start[1], start[0]);
 
   qname[start[0]] = '.';
 
@@ -77,11 +72,81 @@ int decode_mdns_subquery(uint8_t *start, char **out)
   return 0;
 }
 
-int decode_mdns_queries(uint8_t *payload, size_t len, size_t first, uint16_t nqueries, char **out, size_t *last)
+uint16_t get_mdns_query_offset(uint8_t low, uint8_t high)
+{
+  uint16_t offset = low;
+  offset <<= 8;
+  return offset | high;
+}
+
+int decode_mdns_query_name(uint8_t *payload, size_t len, size_t *first, char **out)
+{
+  size_t i = *first, off;
+  char *qname = NULL;
+  struct string_queue* squeue = NULL;
+
+  *out = NULL;
+
+  if ((squeue = init_string_queue(-1)) == NULL) {
+    log_trace("init_string_queue fail");
+    return -1;
+  }
+
+  while (i < len) {
+    if (payload[i] == '\0') {
+      break;
+    }
+
+    if ((payload[i] & COMPRESSION_FLAG_BIT7) && (payload[i] & COMPRESSION_FLAG_BIT6)) {
+      off = (size_t) get_mdns_query_offset(payload[i] & (~COMPRESSION_FLAG), payload[i + 1]);
+
+      if (decode_mdns_query_name(payload, len, &off, &qname) < 0) {
+        log_trace("decode_mdns_query_ptr fail");
+        free_string_queue(squeue);
+        return -1;
+      }
+      if (qname != NULL) {
+        if (push_string_queue(squeue, qname) < 0) {
+          log_trace("push_string_queue fail");
+          os_free(qname);
+          free_string_queue(squeue);
+          return -1;
+        }
+        os_free(qname);
+      }
+      i += 1;
+      break;
+    } else {
+      if (copy_mdns_query_name(&payload[i], &qname) < 0) {
+        log_trace("decode_mdns_subquery fail");
+        free_string_queue(squeue);
+        return -1;
+      }
+
+      if (qname != NULL) {
+        if (push_string_queue(squeue, qname) < 0) {
+          log_trace("push_string_queue fail");
+          os_free(qname);
+          free_string_queue(squeue);
+          return -1;
+        }
+        os_free(qname);
+      }
+      i += payload[i] + 1;
+    }
+  }
+
+  *first = i;
+  *out = concat_string_queue(squeue, -1);
+
+  free_string_queue(squeue);
+  return 0;
+}
+
+int decode_mdns_queries(uint8_t *payload, size_t len, size_t *first, uint16_t nqueries, char **out)
 {
   int idx;
-  size_t i = first, j = 0;
-  uint8_t *start = payload;
+  size_t i = *first;
   char *qname = NULL;
   struct string_queue* squeue = NULL;
 
@@ -93,39 +158,19 @@ int decode_mdns_queries(uint8_t *payload, size_t len, size_t first, uint16_t nqu
   }
 
   for (idx = 0; idx < nqueries; idx++) {
-    while (i < len) {
-      if (start[i] == '\0') {
-        break;
-      }
+    if (decode_mdns_query_name(payload, len, &i, &qname) < 0) {
+      log_trace("decode_mdns_query_ptr fail");
+      free_string_queue(squeue);
+      return -1;
+    }
 
-      j = (start[i] & COMPRESSION_FLAG) ? start[i] & (~COMPRESSION_FLAG) : i;
-
-      log_trace("main %d %d", start[i] & COMPRESSION_FLAG, start[j]);
-
-      if (decode_mdns_subquery(&start[j], &qname) < 0) {
-        log_trace("decode_mdns_subquery fail");
+    if (qname != NULL) {
+      if (push_string_queue(squeue, qname) < 0) {
+        log_trace("push_string_queue fail");
         free_string_queue(squeue);
         return -1;
       }
-
-      if (qname != NULL && strlen(qname)) {
-        if (push_string_queue(squeue, qname) < 0) {
-          log_trace("push_string_queue fail");
-          os_free(qname);
-          free_string_queue(squeue);
-          return -1;
-        }
-      }
-
-      if (qname != NULL) {
-        os_free(qname);
-      }
-
-      if (start[i] & COMPRESSION_FLAG) {
-        break;
-      }
-
-      i += start[i] + 1;
+      os_free(qname);
     }
 
     if (push_string_queue(squeue, " ") < 0) {
@@ -137,60 +182,60 @@ int decode_mdns_queries(uint8_t *payload, size_t len, size_t first, uint16_t nqu
     i += sizeof(struct mdns_query_meta) + 1;
   }
 
+  *first = i;
   *out = concat_string_queue(squeue, -1);
-  if (last != NULL) {
-    *last = i;
-  }
 
   free_string_queue(squeue);
   return 0;
 }
 
-int decode_mdns_answers(uint8_t *payload, size_t len, size_t first, uint16_t nanswers, char **out)
+int decode_mdns_answers(uint8_t *payload, size_t len, size_t *first, uint16_t nanswers, char **out)
 {
   int idx;
-  size_t i = first, j = 0;
-  uint8_t *start = payload;
-  char *qname = NULL;
+  size_t i = *first;
+  char *rrname = NULL;
+  struct string_queue* squeue = NULL;
   struct mdns_answer_meta *meta;
+
+  *out = NULL;
+
+  if ((squeue = init_string_queue(-1)) == NULL) {
+    log_trace("init_string_queue fail");
+    return -1;
+  }
+
   for (idx = 0; idx < nanswers; idx++) {
-    while (i < len) {
-      if (start[i] == '\0') {
-        break;
-      }
+    if (decode_mdns_query_name(payload, len, &i, &rrname) < 0) {
+      log_trace("decode_mdns_query_ptr fail");
+      free_string_queue(squeue);
+      return -1;
+    }
 
-      if (start[i] & COMPRESSION_FLAG) {
-        log_trace("Compression");
-      }
-
-      j = (start[i] & COMPRESSION_FLAG) ? start[i] & (~COMPRESSION_FLAG) : i;
-
-      // char buf[1000];
-      // printf_hex(buf, 1000, &start[j], len - j, 1);
-      // log_trace(">> %s", buf);
-
-      if (decode_mdns_subquery(&start[j], &qname) < 0) {
-        log_trace("decode_mdns_subquery fail");
+    if (rrname != NULL) {
+      if (push_string_queue(squeue, rrname) < 0) {
+        log_trace("push_string_queue fail");
+        free_string_queue(squeue);
         return -1;
       }
+      os_free(rrname);
+    }
 
-      log_trace("++ %s", qname);
-
-      if (qname != NULL) {
-        os_free(qname);
-      }
-
-      if (start[i] & COMPRESSION_FLAG) {
-        break;
-      }
-
-      i += start[i] + 1;
+    if (push_string_queue(squeue, " ") < 0) {
+      log_trace("push_string_queue fail");
+      free_string_queue(squeue);
+      return -1;
     }
 
     i ++;
-    meta = (struct mdns_answer_meta *)&start[i];
+    meta = (struct mdns_answer_meta *) &payload[i];
     i += sizeof(struct mdns_answer_meta) + ntohs(meta->rdlength);
   }
+
+  *first = i;
+  *out = concat_string_queue(squeue, -1);
+
+  free_string_queue(squeue);
+
   return 0;
 }
 
@@ -214,6 +259,7 @@ bool decode_mdns_packet(struct capture_packet *cpac)
   size_t payload_len;
   int pos = 0;
   char *qname = NULL;
+  size_t first;
 
   if ((void *)cpac->udph != NULL) {
     cpac->mdnsh = (struct mdns_header *) ((void *)cpac->udph + sizeof(struct udphdr));
@@ -241,8 +287,9 @@ bool decode_mdns_packet(struct capture_packet *cpac)
   pos = (int)((void*)cpac->mdnsh - (void*)cpac->ethh);
   if (pos + sizeof(struct dns_header) <= cpac->length) {
     payload_len = ((void*) cpac->ethh + cpac->length) - (void*)cpac->mdnsh;
+    first = sizeof(struct mdns_header);
     if (cpac->mdnss.nqueries) {
-      if (decode_mdns_queries((uint8_t *)cpac->mdnsh, payload_len, sizeof(struct mdns_header), cpac->mdnss.nqueries, &qname, NULL) < 0) {
+      if (decode_mdns_queries((uint8_t *)cpac->mdnsh, payload_len, &first, cpac->mdnss.nqueries, &qname) < 0) {
         log_trace("decode_mdns_questions fail");
         return false;
       }

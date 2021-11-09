@@ -300,13 +300,11 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
   uint32_t bytes_available;
   char *buf;
   ssize_t num_bytes;
-  size_t last = 0;
-  int32_t payload_len;
+  size_t first = 0;
   uint16_t port;
   char peer_addr_str[INET6_ADDRSTRLEN];
   struct mdns_header header;
-  uint8_t *payload, *answers = NULL;
-  char *qname = NULL;
+  char *qname = NULL, *rrname = NULL;
 
   os_memset(&peer_addr, 0, sizeof(struct client_address));
 
@@ -339,35 +337,38 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
     return;
   }
 
-  payload = (void *) buf + sizeof(struct mdns_header);
-  if ((payload_len = num_bytes - sizeof(struct mdns_header)) < 0) {
+  if ((size_t) num_bytes < sizeof(struct mdns_header)) {
     log_trace("Not enough bytes to process mdns");
     os_free(buf);
     return;
   }
 
-  if (decode_mdns_queries((uint8_t *)buf, num_bytes, sizeof(struct mdns_header), header.nqueries, &qname, &last) < 0) {
+  first = sizeof(struct mdns_header);
+  if (decode_mdns_queries((uint8_t *) buf, (size_t) num_bytes, &first, header.nqueries, &qname) < 0) {
     log_trace("decode_mdns_questions fail");
     os_free(buf);
-    return;  
+    return;
   }
 
-  // if (decode_mdns_answers(payload, (size_t) payload_len, last, header.nanswers, NULL) < 0) {
-  //   log_trace("decode_mdns_questions fail");
-  //   os_free(buf);
-  //   if (qname != NULL) {
-  //     os_free(qname);
-  //   }
-  //   return;  
-  // }
-
-  log_trace("mDNS id=%d flags=0x%x nqueries=%d nanswers=%d nauth=%d nother=%d qname=%s",
-    header.tid, header.flags, header.nqueries, header.nanswers,
-    header.nauth, header.nother, qname);
-
+  if (decode_mdns_answers((uint8_t *) buf, (size_t) num_bytes, &first, header.nanswers, &rrname) < 0) {
+    log_trace("decode_mdns_questions fail");
+    os_free(buf);
+    if (qname != NULL) {
+      os_free(qname);
+    }
+    return;
+  }
   os_free(buf);
+
+  log_trace("mDNS id=%d flags=0x%x nqueries=%d nanswers=%d nauth=%d nother=%d qname=%s rrname=%s",
+    header.tid, header.flags, header.nqueries, header.nanswers,
+    header.nauth, header.nother, qname, rrname);
+
   if (qname != NULL) {
     os_free(qname);
+  }
+  if (rrname != NULL) {
+    os_free(rrname);
   }
 }
 
