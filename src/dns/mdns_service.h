@@ -20,6 +20,7 @@
 #define REFLECTOR_H
 
 #include "options.h"
+
 int run_event_loop(struct options *options);
 
 #endif //REFLECTOR_H

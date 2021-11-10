@@ -31,7 +31,7 @@
 
 #include "options.h"
 #include "reflection_list.h"
-#include "reflector.h"
+#include "mdns_service.h"
 
 static int parse_args(const char *program, int argc, char *argv[], struct options *options) {
   int ch;

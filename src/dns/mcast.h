@@ -16,18 +16,41 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef MDNS_REFLECTOR_MCAST_H
-#define MDNS_REFLECTOR_MCAST_H
+#ifndef MCAST_H
+#define MCAST_H
 
 #include <stdint.h>
 #include <sys/socket.h>
 
-/// Join a multicast group.
-/// \param fd socket fd
-/// \param sa multicast group address
-/// \param sa_len length of multicast group address
-/// \param ifindex interface index, or 0 to let the kernel decide
-/// \return 0 ON success or -1 ON error
-int mcast_join(int fd, const struct sockaddr_storage *sa, socklen_t sa_len, uint32_t ifindex);
+/**
+ * @brief Join a multicast socket
+ * 
+ * @param fd The socket descriptor
+ * @param sa The socket address
+ * @param sa_len The socket address length
+ * @param ifindex The interface index
+ * @return 0 on success, -1 on failuer
+ */
+int join_mcast(int fd, const struct sockaddr_storage *sa, socklen_t sa_len, uint32_t ifindex);
 
-#endif //MDNS_REFLECTOR_MCAST_H
+/**
+ * @brief Create a receive multicast socket
+ * 
+ * @param sa The socket address
+ * @param sa_len The socket address length
+ * @param ifindex The interface index
+ * @return 0 on success, -1 on failuer
+ */
+int create_recv_mcast(const struct sockaddr_storage *sa, socklen_t sa_len, uint32_t ifindex);
+
+/**
+ * @brief Create a send multicast socket
+ * 
+ * @param sa The socket address
+ * @param sa_len The socket address length
+ * @param ifindex The interface index
+ * @return 0 on success, -1 on failuer
+ */
+int create_send_mcast(const struct sockaddr_storage *sa, socklen_t sa_len, uint32_t ifindex);
+
+#endif //MCAST_H
