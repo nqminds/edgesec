@@ -3,12 +3,17 @@ on:
     types:
       - created
       - edited # can remove once CI is confirmed working
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  
 
-name: Upload Debs to Release
+name: Build Debian Packages
 
 jobs:
   build:
-    name: Upload built .deb
+    name: Build Debian Package
     # building a deb is super slow, so do it on our self-hosted machines
     runs-on: [self-hosted, linux]
     strategy:
@@ -53,7 +58,18 @@ jobs:
           DEB_PATH="$(ls -rt /var/cache/pbuilder/result/edgesec*.deb | head -1)"
           echo " ::set-output name=deb-path::${DEB_PATH}"
           echo " ::set-output name=deb-name::$(basename "${DEB_PATH}")"
+      - name: Archive built debs
+        uses: actions/upload-artifact@v2
+        with:
+          name: edgesec-built-debs
+          # only store .debs for one day to save space
+          # we can always rerun action to regenerate them
+          retention-days: 1
+          path: |
+            /var/cache/pbuilder/result/*.deb
       - name: Upload debs as Release Assets
+        # only run action if this is being run from a GitHub Release
+        if: ${{ github.event_name == 'release' }}
         uses: actions/github-script@v5
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
