@@ -29,6 +29,15 @@
 #include "capture_config.h"
 #include "packet_decoder.h"
 
+#include "../utils/os.h"
+#include "utils/utarray.h"
+
+struct mdns_answer_entry {
+  uint32_t ttl;
+  char rrname[MAX_WEB_PATH_LEN];
+  char ip[IP_LEN];
+};
+
 /**
  * @brief Decodes the mdns queries
  * 
@@ -48,10 +57,10 @@ int decode_mdns_queries(uint8_t *payload, size_t len, size_t *first, uint16_t nq
  * @param len The mdns payload length
  * @param first The starting index to the answers field
  * @param nanswers The number of answers
- * @param qname The output questions array
+ * @param answers The answers array
  * @return 0 Success, -1 on failure
  */
-int decode_mdns_answers(uint8_t *payload, size_t len, size_t *first, uint16_t nanswers, char **out);
+int decode_mdns_answers(uint8_t *payload, size_t len, size_t *first, uint16_t nanswers, UT_array *answers);
 
 /**
  * @brief Decodes the mdns header

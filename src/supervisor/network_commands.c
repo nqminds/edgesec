@@ -34,6 +34,7 @@
 #include "../ap/ap_service.h"
 #include "../crypt/crypt_service.h"
 #include "../capture/capture_service.h"
+#include "../dhcp/dhcp_service.h"
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/log.h"
@@ -120,7 +121,7 @@ int accept_mac_cmd(struct supervisor_context *context, uint8_t *mac_addr, int vl
     return -1;
   }
 
-  if (clear_dhcp_lease(mac_str, context->dconfig) < 0) {
+  if (clear_dhcp_lease(mac_str, &context->dconfig) < 0) {
     log_trace("clear_dhcp_lease fail");
     return -1;
   }

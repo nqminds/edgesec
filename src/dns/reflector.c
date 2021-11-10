@@ -56,6 +56,8 @@
 #define PACKET_MAX 10240
 #define MAX_EVENTS 10
 
+static const UT_icd mdns_answers_icd = {sizeof(struct mdns_answer_entry), NULL, NULL, NULL};
+
 bool stopping;
 
 int new_recv_socket(const struct sockaddr_storage *sa, socklen_t sa_len, uint32_t ifindex) {
@@ -304,7 +306,9 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
   uint16_t port;
   char peer_addr_str[INET6_ADDRSTRLEN];
   struct mdns_header header;
-  char *qname = NULL, *rrname = NULL;
+  char *qname = NULL;
+  UT_array *answers;
+  struct mdns_answer_entry *ael = NULL;
 
   os_memset(&peer_addr, 0, sizeof(struct client_address));
 
@@ -350,8 +354,11 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
     return;
   }
 
-  if (decode_mdns_answers((uint8_t *) buf, (size_t) num_bytes, &first, header.nanswers, &rrname) < 0) {
+  utarray_new(answers, &mdns_answers_icd);
+
+  if (decode_mdns_answers((uint8_t *) buf, (size_t) num_bytes, &first, header.nanswers, answers) < 0) {
     log_trace("decode_mdns_questions fail");
+    utarray_free(answers);
     os_free(buf);
     if (qname != NULL) {
       os_free(qname);
@@ -360,16 +367,20 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
   }
   os_free(buf);
 
-  log_trace("mDNS id=%d flags=0x%x nqueries=%d nanswers=%d nauth=%d nother=%d qname=%s rrname=%s",
+  while((ael = (struct mdns_answer_entry *) utarray_next(answers, ael)) != NULL) {
+    log_trace("TTL=%d", ael->ttl);
+    log_trace("RRNAME=%s", ael->rrname);
+    log_trace("IP=%s", ael->ip);
+  }
+
+  log_trace("mDNS id=%d flags=0x%x nqueries=%d nanswers=%d nauth=%d nother=%d qname=%s",
     header.tid, header.flags, header.nqueries, header.nanswers,
-    header.nauth, header.nother, qname, rrname);
+    header.nauth, header.nother, qname);
 
   if (qname != NULL) {
     os_free(qname);
   }
-  if (rrname != NULL) {
-    os_free(rrname);
-  }
+  utarray_free(answers);
 }
 
 int register_reflector_if6(/*int epoll_fd, */struct reflection_list *rif)

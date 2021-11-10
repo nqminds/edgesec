@@ -79,7 +79,7 @@ struct mdns_query_meta {
   uint16_t qtype;                         /**< The type of the query, i.e. the type of RR which should be returned in response */
   uint16_t uresponse : 1;                 /**< Boolean flag indicating whether a unicast-response is desired */
   uint16_t qclass : 15;                   /**< Boolean flag indicating whether a unicast-response is desired Class code, 1 a.k.a. "IN" for the Internet and IP networks */
-};
+} __attribute__((packed));
 
 /**
  * @brief mDNS response meta definition
@@ -91,7 +91,7 @@ struct mdns_answer_meta {
   uint16_t rrclass : 15;                  /**< Class code, 1 a.k.a. "IN" for the Internet and IP networks */
   uint32_t ttl;                           /**< Time interval (in seconds) that the RR should be cached */
   uint16_t rdlength;                      /**< Integer representing the length (in octets) of the RDATA field */
-};
+} __attribute__((packed));
 
 /**
  * @brief DHCP header definition (truncated)

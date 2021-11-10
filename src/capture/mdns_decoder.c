@@ -38,11 +38,13 @@
 #include "../utils/utarray.h"
 #include "../utils/allocs.h"
 #include "../utils/os.h"
+#include "../utils/if.h"
 #include "../utils/hash.h"
 #include "../utils/squeue.h"
 
 #include "capture_config.h"
 #include "packet_decoder.h"
+#include "mdns_decoder.h"
 
 #define COMPRESSION_FLAG      0xC0
 #define COMPRESSION_FLAG_BIT7 0x80
@@ -189,52 +191,38 @@ int decode_mdns_queries(uint8_t *payload, size_t len, size_t *first, uint16_t nq
   return 0;
 }
 
-int decode_mdns_answers(uint8_t *payload, size_t len, size_t *first, uint16_t nanswers, char **out)
+int decode_mdns_answers(uint8_t *payload, size_t len, size_t *first, uint16_t nanswers, UT_array *answers)
 {
   int idx;
   size_t i = *first;
   char *rrname = NULL;
-  struct string_queue* squeue = NULL;
   struct mdns_answer_meta *meta;
-
-  *out = NULL;
-
-  if ((squeue = init_string_queue(-1)) == NULL) {
-    log_trace("init_string_queue fail");
-    return -1;
-  }
+  struct mdns_answer_entry entry;
 
   for (idx = 0; idx < nanswers; idx++) {
     if (decode_mdns_query_name(payload, len, &i, &rrname) < 0) {
       log_trace("decode_mdns_query_ptr fail");
-      free_string_queue(squeue);
-      return -1;
-    }
-
-    if (rrname != NULL) {
-      if (push_string_queue(squeue, rrname) < 0) {
-        log_trace("push_string_queue fail");
-        free_string_queue(squeue);
-        return -1;
-      }
-      os_free(rrname);
-    }
-
-    if (push_string_queue(squeue, " ") < 0) {
-      log_trace("push_string_queue fail");
-      free_string_queue(squeue);
       return -1;
     }
 
     i ++;
     meta = (struct mdns_answer_meta *) &payload[i];
-    i += sizeof(struct mdns_answer_meta) + ntohs(meta->rdlength);
+    i += sizeof(struct mdns_answer_meta);
+
+    if (rrname != NULL) {
+      // "A" type resource record
+      if (ntohs(meta->rrtype) == 1 && ntohs(meta->rdlength) == IP_BUF_LEN) {
+        entry.ttl = ntohl(meta->ttl);
+        strcpy(entry.rrname, rrname);
+        sprintf(entry.ip, IPSTR, IP2STR(&payload[i]));
+        utarray_push_back(answers, &entry);
+      }
+      os_free(rrname);
+    }
+    i += ntohs(meta->rdlength);
   }
 
   *first = i;
-  *out = concat_string_queue(squeue, -1);
-
-  free_string_queue(squeue);
 
   return 0;
 }
