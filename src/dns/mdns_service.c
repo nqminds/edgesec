@@ -1,20 +1,27 @@
-/*
-    This file is part of mDNS Reflector (mdns-reflector), a lightweight and performant multicast DNS (mDNS) reflector.
-    Copyright (C) 2021 Yuxiang Zhu <me@yux.im>
+/****************************************************************************
+ * Copyright (C) 2021 by NQMCyber Ltd                                       *
+ *                                                                          *
+ * This file is part of EDGESec.                                            *
+ *                                                                          *
+ *   EDGESec is free software: you can redistribute it and/or modify it     *
+ *   under the terms of the GNU Lesser General Public License as published  *
+ *   by the Free Software Foundation, either version 3 of the License, or   *
+ *   (at your option) any later version.                                    *
+ *                                                                          *
+ *   EDGESec is distributed in the hope that it will be useful,             *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of         *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
+ *   GNU Lesser General Public License for more details.                    *
+ *                                                                          *
+ *   You should have received a copy of the GNU Lesser General Public       *
+ *   License along with EDGESec. If not, see <http://www.gnu.org/licenses/>.*
+ ****************************************************************************/
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+/**
+ * @file mdns_service.c
+ * @author Alexandru Mereacre 
+ * @brief File containing the implementation of mDNS service structures.
+ */
 
 #include <stdint.h>
 #include <stdio.h>
@@ -30,23 +37,26 @@
 #include <signal.h>
 #include <inttypes.h>
 
+#include "../utils/uthash.h"
+#include "../utils/if.h"
 #include "../utils/log.h"
 #include "../utils/eloop.h"
 #include "../utils/domain.h"
 #include "../capture/mdns_decoder.h"
+#include "../supervisor/supervisor_config.h"
 
 #include "mdns_service.h"
 #include "reflection_list.h"
-#include "options.h"
 #include "mcast.h"
 
-#define MDNS_PORT 5353
-#define MDNS_ADDR4 (u_int32_t)0xe00000fb  /* 224.0.0.251 */
+#define MDNS_PORT       5353
+#define MDNS_ADDR4      (uint32_t)0xE00000FB  /* 224.0.0.251 */
 #define MDNS_ADDR6_INIT \
 {{{ 0xff, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, \
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xfb }}}
 
 static const UT_icd mdns_answers_icd = {sizeof(struct mdns_answer_entry), NULL, NULL, NULL};
+static const UT_icd mdns_queries_icd = {sizeof(struct mdns_query_entry), NULL, NULL, NULL};
 
 int sockaddr2str(struct sockaddr_storage *sa, char *buffer, uint16_t *port) {
   if (sa->ss_family == AF_INET6) {
@@ -87,14 +97,45 @@ void close_reflector_if(struct reflection_list *rif)
   }
 }
 
-int forward_reflector_if(struct sockaddr_un *addr, uint8_t *send_buf, size_t len, struct reflection_list *rif)
+int forward_reflector_if6(uint8_t *send_buf, size_t len, struct reflection_list *rif)
 {
   struct reflection_list *el;
+  struct sockaddr *dst;
+  socklen_t dst_len;
   struct sockaddr_in6 sa_group6 = {
     .sin6_family=AF_INET6,
     .sin6_port = htons(MDNS_PORT),
     .sin6_addr = MDNS_ADDR6_INIT,
   };
+
+  log_trace("Forwarding to IP6 interfaces");
+
+  dst = (struct sockaddr *) &sa_group6;
+  dst_len = sizeof(sa_group6);
+
+  dl_list_for_each(el, &(rif)->list, struct reflection_list, list) {
+    if (el == rif){
+      continue;
+    }
+
+    sa_group6.sin6_scope_id = el->ifindex;
+    if (sendto(el->send_fd, send_buf, len, 0, dst, dst_len) == -1) {
+      if (errno == EWOULDBLOCK) {
+        continue;
+      }
+      log_err("sendto");
+      return -1;
+    }
+  }
+
+  return 0;
+}
+
+int forward_reflector_if4(uint8_t *send_buf, size_t len, struct reflection_list *rif)
+{
+  struct reflection_list *el;
+  struct sockaddr *dst;
+  socklen_t dst_len;
 
   struct sockaddr_in sa_group4 = {
     .sin_family = AF_INET,
@@ -102,57 +143,29 @@ int forward_reflector_if(struct sockaddr_un *addr, uint8_t *send_buf, size_t len
     .sin_addr.s_addr = htonl(MDNS_ADDR4),
   };
 
-  struct sockaddr *dst;
-  socklen_t dst_len;
+  log_trace("Forwarding to IP4 interfaces");
+  dst = (struct sockaddr *) &sa_group4;
+  dst_len = sizeof(sa_group4);
 
-  if (addr->sun_family == AF_INET6) {
-    log_trace("Forwarding to IP6 interfaces");
-    dst = (struct sockaddr *) &sa_group6;
-    dst_len = sizeof(sa_group6);
+  dl_list_for_each(el, &(rif)->list, struct reflection_list, list) {
+    if (el == rif) {
+      continue;
+    }
 
-    dl_list_for_each(el, &(rif)->list, struct reflection_list, list) {
-      if (el == rif){
+    if (sendto(el->send_fd, send_buf, len, 0, dst, dst_len) == -1) {
+      if (errno == EWOULDBLOCK) {
         continue;
       }
-
-      sa_group6.sin6_scope_id = el->ifindex;
-
-      if (sendto(el->send_fd, send_buf, len, 0, dst, dst_len) == -1) {
-        if (errno == EWOULDBLOCK) {
-          continue;
-        }
-        log_err("sendto");
-        return -1;
-      }
+      log_err("sendto");
+      return -1;
     }
-  } else if (addr->sun_family == AF_INET) {
-    log_trace("Forwarding to IP4 interfaces");
-    dst = (struct sockaddr *) &sa_group4;
-    dst_len = sizeof(sa_group4);
-
-    dl_list_for_each(el, &(rif)->list, struct reflection_list, list) {
-      if (el == rif) {
-        continue;
-      }
-
-      if (sendto(el->send_fd, send_buf, len, 0, dst, dst_len) == -1) {
-        if (errno == EWOULDBLOCK) {
-          continue;
-        }
-        log_err("sendto");
-        return -1;
-      }
-    }
-  } else {
-    log_trace("unknown address type");
-    return -1;
   }
+
   return 0;
 }
 
 void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
 {
-  (void) eloop_ctx;
   struct client_address peer_addr;
   uint32_t bytes_available;
   uint8_t *buf;
@@ -162,9 +175,11 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
   char peer_addr_str[INET6_ADDRSTRLEN];
   struct mdns_header header;
   char *qname = NULL;
-  UT_array *answers;
+  UT_array *answers, *queries;
   struct mdns_answer_entry *ael = NULL;
+  struct mdns_query_entry *qel = NULL;
   struct reflection_list *rif = (struct reflection_list *) sock_ctx;
+  struct supervisor_context *context = (struct supervisor_context *) eloop_ctx;
 
   os_memset(&peer_addr, 0, sizeof(struct client_address));
 
@@ -204,8 +219,11 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
   }
 
   first = sizeof(struct mdns_header);
-  if (decode_mdns_queries((uint8_t *) buf, (size_t) num_bytes, &first, header.nqueries, &qname) < 0) {
+  utarray_new(queries, &mdns_queries_icd);
+
+  if (decode_mdns_queries((uint8_t *) buf, (size_t) num_bytes, &first, header.nqueries, queries) < 0) {
     log_trace("decode_mdns_questions fail");
+    utarray_free(queries);
     os_free(buf);
     return;
   }
@@ -214,6 +232,7 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
 
   if (decode_mdns_answers((uint8_t *) buf, (size_t) num_bytes, &first, header.nanswers, answers) < 0) {
     log_trace("decode_mdns_questions fail");
+    utarray_free(queries);
     utarray_free(answers);
     os_free(buf);
     if (qname != NULL) {
@@ -222,30 +241,54 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
     return;
   }
 
+  while((qel = (struct mdns_query_entry *) utarray_next(queries, qel)) != NULL) {
+    log_trace("QUERY QNAME=%s", qel->qname);
+    log_trace("QUERY QTYPE=%d", qel->qtype);
+  }
+
   while((ael = (struct mdns_answer_entry *) utarray_next(answers, ael)) != NULL) {
-    log_trace("TTL=%d", ael->ttl);
-    log_trace("RRNAME=%s", ael->rrname);
-    log_trace("IP=%s", ael->ip);
+    log_trace("ANSWER TTL=%d", ael->ttl);
+    log_trace("ANSWER RRNAME=%s", ael->rrname);
+    log_trace("ANSWER RRTYPE=%d", ael->rrtype);
+    log_trace("ANSWER IP="IPSTR, IP2STR(ael->ip));
   }
 
   log_trace("mDNS id=%d flags=0x%x nqueries=%d nanswers=%d nauth=%d nother=%d qname=%s",
     header.tid, header.flags, header.nqueries, header.nanswers,
-    header.nauth, header.nother, qname);
+    header.nauth, header.nother);
 
   if (qname != NULL) {
     os_free(qname);
   }
+  utarray_free(queries);
   utarray_free(answers);
 
-  if (forward_reflector_if(&peer_addr.addr, buf, num_bytes, rif) < 0) {
-    log_trace("forward_reflector_if fail");
+  if (peer_addr.addr.sun_family == AF_INET6) {
+    if (context->mconfig.reflect_mdns_ip6) {
+      if (forward_reflector_if6(buf, num_bytes, rif) < 0) {
+        log_trace("forward_reflector_if6 fail");
+        os_free(buf);
+        return;
+      }
+    }
+  } else if (peer_addr.addr.sun_family == AF_INET) {
+    if (context->mconfig.reflect_mdns_ip4) {
+      if (forward_reflector_if4(buf, num_bytes, rif) < 0) {
+        log_trace("forward_reflector_if4 fail");
+        os_free(buf);
+        return;
+      }
+    }
+  } else {
+    log_trace("unknown address type");
   }
+
   os_free(buf);
 }
 
-int register_reflector_if6(struct reflection_list *rif)
+int register_reflector_if6(struct supervisor_context *context)
 {
-  struct reflection_list *el;
+  struct reflection_list *el, *rif = context->mdns_ctx->rif6;
   struct sockaddr_in6 sa6 = {
     .sin6_family=AF_INET6,
     .sin6_port = htons(MDNS_PORT),
@@ -271,7 +314,7 @@ int register_reflector_if6(struct reflection_list *rif)
       return -1;
     }
 
-    if (eloop_register_read_sock(el->recv_fd, eloop_reflector_handler, NULL, (void *) rif) < 0) {
+    if (eloop_register_read_sock(el->recv_fd, eloop_reflector_handler, (void *) context, (void *) rif) < 0) {
       log_trace("eloop_register_read_sock fail");
       return -1;
     }
@@ -282,12 +325,13 @@ int register_reflector_if6(struct reflection_list *rif)
       return -1;
     }
   }
+
   return 0;
 }
 
-int register_reflector_if4(struct reflection_list *rif)
+int register_reflector_if4(struct supervisor_context *context)
 {
-  struct reflection_list *el;
+  struct reflection_list *el, *rif = context->mdns_ctx->rif4;
   struct sockaddr_in sa4 = {
     .sin_family = AF_INET,
     .sin_port = htons(MDNS_PORT),
@@ -314,7 +358,7 @@ int register_reflector_if4(struct reflection_list *rif)
       return -1;
     }
 
-    if (eloop_register_read_sock(el->recv_fd, eloop_reflector_handler, NULL, (void *) rif) < 0) {
+    if (eloop_register_read_sock(el->recv_fd, eloop_reflector_handler, (void *) context, (void *) rif) < 0) {
       log_trace("eloop_register_read_sock fail");
       return -1;
     }
@@ -328,23 +372,90 @@ int register_reflector_if4(struct reflection_list *rif)
   return 0;
 }
 
-int run_event_loop(struct options *options) {
-  if (register_reflector_if6(options->rif6) < 0) {
+int init_reflections(hmap_vlan_conn **vlan_mapper, struct mdns_context *context)
+{
+  char *ifname = NULL;
+  unsigned int ifindex;
+  hmap_vlan_conn *current, *tmp;
+
+  if ((context->rif4 = init_reflection_list()) == NULL) {
+    log_trace("init_reflection_list fail");
+    return -1;
+  }
+
+  if ((context->rif6 = init_reflection_list()) == NULL) {
+    log_trace("init_reflection_list fail");
+    return -1;
+  }
+
+	HASH_ITER(hh, *vlan_mapper, current, tmp) {
+    ifname = current->value.ifname;
+
+    log_trace("Adding interface %s to mDNS reflector", ifname);
+
+    if ((ifindex = if_nametoindex(ifname)) == 0) {
+      log_err("if_nametoindex");
+      return -1;
+    }
+
+    if (push_reflection_list(context->rif6, ifindex, ifname) == NULL) {
+      log_trace("push_reflection_list fail");
+      return -1;
+    }
+    if (push_reflection_list(context->rif4, ifindex, ifname) == NULL) {
+      log_trace("push_reflection_list fail");
+      return -1;
+    }
+  }
+
+  return 0;
+}
+
+int close_mdns(struct mdns_context *context)
+{
+  if (context != NULL) {
+    if (context->rif4 != NULL) {
+      close_reflector_if(context->rif4);
+      free_reflection_list(context->rif4);
+    }
+
+    if (context->rif6 != NULL) {
+      close_reflector_if(context->rif6);
+      free_reflection_list(context->rif6);
+    }
+    os_free(context);
+  }
+
+  return 0;
+}
+
+int run_mdns(struct supervisor_context *context)
+{ 
+  if ((context->mdns_ctx = os_zalloc(sizeof(struct mdns_context))) == NULL) {
+    log_err("os_zalloc");
+    return -1;
+  }
+
+  if (init_reflections(&context->vlan_mapper, context->mdns_ctx) < 0) {
+    log_trace("init_reflections fail");
+    os_free(context->mdns_ctx);
+    context->mdns_ctx = NULL;
+    return -1;
+  }
+
+  if (register_reflector_if6(context) < 0) {
     log_trace("register_reflector_if6 fail");
-    close_reflector_if(options->rif6);
+    close_mdns(context->mdns_ctx);
+    context->mdns_ctx = NULL;
     return -1;
   }
 
-  if (register_reflector_if4(options->rif4) < 0) {
+  if (register_reflector_if4(context) < 0) {
     log_trace("register_reflector_if4 fail");
-    close_reflector_if(options->rif6);
-    close_reflector_if(options->rif4);
+    close_mdns(context->mdns_ctx);
+    context->mdns_ctx = NULL;
     return -1;
   }
-
-  eloop_run();
-  close_reflector_if(options->rif6);
-  close_reflector_if(options->rif4);
 
   return 0;
 }

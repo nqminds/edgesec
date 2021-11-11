@@ -31,6 +31,7 @@
 
 #include "../ap/ap_config.h"
 #include "../dhcp/dhcp_config.h"
+#include "../dns/dns_config.h"
 #include "../utils/if.h"
 #include "../capture/capture_config.h"
 #include "../crypt/crypt_config.h"
@@ -79,6 +80,7 @@ struct supervisor_context {
   struct apconf       hconfig;                                /**< AP service configuration. */
   struct radius_conf  rconfig;                                /**< Radius service configuration. */
   struct dhcp_conf  dconfig;                                  /**< DHCP service configuration. */
+  struct dns_conf  mconfig;                                   /**< DNS service configuration. */
   sqlite3         *fingeprint_db;                             /**< The fingerprint sqlite db structure. */
   sqlite3         *alert_db;                                  /**< The alert sqlite db structure. */
   sqlite3         *macconn_db;                                /**< The macconn db structure. */
@@ -86,7 +88,8 @@ struct supervisor_context {
   struct iptables_context *iptables_ctx;                      /**< The iptables context. */
   struct crypt_context *crypt_ctx;                            /**< The crypt context. */
   struct auth_ticket *ticket;                                 /**< The authentication ticket. */  
-  int              ap_sock;                                 /**< The AP notifier socket. */
+  struct mdns_context *mdns_ctx;                              /**< The mDNS context. */
+  int              ap_sock;                                   /**< The AP notifier socket. */
 };
 
 #endif

@@ -145,49 +145,33 @@ int decode_mdns_query_name(uint8_t *payload, size_t len, size_t *first, char **o
   return 0;
 }
 
-int decode_mdns_queries(uint8_t *payload, size_t len, size_t *first, uint16_t nqueries, char **out)
+int decode_mdns_queries(uint8_t *payload, size_t len, size_t *first, uint16_t nqueries, UT_array *queries)
 {
   int idx;
   size_t i = *first;
   char *qname = NULL;
-  struct string_queue* squeue = NULL;
-
-  *out = NULL;
-
-  if ((squeue = init_string_queue(-1)) == NULL) {
-    log_trace("init_string_queue fail");
-    return -1;
-  }
+  struct mdns_query_meta *meta;
+  struct mdns_query_entry entry;
 
   for (idx = 0; idx < nqueries; idx++) {
     if (decode_mdns_query_name(payload, len, &i, &qname) < 0) {
       log_trace("decode_mdns_query_ptr fail");
-      free_string_queue(squeue);
       return -1;
     }
+
+    i ++;
+    meta = (struct mdns_query_meta *) &payload[i];
+    i += sizeof(struct mdns_query_meta);
 
     if (qname != NULL) {
-      if (push_string_queue(squeue, qname) < 0) {
-        log_trace("push_string_queue fail");
-        free_string_queue(squeue);
-        return -1;
-      }
+      entry.qtype = ntohs(meta->qtype);
+      strcpy(entry.qname, qname);
+      utarray_push_back(queries, &entry);
       os_free(qname);
     }
-
-    if (push_string_queue(squeue, " ") < 0) {
-      log_trace("push_string_queue fail");
-      free_string_queue(squeue);
-      return -1;
-    }
-
-    i += sizeof(struct mdns_query_meta) + 1;
   }
 
   *first = i;
-  *out = concat_string_queue(squeue, -1);
-
-  free_string_queue(squeue);
   return 0;
 }
 
@@ -210,13 +194,15 @@ int decode_mdns_answers(uint8_t *payload, size_t len, size_t *first, uint16_t na
     i += sizeof(struct mdns_answer_meta);
 
     if (rrname != NULL) {
+      entry.ttl = ntohl(meta->ttl);
+      entry.rrtype = ntohs(meta->rrtype);
+      strcpy(entry.rrname, rrname);
       // "A" type resource record
+      os_memset(entry.ip, 0, IP_BUF_LEN);
       if (ntohs(meta->rrtype) == 1 && ntohs(meta->rdlength) == IP_BUF_LEN) {
-        entry.ttl = ntohl(meta->ttl);
-        strcpy(entry.rrname, rrname);
-        sprintf(entry.ip, IPSTR, IP2STR(&payload[i]));
-        utarray_push_back(answers, &entry);
+        os_memcpy(entry.ip, &payload[i], IP_BUF_LEN);
       }
+      utarray_push_back(answers, &entry);
       os_free(rrname);
     }
     i += ntohs(meta->rdlength);
@@ -244,10 +230,10 @@ int decode_mdns_header(uint8_t *packet, struct mdns_header *out)
 bool decode_mdns_packet(struct capture_packet *cpac)
 {
   struct mdns_header mdnsh;
-  size_t payload_len;
-  int pos = 0;
-  char *qname = NULL;
-  size_t first;
+  // size_t payload_len;
+  // int pos = 0;
+  // char *qname = NULL;
+  // size_t first;
 
   if ((void *)cpac->udph != NULL) {
     cpac->mdnsh = (struct mdns_header *) ((void *)cpac->udph + sizeof(struct udphdr));
@@ -272,19 +258,19 @@ bool decode_mdns_packet(struct capture_packet *cpac)
   cpac->mdnss.nauth = mdnsh.nauth;
   cpac->mdnss.nother = mdnsh.nother;
 
-  pos = (int)((void*)cpac->mdnsh - (void*)cpac->ethh);
-  if (pos + sizeof(struct dns_header) <= cpac->length) {
-    payload_len = ((void*) cpac->ethh + cpac->length) - (void*)cpac->mdnsh;
-    first = sizeof(struct mdns_header);
-    if (cpac->mdnss.nqueries) {
-      if (decode_mdns_queries((uint8_t *)cpac->mdnsh, payload_len, &first, cpac->mdnss.nqueries, &qname) < 0) {
-        log_trace("decode_mdns_questions fail");
-        return false;
-      }
-      strncpy(cpac->mdnss.qname, qname, MAX_QUESTION_LEN);
-      os_free(qname);
-    }
-  }
+  // pos = (int)((void*)cpac->mdnsh - (void*)cpac->ethh);
+  // if (pos + sizeof(struct dns_header) <= cpac->length) {
+  //   payload_len = ((void*) cpac->ethh + cpac->length) - (void*)cpac->mdnsh;
+  //   first = sizeof(struct mdns_header);
+  //   if (cpac->mdnss.nqueries) {
+  //     if (decode_mdns_queries((uint8_t *)cpac->mdnsh, payload_len, &first, cpac->mdnss.nqueries, &qname) < 0) {
+  //       log_trace("decode_mdns_questions fail");
+  //       return false;
+  //     }
+  //     strncpy(cpac->mdnss.qname, qname, MAX_QUESTION_LEN);
+  //     os_free(qname);
+  //   }
+  // }
   
   log_trace("mDNS id=%d flags=0x%x nqueries=%d nanswers=%d nauth=%d nother=%d qname=%s",
     cpac->mdnss.tid, cpac->mdnss.flags, cpac->mdnss.nqueries, cpac->mdnss.nanswers,

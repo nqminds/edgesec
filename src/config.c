@@ -417,6 +417,13 @@ bool load_dns_conf(const char *filename, struct app_config *config)
   }
 
   os_free(value);
+
+  // Load mdnsReflectIp4 param
+  config->dns_config.reflect_mdns_ip4 = (int) ini_getbool("dns", "mdnsReflectIp4", 0, filename);
+
+  // Load mdnsReflectIp6 param
+  config->dns_config.reflect_mdns_ip6 = (int) ini_getbool("dns", "mdnsReflectIp6", 0, filename);
+
   return true;
 }
 

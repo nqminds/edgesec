@@ -93,6 +93,8 @@ natInterface = "eth0" # raspberry pi default ethernet port
 
 [dns]
 servers="8.8.4.4,8.8.8.8"
+mdnsReflectIp4=true
+mdnsReflectIp6=true
 
 [dhcp]
 dhcpBinPath = "/usr/sbin/dnsmasq"

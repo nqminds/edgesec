@@ -48,6 +48,7 @@
 #include "radius/radius_service.h"
 #include "ap/ap_service.h"
 #include "dhcp/dhcp_service.h"
+#include "dns/mdns_service.h"
 #include "crypt/crypt_service.h"
 
 #include "engine.h"
@@ -161,6 +162,7 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
   ctx->hmap_bin_paths = NULL;
   ctx->radius_srv = NULL;
   ctx->crypt_ctx = NULL;
+  ctx->mdns_ctx = NULL;
   ctx->ticket = NULL;
   ctx->iptables_ctx = NULL;
   ctx->fingeprint_db = NULL;
@@ -186,6 +188,7 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
   os_memcpy(&ctx->hconfig, &app_config->hconfig, sizeof(struct apconf));
   os_memcpy(&ctx->rconfig, &app_config->rconfig, sizeof(struct radius_conf));
   os_memcpy(&ctx->dconfig, &app_config->dhcp_config, sizeof(struct dhcp_conf));
+  os_memcpy(&ctx->mconfig, &app_config->dns_config, sizeof(struct dns_conf));
 
   if (ctx->default_open_vlanid == ctx->quarantine_vlanid) {
     log_trace("default and quarantine vlans have the same id");
@@ -383,12 +386,17 @@ bool run_engine(struct app_config *app_config)
   }
 
   if (run_dhcp(dnsmasq_path, &context.dconfig, context.hconfig.interface,
-        app_config->dns_config.server_array, app_config->domain_server_path,
+        context.mconfig.server_array, app_config->domain_server_path,
         app_config->exec_dhcp) == -1) {
     log_debug("run_dhcp fail");
     goto run_engine_fail;
   }
 
+  log_info("Running the mdns service...");
+  if (run_mdns(&context) < 0) {
+    log_debug("run_mdns fail");
+    goto run_engine_fail;
+  }
 
   log_info("++++++++++++++++++");
   log_info("Running event loop");
@@ -398,6 +406,7 @@ bool run_engine(struct app_config *app_config)
   close_supervisor(&context);
   close_ap(&context);
   close_dhcp();
+  close_mdns(context.mdns_ctx);
   close_radius(context.radius_srv);
   eloop_destroy();
   hmap_str_keychar_free(&context.hmap_bin_paths);
@@ -415,6 +424,7 @@ run_engine_fail:
   close_supervisor(&context);
   close_ap(&context);
   close_dhcp();
+  close_mdns(context.mdns_ctx);
   close_radius(context.radius_srv);
   eloop_destroy();
   hmap_str_keychar_free(&context.hmap_bin_paths);

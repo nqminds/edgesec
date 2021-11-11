@@ -32,10 +32,16 @@
 #include "../utils/os.h"
 #include "utils/utarray.h"
 
+struct mdns_query_entry {
+  uint16_t qtype;
+  char qname[MAX_WEB_PATH_LEN];
+};
+
 struct mdns_answer_entry {
   uint32_t ttl;
+  uint16_t rrtype;
   char rrname[MAX_WEB_PATH_LEN];
-  char ip[IP_LEN];
+  uint8_t ip[IP_BUF_LEN];
 };
 
 /**
@@ -45,10 +51,10 @@ struct mdns_answer_entry {
  * @param len The mdns payload length
  * @param first The starting index to the queries field
  * @param nqueries The number of queries
- * @param out The output questions array
+ * @param answers The queries array
  * @return 0 Success, -1 on failure
  */
-int decode_mdns_queries(uint8_t *payload, size_t len, size_t *first, uint16_t nqueries, char **out);
+int decode_mdns_queries(uint8_t *payload, size_t len, size_t *first, uint16_t nqueries, UT_array *queries);
 
 /**
  * @brief Decodes the mdns answers
