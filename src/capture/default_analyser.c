@@ -44,6 +44,8 @@
 #include "sqlite_header_writer.h"
 #include "sqlite_pcap_writer.h"
 
+#include "../utils/domain.h"
+#include "../utils/squeue.h"
 #include "../utils/if.h"
 #include "../utils/log.h"
 #include "../utils/eloop.h"
@@ -70,6 +72,76 @@ void construct_pcap_file_name(char *file_name)
   strcat(file_name, PCAP_EXTENSION);
 }
 
+int send_pcap_meta(struct capture_context *context, struct tuple_packet *tp)
+{
+  struct ip4_schema *sch = NULL;
+  struct string_queue* squeue = init_string_queue(-1);
+  char delim_str[2];
+  char *meta_out = NULL;
+
+  sprintf(delim_str, "%c", context->domain_delim);
+
+  if (!os_strnlen_s(context->domain_command, MAX_SUPERVISOR_CMD_SIZE)) {
+    free_string_queue(squeue);
+    return 0;
+  }
+
+  if (push_string_queue(squeue, context->domain_command) < 0) {
+    log_trace("push_string_queue fail");
+    free_string_queue(squeue);
+    return -1;
+  }
+
+  if (push_string_queue(squeue, delim_str) < 0) {
+    log_trace("push_string_queue fail");
+    free_string_queue(squeue);
+    return -1;
+  }
+
+  switch (tp->type) {
+    case PACKET_IP4:
+      sch = (struct ip4_schema *)tp->packet;
+      break;
+    default:
+      free_string_queue(squeue);
+      return 0;
+  }
+
+  if (push_string_queue(squeue, sch->ip_src) < 0) {
+    log_trace("push_string_queue fail");
+    free_string_queue(squeue);
+    return -1;
+  }
+
+  if (push_string_queue(squeue, delim_str) < 0) {
+    log_trace("push_string_queue fail");
+    free_string_queue(squeue);
+    return -1;
+  }
+
+  if (push_string_queue(squeue, sch->ip_dst) < 0) {
+    log_trace("push_string_queue fail");
+    free_string_queue(squeue);
+    return -1;
+  }
+  if ((meta_out = concat_string_queue(squeue, -1)) == NULL) {
+    free_string_queue(squeue);
+    return -1;
+  }
+
+  // HERE send the meta string
+  log_trace("%s", meta_out);
+  if (write_domain_data_s(context->sfd, meta_out, strlen(meta_out), context->domain_server_path) < 0) {
+    log_debug("write_domain_data_s fail");
+    os_free(meta_out);
+    free_string_queue(squeue);
+    return -1;
+  }
+  os_free(meta_out);
+  free_string_queue(squeue);
+  return 0;
+}
+
 void add_packet_queue(struct capture_context *context, UT_array *tp_array, struct packet_queue *queue)
 {
   struct tuple_packet *p = NULL;
@@ -81,8 +153,10 @@ void add_packet_queue(struct capture_context *context, UT_array *tp_array, struc
         free_packet_tuple(p);
       }
     } else {
-      // HERE send packet to supervisor
-      log_trace("SEND TO SUPERVISOR");
+      // Send packet meta to supervisor
+      if (send_pcap_meta(context, p) < 0) {
+        log_trace("send_pcap_meta fail");
+      }
       free_packet_tuple(p);
     }
   }
@@ -96,7 +170,6 @@ void pcap_callback(const void *ctx, const void *pcap_ctx,
 
   UT_array *tp_array = NULL;
 
-  log_trace("IFNAME=%s", pc->ifname);
   if (extract_packets(ltype, header, packet, pc->ifname,
                       context->hostname, context->cap_id, &tp_array) > 0) {
     add_packet_queue(context, tp_array, context->pqueue);
@@ -276,6 +349,7 @@ int start_default_analyser(struct capture_conf *config)
   context.domain_delim = config->domain_delim;
 
   os_strlcpy(context.domain_command, config->domain_command, MAX_SUPERVISOR_CMD_SIZE);
+  os_strlcpy(context.domain_server_path, config->domain_server_path, MAX_OS_PATH_LEN);
 
   if (strlen(config->db_sync_address)) {
     snprintf(context.grpc_srv_addr, MAX_WEB_PATH_LEN, "%s:%d", config->db_sync_address, config->db_sync_port);
@@ -322,6 +396,7 @@ int start_default_analyser(struct capture_conf *config)
   log_info("GRPC Sync CA path=%s", config->ca_path);
   log_info("Supervisor command=%s", context.domain_command);
   log_info("Supervisor delim=%d", context.domain_delim);
+  log_info("Domain path=%s", context.domain_server_path);
 
   context.pqueue = init_packet_queue();
 
@@ -395,6 +470,11 @@ int start_default_analyser(struct capture_conf *config)
     }
   }
 
+  if ((context.sfd = create_domain_client(NULL)) < 0) {
+    log_debug("create_domain_client fail");
+    goto fail;
+  }
+
   if (eloop_init()) {
 		log_debug("Failed to initialize event loop");
     goto fail;
@@ -447,7 +527,7 @@ int start_default_analyser(struct capture_conf *config)
   log_info("Capture ended.");
 
 	/* And close the session */
-
+  close_domain(context.sfd);
   free_pcap_context_list(pc_list, count);
   if (context.ca != NULL) os_free(context.ca);
   utarray_free(interfaces);
@@ -462,6 +542,7 @@ int start_default_analyser(struct capture_conf *config)
   return 0;
 
 fail:
+  close_domain(context.sfd);
   free_pcap_context_list(pc_list, count);
   if (context.ca != NULL) os_free(context.ca);
   utarray_free(interfaces);

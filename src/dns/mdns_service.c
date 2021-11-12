@@ -253,7 +253,7 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
     log_trace("ANSWER IP="IPSTR, IP2STR(ael->ip));
   }
 
-  log_trace("mDNS id=%d flags=0x%x nqueries=%d nanswers=%d nauth=%d nother=%d qname=%s",
+  log_trace("mDNS id=%d flags=0x%x nqueries=%d nanswers=%d nauth=%d nother=%d",
     header.tid, header.flags, header.nqueries, header.nanswers,
     header.nauth, header.nother);
 

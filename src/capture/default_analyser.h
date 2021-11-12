@@ -59,6 +59,8 @@ struct capture_context {
   bool promiscuous;
   bool immediate;
   uint32_t buffer_timeout;
+  int sfd;
+  char domain_server_path[MAX_OS_PATH_LEN];
 };
 
 /**

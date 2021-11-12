@@ -183,8 +183,8 @@ struct ip4_schema {
   uint64_t timestamp;                               /**< Packet timestamp */
   uint32_t ethh_hash;                               /**< Packet ethernet hash */
   char id[MAX_RANDOM_UUID_LEN];                     /**< Packet id */
-  char ip_src[OS_INET_ADDRSTRLEN];                       /**< Packet source address */
-  char ip_dst[OS_INET_ADDRSTRLEN];	                      /**< Packet dest address */
+  char ip_src[OS_INET_ADDRSTRLEN];                  /**< Packet source address */
+  char ip_dst[OS_INET_ADDRSTRLEN];	                /**< Packet dest address */
 
   uint8_t ip_hl;		                                  /**< Packet header length */
   uint8_t ip_v;		                                    /**< Packet version */
