@@ -71,9 +71,10 @@ void receive_pcap_packet(u_char *args, const struct pcap_pkthdr *header, const u
 {
   
   struct pcap_context *ctx = (struct pcap_context *) args;
+  char *ltype = (char *) pcap_datalink_val_to_name(pcap_datalink(ctx->pd));
 
   if (ctx->pcap_fn != NULL) {
-    ctx->pcap_fn(ctx->fn_ctx, (struct pcap_pkthdr *) header, (uint8_t *) packet);
+    ctx->pcap_fn(ctx->fn_ctx, (void *)ctx, ltype, (struct pcap_pkthdr *) header, (uint8_t *) packet);
   }
 }
 
@@ -141,6 +142,7 @@ int run_pcap(char *interface, bool immediate, bool promiscuous,
   ctx = os_zalloc(sizeof(struct pcap_context));
   *pctx = ctx;
 
+  os_strlcpy(ctx->ifname, interface, IFNAMSIZ);
   ctx->pcap_fn = pcap_fn;
   ctx->fn_ctx = fn_ctx;
   if ((ctx->pd = pcap_create(interface, err)) == NULL) {

@@ -39,6 +39,8 @@
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 
+//sudo ./src/capsrv -i br3 -t 10 -n 10 -e -m -y default -q /tmp/edgesec-domain-server -x SET_ALERT -z 32 -f "src net 10.0 and dst net 10.0" -ddddddddd
+
 int run_capture(struct capture_conf *config)
 {
   if (strcmp(config->analyser, PACKET_ANALYSER_DEFAULT) == 0) {

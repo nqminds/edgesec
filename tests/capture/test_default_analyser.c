@@ -174,7 +174,7 @@ static void test_pcap_callback(void **state)
   context.pqueue = init_packet_queue();
   context.cqueue = init_pcap_queue();
 
-  pcap_callback((const void *)&context, &header, NULL);
+  pcap_callback((const void *)&context, NULL, NULL, &header, NULL);
 
   free_packet_queue(context.pqueue);
   free_pcap_queue(context.cqueue);

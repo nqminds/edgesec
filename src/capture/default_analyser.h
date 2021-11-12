@@ -36,7 +36,6 @@
 
 struct capture_context {
   uint32_t process_interval;
-  struct pcap_context *pc;
   struct packet_queue *pqueue;
   struct pcap_queue *cqueue;
   struct string_queue *squeue;
@@ -49,23 +48,30 @@ struct capture_context {
   char db_name[MAX_DB_NAME_LENGTH];
   char *db_path;
   char pcap_path[MAX_OS_PATH_LEN];
-  char *interface;
   char *filter;
   char cap_id[MAX_RANDOM_UUID_LEN];
   char hostname[OS_HOST_NAME_MAX];
   ssize_t sync_store_size;
   ssize_t sync_send_size;
   char *ca;
+  char domain_command[MAX_SUPERVISOR_CMD_SIZE];
+  char domain_delim;
+  bool promiscuous;
+  bool immediate;
+  uint32_t buffer_timeout;
 };
 
 /**
  * @brief Callback for pcap packet module
  * 
  * @param ctx The capture context
+ * @param ctx The pcap context
+ * @param ltype The link type
  * @param header pcap header structure
  * @param packet Returned pcap packet
  */
-void pcap_callback(const void *ctx, struct pcap_pkthdr *header, uint8_t *packet);
+void pcap_callback(const void *ctx, const void *pcap_ctx,
+                   char *ltype, struct pcap_pkthdr *header, uint8_t *packet);
 
 /**
  * @brief Starts the default analyser engine

@@ -119,7 +119,7 @@ int capture_opt2config(char key, char *value, struct capture_conf *config)
   long conversion;
   switch (key) {
     case 'i':
-      os_strlcpy(config->capture_interface, value, IFNAMSIZ);
+      os_strlcpy(config->capture_interface, value, MAX_CAPIF_LIST_SIZE);
       break;
     case 'f':
       os_strlcpy(config->filter, value, MAX_FILTER_SIZE);
@@ -233,13 +233,13 @@ char** capture_config2opt(struct capture_conf *config)
   }
 
   // capture_interface, -i
-  if (os_strnlen_s(config->capture_interface, IFNAMSIZ)) {
+  if (os_strnlen_s(config->capture_interface, MAX_CAPIF_LIST_SIZE)) {
     opt_str[idx] = os_zalloc(3);
     strcpy(opt_str[idx], "-i");
     idx ++;
 
-    opt_str[idx] = os_malloc(IFNAMSIZ);
-    os_strlcpy(opt_str[idx], config->capture_interface, IFNAMSIZ);
+    opt_str[idx] = os_malloc(MAX_CAPIF_LIST_SIZE);
+    os_strlcpy(opt_str[idx], config->capture_interface, MAX_CAPIF_LIST_SIZE);
     idx ++;
   }
 

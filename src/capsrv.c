@@ -155,7 +155,9 @@ int main(int argc, char *argv[])
   config.process_interval = DEFAULT_CAPTURE_INTERVAL;
   config.sync_store_size = -1;
   config.sync_send_size = -1;
+
   ret = process_app_options(argc, argv, &verbosity, &filename, &config);
+
   if (ret < 0) {
     fprintf(stderr, "process_app_options fail");
     return EXIT_FAILURE;

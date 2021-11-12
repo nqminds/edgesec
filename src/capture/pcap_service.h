@@ -30,7 +30,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-typedef void (*capture_callback_fn)(const void *ctx, struct pcap_pkthdr *header, uint8_t *packet);
+typedef void (*capture_callback_fn)(const void *ctx, const void *pcap_ctx,
+                                    char *ltype, struct pcap_pkthdr *header, uint8_t *packet);
 
 /**
  * @brief Pcap context structure definition
@@ -39,6 +40,7 @@ typedef void (*capture_callback_fn)(const void *ctx, struct pcap_pkthdr *header,
 struct pcap_context {
   int pcap_fd;                  /**< The pcap selectable fd */
   pcap_t *pd;                   /**< The pcap structure */
+  char ifname[IFNAMSIZ];        /**< The pcap interface */
   capture_callback_fn pcap_fn;  /**< The pcap capture callback */
   void *fn_ctx;              /**< The context for callback function */
 };

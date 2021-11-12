@@ -55,6 +55,9 @@
 #include "mdns_decoder.h"
 #include "capture_config.h"
 
+#define LINKTYPE_LINUX_SLL  "LINUX_SLL"
+#define LINKTYPE_ETHERNET   "EN10MB"
+
 /* Linux compat */
 #ifndef IPV6_VERSION
 #define IPV6_VERSION		    0x60
@@ -98,7 +101,7 @@ bool decode_udp_packet(struct capture_packet *cpac)
   cpac->udps.len = ntohs(cpac->udph->len);
   cpac->udps.check_p = ntohs(cpac->udph->check);
 
-  // log_trace("UDP source=%d dest=%d", cpac->udps.source, cpac->udps.dest);
+  log_trace("UDP source=%d dest=%d", cpac->udps.source, cpac->udps.dest);
 
   return true;
 }
@@ -135,7 +138,7 @@ bool decode_tcp_packet(struct capture_packet *cpac)
   cpac->tcps.check_p = ntohs(cpac->tcph->check);
   cpac->tcps.urg_ptr = ntohs(cpac->tcph->urg_ptr);
 
-  // log_trace("TCP source=%d dest=%d", cpac->tcps.source, cpac->tcps.dest);
+  log_trace("TCP source=%d dest=%d", cpac->tcps.source, cpac->tcps.dest);
   return true;
 }
 
@@ -154,7 +157,7 @@ bool decode_icmp4_packet(struct capture_packet *cpac)
   cpac->icmp4s.checksum = ntohs(cpac->icmp4h->checksum);
   cpac->icmp4s.gateway = ntohl(cpac->icmp4h->un.gateway);
 
-  // log_trace("ICMP4 type=%d code=%d", cpac->icmp4s.type, cpac->icmp4s.code);
+  log_trace("ICMP4 type=%d code=%d", cpac->icmp4s.type, cpac->icmp4s.code);
 
   return true;
 }
@@ -207,7 +210,7 @@ bool decode_ip4_packet(struct capture_packet *cpac)
   inaddr4_2_ip(&((cpac->ip4h)->ip_src), cpac->ip4s.ip_src);
   inaddr4_2_ip(&((cpac->ip4h)->ip_dst), cpac->ip4s.ip_dst);
 
-  // log_trace("IP4 ip_src=%s ip_dst=%s ip_p=%d ip_v=%d", cpac->ip4s.ip_src, cpac->ip4s.ip_dst, cpac->ip4s.ip_p, cpac->ip4s.ip_v);
+  log_trace("IP4 ip_src=%s ip_dst=%s ip_p=%d ip_v=%d", cpac->ip4s.ip_src, cpac->ip4s.ip_dst, cpac->ip4s.ip_p, cpac->ip4s.ip_v);
 
   // Process futher packets only if IP is version 4
   return (cpac->ip4s.ip_v == 4);
@@ -243,7 +246,7 @@ bool decode_ip6_packet(struct capture_packet *cpac)
   inaddr6_2_ip(&(cpac->ip6h->ip6_src), cpac->ip6s.ip6_src);
   inaddr6_2_ip(&(cpac->ip6h->ip6_dst), cpac->ip6s.ip6_dst);
 
-  // log_trace("IP6 ip6_src=%s ip6_dst=%s", cpac->ip6s.ip6_src, cpac->ip6s.ip6_dst);
+  log_trace("IP6 ip6_src=%s ip6_dst=%s", cpac->ip6s.ip6_src, cpac->ip6s.ip6_dst);
   return true;
 }
 
@@ -267,7 +270,7 @@ bool decode_arp_packet(struct capture_packet *cpac)
   snprintf(cpac->arps.arp_tha, MACSTR_LEN, MACSTR, MAC2STR(cpac->arph->arp_tha));
   snprintf(cpac->arps.arp_tpa, OS_INET_ADDRSTRLEN, IPSTR, IP2STR(cpac->arph->arp_tpa));
 
-  // log_trace("ARP arp_sha=" MACSTR " arp_spa=" IPSTR " arp_tha=" MACSTR, MAC2STR((cpac->arph)->arp_sha), IP2STR((cpac->arph)->arp_spa), MAC2STR((cpac->arph)->arp_tha));
+  log_trace("ARP arp_sha=" MACSTR " arp_spa=" IPSTR " arp_tha=" MACSTR, MAC2STR((cpac->arph)->arp_sha), IP2STR((cpac->arph)->arp_spa), MAC2STR((cpac->arph)->arp_tha));
 
   return true;
 }
@@ -291,7 +294,7 @@ bool decode_eth_packet(const struct pcap_pkthdr *header, const uint8_t *packet, 
     snprintf(cpac->eths.ether_shost, MACSTR_LEN, MACSTR, MAC2STR(cpac->ethh->ether_shost));
     cpac->eths.ether_type = ntohs(cpac->ethh->ether_type);
 
-    // log_trace("Ethernet type=0x%x ether_dhost=%s ether_shost=%s ethh=0x%x", cpac->eths.ether_type, cpac->eths.ether_dhost, cpac->eths.ether_shost, cpac->ethh_hash);
+    log_trace("Ethernet type=0x%x ether_dhost=%s ether_shost=%s ethh=0x%x", cpac->eths.ether_type, cpac->eths.ether_dhost, cpac->eths.ether_shost, cpac->ethh_hash);
 
     return true;
   }
@@ -352,9 +355,11 @@ int decode_packet(const struct pcap_pkthdr *header, const uint8_t *packet, struc
   return count;
 }
 
-int extract_packets(const struct pcap_pkthdr *header, const uint8_t *packet,
+int extract_packets(char *ltype, const struct pcap_pkthdr *header, const uint8_t *packet,
                     char *interface, char *hostname, char *id, UT_array **tp_array)
 {
+  (void) ltype;
+
   struct capture_packet cpac;
   struct tuple_packet tp;
   int count;

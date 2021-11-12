@@ -436,8 +436,12 @@ int send_alert_meta(struct nDPI_reader_thread *reader_thread, struct alert_meta 
   return 0;
 }
 
-static void ndpi_process_packet(const void *ctx, struct pcap_pkthdr *header, uint8_t *packet)
+static void ndpi_process_packet(const void *ctx, const void *pcap_ctx,
+                                char *ltype, struct pcap_pkthdr *header, uint8_t *packet)
 {
+  (void) pcap_ctx;
+  (void) ltype;
+
   struct nDPI_thread_arg *targs = (struct nDPI_thread_arg *)ctx;
   struct nDPI_context *context = targs->context;
   struct nDPI_reader_thread *reader_thread = (struct nDPI_reader_thread *)

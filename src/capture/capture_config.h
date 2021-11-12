@@ -88,6 +88,7 @@ extern const char* const capture_description_string;
 
 #define MAX_QUESTION_LEN 255
 
+#define MAX_CAPIF_LIST_SIZE 4095
 typedef enum packet_types {
   PACKET_NONE = 0,
   PACKET_ETHERNET,
@@ -112,7 +113,7 @@ struct capture_conf {
   char domain_server_path[MAX_OS_PATH_LEN];                   /**< Specifies the path to the UNIX domain socket server */
   char domain_command[MAX_SUPERVISOR_CMD_SIZE];                                    /**< Specifies the UNIX domain command */
   char domain_delim;                                          /**< Specifies the UNIX domain command delimiter */
-  char capture_interface[IFNAMSIZ];                           /**< The capture interface name (any - to capture on all interfaces) */
+  char capture_interface[MAX_CAPIF_LIST_SIZE];                /**< The capture interface name(s) (if multiple delimited by space) */
   bool promiscuous;                                           /**< Specifies whether the interface is to be put into promiscuous mode. If promiscuous param is non-zero, promiscuous mode will be set, otherwise it will not be set */
   bool immediate;                                             /**< Sets whether immediate mode should be set on a capture handle when the handle is activated. If immediate param is non-zero, immediate mode will be set, otherwise it will not be set. */
   uint32_t buffer_timeout;                                    /**< Specifies the packet buffer timeout, as a non-negative value, in milliseconds. (See pcap(3PCAP) for an explanation of the packet buffer timeout.) */
