@@ -278,19 +278,30 @@ int local_ip_2_buf(struct supervisor_context *context, char *ip, in_addr_t *ip_a
 int set_traffic_cmd(struct supervisor_context *context, char *src_ip_addr, char *dst_ip_addr)
 {
   // in_addr_t sip, dip;
+  int ret;
   uint8_t src_mac_addr[ETH_ALEN], dst_mac_addr[ETH_ALEN];
 
   log_trace("SET_TRAFFIC for src_ip=%s and dst_ip=%s", src_ip_addr, dst_ip_addr);
 
-  if (get_ip_mapper(&context->mac_mapper, src_ip_addr, src_mac_addr) <= 0) {
+  ret = get_ip_mapper(&context->mac_mapper, src_ip_addr, src_mac_addr);
+  if (ret < 0) {
     log_trace("get_ip_mapper fail");
+    return -1;
+  } else if (!ret) {
+    log_trace("src MAC not found");
     return -1;
   }
 
-  if (get_ip_mapper(&context->mac_mapper, dst_ip_addr, dst_mac_addr) <= 0) {
+  ret = get_ip_mapper(&context->mac_mapper, dst_ip_addr, dst_mac_addr);
+
+  if (ret < 0) {
     log_trace("get_ip_mapper fail");
     return -1;
+  } else if (!ret) {
+    log_trace("dst MAC not found");
+    return -1;
   }
+
   // if (local_ip_2_buf(context, src_ip_addr, &sip) < 0) {
   //   log_trace("local_ip_2_buf fail");
   //   return -1;
