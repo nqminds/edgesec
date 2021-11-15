@@ -142,7 +142,7 @@ bool create_if_mapper(UT_array *config_ifinfo_array, hmap_if_conn **hmap)
   if (config_ifinfo_array != NULL) {
     while((p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) != NULL) {
       log_trace("Adding ip=%s subnet=%s ifname=%s to mapper", p->ip_addr, p->ifname, p->subnet_mask);
-      if(!ip_2_nbo(p->ip_addr, p->subnet_mask, &addr)) {
+      if(ip_2_nbo(p->ip_addr, p->subnet_mask, &addr) < 0) {
         log_trace("ip_2_nbo fail");
         free_if_mapper(hmap);
         return false;

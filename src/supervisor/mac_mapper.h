@@ -85,7 +85,7 @@ typedef struct hashmap_mac_conn {           /**< hashmap key */
  * @param hmap MAC mapper object
  * @param mac_addr MAC address in byte format
  * @param info Output MAC connection info structure
- * @return int @c 1 if MAc address found, @c -1 error and @c 0 if MAC address not found
+ * @return int @c 1 if MAC address found, @c -1 error and @c 0 if MAC address not found
  */
 int get_mac_mapper(hmap_mac_conn **hmap, uint8_t mac_addr[ETH_ALEN], struct mac_conn_info *info);
 
@@ -124,4 +124,13 @@ int get_mac_list(hmap_mac_conn **hmap, struct mac_conn **list);
 void init_default_mac_info(struct mac_conn_info *info, int default_open_vlanid,
                             bool allow_all_nat);
 
+/**
+ * @brief Get the MAC address for a given IP address
+ * 
+ * @param hmap MAC mapper object
+ * @param ip The AP address
+ * @param mac_addr Output MAC address
+ * @return int @c 1 if MAC address found, @c -1 error and @c 0 if MAC address not found
+ */
+int get_ip_mapper(hmap_mac_conn **hmap, char *ip, uint8_t *mac_addr);
 #endif

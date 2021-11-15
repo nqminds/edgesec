@@ -991,28 +991,28 @@ void free_vlan_mapper(hmap_vlan_conn **hmap)
   }
 }
 
-bool ip_2_nbo(char *ip, char *subnet_mask, in_addr_t *addr)
+int ip_2_nbo(char *ip, char *subnet_mask, in_addr_t *addr)
 {
-	in_addr_t subnet;
+  in_addr_t subnet;
 
-	if (addr == NULL) {
-		log_trace("addr param is NULL");
-		return false;
-	}
+  if (addr == NULL) {
+	log_trace("addr param is NULL");
+	return -1;
+  }
 
   if ((subnet = inet_network(subnet_mask)) == INADDR_NONE) {
-		log_trace("Invalid subnet mask address");
-		return -1;
-	}
+	log_trace("Invalid subnet mask address");
+	return -1;
+  }
 
-	if ((*addr = inet_network(ip)) == INADDR_NONE) {
-		log_trace("Invalid ip address");
-		return false;
-	}
+  if ((*addr = inet_network(ip)) == INADDR_NONE) {
+	log_trace("Invalid ip address");
+	return -1;
+  }
 
-	*addr = *addr & subnet;
+  *addr = *addr & subnet;
 
-	return true;
+  return 0;
 }
 
 const char *inaddr4_2_ip(struct in_addr *addr, char *ip)
@@ -1053,12 +1053,12 @@ int find_subnet_address(UT_array *config_ifinfo_array, char *ip, in_addr_t *subn
   }
 
   while((p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) != NULL) {
-	if (!ip_2_nbo(p->ip_addr, p->subnet_mask, &addr_config)) {
+	if (ip_2_nbo(p->ip_addr, p->subnet_mask, &addr_config) < 0) {
 	  log_trace("ip_2_nbo fail");
 	  return -1;
 	}
 
-	if (!ip_2_nbo(ip, p->subnet_mask, subnet_addr)) {
+	if (ip_2_nbo(ip, p->subnet_mask, subnet_addr) < 0) {
 	  log_trace("ip_2_nbo fail");
 	  return -1;
 	}

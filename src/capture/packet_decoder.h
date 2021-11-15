@@ -170,6 +170,6 @@ struct capture_packet {
  * @return int Total count of packet tuples
  */
 int extract_packets(char *ltype, const struct pcap_pkthdr *header, const uint8_t *packet,
-                    char *interface, char *hostname, char *id, UT_array **tp_array);
+                    char *interface, char *hostname, char *id, UT_array *tp_array);
 
 #endif

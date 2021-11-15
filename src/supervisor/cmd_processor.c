@@ -512,6 +512,39 @@ ssize_t process_set_fingerprint_cmd(int sock, struct client_address *client_addr
   return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
+ssize_t process_set_traffic_cmd(int sock, struct client_address *client_addr,
+  struct supervisor_context *context, UT_array *cmd_arr)
+{
+  char **ptr = (char**) utarray_next(cmd_arr, NULL);
+  char ip[OS_INET_ADDRSTRLEN];
+
+  // src IP address
+  ptr = (char**) utarray_next(cmd_arr, ptr);
+  if (ptr != NULL && *ptr != NULL) {
+    if (!validate_ipv4_string(*ptr)) {
+      log_trace("validate_ipv4_string fail");
+      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);    
+    }
+
+    os_strlcpy(ip, *ptr, OS_INET_ADDRSTRLEN);
+
+    // dst IP address
+    ptr = (char**) utarray_next(cmd_arr, ptr);
+    if (ptr != NULL && *ptr != NULL) {
+      if (!validate_ipv4_string(*ptr)) {
+        log_trace("validate_ipv4_string fail");
+        return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);    
+      }
+
+      if (set_traffic_cmd(context, ip, *ptr) >= 0) {
+        return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
+      }
+    }
+  }
+
+  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+}
+
 ssize_t process_set_alert_cmd(int sock, struct client_address *client_addr,
   struct supervisor_context *context, UT_array *cmd_arr)
 {
@@ -1049,6 +1082,8 @@ process_cmd_fn get_command_function(char *cmd)
     return process_get_bridges_cmd;
   } else if (!strcmp(cmd, CMD_SET_FINGERPRINT)) {
     return process_set_fingerprint_cmd;
+  } else if (!strcmp(cmd, CMD_SET_TRAFFIC)) {
+    return process_set_traffic_cmd;
   } else if (!strcmp(cmd, CMD_SET_ALERT)) {
     return process_set_alert_cmd;
   } else if (!strcmp(cmd, CMD_QUERY_FINGERPRINT)) {

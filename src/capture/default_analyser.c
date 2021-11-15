@@ -58,6 +58,8 @@ uint32_t run_register_db(char *ca, char *address, char *name);
 uint32_t run_sync_db_statement(char *ca, char *address, char *name, bool default_db, char *statement);
 #endif
 
+static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL, NULL};
+
 // static const UT_icd pcap_context_icd = {sizeof(struct pcap_context*), NULL, NULL, NULL};
 
 void construct_header_db_name(char *name, char *db_name)
@@ -145,6 +147,7 @@ int send_pcap_meta(struct capture_context *context, struct tuple_packet *tp)
 void add_packet_queue(struct capture_context *context, UT_array *tp_array, struct packet_queue *queue)
 {
   struct tuple_packet *p = NULL;
+
   while((p = (struct tuple_packet *) utarray_next(tp_array, p)) != NULL) {
     if (context->db_write) {
       if (push_packet_queue(queue, *p) == NULL) {
@@ -170,8 +173,9 @@ void pcap_callback(const void *ctx, const void *pcap_ctx,
 
   UT_array *tp_array = NULL;
 
+  utarray_new(tp_array, &tp_list_icd);
   if (extract_packets(ltype, header, packet, pc->ifname,
-                      context->hostname, context->cap_id, &tp_array) > 0) {
+                      context->hostname, context->cap_id, tp_array) > 0) {
     add_packet_queue(context, tp_array, context->pqueue);
   }
 

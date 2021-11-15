@@ -47,12 +47,12 @@ static void test_ip_2_nbo(void **state)
   in_addr_t addr;
   in_addr_t subnet = 0x0A000100;
 
-  bool ret = ip_2_nbo("10.0.1.23", "255.255.255.0", &addr);
-  assert_true(ret);
+  int ret = ip_2_nbo("10.0.1.23", "255.255.255.0", &addr);
+  assert_int_equal(ret, 0);
   assert_memory_equal(&addr, &subnet, sizeof(uint32_t));
 
   ret = ip_2_nbo("x.0.1.23", "255.255.255.0", &addr);
-  assert_false(ret);
+  assert_int_equal(ret, -1);
 }
 
 static void test_get_if_mapper(void **state)

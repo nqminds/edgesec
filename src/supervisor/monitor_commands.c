@@ -252,6 +252,58 @@ ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr
   return out_size;
 }
 
+int local_ip_2_buf(struct supervisor_context *context, char *ip, in_addr_t *ip_addr)
+{
+  struct in_addr subnet_addr;
+  char subnet_addr_str[OS_INET_ADDRSTRLEN];
+
+  if (find_subnet_address(context->config_ifinfo_array, ip, &subnet_addr.s_addr) < 0) {
+    log_trace("find_subnet_address fail");
+    return -1;
+  }
+
+  if (inaddr4_2_ip(&subnet_addr, subnet_addr_str) == NULL) {
+    log_trace("inaddr4_2_ip fail");
+    return -1;
+  };
+
+  if (ip_2_nbo(ip, subnet_addr_str, ip_addr) < 0) {
+    log_trace("ip_2_nbo fail");
+    return -1;
+  }
+
+  return 0;
+}
+
+int set_traffic_cmd(struct supervisor_context *context, char *src_ip_addr, char *dst_ip_addr)
+{
+  // in_addr_t sip, dip;
+  uint8_t src_mac_addr[ETH_ALEN], dst_mac_addr[ETH_ALEN];
+
+  log_trace("SET_TRAFFIC for src_ip=%s and dst_ip=%s", src_ip_addr, dst_ip_addr);
+
+  if (get_ip_mapper(&context->mac_mapper, src_ip_addr, src_mac_addr) <= 0) {
+    log_trace("get_ip_mapper fail");
+    return -1;
+  }
+
+  if (get_ip_mapper(&context->mac_mapper, dst_ip_addr, dst_mac_addr) <= 0) {
+    log_trace("get_ip_mapper fail");
+    return -1;
+  }
+  // if (local_ip_2_buf(context, src_ip_addr, &sip) < 0) {
+  //   log_trace("local_ip_2_buf fail");
+  //   return -1;
+  // }
+
+  // if (local_ip_2_buf(context, dst_ip_addr, &dip) < 0) {
+  //   log_trace("local_ip_2_buf fail");
+  //   return -1;
+  // }
+
+  return 0;
+}
+
 int set_alert_cmd(struct supervisor_context *context, struct alert_meta *meta,
                         uint8_t *info, size_t info_size)
 {

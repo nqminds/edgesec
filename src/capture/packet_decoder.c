@@ -71,8 +71,6 @@
 
 #define MAX_PACKET_TYPES    10
 
-static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL, NULL};
-
 bool decode_dhcp_packet(struct capture_packet *cpac)
 {
   // log_trace("DHCP");
@@ -356,7 +354,7 @@ int decode_packet(const struct pcap_pkthdr *header, const uint8_t *packet, struc
 }
 
 int extract_packets(char *ltype, const struct pcap_pkthdr *header, const uint8_t *packet,
-                    char *interface, char *hostname, char *id, UT_array **tp_array)
+                    char *interface, char *hostname, char *id, UT_array *tp_array)
 {
   (void) ltype;
 
@@ -364,7 +362,6 @@ int extract_packets(char *ltype, const struct pcap_pkthdr *header, const uint8_t
   struct tuple_packet tp;
   int count;
 
-  utarray_new(*tp_array, &tp_list_icd);
   memset(&cpac, 0, sizeof(struct capture_packet));
   os_memset(&tp, 0, sizeof(struct tuple_packet));
 
@@ -384,7 +381,7 @@ int extract_packets(char *ltype, const struct pcap_pkthdr *header, const uint8_t
       }
       os_memcpy(tp.packet, &cpac.eths, sizeof(struct eth_schema));
       tp.type = PACKET_ETHERNET;
-      utarray_push_back(*tp_array, &tp);
+      utarray_push_back(tp_array, &tp);
     }
     if (cpac.arph != NULL) {
       if ((tp.packet = os_malloc(sizeof(struct arp_schema))) == NULL) {
@@ -393,7 +390,7 @@ int extract_packets(char *ltype, const struct pcap_pkthdr *header, const uint8_t
       }
       os_memcpy(tp.packet, &cpac.arps, sizeof(struct arp_schema));
       tp.type = PACKET_ARP;
-      utarray_push_back(*tp_array, &tp);
+      utarray_push_back(tp_array, &tp);
     }
     if (cpac.ip4h != NULL) {
       if ((tp.packet = os_malloc(sizeof(struct ip4_schema))) == NULL) {
@@ -402,7 +399,7 @@ int extract_packets(char *ltype, const struct pcap_pkthdr *header, const uint8_t
       }
       os_memcpy(tp.packet, &cpac.ip4s, sizeof(struct ip4_schema));
       tp.type = PACKET_IP4;
-      utarray_push_back(*tp_array, &tp);
+      utarray_push_back(tp_array, &tp);
     };
     if (cpac.ip6h != NULL) {
       if ((tp.packet = os_malloc(sizeof(struct ip6_schema))) == NULL) {
@@ -411,7 +408,7 @@ int extract_packets(char *ltype, const struct pcap_pkthdr *header, const uint8_t
       }
       os_memcpy(tp.packet, &cpac.ip6s, sizeof(struct ip6_schema));
       tp.type = PACKET_IP6;
-      utarray_push_back(*tp_array, &tp);
+      utarray_push_back(tp_array, &tp);
     };
     if (cpac.tcph != NULL) {
       if ((tp.packet = os_malloc(sizeof(struct tcp_schema))) == NULL) {
@@ -420,7 +417,7 @@ int extract_packets(char *ltype, const struct pcap_pkthdr *header, const uint8_t
       }
       os_memcpy(tp.packet, &cpac.tcps, sizeof(struct tcp_schema));
       tp.type = PACKET_TCP;
-      utarray_push_back(*tp_array, &tp);
+      utarray_push_back(tp_array, &tp);
     };
     if (cpac.udph != NULL) {
       if ((tp.packet = os_malloc(sizeof(struct udp_schema))) == NULL) {
@@ -429,7 +426,7 @@ int extract_packets(char *ltype, const struct pcap_pkthdr *header, const uint8_t
       }
       os_memcpy(tp.packet, &cpac.udps, sizeof(struct udp_schema));
       tp.type = PACKET_UDP;
-      utarray_push_back(*tp_array, &tp);
+      utarray_push_back(tp_array, &tp);
     };
     if (cpac.icmp4h != NULL) {
       if ((tp.packet = os_malloc(sizeof(struct icmp4_schema))) == NULL) {
@@ -438,7 +435,7 @@ int extract_packets(char *ltype, const struct pcap_pkthdr *header, const uint8_t
       }
       os_memcpy(tp.packet, &cpac.icmp4s, sizeof(struct icmp4_schema));
       tp.type = PACKET_ICMP4;
-      utarray_push_back(*tp_array, &tp);
+      utarray_push_back(tp_array, &tp);
     };
     if (cpac.icmp6h != NULL) {
       if ((tp.packet = os_malloc(sizeof(struct icmp6_schema))) == NULL) {
@@ -447,7 +444,7 @@ int extract_packets(char *ltype, const struct pcap_pkthdr *header, const uint8_t
       }
       os_memcpy(tp.packet, &cpac.icmp6s, sizeof(struct icmp6_schema));
       tp.type = PACKET_ICMP6;
-      utarray_push_back(*tp_array, &tp);
+      utarray_push_back(tp_array, &tp);
     };
     if (cpac.dnsh != NULL) {
       if ((tp.packet = os_malloc(sizeof(struct dns_schema))) == NULL) {
@@ -456,7 +453,7 @@ int extract_packets(char *ltype, const struct pcap_pkthdr *header, const uint8_t
       }
       os_memcpy(tp.packet, &cpac.dnss, sizeof(struct dns_schema));
       tp.type = PACKET_DNS;
-      utarray_push_back(*tp_array, &tp);
+      utarray_push_back(tp_array, &tp);
     };
     if (cpac.mdnsh != NULL) {
       if ((tp.packet = os_malloc(sizeof(struct mdns_schema))) == NULL) {
@@ -465,7 +462,7 @@ int extract_packets(char *ltype, const struct pcap_pkthdr *header, const uint8_t
       }
       os_memcpy(tp.packet, &cpac.mdnss, sizeof(struct mdns_schema));
       tp.type = PACKET_MDNS;
-      utarray_push_back(*tp_array, &tp);
+      utarray_push_back(tp_array, &tp);
     };
     if (cpac.dhcph != NULL) {
       if ((tp.packet = os_malloc(sizeof(struct dhcp_schema))) == NULL) {
@@ -474,9 +471,9 @@ int extract_packets(char *ltype, const struct pcap_pkthdr *header, const uint8_t
       }
       os_memcpy(tp.packet, &cpac.dhcps, sizeof(struct dhcp_schema));
       tp.type = PACKET_DHCP;
-      utarray_push_back(*tp_array, &tp);
+      utarray_push_back(tp_array, &tp);
     };
   }
 
-  return utarray_len(*tp_array);
+  return utarray_len(tp_array);
 }

@@ -120,9 +120,9 @@ typedef struct hashmap_vlan_conn {
  * @param ip The IP address string
  * @param subnetMask The IP address subnet mask
  * @param addr The output @c struct in_addr_t value
- * @return true on success, false otherwise
+ * @return 0 on success, -1 on failure
  */
-bool ip_2_nbo(char *ip, char *subnetMask, in_addr_t *addr);
+int ip_2_nbo(char *ip, char *subnetMask, in_addr_t *addr);
 
 /**
  * @brief Convert a 32 bit number IP to an IP string (string needs to be freed)

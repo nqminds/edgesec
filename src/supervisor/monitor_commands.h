@@ -32,6 +32,16 @@
 #include "../capture/capture_config.h"
 
 /**
+ * @brief SET_TRAFFIC command
+ * 
+ * @param context The supervisor structure instance
+ * @param src_ip_addr The source IP address
+ * @param dst_ip_addr The destination IP address
+ * @return int 0 on success, -1 on failure
+ */
+int set_traffic_cmd(struct supervisor_context *context, char *src_ip_addr, char *dst_ip_addr);
+
+/**
  * @brief SET_ALERT command
  * 
  * @param context The supervisor structure instance

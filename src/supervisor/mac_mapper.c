@@ -141,3 +141,32 @@ void init_default_mac_info(struct mac_conn_info *info, int default_open_vlanid,
   os_memset(info->label, 0, MAX_DEVICE_LABEL_SIZE);
   generate_radom_uuid(info->id);
 }
+
+int get_ip_mapper(hmap_mac_conn **hmap, char *ip, uint8_t *mac_addr)
+{
+  hmap_mac_conn *current, *tmp;
+
+  if (hmap == NULL) {
+		log_trace("hmap param is NULL");
+		return -1;
+  }
+
+  if (ip == NULL) {
+    log_trace("ip param is NULL");
+    return -1;
+  }
+
+  if (mac_addr == NULL) {
+		log_trace("info param is NULL");
+		return -1;
+  }
+
+  HASH_ITER(hh, *hmap, current, tmp) {
+    if (strcmp(ip, current->value.ip_addr) == 0) {
+      os_memcpy(mac_addr, current->key, ETH_ALEN);
+      return 1;
+    }
+  }
+
+  return 0;
+}
