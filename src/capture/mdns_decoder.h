@@ -41,7 +41,7 @@ struct mdns_answer_entry {
   uint32_t ttl;
   uint16_t rrtype;
   char rrname[MAX_WEB_PATH_LEN];
-  uint8_t ip[IP_BUF_LEN];
+  uint8_t ip[IP_ALEN];
 };
 
 /**

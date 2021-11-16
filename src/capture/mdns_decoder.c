@@ -198,9 +198,9 @@ int decode_mdns_answers(uint8_t *payload, size_t len, size_t *first, uint16_t na
       entry.rrtype = ntohs(meta->rrtype);
       strcpy(entry.rrname, rrname);
       // "A" type resource record
-      os_memset(entry.ip, 0, IP_BUF_LEN);
-      if (ntohs(meta->rrtype) == 1 && ntohs(meta->rdlength) == IP_BUF_LEN) {
-        os_memcpy(entry.ip, &payload[i], IP_BUF_LEN);
+      os_memset(entry.ip, 0, IP_ALEN);
+      if (ntohs(meta->rrtype) == 1 && ntohs(meta->rdlength) == IP_ALEN) {
+        os_memcpy(entry.ip, &payload[i], IP_ALEN);
       }
       utarray_push_back(answers, &entry);
       os_free(rrname);
