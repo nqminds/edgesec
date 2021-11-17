@@ -247,6 +247,10 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
   }
 
   while((ael = (struct mdns_answer_entry *) utarray_next(answers, ael)) != NULL) {
+    if (put_mdns_answer_mapper(&(context->mdns_ctx)->imap, ael->ip, ael) < 0) {
+      log_trace("put_mdns_answer_mapper fail");
+    }
+
     log_trace("ANSWER TTL=%d", ael->ttl);
     log_trace("ANSWER RRNAME=%s", ael->rrname);
     log_trace("ANSWER RRTYPE=%d", ael->rrtype);
@@ -423,6 +427,7 @@ int close_mdns(struct mdns_context *context)
       close_reflector_if(context->rif6);
       free_reflection_list(context->rif6);
     }
+    free_mdns_mapper(&context->imap);
     os_free(context);
   }
 

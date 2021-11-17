@@ -30,7 +30,7 @@
 #include "packet_decoder.h"
 
 #include "../utils/os.h"
-#include "utils/utarray.h"
+#include "../utils/utarray.h"
 
 struct mdns_query_entry {
   uint16_t qtype;

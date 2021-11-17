@@ -86,6 +86,7 @@
         "scoped_allocator": "cpp",
         "stdexcept": "cpp",
         "streambuf": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "mdns_decoder.h": "c"
     }
 }

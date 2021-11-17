@@ -27,6 +27,18 @@
 #define MDNS_SERVICE_H
 
 #include "../supervisor/supervisor_config.h"
+#include "reflection_list.h"
+#include "mdns_mapper.h"
+
+/**
+ * @brief The mDNS context.
+ * 
+ */
+struct mdns_context {
+  struct reflection_list *rif4;                 /**< IP4 reflection list. */
+  struct reflection_list *rif6;                 /**< IP6 reflection list. */
+  hmap_mdns_conn *imap;                     /**< mDNS mapper. */
+};
 
 /**
  * @brief Runs the mDNS service

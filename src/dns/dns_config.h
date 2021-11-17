@@ -27,8 +27,6 @@
 
 #include "../utils/utarray.h"
 
-#include "reflection_list.h"
-
 /**
  * @brief The dns configuration structures.
  * 
@@ -39,12 +37,4 @@ struct dns_conf {
   bool reflect_mdns_ip6;                       /**< Reflect mDNS IP6 addresses. */
 };
 
-/**
- * @brief The mDNS context.
- * 
- */
-struct mdns_context {
-  struct reflection_list *rif4;                 /**< IP4 reflection list. */
-  struct reflection_list *rif6;                 /**< IP6 reflection list. */
-};
 #endif

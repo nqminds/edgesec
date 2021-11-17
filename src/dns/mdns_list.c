@@ -113,7 +113,7 @@ int push_mdns_list(struct mdns_list* mlist, struct mdns_list_info *info)
   return 0;
 }
 
-int has_mdns_list_request(struct mdns_list* mlist, enum MDNS_REQUEST_TYPE request)
+int check_mdns_list_request(struct mdns_list* mlist, enum MDNS_REQUEST_TYPE request)
 {
   struct mdns_list *el;
 
