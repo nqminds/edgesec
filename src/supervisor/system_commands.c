@@ -25,6 +25,7 @@
 #include <sys/un.h>
 #include <libgen.h>
 
+#include "system_commands.h"
 #include "mac_mapper.h"
 #include "supervisor.h"
 #include "sqlite_fingerprint_writer.h"
@@ -48,7 +49,7 @@
 #define PING_REPLY  "PONG"
 
 int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
-  char *ip_addr, bool add)
+  char *ip_addr, enum DHCP_IP_TYPE ip_type)
 {
   UT_array *mac_list_arr;
   uint8_t *p = NULL;
@@ -56,6 +57,7 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
   struct mac_conn conn;
   struct mac_conn_info right_info, info;
   int ret;
+  bool add = (ip_type == DHCP_IP_NEW || ip_type == DHCP_IP_OLD);
 
   init_default_mac_info(&info, context->default_open_vlanid, context->allow_all_nat);
 
@@ -73,11 +75,24 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
   os_memcpy(info.ifname, ifname, IFNAMSIZ);
   os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
   os_memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
-          
-  if (add) os_strlcpy(conn.info.ip_addr, ip_addr, IP_LEN);
-  else os_memset(conn.info.ip_addr, 0x0, IP_LEN);
 
-  log_trace("SET_IP type=%d mac=" MACSTR " ip=%s if=%s", add, MAC2STR(mac_addr), ip_addr, ifname);
+  switch(ip_type) {
+    case DHCP_IP_NEW:
+      os_strlcpy(conn.info.ip_addr, ip_addr, IP_LEN);
+      break;
+    case DHCP_IP_OLD:
+      os_strlcpy(conn.info.ip_old_addr, ip_addr, IP_LEN);
+      break;
+    case DHCP_IP_DEL:
+      os_memset(conn.info.ip_addr, 0x0, IP_LEN);
+      os_memset(conn.info.ip_old_addr, 0, IP_LEN);
+      break;
+    default:
+      log_trace("Wrong IP type");
+      return -1;
+  }
+
+  log_trace("SET_IP type=%d mac=" MACSTR " ip=%s if=%s", ip_type, MAC2STR(mac_addr), ip_addr, ifname);
   if (!save_mac_mapper(context, conn)) {
     log_trace("save_mac_mapper fail");
     return -1;

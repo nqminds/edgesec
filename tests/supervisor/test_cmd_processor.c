@@ -13,6 +13,7 @@
 #include <cmocka.h>
 
 #include "supervisor/cmd_processor.h"
+#include "supervisor/system_commands.h"
 
 #include "utils/hashmap.h"
 #include "utils/utarray.h"
@@ -66,12 +67,12 @@ int __wrap_assign_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr,
   return 0;
 }
 
-int __wrap_set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr, char *ip_addr, bool add)
+int __wrap_set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr, char *ip_addr, enum DHCP_IP_TYPE ip_type)
 {
 
   check_expected(mac_addr);
   check_expected(ip_addr);
-  check_expected(add);
+  check_expected(ip_type);
   return 0;
 }
 
@@ -466,7 +467,7 @@ static void test_process_set_ip_cmd(void **state)
   assert_int_not_equal(split_string_array("SET_IP add 11:22:33:44:55:66 10.0.1.23", CMD_DELIMITER, cmd_arr), -1);
   expect_memory(__wrap_set_ip_cmd, mac_addr, addr, ETH_ALEN);
   expect_string(__wrap_set_ip_cmd, ip_addr, ip);
-  expect_value(__wrap_set_ip_cmd, add, 1);
+  expect_value(__wrap_set_ip_cmd, ip_type, DHCP_IP_NEW);
   assert_int_equal(process_set_ip_cmd(0, &claddr, NULL, cmd_arr), strlen(OK_REPLY));
   utarray_free(cmd_arr);
 
@@ -474,15 +475,15 @@ static void test_process_set_ip_cmd(void **state)
   assert_int_not_equal(split_string_array("SET_IP old 11:22:33:44:55:66 10.0.1.23", CMD_DELIMITER, cmd_arr), -1);
   expect_memory(__wrap_set_ip_cmd, mac_addr, addr, ETH_ALEN);
   expect_string(__wrap_set_ip_cmd, ip_addr, ip);
-  expect_value(__wrap_set_ip_cmd, add, 1);  
+  expect_value(__wrap_set_ip_cmd, ip_type, DHCP_IP_OLD);  
   assert_int_equal(process_set_ip_cmd(0, &claddr, NULL, cmd_arr), strlen(OK_REPLY));
   utarray_free(cmd_arr);
 
   utarray_new(cmd_arr, &ut_str_icd);
-  assert_int_not_equal(split_string_array("SET_IP ol 11:22:33:44:55:66 10.0.1.23", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_not_equal(split_string_array("SET_IP del 11:22:33:44:55:66 10.0.1.23", CMD_DELIMITER, cmd_arr), -1);
   expect_memory(__wrap_set_ip_cmd, mac_addr, addr, ETH_ALEN);
   expect_string(__wrap_set_ip_cmd, ip_addr, ip);
-  expect_value(__wrap_set_ip_cmd, add, 0);
+  expect_value(__wrap_set_ip_cmd, ip_type, DHCP_IP_DEL);
   assert_int_equal(process_set_ip_cmd(0, &claddr, NULL, cmd_arr), strlen(OK_REPLY));
   utarray_free(cmd_arr);
 

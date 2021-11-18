@@ -31,6 +31,7 @@
 #include <stdbool.h>
 
 #include "../utils/domain.h"
+#include "supervisor_config.h"
 
 enum DHCP_IP_TYPE {
   DHCP_IP_NONE = 0,
@@ -45,11 +46,11 @@ enum DHCP_IP_TYPE {
  * @param context The supervisor structure instance
  * @param mac_addr The MAC address
  * @param ip_addr The IP address
- * @param add if add = true then add IP to MAC entry, otherwise remove
+ * @param ip_type The DHCP_IP_TYPE
  * @return int 0 on success, -1 on failure
  */
 int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
-  char *ip_addr, bool add);
+  char *ip_addr, enum DHCP_IP_TYPE ip_type);
 
 /**
  * @brief SUPERVISOR_PING command

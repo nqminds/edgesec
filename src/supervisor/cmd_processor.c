@@ -302,15 +302,24 @@ ssize_t process_set_ip_cmd(int sock, struct client_address *client_addr,
 {
   char **ptr = (char**) utarray_next(cmd_arr, NULL);
   uint8_t addr[ETH_ALEN];
-  bool add = false;
   char dhcp_type[4];
+  enum DHCP_IP_TYPE ip_type = DHCP_IP_NONE;
 
   // add type
   ptr = (char**) utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
     os_strlcpy(dhcp_type, *ptr, 4);
     log_trace("Received DHCP request with type=%s", dhcp_type);
-    add = (strcmp(dhcp_type, "add") == 0 || strcmp(dhcp_type, "old") == 0);
+    if (strcmp(dhcp_type, "add") == 0) {
+      ip_type = DHCP_IP_NEW;
+    } else if (strcmp(dhcp_type, "old") == 0) {
+      ip_type = DHCP_IP_OLD;
+    } else if (strcmp(dhcp_type, "del") == 0) {
+      ip_type = DHCP_IP_DEL;
+    } else {
+      log_trace("Wrong type");
+      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+    }
   } else {
     log_trace("Wrong type");
     return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
@@ -324,7 +333,7 @@ ssize_t process_set_ip_cmd(int sock, struct client_address *client_addr,
       ptr = (char**) utarray_next(cmd_arr, ptr);
       if (ptr != NULL && *ptr != NULL) {
         if (validate_ipv4_string(*ptr)) {
-          if (set_ip_cmd(context, addr, *ptr, add) < 0) {
+          if (set_ip_cmd(context, addr, *ptr, ip_type) < 0) {
             log_trace("set_ip_cmd fail");
             return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);  
           }
