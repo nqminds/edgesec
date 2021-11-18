@@ -11,6 +11,7 @@ add_subdirectory(supervisor)
 add_subdirectory(radius)
 add_subdirectory(ap)
 add_subdirectory(dhcp)
+add_subdirectory(dns)
 add_subdirectory(subnet)
 
 add_executable(test_engine test_engine.c)

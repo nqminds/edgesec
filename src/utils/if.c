@@ -35,6 +35,7 @@
 #include <stdbool.h>
 #include <fnmatch.h>
 #include <linux/netlink.h>
+#include <arpa/inet.h>
 
 // #include <netlink/genl/genl.h>
 // #include <netlink/genl/family.h>
@@ -1032,6 +1033,39 @@ const char *bit32_2_ip(uint32_t addr, char *ip)
   return inet_ntop(AF_INET, &in, ip, OS_INET_ADDRSTRLEN);
 }
 
+int ip4_2_buf(char *ip, uint8_t *buf)
+{
+  struct in_addr addr;
+
+  if (ip == NULL) {
+	log_trace("ip param is NULL");
+	return -1;
+  }
+
+  if (buf == NULL) {
+	log_trace("buf param is NULL");
+	return -1;
+  }
+
+  if (!validate_ipv4_string(ip)) {
+	log_trace("IP wroing format");
+	return -1;
+  }
+
+  errno = 0;
+  if (inet_pton(AF_INET, ip, &addr) < 0) {
+	log_err("inet_pton");
+	return -1;
+  }
+  
+  buf[0] = (uint8_t) (addr.s_addr & 0x000000FF);
+  buf[1] = (uint8_t) ((addr.s_addr >> 8) & 0x000000FF);
+  buf[2] = (uint8_t) ((addr.s_addr >> 16) & 0x000000FF);
+  buf[3] = (uint8_t) ((addr.s_addr >> 24) & 0x000000FF);
+
+  return 0;
+}
+
 int find_subnet_address(UT_array *config_ifinfo_array, char *ip, in_addr_t *subnet_addr)
 {
   config_ifinfo_t *p = NULL;
@@ -1097,7 +1131,7 @@ bool validate_ipv4_string(char *ip)
   struct sockaddr_in sa;
   char proc_ip[IP_LEN];
   char *netmask_sep = strchr(ip, '/');
-  int netmask_char_size;
+  int netmask_char_size, ret;
   size_t ip_len;
 
   os_memset(proc_ip, 0, IP_LEN);
@@ -1122,7 +1156,8 @@ bool validate_ipv4_string(char *ip)
 	}
   } else os_strlcpy(proc_ip, ip, IP_LEN);
 
-  int ret = inet_pton(AF_INET, proc_ip, &(sa.sin_addr));
+  errno = 0;
+  ret = inet_pton(AF_INET, proc_ip, &(sa.sin_addr));
   if (ret == -1) {
 	log_err("inet_pton");
 	return false;

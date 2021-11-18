@@ -100,7 +100,7 @@ int push_mdns_list(struct mdns_list* mlist, struct mdns_list_info *info)
     return -1;
   }
 
-  os_memcpy(&el->info, &info, sizeof(struct mdns_list_info));
+  el->info = *info;
 
   if ((el->info.name = os_strdup(info->name)) == NULL) {
     log_err("os_strdup");
@@ -109,11 +109,10 @@ int push_mdns_list(struct mdns_list* mlist, struct mdns_list_info *info)
   }
 
   dl_list_add_tail(&mlist->list, &el->list);
-
   return 0;
 }
 
-int check_mdns_list_request(struct mdns_list* mlist, enum MDNS_REQUEST_TYPE request)
+int check_mdns_list_req(struct mdns_list* mlist, enum MDNS_REQUEST_TYPE request)
 {
   struct mdns_list *el;
 

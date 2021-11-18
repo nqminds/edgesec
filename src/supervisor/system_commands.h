@@ -31,6 +31,14 @@
 #include <stdbool.h>
 
 #include "../utils/domain.h"
+
+enum DHCP_IP_TYPE {
+  DHCP_IP_NONE = 0,
+  DHCP_IP_NEW,
+  DHCP_IP_OLD,
+  DHCP_IP_DEL,
+};
+
 /**
  * @brief SET_IP command
  * 

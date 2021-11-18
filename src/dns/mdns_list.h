@@ -97,6 +97,6 @@ void free_mdns_list(struct mdns_list* mlist);
  * @param request The request type
  * @return 1 request present, 0 otherwise and -1 on failure
  */
-int check_mdns_list_request(struct mdns_list* mlist, enum MDNS_REQUEST_TYPE request);
+int check_mdns_list_req(struct mdns_list* mlist, enum MDNS_REQUEST_TYPE request);
 
 #endif

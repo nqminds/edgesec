@@ -125,6 +125,15 @@ typedef struct hashmap_vlan_conn {
 int ip_2_nbo(char *ip, char *subnetMask, in_addr_t *addr);
 
 /**
+ * @brief IP string to buffer
+ * 
+ * @param ip The IP address string
+ * @param buf The output buffer of size IP_ALEN
+ * @return 0 on success, -1 on failure
+ */
+int ip4_2_buf(char *ip, uint8_t *buf);
+
+/**
  * @brief Convert a 32 bit number IP to an IP string (string needs to be freed)
  * 
  * @param addr The IP in 32 bit format

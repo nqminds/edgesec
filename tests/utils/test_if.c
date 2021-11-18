@@ -55,6 +55,21 @@ static void test_ip_2_nbo(void **state)
   assert_int_equal(ret, -1);
 }
 
+static void test_ip4_2_buf(void **state)
+{
+  (void) state; /* unused */
+  char *ip = "10.0.0.23", *ip1 = "x.168.1.12";
+  uint8_t buf[IP_ALEN];
+
+  assert_int_equal(ip4_2_buf(ip, buf), 0);
+  assert_int_equal(buf[0], 10);
+  assert_int_equal(buf[1], 0);
+  assert_int_equal(buf[2], 0);
+  assert_int_equal(buf[3], 23);
+
+  assert_int_equal(ip4_2_buf(ip1, buf), -1);
+}
+
 static void test_get_if_mapper(void **state)
 {
   (void) state; /* unused */
@@ -174,6 +189,8 @@ static void test_find_subnet_address(void **state)
 
 static void test_validate_ipv4_string(void **state)
 {
+  (void) state;
+
   bool ret = validate_ipv4_string("10.0.0.1");
   assert_true(ret);
 
@@ -202,11 +219,15 @@ static void test_validate_ipv4_string(void **state)
 
 int main(int argc, char *argv[])
 {  
+  (void) argc;
+  (void) argv;
+
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_iface_exists),
     cmocka_unit_test(test_ip_2_nbo),
+    cmocka_unit_test(test_ip4_2_buf),
     cmocka_unit_test(test_get_if_mapper),
     cmocka_unit_test(test_put_if_mapper),
     cmocka_unit_test(test_find_subnet_address),

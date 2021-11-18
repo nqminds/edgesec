@@ -108,7 +108,7 @@ int forward_reflector_if6(uint8_t *send_buf, size_t len, struct reflection_list 
     .sin6_addr = MDNS_ADDR6_INIT,
   };
 
-  log_trace("Forwarding to IP6 interfaces");
+  log_trace("mDNS forwarding to IP6 interfaces");
 
   dst = (struct sockaddr *) &sa_group6;
   dst_len = sizeof(sa_group6);
@@ -143,7 +143,7 @@ int forward_reflector_if4(uint8_t *send_buf, size_t len, struct reflection_list 
     .sin_addr.s_addr = htonl(MDNS_ADDR4),
   };
 
-  log_trace("Forwarding to IP4 interfaces");
+  log_trace("mDNS forwarding to IP4 interfaces");
   dst = (struct sockaddr *) &sa_group4;
   dst_len = sizeof(sa_group4);
 
@@ -168,7 +168,7 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
 {
   struct client_address peer_addr;
   uint32_t bytes_available;
-  uint8_t *buf;
+  uint8_t *buf, qip[IP_ALEN];
   ssize_t num_bytes;
   size_t first = 0;
   uint16_t port;
@@ -205,7 +205,15 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
     return;
   }
 
-  log_trace("Received %u bytes from IP=%s and port=%d", num_bytes, peer_addr_str, port);
+  if (peer_addr.addr.sun_family == AF_INET) {
+    if(ip4_2_buf(peer_addr_str, qip) < 0) {
+      log_trace("Wrong IP4 mDNS address");
+      os_free(buf);
+      return;      
+    }
+  }
+
+  log_trace("mDNS received %u bytes from IP=%s and port=%d", num_bytes, peer_addr_str, port);
   if (decode_mdns_header((uint8_t *)buf, &header) < 0) {
     log_trace("decode_mdns_header fail");
     os_free(buf);
@@ -242,24 +250,18 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
   }
 
   while((qel = (struct mdns_query_entry *) utarray_next(queries, qel)) != NULL) {
-    log_trace("QUERY QNAME=%s", qel->qname);
-    log_trace("QUERY QTYPE=%d", qel->qtype);
+    if (peer_addr.addr.sun_family == AF_INET) {
+      if (put_mdns_query_mapper(&(context->mdns_ctx)->imap, qip, qel) < 0) {
+        log_trace("put_mdns_query_mapper fail");
+      }
+    }
   }
 
   while((ael = (struct mdns_answer_entry *) utarray_next(answers, ael)) != NULL) {
     if (put_mdns_answer_mapper(&(context->mdns_ctx)->imap, ael->ip, ael) < 0) {
       log_trace("put_mdns_answer_mapper fail");
     }
-
-    log_trace("ANSWER TTL=%d", ael->ttl);
-    log_trace("ANSWER RRNAME=%s", ael->rrname);
-    log_trace("ANSWER RRTYPE=%d", ael->rrtype);
-    log_trace("ANSWER IP="IPSTR, IP2STR(ael->ip));
   }
-
-  log_trace("mDNS id=%d flags=0x%x nqueries=%d nanswers=%d nauth=%d nother=%d",
-    header.tid, header.flags, header.nqueries, header.nanswers,
-    header.nauth, header.nother);
 
   if (qname != NULL) {
     os_free(qname);
