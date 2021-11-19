@@ -246,8 +246,8 @@ ssize_t process_get_map_cmd(int sock, struct client_address *client_addr,
       int ret = get_mac_mapper(&context->mac_mapper, addr, &info);
 
       if (ret == 1) {
-        int line_size = snprintf(temp, 255, "%s,%02x:%02x:%02x:%02x:%02x:%02x,%s,%d,%d,%s,%s,%d,%"PRIu64",%d\n",
-          (info.allow_connection) ? "a" : "d", MAC2STR(addr), info.ip_addr, info.vlanid, (info.nat) ? 1 : 0,
+        int line_size = snprintf(temp, 255, "%s,%02x:%02x:%02x:%02x:%02x:%02x,%s,%s,%d,%d,%s,%s,%d,%"PRIu64",%d\n",
+          (info.allow_connection) ? "a" : "d", MAC2STR(addr), info.ip_addr, info.ip_sec_addr, info.vlanid, (info.nat) ? 1 : 0,
           info.label, info.id, (info.pass_len) ? 1 : 0, info.join_timestamp, (int)info.status);
         return write_domain_data(sock, temp, line_size, client_addr);
       } else if (!ret) {
@@ -275,8 +275,8 @@ ssize_t process_get_all_cmd(int sock, struct client_address *client_addr,
   if (mac_list != NULL) {
     for (int count = 0; count < mac_list_len; count ++) {
       struct mac_conn el = mac_list[count];
-      int line_size = snprintf(temp, 255, "%s,%02x:%02x:%02x:%02x:%02x:%02x,%s,%d,%d,%s,%s,%d,%"PRIu64",%d\n",
-        (el.info.allow_connection) ? "a" : "d", MAC2STR(el.mac_addr), el.info.ip_addr, el.info.vlanid,
+      int line_size = snprintf(temp, 255, "%s,%02x:%02x:%02x:%02x:%02x:%02x,%s,%s,%d,%d,%s,%s,%d,%"PRIu64",%d\n",
+        (el.info.allow_connection) ? "a" : "d", MAC2STR(el.mac_addr), el.info.ip_addr, el.info.ip_sec_addr, el.info.vlanid,
         (el.info.nat) ? 1 : 0, el.info.label, el.info.id, (el.info.pass_len) ? 1 : 0, el.info.join_timestamp, (int)el.info.status);
       total += line_size + 1;
       if (reply_buf == NULL)

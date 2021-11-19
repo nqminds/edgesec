@@ -54,7 +54,7 @@ struct mac_conn_info {
 	uint8_t 	pass[AP_SECRET_LEN];            /**< WiFi password assigned to the MAC devices */
 	ssize_t		pass_len;                       /**< WiFi password length assigned to the MAC devices */
   char      ip_addr[IP_LEN];                /**< IP address assigned to the MAC device */
-  char      ip_old_addr[IP_LEN];            /**< The old IP address assigned to the MAC device */
+  char      ip_sec_addr[IP_LEN];            /**< The secondary IP address assigned to the MAC device */
   char      ifname[IFNAMSIZ];               /**< WiFi subnet interface assigned to the MAC device */
   char      label[MAX_DEVICE_LABEL_SIZE];   /**< The MAC device label */
   char      id[MAX_RANDOM_UUID_LEN];        /**< The MAC device ID */

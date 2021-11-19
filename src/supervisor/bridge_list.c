@@ -72,7 +72,7 @@ void free_bridge_list(struct bridge_mac_list *ml)
   bridge_mac_list_free(ml);
 }
 
-bool check_edge(struct bridge_mac_list *e, const uint8_t *mac_addr_left, const uint8_t *mac_addr_right)
+bool compare_edge(struct bridge_mac_list *e, const uint8_t *mac_addr_left, const uint8_t *mac_addr_right)
 {
   if (memcmp(e->mac_tuple.src_addr, mac_addr_left, ETH_ALEN) == 0 &&
       memcmp(e->mac_tuple.dst_addr, mac_addr_right, ETH_ALEN) == 0) {
@@ -104,16 +104,27 @@ struct bridge_mac_list_tuple get_bridge_mac(struct bridge_mac_list *ml, const ui
 
   struct dl_list *list = &ml->list;
 	dl_list_for_each(e, list, struct bridge_mac_list, list) {
-    if (check_edge(e, mac_addr_left, mac_addr_right)) {
+    if (compare_edge(e, mac_addr_left, mac_addr_right)) {
       ret.left_edge = e;
     }
 
-    if (check_edge(e, mac_addr_right, mac_addr_left)) {
+    if (compare_edge(e, mac_addr_right, mac_addr_left)) {
       ret.right_edge = e;
     }
 	}
 
   return ret;
+}
+
+int check_bridge_exist(struct bridge_mac_list *ml, const uint8_t *mac_addr_left, const uint8_t *mac_addr_right)
+{
+  struct bridge_mac_list_tuple ret = get_bridge_mac(ml, mac_addr_left, mac_addr_right);
+
+  // Existing edge
+	if(ret.left_edge && ret.right_edge)
+    return 1;
+
+  return 0;
 }
 
 int add_bridge_mac(struct bridge_mac_list *ml, const uint8_t *mac_addr_left, const uint8_t *mac_addr_right)

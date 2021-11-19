@@ -72,25 +72,43 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
     return -1;
   }
 
+  switch(ip_type) {
+    case DHCP_IP_NEW:
+    case DHCP_IP_OLD:
+      if (strcmp(info.ip_addr, ip_addr) == 0) {
+        log_trace("IP %s already assigned as primary", ip_addr);
+        return 0;
+      } else if (strcmp(info.ip_sec_addr, ip_addr) == 0) {
+        log_trace("IP %s already assigned as secondary", ip_addr);
+        return 0;
+      }
+
+      if (!strlen(info.ip_addr)) {
+        os_strlcpy(info.ip_addr, ip_addr, IP_LEN);
+      } else if (strlen(info.ip_addr) && !strlen(info.ip_sec_addr)) {
+        os_strlcpy(info.ip_sec_addr, ip_addr, IP_LEN);
+      } else {
+        log_trace("IPs already present");
+        return -1;
+      }
+      break;
+    case DHCP_IP_DEL:
+      if (strcmp(info.ip_addr, ip_addr) == 0) {
+        os_memset(info.ip_addr, 0x0, IP_LEN);
+      }
+
+      if (strcmp(info.ip_sec_addr, ip_addr) == 0) {
+        os_memset(info.ip_sec_addr, 0, IP_LEN);
+      }
+      break;
+    default:
+      log_trace("Wrong DHCP IP type");
+      return -1;
+  }
+
   os_memcpy(info.ifname, ifname, IFNAMSIZ);
   os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
   os_memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
-
-  switch(ip_type) {
-    case DHCP_IP_NEW:
-      os_strlcpy(conn.info.ip_addr, ip_addr, IP_LEN);
-      break;
-    case DHCP_IP_OLD:
-      os_strlcpy(conn.info.ip_old_addr, ip_addr, IP_LEN);
-      break;
-    case DHCP_IP_DEL:
-      os_memset(conn.info.ip_addr, 0x0, IP_LEN);
-      os_memset(conn.info.ip_old_addr, 0, IP_LEN);
-      break;
-    default:
-      log_trace("Wrong IP type");
-      return -1;
-  }
 
   log_trace("SET_IP type=%d mac=" MACSTR " ip=%s if=%s", ip_type, MAC2STR(mac_addr), ip_addr, ifname);
   if (!save_mac_mapper(context, conn)) {
@@ -107,45 +125,54 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
   // Change the NAT iptables rules
   if (add && info.nat) {
     log_trace("Adding NAT rule");
-    if (!iptables_add_nat(context->iptables_ctx, ip_addr, ifname, context->nat_interface)) {
-      log_trace("iptables_add_nat fail");
+    if (add_nat_ip(context, ip_addr) < 0) {
+      log_trace("add_nat_ip fail");
       return -1;
     }
   } else if (!add && info.nat){
     log_trace("Deleting NAT rule");
-    if (!iptables_delete_nat(context->iptables_ctx, ip_addr, ifname, context->nat_interface)) {
-      log_trace("iptables_delete_nat fail");
+    if (remove_nat_ip(context, ip_addr) < 0) {
+      log_trace("remove_nat_ip fail");
       return -1;
     }
   }
 
   // Change the bridge iptables rules
   // Get the list of all dst MACs to update the iptables
-  if(get_src_mac_list(context->bridge_list, conn.mac_addr, &mac_list_arr) >= 0) {
-    while((p = (uint8_t *) utarray_next(mac_list_arr, p)) != NULL) {
-      if(get_mac_mapper(&context->mac_mapper, p, &right_info) == 1) {
-        if (validate_ipv4_string(right_info.ip_addr)) {
-          if (add) {
-            log_trace("Adding iptable rule for sip=%s sif=%s dip=%s dif=%s", conn.info.ip_addr, conn.info.ifname, right_info.ip_addr, right_info.ifname);
-            if (!iptables_add_bridge(context->iptables_ctx, conn.info.ip_addr, conn.info.ifname, right_info.ip_addr, right_info.ifname)) {
-              log_trace("iptables_add_bridge fail");
-              utarray_free(mac_list_arr);
-              return -1;
-            }
-          } else {
-            log_trace("Removing iptable rule for sip=%s sif=%s dip=%s dif=%s", info.ip_addr, info.ifname, right_info.ip_addr, right_info.ifname);
-            if (!iptables_delete_bridge(context->iptables_ctx, info.ip_addr, info.ifname, right_info.ip_addr, right_info.ifname)) {
-              log_trace("remove_bridge_rules fail");
-              utarray_free(mac_list_arr);
-              return -1;
-            }
-          }
+  if(get_src_mac_list(context->bridge_list, mac_addr, &mac_list_arr) < 0) {
+    log_trace("get_src_mac_list fail");
+    return -1;
+  }
+
+  while((p = (uint8_t *) utarray_next(mac_list_arr, p)) != NULL) {
+    if(get_mac_mapper(&context->mac_mapper, p, &right_info) == 1) {
+      if (add) {
+        if (add_bridge_ip(context, ip_addr, right_info.ip_addr) < 0) {
+          log_trace("add_bridge_ip fail");
+          utarray_free(mac_list_arr);
+          return -1;
+        }
+        if (add_bridge_ip(context, ip_addr, right_info.ip_sec_addr) < 0) {
+          log_trace("add_bridge_ip fail");
+          utarray_free(mac_list_arr);
+          return -1;
+        }
+      } else {
+        if (delete_bridge_ip(context, ip_addr, right_info.ip_addr) < 0) {
+          log_trace("delete_bridge_ip fail");
+          utarray_free(mac_list_arr);
+          return -1;
+        }
+        if (delete_bridge_ip(context, ip_addr, right_info.ip_sec_addr) < 0) {
+          log_trace("delete_bridge_ip fail");
+          utarray_free(mac_list_arr);
+          return -1;
         }
       }
     }
-    utarray_free(mac_list_arr);
-  } else return -1;
+  }
 
+  utarray_free(mac_list_arr);
   return 0;
 }
 

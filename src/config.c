@@ -418,11 +418,16 @@ bool load_dns_conf(const char *filename, struct app_config *config)
 
   os_free(value);
 
+  return true;
+}
+
+bool load_mdns_conf(const char *filename, struct app_config *config)
+{
   // Load mdnsReflectIp4 param
-  config->dns_config.reflect_mdns_ip4 = (int) ini_getbool("dns", "mdnsReflectIp4", 0, filename);
+  config->mdns_config.reflect_ip4 = (int) ini_getbool("dns", "mdnsReflectIp4", 0, filename);
 
   // Load mdnsReflectIp6 param
-  config->dns_config.reflect_mdns_ip6 = (int) ini_getbool("dns", "mdnsReflectIp6", 0, filename);
+  config->mdns_config.reflect_ip6 = (int) ini_getbool("dns", "mdnsReflectIp6", 0, filename);
 
   return true;
 }
@@ -729,6 +734,12 @@ bool load_app_config(const char *filename, struct app_config *config)
 
   // Load the DNS server configuration
   if(!load_dns_conf(filename, config)) {
+    fprintf(stderr, "dns config parsing error.\n");
+    return false;
+  }
+
+  // Load the mDNS server configuration
+  if(!load_mdns_conf(filename, config)) {
     fprintf(stderr, "dns config parsing error.\n");
     return false;
   }

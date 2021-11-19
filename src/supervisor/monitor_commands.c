@@ -37,6 +37,8 @@
 #include "../crypt/crypt_service.h"
 #include "../capture/capture_service.h"
 #include "../capture/capture_config.h"
+#include "../dns/mdns_mapper.h"
+#include "../dns/mdns_service.h"
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/log.h"
@@ -252,36 +254,23 @@ ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr
   return out_size;
 }
 
-int local_ip_2_buf(struct supervisor_context *context, char *ip, in_addr_t *ip_addr)
-{
-  struct in_addr subnet_addr;
-  char subnet_addr_str[OS_INET_ADDRSTRLEN];
-
-  if (find_subnet_address(context->config_ifinfo_array, ip, &subnet_addr.s_addr) < 0) {
-    log_trace("find_subnet_address fail");
-    return -1;
-  }
-
-  if (inaddr4_2_ip(&subnet_addr, subnet_addr_str) == NULL) {
-    log_trace("inaddr4_2_ip fail");
-    return -1;
-  };
-
-  if (ip_2_nbo(ip, subnet_addr_str, ip_addr) < 0) {
-    log_trace("ip_2_nbo fail");
-    return -1;
-  }
-
-  return 0;
-}
-
 int set_traffic_cmd(struct supervisor_context *context, char *src_ip_addr, char *dst_ip_addr)
 {
-  // in_addr_t sip, dip;
-  int ret;
+  int ret, retd;
   uint8_t src_mac_addr[ETH_ALEN], dst_mac_addr[ETH_ALEN];
+  uint8_t sip[IP_ALEN], dip[IP_ALEN];
 
   log_trace("SET_TRAFFIC for src_ip=%s and dst_ip=%s", src_ip_addr, dst_ip_addr);
+
+  if(ip4_2_buf(src_ip_addr, sip) < 0) {
+    log_trace("Wrong source IP4");
+    return -1;
+  }
+
+  if(ip4_2_buf(dst_ip_addr, dip) < 0) {
+    log_trace("Wrong source IP4");
+    return -1;
+  }
 
   ret = get_ip_mapper(&context->mac_mapper, src_ip_addr, src_mac_addr);
   if (ret < 0) {
@@ -302,15 +291,28 @@ int set_traffic_cmd(struct supervisor_context *context, char *src_ip_addr, char 
     return -1;
   }
 
-  // if (local_ip_2_buf(context, src_ip_addr, &sip) < 0) {
-  //   log_trace("local_ip_2_buf fail");
-  //   return -1;
-  // }
+  if (check_bridge_exist(context->bridge_list, src_mac_addr, dst_mac_addr) > 0) {
+    log_trace("Bridge between %s and %s already exists", src_ip_addr, dst_ip_addr);
+    return 0;
+  }
 
-  // if (local_ip_2_buf(context, dst_ip_addr, &dip) < 0) {
-  //   log_trace("local_ip_2_buf fail");
-  //   return -1;
-  // }
+  if ((ret = check_mdns_mapper_req(&context->mdns_ctx->imap, sip, MDNS_REQUEST_ANSWER)) < 0) {
+    log_trace("check_mdns_mapper_req fail");
+    return -1;
+  }
+  
+  if ((retd = check_mdns_mapper_req(&context->mdns_ctx->imap, dip, MDNS_REQUEST_ANSWER)) < 0) {
+    log_trace("check_mdns_mapper_req fail");
+    return -1;
+  }
+  
+  if (ret > 0 || retd > 0) {
+    log_trace("Found mDNS answer request for src ip=%s and dst ip", src_ip_addr, dst_ip_addr);
+    if (add_bridge_cmd(context, src_mac_addr, dst_mac_addr) < 0) {
+      log_trace("add_bridge_cmd fail");
+      return -1;
+    }
+  }
 
   return 0;
 }

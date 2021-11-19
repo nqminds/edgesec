@@ -30,7 +30,7 @@ target_link_libraries(network_commands PRIVATE dhcp_service ap_service crypt_ser
 
 add_library(monitor_commands monitor_commands.c)
 target_include_directories(monitor_commands PRIVATE ${LIBSQLITE_INCLUDE_DIR})
-target_link_libraries(monitor_commands PRIVATE subscriber_events sqlite_alert_writer ap_service crypt_service capture_config sqlite_macconn_writer mac_mapper eloop iptables base64 log os)
+target_link_libraries(monitor_commands PRIVATE mdns_mapper subscriber_events sqlite_alert_writer ap_service crypt_service capture_config sqlite_macconn_writer mac_mapper eloop iptables base64 log os)
 
 add_library(crypt_commands crypt_commands.c)
 target_include_directories(crypt_commands PRIVATE ${LIBSQLITE_INCLUDE_DIR})

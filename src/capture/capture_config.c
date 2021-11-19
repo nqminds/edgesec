@@ -239,7 +239,7 @@ char** capture_config2opt(struct capture_conf *config)
     idx ++;
 
     opt_str[idx] = os_malloc(MAX_CAPIF_LIST_SIZE);
-    os_strlcpy(opt_str[idx], config->capture_interface, MAX_CAPIF_LIST_SIZE);
+    os_strlcpy(opt_str[idx], config->capture_interface, IFNAMSIZ);
     idx ++;
   }
 

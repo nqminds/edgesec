@@ -121,4 +121,13 @@ int get_src_mac_list(struct bridge_mac_list *ml, const uint8_t *src_addr, UT_arr
  */
 int get_all_bridge_edges(struct bridge_mac_list *ml, UT_array **tuple_list_arr);
 
+/**
+ * @brief Check if a bridge exist
+ * 
+ * @param ml The MAC bridge address list
+ * @param mac_addr_left The MAC address in byte format for left node
+ * @param mac_addr_right The MAC address in byte format for rigth node
+ * @return int 1 exists, 0 otherwise
+ */
+int check_bridge_exist(struct bridge_mac_list *ml, const uint8_t *mac_addr_left, const uint8_t *mac_addr_right);
 #endif

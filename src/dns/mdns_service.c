@@ -270,7 +270,7 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
   utarray_free(answers);
 
   if (peer_addr.addr.sun_family == AF_INET6) {
-    if (context->mconfig.reflect_mdns_ip6) {
+    if (context->mconfig.reflect_ip6) {
       if (forward_reflector_if6(buf, num_bytes, rif) < 0) {
         log_trace("forward_reflector_if6 fail");
         os_free(buf);
@@ -278,7 +278,7 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
       }
     }
   } else if (peer_addr.addr.sun_family == AF_INET) {
-    if (context->mconfig.reflect_mdns_ip4) {
+    if (context->mconfig.reflect_ip4) {
       if (forward_reflector_if4(buf, num_bytes, rif) < 0) {
         log_trace("forward_reflector_if4 fail");
         os_free(buf);

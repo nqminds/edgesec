@@ -188,7 +188,8 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
   os_memcpy(&ctx->hconfig, &app_config->hconfig, sizeof(struct apconf));
   os_memcpy(&ctx->rconfig, &app_config->rconfig, sizeof(struct radius_conf));
   os_memcpy(&ctx->dconfig, &app_config->dhcp_config, sizeof(struct dhcp_conf));
-  os_memcpy(&ctx->mconfig, &app_config->dns_config, sizeof(struct dns_conf));
+  os_memcpy(&ctx->nconfig, &app_config->dns_config, sizeof(struct dns_conf));
+  os_memcpy(&ctx->mconfig, &app_config->mdns_config, sizeof(struct mdns_conf));
 
   if (ctx->default_open_vlanid == ctx->quarantine_vlanid) {
     log_trace("default and quarantine vlans have the same id");
@@ -386,7 +387,7 @@ bool run_engine(struct app_config *app_config)
   }
 
   if (run_dhcp(dnsmasq_path, &context.dconfig, context.hconfig.interface,
-        context.mconfig.server_array, app_config->domain_server_path,
+        context.nconfig.server_array, app_config->domain_server_path,
         app_config->exec_dhcp) == -1) {
     log_debug("run_dhcp fail");
     goto run_engine_fail;

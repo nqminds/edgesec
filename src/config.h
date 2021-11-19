@@ -75,6 +75,7 @@ struct app_config {
   struct radius_conf  rconfig;                              /**< Radius service configuration. */
   struct apconf       hconfig;                              /**< AP service configuration. */
   struct dns_conf     dns_config;                           /**< DNS service configuration. */
+  struct mdns_conf    mdns_config;                          /**< mDNS service configuration. */
   struct dhcp_conf    dhcp_config;                          /**< DHCP service configuration. */
   struct capture_conf capture_config;                       /**< Capture service configuration. */
 };

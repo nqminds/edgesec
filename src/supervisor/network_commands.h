@@ -151,4 +151,41 @@ uint8_t* register_ticket_cmd(struct supervisor_context *context, uint8_t *mac_ad
  */
 int clear_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr);
 
+/**
+ * @brief Add an IP to NAT
+ * 
+ * @param context The supervisor structure instance
+ * @param ip_addr The IP address string
+ * @return 0 on success, -1 on failure
+ */
+int add_nat_ip(struct supervisor_context *context, char *ip_addr);
+
+/**
+ * @brief Remove an IP to NAT
+ * 
+ * @param context The supervisor structure instance
+ * @param ip_addr The IP address string
+ * @return 0 on success, -1 on failure
+ */
+int remove_nat_ip(struct supervisor_context *context, char *ip_addr);
+
+/**
+ * @brief Add an IP bridge
+ * 
+ * @param context The supervisor structure instance
+ * @param ip_addr_left The left IP address string
+ * @param ip_addr_right The right IP address string
+ * @return 0 on success, -1 on failure
+ */
+int add_bridge_ip(struct supervisor_context *context, char *ip_addr_left, char *ip_addr_right);
+
+/**
+ * @brief Deletes an IP bridge
+ * 
+ * @param context The supervisor structure instance
+ * @param ip_addr_left The left IP address string
+ * @param ip_addr_right The right IP address string
+ * @return 0 on success, -1 on failure
+ */
+int delete_bridge_ip(struct supervisor_context *context, char *ip_addr_left, char *ip_addr_right);
 #endif

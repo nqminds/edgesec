@@ -2,6 +2,9 @@ include_directories (
   "${EDGESEC_SOURCE_DIR}/src"
 )
 
+add_library(dns_config dns_config.c)
+target_link_libraries(dns_config PRIVATE os)
+
 add_library(mdns_list mdns_list.c)
 target_link_libraries(mdns_list PRIVATE os)
 

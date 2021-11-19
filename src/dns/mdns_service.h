@@ -26,7 +26,7 @@
 #ifndef MDNS_SERVICE_H
 #define MDNS_SERVICE_H
 
-#include "../supervisor/supervisor_config.h"
+#include "dns_config.h"
 #include "reflection_list.h"
 #include "mdns_mapper.h"
 
@@ -41,9 +41,9 @@ struct mdns_context {
 };
 
 /**
- * @brief Runs the mDNS service
+ * @brief Runs the mDNS forwarder service
  * 
- * @param context The supervisor context structure
+ * @param config The mDNS config structure
  * @return int 0 on success, -1 on failure
  */
 int run_mdns(struct supervisor_context *context);

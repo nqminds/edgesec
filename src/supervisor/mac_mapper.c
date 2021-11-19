@@ -137,7 +137,7 @@ void init_default_mac_info(struct mac_conn_info *info, int default_open_vlanid,
   info->pass_len = 0;
   os_memset(info->pass, 0, AP_SECRET_LEN);
   os_memset(info->ip_addr, 0, IP_LEN);
-  os_memset(info->ip_old_addr, 0, IP_LEN);
+  os_memset(info->ip_sec_addr, 0, IP_LEN);
   os_memset(info->ifname, 0, IFNAMSIZ);
   os_memset(info->label, 0, MAX_DEVICE_LABEL_SIZE);
   generate_radom_uuid(info->id);
@@ -163,7 +163,11 @@ int get_ip_mapper(hmap_mac_conn **hmap, char *ip, uint8_t *mac_addr)
   }
 
   HASH_ITER(hh, *hmap, current, tmp) {
-    if (strcmp(ip, current->value.ip_addr) == 0) {
+    if (validate_ipv4_string(current->value.ip_addr) && strcmp(ip, current->value.ip_addr) == 0) {
+      os_memcpy(mac_addr, current->key, ETH_ALEN);
+      return 1;
+    }
+    if (validate_ipv4_string(current->value.ip_sec_addr) && strcmp(ip, current->value.ip_sec_addr) == 0) {
       os_memcpy(mac_addr, current->key, ETH_ALEN);
       return 1;
     }
