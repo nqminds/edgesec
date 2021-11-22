@@ -67,9 +67,6 @@ const char description_string[] = R"==(
     6. State machine: Networking monitoring and management.
 )==";
 
-static const UT_icd config_ifinfo_icd = {sizeof(config_ifinfo_t), NULL, NULL, NULL};
-static const UT_icd config_dhcpinfo_icd = {sizeof(config_dhcpinfo_t), NULL, NULL, NULL};
-
 static __thread char version_buf[10];
 
 void eloop_sighup_handler(int sig, void *ctx)
@@ -182,30 +179,10 @@ int main(int argc, char *argv[])
   uint8_t verbosity = 0;
   uint8_t level = 0;
   char *config_filename = NULL, *log_filename = NULL;
-  UT_array *bin_path_arr;
-  UT_array *config_ifinfo_arr;
-  UT_array *config_dhcpinfo_arr;
-  UT_array *server_arr;
   struct app_config config;
   
   // Init the app config struct
   memset(&config, 0, sizeof(struct app_config));
-
-  // Create the empty dynamic array for bin path strings
-  utarray_new(bin_path_arr, &ut_str_icd);
-  config.bin_path_array = bin_path_arr;
-
-  // Create the config interface
-  utarray_new(config_ifinfo_arr, &config_ifinfo_icd);
-  config.config_ifinfo_array = config_ifinfo_arr;
-
-  // Create the dhcp config interface
-  utarray_new(config_dhcpinfo_arr, &config_dhcpinfo_icd);
-  config.dhcp_config.config_dhcpinfo_array = config_dhcpinfo_arr;
-
-  // Create the dns server array
-  utarray_new(server_arr, &ut_str_icd);
-  config.dns_config.server_array = server_arr;
 
   process_app_options(argc, argv, &verbosity, &config_filename, config.crypt_secret, &log_filename);
 
@@ -225,36 +202,36 @@ int main(int argc, char *argv[])
   if (log_filename != NULL) {
     if (log_open_file(log_filename) < 0) {
       fprintf(stderr, "log_open_file fail");
-      exit(1);
+      return EXIT_FAILURE;
     }
   }
 
   if (!load_app_config(config_filename, &config)) {
     fprintf(stderr, "load_app_config fail\n");
-    exit(1);
+    return EXIT_FAILURE;
   }
 
   // Kill all edgesec processes if running
   if (config.kill_running_proc) {
     if(!kill_process(get_app_name(argv[0]))){
       fprintf(stderr, "kill_process fail.\n");
-      exit(1);
+      return EXIT_FAILURE;
     }
   }
 
   if (create_pid_file(config.pid_file_path, FD_CLOEXEC) < 0) {
     fprintf(stderr, "create_pid_file fail");
-    exit(1);
+    return EXIT_FAILURE;
   }
 
   if (eloop_init() < 0) {
 		fprintf(stderr, "Failed to initialize event loop");
-		exit(1);
+		return EXIT_FAILURE;
 	}
 
   if (eloop_register_signal_reconfig(eloop_sighup_handler, (void *)log_filename) < 0) {
     fprintf(stderr, "Failed to register signal");
-    exit(1);
+    return EXIT_FAILURE;
   }
 
   os_init_random_seed();
@@ -264,14 +241,12 @@ int main(int argc, char *argv[])
   } else
     fprintf(stderr, "Edgesec engine stopped.\n");
 
-  utarray_free(bin_path_arr);
-  utarray_free(config_ifinfo_arr);
-  utarray_free(config_dhcpinfo_arr);
-  utarray_free(server_arr);
+  free_app_config(&config);
+
   if (config_filename != NULL)
     os_free(config_filename);
   if (log_filename != NULL)
     os_free(log_filename);
 
-  exit(0);
+  return EXIT_SUCCESS;
 }

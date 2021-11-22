@@ -89,7 +89,6 @@ struct supervisor_context {
   struct iptables_context *iptables_ctx;                      /**< The iptables context. */
   struct crypt_context *crypt_ctx;                            /**< The crypt context. */
   struct auth_ticket *ticket;                                 /**< The authentication ticket. */  
-  struct mdns_context *mdns_ctx;                              /**< The mDNS context. */
   int              ap_sock;                                   /**< The AP notifier socket. */
 };
 

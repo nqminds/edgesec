@@ -38,7 +38,9 @@
 #include <pcap.h>
 #endif
 
-#include "mdns/mdns_config.h"
+#include "dns/dns_config.h"
+#include "dns/mdns_service.h"
+#include "subnet/subnet_service.h"
 #include "config.h"
 #include "version.h"
 #include "utils/log.h"
@@ -83,7 +85,7 @@ int show_app_help(char *app_name)
   show_app_version();
   fprintf(stdout, "Usage:\n");
   fprintf(stdout, MDNS_USAGE_STRING, basename(app_name));
-  fprintf(stdout, "\n%s", mdns_description_string);
+  fprintf(stdout, "\n%s", MDNS_DESCRIPTION);
   fprintf(stdout, "\nOptions:\n");
   fprintf(stdout, "%s", MDNS_OPT_DEFS);
   fprintf(stdout, "Copyright NQMCyber Ltd\n");
@@ -106,10 +108,9 @@ int log_cmdline_error(const char *format, ...)
     return -1;
 }
 
-int process_app_options(int argc, char *argv[], uint8_t *verbosity,
-                          const char **filename, struct mdns_conf *config)
+int process_app_options(int argc, char *argv[], uint8_t *verbosity, const char **filename)
 {
-  int opt, ret;
+  int opt;
 
   while ((opt = getopt(argc, argv, MDNS_OPT_STRING)) != -1) {
     switch (opt) {
@@ -120,18 +121,30 @@ int process_app_options(int argc, char *argv[], uint8_t *verbosity,
       return show_app_help(argv[0]);
     case 'v':
       return show_app_version();
+    case 'c':
+      *filename = optarg;
+      break;
     case ':':
       return log_cmdline_error("Missing argument for -%c\n", optopt);
     case '?':
       return log_cmdline_error("Unrecognized option -%c\n", optopt);
     default: 
-      ret = mdns_opt2config(opt, optarg, config);
-      if (ret < 0) {
-        return log_cmdline_error("Wrong argument value for -%c\n", optopt);
-      } else if (ret > 0) {
-        return show_app_help(argv[0]);
-      }
+      return show_app_help(argv[0]);
     }
+  }
+
+  return 0;
+}
+
+int init_mdns_context(struct app_config *config, struct mdns_context *context)
+{
+  os_memset(context, 0, sizeof(struct mdns_context));
+
+  context->config = config->mdns_config;
+
+  if (!create_vlan_mapper(config->config_ifinfo_array, &context->vlan_mapper)) {
+    fprintf(stderr, "create_if_mapper fail");
+    return -1;
   }
 
   return 0;
@@ -143,12 +156,14 @@ int main(int argc, char *argv[])
   uint8_t verbosity = 0;
   uint8_t level = 0;
   const char *filename = NULL;
-  struct mdns_conf config;
+  struct app_config config;
+  struct mdns_context context;
 
   // Init the mdns config struct
   memset(&config, 0, sizeof(struct mdns_conf));
+  memset(&context, 0, sizeof(struct mdns_context));
 
-  ret = process_app_options(argc, argv, &verbosity, &filename, &config);
+  ret = process_app_options(argc, argv, &verbosity, &filename);
 
   if (ret < 0) {
     fprintf(stderr, "process_app_options fail");
@@ -170,22 +185,54 @@ int main(int argc, char *argv[])
     level = MAX_LOG_LEVELS - verbosity;
   }
 
-  if (pthread_mutex_init(&log_lock, NULL) != 0) {
-      fprintf(stderr, "mutex init has failed\n");
-      return EXIT_FAILURE;
-  }
-
   log_set_lock(log_lock_fun);
 
   // Set the log level
   log_set_level(level);
-  
-  if (run_capture(&config) < 0) {
-    fprintf(stderr, "run_capture fail\n");
-    pthread_mutex_destroy(&log_lock);
+
+  if (!load_system_config(filename, &config)) {
+    fprintf(stderr, "load_system_config fail\n");
     return EXIT_FAILURE;
   }
 
+  if (!load_supervisor_config(filename, &config)) {
+    fprintf(stderr, "load_supervisor_config fail\n");
+    return EXIT_FAILURE;
+  }
+
+  if(!load_mdns_conf(filename, &config)) {
+    fprintf(stderr, "load_mdns_conf fail");
+    return EXIT_FAILURE;
+  }
+
+  if(!load_interface_list(filename, &config)) {
+    return EXIT_FAILURE;
+  }
+
+  if (init_mdns_context(&config, &context) < 0) {
+    utarray_free(config.config_ifinfo_array);
+    free_vlan_mapper(&context.vlan_mapper);
+    return EXIT_FAILURE;
+  }
+
+  if (pthread_mutex_init(&log_lock, NULL) != 0) {
+    fprintf(stderr, "mutex init has failed\n");
+    free_vlan_mapper(&context.vlan_mapper);
+    utarray_free(config.config_ifinfo_array);
+    return EXIT_FAILURE;
+  }
+
+  if (run_mdns(&context) < 0) {
+    fprintf(stderr, "run_mdns has failed\n");
+    free_vlan_mapper(&context.vlan_mapper);
+    utarray_free(config.config_ifinfo_array);
+    return EXIT_FAILURE;
+  }
+
+  close_mdns(&context);
   pthread_mutex_destroy(&log_lock);
+  utarray_free(config.config_ifinfo_array);
+  free_vlan_mapper(&context.vlan_mapper);
+
   return EXIT_SUCCESS;
 }

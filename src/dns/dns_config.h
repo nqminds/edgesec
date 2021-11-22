@@ -30,21 +30,21 @@
 
 #define MDNS_MAX_OPT       26
 
-#define MDNS_OPT_STRING    ":i:q:f:x:z:dvh46"
-#define MDNS_USAGE_STRING  "\t%s [-d] [-h] [-v] [-i interface] [-q domain]" \
-                              "[-f filter] [-x command] [-z delimiter]\n"
-extern const char* const mdns_description_string;
+#define MDNS_OPT_STRING    ":c:dvh"
+#define MDNS_USAGE_STRING  "\t%s [-d] [-h] [-v] [-c config]"
 
 #define MDNS_OPT_DEFS      "\t-q domain\t The UNIX domain path\n" \
-                              "\t-x command\t The UNIX domain command\n" \
-                              "\t-z delimiter\t The UNIX domain command delimiter\n" \
-                              "\t-i interface\t The capture interface name\n" \
-                              "\t-f filter\t The capture filter expression\n" \
-                              "\t-4 \t\t Reflect IP4\n" \
-                              "\t-6 \t\t Reflect IP6\n" \
+                              "\t-c config\t The config file path\n" \
                               "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n" \
                               "\t-h\t\t Show help\n" \
                               "\t-v\t\t Show app version\n\n"
+
+
+#define MDNS_DESCRIPTION "--" \
+  "NquiringMinds EDGESEC mdns forwarder.\n" \
+  "\n" \
+  "Forwards and captures EDGESEC mDNS network traffic for each connected device.\n" \
+  "The resulting captured mDNS traffic is forwarded across subnets and bridge commands are issued accordingly.\n\n"
 
 /**
  * @brief The dns configuration structures.

@@ -179,7 +179,7 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
   struct mdns_answer_entry *ael = NULL;
   struct mdns_query_entry *qel = NULL;
   struct reflection_list *rif = (struct reflection_list *) sock_ctx;
-  struct supervisor_context *context = (struct supervisor_context *) eloop_ctx;
+  struct mdns_context *context = (struct mdns_context *) eloop_ctx;
 
   os_memset(&peer_addr, 0, sizeof(struct client_address));
 
@@ -251,14 +251,14 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
 
   while((qel = (struct mdns_query_entry *) utarray_next(queries, qel)) != NULL) {
     if (peer_addr.addr.sun_family == AF_INET) {
-      if (put_mdns_query_mapper(&(context->mdns_ctx)->imap, qip, qel) < 0) {
+      if (put_mdns_query_mapper(&context->imap, qip, qel) < 0) {
         log_trace("put_mdns_query_mapper fail");
       }
     }
   }
 
   while((ael = (struct mdns_answer_entry *) utarray_next(answers, ael)) != NULL) {
-    if (put_mdns_answer_mapper(&(context->mdns_ctx)->imap, ael->ip, ael) < 0) {
+    if (put_mdns_answer_mapper(&context->imap, ael->ip, ael) < 0) {
       log_trace("put_mdns_answer_mapper fail");
     }
   }
@@ -270,7 +270,7 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
   utarray_free(answers);
 
   if (peer_addr.addr.sun_family == AF_INET6) {
-    if (context->mconfig.reflect_ip6) {
+    if (context->config.reflect_ip6) {
       if (forward_reflector_if6(buf, num_bytes, rif) < 0) {
         log_trace("forward_reflector_if6 fail");
         os_free(buf);
@@ -278,7 +278,7 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
       }
     }
   } else if (peer_addr.addr.sun_family == AF_INET) {
-    if (context->mconfig.reflect_ip4) {
+    if (context->config.reflect_ip4) {
       if (forward_reflector_if4(buf, num_bytes, rif) < 0) {
         log_trace("forward_reflector_if4 fail");
         os_free(buf);
@@ -292,9 +292,9 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
   os_free(buf);
 }
 
-int register_reflector_if6(struct supervisor_context *context)
+int register_reflector_if6(struct mdns_context *context)
 {
-  struct reflection_list *el, *rif = context->mdns_ctx->rif6;
+  struct reflection_list *el, *rif = context->rif6;
   struct sockaddr_in6 sa6 = {
     .sin6_family=AF_INET6,
     .sin6_port = htons(MDNS_PORT),
@@ -335,9 +335,9 @@ int register_reflector_if6(struct supervisor_context *context)
   return 0;
 }
 
-int register_reflector_if4(struct supervisor_context *context)
+int register_reflector_if4(struct mdns_context *context)
 {
-  struct reflection_list *el, *rif = context->mdns_ctx->rif4;
+  struct reflection_list *el, *rif = context->rif4;
   struct sockaddr_in sa4 = {
     .sin_family = AF_INET,
     .sin_port = htons(MDNS_PORT),
@@ -430,39 +430,31 @@ int close_mdns(struct mdns_context *context)
       free_reflection_list(context->rif6);
     }
     free_mdns_mapper(&context->imap);
-    os_free(context);
   }
 
   return 0;
 }
 
-int run_mdns(struct supervisor_context *context)
+int run_mdns(struct mdns_context *context)
 { 
-  if ((context->mdns_ctx = os_zalloc(sizeof(struct mdns_context))) == NULL) {
-    log_err("os_zalloc");
-    return -1;
-  }
-
-  if (init_reflections(&context->vlan_mapper, context->mdns_ctx) < 0) {
+  if (init_reflections(&context->vlan_mapper, context) < 0) {
     log_trace("init_reflections fail");
-    os_free(context->mdns_ctx);
-    context->mdns_ctx = NULL;
     return -1;
   }
 
-  if (register_reflector_if6(context) < 0) {
-    log_trace("register_reflector_if6 fail");
-    close_mdns(context->mdns_ctx);
-    context->mdns_ctx = NULL;
-    return -1;
-  }
+  // if (register_reflector_if6(context) < 0) {
+  //   log_trace("register_reflector_if6 fail");
+  //   close_mdns(context->mdns_ctx);
+  //   context->mdns_ctx = NULL;
+  //   return -1;
+  // }
 
-  if (register_reflector_if4(context) < 0) {
-    log_trace("register_reflector_if4 fail");
-    close_mdns(context->mdns_ctx);
-    context->mdns_ctx = NULL;
-    return -1;
-  }
+  // if (register_reflector_if4(context) < 0) {
+  //   log_trace("register_reflector_if4 fail");
+  //   close_mdns(context->mdns_ctx);
+  //   context->mdns_ctx = NULL;
+  //   return -1;
+  // }
 
   return 0;
 }

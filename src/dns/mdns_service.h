@@ -29,7 +29,7 @@
 #include "dns_config.h"
 #include "reflection_list.h"
 #include "mdns_mapper.h"
-
+#include "../subnet/subnet_service.h"
 /**
  * @brief The mDNS context.
  * 
@@ -37,7 +37,9 @@
 struct mdns_context {
   struct reflection_list *rif4;                 /**< IP4 reflection list. */
   struct reflection_list *rif6;                 /**< IP6 reflection list. */
-  hmap_mdns_conn *imap;                     /**< mDNS mapper. */
+  hmap_mdns_conn *imap;                         /**< mDNS mapper. */
+  hmap_vlan_conn  *vlan_mapper;                 /**< WiFi VLAN to interface mapper */
+  struct mdns_conf config;                      /**< mDNS config. */
 };
 
 /**
@@ -46,7 +48,7 @@ struct mdns_context {
  * @param config The mDNS config structure
  * @return int 0 on success, -1 on failure
  */
-int run_mdns(struct supervisor_context *context);
+int run_mdns(struct mdns_context *context);
 
 /**
  * @brief Closes mDNS service

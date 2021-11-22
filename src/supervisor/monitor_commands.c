@@ -296,15 +296,15 @@ int set_traffic_cmd(struct supervisor_context *context, char *src_ip_addr, char 
     return 0;
   }
 
-  if ((ret = check_mdns_mapper_req(&context->mdns_ctx->imap, sip, MDNS_REQUEST_ANSWER)) < 0) {
-    log_trace("check_mdns_mapper_req fail");
-    return -1;
-  }
+  // if ((ret = check_mdns_mapper_req(&context->mdns_ctx->imap, sip, MDNS_REQUEST_ANSWER)) < 0) {
+  //   log_trace("check_mdns_mapper_req fail");
+  //   return -1;
+  // }
   
-  if ((retd = check_mdns_mapper_req(&context->mdns_ctx->imap, dip, MDNS_REQUEST_ANSWER)) < 0) {
-    log_trace("check_mdns_mapper_req fail");
-    return -1;
-  }
+  // if ((retd = check_mdns_mapper_req(&context->mdns_ctx->imap, dip, MDNS_REQUEST_ANSWER)) < 0) {
+  //   log_trace("check_mdns_mapper_req fail");
+  //   return -1;
+  // }
   
   if (ret > 0 || retd > 0) {
     log_trace("Found mDNS answer request for src ip=%s and dst ip", src_ip_addr, dst_ip_addr);

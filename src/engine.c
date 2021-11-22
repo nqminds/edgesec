@@ -162,7 +162,6 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
   ctx->hmap_bin_paths = NULL;
   ctx->radius_srv = NULL;
   ctx->crypt_ctx = NULL;
-  ctx->mdns_ctx = NULL;
   ctx->ticket = NULL;
   ctx->iptables_ctx = NULL;
   ctx->fingeprint_db = NULL;
@@ -393,12 +392,6 @@ bool run_engine(struct app_config *app_config)
     goto run_engine_fail;
   }
 
-  log_info("Running the mdns service...");
-  if (run_mdns(&context) < 0) {
-    log_debug("run_mdns fail");
-    goto run_engine_fail;
-  }
-
   log_info("++++++++++++++++++");
   log_info("Running event loop");
   log_info("++++++++++++++++++");
@@ -407,7 +400,6 @@ bool run_engine(struct app_config *app_config)
   close_supervisor(&context);
   close_ap(&context);
   close_dhcp();
-  close_mdns(context.mdns_ctx);
   close_radius(context.radius_srv);
   eloop_destroy();
   hmap_str_keychar_free(&context.hmap_bin_paths);
@@ -425,7 +417,6 @@ run_engine_fail:
   close_supervisor(&context);
   close_ap(&context);
   close_dhcp();
-  close_mdns(context.mdns_ctx);
   close_radius(context.radius_srv);
   eloop_destroy();
   hmap_str_keychar_free(&context.hmap_bin_paths);

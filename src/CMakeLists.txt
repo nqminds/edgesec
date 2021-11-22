@@ -25,6 +25,10 @@ add_library(config config.c)
 target_include_directories(config PUBLIC ${LIBSQLITE_INCLUDE_DIR})
 target_link_libraries(config minIni mac_mapper)
 
+add_executable(mdnsf mdnsf.c)
+target_include_directories(mdnsf PRIVATE ${LIBPCAP_INCLUDE_PATH} ${PROJECT_BINARY_DIR})
+target_link_libraries(mdnsf PRIVATE mdns_service subnet_service config minIni log os)
+
 if (BUILD_CAPTURE_SERVICE)
   add_executable(capsrv capsrv.c)
   target_include_directories(capsrv PRIVATE ${LIBPCAP_INCLUDE_PATH} ${PROJECT_BINARY_DIR})

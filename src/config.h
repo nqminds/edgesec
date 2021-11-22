@@ -89,12 +89,57 @@ struct app_config {
  */
 bool load_app_config(const char *filename, struct app_config *config);
 
+
+/**
+ * @brief Frees the app configuration
+ * 
+ * @param config The app configuration structure
+ * @return true on success, false otherwise
+ */
+void free_app_config(struct app_config *config);
+
 /**
  * @brief Loads the capture config
  * 
  * @param filename The app configuration file
- * @param config The configuration structure
+ * @param config The capture configuration structure
  * @return true on success, false otherwise
  */
 bool load_capture_config(const char *filename, struct capture_conf *config);
+
+/**
+ * @brief Loads the system config
+ * 
+ * @param filename The app configuration file
+ * @param config The app configuration structure
+ * @return true on success, false otherwise
+ */
+bool load_system_config(const char *filename, struct app_config *config);
+
+/**
+ * @brief Loads the supervisor config
+ * 
+ * @param filename The app configuration file
+ * @param config The app configuration structure
+ * @return true on success, false otherwise
+ */
+bool load_supervisor_config(const char *filename, struct app_config *config);
+
+/**
+ * @brief Loads the mDNS config
+ * 
+ * @param filename The app configuration file
+ * @param config The app configuration structure
+ * @return true on success, false otherwise
+ */
+bool load_mdns_conf(const char *filename, struct app_config *config);
+
+/**
+ * @brief Loads the list of interfcaes
+ * 
+ * @param filename The app configuration file
+ * @param config The app configuration structure
+ * @return true on success, false otherwise
+ */
+bool load_interface_list(const char *filename, struct app_config *config);
 #endif
