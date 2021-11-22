@@ -47,6 +47,7 @@
 #include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/minIni.h"
+#include "utils/squeue.h"
 
 static __thread char version_buf[10];
 
@@ -141,12 +142,57 @@ int init_mdns_context(struct app_config *config, struct mdns_context *context)
   os_memset(context, 0, sizeof(struct mdns_context));
 
   context->config = config->mdns_config;
+  context->pctx = NULL;
 
   if (!create_vlan_mapper(config->config_ifinfo_array, &context->vlan_mapper)) {
     fprintf(stderr, "create_if_mapper fail");
     return -1;
   }
 
+  os_strlcpy(context->filter, config->mdns_config.filter, MAX_FILTER_SIZE);
+
+  generate_radom_uuid(context->cap_id);
+
+  if (get_hostname(context->hostname) < 0) {
+    fprintf(stderr, "get_hostname fail");
+    return -1;
+  }
+
+  return 0;
+}
+
+int get_interface_list_str(UT_array *config_ifinfo_array, char **ifname)
+{
+  struct string_queue* squeue = NULL;
+  config_ifinfo_t *p = NULL;
+
+  *ifname = NULL;
+
+  if ((squeue = init_string_queue(-1)) == NULL) {
+    fprintf(stderr, "init_string_queue fail");
+    return -1;
+  }
+
+  while((p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) != NULL) {
+    if (push_string_queue(squeue, p->ifname) < 0) {
+      fprintf(stderr, "push_string_queue fail");
+      free_string_queue(squeue);
+      return -1;
+    }
+    if (push_string_queue(squeue, ",") < 0) {
+      fprintf(stderr, "push_string_queue fail");
+      free_string_queue(squeue);
+      return -1;
+    }
+  }
+
+  if ((*ifname = concat_string_queue(squeue, -1)) == NULL) {
+    fprintf(stderr, "concat_string_queue fail\n");
+    free_string_queue(squeue);
+    return -1;
+  }
+
+  free_string_queue(squeue);
   return 0;
 }
 
@@ -206,10 +252,29 @@ int main(int argc, char *argv[])
   }
 
   if(!load_interface_list(filename, &config)) {
+    fprintf(stderr, "load_interface_list fail");
+    return EXIT_FAILURE;
+  }
+
+  if (!load_ap_conf(filename, &config)) {
+    fprintf(stderr, "load_ap_conf fail");
+    return EXIT_FAILURE;
+  }
+
+  if (!init_ifbridge_names(config.config_ifinfo_array, config.hconfig.vlan_bridge)) {
+    fprintf(stderr, "init_ifbridge_names fail");
     return EXIT_FAILURE;
   }
 
   if (init_mdns_context(&config, &context) < 0) {
+    fprintf(stderr, "init_mdns_context fail");
+    utarray_free(config.config_ifinfo_array);
+    free_vlan_mapper(&context.vlan_mapper);
+    return EXIT_FAILURE;
+  }
+
+  if(get_interface_list_str(config.config_ifinfo_array, &context.ifname) < 0) {
+    fprintf(stderr, "get_interface_list_str fail");
     utarray_free(config.config_ifinfo_array);
     free_vlan_mapper(&context.vlan_mapper);
     return EXIT_FAILURE;
@@ -219,6 +284,7 @@ int main(int argc, char *argv[])
     fprintf(stderr, "mutex init has failed\n");
     free_vlan_mapper(&context.vlan_mapper);
     utarray_free(config.config_ifinfo_array);
+    os_free(context.ifname);
     return EXIT_FAILURE;
   }
 
@@ -226,13 +292,14 @@ int main(int argc, char *argv[])
     fprintf(stderr, "run_mdns has failed\n");
     free_vlan_mapper(&context.vlan_mapper);
     utarray_free(config.config_ifinfo_array);
+    os_free(context.ifname);
     return EXIT_FAILURE;
   }
 
-  close_mdns(&context);
   pthread_mutex_destroy(&log_lock);
   utarray_free(config.config_ifinfo_array);
   free_vlan_mapper(&context.vlan_mapper);
+  os_free(context.ifname);
 
   return EXIT_SUCCESS;
 }

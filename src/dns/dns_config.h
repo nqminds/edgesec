@@ -62,7 +62,6 @@ struct mdns_conf {
   char domain_server_path[MAX_OS_PATH_LEN];                   /**< Specifies the path to the UNIX domain socket server */
   char domain_command[MAX_SUPERVISOR_CMD_SIZE];               /**< Specifies the UNIX domain command */
   char domain_delim;                                          /**< Specifies the UNIX domain command delimiter */
-  char capture_interface[MAX_CAPIF_LIST_SIZE];                /**< The capture interface name(s) (if multiple delimited by space) */
   char filter[MAX_FILTER_SIZE];                               /**< Specifies the filter expression or pcap lib */
   bool reflect_ip4;                                           /**< Reflect mDNS IP4 addresses. */
   bool reflect_ip6;                                           /**< Reflect mDNS IP6 addresses. */

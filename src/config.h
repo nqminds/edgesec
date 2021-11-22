@@ -135,11 +135,20 @@ bool load_supervisor_config(const char *filename, struct app_config *config);
 bool load_mdns_conf(const char *filename, struct app_config *config);
 
 /**
- * @brief Loads the list of interfcaes
+ * @brief Loads the list of interfaces
  * 
  * @param filename The app configuration file
  * @param config The app configuration structure
  * @return true on success, false otherwise
  */
 bool load_interface_list(const char *filename, struct app_config *config);
+
+/**
+ * @brief Loads the AP config
+ * 
+ * @param filename The app configuration file
+ * @param config The app configuration structure
+ * @return true on success, false otherwise
+ */
+bool load_ap_conf(const char *filename, struct app_config *config);
 #endif

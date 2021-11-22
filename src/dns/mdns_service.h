@@ -39,7 +39,13 @@ struct mdns_context {
   struct reflection_list *rif6;                 /**< IP6 reflection list. */
   hmap_mdns_conn *imap;                         /**< mDNS mapper. */
   hmap_vlan_conn  *vlan_mapper;                 /**< WiFi VLAN to interface mapper */
+  struct pcap_context* pctx;                    /**< The pcap context */
   struct mdns_conf config;                      /**< mDNS config. */
+  char *ifname;                                 /**< Specifies the interface for pcap lib. */      
+  char filter[MAX_FILTER_SIZE];                 /**< Specifies the filter expression for pcap lib */
+  char cap_id[MAX_RANDOM_UUID_LEN];             /**< Auto generated capture ID */
+  char hostname[OS_HOST_NAME_MAX];              /**< The capture hostname */
+
 };
 
 /**

@@ -455,11 +455,25 @@ bool load_dns_conf(const char *filename, struct app_config *config)
 
 bool load_mdns_conf(const char *filename, struct app_config *config)
 {
+  int ret;
+  char *value = NULL;
+
   // Load mdnsReflectIp4 param
   config->mdns_config.reflect_ip4 = (int) ini_getbool("dns", "mdnsReflectIp4", 0, filename);
 
   // Load mdnsReflectIp6 param
   config->mdns_config.reflect_ip6 = (int) ini_getbool("dns", "mdnsReflectIp6", 0, filename);
+
+  value = os_zalloc(INI_BUFFERSIZE);
+  ret = ini_gets("dns", "mdnsFilter", "", value, INI_BUFFERSIZE, filename);
+  if (!ret) {
+    log_debug("dns mdnsFilter was not specified\n");
+    os_free(value);
+    return false;
+  }
+
+  os_strlcpy(config->mdns_config.filter, value, MAX_OS_PATH_LEN);
+  os_free(value);
 
   return true;
 }

@@ -129,6 +129,7 @@ int create_recv_mcast(const struct sockaddr_storage *sa, socklen_t sa_len, uint3
   int on = 1;
   int fd, flags;
 
+  errno = 0;
   switch (sa->ss_family) {
     case AF_INET6:
       if ((fd = socket(AF_INET6, SOCK_DGRAM, 0)) < 0) {

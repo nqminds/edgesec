@@ -2,9 +2,6 @@ include_directories (
   "${EDGESEC_SOURCE_DIR}/src"
 )
 
-add_library(dns_config dns_config.c)
-target_link_libraries(dns_config PRIVATE os)
-
 add_library(mdns_list mdns_list.c)
 target_link_libraries(mdns_list PRIVATE os)
 
@@ -20,4 +17,4 @@ target_link_libraries(reflection_list PRIVATE os log)
 
 add_library(mdns_service mdns_service.c)
 target_include_directories(mdns_service PRIVATE "${LIBSQLITE_INCLUDE_DIR}")
-target_link_libraries(mdns_service PUBLIC mdns_mapper PRIVATE reflection_list mcast mdns_decoder domain eloop if os log)
+target_link_libraries(mdns_service PUBLIC packet_queue mdns_mapper PRIVATE pcap_service reflection_list mcast mdns_decoder domain eloop if os log)

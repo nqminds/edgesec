@@ -55,7 +55,7 @@ option(BUILD_MICROHTTPD_LIB "Build microhttpd library" ON)
 option(BUILD_UUID_LIB "Build uuid library" ON)
 option(BUILD_PCAP_LIB "Build pcap library" ON)
 option(BUILD_NDPI_LIB "Build nDPI library" ON)
-option(BUILD_GRPC_LIB "Build gRPC library (warning, cross-compiling does not work well)" OFF)
+option(BUILD_GRPC_LIB "Build gRPC library (warning, cross-compiling does not work well)" ON)
 option(BUILD_SQLSYNC_SERVICE "Build sqlsync service" ON)
 option(BUILD_REVERSE_SERVICE "Build Reverse service" ON)
 
