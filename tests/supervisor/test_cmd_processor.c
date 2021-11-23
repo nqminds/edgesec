@@ -25,74 +25,118 @@
 
 ssize_t __wrap_write_domain_data(int sock, char *data, size_t data_len, struct sockaddr_un *addr, int addr_len)
 {
+  (void) sock;
+  (void) data;
+  (void) addr;
+  (void) addr_len;
+
   return data_len;
 }
 
 int __wrap_subscribe_events_cmd(struct supervisor_context *context, struct client_address *addr)
 {
+  (void) context;
+
   check_expected(addr);
+
   return 0;
 }
 
 int __wrap_accept_mac_cmd(struct supervisor_context *context, uint8_t *mac_addr, int vlanid)
 {
+  (void) context;
+
   check_expected(mac_addr);
   check_expected(vlanid);
+
   return 0;
 }
 
 int __wrap_deny_mac_cmd(struct supervisor_context *context, uint8_t *mac_addr)
 {
+  (void) context;
+
   check_expected(mac_addr);
+
   return 0;
 }
 
 int __wrap_add_nat_cmd(struct supervisor_context *context, uint8_t *mac_addr)
 {
+  (void) context;
+
   check_expected(mac_addr);
+
   return 0;
 }
 
 int __wrap_remove_nat_cmd(struct supervisor_context *context, uint8_t *mac_addr)
 {
+  (void) context;
+
   check_expected(mac_addr);
+
   return 0;
 }
 
 int __wrap_assign_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr, char *pass, int pass_len)
 {
+  (void) context;
+
   check_expected(mac_addr);
   check_expected(pass);
   check_expected(pass_len);
+
   return 0;
 }
 
 int __wrap_set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr, char *ip_addr, enum DHCP_IP_TYPE ip_type)
 {
+  (void) context;
 
   check_expected(mac_addr);
   check_expected(ip_addr);
   check_expected(ip_type);
+
   return 0;
 }
 
-int __wrap_add_bridge_cmd(struct supervisor_context *context, uint8_t *left_mac_addr, uint8_t *right_mac_addr)
+int __wrap_add_bridge_mac_cmd(struct supervisor_context *context, uint8_t *left_mac_addr, uint8_t *right_mac_addr)
 {
+  (void) context;
+
   check_expected(left_mac_addr);
   check_expected(right_mac_addr);
+
+  return 0;
+}
+
+int __wrap_add_bridge_ip_cmd(struct supervisor_context *context, char *left_ip_addr, char *right_ip_addr)
+{
+  (void) context;
+
+  check_expected(left_ip_addr);
+  check_expected(right_ip_addr);
+
   return 0;
 }
 
 int __wrap_remove_bridge_cmd(struct supervisor_context *context, uint8_t *left_mac_addr, uint8_t *right_mac_addr)
 {
+  (void) context;
+
   check_expected(left_mac_addr);
   check_expected(right_mac_addr);
+
   return 0;
 }
 
 int __wrap_clear_bridges_cmd(struct supervisor_context *context, uint8_t *mac_addr)
 {
+  (void) context;
+
   check_expected(mac_addr);
+
   return 0;
 }
 
@@ -100,119 +144,164 @@ int __wrap_set_fingerprint_cmd(struct supervisor_context *context, char *src_mac
                         char *dst_mac_addr, char *protocol, char *fingerprint,
                         uint64_t timestamp, char *query)
 {
+  (void) context;
+
   check_expected(src_mac_addr);
   check_expected(dst_mac_addr);
   check_expected(protocol);
   check_expected(fingerprint);
   check_expected(timestamp);
   check_expected(query);
+
   return 0;
 }
 
 int __wrap_set_traffic_cmd(struct supervisor_context *context, char *src_ip_addr, char *dst_ip_addr)
 {
+  (void) context;
+
   check_expected(src_ip_addr);
   check_expected(dst_ip_addr);
+
   return 0;
 }
 
 ssize_t __wrap_query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr, uint64_t timestamp,
                         char *op, char *protocol, char **out)
 {
+  (void) context;
+
   check_expected(mac_addr);
   check_expected(timestamp);
   check_expected(op);
   check_expected(protocol);
   *out = os_malloc(sizeof(char));
+
   return strlen(OK_REPLY);
 }
 
 uint8_t* __wrap_register_ticket_cmd(struct supervisor_context *context, uint8_t *mac_addr, char *label,
                         int vlanid)
 {
+  (void) context;
+
   check_expected(mac_addr);
   check_expected(label);
   check_expected(vlanid);
-  return OK_REPLY;
+
+  return (uint8_t *)OK_REPLY;
 }
 
 int __wrap_clear_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr)
 {
+  (void) context;
+
   check_expected(mac_addr);
+
   return 0;
 }
 
 int __wrap_put_crypt_cmd(struct supervisor_context *context, char *key, char *value)
 {
+  (void) context;
+
   check_expected(key);
   check_expected(value);
+
   return 0;
 }
 
 int __wrap_get_crypt_cmd(struct supervisor_context *context, char *key, char **value)
 {
+  (void) context;
+
   check_expected(key);
   *value = os_strdup(OK_REPLY);
+
   return 0;
 }
 
 int __wrap_gen_randkey_cmd(struct supervisor_context *context, char *keyid, int size)
 {
+  (void) context;
+
   check_expected(keyid);
   check_expected(size);
+
   return 0;
 }
 
 int __wrap_gen_privkey_cmd(struct supervisor_context *context, char *keyid, int size)
 {
+  (void) context;
+
   check_expected(keyid);
   check_expected(size);
+
   return 0;
 }
 
 int __wrap_gen_pubkey_cmd(struct supervisor_context *context, char *pubid, char *keyid)
 {
+  (void) context;
+
   check_expected(pubid);
   check_expected(keyid);
+
   return 0;
 }
 
 int __wrap_gen_cert_cmd(struct supervisor_context *context, char *certid, char *keyid,
                         struct certificate_meta *meta)
 {
+  (void) context;
+
   check_expected(certid);
   check_expected(keyid);
   check_expected(meta);
+
   return 0;
 }
 
 char* __wrap_encrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *ivid, char *blob)
 {
+  (void) context;
+
   check_expected(keyid);
   check_expected(ivid);
   check_expected(blob);
+
   return os_strdup(OK_REPLY);
 }
 
 char* __wrap_decrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *ivid, char *blob)
 {
+  (void) context;
+
   check_expected(keyid);
   check_expected(ivid);
   check_expected(blob);
-    return os_strdup(OK_REPLY);
+
+  return os_strdup(OK_REPLY);
 }
 
 char* __wrap_sign_blob_cmd(struct supervisor_context *context, char *keyid, char *blob)
 {
+  (void) context;
+
   check_expected(keyid);
   check_expected(blob);
-    return os_strdup(OK_REPLY);
+
+  return os_strdup(OK_REPLY);
 }
 
 int __wrap_get_mac_mapper(hmap_mac_conn **hmap, uint8_t mac_addr[ETH_ALEN], struct mac_conn_info *info)
 {
+  (void) hmap;
+
   check_expected(mac_addr);
   check_expected(info);
+
   return 1;
 }
 
@@ -407,7 +496,7 @@ static void test_process_get_map_cmd(void **state)
   expect_any(__wrap_get_mac_mapper, info);
 
   int ret = process_get_map_cmd(0, &claddr, &context, cmd_arr);
-  bool comp = ret > STRLEN("11:22:33:44:55:66");
+  bool comp = ret > (int) (STRLEN("11:22:33:44:55:66"));
   assert_true(comp);
   utarray_free(cmd_arr);
 
@@ -448,7 +537,7 @@ static void test_process_get_all_cmd(void **state)
   put_mac_mapper(&(ctx.mac_mapper), p);
 
   int ret = process_get_all_cmd(0,&claddr, &ctx, cmd_arr);
-  bool comp = ret > 2 * STRLEN("11:22:33:44:55:66");
+  bool comp = ret > (int) (2 * STRLEN("11:22:33:44:55:66"));
   assert_true(comp);
   utarray_free(cmd_arr);
   free_mac_mapper(&(ctx.mac_mapper));
@@ -515,8 +604,8 @@ static void test_process_add_bridge_cmd(void **state)
 
   utarray_new(cmd_arr, &ut_str_icd);
   assert_int_not_equal(split_string_array("ADD_BRIDGE 11:22:33:44:55:66 aa:bb:cc:dd:ee:ff", CMD_DELIMITER, cmd_arr), -1);
-  expect_memory(__wrap_add_bridge_cmd, left_mac_addr, addr1, ETH_ALEN);
-  expect_memory(__wrap_add_bridge_cmd, right_mac_addr, addr2, ETH_ALEN);
+  expect_memory(__wrap_add_bridge_mac_cmd, left_mac_addr, addr1, ETH_ALEN);
+  expect_memory(__wrap_add_bridge_mac_cmd, right_mac_addr, addr2, ETH_ALEN);
   assert_int_equal(process_add_bridge_cmd(0, &claddr, NULL, cmd_arr), strlen(OK_REPLY));
   utarray_free(cmd_arr);
 
@@ -526,12 +615,39 @@ static void test_process_add_bridge_cmd(void **state)
   utarray_free(cmd_arr);
 
   utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("ADD_BRIDGE 11:22:33:44:55:66 10.0.1.2", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_add_bridge_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
   assert_int_not_equal(split_string_array("ADD_BRIDGE 11:22:33:44:55:66 aa:bb:cc:dd:ee:", CMD_DELIMITER, cmd_arr), -1);
   assert_int_equal(process_add_bridge_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
   utarray_free(cmd_arr);
 
   utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("ADD_BRIDGE 10.0.1.2 11:22:33:44:55:66", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_add_bridge_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
   assert_int_not_equal(split_string_array("ADD_BRIDGE", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_add_bridge_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("ADD_BRIDGE 10.0.1.2 10.0.3.2", CMD_DELIMITER, cmd_arr), -1);
+  expect_string(__wrap_add_bridge_ip_cmd, left_ip_addr, "10.0.1.2");
+  expect_string(__wrap_add_bridge_ip_cmd, right_ip_addr, "10.0.3.2");
+  assert_int_equal(process_add_bridge_cmd(0, &claddr, NULL, cmd_arr), strlen(OK_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("ADD_BRIDGE 10.0.1.2 10.0.3.", CMD_DELIMITER, cmd_arr), -1);
+  assert_int_equal(process_add_bridge_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
+  utarray_free(cmd_arr);
+
+  utarray_new(cmd_arr, &ut_str_icd);
+  assert_int_not_equal(split_string_array("ADD_BRIDGE 10.0.1. 10.0.3.1", CMD_DELIMITER, cmd_arr), -1);
   assert_int_equal(process_add_bridge_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
   utarray_free(cmd_arr);
 }
@@ -996,6 +1112,8 @@ static void test_process_sign_blob(void **state)
 
 int main(int argc, char *argv[])
 {  
+  (void) argc;
+  (void) argv;
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {

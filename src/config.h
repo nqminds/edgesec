@@ -52,6 +52,7 @@ struct app_config {
   bool                exec_radius;                          /**< Flag to execute the radius service. */
   bool                exec_dhcp;                            /**< Flag to execute the dhcp service. */
   bool                exec_capture;                         /**< Flag to execute the capture service. */
+  bool                exec_mdns_forward;                    /**< Flag to execute the mdns forwarding service. */
   bool                exec_iptables;                        /**< Flag to execute the iptables command. */
   char                nat_interface[IFNAMSIZ];              /**< The NAT interface string. */
   bool                create_interfaces;                    /**< Flag to create the WiFi subnet interfaces. */
@@ -72,6 +73,7 @@ struct app_config {
   bool                kill_running_proc;                    /**< Flag to terminate running app processes. */
   bool                set_ip_forward;                       /**< Flag to set the ip forward os system param. */
   char                pid_file_path[MAX_OS_PATH_LEN];       /**< Path to the pid file. */
+  char                config_ini_path[MAX_OS_PATH_LEN];     /**< Path to the config.ini file. */
   struct radius_conf  rconfig;                              /**< Radius service configuration. */
   struct apconf       hconfig;                              /**< AP service configuration. */
   struct dns_conf     dns_config;                           /**< DNS service configuration. */

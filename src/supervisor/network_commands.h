@@ -102,14 +102,24 @@ int assign_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr,
   char *pass, int pass_len);
 
 /**
- * @brief ADD_BRIDGE command
+ * @brief ADD_BRIDGE command (MAC address input)
  * 
  * @param context The supervisor structure instance
  * @param left_mac_addr The left MAC address
  * @param right_mac_addr The right MAC address
  * @return int 0 on success, -1 on failure
  */
-int add_bridge_cmd(struct supervisor_context *context, uint8_t *left_mac_addr, uint8_t *right_mac_addr);
+int add_bridge_mac_cmd(struct supervisor_context *context, uint8_t *left_mac_addr, uint8_t *right_mac_addr);
+
+/**
+ * @brief ADD_BRIDGE command (IP address input)
+ * 
+ * @param context The supervisor structure instance
+ * @param left_ip_addr The left IP address
+ * @param right_ip_addr The right IP address
+ * @return int 0 on success, -1 on failure
+ */
+int add_bridge_ip_cmd(struct supervisor_context *context, char *left_ip_addr, char *right_ip_addr);
 
 /**
  * @brief REMOVE_BRIDGE command

@@ -354,8 +354,8 @@ ssize_t process_add_bridge_cmd(int sock, struct client_address *client_addr,
   struct supervisor_context *context, UT_array *cmd_arr)
 {
   char **ptr = (char**) utarray_next(cmd_arr, NULL);
-  uint8_t left_addr[ETH_ALEN];
-  uint8_t right_addr[ETH_ALEN];
+  uint8_t left_addr[ETH_ALEN], right_addr[ETH_ALEN];
+  char left_ip[IP_LONG_LEN], right_ip[IP_LONG_LEN];
 
   // MAC address source
   ptr = (char**) utarray_next(cmd_arr, ptr);
@@ -365,7 +365,23 @@ ssize_t process_add_bridge_cmd(int sock, struct client_address *client_addr,
       ptr = (char**) utarray_next(cmd_arr, ptr);
       if (ptr != NULL && *ptr != NULL) {
         if (hwaddr_aton2(*ptr, right_addr) != -1) {
-          if (add_bridge_cmd(context, left_addr, right_addr) < 0) {
+          if (add_bridge_mac_cmd(context, left_addr, right_addr) < 0) {
+            log_trace("add_bridge_cmd fail");
+            return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+          }
+          return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
+        }
+      }
+    } else if (validate_ipv4_string(*ptr)) {
+      os_strlcpy(left_ip, *ptr, IP_LONG_LEN);
+
+      // IP address destination
+      ptr = (char**) utarray_next(cmd_arr, ptr);
+      if (ptr != NULL && *ptr != NULL) {
+        if (validate_ipv4_string(*ptr)) {
+          os_strlcpy(right_ip, *ptr, IP_LONG_LEN);
+
+          if (add_bridge_ip_cmd(context, left_ip, right_ip) < 0) {
             log_trace("add_bridge_cmd fail");
             return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
           }

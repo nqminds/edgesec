@@ -342,7 +342,7 @@ int delete_bridge_ip(struct supervisor_context *context, char *ip_addr_left, cha
   return 0;
 }
 
-int add_bridge_cmd(struct supervisor_context *context, uint8_t *left_mac_addr, uint8_t *right_mac_addr)
+int add_bridge_mac_cmd(struct supervisor_context *context, uint8_t *left_mac_addr, uint8_t *right_mac_addr)
 {
   struct mac_conn_info left_info, right_info;
 
@@ -371,6 +371,45 @@ int add_bridge_cmd(struct supervisor_context *context, uint8_t *left_mac_addr, u
     }
   } else {
     log_trace("add_bridge_mac fail");
+    return -1;
+  }
+
+  return 0;
+}
+
+int add_bridge_ip_cmd(struct supervisor_context *context, char *left_ip_addr, char *right_ip_addr)
+{
+  int ret;
+  uint8_t left_mac_addr[ETH_ALEN], right_mac_addr[ETH_ALEN];
+
+  ret = get_ip_mapper(&context->mac_mapper, left_ip_addr, left_mac_addr);
+  if (ret < 0) {
+    log_trace("get_ip_mapper fail");
+    return -1;
+  } else if (!ret) {
+    log_trace("src MAC not found");
+    return -1;
+  }
+
+  ret = get_ip_mapper(&context->mac_mapper, right_ip_addr, right_mac_addr);
+
+  if (ret < 0) {
+    log_trace("get_ip_mapper fail");
+    return -1;
+  } else if (!ret) {
+    log_trace("dst MAC not found");
+    return -1;
+  }
+
+  log_trace("ADD_BRIDGE left_ip=%s, right_ip=", left_ip_addr, right_ip_addr);
+
+  if (check_bridge_exist(context->bridge_list, left_mac_addr, right_mac_addr) > 0) {
+    log_trace("Bridge between %s and %s already exists", left_ip_addr, right_ip_addr);
+    return 0;
+  }
+
+  if (add_bridge_mac_cmd(context, left_mac_addr, right_mac_addr) < 0) {
+    log_trace("add_bridge_cmd fail");
     return -1;
   }
 

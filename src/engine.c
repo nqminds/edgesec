@@ -240,6 +240,38 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
   return true;
 }
 
+// int run_forwared(char *config_ini_path)
+// {
+//   int ret;
+//   pid_t child_pid;
+//   char **process_argv = capture_config2opt(config);
+//   char *proc_name;
+//   if (process_argv == NULL) {
+//     log_trace("capture_config2opt fail");
+//     return -1;
+//   }
+
+//   ret = run_process(process_argv, &child_pid);
+
+//   if ((proc_name = os_strdup(basename(process_argv[0]))) == NULL) {
+//     log_err("os_malloc");
+//     capture_freeopt(process_argv);
+//     return -1;
+//   }
+
+//   if (is_proc_running(proc_name) <= 0) {
+//     log_trace("is_proc_running fail (%s)", proc_name);
+//     os_free(proc_name);
+//     capture_freeopt(process_argv);
+//     return -1;
+//   }
+
+//   log_trace("Found capture process running with pid=%d (%s)", child_pid, proc_name);
+//   os_free(proc_name);
+//   capture_freeopt(process_argv);
+//   return ret;
+// }
+
 bool run_engine(struct app_config *app_config)
 {
   struct supervisor_context context;
@@ -390,6 +422,11 @@ bool run_engine(struct app_config *app_config)
         app_config->exec_dhcp) == -1) {
     log_debug("run_dhcp fail");
     goto run_engine_fail;
+  }
+
+  if (app_config->exec_mdns_forward) {
+    log_info("Running the mdns forwarder service...");
+
   }
 
   log_info("++++++++++++++++++");

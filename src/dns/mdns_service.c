@@ -42,10 +42,13 @@
 #include "../utils/log.h"
 #include "../utils/eloop.h"
 #include "../utils/domain.h"
+#include "../utils/squeue.h"
+#include "../utils/hashmap.h"
 #include "../capture/mdns_decoder.h"
 #include "../capture/pcap_service.h"
 #include "../capture/packet_queue.h"
 #include "../supervisor/supervisor_config.h"
+#include "../supervisor/cmd_processor.h"
 
 #include "mdns_service.h"
 #include "reflection_list.h"
@@ -439,80 +442,141 @@ int close_mdns(struct mdns_context *context)
     free_mdns_mapper(&context->imap);
     context->imap = NULL;
 
-    close_pcap(context->pctx);
-    context->pctx = NULL;
+    free_pcap_list(context->pctx_list);
+    context->pctx_list = NULL;
+
+    free_command_mapper(&context->command_mapper);
+    context->command_mapper = NULL;
+
+    close_domain(context->sfd);
+    context->sfd = 0;
   }
 
   return 0;
 }
 
-int send_pcap_meta(struct mdns_context *context, struct tuple_packet *tp)
+int create_domain_command(char *src_ip, char *dst_ip, char delim, char **out)
 {
-  // struct ip4_schema *sch = NULL;
-  // struct string_queue* squeue = init_string_queue(-1);
-  // char delim_str[2];
-  // char *meta_out = NULL;
+  struct string_queue* squeue = NULL;
+  char delim_str[2];
 
-  // sprintf(delim_str, "%c", context->domain_delim);
+  sprintf(delim_str, "%c", delim);
 
-  // if (!os_strnlen_s(context->domain_command, MAX_SUPERVISOR_CMD_SIZE)) {
-  //   free_string_queue(squeue);
-  //   return 0;
-  // }
+  *out = NULL;
 
-  // if (push_string_queue(squeue, context->domain_command) < 0) {
-  //   log_trace("push_string_queue fail");
-  //   free_string_queue(squeue);
-  //   return -1;
-  // }
+  if ((squeue = init_string_queue(-1)) == NULL) {
+    log_trace("init_string_queue fail");
+    return -1;
+  }
 
-  // if (push_string_queue(squeue, delim_str) < 0) {
-  //   log_trace("push_string_queue fail");
-  //   free_string_queue(squeue);
-  //   return -1;
-  // }
+  if (push_string_queue(squeue, CMD_ADD_BRIDGE) < 0) {
+    log_trace("push_string_queue fail");
+    free_string_queue(squeue);
+    return -1;
+  }
 
-  // switch (tp->type) {
-  //   case PACKET_IP4:
-  //     sch = (struct ip4_schema *)tp->packet;
-  //     break;
-  //   default:
-  //     free_string_queue(squeue);
-  //     return 0;
-  // }
+  if (push_string_queue(squeue, delim_str) < 0) {
+    log_trace("push_string_queue fail");
+    free_string_queue(squeue);
+    return -1;
+  }
 
-  // if (push_string_queue(squeue, sch->ip_src) < 0) {
-  //   log_trace("push_string_queue fail");
-  //   free_string_queue(squeue);
-  //   return -1;
-  // }
+  if (push_string_queue(squeue, src_ip) < 0) {
+    log_trace("push_string_queue fail");
+    free_string_queue(squeue);
+    return -1;
+  }
 
-  // if (push_string_queue(squeue, delim_str) < 0) {
-  //   log_trace("push_string_queue fail");
-  //   free_string_queue(squeue);
-  //   return -1;
-  // }
+  if (push_string_queue(squeue, delim_str) < 0) {
+    log_trace("push_string_queue fail");
+    free_string_queue(squeue);
+    return -1;
+  }
 
-  // if (push_string_queue(squeue, sch->ip_dst) < 0) {
-  //   log_trace("push_string_queue fail");
-  //   free_string_queue(squeue);
-  //   return -1;
-  // }
-  // if ((meta_out = concat_string_queue(squeue, -1)) == NULL) {
-  //   free_string_queue(squeue);
-  //   return -1;
-  // }
+  if (push_string_queue(squeue, dst_ip) < 0) {
+    log_trace("push_string_queue fail");
+    free_string_queue(squeue);
+    return -1;
+  }
 
-  // // HERE send the meta string
-  // log_trace("%s", meta_out);
-  // if (write_domain_data_s(context->sfd, meta_out, strlen(meta_out), context->domain_server_path) < 0) {
-  //   log_debug("write_domain_data_s fail");
-  //   os_free(meta_out);
-  //   free_string_queue(squeue);
-  //   return -1;
-  // }
-  // os_free(meta_out);
-  // free_string_queue(squeue);
+  if ((*out = concat_string_queue(squeue, -1)) == NULL) {
+    free_string_queue(squeue);
+    return -1;
+  }
+
+  free_string_queue(squeue);
+  return 0;
+}
+
+int send_bridge_command(struct mdns_context *context, struct tuple_packet *tp)
+{
+  struct ip4_schema *sch = NULL;
+  char *domain = NULL;
+  uint8_t sip[IP_ALEN], dip[IP_ALEN];
+  int ret, retd;
+
+  if (tp->type == PACKET_IP4) {
+    sch = (struct ip4_schema *) tp->packet;
+  } else {
+    return 0;
+  }
+
+  if(ip4_2_buf(sch->ip_src, sip) < 0) {
+    log_trace("Wrong source IP4");
+    return -1;
+  }
+
+  if(ip4_2_buf(sch->ip_dst, dip) < 0) {
+    log_trace("Wrong source IP4");
+    return -1;
+  }
+
+  if ((ret = check_mdns_mapper_req(&context->imap, sip, MDNS_REQUEST_ANSWER)) < 0) {
+    log_trace("check_mdns_mapper_req fail");
+    return -1;
+  }
+  
+  if ((retd = check_mdns_mapper_req(&context->imap, dip, MDNS_REQUEST_ANSWER)) < 0) {
+    log_trace("check_mdns_mapper_req fail");
+    return -1;
+  }
+  
+  if (!ret && !retd) {
+    log_trace("Not found mDNS answer request for src ip=%s or dst ip=%s", sch->ip_src, sch->ip_dst);
+    return -1;
+  }
+
+  if (create_domain_command(sch->ip_src, sch->ip_dst,
+                            context->domain_delim, &domain) < 0)
+  {
+    log_trace("create_domain_command fail");
+    return -1;
+  }  
+
+  log_trace("%s", domain);
+
+  ret = check_command_mapper(&context->command_mapper, domain);
+  if (ret > 0) {
+    log_trace("Command in hash map");
+  } else if (!ret) {
+    if (put_command_mapper(&context->command_mapper, domain) < 0) {
+      log_trace("put_command_mapper fail");
+      os_free(domain);
+      return -1;
+    }
+
+    if (write_domain_data_s(context->sfd, domain, strlen(domain), context->domain_server_path) < 0) {
+      log_debug("write_domain_data_s fail");
+      os_free(domain);
+      return -1;
+    }
+
+  } else {
+    log_trace("check_command_mapper fail");
+    os_free(domain);
+    return -1;
+  }
+  os_free(domain);
   return 0;
 }
 
@@ -528,7 +592,7 @@ void mdns_pcap_callback(const void *ctx, const void *pcap_ctx,
   if (extract_packets(ltype, header, packet, pc->ifname,
                       context->hostname, context->cap_id, tp_array) > 0) {
     while((p = (struct tuple_packet *) utarray_next(tp_array, p)) != NULL) {
-      if (send_pcap_meta(context, p) < 0) {
+      if (send_bridge_command(context, p) < 0) {
         log_trace("send_pcap_meta fail");
       }
       free_packet_tuple(p);
@@ -538,12 +602,72 @@ void mdns_pcap_callback(const void *ctx, const void *pcap_ctx,
   utarray_free(tp_array);
 }
 
+void eloop_read_fd_handler(int sock, void *eloop_ctx, void *sock_ctx)
+{
+  (void) sock;
+  (void) sock_ctx;
+  struct pcap_context *pc = (struct pcap_context *) eloop_ctx;
+
+  if (capture_pcap_packet(pc) < 0) {
+    log_trace("capture_pcap_packet fail");
+  }
+}
+
+int run_capture(struct mdns_context *context)
+{
+  UT_array *interfaces = NULL;
+  char **ifname = NULL;
+  struct pcap_context *pctx = NULL; 
+  utarray_new(interfaces, &ut_str_icd);
+
+  if (split_string_array(context->ifname, ',', interfaces) < 0) {
+    log_debug("split_string_array fail");
+    utarray_free(interfaces);
+    return -1;
+  }
+
+  if ((context->pctx_list = create_pcap_list()) == NULL) {
+    log_trace("create_pcap_context_list fail");
+    utarray_free(interfaces);
+    return -1;  
+  }
+
+  while((ifname = (char**) utarray_next(interfaces, ifname)) != NULL) { 
+    if (!strlen(*ifname)) {
+      continue;
+    }
+
+    log_info("Registering pcap for ifname=%s", *ifname);
+    if (run_pcap(*ifname, false, false, MDNS_PCAP_BUFFER_TIMEOUT,
+                 context->filter, true, mdns_pcap_callback, (void *)context, &pctx) < 0) {
+      log_trace("run_pcap fail");
+      utarray_free(interfaces);
+      return -1;
+    }
+
+    utarray_push_back(context->pctx_list, &pctx);
+
+    if (eloop_register_read_sock(pctx->pcap_fd, eloop_read_fd_handler, (void*) pctx, (void *) NULL) ==  -1) {
+      log_debug("eloop_register_read_sock fail");
+      utarray_free(interfaces);
+      return -1;
+    }
+  }
+
+  utarray_free(interfaces);
+  return 0;
+}
+
 int run_mdns(struct mdns_context *context)
 { 
-  log_info("Interface=%s", context->ifname);
-
   if (init_reflections(&context->vlan_mapper, context) < 0) {
     log_trace("init_reflections fail");
+    return -1;
+  }
+
+  if ((context->sfd = create_domain_client(NULL)) < 0) {
+    log_debug("create_domain_client fail");
+    close_mdns(context);
     return -1;
   }
 
@@ -570,9 +694,8 @@ int run_mdns(struct mdns_context *context)
   log_info("Using ifname=%s", context->ifname);
   log_info("Using filter=%s", context->filter);
 
-  if (run_pcap(context->ifname, false, false, MDNS_PCAP_BUFFER_TIMEOUT,
-               context->filter, true, mdns_pcap_callback, (void *)&context, &context->pctx) < 0) {
-    log_trace("run_pcap fail");
+  if (run_capture(context) < 0) {
+    log_trace("run_capture fail");
     close_mdns(context);
     eloop_destroy();
     return -1;

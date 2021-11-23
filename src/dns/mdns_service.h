@@ -29,7 +29,9 @@
 #include "dns_config.h"
 #include "reflection_list.h"
 #include "mdns_mapper.h"
+#include "command_mapper.h"
 #include "../subnet/subnet_service.h"
+
 /**
  * @brief The mDNS context.
  * 
@@ -39,13 +41,16 @@ struct mdns_context {
   struct reflection_list *rif6;                 /**< IP6 reflection list. */
   hmap_mdns_conn *imap;                         /**< mDNS mapper. */
   hmap_vlan_conn  *vlan_mapper;                 /**< WiFi VLAN to interface mapper */
-  struct pcap_context* pctx;                    /**< The pcap context */
+  hmap_command_conn *command_mapper;            /**< The command mapper */
+  UT_array *pctx_list;                          /**< The list of pcap context */
   struct mdns_conf config;                      /**< mDNS config. */
   char *ifname;                                 /**< Specifies the interface for pcap lib. */      
   char filter[MAX_FILTER_SIZE];                 /**< Specifies the filter expression for pcap lib */
   char cap_id[MAX_RANDOM_UUID_LEN];             /**< Auto generated capture ID */
   char hostname[OS_HOST_NAME_MAX];              /**< The capture hostname */
-
+  char domain_server_path[MAX_OS_PATH_LEN];     /**< Specifies the path to the UNIX domain socket server */
+  char domain_delim;                            /**< Specifies the UNIX domain command delimiter */
+  int sfd;                                      /**< Domain client file descriptor */  
 };
 
 /**

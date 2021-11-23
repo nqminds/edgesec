@@ -35,6 +35,8 @@
 #define PCAP_SNAPSHOT_LENGTH  65535
 #define PCAP_BUFFER_SIZE      64*1024
 
+static const UT_icd pcap_list_icd = {sizeof(struct pcap_context *), NULL, NULL, NULL};
+
 bool find_device(char *ifname, bpf_u_int32 *net, bpf_u_int32 *mask)
 {
   pcap_if_t *temp = NULL, *ifs = NULL;
@@ -237,4 +239,27 @@ int dump_file_pcap(struct pcap_context *ctx, char *file_path, struct pcap_pkthdr
   pcap_dump((u_char*)dumper, header, packet);
   pcap_dump_close(dumper);
   return 0;
+}
+
+void free_pcap_list(UT_array *ctx_list)
+{
+  struct pcap_context **p = NULL;
+
+  if (ctx_list == NULL) {
+    return;
+  }
+
+  while((p = (struct pcap_context**) utarray_next(ctx_list, p)) != NULL) {
+    close_pcap(*p);
+  }
+
+  utarray_free(ctx_list);
+}
+
+UT_array * create_pcap_list(void)
+{
+  UT_array *ctx_list = NULL;
+  utarray_new(ctx_list, &pcap_list_icd);
+
+  return ctx_list;
 }

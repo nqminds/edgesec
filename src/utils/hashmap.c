@@ -99,11 +99,11 @@ bool hmap_str_keychar_put(hmap_str_keychar **hmap, char *keyptr, char *value)
 
 void hmap_str_keychar_free(hmap_str_keychar **hmap)
 {
-	hmap_str_keychar *current, *tmp;
+  hmap_str_keychar *current, *tmp;
 
-	HASH_ITER(hh, *hmap, current, tmp) {
-    HASH_DEL(*hmap, current);  							/* delete it (users advances to next) */
-		os_free(current->value);								/* free the value content */
-    os_free(current);            						/* free it */
+  HASH_ITER(hh, *hmap, current, tmp) {
+  	HASH_DEL(*hmap, current);  							/* delete it (users advances to next) */
+	os_free(current->value);								/* free the value content */
+  	os_free(current);            						/* free it */
   }
 }

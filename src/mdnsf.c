@@ -142,7 +142,11 @@ int init_mdns_context(struct app_config *config, struct mdns_context *context)
   os_memset(context, 0, sizeof(struct mdns_context));
 
   context->config = config->mdns_config;
-  context->pctx = NULL;
+  context->pctx_list = NULL;
+  os_strlcpy(context->domain_server_path, config->domain_server_path, MAX_OS_PATH_LEN);
+  context->domain_delim = config->domain_delim;
+  context->command_mapper = NULL;
+  context->sfd = 0;
 
   if (!create_vlan_mapper(config->config_ifinfo_array, &context->vlan_mapper)) {
     fprintf(stderr, "create_if_mapper fail");

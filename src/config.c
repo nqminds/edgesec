@@ -664,6 +664,9 @@ bool load_system_config(const char *filename, struct app_config *config)
   // Load the exec capture flag
   config->exec_capture = ini_getbool("system", "execCapture", 1, filename);
 
+  // Load the exec mdns forward flag
+  config->exec_mdns_forward = ini_getbool("system", "execMdnsForward", 0, filename);
+
   // Load the exec iptables flag
   config->exec_iptables = ini_getbool("system", "execIptables", 1, filename);
 
@@ -790,6 +793,8 @@ bool load_app_config(const char *filename, struct app_config *config)
     return false;
   }
   fclose(fp);
+
+  os_strlcpy(config->config_ini_path, filename, MAX_OS_PATH_LEN);
 
   if (!load_system_config(filename, config)) {
     log_debug("load_system_config fail");

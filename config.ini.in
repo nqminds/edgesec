@@ -20,6 +20,7 @@ execAp = true
 execRadius = true
 execDhcp = true
 execCapture = true
+execMdnsForward = false
 execIptables = true
 setIpForward = true
 dbPath = "@EDGESEC_full_local_lib_dir@/db"

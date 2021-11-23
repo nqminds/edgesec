@@ -30,6 +30,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "../utils/utarray.h"
+
 typedef void (*capture_callback_fn)(const void *ctx, const void *pcap_ctx,
                                     char *ltype, struct pcap_pkthdr *header, uint8_t *packet);
 
@@ -111,4 +113,18 @@ int dump_file_pcap(struct pcap_context *ctx, char *file_path, struct pcap_pkthdr
  * @param ctx The pcap context
  */
 void close_pcap(struct pcap_context *ctx);
+
+/**
+ * @brief Frees a pcap list
+ * 
+ * @param ctx_list The pcap list
+ */
+void free_pcap_list(UT_array *ctx_list);
+
+/**
+ * @brief Creates a pcap list
+ * 
+ * @return UT_array* The pcap list, NULL on failure
+ */
+UT_array * create_pcap_list(void);
 #endif

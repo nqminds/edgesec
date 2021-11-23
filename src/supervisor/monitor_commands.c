@@ -256,45 +256,45 @@ ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr
 
 int set_traffic_cmd(struct supervisor_context *context, char *src_ip_addr, char *dst_ip_addr)
 {
-  int ret, retd;
-  uint8_t src_mac_addr[ETH_ALEN], dst_mac_addr[ETH_ALEN];
-  uint8_t sip[IP_ALEN], dip[IP_ALEN];
+  // int ret, retd;
+  // uint8_t src_mac_addr[ETH_ALEN], dst_mac_addr[ETH_ALEN];
+  // uint8_t sip[IP_ALEN], dip[IP_ALEN];
 
-  log_trace("SET_TRAFFIC for src_ip=%s and dst_ip=%s", src_ip_addr, dst_ip_addr);
+  // log_trace("SET_TRAFFIC for src_ip=%s and dst_ip=%s", src_ip_addr, dst_ip_addr);
 
-  if(ip4_2_buf(src_ip_addr, sip) < 0) {
-    log_trace("Wrong source IP4");
-    return -1;
-  }
+  // if(ip4_2_buf(src_ip_addr, sip) < 0) {
+  //   log_trace("Wrong source IP4");
+  //   return -1;
+  // }
 
-  if(ip4_2_buf(dst_ip_addr, dip) < 0) {
-    log_trace("Wrong source IP4");
-    return -1;
-  }
+  // if(ip4_2_buf(dst_ip_addr, dip) < 0) {
+  //   log_trace("Wrong source IP4");
+  //   return -1;
+  // }
 
-  ret = get_ip_mapper(&context->mac_mapper, src_ip_addr, src_mac_addr);
-  if (ret < 0) {
-    log_trace("get_ip_mapper fail");
-    return -1;
-  } else if (!ret) {
-    log_trace("src MAC not found");
-    return -1;
-  }
+  // ret = get_ip_mapper(&context->mac_mapper, src_ip_addr, src_mac_addr);
+  // if (ret < 0) {
+  //   log_trace("get_ip_mapper fail");
+  //   return -1;
+  // } else if (!ret) {
+  //   log_trace("src MAC not found");
+  //   return -1;
+  // }
 
-  ret = get_ip_mapper(&context->mac_mapper, dst_ip_addr, dst_mac_addr);
+  // ret = get_ip_mapper(&context->mac_mapper, dst_ip_addr, dst_mac_addr);
 
-  if (ret < 0) {
-    log_trace("get_ip_mapper fail");
-    return -1;
-  } else if (!ret) {
-    log_trace("dst MAC not found");
-    return -1;
-  }
+  // if (ret < 0) {
+  //   log_trace("get_ip_mapper fail");
+  //   return -1;
+  // } else if (!ret) {
+  //   log_trace("dst MAC not found");
+  //   return -1;
+  // }
 
-  if (check_bridge_exist(context->bridge_list, src_mac_addr, dst_mac_addr) > 0) {
-    log_trace("Bridge between %s and %s already exists", src_ip_addr, dst_ip_addr);
-    return 0;
-  }
+  // if (check_bridge_exist(context->bridge_list, src_mac_addr, dst_mac_addr) > 0) {
+  //   log_trace("Bridge between %s and %s already exists", src_ip_addr, dst_ip_addr);
+  //   return 0;
+  // }
 
   // if ((ret = check_mdns_mapper_req(&context->mdns_ctx->imap, sip, MDNS_REQUEST_ANSWER)) < 0) {
   //   log_trace("check_mdns_mapper_req fail");
@@ -306,13 +306,13 @@ int set_traffic_cmd(struct supervisor_context *context, char *src_ip_addr, char 
   //   return -1;
   // }
   
-  if (ret > 0 || retd > 0) {
-    log_trace("Found mDNS answer request for src ip=%s and dst ip", src_ip_addr, dst_ip_addr);
-    if (add_bridge_cmd(context, src_mac_addr, dst_mac_addr) < 0) {
-      log_trace("add_bridge_cmd fail");
-      return -1;
-    }
-  }
+  // if (ret > 0 || retd > 0) {
+  //   log_trace("Found mDNS answer request for src ip=%s and dst ip", src_ip_addr, dst_ip_addr);
+  //   if (add_bridge_cmd(context, src_mac_addr, dst_mac_addr) < 0) {
+  //     log_trace("add_bridge_cmd fail");
+  //     return -1;
+  //   }
+  // }
 
   return 0;
 }
