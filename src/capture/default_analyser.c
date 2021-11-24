@@ -74,76 +74,6 @@ void construct_pcap_file_name(char *file_name)
   strcat(file_name, PCAP_EXTENSION);
 }
 
-int send_pcap_meta(struct capture_context *context, struct tuple_packet *tp)
-{
-  struct ip4_schema *sch = NULL;
-  struct string_queue* squeue = init_string_queue(-1);
-  char delim_str[2];
-  char *meta_out = NULL;
-
-  sprintf(delim_str, "%c", context->domain_delim);
-
-  if (!os_strnlen_s(context->domain_command, MAX_SUPERVISOR_CMD_SIZE)) {
-    free_string_queue(squeue);
-    return 0;
-  }
-
-  if (push_string_queue(squeue, context->domain_command) < 0) {
-    log_trace("push_string_queue fail");
-    free_string_queue(squeue);
-    return -1;
-  }
-
-  if (push_string_queue(squeue, delim_str) < 0) {
-    log_trace("push_string_queue fail");
-    free_string_queue(squeue);
-    return -1;
-  }
-
-  switch (tp->type) {
-    case PACKET_IP4:
-      sch = (struct ip4_schema *)tp->packet;
-      break;
-    default:
-      free_string_queue(squeue);
-      return 0;
-  }
-
-  if (push_string_queue(squeue, sch->ip_src) < 0) {
-    log_trace("push_string_queue fail");
-    free_string_queue(squeue);
-    return -1;
-  }
-
-  if (push_string_queue(squeue, delim_str) < 0) {
-    log_trace("push_string_queue fail");
-    free_string_queue(squeue);
-    return -1;
-  }
-
-  if (push_string_queue(squeue, sch->ip_dst) < 0) {
-    log_trace("push_string_queue fail");
-    free_string_queue(squeue);
-    return -1;
-  }
-  if ((meta_out = concat_string_queue(squeue, -1)) == NULL) {
-    free_string_queue(squeue);
-    return -1;
-  }
-
-  // HERE send the meta string
-  log_trace("%s", meta_out);
-  if (write_domain_data_s(context->sfd, meta_out, strlen(meta_out), context->domain_server_path) < 0) {
-    log_debug("write_domain_data_s fail");
-    os_free(meta_out);
-    free_string_queue(squeue);
-    return -1;
-  }
-  os_free(meta_out);
-  free_string_queue(squeue);
-  return 0;
-}
-
 void add_packet_queue(struct capture_context *context, UT_array *tp_array, struct packet_queue *queue)
 {
   struct tuple_packet *p = NULL;
@@ -155,12 +85,6 @@ void add_packet_queue(struct capture_context *context, UT_array *tp_array, struc
         // Free the packet if cannot be added to the queue
         free_packet_tuple(p);
       }
-    } else {
-      // Send packet meta to supervisor
-      if (send_pcap_meta(context, p) < 0) {
-        log_trace("send_pcap_meta fail");
-      }
-      free_packet_tuple(p);
     }
   }
 }
@@ -289,33 +213,14 @@ void trace_callback(char *sqlite_statement, void *ctx)
   }
 }
 
-void free_pcap_context_list(struct pcap_context **list, int size)
-{
-  int idx = 0;
-
-  if (list == NULL) {
-    return;
-  }
-
-  while (idx < size) {
-    if (list[idx] != NULL) {
-      os_free(list[idx]);
-    }
-
-    idx ++;
-  }
-}
-
 int start_default_analyser(struct capture_conf *config)
 {
-  int ret = -1, count = 0;
+  int ret = -1;
   struct capture_context context;
-  struct pcap_context **pc_list = NULL, *pc = NULL;
+  struct pcap_context *pc = NULL;
   char *header_db_path = NULL;
   char *pcap_db_path = NULL;
   char *pcap_subfolder_path = NULL;
-  char **ifname = NULL;
-  UT_array *interfaces = NULL;
 
   os_memset(&context, 0, sizeof(context));
 
@@ -371,7 +276,6 @@ int start_default_analyser(struct capture_conf *config)
     return -1;
   }
   
-
   if (os_strnlen_s(config->ca_path, MAX_OS_PATH_LEN) && context.db_sync) {
       if (read_file_string(config->ca_path, &context.ca) < 0) {
         os_free(header_db_path);
@@ -474,56 +378,32 @@ int start_default_analyser(struct capture_conf *config)
     }
   }
 
-  if ((context.sfd = create_domain_client(NULL)) < 0) {
-    log_debug("create_domain_client fail");
-    goto fail;
-  }
-
   if (eloop_init()) {
 		log_debug("Failed to initialize event loop");
     goto fail;
 	}
 
-  utarray_new(interfaces, &ut_str_icd);
-
-  if (split_string_array(config->capture_interface, ',', interfaces) < 0) {
-    log_debug("split_string_array fail");
+  log_info("Registering pcap for ifname=%s", config->capture_interface);
+  if (run_pcap(config->capture_interface, context.immediate,
+               context.promiscuous, (int)context.buffer_timeout,
+               context.filter, true, pcap_callback, (void *)&context, &pc) < 0) {
+    log_debug("run_pcap fail");
     goto fail;
   }
 
-  if ((pc_list = (struct pcap_context **)os_zalloc(sizeof(struct pcap_context *) * utarray_len(interfaces))) == NULL) {
-    log_err("os_zalloc");
+  if (pc != NULL) {
+    if (eloop_register_read_sock(pc->pcap_fd, eloop_read_fd_handler, (void*) pc, (void *) NULL) ==  -1) {
+      log_debug("eloop_register_read_sock fail");
+      goto fail;
+    }
+  } else {
+    log_debug("Empty pcap context");
     goto fail;
   }
 
-  while((ifname = (char**) utarray_next(interfaces, ifname)) != NULL) { 
-    if (!strlen(*ifname)) {
-      continue;
-    }
-
-    log_info("Registering pcap for ifname=%s", *ifname);
-    if (run_pcap(*ifname, context.immediate,
-                 context.promiscuous, (int)context.buffer_timeout,
-                 context.filter, true, pcap_callback, (void *)&context, &pc) < 0) {
-      log_debug("run_pcap fail");
-      goto fail;
-    }
-
-    if (pc != NULL) {
-      if (eloop_register_read_sock(pc->pcap_fd, eloop_read_fd_handler, (void*) pc, (void *) NULL) ==  -1) {
-        log_debug("eloop_register_read_sock fail");
-        goto fail;
-      }
-    } else {
-      log_debug("Empty pcap context");
-      goto fail;
-    }
-
-    if (eloop_register_timeout(0, context.process_interval, eloop_tout_handler, (void *) pc, (void *)&context) == -1) {
-      log_debug("eloop_register_timeout fail");
-      goto fail;
-    }
-    pc_list[count++] = pc;
+  if (eloop_register_timeout(0, context.process_interval, eloop_tout_handler, (void *) pc, (void *)&context) == -1) {
+    log_debug("eloop_register_timeout fail");
+    goto fail;
   }
 
 
@@ -531,10 +411,10 @@ int start_default_analyser(struct capture_conf *config)
   log_info("Capture ended.");
 
 	/* And close the session */
-  close_domain(context.sfd);
-  free_pcap_context_list(pc_list, count);
-  if (context.ca != NULL) os_free(context.ca);
-  utarray_free(interfaces);
+  close_pcap(pc);
+  if (context.ca != NULL) {
+    os_free(context.ca);
+  }
   eloop_destroy();
   free_packet_queue(context.pqueue);
   free_pcap_queue(context.cqueue);
@@ -546,10 +426,10 @@ int start_default_analyser(struct capture_conf *config)
   return 0;
 
 fail:
-  close_domain(context.sfd);
-  free_pcap_context_list(pc_list, count);
-  if (context.ca != NULL) os_free(context.ca);
-  utarray_free(interfaces);
+  close_pcap(pc);
+  if (context.ca != NULL) {
+    os_free(context.ca);
+  }
   eloop_destroy();
   free_packet_queue(context.pqueue);
   free_pcap_queue(context.cqueue);

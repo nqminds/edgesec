@@ -26,28 +26,39 @@ static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL, NULL
 
 int __wrap_open_sqlite_header_db(char *db_path, trace_callback_fn fn, void *trace_ctx, sqlite3 **sql)
 {
+  (void) db_path;
+  (void) fn;
+  (void) trace_ctx;
+  (void) sql;
+
   return 0;
 }
 
 int __wrap_open_sqlite_pcap_db(char *db_path, sqlite3** sql)
 {
+  (void) db_path;
+  (void) sql;
+
   return 0;
 }
 
 void __wrap_free_sqlite_header_db(sqlite3 *db)
 {
-
+  (void) db;
 }
 
 void __wrap_free_sqlite_pcap_db(sqlite3 *db)
 {
-
+  (void) db;
 }
 
 int __wrap_run_pcap(char *interface, bool immediate, bool promiscuous,
              int timeout, char *filter, bool nonblock, capture_callback_fn pcap_fn,
              void *fn_ctx, struct pcap_context** pctx)
 {
+  (void) fn_ctx;
+  (void) pcap_fn;
+
   assert_string_equal(interface, "wlan0");
   assert_true(immediate);
   assert_true(promiscuous);
@@ -72,6 +83,11 @@ int __wrap_eloop_init(void)
 int __wrap_eloop_register_read_sock(int sock, eloop_sock_handler handler,
 			     void *eloop_data, void *user_data)
 {
+  (void) sock;
+  (void) handler;
+  (void) eloop_data;
+  (void) user_data;
+  
   return 0;
 }
 
@@ -79,6 +95,12 @@ int __wrap_eloop_register_timeout(unsigned long secs, unsigned long usecs,
 			   eloop_timeout_handler handler,
 			   void *eloop_data, void *user_data)
 {
+  (void) secs;
+  (void) usecs;
+  (void) handler;
+  (void) eloop_data;
+  (void) user_data;
+
   return 0;
 }
 
@@ -94,12 +116,18 @@ void __wrap_eloop_destroy(void)
 
 uint32_t __wrap_run_register_db(char *address, char *name)
 {
+  (void) address;
+  (void) name;
   return 1;
 }
 
 int __wrap_extract_packets(const struct pcap_pkthdr *header, const uint8_t *packet,
                     char *interface, char *hostname, char *id, UT_array **tp_array)
 {
+  (void) id;
+  (void) hostname;
+  (void) interface;
+
   struct tuple_packet tp;
   utarray_new(*tp_array, &tp_list_icd);
 
@@ -119,6 +147,7 @@ struct packet_queue* __wrap_push_packet_queue(struct packet_queue* queue, struct
 
 struct pcap_queue* __wrap_push_pcap_queue(struct pcap_queue* queue, struct pcap_pkthdr *header, uint8_t *packet)
 {
+  (void) packet;
   assert_int_equal(header->caplen, 100);
   assert_int_equal(header->len, 100);
 
@@ -183,6 +212,9 @@ static void test_pcap_callback(void **state)
 
 int main(int argc, char *argv[])
 {  
+  (void) argc;
+  (void) argv;
+
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
