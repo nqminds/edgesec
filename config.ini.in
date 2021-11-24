@@ -20,7 +20,7 @@ execAp = true
 execRadius = true
 execDhcp = true
 execCapture = true
-execMdnsForward = false
+execMdnsForward = true
 execIptables = true
 setIpForward = true
 dbPath = "@EDGESEC_full_local_lib_dir@/db"
@@ -94,6 +94,7 @@ natInterface = "eth0" # raspberry pi default ethernet port
 
 [dns]
 servers="8.8.4.4,8.8.8.8"
+mdnsBinPath = "@EDGESEC_full_bin_dir@/mdnsf"
 mdnsReflectIp4=true
 mdnsReflectIp6=true
 mdnsFilter = "src net 10.0 and dst net 10.0"

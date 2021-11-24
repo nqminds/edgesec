@@ -458,6 +458,18 @@ bool load_mdns_conf(const char *filename, struct app_config *config)
   int ret;
   char *value = NULL;
 
+  // Load ap bin path
+  value = os_malloc(INI_BUFFERSIZE);
+  ret = ini_gets("dns", "mdnsBinPath", "", value, INI_BUFFERSIZE, filename);
+  if (!ret) {
+    log_debug("mdnsBinPath was not specified\n");
+    os_free(value);
+    return false;
+  }
+
+  os_strlcpy(config->mdns_config.mdns_bin_path, value, MAX_OS_PATH_LEN);
+  os_free(value);
+
   // Load mdnsReflectIp4 param
   config->mdns_config.reflect_ip4 = (int) ini_getbool("dns", "mdnsReflectIp4", 0, filename);
 

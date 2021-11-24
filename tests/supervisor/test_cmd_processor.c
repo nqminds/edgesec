@@ -156,16 +156,6 @@ int __wrap_set_fingerprint_cmd(struct supervisor_context *context, char *src_mac
   return 0;
 }
 
-int __wrap_set_traffic_cmd(struct supervisor_context *context, char *src_ip_addr, char *dst_ip_addr)
-{
-  (void) context;
-
-  check_expected(src_ip_addr);
-  check_expected(dst_ip_addr);
-
-  return 0;
-}
-
 ssize_t __wrap_query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr, uint64_t timestamp,
                         char *op, char *protocol, char **out)
 {
@@ -709,26 +699,6 @@ static void test_process_clear_bridges_cmd(void **state)
   utarray_free(cmd_arr);
 }
 
-static void test_process_set_traffic_cmd(void **state)
-{
-  (void) state; /* unused */
-
-  UT_array *cmd_arr;
-  struct client_address claddr;
-
-  utarray_new(cmd_arr, &ut_str_icd);
-  assert_int_not_equal(split_string_array("SET_TRAFFIC 10.0.1.3 10.0.0.1", CMD_DELIMITER, cmd_arr), -1);
-  expect_string(__wrap_set_traffic_cmd, src_ip_addr, "10.0.1.3");
-  expect_string(__wrap_set_traffic_cmd, dst_ip_addr, "10.0.0.1");
-  assert_int_equal(process_set_traffic_cmd(0, &claddr, NULL, cmd_arr), strlen(OK_REPLY));
-  utarray_free(cmd_arr);
-
-  utarray_new(cmd_arr, &ut_str_icd);
-  assert_int_not_equal(split_string_array("SET_TRAFFIC 10.0.1.3 ", CMD_DELIMITER, cmd_arr), -1);
-  assert_int_equal(process_set_traffic_cmd(0, &claddr, NULL, cmd_arr), strlen(FAIL_REPLY));
-  utarray_free(cmd_arr);
-}
-
 static void test_process_set_fingerprint_cmd(void **state)
 {
   (void) state; /* unused */
@@ -1130,7 +1100,6 @@ int main(int argc, char *argv[])
     cmocka_unit_test(test_process_add_bridge_cmd),
     cmocka_unit_test(test_process_remove_bridge_cmd),
     cmocka_unit_test(test_process_clear_bridges_cmd),
-    cmocka_unit_test(test_process_set_traffic_cmd),
     cmocka_unit_test(test_process_set_fingerprint_cmd),
     cmocka_unit_test(test_process_query_fingerprint_cmd),
     cmocka_unit_test(test_process_register_ticket_cmd),

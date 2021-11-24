@@ -30,6 +30,7 @@
 
 #define MDNS_MAX_OPT       26
 
+#define MDNS_OPT_CONFIG    "-c"
 #define MDNS_OPT_STRING    ":c:dvh"
 #define MDNS_USAGE_STRING  "\t%s [-d] [-h] [-v] [-c config]"
 
@@ -59,6 +60,7 @@ struct dns_conf {
  * 
  */
 struct mdns_conf {
+  char mdns_bin_path[MAX_OS_PATH_LEN];                        /**< Path to the mDNS binary */
   char filter[MAX_FILTER_SIZE];                               /**< Specifies the filter expression or pcap lib */
   bool reflect_ip4;                                           /**< Reflect mDNS IP4 addresses. */
   bool reflect_ip6;                                           /**< Reflect mDNS IP6 addresses. */
