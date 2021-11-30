@@ -1,6 +1,6 @@
 include(GNUInstallDirs) # automagically setup install dir locations
 install(
-  TARGETS edgesec capsrv
+  TARGETS edgesec capsrv mdnsf
   RUNTIME
 )
 if (BUILD_REST_SERVER AND LIBMICROHTTPD_LIB)
