@@ -102,7 +102,19 @@ find_package_handle_standard_args(GRPC
     VERSION_VAR GRPC_VERSION # may be empty
 )
 
+set(GRPC_LOCAL_INSTALL_WARNING_MESSAGE "\
+Found GRPC++ library in /usr/local. \
+This may cause issues unless you've also installed a compatible protobuf version. \
+WE RECOMMEND INSTALLING GRPC FROM YOUR SYSTEM LIBRARIES INSTEAD. \
+(e.g. using `apt install libgrpc-dev`)
+")
+
 if(GRPC_FOUND)
     set(GRPC_LIBRARIES GRPC::grpc GRPC::grpc++ GRPC::grpc++_reflection)
     set(GRPC_INCLUDE_DIRS ${GRPC_INCLUDE_DIR})
+
+    string(FIND "${GRPC_grpc++_LIBRARY}" "/usr/local" "grpc++_lib_in_usr_local")
+    if (${grpc++_lib_in_usr_local} EQUAL -1)
+        message(WARNING ${GRPC_LOCAL_INSTALL_WARNING_MESSAGE})
+    endif()
 endif(GRPC_FOUND)
