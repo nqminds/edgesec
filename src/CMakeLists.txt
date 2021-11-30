@@ -29,7 +29,7 @@ add_executable(mdnsf mdnsf.c)
 target_include_directories(mdnsf PRIVATE ${LIBPCAP_INCLUDE_PATH} ${PROJECT_BINARY_DIR})
 target_link_libraries(mdnsf PRIVATE mdns_service subnet_service config minIni squeue log os)
 # link time optimization
-set_target_properties(capsrv PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
+set_target_properties(mdnsf PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 
 if (BUILD_CAPTURE_SERVICE)
