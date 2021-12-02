@@ -106,9 +106,9 @@ string(TOLOWER "${CMAKE_HOST_SYSTEM_PROCESSOR}-${build_autoconf_os}" build_autoc
 get_autoconf_os(${CMAKE_SYSTEM_NAME} target_autoconf_os)
 string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}-${target_autoconf_os}" target_autoconf_triple)
 
-if (NOT target_autoconf_triple STREQUAL CMAKE_LIBRARY_ARCHITECTURE)
-  message(FATAL_ERROR "CMake target_autoconf_triple=${target_autoconf_triple}, not the same as CMAKE_LIBRARY_ARCHITECTURE=${CMAKE_LIBRARY_ARCHITECTURE}")
-endif (NOT target_autoconf_triple STREQUAL CMAKE_LIBRARY_ARCHITECTURE)
+#if (NOT target_autoconf_triple STREQUAL CMAKE_LIBRARY_ARCHITECTURE)
+#  message(FATAL_ERROR "CMake target_autoconf_triple=${target_autoconf_triple}, not the same as CMAKE_LIBRARY_ARCHITECTURE=${CMAKE_LIBRARY_ARCHITECTURE}")
+#endif (NOT target_autoconf_triple STREQUAL CMAKE_LIBRARY_ARCHITECTURE)
 
 
 if (CMAKE_CROSSCOMPILING)
