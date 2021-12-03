@@ -34,7 +34,7 @@ runtime_dependencies=(
 sudo apt install -y "${build_dependencies[@]}" "${runtime_dependencies[@]}"
 ```
 
-### Compile
+### Compile & Build
 
 Compiling EDGESec is done with CMake.
 
@@ -50,17 +50,16 @@ Setting `-DLIB_MAKEFLAGS="--jobs=$(nproc)"` will mean that while compiling libra
 cmake -B build/ -S . -DLIB_MAKEFLAGS="--jobs=$(nproc)"
 ```
 
-To build, you can then run
+To build, you can then run:
 ```bash
 make
 ```
-or to built on multiple core run
+or to built on multiple core run:
 
 ```bash
 cmake --build build/ -j4
 ```
 `-j4` means 4 jobs/threads, replace `4` with the amount of cores you want to use, equivalent to `make -j4`.
-
 
 After succesful compilation the binary will be located in ```./build/src``` folder.
 
@@ -82,10 +81,7 @@ Set `-DCMAKE_INSTALL_PREFIX=<YOUR-LOCATION-HERE>` to build for a different locat
 MAKEFLAGS="--jobs=$(nproc)" cmake -B build/ -S . -DCMAKE_INSTALL_PREFIX=/tmp/example-build
 cmake --build build/ --target install -j4
 ```
-
-This will also automatically update `config.ini` to have all paths point to the installed location.
-
-You can also use the following to install to a different location than the one you built for.
+This will also automatically update `config.ini` to have all paths point to the installed location. You can also use the following to install to a different location than the one you built for.
 
 ```bash
 # Will update config.ini, but will not update RPATHS!!!
@@ -137,7 +133,7 @@ make doxydocs
 
 See [`./docs`](./docs) for how to build the developer doxygen documentation website.
 
-## Build
+## Building the Debian package
 
 Instructions to create `.deb` file are located in
 [`./docs/CREATING_A_DEB.md`](./docs/CREATING_A_DEB.md).
