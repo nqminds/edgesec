@@ -7,33 +7,58 @@ binPath = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bi
 hashIpCommand = ""
 createInterfaces = true
 ignoreErrorOnIfCreate = true
-allowAllConnections = false
+allowAllConnections = true
+allowAllNat = true
 apDetect = false
+generateSsid = true
+allocateVlans = true
 defaultOpenVlanId = 0
-killRunningProcess = true
-execAp = true
+quarantineVlanId = 10
+riskScore = 100
+killRunningProcess = false
+execAp = false
 execRadius = true
 execDhcp = true
+execCapture = true
+execMdnsForward = true
+execIptables = true
+setIpForward = true
+dbPath = "./db"
+cryptDbPath = "./crypt.sqlite"
+cryptKeyId = "master"
+pidFilePath = "/var/run/edgesec.pid"
 
 [capture]
-captureInterface = "wls1"
+captureBinPath = "./src/capsrv"
+captureInterface = "enp2s0"
+filter = "" 
 promiscuous = false
 bufferTimeout = 10
 processInterval = 10
 immediate = false
-db = "./pcap.sqlite"
-syncAddress = ""
-syncPort = 0
+analyser = "default"
+fileWrite = true
+dbWrite = true
+dbSync = false
+dbSyncAddress = "localhost"
+dbSyncPort = 8512
+syncCaPath = "./cert/CA/CA.pem"
+command = "SET_ALERT"
+syncStoreSize = 1000
+syncSendSize = 20
+captureStoreSize = 1000000
 
 [supervisor]
-domainServerPath = /tmp/edgesec-domain-server
+domainServerPath = "/tmp/edgesec-domain-server"
+delim = 32
 
 [ap]
 apBinPath = "./hostapd"
 apFilePath = "/tmp/hostapd.conf"
 apLogPath = "/tmp/hostapd.log"
 interface = "wifiap0"
-ssid = "IOTH_IMX7"
+vlanTaggedInterface = ""
+ssid = "IOTH_TEST"
 wpaPassphrase = "1234554321"
 bridge = "br0"
 driver = "nl80211"
@@ -68,12 +93,17 @@ secret = "radius"
 natInterface = "enp2s0"
 
 [dns]
-servers="8.8.4.4,8.8.8.8"
+servers = "8.8.4.4,8.8.8.8"
+mdnsBinPath = "./src/mdnsf"
+mdnsReflectIp4 = true
+mdnsReflectIp6 = true
+mdnsFilter = "src net 10.0 and dst net 10.0"
 
 [dhcp]
 dhcpBinPath = "/usr/sbin/dnsmasq"
 dhcpConfigPath = "/tmp/dnsmasq.conf"
 dhcpScriptPath = "/tmp/dnsmasq_exec.sh"
+dhcpLeasefilePath = "./db/dnsmasq.leases"
 dhcpRange0 = "0,10.0.0.2,10.0.0.254,255.255.255.0,24h"
 dhcpRange1 = "1,10.0.1.2,10.0.1.254,255.255.255.0,24h"
 dhcpRange2 = "2,10.0.2.2,10.0.2.254,255.255.255.0,24h"
@@ -85,16 +115,6 @@ dhcpRange7 = "7,10.0.7.2,10.0.7.254,255.255.255.0,24h"
 dhcpRange8 = "8,10.0.8.2,10.0.8.254,255.255.255.0,24h"
 dhcpRange9 = "9,10.0.9.2,10.0.9.254,255.255.255.0,24h"
 dhcpRange10 = "10,10.0.10.2,10.0.10.254,255.255.255.0,24h"
-
-[connections]
-con1 = "d,04:f0:21:5a:f4:c4,0,1,1234554321"
-con2 = "d,30:52:cb:e9:00:8f,1,1,1234554321"
-con3 = "d,40:b4:cd:f1:18:bc,2,1,1234554321"
-con4 = "d,60:70:c0:0a:23:ba,3,1,1234554321"
-con5 = "d,00:0f:00:70:62:88,4,1,1234554321"
-con6 = "d,9c:ef:d5:fd:db:56,5,1,1234554321"
-con7 = "d,c0:ee:fb:d5:5a:ec,6,1,1234554321"
-con8 = "a,00:0f:00:70:62:88,7,1,1234554321"
 
 [interfaces]
 if0 = "0,10.0.0.1,10.0.0.255,255.255.255.0"
@@ -108,7 +128,6 @@ if7 = "7,10.0.7.1,10.0.7.255,255.255.255.0"
 if8 = "8,10.0.8.1,10.0.8.255,255.255.255.0"
 if9 = "9,10.0.9.1,10.0.9.255,255.255.255.0"
 if10 = "10,10.0.10.1,10.0.10.255,255.255.255.0"
-```
 
 The configuration file is based on the `ini` file type format. Each parameter in the file is set using a key and a value pair. The `edgesec` configuration file is composed of the following groups:
 * *[system]*
@@ -140,19 +159,31 @@ If set to `true`, `edgesec` will ignore the "network interface already exists" e
 ### allowAllConnections (boolean)
 If set to `true`, `edgesec` will allow all WiFi connection requests regarding of the MAC value.
 
+### allowAllNat (boolean)
+If set to `true`, `edgesec` will allow all NAT connection requests regarding of the MAC value.
+
 ### apDetect (boolean)
 If set to `true`, `edgesec` will try to detect the WiFi network interfaces that supports VLAN capability. The detected network interface will be used by `hostapd` service to create an AP.
+
+### generateSsid (boolean)
+If set to `true`, `edgesec` will generate the SSID WiFi name based on hostname. If `false` the SSID name will be `ssid` param from `ap` section.
+
+### allocateVlans (boolean)
+If set to `true`, `edgesec` will randomly assign a VLAN ID to a newly connected device.
 
 ### defaultOpenVlanId (integer)
 The default VLAN ID positive integer number assigned to new devices if `allowAllConnections` flag is set to `true`.
 
+### quarantineVlanId (integer)
+The VLAN ID assigned to devices that are quarantined.
+
+### riskScore (integer)
+The risk score threshold for a device to be quarantined.
+
 ### killRunningProcess (boolean)
 If set to true the current running `edgesec` will terminate exisiting running `edgesec` processes.
 
-### setIpForward (boolean)
-If set to true `edgesec` will set the ip forward os system param.
-
-### execHostapd (boolean)
+### execAp (boolean)
 If set to `true`, `edgesec` will execute the `hostapd` service using `excve` system command. If set to `false` the `hostapd` service has to be run before executing `edgesec`.
 
 ### execRadius (boolean)
@@ -161,8 +192,35 @@ If set to `true`, `edgesec` will execute the `radius` service.
 ### execDhcp (boolean)
 If set to `true`, `edgesec` will execute the `dhcp` service.
 
+### execCapture (boolean)
+If set to `true`, `edgesec` will execute the `capture` service.
+
+### execMdnsForward (boolean)
+If set to `true`, `edgesec` will execute the `mdnsf` service.
+
+### execIptables (boolean)
+If set to `true`, `edgesec` will execute the `iptables` command.
+
+### setIpForward (boolean)
+If set to true `edgesec` will set the ip forward os system param.
+
+### dbPath (string)
+The path to the `db` folder.
+
+### cryptDbPath (string)
+The path to the `crypt` sqlite db.
+
+### cryptKeyId (string)
+The master key ID for the `crypt` sqlite db.
+
+### pidFilePath (string)
+The path to the edgesec PID file.
+
 ## [capture] group
 The capture group contains all the parameters that are reponsible to configure the `capture` app service.
+
+### captureBinPath (string)
+The path to the `capsrv` service.
 
 ### captureInterface (string)
 The name of the capture interface. If set to "any" the service will traffic from all interfaces.
@@ -173,14 +231,17 @@ The pcap lib capture filter.
 ### promiscuous (boolean)
 If set to `true` the capture interface is set to promiscuous mode. The default value is `false`.
 
-### immediate (boolean)
-If set to `true` the capture interface is set to immediate mode. The default value is `false`.
-
 ### bufferTimeout (number)
 The timeout in milliseconds to read a packet. The default value is 10.
 
 ### processInterval (number)
 The interval in milliseconds to process a packet from the queue. The default value is 10.
+
+### immediate (boolean)
+If set to `true` the capture interface is set to immediate mode. The default value is `false`.
+
+### analyser (string)
+The analyser name for the capture service. Currently supported `default` and `ndpi` analysers.
 
 ### fileWrite (boolean)
 Write the packet data to file(s).
@@ -191,14 +252,26 @@ If set to true the capture service will store the packet into an sqlite db
 ### dbSync (boolean)
 If set to true the sqlite packets db will be synced
 
-### dbPath (string)
-Absolute path to the sqlite3 dbs.
-
 ### dbSyncAddress (string)
 The web address for sqlite syncing
 
 ### dbSyncPort (number)
 The port of the web address for sqlite syncing
+
+### syncCaPath (string)
+The path to the certificate authority file used for gRPC syncing
+
+### command (string)
+The UNIX domain command used by the capture service
+
+### syncStoreSize (integer)
+Number of capture strings to store in memory before 
+
+### syncSendSize (integer)
+Number of string to send (sync) from the memory buffer
+
+### captureStoreSize (integer)
+Number of pcap Kb to store before cleaning. Used by capture `cleaner` service 
 
 ## [supervisor] group
 The supervisor group defines the parameters to run the supervisor service.
@@ -206,20 +279,26 @@ The supervisor group defines the parameters to run the supervisor service.
 ### domainServerPath (string)
 The absolute path to the UNIX domain socket used by the supervisor service.
 
-## [hostapd] group
-The hostapd groups defines all the paremeters to run `hostapd` service. Most of the parameters are inherited from the `hostapd` config file.
+### delim (integer)
+The decimal ASCII number used to delimit command parameters.
 
-### hostapdBinPath (string)
+## [ap] group
+The ap groups defines all the paremeters to run `ap` service. Most of the parameters are inherited from the `hostapd` config file.
+
+### apBinPath (string)
 Absolute path to the `hostapd` binary.
 
-### hostapdFilePath (string)
+### apFilePath (string)
 Absolute path to the `hostapd` configuration file.
 
-### hostapdLogPath (string)
+### apLogPath (string)
 Absolute path to the `hostapd` log file. If empty no log file is generated
 
 ### interface (string)
 Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
+
+### vlanTaggedInterface (string)
+Interface name for vlan tagging
 
 ### ssid (string)
 Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
@@ -320,39 +399,51 @@ The dns groups defines the parameters for the DNS server configuration.
 ### servers (string)
 A comma delimited string of dns server IP addresses with the format `x.y.z.q,a.b.c.d,...`.
 
+### mdnsBinPath (string)
+The path to the `mdnsf` service.
+
+### mdnsReflectIp4 (boolean)
+If set to `true` the mdns service will reflect IP4 mdns packets.
+
+### mdnsReflectIp6 (boolean)
+If set to `true` the mdns service will reflect IP6 mdns packets.
+
+### mdnsFilter (string)
+The `mdns` service filter string used by pcap library to track internal IP connections. The filter is based on the `interface` IP addresses.
+
 ## [dhcp] group
 The dhpc groups defines the parameters for the DHCP server configuration.
 
+### dhcpBinPath (string)
+The path to the DHCP server
+
 ### dhcpConfigPath (string)
-The absolute path to the DHCP server configuration file
+The path to the DHCP server configuration file
 
 ### dhcpScriptPath (string)
-The absolute path to the DHCP server aditional executable script.
+The path to the DHCP server aditional executable script
 
-## [connections] group
-The connections groups defines the parameters for devices that connect to the WiFi AP.
+### dhcpLeasefilePath (string)
+The path to the DHCP lease file
 
-### con(idx) (string)
-The `con` indexed by `idx≥0` defines all the MAC addresses and WiFi passwords for devices that are allowed to connect to the WiFi AP. It has the following format:
+### dhcpRangei (string)
+The DHCP configuration indexed by `i≥0`. It has the followig format:
+
 ```
-d|a,aa:bb:cc:dd:ee:ff,x,y,pass
+vlanid,ip_low,ip_up,mask,time
 ```
-where:
-
- - `d|a` - (d)eny or (a)llow the device with the given MAC to connect to the WiFi AP,
- - `aa:bb:cc:dd:ee:ff` - the given MAC address of the device,
- - `x` - denotes the VLAN ID integer assigned to the device,
- - `y` - if `1` the device is allowed NAT, `0` otherwise,
- - `pass` - the WiFi password used by the device to connect to the WiFi AP.
+,where
+ - `vlanid` - the VLAN ID
+ - `ip_low` - the lower bound for IP subnet
+ - `up_low` - the upper bound for IP subnet
+ - `mask` - the subnet mask
+ - `time` - the lease time (dnsmasq format)
 
 ## [interfaces] groups
 The interfaces group defines the parameters for WiFi subnet interfaces.
 
-### subnetMask (string)
-The WiFi subnet mask with format `x.y.z.q`.
-
-### if(idx) (string)
-The `if` indexed by `idx≥0` defines the network interfaces for a particular subnet. It has the following format:
+### ifi (string)
+The `if` indexed by `i≥0` defines the network interfaces for a particular subnet. It has the following format:
 ```
 vlanid,ip0,ipn,mask
 ```
