@@ -1,11 +1,6 @@
 # EDGESec
 [![C/C++ CI](https://github.com/nqminds/EDGESec/workflows/C/C++%20CI/badge.svg?branch=main)](https://github.com/nqminds/EDGESec/actions?query=workflow%3A%22Github+Pages%22)
 
-## Build
-
-Instructions to create `.deb` file are located in
-[`./docs/CREATING_A_DEB.md`](./docs/CREATING_A_DEB.md).
-
 ### Installing Dependencies
 
 On Ubuntu, we need a C compiler, CMake, Doxygen, and libnl libraries:
@@ -44,23 +39,28 @@ sudo apt install -y "${build_dependencies[@]}" "${runtime_dependencies[@]}"
 Compiling EDGESec is done with CMake.
 
 First, configure `cmake` in the `build/` directory by running the following.
-(equivalent to `mkdir build && cd build && cmake ..`)
+```bash
+mkdir build && cd build && cmake ../
+```
 
-Setting `-DLIB_MAKEFLAGS="--jobs=$(nproc)"` will mean
-that while compiling library dependencies,
-`make` commands will run using all CPU cores, greatly speeding
-this building (set a lower number if you have less RAM).
+Setting `-DLIB_MAKEFLAGS="--jobs=$(nproc)"` will mean that while compiling library dependencies,
+`make` commands will run using all CPU cores, greatly speeding this building (set a lower number if you have less RAM).
 
 ```bash
 cmake -B build/ -S . -DLIB_MAKEFLAGS="--jobs=$(nproc)"
 ```
 
-To build, you can then run (`-j4` means 4 jobs/threads, replace `4` with the amount of cores you want to use):
-(equivalent to `make -j4`)
+To build, you can then run
+```bash
+make
+```
+or to built on multiple core run
 
 ```bash
 cmake --build build/ -j4
 ```
+`-j4` means 4 jobs/threads, replace `4` with the amount of cores you want to use, equivalent to `make -j4`.
+
 
 After succesful compilation the binary will be located in ```./build/src``` folder.
 
@@ -136,6 +136,11 @@ make doxydocs
 ```
 
 See [`./docs`](./docs) for how to build the developer doxygen documentation website.
+
+## Build
+
+Instructions to create `.deb` file are located in
+[`./docs/CREATING_A_DEB.md`](./docs/CREATING_A_DEB.md).
 
 ## Config
 [Configuration file structure](./docs/CONFIG.md)
