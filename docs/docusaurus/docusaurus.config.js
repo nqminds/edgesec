@@ -1,14 +1,14 @@
 module.exports = {
-  title: "NquiringMinds Docusaurus Template",
-  tagline: "A template for creating docusaurus sites in NquiringMinds",
+  title: "EDGESec NGI Pointer Project",
+  tagline: "EDGESec will define a new architecture for local (edge based) routers addressing fundamental security weaknesses that impact current IP and IOT router implementations",
   url: "https://nqminds.github.io",
-  baseUrl: "/docusaurus-template/", // usually your repo name, must contain a trailing and starting slash
+  baseUrl: "/", // usually your repo name, must contain a trailing and starting slash
   favicon: "img/logo.svg",
-  organizationName: "nqminds", // Usually your GitHub org/user name.
-  projectName: "docusaurus-template", // Usually your repo name.
+  organizationName: "nqmcyber", // Usually your GitHub org/user name.
+  projectName: "edgesec", // Usually your repo name.
   themeConfig: {
     navbar: {
-      title: "NQM Docusaurus Template",
+      title: "EDGESec",
       logo: {
         alt: "NQM Docusaurus Template Logo",
         src: "img/logo.svg",
@@ -28,7 +28,7 @@ module.exports = {
           position: "right",
         },
         {
-          href: "https://github.com/nqminds/docusaurus-template",
+          href: "https://github.com/nqminds/edgesec",
           label: "GitHub",
           position: "right",
         },
@@ -38,24 +38,11 @@ module.exports = {
       style: "dark",
       links: [
         {
-          title: "Docs",
-          items: [
-            {
-              label: "Index",
-              to: "/",
-            },
-          ],
-        },
-        {
           title: "Contact Us",
           items: [
             {
               label: "Website",
-              href: "https://nquiringminds.com",
-            },
-            {
-              label: "Twitter",
-              href: "https://twitter.com/nqminds",
+              href: "http://nqmcyber.com",
             },
           ],
         },
@@ -63,9 +50,9 @@ module.exports = {
       logo: {
         alt: "NquiringMinds Logo",
         src: "img/nqminds-logo.svg",
-        href: "https://nquiringminds.com",
+        href: "http://nqmcyber.com",
       },
-      copyright: `Copyright © ${new Date().getFullYear()} NquiringMinds LTD. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} NQMCyber LTD. Built with Docusaurus.`,
     },
   },
   presets: [

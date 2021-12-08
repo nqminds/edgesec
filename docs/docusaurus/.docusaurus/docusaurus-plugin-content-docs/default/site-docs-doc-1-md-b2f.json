@@ -1,0 +1,24 @@
+{
+  "unversionedId": "doc1",
+  "id": "doc1",
+  "isDocsHomePage": false,
+  "title": "Style Guide",
+  "description": "You can write content using GitHub-flavored Markdown syntax.",
+  "source": "@site/docs/doc1.md",
+  "sourceDirName": ".",
+  "slug": "/",
+  "permalink": "/docs/",
+  "editUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs/doc1.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "slug": "/",
+    "title": "Style Guide",
+    "sidebar_label": "Style Guide"
+  },
+  "sidebar": "someSidebar",
+  "next": {
+    "title": "Document Number 2",
+    "permalink": "/docs/doc2"
+  }
+}

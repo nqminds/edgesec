@@ -9,7 +9,7 @@ import styles from "./styles.module.css";
 
 const features = [
   {
-    title: <>Easy to Use</>,
+    title: <>Network Control</>,
     imageUrl: "img/undraw_docusaurus_mountain.svg",
     description: (
       <>
@@ -19,7 +19,7 @@ const features = [
     ),
   },
   {
-    title: <>Focus on What Matters</>,
+    title: <>Network Monitor</>,
     imageUrl: "img/undraw_docusaurus_tree.svg",
     description: (
       <>
@@ -29,7 +29,7 @@ const features = [
     ),
   },
   {
-    title: <>Powered by React</>,
+    title: <>Secure Storage</>,
     imageUrl: "img/undraw_docusaurus_react.svg",
     description: (
       <>
@@ -102,28 +102,6 @@ function Home() {
             </div>
           </section>
         )}
-        <section className="text--center">
-          <p>
-            This file is located in <code>src/pages/index.js</code>.
-          </p>
-          <p>
-            You can remove this file, and point directly to the
-            <a href="docs">docs/</a> URL,
-            by changing <code>routeBasePath</code> in&nbsp;
-            <code>docusaurus.config.js</code>.
-
-            See
-            <a
-              href="https://v2.docusaurus.io/docs/docs-introduction/#docs-only-mode"
-            > Docs-only mode on the Docusaurus documentation
-            </a>.
-          </p>
-
-          <p>
-            If you do so, please remember to update the links to the Docs and
-            About pages in <code>docusaurus.config.js</code>.
-          </p>
-        </section>
       </main>
     </Layout>
   );

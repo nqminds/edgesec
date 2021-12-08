@@ -1,0 +1,30 @@
+{
+  "/edgesec/blog/tags/facebook": {
+    "allTagsPath": "/edgesec/blog/tags",
+    "slug": "/edgesec/blog/tags/facebook",
+    "name": "facebook",
+    "count": 1,
+    "permalink": "/edgesec/blog/tags/facebook"
+  },
+  "/edgesec/blog/tags/hello": {
+    "allTagsPath": "/edgesec/blog/tags",
+    "slug": "/edgesec/blog/tags/hello",
+    "name": "hello",
+    "count": 2,
+    "permalink": "/edgesec/blog/tags/hello"
+  },
+  "/edgesec/blog/tags/docusaurus": {
+    "allTagsPath": "/edgesec/blog/tags",
+    "slug": "/edgesec/blog/tags/docusaurus",
+    "name": "docusaurus",
+    "count": 3,
+    "permalink": "/edgesec/blog/tags/docusaurus"
+  },
+  "/edgesec/blog/tags/hola": {
+    "allTagsPath": "/edgesec/blog/tags",
+    "slug": "/edgesec/blog/tags/hola",
+    "name": "hola",
+    "count": 1,
+    "permalink": "/edgesec/blog/tags/hola"
+  }
+}
