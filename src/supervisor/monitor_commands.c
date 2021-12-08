@@ -261,8 +261,8 @@ int set_alert_cmd(struct supervisor_context *context, struct alert_meta *meta,
 
   os_memset(&row, 0, sizeof(struct alert_row));
 
-  log_trace("SET_ALERT for src_mac="MACSTR", dst_mac="MACSTR", and timestamp=%"PRIu64, MAC2STR(meta->src_mac_addr),
-            MAC2STR(meta->dst_mac_addr), meta->timestamp);
+  log_trace("SET_ALERT for src_mac="MACSTR", dst_mac="MACSTR", timestamp=%"PRIu64" and score=%d", MAC2STR(meta->src_mac_addr),
+            MAC2STR(meta->dst_mac_addr), meta->timestamp, meta->risk);
 
   if ((row.hostname = os_strdup(meta->hostname)) == NULL) {
     log_err("os_strdup");
