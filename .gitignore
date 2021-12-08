@@ -61,6 +61,7 @@ dkms.conf
 /lib/libmicrohttpd-0.9.72
 
 apps/**/node_modules
+docs/**/node_modules
 build/**
 docs/html/**
 docs/latex/**
