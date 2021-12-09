@@ -1,0 +1,59 @@
+{
+  "name": "docusaurus",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "docusaurus start",
+    "build": "docusaurus build",
+    "serve": "docusaurus serve",
+    "swizzle": "docusaurus swizzle",
+    "deploy": "docusaurus deploy",
+    "pdf": "docusaurus-pdf from-build-config",
+    "prepdf": "npm run build",
+    "lint": "eslint *.js src/"
+  },
+  "dependencies": {
+    "@docusaurus/core": "2.0.0-beta.8",
+    "@docusaurus/mdx-loader": "2.0.0-beta.8",
+    "@docusaurus/preset-classic": "2.0.0-beta.8",
+    "clsx": "^1.1.1",
+    "docusaurus-lunr-search": "^2.0.1",
+    "docusaurus-pdf": "^1.2.0",
+    "react": "^16.8.4",
+    "react-dom": "^16.8.4",
+    "remark-mermaid-dataurl": "^1.0.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@nqminds/eslint-config-react": "^1.0.0",
+    "eslint": "^7.3.1",
+    "eslint-plugin-babel": "^5.3.0",
+    "eslint-plugin-jsdoc": "^35.5.1",
+    "eslint-plugin-mocha": "^7.0.1",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-react": "^7.20.0",
+    "husky": "^4.2.5",
+    "lint-staged": "^10.2.9",
+    "prettier": "^2.0.5"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.js": "eslint --cache --fix",
+    "*.{md,yaml,yml,json,css,mdx}": "prettier --write"
+  }
+}

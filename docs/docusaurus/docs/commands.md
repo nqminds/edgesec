@@ -1,4 +1,7 @@
-# EDGESec and HOSATPD UNIX domain sockets commands
+---
+slug: commands
+title: Control Commands
+---
 
 ## EDGESec Commands
 

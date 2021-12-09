@@ -1,10 +1,11 @@
-# Creating a .deb
+---
+slug: deb
+title: Creating a .deb
+---
 
-## Creating Deb
+## Using GitHub Actions (recommended)
 
-### Using GitHub Actions (recommended)
-
-1. Update [`debian/changelog`](../debian/changelog) and make a new version.
+1. Update [`debian/changelog`](https://github.com/nqminds/EDGESec/debian/changelog) and make a new version.
 2. [Create a new GitHub Release](https://github.com/nqminds/EDGESec/releases/new),
   using the branch where you pushed the updated changelog.
 3. After creating a Release (and when it's **NOT** a draft),
@@ -12,7 +13,7 @@
   will automatically compile the `.deb` files, and upload them as
   part of the Release you made.
 
-### Build Environment
+## Build Environment
 
 The recommended way of building a `.deb` is using the software `pbuilder`.
 
@@ -25,7 +26,7 @@ installing into a `chroot` environment.
 Additionally, you also need access to `chroot`, so `pbuilder` does not work
 in a container like `docker`/`podman`.
 
-#### PBuild
+### PBuild
 
 Install build dependencies:
 
@@ -62,7 +63,7 @@ The meaning of the options are:
 
 By default, the `.deb` file will be located in `/var/cache/pbuilder/result/`.
 
-#### Cross-compiling
+### Cross-compiling
 
 First of all, install `pbuilder`, which automatically downloads dependencies
 and does the cross-compiling for you.
@@ -106,7 +107,7 @@ pdebuild --debbuildopts "-us -uc" -- --override-config --distribution focal --mi
 
 By default, the `.deb` file will be located in `/var/cache/pbuilder/result/`.
 
-#### Podman
+### Podman
 
 If you want to use podman
 (e.g. since you're using elementary OS, or `pbuilder` doesn't work since you don't have `chroot` support),

@@ -1,0 +1,592 @@
+{
+  "docusaurus-plugin-content-docs": {
+    "default": {
+      "loadedVersions": [
+        {
+          "versionName": "current",
+          "versionLabel": "Next",
+          "versionPath": "/docs",
+          "tagsPath": "/docs/tags",
+          "versionEditUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs",
+          "versionEditUrlLocalized": "https://github.com/nqminds/docusaurus-template/edit/master/i18n/en/docusaurus-plugin-content-docs/current",
+          "versionBanner": null,
+          "versionBadge": false,
+          "versionClassName": "docs-version-current",
+          "isLast": true,
+          "routePriority": -1,
+          "sidebarFilePath": "/home/alexandru/Projects/EDGESec/docs/docusaurus/sidebars.js",
+          "contentPath": "/home/alexandru/Projects/EDGESec/docs/docusaurus/docs",
+          "contentPathLocalized": "/home/alexandru/Projects/EDGESec/docs/docusaurus/i18n/en/docusaurus-plugin-content-docs/current",
+          "mainDocId": "intro",
+          "docs": [
+            {
+              "unversionedId": "about",
+              "id": "about",
+              "isDocsHomePage": false,
+              "title": "About",
+              "description": "This is EDGESec's documentation website for the",
+              "source": "@site/docs/about.md",
+              "sourceDirName": ".",
+              "slug": "/about",
+              "permalink": "/docs/about",
+              "editUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs/about.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "title": "About"
+              }
+            },
+            {
+              "unversionedId": "capture",
+              "id": "capture",
+              "isDocsHomePage": false,
+              "title": "Network Capture",
+              "description": "The Network Capture architecture",
+              "source": "@site/docs/capture.md",
+              "sourceDirName": ".",
+              "slug": "/capture",
+              "permalink": "/docs/capture",
+              "editUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs/capture.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "slug": "capture",
+                "title": "Network Capture"
+              },
+              "sidebar": "someSidebar",
+              "previous": {
+                "title": "Network Control",
+                "permalink": "/docs/control"
+              },
+              "next": {
+                "title": "Device Discovery",
+                "permalink": "/docs/discovery"
+              }
+            },
+            {
+              "unversionedId": "commands",
+              "id": "commands",
+              "isDocsHomePage": false,
+              "title": "Control Commands",
+              "description": "EDGESec Commands",
+              "source": "@site/docs/commands.md",
+              "sourceDirName": ".",
+              "slug": "/commands",
+              "permalink": "/docs/commands",
+              "editUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs/commands.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "slug": "commands",
+                "title": "Control Commands"
+              },
+              "sidebar": "someSidebar",
+              "previous": {
+                "title": "Configuration File",
+                "permalink": "/docs/config"
+              },
+              "next": {
+                "title": "Creating a .deb",
+                "permalink": "/docs/deb"
+              }
+            },
+            {
+              "unversionedId": "config",
+              "id": "config",
+              "isDocsHomePage": false,
+              "title": "Configuration File",
+              "description": "Below is an example of the configuration file that is passed as a parameter to edgesec tool:",
+              "source": "@site/docs/config.md",
+              "sourceDirName": ".",
+              "slug": "/config",
+              "permalink": "/docs/config",
+              "editUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs/config.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "slug": "config",
+                "title": "Configuration File"
+              },
+              "sidebar": "someSidebar",
+              "previous": {
+                "title": "Running",
+                "permalink": "/docs/running"
+              },
+              "next": {
+                "title": "Control Commands",
+                "permalink": "/docs/commands"
+              }
+            },
+            {
+              "unversionedId": "control",
+              "id": "control",
+              "isDocsHomePage": false,
+              "title": "Network Control",
+              "description": "The Network Control architecture",
+              "source": "@site/docs/control.md",
+              "sourceDirName": ".",
+              "slug": "/control",
+              "permalink": "/docs/control",
+              "editUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs/control.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "slug": "control",
+                "title": "Network Control"
+              },
+              "sidebar": "someSidebar",
+              "previous": {
+                "title": "EDGESec Intro",
+                "permalink": "/docs/"
+              },
+              "next": {
+                "title": "Network Capture",
+                "permalink": "/docs/capture"
+              }
+            },
+            {
+              "unversionedId": "deb",
+              "id": "deb",
+              "isDocsHomePage": false,
+              "title": "Creating a .deb",
+              "description": "Using GitHub Actions (recommended)",
+              "source": "@site/docs/deb.md",
+              "sourceDirName": ".",
+              "slug": "/deb",
+              "permalink": "/docs/deb",
+              "editUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs/deb.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "slug": "deb",
+                "title": "Creating a .deb"
+              },
+              "sidebar": "someSidebar",
+              "previous": {
+                "title": "Control Commands",
+                "permalink": "/docs/commands"
+              },
+              "next": {
+                "title": "Issues",
+                "permalink": "/docs/issues"
+              }
+            },
+            {
+              "unversionedId": "discovery",
+              "id": "discovery",
+              "isDocsHomePage": false,
+              "title": "Device Discovery",
+              "description": "The secure discovery service implements gateway and device discovery suing the network control service and mDNS reflector if available.",
+              "source": "@site/docs/discovery.md",
+              "sourceDirName": ".",
+              "slug": "/discovery",
+              "permalink": "/docs/discovery",
+              "editUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs/discovery.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "slug": "discovery",
+                "title": "Device Discovery"
+              },
+              "sidebar": "someSidebar",
+              "previous": {
+                "title": "Network Capture",
+                "permalink": "/docs/capture"
+              },
+              "next": {
+                "title": "Secure Storage",
+                "permalink": "/docs/storage"
+              }
+            },
+            {
+              "unversionedId": "instalation",
+              "id": "instalation",
+              "isDocsHomePage": false,
+              "title": "Instalation",
+              "description": "Dependencies",
+              "source": "@site/docs/instalation.md",
+              "sourceDirName": ".",
+              "slug": "/instalation",
+              "permalink": "/docs/instalation",
+              "editUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs/instalation.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "slug": "instalation",
+                "title": "Instalation"
+              },
+              "sidebar": "someSidebar",
+              "previous": {
+                "title": "Secure Storage",
+                "permalink": "/docs/storage"
+              },
+              "next": {
+                "title": "Running",
+                "permalink": "/docs/running"
+              }
+            },
+            {
+              "unversionedId": "intro",
+              "id": "intro",
+              "isDocsHomePage": false,
+              "title": "EDGESec Intro",
+              "description": "EDGESec defines a new architecture and toolset for edge based routers addressing fundamental security weaknesses that impact current IP and IoT router implementations.",
+              "source": "@site/docs/intro.md",
+              "sourceDirName": ".",
+              "slug": "/",
+              "permalink": "/docs/",
+              "editUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs/intro.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "slug": "/",
+                "title": "EDGESec Intro"
+              },
+              "sidebar": "someSidebar",
+              "next": {
+                "title": "Network Control",
+                "permalink": "/docs/control"
+              }
+            },
+            {
+              "unversionedId": "issues",
+              "id": "issues",
+              "isDocsHomePage": false,
+              "title": "Issues",
+              "description": "aclocal-1.15: command not found",
+              "source": "@site/docs/issues.md",
+              "sourceDirName": ".",
+              "slug": "/issues",
+              "permalink": "/docs/issues",
+              "editUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs/issues.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "slug": "issues",
+                "title": "Issues"
+              },
+              "sidebar": "someSidebar",
+              "previous": {
+                "title": "Creating a .deb",
+                "permalink": "/docs/deb"
+              }
+            },
+            {
+              "unversionedId": "running",
+              "id": "running",
+              "isDocsHomePage": false,
+              "title": "Running",
+              "description": "To run `edgesec` tool with the configuration file `dev-config.ini` located in `./build` folder use:",
+              "source": "@site/docs/running.md",
+              "sourceDirName": ".",
+              "slug": "/running",
+              "permalink": "/docs/running",
+              "editUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs/running.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "slug": "running",
+                "title": "Running"
+              },
+              "sidebar": "someSidebar",
+              "previous": {
+                "title": "Instalation",
+                "permalink": "/docs/instalation"
+              },
+              "next": {
+                "title": "Configuration File",
+                "permalink": "/docs/config"
+              }
+            },
+            {
+              "unversionedId": "storage",
+              "id": "storage",
+              "isDocsHomePage": false,
+              "title": "Secure Storage",
+              "description": "The secure storage service implements a key/value store for all other services to store and retrieve encrypted keys or data. To encrypt data the secure storage generates keys that are encrypted using the hardware secure element or a user supplied passphrase.",
+              "source": "@site/docs/storage.md",
+              "sourceDirName": ".",
+              "slug": "/storage",
+              "permalink": "/docs/storage",
+              "editUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs/storage.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "slug": "storage",
+                "title": "Secure Storage"
+              },
+              "sidebar": "someSidebar",
+              "previous": {
+                "title": "Device Discovery",
+                "permalink": "/docs/discovery"
+              },
+              "next": {
+                "title": "Instalation",
+                "permalink": "/docs/instalation"
+              }
+            }
+          ],
+          "sidebars": {
+            "someSidebar": [
+              {
+                "type": "category",
+                "collapsed": true,
+                "collapsible": true,
+                "label": "Introduction",
+                "items": [
+                  {
+                    "type": "doc",
+                    "id": "intro"
+                  },
+                  {
+                    "type": "doc",
+                    "id": "control"
+                  },
+                  {
+                    "type": "doc",
+                    "id": "capture"
+                  },
+                  {
+                    "type": "doc",
+                    "id": "discovery"
+                  },
+                  {
+                    "type": "doc",
+                    "id": "storage"
+                  }
+                ]
+              },
+              {
+                "type": "category",
+                "collapsed": true,
+                "collapsible": true,
+                "label": "Development",
+                "items": [
+                  {
+                    "type": "doc",
+                    "id": "instalation"
+                  },
+                  {
+                    "type": "doc",
+                    "id": "running"
+                  },
+                  {
+                    "type": "doc",
+                    "id": "config"
+                  },
+                  {
+                    "type": "doc",
+                    "id": "commands"
+                  },
+                  {
+                    "type": "doc",
+                    "id": "deb"
+                  },
+                  {
+                    "type": "doc",
+                    "id": "issues"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "docusaurus-plugin-content-blog": {
+    "default": {
+      "blogSidebarTitle": "Recent posts",
+      "blogPosts": [
+        {
+          "id": "welcome",
+          "metadata": {
+            "permalink": "/blog/welcome",
+            "source": "@site/blog/2019-05-30-welcome.md",
+            "title": "Welcome",
+            "description": "Blog features are powered by the blog plugin. Simply add files to the blog directory. It supports tags as well!",
+            "date": "2019-05-30T00:00:00.000Z",
+            "formattedDate": "May 30, 2019",
+            "tags": [
+              {
+                "label": "facebook",
+                "permalink": "/blog/tags/facebook"
+              },
+              {
+                "label": "hello",
+                "permalink": "/blog/tags/hello"
+              },
+              {
+                "label": "docusaurus",
+                "permalink": "/blog/tags/docusaurus"
+              }
+            ],
+            "readingTime": 0.175,
+            "truncated": false,
+            "authors": [
+              {
+                "name": "Yangshun Tay",
+                "title": "Front End Engineer @ Facebook",
+                "url": "https://github.com/yangshun",
+                "imageURL": "https://avatars0.githubusercontent.com/u/1315101?s=400&v=4"
+              }
+            ],
+            "nextItem": {
+              "title": "Hello",
+              "permalink": "/blog/hello-world"
+            }
+          },
+          "content": "Blog features are powered by the blog plugin. Simply add files to the `blog` directory. It supports tags as well!\n\nDelete the whole directory if you don't want the blog features. As simple as that!"
+        },
+        {
+          "id": "hello-world",
+          "metadata": {
+            "permalink": "/blog/hello-world",
+            "source": "@site/blog/2019-05-29-hello-world.md",
+            "title": "Hello",
+            "description": "Welcome to this blog. This blog is created with Docusaurus 2 alpha.",
+            "date": "2019-05-29T00:00:00.000Z",
+            "formattedDate": "May 29, 2019",
+            "tags": [
+              {
+                "label": "hello",
+                "permalink": "/blog/tags/hello"
+              },
+              {
+                "label": "docusaurus",
+                "permalink": "/blog/tags/docusaurus"
+              }
+            ],
+            "readingTime": 0.12,
+            "truncated": true,
+            "authors": [
+              {
+                "name": "Endilie Yacop Sucipto",
+                "title": "Maintainer of Docusaurus",
+                "url": "https://github.com/endiliey",
+                "imageURL": "https://avatars1.githubusercontent.com/u/17883920?s=460&v=4"
+              }
+            ],
+            "prevItem": {
+              "title": "Welcome",
+              "permalink": "/blog/welcome"
+            },
+            "nextItem": {
+              "title": "Hola",
+              "permalink": "/blog/hola"
+            }
+          },
+          "content": "Welcome to this blog. This blog is created with [**Docusaurus 2 alpha**](https://v2.docusaurus.io/).\n\n<!--truncate-->\n\nThis is a test post.\n\nA whole bunch of other information."
+        },
+        {
+          "id": "hola",
+          "metadata": {
+            "permalink": "/blog/hola",
+            "source": "@site/blog/2019-05-28-hola.md",
+            "title": "Hola",
+            "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque elementum dignissim ultricies. Fusce rhoncus ipsum tempor eros aliquam consequat. Lorem ipsum dolor sit amet",
+            "date": "2019-05-28T00:00:00.000Z",
+            "formattedDate": "May 28, 2019",
+            "tags": [
+              {
+                "label": "hola",
+                "permalink": "/blog/tags/hola"
+              },
+              {
+                "label": "docusaurus",
+                "permalink": "/blog/tags/docusaurus"
+              }
+            ],
+            "readingTime": 0.12,
+            "truncated": false,
+            "authors": [
+              {
+                "name": "Gao Wei",
+                "title": "Docusaurus Core Team",
+                "url": "https://github.com/wgao19",
+                "imageURL": "https://avatars1.githubusercontent.com/u/2055384?v=4"
+              }
+            ],
+            "prevItem": {
+              "title": "Hello",
+              "permalink": "/blog/hello-world"
+            }
+          },
+          "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque elementum dignissim ultricies. Fusce rhoncus ipsum tempor eros aliquam consequat. Lorem ipsum dolor sit amet"
+        }
+      ],
+      "blogListPaginated": [
+        {
+          "metadata": {
+            "permalink": "/blog",
+            "page": 1,
+            "postsPerPage": 10,
+            "totalPages": 1,
+            "totalCount": 3,
+            "previousPage": null,
+            "nextPage": null,
+            "blogDescription": "Blog",
+            "blogTitle": "Blog"
+          },
+          "items": [
+            "welcome",
+            "hello-world",
+            "hola"
+          ]
+        }
+      ],
+      "blogTags": {
+        "/blog/tags/facebook": {
+          "name": "facebook",
+          "items": [
+            "welcome"
+          ],
+          "permalink": "/blog/tags/facebook"
+        },
+        "/blog/tags/hello": {
+          "name": "hello",
+          "items": [
+            "welcome",
+            "hello-world"
+          ],
+          "permalink": "/blog/tags/hello"
+        },
+        "/blog/tags/docusaurus": {
+          "name": "docusaurus",
+          "items": [
+            "welcome",
+            "hello-world",
+            "hola"
+          ],
+          "permalink": "/blog/tags/docusaurus"
+        },
+        "/blog/tags/hola": {
+          "name": "hola",
+          "items": [
+            "hola"
+          ],
+          "permalink": "/blog/tags/hola"
+        }
+      },
+      "blogTagsListPath": "/blog/tags"
+    }
+  },
+  "docusaurus-plugin-content-pages": {
+    "default": [
+      {
+        "type": "jsx",
+        "permalink": "/",
+        "source": "@site/src/pages/index.js"
+      }
+    ]
+  },
+  "docusaurus-plugin-debug": {
+    "default": null
+  },
+  "docusaurus-theme-classic": {
+    "default": null
+  },
+  "docusaurus-lunr-search": {
+    "default": null
+  }
+}

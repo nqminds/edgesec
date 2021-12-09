@@ -1,0 +1,17 @@
+{
+  "unversionedId": "about",
+  "id": "about",
+  "isDocsHomePage": false,
+  "title": "About",
+  "description": "This is EDGESec's documentation website for the",
+  "source": "@site/docs/about.md",
+  "sourceDirName": ".",
+  "slug": "/about",
+  "permalink": "/docs/about",
+  "editUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs/about.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "About"
+  }
+}

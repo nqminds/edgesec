@@ -1,20 +1,22 @@
-/**
-\page networkcapture Network Capture
+---
+slug: capture
+title: Network Capture
+---
 
-\section captureh The Network Capture architecture
+## The Network Capture architecture
 
 The network capture has the purpose of monitoring network traffic for each connected device. The resulting traffic analytics is sent to the network controller for device management. The network capture contains the following services:
 
-\li Packet decoder
-\li Packet capture
-\li SQLite header storer
-\li Raw packet storer
-\li GRPC Synchroniser
-\li Device monitoring
+* Packet decoder
+* Packet capture
+* SQLite header storer
+* Raw packet storer
+* GRPC Synchroniser
+* Device monitoring
 
 The capture service is implemented as a standalone executable that can be run on demand by the network controller. The configuration of the capture service is depicted below:
 
-\code{.c}
+```c
 struct capture_conf {
   char capture_interface[IFNAMSIZ];
   bool promiscuous;
@@ -29,14 +31,14 @@ struct capture_conf {
   uint16_t db_sync_port;
   char *filter;
 };
-\endcode
+```
 
 The capture service can be run on a given network interface with a given filter. The capture also has the ability to store the processed packet in SQLite databases or raw format. The databases can be synchronised with the cloud for remote access.
 
-\section packetdecoder Packet decoder
+## Packet decoder
 The packet decoder extract the metadata from captured packet. The below structure represents all the protocols that are currently being decoded:
 
-\code{.c}
+```c
 struct capture_packet {
   struct ether_header *ethh;
   struct ether_arp *arph;
@@ -65,19 +67,19 @@ struct capture_packet {
   uint32_t dhcph_hash;
   int count;
 };
-\endcode
+```
 
 For each decoded packet the service stores the hash of the header as well as the timestamp.
 
-\section packetcapture Packet capture 
+## Packet capture 
 
 The packet capture implements the actual network sniffing process. Currently it uses pcap library. But it also allow interfacing with PF_RING module that implements zero-copy technique.
 
-\section sqlitestorer SQLite storer
+## SQLite storer
 
 The SQLite storer implements the storage process for packet metadata into sqlite databases. Below is the list of schemas created by the SQLite storer that can be used by any application to query the packets:
 
-\verbatim
+```
 CREATE TABLE eth (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, caplen INTEGER, length INTEGER, ether_dhost TEXT, ether_shost TEXT, ether_type INTEGER,PRIMARY KEY (hash, timestamp, ethh_hash))
 CREATE TABLE arp (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, caplen INTEGER, length INTEGER, arp_hrd INTEGER, arp_pro INTEGER, arp_hln INTEGER, arp_pln INTEGER, arp_op INTEGER, arp_sha TEXT, arp_spa TEXT, arp_tha TEXT, arp_tpa TEXT, PRIMARY KEY (hash, timestamp, ethh_hash))
 CREATE TABLE ip4 (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, caplen INTEGER, length INTEGER, ip_hl INTEGER, ip_v INTEGER, ip_tos INTEGER, ip_len INTEGER, ip_id INTEGER, ip_off INTEGER, ip_ttl INTEGER, ip_p INTEGER, ip_sum INTEGER, ip_src TEXT, ip_dst TEXT, PRIMARY KEY (hash, timestamp, ethh_hash))
@@ -89,27 +91,27 @@ CREATE TABLE icmp6 (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash
 CREATE TABLE dns (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, caplen INTEGER, length INTEGER, tid INTEGER, flags INTEGER, nqueries INTEGER, nanswers INTEGER, nauth INTEGER, nother INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash))
 CREATE TABLE mdns (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, caplen INTEGER, length INTEGER, tid INTEGER, flags INTEGER, nqueries INTEGER, nanswers INTEGER, nauth INTEGER, nother INTEGER, PRIMARY KEY (hash, timestamp, ethh_hash))
 CREATE TABLE dhcp (hash INTEGER NOT NULL, timestamp INTEGER NOT NULL, ethh_hash INTEGER NOT NULL, caplen INTEGER, length INTEGER, op INTEGER, htype INTEGER, hlen INTEGER, hops INTEGER, xid INTEGER, secs INTEGER, flags INTEGER, ciaddr TEXT, yiaddr TEXT, siaddr TEXT, giaddr TEXT, PRIMARY KEY (hash, timestamp, ethh_hash))
-\endverbatim
+```
 
 Ever column in the respective table contains the hash of the Ethernet protocol that encapsulated the upper layers of the internet protocol suite as well as the capture timestamp.
 
-\section rawstorer Raw packet storer
+## Raw packet storer
 
 The raw packet storer stores the raw packet into pcap files and the metadata for each file is stored in a SQLite database. The file name for each packet is randomly generate and subsequently the name is stored in a SQLite database together with the timestamp and packet length. The schema for the SQLite database is depicted below:
-\verbatim
+```
 CREATE TABLE meta (id TEXT, timestamp INTEGER NOT NULL, name TEXT, interface TEXT, filter TEXT, caplen INTEGER, length INTEGER, PRIMARY KEY (id, timestamp, interface))
-\endverbatim
+```
 
-\section grpcsync GRPC Synchroniser
+## GRPC Synchroniser
 
 The GRPC syncroniser service implements the syncronisation process to the cloud for stored packet data as well as other tool data. The syncroniser can function in two ways:
-\li Forward - the syncroniser pushes the tool data to a cloud endpoint
-\li Reverse - the syncroniser connects to a cloud endpoint, which subsequently makes a reverse connection to the syncroniser service
+* Forward - the syncroniser pushes the tool data to a cloud endpoint
+* Reverse - the syncroniser connects to a cloud endpoint, which subsequently makes a reverse connection to the syncroniser service
 
 The syncronisation process is based on gRPC protocol, where the syncroniser service acts as a client and the cloud endpoint as a server. The connection can be made secure (using TLS) by providing a server certificate.
 
 The gRPC protocol uses procol buffers to define the remote execution function. The forward service is implemented by the below protocol buffer:
-\verbatim
+```
 syntax = "proto3";
 
 package sqlite_sync;
@@ -141,15 +143,16 @@ message SyncDbStatementRequest {
 message SyncDbStatementReply {
   uint32 status = 1;
 }
-\endverbatim
+```
+
 The forward synchroniser is used for cases when one needs to syncronise only the metadata to the cloud. It is implemented as a queue that pushes the packets at given intervals of time.
 
-\section devicemonitoring Device monitoring
+## Device monitoring
 
 The device monitoring service decodes the network traffic and assembles nettwork flow. Each flow is denoted by a source and destination MAC address, and protcol type. For each flow the device monitoring service calculates a fingerpint using the SHA256 algorithm.
 
 The flow results in the following structure:
-\code{.c}
+```c
 struct nDPI_flow_meta {
   char src_mac_addr[MACSTR_LEN];
   char dst_mac_addr[MACSTR_LEN];
@@ -157,44 +160,42 @@ struct nDPI_flow_meta {
   char hash[SHA256_HASH_LEN];
   char query[MAX_QUERY_LEN];
 };
-\endcode
-where \b src_mac_addr is the source MAC address, \b dst_mac_addr is the destination MAC address, \b protocol is the ID of the identified network protocol, \b hash is the fingerprint of the flow and \b query is the optional query string. The optional \b query string is dependent on the protocol type. For DNS, mDNS and TLS it is the same as the requested host name.
+```
+
+where **src_mac_addr** is the source MAC address, **dst_mac_addr** is the destination MAC address, **protocol** is the ID of the identified network protocol, **hash** is the fingerprint of the flow and **query** is the optional query string. The optional **query** string is dependent on the protocol type. For DNS, mDNS and TLS it is the same as the requested host name.
 
 Each flow is stored in a sqlite database with teh followinf schema:
 
-\verbatim
+```
 CREATE TABLE fingerprint (mac TEXT NOT NULL, protocol TEXT, fingerprint TEXT, timestamp INTEGER NOT NULL, query TEXT, PRIMARY KEY (mac, timestamp));
-\endverbatim
+```
 
 The timestamp is given as 64 bit microseconds value and the fingerprint string is encoded in base64.
 
 
 An example of the fingerprint table rows are below:
-<table>
-<caption id="multi_row">The fingerprint table</caption>
-<tr><th>MAC<th>PROTOCOL<th>FINGERPRINT<th>TIMESTAMP<th>QUERY
-<tr><td> 84:e3:42:3a:cb:2f <td> TLS.Amazon <td> mI1ENXMPBQDVjwGh/o0bLSrD8+O2O5RCFQLbUVt4lzI <td> 1625055051481102 <td> a2.tuyaeu.com
-<tr><td> 9c:ef:d5:fd:db:56 <td> TLS.Amazon <td> mI1ENXMPBQDVjwGh/o0bLSrD8+O2O5RCFQLbUVt4lzI <td> 1625055051481102 <td> a2.tuyaeu.com
-<tr><td> 84:e3:42:3a:cb:2f <td> DNS <td> NqRTRWiNdfG4zMkiXE9P0eRQIefPgMYV/vXUymxdvNw <td> 1625055072748967 <td> 1.0.0.10.in-addr.arpa
-<tr><td> 9c:ef:d5:fd:db:56 <td> DNS <td> NqRTRWiNdfG4zMkiXE9P0eRQIefPgMYV/vXUymxdvNw <td> 1625055072748967 <td> 1.0.0.10.in-addr.arpa
-</table>
+
+|MACPROTOCOL|FINGERPRINT|TIMESTAMP|QUERY|
+|-----------|-----------|---------|-----|
+|84:e3:42:3a:cb:2f|TLS.Amazon|mI1ENXMPBQDVjwGh/o0bLSrD8+O2O5RCFQLbUVt4lzI|1625055051481102|a2.tuyaeu.com|
+|9c:ef:d5:fd:db:56|TLS.Amazon|mI1ENXMPBQDVjwGh/o0bLSrD8+O2O5RCFQLbUVt4lzI|1625055051481102|a2.tuyaeu.com|
+|84:e3:42:3a:cb:2f|DNS|NqRTRWiNdfG4zMkiXE9P0eRQIefPgMYV/vXUymxdvNw|1625055072748967|1.0.0.10.in-addr.arpa|
+|9c:ef:d5:fd:db:56|DNS|NqRTRWiNdfG4zMkiXE9P0eRQIefPgMYV/vXUymxdvNw|1625055072748967|1.0.0.10.in-addr.arpa|
+
 
 The entries of the fingerprint table can be queried using the supervisor service.
 
 For instance to retrieve all fingerprints for the MAC address 84:e3:42:3a:cb:2f one could use the following command:
-\verbatim
+```
 QUERY_FINGERPRINT 84:e3:42:3a:cb:2f 0 >= all
-\endverbatim
+```
 
 To retrieve all the fingerprints up to a given timestamp one could use the following command:
-\verbatim
+```
 QUERY_FINGERPRINT 84:e3:42:3a:cb:2f 1625055051481102 <= all
-\endverbatim
+```
 
 To retrieve all the fingerprints for the DNS protocol one could use the following command:
-\verbatim
+```
 QUERY_FINGERPRINT 84:e3:42:3a:cb:2f 0 >= DNS
-\endverbatim
-
-
-*/
+```

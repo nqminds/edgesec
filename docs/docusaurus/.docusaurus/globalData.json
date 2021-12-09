@@ -1,0 +1,85 @@
+{
+  "docusaurus-lunr-search": {
+    "default": {
+      "fileNames": {
+        "searchDoc": "search-doc-1639068002806.json",
+        "lunrIndex": "lunr-index-1639068002806.json"
+      }
+    }
+  },
+  "docusaurus-plugin-content-docs": {
+    "default": {
+      "path": "/docs",
+      "versions": [
+        {
+          "name": "current",
+          "label": "Next",
+          "isLast": true,
+          "path": "/docs",
+          "mainDocId": "intro",
+          "docs": [
+            {
+              "id": "about",
+              "path": "/docs/about"
+            },
+            {
+              "id": "capture",
+              "path": "/docs/capture",
+              "sidebar": "someSidebar"
+            },
+            {
+              "id": "commands",
+              "path": "/docs/commands",
+              "sidebar": "someSidebar"
+            },
+            {
+              "id": "config",
+              "path": "/docs/config",
+              "sidebar": "someSidebar"
+            },
+            {
+              "id": "control",
+              "path": "/docs/control",
+              "sidebar": "someSidebar"
+            },
+            {
+              "id": "deb",
+              "path": "/docs/deb",
+              "sidebar": "someSidebar"
+            },
+            {
+              "id": "discovery",
+              "path": "/docs/discovery",
+              "sidebar": "someSidebar"
+            },
+            {
+              "id": "instalation",
+              "path": "/docs/instalation",
+              "sidebar": "someSidebar"
+            },
+            {
+              "id": "intro",
+              "path": "/docs/",
+              "sidebar": "someSidebar"
+            },
+            {
+              "id": "issues",
+              "path": "/docs/issues",
+              "sidebar": "someSidebar"
+            },
+            {
+              "id": "running",
+              "path": "/docs/running",
+              "sidebar": "someSidebar"
+            },
+            {
+              "id": "storage",
+              "path": "/docs/storage",
+              "sidebar": "someSidebar"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

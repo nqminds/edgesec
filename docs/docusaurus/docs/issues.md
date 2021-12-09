@@ -1,4 +1,7 @@
-# libmnl-1.0.4
+---
+slug: issues
+title: Issues
+---
 
 ## aclocal-1.15: command not found
 ```console
