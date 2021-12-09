@@ -37,7 +37,11 @@ jobs:
 
     # - name: test
     #   run: cd build && make test
-    
+
+    - name: Install modules
+      working-directory: ./docs/docusaurus/
+      run: npm i
+
     - name: Build
       working-directory: ./docs/docusaurus/
       run: npm run build
