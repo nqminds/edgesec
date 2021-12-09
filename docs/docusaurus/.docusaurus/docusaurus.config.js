@@ -1,6 +1,6 @@
 export default {
-  "title": "EDGESec NGI Pointer Project",
-  "tagline": "EDGESec will define a new architecture for local (edge based) routers addressing fundamental security weaknesses that impact current IP and IOT router implementations",
+  "title": "EDGESec",
+  "tagline": "Secure IoT router implementation",
   "url": "https://nqminds.github.io",
   "baseUrl": "/",
   "favicon": "img/logo.svg",
@@ -17,7 +17,7 @@ export default {
         {
           "to": "docs/",
           "activeBasePath": "docs",
-          "label": "Docs",
+          "label": "Documentation",
           "position": "left"
         },
         {
@@ -46,12 +46,7 @@ export default {
           ]
         }
       ],
-      "logo": {
-        "alt": "NquiringMinds Logo",
-        "src": "img/nqminds-logo.svg",
-        "href": "http://nqmcyber.com"
-      },
-      "copyright": "Copyright © 2021 NQMCyber LTD. Built with Docusaurus."
+      "copyright": "Copyright © 2021 NQMCyber LTD.<br/>Built with Docusaurus."
     },
     "colorMode": {
       "defaultMode": "light",

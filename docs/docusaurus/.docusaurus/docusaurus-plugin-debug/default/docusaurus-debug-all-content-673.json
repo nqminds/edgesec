@@ -17,14 +17,14 @@
           "sidebarFilePath": "/home/alexandru/Projects/EDGESec/docs/docusaurus/sidebars.js",
           "contentPath": "/home/alexandru/Projects/EDGESec/docs/docusaurus/docs",
           "contentPathLocalized": "/home/alexandru/Projects/EDGESec/docs/docusaurus/i18n/en/docusaurus-plugin-content-docs/current",
-          "mainDocId": "doc1",
+          "mainDocId": "intro",
           "docs": [
             {
               "unversionedId": "about",
               "id": "about",
               "isDocsHomePage": false,
               "title": "About",
-              "description": "This is nquiringminds's documentation website for the",
+              "description": "This is EDGESec's documentation website for the",
               "source": "@site/docs/about.md",
               "sourceDirName": ".",
               "slug": "/about",
@@ -37,104 +37,292 @@
               }
             },
             {
-              "unversionedId": "doc1",
-              "id": "doc1",
+              "unversionedId": "capture",
+              "id": "capture",
               "isDocsHomePage": false,
-              "title": "Style Guide",
-              "description": "You can write content using GitHub-flavored Markdown syntax.",
-              "source": "@site/docs/doc1.md",
+              "title": "Network Capture",
+              "description": "The Network Capture architecture",
+              "source": "@site/docs/capture.md",
+              "sourceDirName": ".",
+              "slug": "/capture",
+              "permalink": "/docs/capture",
+              "editUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs/capture.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "slug": "capture",
+                "title": "Network Capture"
+              },
+              "sidebar": "someSidebar",
+              "previous": {
+                "title": "Network Control",
+                "permalink": "/docs/control"
+              },
+              "next": {
+                "title": "Device Discovery",
+                "permalink": "/docs/discovery"
+              }
+            },
+            {
+              "unversionedId": "commands",
+              "id": "commands",
+              "isDocsHomePage": false,
+              "title": "Control Commands",
+              "description": "EDGESec Commands",
+              "source": "@site/docs/commands.md",
+              "sourceDirName": ".",
+              "slug": "/commands",
+              "permalink": "/docs/commands",
+              "editUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs/commands.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "slug": "commands",
+                "title": "Control Commands"
+              },
+              "sidebar": "someSidebar",
+              "previous": {
+                "title": "Configuration File",
+                "permalink": "/docs/config"
+              },
+              "next": {
+                "title": "Creating a .deb",
+                "permalink": "/docs/deb"
+              }
+            },
+            {
+              "unversionedId": "config",
+              "id": "config",
+              "isDocsHomePage": false,
+              "title": "Configuration File",
+              "description": "Below is an example of the configuration file that is passed as a parameter to edgesec tool:",
+              "source": "@site/docs/config.md",
+              "sourceDirName": ".",
+              "slug": "/config",
+              "permalink": "/docs/config",
+              "editUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs/config.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "slug": "config",
+                "title": "Configuration File"
+              },
+              "sidebar": "someSidebar",
+              "previous": {
+                "title": "Running",
+                "permalink": "/docs/running"
+              },
+              "next": {
+                "title": "Control Commands",
+                "permalink": "/docs/commands"
+              }
+            },
+            {
+              "unversionedId": "control",
+              "id": "control",
+              "isDocsHomePage": false,
+              "title": "Network Control",
+              "description": "The Network Control architecture",
+              "source": "@site/docs/control.md",
+              "sourceDirName": ".",
+              "slug": "/control",
+              "permalink": "/docs/control",
+              "editUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs/control.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "slug": "control",
+                "title": "Network Control"
+              },
+              "sidebar": "someSidebar",
+              "previous": {
+                "title": "EDGESec Intro",
+                "permalink": "/docs/"
+              },
+              "next": {
+                "title": "Network Capture",
+                "permalink": "/docs/capture"
+              }
+            },
+            {
+              "unversionedId": "deb",
+              "id": "deb",
+              "isDocsHomePage": false,
+              "title": "Creating a .deb",
+              "description": "Using GitHub Actions (recommended)",
+              "source": "@site/docs/deb.md",
+              "sourceDirName": ".",
+              "slug": "/deb",
+              "permalink": "/docs/deb",
+              "editUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs/deb.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "slug": "deb",
+                "title": "Creating a .deb"
+              },
+              "sidebar": "someSidebar",
+              "previous": {
+                "title": "Control Commands",
+                "permalink": "/docs/commands"
+              },
+              "next": {
+                "title": "Issues",
+                "permalink": "/docs/issues"
+              }
+            },
+            {
+              "unversionedId": "discovery",
+              "id": "discovery",
+              "isDocsHomePage": false,
+              "title": "Device Discovery",
+              "description": "The secure discovery service implements gateway and device discovery suing the network control service and mDNS reflector if available.",
+              "source": "@site/docs/discovery.md",
+              "sourceDirName": ".",
+              "slug": "/discovery",
+              "permalink": "/docs/discovery",
+              "editUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs/discovery.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "slug": "discovery",
+                "title": "Device Discovery"
+              },
+              "sidebar": "someSidebar",
+              "previous": {
+                "title": "Network Capture",
+                "permalink": "/docs/capture"
+              },
+              "next": {
+                "title": "Secure Storage",
+                "permalink": "/docs/storage"
+              }
+            },
+            {
+              "unversionedId": "instalation",
+              "id": "instalation",
+              "isDocsHomePage": false,
+              "title": "Instalation",
+              "description": "Dependencies",
+              "source": "@site/docs/instalation.md",
+              "sourceDirName": ".",
+              "slug": "/instalation",
+              "permalink": "/docs/instalation",
+              "editUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs/instalation.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "slug": "instalation",
+                "title": "Instalation"
+              },
+              "sidebar": "someSidebar",
+              "previous": {
+                "title": "Secure Storage",
+                "permalink": "/docs/storage"
+              },
+              "next": {
+                "title": "Running",
+                "permalink": "/docs/running"
+              }
+            },
+            {
+              "unversionedId": "intro",
+              "id": "intro",
+              "isDocsHomePage": false,
+              "title": "EDGESec Intro",
+              "description": "EDGESec defines a new architecture and toolset for edge based routers addressing fundamental security weaknesses that impact current IP and IoT router implementations.",
+              "source": "@site/docs/intro.md",
               "sourceDirName": ".",
               "slug": "/",
               "permalink": "/docs/",
-              "editUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs/doc1.md",
+              "editUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs/intro.md",
               "tags": [],
               "version": "current",
               "frontMatter": {
                 "slug": "/",
-                "title": "Style Guide",
-                "sidebar_label": "Style Guide"
+                "title": "EDGESec Intro"
               },
               "sidebar": "someSidebar",
               "next": {
-                "title": "Document Number 2",
-                "permalink": "/docs/doc2"
+                "title": "Network Control",
+                "permalink": "/docs/control"
               }
             },
             {
-              "unversionedId": "doc2",
-              "id": "doc2",
+              "unversionedId": "issues",
+              "id": "issues",
               "isDocsHomePage": false,
-              "title": "Document Number 2",
-              "description": "This is a link to another document. This is a link to an external page.",
-              "source": "@site/docs/doc2.md",
+              "title": "Issues",
+              "description": "aclocal-1.15: command not found",
+              "source": "@site/docs/issues.md",
               "sourceDirName": ".",
-              "slug": "/doc2",
-              "permalink": "/docs/doc2",
-              "editUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs/doc2.md",
+              "slug": "/issues",
+              "permalink": "/docs/issues",
+              "editUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs/issues.md",
               "tags": [],
               "version": "current",
               "frontMatter": {
-                "slug": "doc2",
-                "title": "Document Number 2"
+                "slug": "issues",
+                "title": "Issues"
               },
               "sidebar": "someSidebar",
               "previous": {
-                "title": "Style Guide",
-                "permalink": "/docs/"
+                "title": "Creating a .deb",
+                "permalink": "/docs/deb"
+              }
+            },
+            {
+              "unversionedId": "running",
+              "id": "running",
+              "isDocsHomePage": false,
+              "title": "Running",
+              "description": "To run `edgesec` tool with the configuration file `dev-config.ini` located in `./build` folder use:",
+              "source": "@site/docs/running.md",
+              "sourceDirName": ".",
+              "slug": "/running",
+              "permalink": "/docs/running",
+              "editUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs/running.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "slug": "running",
+                "title": "Running"
+              },
+              "sidebar": "someSidebar",
+              "previous": {
+                "title": "Instalation",
+                "permalink": "/docs/instalation"
               },
               "next": {
-                "title": "This is Document Number 3",
-                "permalink": "/docs/doc3"
+                "title": "Configuration File",
+                "permalink": "/docs/config"
               }
             },
             {
-              "unversionedId": "doc3",
-              "id": "doc3",
+              "unversionedId": "storage",
+              "id": "storage",
               "isDocsHomePage": false,
-              "title": "This is Document Number 3",
-              "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. In ac euismod odio, eu consequat dui. Nullam molestie consectetur risus id imperdiet. Proin sodales ornare turpis, non mollis massa ultricies id. Nam at nibh scelerisque, feugiat ante non, dapibus tortor. Vivamus volutpat diam quis tellus elementum bibendum. Praesent semper gravida velit quis aliquam. Etiam in cursus neque. Nam lectus ligula, malesuada et mauris a, bibendum faucibus mi. Phasellus ut interdum felis. Phasellus in odio pulvinar, porttitor urna eget, fringilla lectus. Aliquam sollicitudin est eros. Mauris consectetur quam vitae mauris interdum hendrerit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-              "source": "@site/docs/doc3.md",
+              "title": "Secure Storage",
+              "description": "The secure storage service implements a key/value store for all other services to store and retrieve encrypted keys or data. To encrypt data the secure storage generates keys that are encrypted using the hardware secure element or a user supplied passphrase.",
+              "source": "@site/docs/storage.md",
               "sourceDirName": ".",
-              "slug": "/doc3",
-              "permalink": "/docs/doc3",
-              "editUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs/doc3.md",
+              "slug": "/storage",
+              "permalink": "/docs/storage",
+              "editUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs/storage.md",
               "tags": [],
               "version": "current",
               "frontMatter": {
-                "slug": "doc3",
-                "title": "This is Document Number 3"
+                "slug": "storage",
+                "title": "Secure Storage"
               },
               "sidebar": "someSidebar",
               "previous": {
-                "title": "Document Number 2",
-                "permalink": "/docs/doc2"
+                "title": "Device Discovery",
+                "permalink": "/docs/discovery"
               },
               "next": {
-                "title": "Powered by MDX",
-                "permalink": "/docs/mdx"
-              }
-            },
-            {
-              "unversionedId": "mdx",
-              "id": "mdx",
-              "isDocsHomePage": false,
-              "title": "Powered by MDX",
-              "description": "You can write JSX and use React components within your Markdown thanks to MDX.",
-              "source": "@site/docs/mdx.md",
-              "sourceDirName": ".",
-              "slug": "/mdx",
-              "permalink": "/docs/mdx",
-              "editUrl": "https://github.com/nqminds/docusaurus-template/edit/master/docs/mdx.md",
-              "tags": [],
-              "version": "current",
-              "frontMatter": {
-                "slug": "mdx",
-                "title": "Powered by MDX"
-              },
-              "sidebar": "someSidebar",
-              "previous": {
-                "title": "This is Document Number 3",
-                "permalink": "/docs/doc3"
+                "title": "Instalation",
+                "permalink": "/docs/instalation"
               }
             }
           ],
@@ -144,19 +332,27 @@
                 "type": "category",
                 "collapsed": true,
                 "collapsible": true,
-                "label": "Development",
+                "label": "Introduction",
                 "items": [
                   {
                     "type": "doc",
-                    "id": "doc1"
+                    "id": "intro"
                   },
                   {
                     "type": "doc",
-                    "id": "doc2"
+                    "id": "control"
                   },
                   {
                     "type": "doc",
-                    "id": "doc3"
+                    "id": "capture"
+                  },
+                  {
+                    "type": "doc",
+                    "id": "discovery"
+                  },
+                  {
+                    "type": "doc",
+                    "id": "storage"
                   }
                 ]
               },
@@ -164,11 +360,31 @@
                 "type": "category",
                 "collapsed": true,
                 "collapsible": true,
-                "label": "Features",
+                "label": "Development",
                 "items": [
                   {
                     "type": "doc",
-                    "id": "mdx"
+                    "id": "instalation"
+                  },
+                  {
+                    "type": "doc",
+                    "id": "running"
+                  },
+                  {
+                    "type": "doc",
+                    "id": "config"
+                  },
+                  {
+                    "type": "doc",
+                    "id": "commands"
+                  },
+                  {
+                    "type": "doc",
+                    "id": "deb"
+                  },
+                  {
+                    "type": "doc",
+                    "id": "issues"
                   }
                 ]
               }

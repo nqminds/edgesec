@@ -14,10 +14,5 @@
   "frontMatter": {
     "slug": "mdx",
     "title": "Powered by MDX"
-  },
-  "sidebar": "someSidebar",
-  "previous": {
-    "title": "This is Document Number 3",
-    "permalink": "/docs/doc3"
   }
 }

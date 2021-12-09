@@ -4,11 +4,8 @@ title: About
 
 import useBaseUrl from '@docusaurus/useBaseUrl';
 
-This is **nquiring**minds's documentation website for the
+This is **EDGESec**'s documentation website for the
 docusaurus-template project.
-
-For more information, please visit
-[the **nquiring**minds website](https://nquiringminds.com).
 
 ## Licensing
 

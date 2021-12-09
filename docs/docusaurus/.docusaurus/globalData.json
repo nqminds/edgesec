@@ -2,8 +2,8 @@
   "docusaurus-lunr-search": {
     "default": {
       "fileNames": {
-        "searchDoc": "search-doc-1638982500402.json",
-        "lunrIndex": "lunr-index-1638982500402.json"
+        "searchDoc": "search-doc-1639068002806.json",
+        "lunrIndex": "lunr-index-1639068002806.json"
       }
     }
   },
@@ -16,30 +16,65 @@
           "label": "Next",
           "isLast": true,
           "path": "/docs",
-          "mainDocId": "doc1",
+          "mainDocId": "intro",
           "docs": [
             {
               "id": "about",
               "path": "/docs/about"
             },
             {
-              "id": "doc1",
+              "id": "capture",
+              "path": "/docs/capture",
+              "sidebar": "someSidebar"
+            },
+            {
+              "id": "commands",
+              "path": "/docs/commands",
+              "sidebar": "someSidebar"
+            },
+            {
+              "id": "config",
+              "path": "/docs/config",
+              "sidebar": "someSidebar"
+            },
+            {
+              "id": "control",
+              "path": "/docs/control",
+              "sidebar": "someSidebar"
+            },
+            {
+              "id": "deb",
+              "path": "/docs/deb",
+              "sidebar": "someSidebar"
+            },
+            {
+              "id": "discovery",
+              "path": "/docs/discovery",
+              "sidebar": "someSidebar"
+            },
+            {
+              "id": "instalation",
+              "path": "/docs/instalation",
+              "sidebar": "someSidebar"
+            },
+            {
+              "id": "intro",
               "path": "/docs/",
               "sidebar": "someSidebar"
             },
             {
-              "id": "doc2",
-              "path": "/docs/doc2",
+              "id": "issues",
+              "path": "/docs/issues",
               "sidebar": "someSidebar"
             },
             {
-              "id": "doc3",
-              "path": "/docs/doc3",
+              "id": "running",
+              "path": "/docs/running",
               "sidebar": "someSidebar"
             },
             {
-              "id": "mdx",
-              "path": "/docs/mdx",
+              "id": "storage",
+              "path": "/docs/storage",
               "sidebar": "someSidebar"
             }
           ]

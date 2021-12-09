@@ -1,7 +1,10 @@
-# Configuration file structure
+---
+slug: config
+title: Configuration File
+---
 
 Below is an example of the configuration file that is passed as a parameter to `edgesec` tool:
-```ini
+```
 [system]
 binPath = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"
 hashIpCommand = ""
@@ -128,6 +131,7 @@ if7 = "7,10.0.7.1,10.0.7.255,255.255.255.0"
 if8 = "8,10.0.8.1,10.0.8.255,255.255.255.0"
 if9 = "9,10.0.9.1,10.0.9.255,255.255.255.0"
 if10 = "10,10.0.10.1,10.0.10.255,255.255.255.0"
+```
 
 The configuration file is based on the `ini` file type format. Each parameter in the file is set using a key and a value pair. The `edgesec` configuration file is composed of the following groups:
 * *[system]*

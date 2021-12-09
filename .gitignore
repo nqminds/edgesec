@@ -62,6 +62,8 @@ dkms.conf
 
 apps/**/node_modules
 docs/**/node_modules
+docs/docusaurus/build
+docs/docusaurus/.docusaurus
 build/**
 docs/html/**
 docs/latex/**

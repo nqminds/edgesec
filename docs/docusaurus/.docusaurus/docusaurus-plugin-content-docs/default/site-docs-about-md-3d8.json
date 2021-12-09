@@ -3,7 +3,7 @@
   "id": "about",
   "isDocsHomePage": false,
   "title": "About",
-  "description": "This is nquiringminds's documentation website for the",
+  "description": "This is EDGESec's documentation website for the",
   "source": "@site/docs/about.md",
   "sourceDirName": ".",
   "slug": "/about",

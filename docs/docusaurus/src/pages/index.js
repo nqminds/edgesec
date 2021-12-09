@@ -10,31 +10,28 @@ import styles from "./styles.module.css";
 const features = [
   {
     title: <>Network Control</>,
-    imageUrl: "img/undraw_docusaurus_mountain.svg",
+    imageUrl: "img/network.svg",
     description: (
       <>
-        Docusaurus was designed from the ground up to be easily installed and
-        used to get your website up and running quickly.
+        Wireless network segmentation and fine gained control of connected IoT devices.
       </>
     ),
   },
   {
     title: <>Network Monitor</>,
-    imageUrl: "img/undraw_docusaurus_tree.svg",
+    imageUrl: "img/monitor.svg",
     description: (
       <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
+        Traffic monitoring and detection of compromised IoT devices.
       </>
     ),
   },
   {
     title: <>Secure Storage</>,
-    imageUrl: "img/undraw_docusaurus_react.svg",
+    imageUrl: "img/vault.svg",
     description: (
       <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
+        Implementation of a secure key/value store on top of hardware secure storage.
       </>
     ),
   },

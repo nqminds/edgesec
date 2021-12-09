@@ -1,6 +1,6 @@
 module.exports = {
-  title: "EDGESec NGI Pointer Project",
-  tagline: "EDGESec will define a new architecture for local (edge based) routers addressing fundamental security weaknesses that impact current IP and IOT router implementations",
+  title: "EDGESec",
+  tagline: "Secure IoT router implementation",
   url: "https://nqminds.github.io",
   baseUrl: "/", // usually your repo name, must contain a trailing and starting slash
   favicon: "img/logo.svg",
@@ -18,7 +18,7 @@ module.exports = {
           // WARNING, if you change routeBasePath of docs, you should change this as well
           to: "docs/",
           activeBasePath: "docs",
-          label: "Docs",
+          label: "Documentation",
           position: "left",
         },
         {
@@ -47,12 +47,7 @@ module.exports = {
           ],
         },
       ],
-      logo: {
-        alt: "NquiringMinds Logo",
-        src: "img/nqminds-logo.svg",
-        href: "http://nqmcyber.com",
-      },
-      copyright: `Copyright © ${new Date().getFullYear()} NQMCyber LTD. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} NQMCyber LTD.<br/>Built with Docusaurus.`,
     },
   },
   presets: [

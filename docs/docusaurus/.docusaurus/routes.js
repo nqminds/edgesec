@@ -4,41 +4,6 @@ import ComponentCreator from '@docusaurus/ComponentCreator';
 
 export default [
   {
-    path: '/__docusaurus/debug',
-    component: ComponentCreator('/__docusaurus/debug','3d6'),
-    exact: true
-  },
-  {
-    path: '/__docusaurus/debug/config',
-    component: ComponentCreator('/__docusaurus/debug/config','914'),
-    exact: true
-  },
-  {
-    path: '/__docusaurus/debug/content',
-    component: ComponentCreator('/__docusaurus/debug/content','c28'),
-    exact: true
-  },
-  {
-    path: '/__docusaurus/debug/globalData',
-    component: ComponentCreator('/__docusaurus/debug/globalData','3cf'),
-    exact: true
-  },
-  {
-    path: '/__docusaurus/debug/metadata',
-    component: ComponentCreator('/__docusaurus/debug/metadata','31b'),
-    exact: true
-  },
-  {
-    path: '/__docusaurus/debug/registry',
-    component: ComponentCreator('/__docusaurus/debug/registry','0da'),
-    exact: true
-  },
-  {
-    path: '/__docusaurus/debug/routes',
-    component: ComponentCreator('/__docusaurus/debug/routes','244'),
-    exact: true
-  },
-  {
     path: '/blog',
     component: ComponentCreator('/blog','569'),
     exact: true
@@ -90,11 +55,11 @@ export default [
   },
   {
     path: '/docs',
-    component: ComponentCreator('/docs','da2'),
+    component: ComponentCreator('/docs','da5'),
     routes: [
       {
         path: '/docs/',
-        component: ComponentCreator('/docs/','6b2'),
+        component: ComponentCreator('/docs/','2aa'),
         exact: true,
         'sidebar': "someSidebar"
       },
@@ -104,20 +69,62 @@ export default [
         exact: true
       },
       {
-        path: '/docs/doc2',
-        component: ComponentCreator('/docs/doc2','fc7'),
+        path: '/docs/capture',
+        component: ComponentCreator('/docs/capture','4a5'),
         exact: true,
         'sidebar': "someSidebar"
       },
       {
-        path: '/docs/doc3',
-        component: ComponentCreator('/docs/doc3','b20'),
+        path: '/docs/commands',
+        component: ComponentCreator('/docs/commands','3f4'),
         exact: true,
         'sidebar': "someSidebar"
       },
       {
-        path: '/docs/mdx',
-        component: ComponentCreator('/docs/mdx','106'),
+        path: '/docs/config',
+        component: ComponentCreator('/docs/config','46a'),
+        exact: true,
+        'sidebar': "someSidebar"
+      },
+      {
+        path: '/docs/control',
+        component: ComponentCreator('/docs/control','960'),
+        exact: true,
+        'sidebar': "someSidebar"
+      },
+      {
+        path: '/docs/deb',
+        component: ComponentCreator('/docs/deb','bca'),
+        exact: true,
+        'sidebar': "someSidebar"
+      },
+      {
+        path: '/docs/discovery',
+        component: ComponentCreator('/docs/discovery','c4e'),
+        exact: true,
+        'sidebar': "someSidebar"
+      },
+      {
+        path: '/docs/instalation',
+        component: ComponentCreator('/docs/instalation','edc'),
+        exact: true,
+        'sidebar': "someSidebar"
+      },
+      {
+        path: '/docs/issues',
+        component: ComponentCreator('/docs/issues','6ff'),
+        exact: true,
+        'sidebar': "someSidebar"
+      },
+      {
+        path: '/docs/running',
+        component: ComponentCreator('/docs/running','646'),
+        exact: true,
+        'sidebar': "someSidebar"
+      },
+      {
+        path: '/docs/storage',
+        component: ComponentCreator('/docs/storage','057'),
         exact: true,
         'sidebar': "someSidebar"
       }

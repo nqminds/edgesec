@@ -17,8 +17,8 @@
     "sidebar_label": "Style Guide"
   },
   "sidebar": "someSidebar",
-  "next": {
-    "title": "Document Number 2",
-    "permalink": "/docs/doc2"
+  "previous": {
+    "title": "Issues",
+    "permalink": "/docs/issues"
   }
 }
