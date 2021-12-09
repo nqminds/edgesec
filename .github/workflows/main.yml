@@ -23,11 +23,14 @@ jobs:
     # warning! This is a shallow clone, and has no git history for docs!
     - uses: actions/checkout@v2
     
-    - name: Install dependencies
-      run: sudo apt install -y doxygen texinfo graphviz cmake build-essential
-
-    - name: configure
-      run: cmake -B build/ -S . -DBUILD_ONLY_DOCS=ON
+    - name: Setup node
+      uses: actions/setup-node@v2
+      with:
+          node-version: "14.x"
+          registry-url: "https://registry.npmjs.org"
+          cache: npm
+          cache-dependency-path: |
+            docs/docusaurus/package-lock.json
 
     # - name: build
     #   run: cd build && make
@@ -35,16 +38,16 @@ jobs:
     # - name: test
     #   run: cd build && make test
     
-    - name: builds docs
-      # Ubuntu runner has 2 vCPUs, so use 2 jobs
-      run: cmake --build build/ --target doxydocs -j2
+    - name: Build
+      working-directory: ./docs/docusaurus/
+      run: npm run build
 
     - name: publish docs (main-branch only)
       if: github.ref == 'refs/heads/main'
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./docs/html/
+        publish_dir: ./docs/docusaurus/build
         enable_jekyll: false
         allow_empty_commit: false
         force_orphan: true
