@@ -1,3 +1,9 @@
+edgesec (0.9.9-alpha5) UNRELEASED; urgency=low
+
+  * Add `edgesec-mdnsf` package that creates the `mdnsf` executable.
+
+ -- Alois Klink <alois@nquiringminds.com>  Tue, 30 Nov 2021 10:04:50 +0000
+
 edgesec (0.9.9-alpha4) UNRELEASED; urgency=low
 
   * Use `libmnl0` instead of building our own libmnl.

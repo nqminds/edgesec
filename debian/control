@@ -26,6 +26,7 @@ Depends: libedgesec (= ${binary:Version}),
     edgesec-capsrv (= ${binary:Version}),
     edgesec-revclient (= ${binary:Version}),
     edgesec-restsrv (= ${binary:Version}),
+    edgesec-mdnsf (= ${binary:Version}),
     ${shlibs:Depends},
     ${misc:Depends},
     dnsmasq, jq
@@ -84,6 +85,18 @@ Description: NquiringMinds EDGESEC RESTful server.
  Provides a HTTP/HTTPS RESTful Server that can
  be used to communicate with the `edgesec` process,
  as it only provides an Unix Domain Socket.
+
+Package: edgesec-mdnsf
+Architecture: any
+Multi-Arch: foreign
+Depends: libedgesec (= ${binary:Version}),
+    edgesec-common (= ${source:Version}),
+    ${shlibs:Depends},
+    ${misc:Depends}
+Description: NquiringMinds EDGESEC mdns forwarder.
+ Forwards and captures EDGESEC mDNS network traffic for each connected device.
+ The resulting captured mDNS traffic is forwarded across subnets and bridge
+ commands are issued accordingly.
 
 Package: edgesec-capsrv
 Architecture: any
