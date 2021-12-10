@@ -6,6 +6,7 @@
     "start": "docusaurus start",
     "build": "docusaurus build",
     "serve": "docusaurus serve",
+    "clean": "docusaurus clear",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
     "pdf": "docusaurus-pdf from-build-config",
