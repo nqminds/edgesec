@@ -1,14 +1,8 @@
-# This is a basic workflow to help you get started with Actions
+# Workflow that always runs
+name: Main CI
 
-name: C/C++ CI
-
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+# This action should run on every commit
+on: [push, pull_request]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -16,13 +10,16 @@ jobs:
   build-docs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./docs/docusaurus/
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     # warning! This is a shallow clone, and has no git history for docs!
     - uses: actions/checkout@v2
-    
+
     - name: Setup node
       uses: actions/setup-node@v2
       with:
@@ -32,18 +29,10 @@ jobs:
           cache-dependency-path: |
             docs/docusaurus/package-lock.json
 
-    # - name: build
-    #   run: cd build && make
-
-    # - name: test
-    #   run: cd build && make test
-
-    - name: Install modules
-      working-directory: ./docs/docusaurus/
-      run: npm i
+    - name: Install modules (CI-mode)
+      run: npm ci
 
     - name: Build
-      working-directory: ./docs/docusaurus/
       run: npm run build
 
     - name: publish docs (main-branch only)
