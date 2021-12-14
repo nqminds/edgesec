@@ -3,6 +3,8 @@ slug: instalation
 title: Instalation
 ---
 
+The codebase can be clone from the Github [repo](https://github.com/nqminds/edgesec). The precompiled instalation packages for amd64 and arm64 architectures on a Debian OS can be downloaded from [here](https://github.com/nqminds/EDGESec/releases).
+
 ## Dependencies
 
 On Ubuntu, we need a C compiler, CMake, Doxygen, and libnl libraries:
@@ -41,6 +43,7 @@ sudo apt install -y "${build_dependencies[@]}" "${runtime_dependencies[@]}"
 Compiling EDGESec is done with CMake.
 
 First, configure `cmake` in the `build/` directory by running the following.
+
 ```bash
 mkdir build && cd build && cmake ../
 ```
@@ -53,17 +56,20 @@ cmake -B build/ -S . -DLIB_MAKEFLAGS="--jobs=$(nproc)"
 ```
 
 To build, you can then run:
+
 ```bash
 make
 ```
+
 or to built on multiple core run:
 
 ```bash
 cmake --build build/ -j4
 ```
+
 `-j4` means 4 jobs/threads, replace `4` with the amount of cores you want to use, equivalent to `make -j4`.
 
-After succesful compilation the binary will be located in ```./build/src``` folder.
+After succesful compilation the binary will be located in `./build/src` folder.
 
 ## Installation
 
@@ -83,6 +89,7 @@ Set `-DCMAKE_INSTALL_PREFIX=<YOUR-LOCATION-HERE>` to build for a different locat
 MAKEFLAGS="--jobs=$(nproc)" cmake -B build/ -S . -DCMAKE_INSTALL_PREFIX=/tmp/example-build
 cmake --build build/ --target install -j4
 ```
+
 This will also automatically update `config.ini` to have all paths point to the installed location. You can also use the following to install to a different location than the one you built for.
 
 ```bash
@@ -106,11 +113,11 @@ cmake --build build/ -j4 # or make -j4
 cmake --build build/ --target test -j4 # or `make test`
 ```
 
-To run each test individually, the test binaries can be located in ```./build/tests``` folder.
+To run each test individually, the test binaries can be located in `./build/tests` folder.
 
 ## Developer Documentation
 
-To compile the docs from ```./build``` folder:
+To compile the docs from `./build` folder:
 
 ```console
 make doxydocs

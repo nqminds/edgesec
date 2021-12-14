@@ -56,24 +56,39 @@ static char *test_hostapd_vlan_content = "*\twlan0.#\n";
 static char *test_ap_bin_path = "/tmp/hostapd";
 static char *test_ap_log_path = "/tmp/hostapd.log";
 
+bool __wrap_signal_process(char *proc_name, int sig)
+{
+  (void) sig;
+  check_expected(proc_name);
+  return true;
+}
+
 bool __wrap_kill_process(char *proc_name)
 {
-  log_trace("HERE");
+  check_expected(proc_name);
   return true;
 }
 
 bool __wrap_reset_interface(char *if_name)
 {
+  (void) if_name;
+
   return true;
 }
 
 int __wrap_run_process(char *argv[], pid_t *child_pid)
 {
+  (void) argv;
+  (void) child_pid;
+
   return 0;
 }
 
 int __wrap_list_dir(char *dirpath, list_dir_fn fun, void *args)
 {
+  (void) fun;
+  (void) dirpath;
+
   struct find_dir_type *dir_args = (struct find_dir_type *) args;
   dir_args->proc_running = 1;
   return 0;
@@ -81,7 +96,9 @@ int __wrap_list_dir(char *dirpath, list_dir_fn fun, void *args)
 
 int __wrap_check_sock_file_exists(char *path)
 {
-  return 0;
+  (void) path;
+
+  return mock_type(int);
 }
 
 
@@ -185,19 +202,73 @@ static void test_run_ap_process(void **state)
   strcpy(hconf.ap_bin_path, test_ap_bin_path);
   strcpy(hconf.ap_file_path, test_hostapd_conf_file);
   strcpy(hconf.ap_log_path, test_ap_log_path);
-  
+
+  will_return(__wrap_check_sock_file_exists, 1);
+  expect_any(__wrap_kill_process, proc_name);
   int ret = run_ap_process(&hconf);
+  assert_int_equal(ret, 0);
+
+  expect_any(__wrap_kill_process, proc_name);
+  kill_ap_process();
+}
+
+static void test_kill_ap_process(void **state)
+{
+  (void) state; /* unused */
+
+  struct apconf hconf;
+
+  os_memset(&hconf, 0, sizeof(struct apconf));
+
+  strcpy(hconf.ap_bin_path, test_ap_bin_path);
+  strcpy(hconf.ap_file_path, test_hostapd_conf_file);
+  strcpy(hconf.ap_log_path, test_ap_log_path);
+
+  will_return(__wrap_check_sock_file_exists, 1);
+  expect_any(__wrap_kill_process, proc_name);
+  int ret = run_ap_process(&hconf);
+  assert_int_equal(ret, 0);
+
+  expect_string(__wrap_kill_process, proc_name, "hostapd");
+  assert_true(kill_ap_process());
+}
+
+static void test_signal_ap_process(void **state)
+{
+  (void) state; /* unused */
+
+  struct apconf hconf;
+
+  os_memset(&hconf, 0, sizeof(struct apconf));
+
+  strcpy(hconf.ap_bin_path, test_ap_bin_path);
+  strcpy(hconf.ap_file_path, test_hostapd_conf_file);
+  strcpy(hconf.ap_log_path, test_ap_log_path);
+  
+  will_return(__wrap_check_sock_file_exists, 1);
+  expect_any(__wrap_kill_process, proc_name);
+  int ret = run_ap_process(&hconf);
+  assert_int_equal(ret, 0);
+
+  will_return(__wrap_check_sock_file_exists, 1);
+  expect_string(__wrap_signal_process, proc_name, "hostapd");
+  ret = signal_ap_process(&hconf);
   assert_int_equal(ret, 0);
 }
 
 int main(int argc, char *argv[])
 {  
+  (void) argc;
+  (void) argv;
+
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_generate_hostapd_conf),
     cmocka_unit_test(test_generate_vlan_conf),
-    cmocka_unit_test(test_run_ap_process)
+    cmocka_unit_test(test_run_ap_process),
+    cmocka_unit_test(test_kill_ap_process),
+    cmocka_unit_test(test_signal_ap_process)
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);
