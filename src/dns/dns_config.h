@@ -34,8 +34,7 @@
 #define MDNS_OPT_STRING    ":c:dvh"
 #define MDNS_USAGE_STRING  "\t%s [-d] [-h] [-v] [-c config]"
 
-#define MDNS_OPT_DEFS      "\t-q domain\t The UNIX domain path\n" \
-                              "\t-c config\t The config file path\n" \
+#define MDNS_OPT_DEFS         "\t-c config\t The config file path\n" \
                               "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n" \
                               "\t-h\t\t Show help\n" \
                               "\t-v\t\t Show app version\n\n"

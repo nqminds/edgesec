@@ -82,6 +82,30 @@ ssize_t __wrap_write_domain_data_s(int sock, char *data, size_t data_len, char *
   return data_len;
 }
 
+int __wrap_writeread_domain_data_str(char *socket_path, char *write_str, char **reply)
+{
+  (void) socket_path;
+  (void) reply;
+
+  *reply = NULL;
+
+  if (write_str != NULL) {
+    if (strcmp(write_str, PING_AP_COMMAND) == 0) {
+      *reply = os_strdup(PING_AP_COMMAND_REPLY);
+      return 0;
+    }
+  }
+
+  return 0;
+}
+
+int __wrap_close (int __fd)
+{
+  (void) __fd;
+
+  return 0;
+}
+
 static void test_run_ap(void **state)
 {
   (void) state; /* unused */
@@ -89,6 +113,16 @@ static void test_run_ap(void **state)
   struct supervisor_context context;
 
   assert_int_equal(run_ap(&context, true, false, NULL), 0);
+}
+
+static void test_close_ap(void **state)
+{
+  (void) state;
+
+  struct supervisor_context context;
+
+  assert_int_equal(run_ap(&context, true, false, NULL), 0);
+  assert_true(close_ap(&context));
 }
 
 int main(int argc, char *argv[])
@@ -100,6 +134,7 @@ int main(int argc, char *argv[])
 
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_run_ap),
+    cmocka_unit_test(test_close_ap),
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

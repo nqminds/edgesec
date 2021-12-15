@@ -37,6 +37,9 @@
 #include "../utils/os.h"
 #include "../utils/if.h"
 
+#define PING_AP_COMMAND                 "PING"
+#define PING_AP_COMMAND_REPLY           "PONG"
+
 /**
  * @brief Runs the AP service
  * 

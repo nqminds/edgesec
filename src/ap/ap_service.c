@@ -41,8 +41,6 @@
 
 #define GENERIC_AP_COMMAND_OK_REPLY     "OK"
 #define GENERIC_AP_COMMAND_FAIL_REPLY   "FAIL"
-#define PING_AP_COMMAND                 "PING"
-#define PING_AP_COMMAND_REPLY           "PONG"
 #define STA_AP_COMMAND                  "STA"
 #define ATTACH_AP_COMMAND               "ATTACH"
 #define DENYACL_ADD_COMMAND             "DENY_ACL ADD_MAC"

@@ -1,9 +1,9 @@
 ---
-slug: instalation
-title: Instalation
+slug: installation
+title: Installation
 ---
 
-The codebase can be clone from the Github [repo](https://github.com/nqminds/edgesec). The precompiled instalation packages for amd64 and arm64 architectures on a Debian OS can be downloaded from [here](https://github.com/nqminds/EDGESec/releases).
+The codebase can be clone from the Github [repo](https://github.com/nqminds/edgesec). The precompiled installation packages for amd64 and arm64 architectures on a Debian OS can be downloaded from [here](https://github.com/nqminds/EDGESec/releases).
 
 ## Dependencies
 

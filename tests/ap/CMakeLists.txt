@@ -13,7 +13,7 @@ add_executable(test_ap_service test_ap_service.c)
 target_link_libraries(test_ap_service PRIVATE ap_service hostapd if os log cmocka::cmocka)
 set_target_properties(test_ap_service
   PROPERTIES
-  LINK_FLAGS  "-Wl,--wrap=generate_vlan_conf -Wl,--wrap=run_ap_process -Wl,--wrap=generate_hostapd_conf -Wl,--wrap=signal_ap_process -Wl,--wrap=create_domain_client -Wl,--wrap=eloop_register_read_sock -Wl,--wrap=write_domain_data_s"
+  LINK_FLAGS  "-Wl,--wrap=close -Wl,--wrap=generate_vlan_conf -Wl,--wrap=run_ap_process -Wl,--wrap=generate_hostapd_conf -Wl,--wrap=signal_ap_process -Wl,--wrap=create_domain_client -Wl,--wrap=eloop_register_read_sock -Wl,--wrap=write_domain_data_s -Wl,--wrap=writeread_domain_data_str"
 )
 
 add_test(NAME test_hostapd COMMAND test_hostapd)
