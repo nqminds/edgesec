@@ -39,12 +39,7 @@
 #include "../utils/log.h"
 #include "../utils/domain.h"
 
-#define GENERIC_AP_COMMAND_OK_REPLY     "OK"
-#define GENERIC_AP_COMMAND_FAIL_REPLY   "FAIL"
-#define STA_AP_COMMAND                  "STA"
 #define ATTACH_AP_COMMAND               "ATTACH"
-#define DENYACL_ADD_COMMAND             "DENY_ACL ADD_MAC"
-#define DENYACL_DEL_COMMAND             "DENY_ACL DEL_MAC"
 
 #define AP_STA_DISCONNECTED       "AP-STA-DISCONNECTED"
 #define AP_STA_CONNECTED          "AP-STA-CONNECTED"

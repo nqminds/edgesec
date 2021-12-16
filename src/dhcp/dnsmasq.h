@@ -54,17 +54,6 @@ bool generate_dnsmasq_conf(struct dhcp_conf *dconf, char *interface, UT_array *d
 bool generate_dnsmasq_script(char *dhcp_script_path, char *domain_server_path);
 
 /**
- * @brief Generates the DHCP configs
- * 
- * @param dconf The dhcp configuration structure.
- * @param interface The WiFi AP interface name.
- * @param dns_server_array The array including the DNS servers IP addresses.
- * @param domain_server_path The UNIX domains server path.
- * @return true on success, false otherwise
- */
-bool generate_dhcp_configs(struct dhcp_conf *dconf, char *interface, UT_array *dns_server_array, char *domain_server_path);
-
-/**
  * @brief Execute the DHCP server
  * 
  * @param dhcp_bin_path The DHCP server binary path

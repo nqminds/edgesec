@@ -34,8 +34,13 @@ int run_dhcp(char *dhcp_bin_path, struct dhcp_conf *dconf,
   char *interface, UT_array *dns_server_array, char *domain_server_path,
   bool exec_dhcp)
 {
-  if (!generate_dhcp_configs(dconf, interface, dns_server_array, domain_server_path)) {
-    log_trace("generate_dhcp_configs fail");
+  if (!generate_dnsmasq_conf(dconf, interface, dns_server_array)) {
+    log_trace("generate_dnsmasq_conf fail");
+    return -1;
+  }
+  
+  if (!generate_dnsmasq_script(dconf->dhcp_script_path, domain_server_path)) {
+    log_trace("generate_dnsmasq_script fail");
     return -1;
   }
 

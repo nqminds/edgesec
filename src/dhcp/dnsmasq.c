@@ -134,14 +134,6 @@ bool generate_dnsmasq_script(char *dhcp_script_path, char *domain_server_path)
   return true;
 }
 
-bool generate_dhcp_configs(struct dhcp_conf *dconf, char *interface, UT_array *dns_server_array, char *domain_server_path)
-{
-  if (!generate_dnsmasq_conf(dconf, interface, dns_server_array))
-    return false;
-  
-  return generate_dnsmasq_script(dconf->dhcp_script_path, domain_server_path);
-}
-
 char* get_dnsmasq_args(char *dnsmasq_bin_path, char *dnsmasq_conf_path, char *argv[])
 {
   // sudo dnsmasq --bind-interfaces --no-daemon --log-queries --conf-file=/tmp/dnsmasq.conf
@@ -190,7 +182,7 @@ int check_dhcp_running(char *name, int wait_time)
 
 char* run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path)
 {
-  pid_t child_pid;
+  pid_t child_pid = 0;
   int ret;
   char *process_argv[5] = {NULL, NULL, NULL, NULL, NULL};
 

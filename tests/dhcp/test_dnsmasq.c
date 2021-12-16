@@ -49,6 +49,37 @@ static char *test_dhcp_leasefile_content =
 static char *interface="wifi_if";
 static char *dns_server="8.8.4.4,8.8.8.8";
 
+bool __wrap_signal_process(char *proc_name, int sig)
+{
+  (void) sig;
+
+  check_expected(proc_name);
+
+  return true;
+}
+
+int __wrap_is_proc_running(char *name)
+{
+  check_expected(name);
+
+  return 1;
+}
+
+bool __wrap_kill_process(char *proc_name)
+{
+  check_expected(proc_name);
+
+  return true;
+}
+
+int __wrap_run_process(char *argv[], pid_t *child_pid)
+{
+  (void) argv;
+  (void) child_pid;
+
+  return 0;
+}
+
 bool get_config_dhcpinfo(char *info, config_dhcpinfo_t *el)
 {
   UT_array *info_arr;
@@ -108,7 +139,7 @@ err:
   return false;
 }
 
-static void test_generate_dhcp_conf(void **state)
+static void test_generate_dnsmasq_conf(void **state)
 {
   (void) state; /* unused */
   struct dhcp_conf dconf;
@@ -160,7 +191,7 @@ static void test_generate_dhcp_conf(void **state)
   utarray_free(dconf.config_dhcpinfo_array);
 }
 
-static void test_generate_script_conf(void **state)
+static void test_generate_dnsmasq_script(void **state)
 {
   (void) state; /* unused */
 
@@ -224,6 +255,35 @@ static void test_clear_dhcp_lease_entry(void **state)
   os_free(out);
 }
 
+static void test_run_dhcp_process(void **state)
+{
+  (void) state;
+
+  expect_string(__wrap_kill_process, proc_name, "dnsmasq");
+  expect_string(__wrap_is_proc_running, name, "dnsmasq");
+  char *ret = run_dhcp_process("/tmp/sbin/dnsmasq", "/tmp/dnsmasq.conf");
+  assert_non_null(ret);
+  assert_string_equal(ret, "dnsmasq");
+  expect_string(__wrap_kill_process, proc_name, "dnsmasq");
+  assert_true(kill_dhcp_process());
+}
+
+static void test_kill_dhcp_process(void **state)
+{
+  (void) state;
+
+  assert_true(kill_dhcp_process());
+}
+
+static void test_signal_dhcp_process(void **state)
+{
+  (void) state;
+
+  expect_string(__wrap_signal_process, proc_name, "dnsmasq");
+  expect_string(__wrap_is_proc_running, name, "dnsmasq");
+  assert_int_equal(signal_dhcp_process("/tmp/sbin/dnsmasq", "/tmp/dnsmasq.conf"), 0);
+}
+
 int main(int argc, char *argv[])
 {  
   (void) argc; /* unused */
@@ -231,8 +291,11 @@ int main(int argc, char *argv[])
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
-    cmocka_unit_test(test_generate_dhcp_conf),
-    cmocka_unit_test(test_generate_script_conf),
+    cmocka_unit_test(test_generate_dnsmasq_conf),
+    cmocka_unit_test(test_generate_dnsmasq_script),
+    cmocka_unit_test(test_run_dhcp_process),
+    cmocka_unit_test(test_kill_dhcp_process),
+    cmocka_unit_test(test_signal_dhcp_process),
     cmocka_unit_test(test_clear_dhcp_lease_entry)
   };
 

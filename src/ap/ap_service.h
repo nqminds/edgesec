@@ -37,8 +37,16 @@
 #include "../utils/os.h"
 #include "../utils/if.h"
 
+#define STA_AP_COMMAND                  "STA"
+
+#define GENERIC_AP_COMMAND_OK_REPLY     "OK"
+#define GENERIC_AP_COMMAND_FAIL_REPLY   "FAIL"
+
 #define PING_AP_COMMAND                 "PING"
 #define PING_AP_COMMAND_REPLY           "PONG"
+
+#define DENYACL_ADD_COMMAND             "DENY_ACL ADD_MAC"
+#define DENYACL_DEL_COMMAND             "DENY_ACL DEL_MAC"
 
 /**
  * @brief Runs the AP service
@@ -59,16 +67,6 @@ int run_ap(struct supervisor_context *context, bool exec_ap, bool generate_ssid,
  * @return true success, false otherwise
  */
 bool close_ap(struct supervisor_context *context);
-
-/**
- * @brief Send a command to the AP service
- * 
- * @param socket_path The service UNIX domain path
- * @param cmd_str The command string
- * @param reply The reply
- * @return int 0 on success, -1 on failure
- */
-int send_ap_command(char *socket_path, char *cmd_str, char **reply);
 
 /**
  * @brief Deny ACL ADD AP command 

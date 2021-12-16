@@ -52,6 +52,32 @@ static void test_push_mdns_list(void **state)
   free_mdns_list(list);
 }
 
+static void test_init_mdns_list(void **state)
+{
+  (void) state;
+
+  struct mdns_list *list = NULL;
+  list = init_mdns_list();
+  assert_non_null(list);
+
+  free_mdns_list(list);
+}
+
+static void test_check_mdns_list_req(void **state)
+{
+  (void) state; /* unused */
+  char *name = "test";
+  struct mdns_list_info info = {.name = name, .request = MDNS_REQUEST_QUERY};
+  struct mdns_list *list = init_mdns_list();
+  
+  assert_non_null(list);
+  assert_int_equal(push_mdns_list(list, &info), 0);
+  assert_int_equal(check_mdns_list_req(list, MDNS_REQUEST_QUERY), 1);
+  assert_int_equal(check_mdns_list_req(list, MDNS_REQUEST_ANSWER), 0);
+  
+  free_mdns_list(list);
+}
+
 int main(int argc, char *argv[])
 {  
   (void) argc; /* unused */
@@ -60,7 +86,9 @@ int main(int argc, char *argv[])
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
+    cmocka_unit_test(test_init_mdns_list),
     cmocka_unit_test(test_push_mdns_list),
+    cmocka_unit_test(test_check_mdns_list_req)
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

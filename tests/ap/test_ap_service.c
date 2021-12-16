@@ -94,6 +94,21 @@ int __wrap_writeread_domain_data_str(char *socket_path, char *write_str, char **
       *reply = os_strdup(PING_AP_COMMAND_REPLY);
       return 0;
     }
+
+    if (strstr(write_str, DENYACL_ADD_COMMAND) != NULL) {
+      *reply = os_strdup(GENERIC_AP_COMMAND_OK_REPLY);
+      return 0;
+    }
+
+    if (strstr(write_str, DENYACL_DEL_COMMAND) != NULL) {
+      *reply = os_strdup(GENERIC_AP_COMMAND_OK_REPLY);
+      return 0;
+    }
+
+    if (strstr(write_str, STA_AP_COMMAND) != NULL) {
+      *reply = os_strdup("1");
+      return 0;
+    }
   }
 
   return 0;
@@ -125,6 +140,43 @@ static void test_close_ap(void **state)
   assert_true(close_ap(&context));
 }
 
+
+static void test_denyacl_add_ap_command(void **state)
+{
+  (void) state;
+  
+  struct apconf hconf;
+
+  assert_int_equal(denyacl_add_ap_command(&hconf, "11:22:33:44:55:66"), 0);
+}
+
+static void test_denyacl_del_ap_command(void **state)
+{
+  (void) state;
+
+  struct apconf hconf;
+
+  assert_int_equal(denyacl_del_ap_command(&hconf, "11:22:33:44:55:66"), 0);
+}
+
+static void test_disconnect_ap_command(void **state)
+{
+  (void) state;
+
+  struct apconf hconf;
+
+  assert_int_equal(disconnect_ap_command(&hconf, "11:22:33:44:55:66"), 0);
+}
+
+static void test_check_sta_ap_command(void **state)
+{
+  (void) state;
+
+  struct apconf hconf;
+
+  assert_int_equal(check_sta_ap_command(&hconf, "11:22:33:44:55:66"), 0);
+}
+
 int main(int argc, char *argv[])
 {  
   (void) argc;
@@ -135,6 +187,10 @@ int main(int argc, char *argv[])
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_run_ap),
     cmocka_unit_test(test_close_ap),
+    cmocka_unit_test(test_denyacl_add_ap_command),
+    cmocka_unit_test(test_denyacl_del_ap_command),
+    cmocka_unit_test(test_disconnect_ap_command),
+    cmocka_unit_test(test_check_sta_ap_command)
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);
