@@ -89,7 +89,9 @@ int capture_pcap_packet(struct pcap_context *ctx)
 void close_pcap(struct pcap_context *ctx)
 {
   if (ctx != NULL) {
-    pcap_close(ctx->pd);
+    if (ctx->pd != NULL) {
+      pcap_close(ctx->pd);
+    }
     os_free(ctx);
   }
 }

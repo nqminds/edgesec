@@ -439,6 +439,7 @@ int close_mdns(struct mdns_context *context)
       free_reflection_list(context->rif6);
       context->rif6 = NULL;
     }
+
     free_mdns_mapper(&context->imap);
     context->imap = NULL;
 

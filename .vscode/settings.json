@@ -88,6 +88,7 @@
         "streambuf": "cpp",
         "variant": "cpp",
         "mdns_decoder.h": "c",
-        "stdbool.h": "c"
+        "stdbool.h": "c",
+        "mdns_mapper.h": "c"
     }
 }
