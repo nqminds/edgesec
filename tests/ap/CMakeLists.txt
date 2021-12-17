@@ -11,6 +11,8 @@ set_target_properties(test_hostapd
 
 add_executable(test_ap_service test_ap_service.c)
 target_link_libraries(test_ap_service PRIVATE ap_service hostapd if os log cmocka::cmocka)
+# sqlite3.h required by src/supervisor/supervisor_config.h
+target_include_directories(test_ap_service PUBLIC ${LIBSQLITE_INCLUDE_DIR})
 set_target_properties(test_ap_service
   PROPERTIES
   LINK_FLAGS  "-Wl,--wrap=close -Wl,--wrap=generate_vlan_conf -Wl,--wrap=run_ap_process -Wl,--wrap=generate_hostapd_conf -Wl,--wrap=signal_ap_process -Wl,--wrap=create_domain_client -Wl,--wrap=eloop_register_read_sock -Wl,--wrap=write_domain_data_s -Wl,--wrap=writeread_domain_data_str"
