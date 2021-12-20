@@ -34,6 +34,7 @@ int __wrap_run_pcap(char *interface, bool immediate, bool promiscuous,
   (void) fn_ctx;
 
   *pctx = (struct pcap_context*) os_zalloc(sizeof(struct pcap_context));
+
   return 0;
 }
 
@@ -67,6 +68,18 @@ static void test_run_mdns(void **state)
   close_mdns(&context);
 }
 
+static void test_close_mdns(void **state)
+{
+  (void) state;
+  
+  struct mdns_context context;
+  context.ifname = os_strdup("wlan0");
+  run_mdns(&context);
+  os_free(context.ifname);
+  assert_int_equal(close_mdns(&context), 0);
+  
+}
+
 int main(int argc, char *argv[])
 {  
   (void) argc; /* unused */
@@ -76,6 +89,7 @@ int main(int argc, char *argv[])
 
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_run_mdns),
+    cmocka_unit_test(test_close_mdns),
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

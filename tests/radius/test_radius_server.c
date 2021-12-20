@@ -50,6 +50,8 @@ struct radius_ctx {
 
 struct mac_conn_info get_mac_conn(uint8_t mac_addr[], void *mac_conn_arg)
 {
+	(void) mac_conn_arg;
+
 	struct mac_conn_info info = {.vlanid = 0};
 	log_trace("RADIUS requested mac=%02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(mac_addr));
 	memcpy(saved_addr, mac_addr, 6);
@@ -63,6 +65,11 @@ static RadiusRxResult receive_auth(struct radius_msg *msg,
 				   size_t shared_secret_len,
 				   void *data)
 {
+	(void) req;
+	(void) shared_secret;
+	(void) shared_secret_len;
+	(void) data;
+
 	/* struct radius_ctx *ctx = data; */
 	log_trace("Received RADIUS Authentication message; code=%d", radius_msg_get_hdr(msg)->code);
 
@@ -75,6 +82,8 @@ static RadiusRxResult receive_auth(struct radius_msg *msg,
 
 static void start_test(void *eloop_ctx, void *timeout_ctx)
 {
+	(void) timeout_ctx;
+
 	struct radius_ctx *ctx = eloop_ctx;
 	struct radius_msg *msg;
 
@@ -93,14 +102,14 @@ static void start_test(void *eloop_ctx, void *timeout_ctx)
 	radius_msg_make_authenticator(msg);
 
 	sprintf(buf, "%02x%02x%02x%02x%02x%02x", MAC2STR(addr));
-	if (!radius_msg_add_attr(msg, RADIUS_ATTR_USER_NAME, buf, strlen(buf))) {
+	if (!radius_msg_add_attr(msg, RADIUS_ATTR_USER_NAME, (uint8_t*) buf, strlen(buf))) {
 		log_trace("Could not add User-Name");
 		radius_msg_free(msg);
 		return;
 	}
 
 	sprintf(buf, "%02X-%02X-%02X-%02X-%02X-%02x", MAC2STR(addr));
-	if (!radius_msg_add_attr(msg, RADIUS_ATTR_CALLING_STATION_ID, buf, strlen(buf))) {
+	if (!radius_msg_add_attr(msg, RADIUS_ATTR_CALLING_STATION_ID, (uint8_t *) buf, strlen(buf))) {
 		log_trace("Could not add Calling-Station-Id");
 		radius_msg_free(msg);
 		return;
@@ -156,7 +165,7 @@ static void test_radius_server_init(void **state)
 	assert_non_null(srv);
 
 	srv->addr.af = AF_INET;
-	srv->port = 1812;
+	srv->port = 12345;
 	ret = (hostapd_parse_ip_addr(conf.radius_client_ip, &srv->addr) >= 0);
 	assert_true(ret);
 
@@ -186,7 +195,7 @@ static void test_radius_server_init(void **state)
 	assert_int_equal(cmp, 0);
 
 	radius_client_deinit(ctx.radius);
-  radius_server_deinit(radius_srv);
+  	radius_server_deinit(radius_srv);
 	os_free(srv->shared_secret);
 	os_free(srv);
 
@@ -195,6 +204,9 @@ static void test_radius_server_init(void **state)
 
 int main(int argc, char *argv[])
 {  
+  (void) argc;
+  (void) argv;
+
   log_set_quiet(true);
 
   const struct CMUnitTest tests[] = {
