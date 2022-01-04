@@ -19,7 +19,7 @@
 
 /**
  * @file mdns_list.h
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the definition of mdns list utils.
  */
 
@@ -61,15 +61,15 @@ struct mdns_list {
 };
 
 /**
- * @brief Initialises and empty mdns list
- * 
+ * @brief Initialises an empty mdns list
+ *
  * @return struct mdns_list* Returned initialised empty mdns list
  */
 struct mdns_list* init_mdns_list(void);
 
 /**
- * @brief Pushes a mdns info entry in the mdns list
- * 
+ * @brief Pushes an mdns info entry in the mdns list
+ *
  * @param mlist The mdns list
  * @param info The mdns info structure
  * @return 0 on success, -1 on failure
