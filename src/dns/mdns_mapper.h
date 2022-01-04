@@ -44,8 +44,8 @@ typedef struct hashmap_mdns_conn {            /**< hashmap key */
 } hmap_mdns_conn;
 
 /**
- * @brief Insert a mDNS query structure into the mdns mapper connection object
- * 
+ * @brief Inserts an mDNS query structure into the mdns mapper connection object
+ *
  * @param imap mDNS mapper object
  * @param ip The IP
  * @param query mDNS query structure
@@ -54,8 +54,8 @@ typedef struct hashmap_mdns_conn {            /**< hashmap key */
 int put_mdns_query_mapper(hmap_mdns_conn **imap, uint8_t *ip, struct mdns_query_entry *query);
 
 /**
- * @brief Insert a mDNS answer structure into the mdns mapper connection object
- * 
+ * @brief Inserts an mDNS answer structure into the mdns mapper connection object
+ *
  * @param imap mDNS mapper object
  * @param ip The IP
  * @param query mDNS answer structure
