@@ -21,6 +21,11 @@
  * @file capture_cleaner.c 
  * @author Alexandru Mereacre 
  * @brief File containing the implementation of the capture cleaner service structures.
+ * 
+ * Defines the start function for the capturte cleaner service, which
+ * removes the capture files from the database folder when it 
+ * reaches a given size specified in the capture_conf structure. The
+ * store size is give by the parameter capture_store_size in Kb.
  */
 
 #include <sqlite3.h>
@@ -31,8 +36,8 @@
 #include "../utils/eloop.h"
 #include "../utils/utarray.h"
 
-#define CLEANER_CHECK_INTERVAL  5        // Interval in sec
-#define CLEANER_GROUP_INTERVAL  1000     // Number of rows to sum
+#define CLEANER_CHECK_INTERVAL  5        /* Frequency in sec to run the cleaner function*/
+#define CLEANER_GROUP_INTERVAL  1000     /* Number of rows to sum from the pcap metadata to calculate the store size*/
 
 static const UT_icd pcap_file_meta_icd = {sizeof(struct pcap_file_meta), NULL, NULL, NULL};
 

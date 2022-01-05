@@ -47,7 +47,7 @@
 /**
  * @brief The AP conection status
  * 
- * Defines the connection state for a station.
+ * Defines the connection state for a station connected to the AP.
  */
 enum AP_CONNECTION_STATUS {
   AP_DEFAULT_STATUS = 0,
