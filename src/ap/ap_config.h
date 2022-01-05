@@ -21,6 +21,9 @@
  * @file ap_config.h 
  * @author Alexandru Mereacre 
  * @brief File containing the definition of AP config structures.
+ * 
+ * Defines the access point (AP) configuration structure used to configure the 
+ * AP service.
  */
 
 #ifndef CONFIG_GENERATOR_H
@@ -34,13 +37,18 @@
 #include "../utils/os.h"
 #include "../radius/radius_server.h"
 
-#define AP_NAME_LEN           32
-#define AP_SECRET_LEN         64
-#define AP_DRIVE_LEN          20
-#define AP_HWMODE_LEN         4
-#define AP_WPA_KEY_MGMT_LEN   20
-#define AP_RSN_PAIRWISE_LEN   20
+#define AP_NAME_LEN           32    /* Maximum length of the AP name, i.e., ESSID name */
+#define AP_SECRET_LEN         64    /* Maximum length of the AP secret, i.e., ESSID secret */
+#define AP_DRIVE_LEN          20    /* Maximum length of the AP driver name */
+#define AP_HWMODE_LEN         4     /* Maximum size of the hostapd @c hw_mode param @see https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf */
+#define AP_WPA_KEY_MGMT_LEN   20    /* Maximum size of the hostapd @c wpa_key_mgmt param @see https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf */
+#define AP_RSN_PAIRWISE_LEN   20    /* Maximum size of the hostapd @c rsn_pairwise param @see https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf */
 
+/**
+ * @brief The AP conection status
+ * 
+ * Defines the connection state for a station.
+ */
 enum AP_CONNECTION_STATUS {
   AP_DEFAULT_STATUS = 0,
   AP_CONNECTED_STATUS,

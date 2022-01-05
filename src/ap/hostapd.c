@@ -21,6 +21,9 @@
  * @file hostapd.c
  * @author Alexandru Mereacre 
  * @brief File containing the implementation of hostapd config generation utilities.
+ * 
+ * Defines function that generate the hostapd daemon configuration file and
+ * manages (execute, kill and signal) the hostapd process.
  */
 
 #include <sys/stat.h>
@@ -42,8 +45,8 @@
 
 #define HOSTAPD_LOG_FILE_OPTION "-f"
 
-#define PROCESS_RESTART_TIME  5 // In seconds
-#define MAX_AP_CHECK_COUNT  100 // number of tries
+#define PROCESS_RESTART_TIME  5       /* In seconds */
+#define MAX_AP_CHECK_COUNT  100       /* Number of tries */
 
 static char hostapd_proc_name[MAX_OS_PATH_LEN];
 static bool ap_process_started = false;

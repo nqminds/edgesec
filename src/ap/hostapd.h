@@ -21,6 +21,9 @@
  * @file hostapd.h 
  * @author Alexandru Mereacre 
  * @brief File containing the definition of hostapd config generation utilities.
+ * 
+ * Defines function that generate the hostapd daemon configuration file and
+ * manages (execute, kill and signal) the hostapd process.
  */
 
 #ifndef HOSTAPD_H
