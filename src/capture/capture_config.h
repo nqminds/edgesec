@@ -21,6 +21,10 @@
  * @file capture_config.h 
  * @author Alexandru Mereacre 
  * @brief File containing the definition of the capture config structures.
+ * 
+ * Defines the function to generate the config parameters for the capture 
+ * service. It also defines all the metadata and database schema for the 
+ * captured packets.
  */
 
 #ifndef CAPTURE_CONFIG_H
@@ -34,20 +38,20 @@
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 
-#define PCAP_DB_NAME                  "pcap-meta" SQLITE_EXTENSION
-#define PCAP_SUBFOLDER_NAME           "./pcap"                
+#define PCAP_DB_NAME                  "pcap-meta" SQLITE_EXTENSION  /* sqlite db name for raw pcap data */
+#define PCAP_SUBFOLDER_NAME           "./pcap"                      /* Subfodler name to store raw pcap data */
 
-#define MAX_ANALYSER_NAME_SIZE      64
-#define MAX_FILTER_SIZE             4094
+#define MAX_ANALYSER_NAME_SIZE      64                              /* Maximum length of the packet analyser name */
+#define MAX_FILTER_SIZE             4094                            /* Maximum length of the filter string for libpcap */
 
 #define PACKET_ANALYSER_DEFAULT     "default"
 #define PACKET_ANALYSER_NDPI        "ndpi"
 
-#define DEFAULT_CAPTURE_TIMEOUT     10
-#define DEFAULT_CAPTURE_INTERVAL    10
+#define DEFAULT_CAPTURE_TIMEOUT     10                              /* Default capture timeout for in milliseconds */
+#define DEFAULT_CAPTURE_INTERVAL    10                              /* Default capture interval for in milliseconds */
 
 // #define META_HASH_SIZE              SHA256_HASH_LEN * 2 + 1
-#define MAX_PROTOCOL_NAME_LEN 	    64
+#define MAX_PROTOCOL_NAME_LEN 	    64                              /* Maximum length of the captured network protocol name */
 #define MAX_FINGERPRINT_LEN 	      1024
 #define MAX_QUERY_LEN 	            MAX_OS_PATH_LEN
 

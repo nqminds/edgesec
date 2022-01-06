@@ -1,7 +1,8 @@
 module.exports = {
   someSidebar: {
     Introduction: ["intro", "control", "capture", "discovery", "storage"],
-    Development: ["installation", "running", "config", "commands", "deb", "issues"],
+    Development: ["compilation", "running", "config", "commands", "deb", "issues"],
+    Deployment: ["installation"],
     Hardware: ["devices"],
   },
 };

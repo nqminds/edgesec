@@ -21,9 +21,13 @@
  * @file capture_config.c
  * @author Alexandru Mereacre 
  * @brief File containing the implementation of the capture config structures.
+ * 
+ * Defines the function to generate the config parameters for the capture 
+ * service. It also defines all the metadata and database schema for the 
+ * captured packets.
  */
+
 #include <errno.h>
-// Use to check whether long is same size as uint32_t
 #include <limits.h>
 
 #include "capture_config.h"

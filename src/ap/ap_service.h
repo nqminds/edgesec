@@ -21,6 +21,10 @@
  * @file hostapd_service.h 
  * @author Alexandru Mereacre 
  * @brief File containing the definition of the hostapd service.
+ * 
+ * Defines the functions to start and stop the acces point service (AP). It also 
+ * defines auxiliary commands to manage the acces control list for stations
+ * connected to the AP.
  */
 
 #ifndef HOSTAPD_SERVICE_H
@@ -37,16 +41,16 @@
 #include "../utils/os.h"
 #include "../utils/if.h"
 
-#define STA_AP_COMMAND                  "STA"
+#define STA_AP_COMMAND                  "STA"                 /* Command name to check if a station is registered */
 
-#define GENERIC_AP_COMMAND_OK_REPLY     "OK"
-#define GENERIC_AP_COMMAND_FAIL_REPLY   "FAIL"
+#define GENERIC_AP_COMMAND_OK_REPLY     "OK"                  /* The command response on succes */
+#define GENERIC_AP_COMMAND_FAIL_REPLY   "FAIL"                /* The command response on failure */
 
-#define PING_AP_COMMAND                 "PING"
-#define PING_AP_COMMAND_REPLY           "PONG"
+#define PING_AP_COMMAND                 "PING"                /* Command name to ping the hostapd daemon */
+#define PING_AP_COMMAND_REPLY           "PONG"                /* Reply to the ping command */
 
-#define DENYACL_ADD_COMMAND             "DENY_ACL ADD_MAC"
-#define DENYACL_DEL_COMMAND             "DENY_ACL DEL_MAC"
+#define DENYACL_ADD_COMMAND             "DENY_ACL ADD_MAC"    /* Command name to add a station to the deny ACL */
+#define DENYACL_DEL_COMMAND             "DENY_ACL DEL_MAC"    /* Command name to remove a station from the deny ACL */
 
 /**
  * @brief Runs the AP service
@@ -87,7 +91,7 @@ int denyacl_add_ap_command(struct apconf *hconf, char *mac_addr);
 int denyacl_del_ap_command(struct apconf *hconf, char *mac_addr);
 
 /**
- * @brief Dissconnect and reconnect a MAC device from the AP
+ * @brief Disconnect and reconnect a MAC device from the AP
  * 
  * @param hconf AP config structure
  * @param mac_addr The mac address to disconnect
