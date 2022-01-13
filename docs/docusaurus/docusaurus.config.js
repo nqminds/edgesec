@@ -23,6 +23,12 @@ module.exports = {
         },
         {
           // WARNING, if you change routeBasePath of docs, you should change this as well
+          to: "blog/",
+          label: "Blog",
+          position: "left",
+        },
+        {
+          // WARNING, if you change routeBasePath of docs, you should change this as well
           to: "docs/about",
           label: "About",
           position: "right",
