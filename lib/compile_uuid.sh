@@ -21,5 +21,6 @@ AL_OPTS="-I/usr/share/aclocal" ./autogen.sh
 export MAKEFLAGS="${MAKEFLAGS-""} ${LIB_MAKEFLAGS-""}"
 
 make
-make install-strip # make install, except with symbols removed
+make install
+#make install-strip # make install, except with symbols removed
 make distclean

@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.15.0)
 #   GRPC_CPP_PLUGIN PROTOC_BIN
 
 # Fetch and Compile libgrpc
-if (BUILD_GRPC_LIB AND NOT (BUILD_ONLY_DOCS))
+if (BUILD_GRPC_LIB AND NOT (BUILD_ONLY_DOCS) AND USE_GRPC_LIB)
   FetchContent_Declare(
     gRPC
     GIT_REPOSITORY https://github.com/grpc/grpc
@@ -78,7 +78,7 @@ if (BUILD_GRPC_LIB AND NOT (BUILD_ONLY_DOCS))
 
   add_executable(GRPC::grpc_cpp_plugin ALIAS grpc_cpp_plugin)
 
-elseif (NOT (BUILD_ONLY_DOCS))
+elseif (NOT (BUILD_ONLY_DOCS) AND USE_GRPC_LIB)
   # Find pre-installed grpc
   find_package(GRPC REQUIRED)
 
@@ -111,7 +111,7 @@ function(check_vars_defined ARGV)
   endforeach()
 endfunction()
 
-if (NOT BUILD_ONLY_DOCS)
+if (NOT BUILD_ONLY_DOCS AND USE_GRPC_LIB)
   check_targets_exists(GRPC::grpc++ GRPC::grpc++_reflection GRPC::grpc_plugin_support)
   check_vars_defined(GRPC_CPP_PLUGIN PROTOC_BIN)
-endif (NOT BUILD_ONLY_DOCS)
+endif ()

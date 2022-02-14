@@ -1,5 +1,18 @@
 cmake_minimum_required(VERSION 3.11.0)
 # 3.11 required for FetchContent
+
+option(CROSS_COMPILE_EDGESEC "Cross compile the EDGESec" ON)
+
+if (CROSS_COMPILE_EDGESEC)
+  set(CMAKE_SYSTEM_NAME Linux)
+  set(CMAKE_SYSTEM_PROCESSOR arm)
+  # set(tools /usr/local/arm-linux-musleabihf)
+  # set(COMPILE_CONFIG_HOST arm-linux-musleabihf)
+  set(CMAKE_C_COMPILER /usr/local/bin/arm-linux-musleabihf-gcc)
+  set(CMAKE_CXX_COMPILER /usr/local/bin/arm-linux-musleabihf-g++)
+  set(CMAKE_STRIP /usr/local/bin/arm-linux-musleabihf-strip)
+endif ()
+
 project(EDGESEC C CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
@@ -9,8 +22,12 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/docs")
 include(CTest)
 include(FetchContent)
 include(ExternalProject)
-# include(CodeCoverage)
 include(glibc)
+# include(CodeCoverage)
+
+if (NOT CROSS_COMPILE_EDGESEC)
+  CHECK_GLIBC_VERSION()
+endif ()
 
 string(TOLOWER ${CMAKE_HOST_SYSTEM_PROCESSOR} _sys)
 string(TOLOWER ${PROJECT_NAME} _project_lower)
@@ -39,30 +56,31 @@ set(
   "$ORIGIN/${EDGESec_relative_private_lib_dir}"
 )
 
-option(USE_ARM_MUSL_LIBC "Use arm musl standard C library" OFF)
 option(BUILD_ONLY_DOCS "Build only docs" OFF)
-option(BUILD_CAPTURE_SERVICE "Build Capture server" ON)
-option(BUILD_REST_SERVER "Build Rest server" ON)
-option(BUILD_HOSTAPD "Build hostapd" ON)
+option(BUILD_CAPTURE_SERVICE "Build Capture server" OFF)
+option(BUILD_REST_SERVER "Build Rest server" OFF)
+option(BUILD_HOSTAPD "Build hostapd" OFF)
 option(BUILD_SQLITE_LIB "Build sqlite3 library" ON)
-option(BUILD_OPENSSL_LIB "Build OpenSSL" ON)
+option(BUILD_OPENSSL_LIB "Build OpenSSL" OFF)
 option(BUILD_CMOCKA_LIB "Build cmocka library" OFF)
 # off by default since we should apt install libmnl-dev
 option(BUILD_MNL_LIB "Build mnl library" ON)
-option(BUILD_NETLINK_LIB "Build netlink library" ON)
-option(BUILD_NL_LIB "Build nl library" ON)
-option(BUILD_MICROHTTPD_LIB "Build microhttpd library" ON)
+option(BUILD_NETLINK_LIB "Build netlink library" OFF)
+option(BUILD_NL_LIB "Build nl library" OFF)
+option(BUILD_MICROHTTPD_LIB "Build microhttpd library" OFF)
 option(BUILD_UUID_LIB "Build uuid library" ON)
-option(BUILD_PCAP_LIB "Build pcap library" ON)
-option(BUILD_NDPI_LIB "Build nDPI library" ON)
+option(BUILD_PCAP_LIB "Build pcap library" OFF)
+option(BUILD_NDPI_LIB "Build nDPI library" OFF)
 option(BUILD_GRPC_LIB "Build gRPC library (warning, cross-compiling does not work well)" OFF)
-option(BUILD_SQLSYNC_SERVICE "Build sqlsync service" ON)
-option(BUILD_REVERSE_SERVICE "Build Reverse service" ON)
+option(BUILD_SQLSYNC_SERVICE "Build sqlsync service" OFF)
+option(BUILD_REVERSE_SERVICE "Build Reverse service" OFF)
 
+option(USE_NETLINK_LIB "Use netlink library" OFF)
+option(USE_GRPC_LIB "Use grpc library" OFF)
 option(USE_SQLITE3_LIB "Use sqlite3 library" ON)
 option(USE_UUID_LIB "Use uuid library" ON)
-option(USE_PTHREAD_LIB "Use pthread library" ON)
-option(USE_M_LIB "Use m library" ON)
+option(USE_PTHREAD_LIB "Use pthread library" OFF)
+option(USE_M_LIB "Use m library" OFF)
 option(USE_OW_DNSMASQ "Use the OpenWrt dnsmasq service" OFF)
 option(USE_ZYMKEY4_HSM "Use the Zymkey4 HSM" OFF)
 
@@ -83,14 +101,6 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release"
     "MinSizeRel" "RelWithDebInfo")
 endif()
-
-if (USE_ARM_MUSL_LIBC)
-  set(CMAKE_SYSTEM_PROCESSOR arm)
-  # set(tools /usr/local/arm-linux-musleabihf)
-  set(COMPILE_CONFIG_HOST arm-linux-musleabihf)
-  set(CMAKE_C_COMPILER /usr/local/bin/arm-linux-musleabihf-gcc)
-  set(CMAKE_CXX_COMPILER /usr/local/bin/arm-linux-musleabihf-g++)
-endif ()
 
 # Convert CMAKE_SYSTEM_NAME to os specifier that autoconf understands
 function(get_autoconf_os system_name output_var)
@@ -168,10 +178,6 @@ set(MDNSF_VERSION_MAJOR 0)
 set(MDNSF_VERSION_MINOR 9)
 set(MDNSF_VERSION_PATCH 9)
 
-if (NOT USE_ARM_MUSL_LIBC)
-  CHECK_GLIBC_VERSION()
-endif ()
-
 # Include the libraries
 include(hostapd)
 include(cmocka)
@@ -205,7 +211,7 @@ if (USE_M_LIB AND NOT (BUILD_ONLY_DOCS))
   endif ()
 endif ()
 
-if (BUILD_SQLSYNC_SERVICE AND NOT (BUILD_ONLY_DOCS))
+if (BUILD_SQLSYNC_SERVICE AND NOT (BUILD_ONLY_DOCS) AND USE_GRPC_LIB)
   add_compile_definitions(WITH_SQLSYNC_SERVICE)
 
   # Generate grpc probuf sources
@@ -232,7 +238,7 @@ if (BUILD_SQLSYNC_SERVICE AND NOT (BUILD_ONLY_DOCS))
   target_link_libraries(sqlite_grpc_proto PUBLIC GRPC::grpc++ GRPC::grpc_plugin_support)
 endif ()
 
-if (BUILD_REVERSE_SERVICE AND NOT (BUILD_ONLY_DOCS))
+if (BUILD_REVERSE_SERVICE AND NOT (BUILD_ONLY_DOCS) AND USE_GRPC_LIB)
   get_filename_component(reverse_proto "protos/reverse_access.proto" ABSOLUTE)
   get_filename_component(reverse_proto_path "${reverse_proto}" PATH)
 
@@ -282,7 +288,9 @@ include(doxygen)
 
 if (NOT BUILD_ONLY_DOCS)
   add_subdirectory(src)
-  add_subdirectory(tests)
+  if (NOT CMAKE_CROSSCOMPILING)
+    add_subdirectory(tests)
+  endif ()
   include(install)
 endif ()
 

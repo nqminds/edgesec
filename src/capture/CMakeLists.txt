@@ -63,7 +63,7 @@ if (BUILD_PCAP_LIB)
   target_include_directories(capture_service PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
 endif ()
 
-if (BUILD_NDPI_LIB)
+if (BUILD_NDPI_LIB AND USE_PTHREAD_LIB AND USE_M_LIB)
   add_library(ndpi_serialiser ndpi_serialiser.c)
   target_include_directories(ndpi_serialiser PRIVATE ${LIBNDPI_INCLUDE_PATH})
   target_link_libraries(ndpi_serialiser PRIVATE hash os log ${LIBNDPI_LIB})

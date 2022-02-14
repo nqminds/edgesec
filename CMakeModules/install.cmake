@@ -1,8 +1,16 @@
 include(GNUInstallDirs) # automagically setup install dir locations
 install(
-  TARGETS edgesec capsrv mdnsf
+  TARGETS edgesec
   RUNTIME
 )
+
+if (BUILD_PCAP_LIB)
+  install(
+    TARGETS capsrv mdnsf
+    RUNTIME
+  )
+endif ()
+
 if (BUILD_REST_SERVER AND LIBMICROHTTPD_LIB)
   install(
     TARGETS restsrv

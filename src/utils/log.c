@@ -160,7 +160,7 @@ void log_set_color(bool enable)
 
 int log_open_file(char *path)
 {
-  __mode_t m;
+  mode_t m;
 
   log_set_color(false);
 

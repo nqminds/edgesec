@@ -27,6 +27,8 @@
 #define CRYPTOU_H
 
 #include <stdint.h>
+#include <stddef.h>
+#include <sys/types.h>
 
 #define AES_BLOCK_SIZE      16
 #define IV_SIZE             AES_BLOCK_SIZE

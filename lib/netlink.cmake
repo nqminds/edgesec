@@ -1,4 +1,8 @@
 # Compile library libnetlink
+if (USE_NETLINK_LIB)
+  add_compile_definitions(WITH_NETLINK_LIB)
+endif ()
+
 if (BUILD_NETLINK_LIB AND NOT (BUILD_ONLY_DOCS))
   set(LIBNETLINK_SOURCE_DIR "${CMAKE_SOURCE_DIR}/lib/libnetlink")
   set(LIBNETLINK_INSTALL_ROOT "${CMAKE_CURRENT_BINARY_DIR}/lib")
