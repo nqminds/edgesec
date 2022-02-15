@@ -27,35 +27,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-// #include <linux/if.h>
-#include <net/if.h>
-#include <netinet/in.h>
+#include <linux/if.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdbool.h>
 #include <fnmatch.h>
-#include <linux/netlink.h>
 #include <arpa/inet.h>
 
-// #include <netlink/genl/genl.h>
-// #include <netlink/genl/family.h>
-// #include <netlink/genl/ctrl.h>
-// #include <netlink/msg.h>
-// #include <netlink/attr.h>
-
-#include "linux/if_addr.h"
-// #include "linux/if_arp.h"
-#include "linux/if_infiniband.h"
-
-
-#include "nl80211.h"
 #include "allocs.h"
 #include "os.h"
 #include "log.h"
 #include "iface.h"
+#include "ifaceu.h"
 
 #ifdef WITH_NETLINK_LIB
 #include "nl.h"
@@ -70,8 +54,7 @@ bool iface_exists(const char *ifname)
 		return false;
 	}
 
-	unsigned int idx = if_nametoindex(ifname);
-	if (!idx) {
+	if (!iface_nametoindex(ifname)) {
 		return false;
 	}
 

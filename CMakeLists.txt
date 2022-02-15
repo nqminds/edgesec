@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.11.0)
 # 3.11 required for FetchContent
 
-option(CROSS_COMPILE_EDGESEC "Cross compile the EDGESec" OFF)
+option(CROSS_COMPILE_EDGESEC "Cross compile the EDGESec" ON)
 
 if (CROSS_COMPILE_EDGESEC)
   set(CMAKE_SYSTEM_NAME Linux)
@@ -69,7 +69,7 @@ option(BUILD_NETLINK_LIB "Build netlink library" OFF)
 option(BUILD_NL_LIB "Build nl library" OFF)
 option(BUILD_MICROHTTPD_LIB "Build microhttpd library" OFF)
 option(BUILD_UUID_LIB "Build uuid library" ON)
-option(BUILD_PCAP_LIB "Build pcap library" OFF)
+option(BUILD_PCAP_LIB "Build pcap library" ON)
 option(BUILD_NDPI_LIB "Build nDPI library" OFF)
 option(BUILD_GRPC_LIB "Build gRPC library (warning, cross-compiling does not work well)" OFF)
 option(BUILD_SQLSYNC_SERVICE "Build sqlsync service" OFF)

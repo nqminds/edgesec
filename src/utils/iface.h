@@ -18,31 +18,24 @@
  ****************************************************************************/
 
 /**
- * @file if.h 
+ * @file iface.h 
  * @author Alexandru Mereacre
  * @brief File containing the definition of the network interface utilities.
  */
 
-#ifndef IF_H_
-#define IF_H_
+#ifndef IFACE_H_
+#define IFACE_H_
 
-//#include <linux/if.h>
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <linux/if.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include <netinet/in.h>
 #include <net/ethernet.h>
 
-
-#include "linux/rtnetlink.h"
 #include "utarray.h"
 #include "uthash.h"
 #include "allocs.h"
 #include "os.h"
-
-// #define 	IFNAMSIZ	16
 
 enum IF_STATE{
 	IF_STATE_UNKNOWN = 0,
@@ -70,12 +63,6 @@ typedef struct {
 	char 			brd_addr[IP_LEN];					/**< Interface string IP broadcast address */
 	uint8_t 		mac_addr[ETH_ALEN];					/**< Interface byte MAC address */
 } netif_info_t;
-
-struct iplink_req {
-	struct nlmsghdr		n;
-	struct ifinfomsg	i;
-	char				buf[1024];
-};
 
 /**
  * @brief Interface configuration info structure

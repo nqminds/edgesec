@@ -4,9 +4,16 @@ install(
   RUNTIME
 )
 
-if (BUILD_PCAP_LIB)
+if (BUILD_CAPTURE_SERVICE AND BUILD_PCAP_LIB)
   install(
-    TARGETS capsrv mdnsf
+    TARGETS capsrv
+    RUNTIME
+  )
+endif ()
+
+if (BUILD_MDNS_SERVICE AND BUILD_PCAP_LIB)
+  install(
+    TARGETS mdnsf
     RUNTIME
   )
 endif ()

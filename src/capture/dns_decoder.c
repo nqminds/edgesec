@@ -25,7 +25,7 @@
 
 #include <netinet/in.h>
 #include <netinet/ip.h>
-#include <net/if.h>
+#include <linux/if.h>
 #include <netinet/if_ether.h>
 #include <netinet/ip6.h>
 #include <netinet/icmp6.h>

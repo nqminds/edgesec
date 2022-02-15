@@ -25,7 +25,7 @@
 
 #include <netinet/in.h>
 #include <netinet/ip.h>
-#include <net/if.h>
+#include <linux/if.h>
 #include <netinet/if_ether.h>
 #include <netinet/ip6.h>
 #include <netinet/icmp6.h>
@@ -38,7 +38,7 @@
 #include "../utils/utarray.h"
 #include "../utils/allocs.h"
 #include "../utils/os.h"
-#include "../utils/if.h"
+#include "../utils/iface.h"
 #include "../utils/hash.h"
 #include "../utils/squeue.h"
 

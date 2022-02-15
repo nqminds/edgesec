@@ -25,12 +25,7 @@
 
 #include <inttypes.h>
 #include <stdbool.h>
-#include <netinet/in.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-// #include <linux/if.h>
-#include <net/if.h>
-#include <netinet/in.h>
+#include <linux/if.h>
 #include <arpa/inet.h>
 
 #include "utils/utarray.h"
@@ -39,8 +34,7 @@
 #include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/iface.h"
-
-#include "subnet/subnet_service.h"
+#include "utils/ifaceu.h"
 
 uint8_t get_short_subnet(char *subnet_mask)
 {
@@ -103,10 +97,10 @@ bool create_subnet_ifs(UT_array *ifinfo_array, bool ignore_error)
 bool get_nat_if_ip(const char *nat_interface, char *ip_buf)
 {
   UT_array *netip_list = NULL;
-  unsigned int if_idx = if_nametoindex(nat_interface);
+  unsigned int if_idx = iface_nametoindex(nat_interface);
 
   if (!if_idx) {
-    log_err("if_nametoindex");
+    log_err("iface_nametoindex");
     goto err;
   }
 

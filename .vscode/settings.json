@@ -93,6 +93,10 @@
         "packet_decoder.h": "c",
         "mdns_service.h": "c",
         "ip.h": "c",
-        "in.h": "c"
+        "in.h": "c",
+        "stat.h": "c",
+        "subnet_service.h": "c",
+        "os.h": "c",
+        "iface.h": "c"
     }
 }

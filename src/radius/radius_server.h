@@ -20,10 +20,10 @@
 #include <unistd.h>
 #include <linux/types.h>
 #include <linux/posix_types.h>
+#include <netinet/if_ether.h>
 #include <asm/types.h>
 #include <arpa/inet.h>
 #include <stdbool.h>
-// #include <net/if.h>
 
 #include "../utils/iface.h"
 

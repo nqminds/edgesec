@@ -26,7 +26,15 @@
 #ifndef NL_H_
 #define NL_H_
 
+#include "linux/rtnetlink.h"
+
 #include "utarray.h"
+
+struct iplink_req {
+	struct nlmsghdr		n;
+	struct ifinfomsg	i;
+	char				buf[1024];
+};
 
 /**
  * @brief Get the array of @c struct netif_info_t for each available interface

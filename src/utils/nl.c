@@ -57,7 +57,7 @@
 #include "allocs.h"
 #include "os.h"
 #include "log.h"
-#include "if.h"
+#include "nl.h"
 #include "utarray.h"
 
 static int ifindex = 0;
