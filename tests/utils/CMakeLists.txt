@@ -3,7 +3,7 @@ include_directories(
 )
 
 add_executable(test_if test_if.c)
-target_link_libraries(test_if PRIVATE if cmocka::cmocka)
+target_link_libraries(test_if PRIVATE iface cmocka::cmocka)
 
 add_executable(test_os test_os.c)
 target_link_libraries(test_os PRIVATE os cmocka::cmocka)

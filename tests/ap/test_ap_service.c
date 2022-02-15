@@ -19,7 +19,7 @@
 #include "utils/log.h"
 #include "utils/allocs.h"
 #include "utils/os.h"
-#include "utils/if.h"
+#include "utils/iface.h"
 #include "utils/eloop.h"
 #include "ap/ap_service.h"
 #include "ap/ap_config.h"

@@ -18,9 +18,9 @@
  ****************************************************************************/
 
 /**
- * @file hostapd_service.h 
+ * @file ap_service.h 
  * @author Alexandru Mereacre 
- * @brief File containing the definition of the hostapd service.
+ * @brief File containing the definition of the ap service.
  * 
  * Defines the functions to start and stop the acces point service (AP). It also 
  * defines auxiliary commands to manage the acces control list for stations
@@ -31,7 +31,6 @@
 #define HOSTAPD_SERVICE_H
 
 #include <sys/types.h>
-#include <linux/if.h>
 #include <stdbool.h>
 
 #include "ap_config.h"
@@ -39,7 +38,7 @@
 #include "../radius/radius_server.h"
 #include "../utils/allocs.h"
 #include "../utils/os.h"
-#include "../utils/if.h"
+#include "../utils/iface.h"
 
 #define STA_AP_COMMAND                  "STA"                 /* Command name to check if a station is registered */
 

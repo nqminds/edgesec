@@ -3,7 +3,7 @@ include_directories (
 )
 
 add_library(hostapd hostapd.c)
-target_link_libraries(hostapd PRIVATE log os if)
+target_link_libraries(hostapd PRIVATE log os iface)
 
 add_library(ap_service ap_service.c)
 target_include_directories(ap_service PRIVATE ${LIBSQLITE_INCLUDE_DIR})

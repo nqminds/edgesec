@@ -30,7 +30,7 @@
 #define CONFIG_GENERATOR_H
 
 #include <sys/types.h>
-#include <net/if.h>
+// #include <net/if.h>
 #include <stdbool.h>
 
 #include "../utils/allocs.h"

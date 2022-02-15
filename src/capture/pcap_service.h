@@ -29,6 +29,7 @@
 #include <sys/types.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <pcap.h>
 
 #include "../utils/utarray.h"
 

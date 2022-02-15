@@ -38,7 +38,7 @@
 #include <inttypes.h>
 
 #include "../utils/uthash.h"
-#include "../utils/if.h"
+#include "../utils/iface.h"
 #include "../utils/log.h"
 #include "../utils/eloop.h"
 #include "../utils/domain.h"

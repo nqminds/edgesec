@@ -26,8 +26,10 @@
 #include <inttypes.h>
 #include <stdbool.h>
 #include <netinet/in.h>
-#include <net/if.h>
+#include <sys/types.h>
 #include <sys/socket.h>
+// #include <linux/if.h>
+#include <net/if.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
@@ -36,7 +38,7 @@
 #include "utils/log.h"
 #include "utils/allocs.h"
 #include "utils/os.h"
-#include "utils/if.h"
+#include "utils/iface.h"
 
 #include "subnet/subnet_service.h"
 

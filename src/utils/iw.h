@@ -31,7 +31,7 @@
 #include <stdbool.h>
 
 #include "utarray.h"
-#include "if.h"
+#include "iface.h"
 
 
 #ifdef DEBUG_LIBNL

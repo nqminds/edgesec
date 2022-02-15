@@ -27,7 +27,6 @@
 #define MDNS_DECODER_H
 
 #include "capture_config.h"
-#include "packet_decoder.h"
 
 #include "../utils/os.h"
 #include "../utils/utarray.h"

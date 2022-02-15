@@ -18,14 +18,14 @@ if (BUILD_PCAP_LIB)
   add_library(packet_decoder packet_decoder.c)
   # packet_decoder.h has an #include <pcap.h>, so need to make it PUBLIC include
   target_include_directories(packet_decoder PUBLIC ${LIBPCAP_INCLUDE_PATH})
-  target_link_libraries(packet_decoder PUBLIC ${LIBPCAP_LIB} PRIVATE mdns_decoder dns_decoder hash if log os hashmap)
+  target_link_libraries(packet_decoder PUBLIC ${LIBPCAP_LIB} PRIVATE mdns_decoder dns_decoder hash iface log os hashmap)
 
   add_library(packet_queue packet_queue.c)
   target_link_libraries(packet_queue PRIVATE packet_decoder log os)
 
   add_library(pcap_service pcap_service.c)
   target_include_directories(pcap_service PRIVATE ${LIBPCAP_INCLUDE_PATH})
-  target_link_libraries(pcap_service PRIVATE if log os ${LIBPCAP_LIB})
+  target_link_libraries(pcap_service PRIVATE iface log os ${LIBPCAP_LIB})
 
   add_library(pcap_queue pcap_queue.c)
   target_include_directories(pcap_queue PRIVATE ${LIBPCAP_INCLUDE_PATH})
@@ -33,7 +33,7 @@ if (BUILD_PCAP_LIB)
 
   add_library(sqlite_header_writer sqlite_header_writer.c)
   target_include_directories(sqlite_header_writer PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
-  target_link_libraries(sqlite_header_writer PRIVATE sqliteu squeue log os if ${LIBSQLITE_LIB})
+  target_link_libraries(sqlite_header_writer PRIVATE sqliteu squeue log os iface ${LIBSQLITE_LIB})
 
   add_library(sqlite_pcap_writer sqlite_pcap_writer.c)
   target_include_directories(sqlite_pcap_writer PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
@@ -51,10 +51,10 @@ if (BUILD_SQLSYNC_SERVICE)
   add_library(sync_client sync_client.cc)
   target_include_directories(sync_client PRIVATE ${PROJECT_BINARY_DIR})
   target_link_libraries(sync_client PRIVATE log sqlite_grpc_proto GRPC::grpc++_reflection)
-  target_link_libraries(default_analyser PRIVATE dns_decoder pcap_service sync_client sqlite_header_writer sqlite_pcap_writer pcap_queue packet_queue packet_decoder squeue eloop if log os hashmap domain)
+  target_link_libraries(default_analyser PRIVATE dns_decoder pcap_service sync_client sqlite_header_writer sqlite_pcap_writer pcap_queue packet_queue packet_decoder squeue eloop iface log os hashmap domain)
 else ()
   if (BUILD_PCAP_LIB)
-    target_link_libraries(default_analyser PRIVATE dns_decoder pcap_service sqlite_header_writer sqlite_pcap_writer pcap_queue packet_queue packet_decoder squeue eloop if log os hashmap domain)
+    target_link_libraries(default_analyser PRIVATE dns_decoder pcap_service sqlite_header_writer sqlite_pcap_writer pcap_queue packet_queue packet_decoder squeue eloop iface log os hashmap domain)
   endif()
 endif ()
 

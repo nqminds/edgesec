@@ -20,13 +20,16 @@
 #include <asm/types.h>
 #include <arpa/inet.h>
 #include <stdbool.h>
-#include <net/if.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <linux/if.h>
+
 
 #include "utils/eloop.h"
 #include "utils/log.h"
 #include "utils/allocs.h"
 #include "utils/os.h"
-#include "utils/if.h"
+#include "utils/iface.h"
 #include "utils/list.h"
 #include "../supervisor/mac_mapper.h"
 

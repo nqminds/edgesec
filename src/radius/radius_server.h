@@ -23,9 +23,9 @@
 #include <asm/types.h>
 #include <arpa/inet.h>
 #include <stdbool.h>
-#include <net/if.h>
+// #include <net/if.h>
 
-#include "../utils/if.h"
+#include "../utils/iface.h"
 
 #define RADIUS_SECRET_LEN				255
 

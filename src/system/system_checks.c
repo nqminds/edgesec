@@ -25,8 +25,6 @@
 
 #include <inttypes.h>
 #include <stdbool.h>
-#include <netinet/in.h>
-#include <net/if.h>
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -42,8 +40,6 @@
 #include "utils/utarray.h"
 #include "utils/hashmap.h"
 #include "utils/log.h"
-#include "utils/if.h"
-#include "utils/iw.h"
 #include "utils/allocs.h"
 #include "utils/os.h"
 

@@ -89,6 +89,10 @@
         "variant": "cpp",
         "mdns_decoder.h": "c",
         "stdbool.h": "c",
-        "mdns_mapper.h": "c"
+        "mdns_mapper.h": "c",
+        "packet_decoder.h": "c",
+        "mdns_service.h": "c",
+        "ip.h": "c",
+        "in.h": "c"
     }
 }

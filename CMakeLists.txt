@@ -1,16 +1,15 @@
 cmake_minimum_required(VERSION 3.11.0)
 # 3.11 required for FetchContent
 
-option(CROSS_COMPILE_EDGESEC "Cross compile the EDGESec" ON)
+option(CROSS_COMPILE_EDGESEC "Cross compile the EDGESec" OFF)
 
 if (CROSS_COMPILE_EDGESEC)
   set(CMAKE_SYSTEM_NAME Linux)
   set(CMAKE_SYSTEM_PROCESSOR arm)
-  # set(tools /usr/local/arm-linux-musleabihf)
-  # set(COMPILE_CONFIG_HOST arm-linux-musleabihf)
-  set(CMAKE_C_COMPILER /usr/local/bin/arm-linux-musleabihf-gcc)
-  set(CMAKE_CXX_COMPILER /usr/local/bin/arm-linux-musleabihf-g++)
-  set(CMAKE_STRIP /usr/local/bin/arm-linux-musleabihf-strip)
+  set(CROSS_COMPILE_PREFIX /usr/local/bin/arm-linux-musleabihf-)
+  set(CMAKE_C_COMPILER "${CROSS_COMPILE_PREFIX}gcc")
+  set(CMAKE_CXX_COMPILER "${CROSS_COMPILE_PREFIX}g++")
+  set(CMAKE_STRIP "${CROSS_COMPILE_PREFIX}strip")
 endif ()
 
 project(EDGESEC C CXX)
@@ -57,11 +56,12 @@ set(
 )
 
 option(BUILD_ONLY_DOCS "Build only docs" OFF)
-option(BUILD_CAPTURE_SERVICE "Build Capture server" OFF)
+option(BUILD_MDNS_SERVICE "Build mDNS service" OFF)
+option(BUILD_CAPTURE_SERVICE "Build Capture service" OFF)
 option(BUILD_REST_SERVER "Build Rest server" OFF)
 option(BUILD_HOSTAPD "Build hostapd" OFF)
 option(BUILD_SQLITE_LIB "Build sqlite3 library" ON)
-option(BUILD_OPENSSL_LIB "Build OpenSSL" OFF)
+option(BUILD_OPENSSL_LIB "Build OpenSSL" ON)
 option(BUILD_CMOCKA_LIB "Build cmocka library" OFF)
 # off by default since we should apt install libmnl-dev
 option(BUILD_MNL_LIB "Build mnl library" ON)

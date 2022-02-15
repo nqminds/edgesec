@@ -27,17 +27,22 @@
 #define IF_H_
 
 //#include <linux/if.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <linux/if.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include <netinet/in.h>
 #include <net/ethernet.h>
-#include <net/if.h>
+
 
 #include "linux/rtnetlink.h"
 #include "utarray.h"
 #include "uthash.h"
 #include "allocs.h"
 #include "os.h"
+
+// #define 	IFNAMSIZ	16
 
 enum IF_STATE{
 	IF_STATE_UNKNOWN = 0,

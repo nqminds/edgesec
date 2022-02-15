@@ -18,7 +18,7 @@
  ****************************************************************************/
 
 /**
- * @file if.c
+ * @file iface.c
  * @author Alexandru Mereacre
  * @brief File containing the implementation of the network interface utilities.
  */
@@ -27,8 +27,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <net/if.h>
 #include <sys/types.h>
+#include <sys/socket.h>
+// #include <linux/if.h>
+#include <net/if.h>
+#include <netinet/in.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -52,7 +55,7 @@
 #include "allocs.h"
 #include "os.h"
 #include "log.h"
-#include "if.h"
+#include "iface.h"
 
 #ifdef WITH_NETLINK_LIB
 #include "nl.h"
@@ -80,6 +83,8 @@ UT_array *get_interfaces(int if_id)
 #ifdef WITH_NETLINK_LIB
 	return nl_get_interfaces(if_id);
 #else
+  (void) if_id;
+
 	log_trace("get_interfaces not implemented");
 	return NULL;
 #endif
@@ -91,6 +96,9 @@ bool create_interface(char *if_name, char *type)
 #ifdef WITH_NETLINK_LIB
 	return nl_create_interface(if_name, type);
 #else
+  (void) if_name;
+  (void) type;
+
 	log_trace("create_interface not implemented");
 	return NULL;
 #endif
@@ -102,6 +110,10 @@ bool set_interface_ip(char *ip_addr, char *brd_addr, char *if_name)
 #ifdef WITH_NETLINK_LIB
 	return nl_set_interface_ip(ip_addr, brd_addr, if_name);
 #else
+  (void) ip_addr;
+  (void) brd_addr;
+  (void) if_name;
+
 	log_trace("set_interface_ip not implemented");
 	return NULL;
 #endif
@@ -112,6 +124,9 @@ bool set_interface_state(char *if_name, bool state)
 #ifdef WITH_NETLINK_LIB
 	return nl_set_interface_state(if_name, state);
 #else
+  (void) if_name;
+  (void) state;
+
 	log_trace("set_interface_state not implemented");
 	return NULL;
 #endif

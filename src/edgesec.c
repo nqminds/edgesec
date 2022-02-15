@@ -33,7 +33,9 @@
 #include <pthread.h>
 #include <stdbool.h>
 #include <errno.h>
-#include <net/if.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <linux/if.h>
 #include <libgen.h>
 
 #include "version.h"
@@ -42,7 +44,7 @@
 #include "utils/os.h"
 #include "utils/minIni.h"
 #include "utils/utarray.h"
-#include "utils/if.h"
+#include "utils/iface.h"
 #include "utils/eloop.h"
 #include "dhcp/dhcp_config.h"
 #include "engine.h"

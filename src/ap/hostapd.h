@@ -30,7 +30,6 @@
 #define HOSTAPD_H
 
 #include <sys/types.h>
-#include <net/if.h>
 #include <stdbool.h>
 
 #include "ap_config.h"

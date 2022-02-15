@@ -275,7 +275,6 @@ bool run_engine(struct app_config *app_config)
   struct supervisor_context context;
 
   char *commands[] = {"ip", "iw", "iptables", "dnsmasq", "sysctl", NULL};
-  int ret;
 
   if (create_dir(app_config->db_path, S_IRWXU | S_IRWXG) < 0) {
     log_debug("create_dir fail");

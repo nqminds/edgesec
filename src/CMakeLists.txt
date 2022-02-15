@@ -6,31 +6,31 @@ add_subdirectory(dhcp)
 add_subdirectory(subnet)
 add_subdirectory(system)
 add_subdirectory(crypt)
+
 add_subdirectory(dns)
 
-if (BUILD_CAPTURE_SERVICE)
-  add_subdirectory(capture)
-endif ()
+add_subdirectory(capture)
 
 add_library(engine engine.c)
 if (BUILD_NL_LIB)
   target_include_directories(engine PRIVATE ${LIBNL_INCLUDE_DIR} ${LIBSQLITE_INCLUDE_DIR})
-  target_link_libraries(engine crypt_service log if iw os sqlite_macconn_writer sqlite_fingerprint_writer mdns_service subnet_service system_checks eloop supervisor network_commands radius_service mac_mapper ap_service iptables dhcp_service)
+  target_link_libraries(engine crypt_service log iface iw os sqlite_macconn_writer sqlite_fingerprint_writer subnet_service system_checks eloop supervisor network_commands radius_service mac_mapper ap_service iptables dhcp_service)
 else ()
   target_include_directories(engine PRIVATE ${LIBSQLITE_INCLUDE_DIR})
-  target_link_libraries(engine crypt_service log if os sqlite_macconn_writer sqlite_fingerprint_writer mdns_service subnet_service system_checks eloop supervisor network_commands radius_service mac_mapper ap_service iptables dhcp_service)
+  target_link_libraries(engine crypt_service log iface os sqlite_macconn_writer sqlite_fingerprint_writer subnet_service system_checks eloop supervisor network_commands radius_service mac_mapper ap_service iptables dhcp_service)
 endif ()
 
 add_library(config config.c)
 target_include_directories(config PUBLIC ${LIBSQLITE_INCLUDE_DIR})
 target_link_libraries(config minIni mac_mapper)
 
-add_executable(mdnsf mdnsf.c)
-target_include_directories(mdnsf PRIVATE ${LIBPCAP_INCLUDE_PATH} ${PROJECT_BINARY_DIR})
-target_link_libraries(mdnsf PRIVATE mdns_service subnet_service config minIni squeue log os)
-# link time optimization
-set_target_properties(mdnsf PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
-
+if (BUILD_MDNS_SERVICE AND BUILD_CAPTURE_SERVICE)
+  add_executable(mdnsf mdnsf.c)
+  target_include_directories(mdnsf PRIVATE ${LIBPCAP_INCLUDE_PATH} ${PROJECT_BINARY_DIR})
+  target_link_libraries(mdnsf PRIVATE mdns_service subnet_service config minIni squeue log os)
+  # link time optimization
+  set_target_properties(mdnsf PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
+endif ()
 
 if (BUILD_CAPTURE_SERVICE)
   add_executable(capsrv capsrv.c)

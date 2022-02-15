@@ -39,11 +39,11 @@
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/eloop.h"
-#include "../utils/if.h"
+#include "../utils/iface.h"
 #include "../utils/log.h"
 #include "../utils/domain.h"
 
-#define ATTACH_AP_COMMAND               "ATTACH"
+#define ATTACH_AP_COMMAND         "ATTACH"
 
 #define AP_STA_DISCONNECTED       "AP-STA-DISCONNECTED"
 #define AP_STA_CONNECTED          "AP-STA-CONNECTED"
