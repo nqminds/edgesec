@@ -118,18 +118,6 @@ bool reset_interface(char *ifname)
   return true;
 }
 
-int is_interface_vlan(const char *ifname)
-{
-#ifdef WITH_NETLINK_SERVICE
-	return nl_is_iw_vlan(ifname);
-#else
-  (void) ifname;
-
-	log_trace("is_interface_vlan not implemented");
-	return -1;
-#endif
-}
-
 char* get_vlan_interface(char *buf)
 {
 #ifdef WITH_NETLINK_SERVICE

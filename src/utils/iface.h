@@ -74,14 +74,6 @@ bool set_interface_state(char *ifname, bool state);
 bool reset_interface(char *ifname);
 
 /**
- * @brief Check if interface has the VLAN capability
- * 
- * @param ap_interface Interface name string
- * @return int 0 if VLAN capable, -1 on error and 1 if not VLAN capable
- */
-int is_interface_vlan(const char *ifname);
-
-/**
  * @brief Returns an exisiting WiFi interface name that supports VLAN
  * 
  * @param if_buf Interface working buffer

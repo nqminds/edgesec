@@ -330,16 +330,7 @@ bool run_engine(struct app_config *app_config)
     return false;
   }
 
-  log_info("Checking wifi interface...");
-  if (!app_config->ap_detect) {
-    int ret = is_interface_vlan(context.hconfig.interface);
-    if(ret > 0) {
-      log_debug("interface %s not VLAN capable", context.hconfig.interface);
-      goto run_engine_fail;
-    } else if (ret < 0) {
-      log_debug("is_iw_vlan fail");
-    }
-  } else {
+  if (app_config->ap_detect) {
     log_info("Looking for VLAN capable wifi interface...");
     if(get_vlan_interface(context.hconfig.interface) == NULL) {
       log_debug("get_valid_iw fail");
@@ -347,7 +338,7 @@ bool run_engine(struct app_config *app_config)
     }
   }
 
-  log_info("Found wifi interface %s", context.hconfig.interface);
+  log_info("Using wifi interface %s", context.hconfig.interface);
 
   if(!construct_ap_ctrlif(context.hconfig.ctrl_interface, context.hconfig.interface,
                           context.hconfig.ctrl_interface_path)) {

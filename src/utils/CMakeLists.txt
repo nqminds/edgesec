@@ -27,6 +27,10 @@ if (USE_NETLINK_SERVICE)
   target_link_libraries(nl PRIVATE ifaceu ${LIBNL_LIBRARY} ${LIBNL_GENL_LIBRARY} ${LIBNETLINK_LIB} MNL::mnl ${LL_MAP_LIB} ${UTILS_LIB} ${RT_NAMES_LIB} log os)
 endif ()
 
+add_library(uci uci.c)
+target_include_directories(uci PRIVATE ${ubox_SOURCE_DIR})
+target_link_libraries(uci PRIVATE os log ubox)
+
 add_library(iface_mapper iface_mapper.c)
 target_link_libraries(iface_mapper PRIVATE net log os)
 

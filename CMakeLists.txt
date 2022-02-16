@@ -76,6 +76,7 @@ option(BUILD_SQLSYNC_SERVICE "Build sqlsync service" OFF)
 option(BUILD_REVERSE_SERVICE "Build Reverse service" OFF)
 
 option(USE_NETLINK_SERVICE "Use netlink service" OFF)
+option(USE_UCI_SERVICE "Use OpenWRT uci service" ON)
 option(USE_GRPC_LIB "Use grpc library" OFF)
 option(USE_SQLITE3_LIB "Use sqlite3 library" ON)
 option(USE_UUID_LIB "Use uuid library" ON)
@@ -83,6 +84,10 @@ option(USE_PTHREAD_LIB "Use pthread library" OFF)
 option(USE_M_LIB "Use m library" OFF)
 option(USE_OW_DNSMASQ "Use the OpenWrt dnsmasq service" OFF)
 option(USE_ZYMKEY4_HSM "Use the Zymkey4 HSM" OFF)
+
+if (USE_NETLINK_SERVICE AND USE_UCI_SERVICE)
+  message(FATAL_ERROR "Only USE_NETLINK_SERVICE or USE_UCI_SERVICE allowed.")
+endif ()
 
 # CMake hides $ENV{MAKEFLAGS}, so we need to define it ourselves
 set(LIB_MAKEFLAGS "--jobs=2" CACHE STRING "Flags to pass to make for building libraries (e.g. -j12)")
@@ -192,6 +197,7 @@ include(grpc)
 include(openssl)
 include(sqlite)
 include(zymkey4)
+include(ubox)
 
 if (USE_PTHREAD_LIB AND NOT (BUILD_ONLY_DOCS))
   find_library(LIBPTHREAD_LIB NAMES pthread libpthread)
