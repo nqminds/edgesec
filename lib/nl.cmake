@@ -1,5 +1,5 @@
 # Compile library libnetlink
-if (BUILD_NL_LIB AND NOT (BUILD_ONLY_DOCS))
+if (USE_NETLINK_SERVICE AND NOT (BUILD_ONLY_DOCS))
   find_path(LIBNL_INCLUDE_DIR netlink/netlink.h
   	/usr/include
   	/usr/include/libnl3

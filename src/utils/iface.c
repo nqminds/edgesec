@@ -126,7 +126,7 @@ int is_interface_vlan(const char *ifname)
   (void) ifname;
 
 	log_trace("is_interface_vlan not implemented");
-	return NULL;
+	return -1;
 #endif
 }
 

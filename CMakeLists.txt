@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.11.0)
 # 3.11 required for FetchContent
 
-option(CROSS_COMPILE_EDGESEC "Cross compile the EDGESec" OFF)
+option(CROSS_COMPILE_EDGESEC "Cross compile the EDGESec" ON)
 
 if (CROSS_COMPILE_EDGESEC)
   set(CMAKE_SYSTEM_NAME Linux)
@@ -64,9 +64,9 @@ option(BUILD_SQLITE_LIB "Build sqlite3 library" ON)
 option(BUILD_OPENSSL_LIB "Build OpenSSL" ON)
 option(BUILD_CMOCKA_LIB "Build cmocka library" OFF)
 # off by default since we should apt install libmnl-dev
-option(BUILD_MNL_LIB "Build mnl library" ON)
-option(BUILD_NETLINK_LIB "Build netlink library" ON)
-option(BUILD_NL_LIB "Build nl library" ON)
+option(BUILD_MNL_LIB "Build mnl library" OFF)
+option(BUILD_NETLINK_LIB "Build netlink library" OFF)
+option(BUILD_NL_LIB "Build nl library" OFF)
 option(BUILD_MICROHTTPD_LIB "Build microhttpd library" OFF)
 option(BUILD_UUID_LIB "Build uuid library" ON)
 option(BUILD_PCAP_LIB "Build pcap library" ON)
@@ -75,7 +75,7 @@ option(BUILD_GRPC_LIB "Build gRPC library (warning, cross-compiling does not wor
 option(BUILD_SQLSYNC_SERVICE "Build sqlsync service" OFF)
 option(BUILD_REVERSE_SERVICE "Build Reverse service" OFF)
 
-option(USE_NETLINK_SERVICE "Use netlink service" ON)
+option(USE_NETLINK_SERVICE "Use netlink service" OFF)
 option(USE_GRPC_LIB "Use grpc library" OFF)
 option(USE_SQLITE3_LIB "Use sqlite3 library" ON)
 option(USE_UUID_LIB "Use uuid library" ON)
