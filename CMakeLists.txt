@@ -75,8 +75,7 @@ option(BUILD_GRPC_LIB "Build gRPC library (warning, cross-compiling does not wor
 option(BUILD_SQLSYNC_SERVICE "Build sqlsync service" OFF)
 option(BUILD_REVERSE_SERVICE "Build Reverse service" OFF)
 
-option(USE_NETLINK_LIB "Use netlink library" OFF)
-option(USE_MNL_LIB "Use mnl library" OFF)
+option(USE_NETLINK_SERVICE "Use netlink service" OFF)
 option(USE_GRPC_LIB "Use grpc library" OFF)
 option(USE_SQLITE3_LIB "Use sqlite3 library" ON)
 option(USE_UUID_LIB "Use uuid library" ON)
