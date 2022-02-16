@@ -1,6 +1,6 @@
 # Compile library libnetlink
-if (USE_NETLINK_LIB)
-  add_compile_definitions(WITH_NETLINK_LIB)
+if (USE_NETLINK_SERVICE)
+  add_compile_definitions(WITH_NETLINK_SERVICE)
 endif ()
 
 if (BUILD_NETLINK_LIB AND NOT (BUILD_ONLY_DOCS))

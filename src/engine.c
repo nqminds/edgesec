@@ -55,7 +55,6 @@
 #include "engine.h"
 #include "system/system_checks.h"
 #include "subnet/subnet_service.h"
-#include "utils/iw.h"
 #include "config.h"
 
 #define MACCONN_DB_NAME "macconn" SQLITE_EXTENSION
@@ -331,28 +330,19 @@ bool run_engine(struct app_config *app_config)
 
   log_info("Checking wifi interface...");
   if (!app_config->ap_detect) {
-#ifdef WITH_IW_SERVICE
-    ret = is_iw_vlan(context.hconfig.interface);
+    int ret = is_interface_vlan(context.hconfig.interface);
     if(ret > 0) {
       log_debug("interface %s not VLAN capable", context.hconfig.interface);
       goto run_engine_fail;
     } else if (ret < 0) {
       log_debug("is_iw_vlan fail");
     }
-#else
-  log_warn("iw service not implemented");
-#endif
   } else {
     log_info("Looking for VLAN capable wifi interface...");
-#ifdef WITH_IW_SERVICE
-    if(get_valid_iw(context.hconfig.interface) == NULL) {
+    if(get_vlan_interface(context.hconfig.interface) == NULL) {
       log_debug("get_valid_iw fail");
       goto run_engine_fail;
     }
-#else
-  log_warn("iw service not implemented");
-  goto run_engine_fail;
-#endif
   }
 
   log_info("Found wifi interface %s", context.hconfig.interface);

@@ -26,9 +26,34 @@
 #ifndef NL_H_
 #define NL_H_
 
+#include <linux/if.h>
+#include <netinet/if_ether.h>
 #include "linux/rtnetlink.h"
 
 #include "utarray.h"
+
+#ifdef DEBUG_LIBNL
+#define NL_CB_TYPE NL_CB_DEBUG
+#else
+#define NL_CB_TYPE NL_CB_DEFAULT
+#endif
+
+struct nl80211_state {
+	struct nl_sock *nl_sock;
+	int nl80211_id;
+};
+
+/**
+ * @brief Network wireless interface information structure
+ * 
+ */
+typedef struct {
+	char ifname[IFNAMSIZ];				/**< Interface string name */
+	uint32_t ifindex;					/**< Interface index */
+	uint64_t wdev;						/**< Physical interface wdev param */
+	uint8_t addr[ETH_ALEN];				/**< Interface byte MAC address */
+	uint32_t wiphy;						/**< Physical interface ID */
+} netiw_info_t;
 
 struct iplink_req {
 	struct nlmsghdr		n;
@@ -72,5 +97,36 @@ bool nl_set_interface_ip(char *ip_addr, char *brd_addr, char *if_name);
  * @return true on success, false otherwise
  */
 bool nl_set_interface_state(char *if_name, bool state);
+
+/**
+ * @brief Check if wireless physical interface has VLAN capability
+ * 
+ * @param wiphy Wireless physical interface ID
+ * @return true if capability present, false otherwise
+ */
+bool iwace_isvlan(uint32_t wiphy);
+
+/**
+ * @brief Get the array of all wireless physical interfaces
+ * 
+ * @return UT_array* The array of wireless physical interfaces
+ */
+UT_array *get_netiw_info(void);
+
+/**
+ * @brief Check if interface has the VLAN capability
+ * 
+ * @param ifname Interface name string
+ * @return int 0 if VLAN capable, -1 on error and 1 if not VLAN capable
+ */
+int nl_is_iw_vlan(const char *ifname);
+
+/**
+ * @brief Returns an exisiting WiFi interface name that supports VLAN
+ * 
+ * @param buf Interface working buffer
+ * @return char* WiFi interface name
+ */
+char* nl_get_valid_iw(char *buf);
 
 #endif

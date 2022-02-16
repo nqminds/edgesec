@@ -37,11 +37,12 @@
 #include <linux/netlink.h>
 #include <arpa/inet.h>
 
-// #include <netlink/genl/genl.h>
-// #include <netlink/genl/family.h>
-// #include <netlink/genl/ctrl.h>
-// #include <netlink/msg.h>
-// #include <netlink/attr.h>
+
+#include <netlink/genl/genl.h>
+#include <netlink/genl/family.h>
+#include <netlink/genl/ctrl.h>
+#include <netlink/msg.h>
+#include <netlink/attr.h>
 
 #include "libnetlink.h"
 #include "ll_map.h"
@@ -49,7 +50,6 @@
 #include "rt_names.h"
 
 #include "linux/if_addr.h"
-// #include "linux/if_arp.h"
 #include "linux/if_infiniband.h"
 
 
@@ -58,6 +58,8 @@
 #include "os.h"
 #include "log.h"
 #include "nl.h"
+#include "net.h"
+#include "ifaceu.h"
 #include "utarray.h"
 
 static int ifindex = 0;
@@ -65,6 +67,23 @@ struct rtnl_handle rth = { .fd = -1 };
 static int have_rtnl_newlink = -1;
 
 static const UT_icd netif_info_icd = {sizeof(netif_info_t), NULL, NULL, NULL};
+static const UT_icd netiw_info_icd = {sizeof(netiw_info_t), NULL, NULL, NULL};
+
+static const char *ifmodes[NL80211_IFTYPE_MAX + 1] = {
+	"unspecified",
+	"IBSS",
+	"managed",
+	"AP",
+	"AP/VLAN",
+	"WDS",
+	"monitor",
+	"mesh point",
+	"P2P-client",
+	"P2P-GO",
+	"P2P-device",
+	"outside context of a BSS",
+	"NAN",
+};
 
 static int store_nlmsg(struct nlmsghdr *n, void *arg)
 {
@@ -823,4 +842,356 @@ bool nl_set_interface_state(char *if_name, bool state)
 err:
 	rtnl_close(&rth);
 	return false;
+}
+
+static void mac_addr_n2a(char *mac_addr, const unsigned char *arg)
+{
+	int i, l;
+
+	l = 0;
+	for (i = 0; i < ETH_ALEN ; i++) {
+		if (i == 0) {
+			sprintf(mac_addr+l, "%02x", arg[i]);
+			l += 2;
+		} else {
+			sprintf(mac_addr+l, ":%02x", arg[i]);
+			l += 3;
+		}
+	}
+}
+
+static const char *iftype_name(enum nl80211_iftype iftype, char *modebuf)
+{
+	if (iftype <= NL80211_IFTYPE_MAX && ifmodes[iftype])
+		return ifmodes[iftype];
+	sprintf(modebuf, "Unknown mode (%d)", iftype);
+	return modebuf;
+}
+
+static int error_handler(struct sockaddr_nl *nla, struct nlmsgerr *err,
+			 void *arg)
+{
+	(void) nla;
+	struct nlmsghdr *nlh = (struct nlmsghdr *)err - 1;
+	int len = nlh->nlmsg_len;
+	struct nlattr *attrs;
+	struct nlattr *tb[NLMSGERR_ATTR_MAX + 1];
+	int *ret = arg;
+	int ack_len = sizeof(*nlh) + sizeof(int) + sizeof(*nlh);
+
+	*ret = err->error;
+
+	if (!(nlh->nlmsg_flags & NLM_F_ACK_TLVS))
+		return NL_STOP;
+
+	if (!(nlh->nlmsg_flags & NLM_F_CAPPED))
+		ack_len += err->msg.nlmsg_len - sizeof(*nlh);
+
+	if (len <= ack_len)
+		return NL_STOP;
+
+	attrs = (void *)((unsigned char *)nlh + ack_len);
+	len -= ack_len;
+
+	nla_parse(tb, NLMSGERR_ATTR_MAX, attrs, len, NULL);
+	if (tb[NLMSGERR_ATTR_MSG]) {
+		len = strnlen((char *)nla_data(tb[NLMSGERR_ATTR_MSG]), nla_len(tb[NLMSGERR_ATTR_MSG]));
+		log_trace("kernel reports: %*s\n", len, (char *)nla_data(tb[NLMSGERR_ATTR_MSG]));
+	}
+
+	return NL_STOP;
+}
+
+static int finish_handler(struct nl_msg *msg, void *arg)
+{
+	(void) msg;
+	int *ret = arg;
+	*ret = 0;
+	return NL_SKIP;
+}
+
+static int ack_handler(struct nl_msg *msg, void *arg)
+{
+	(void) msg;
+	int *ret = arg;
+	*ret = 0;
+	return NL_STOP;
+}
+
+static int nl80211_init(struct nl80211_state *state)
+{
+	int err;
+
+	state->nl_sock = nl_socket_alloc();
+	if (!state->nl_sock) {
+		log_err("Failed to allocate netlink socket");
+		return -ENOMEM;
+	}
+
+	if (genl_connect(state->nl_sock)) {
+		log_err("Failed to connect to generic netlink");
+		err = -ENOLINK;
+		goto out_handle_destroy;
+	}
+
+	nl_socket_set_buffer_size(state->nl_sock, 8192, 8192);
+
+	/* try to set NETLINK_EXT_ACK to 1, ignoring errors */
+	err = 1;
+	setsockopt(nl_socket_get_fd(state->nl_sock), SOL_NETLINK,
+		   NETLINK_EXT_ACK, &err, sizeof(err));
+
+	state->nl80211_id = genl_ctrl_resolve(state->nl_sock, "nl80211");
+	if (state->nl80211_id < 0) {
+		log_err("nl80211 not found");
+		err = -ENOENT;
+		goto out_handle_destroy;
+	}
+
+	return 0;
+
+ out_handle_destroy:
+	nl_socket_free(state->nl_sock);
+	return err;
+}
+
+static int process_phy_handler(struct nl_msg *msg, void *arg)
+{
+	struct nlattr *tb_msg[NL80211_ATTR_MAX + 1];
+	struct genlmsghdr *gnlh = nlmsg_data(nlmsg_hdr(msg));
+
+	struct nlattr *nl_mode;
+	int rem_mode;
+	bool *isvalid = (bool*)arg;
+	char* capability;
+	char *wiphy;
+
+	nla_parse(tb_msg, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0), genlmsg_attrlen(gnlh, 0), NULL);
+
+	if (tb_msg[NL80211_ATTR_WIPHY_NAME])
+		wiphy = nla_get_string(tb_msg[NL80211_ATTR_WIPHY_NAME]);
+		log_debug("Using Wiphy %s", wiphy);
+
+	if (tb_msg[NL80211_ATTR_SUPPORTED_IFTYPES]) {
+		char modebuf[100];
+		nla_for_each_nested(nl_mode, tb_msg[NL80211_ATTR_SUPPORTED_IFTYPES], rem_mode) {
+			capability = (char *) iftype_name(nla_type(nl_mode), modebuf);
+			log_trace("%s -> %s", wiphy, capability);
+			if (!strcmp(capability, "AP/VLAN")) {
+				*isvalid = true;
+			}
+		}
+	}
+
+	return NL_SKIP;
+}
+
+static int process_iface_handler(struct nl_msg *msg, void *arg)
+{
+	UT_array *arr = (UT_array *) arg;
+	struct genlmsghdr *gnlh = nlmsg_data(nlmsg_hdr(msg));
+	struct nlattr *tb_msg[NL80211_ATTR_MAX + 1];
+	netiw_info_t element;
+
+	nla_parse(tb_msg, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0), genlmsg_attrlen(gnlh, 0), NULL);
+
+	if (tb_msg[NL80211_ATTR_IFNAME]) {
+		os_strlcpy(element.ifname, nla_get_string(tb_msg[NL80211_ATTR_IFNAME]), IFNAMSIZ);
+
+		if (tb_msg[NL80211_ATTR_IFINDEX]) {
+			element.ifindex = nla_get_u32(tb_msg[NL80211_ATTR_IFINDEX]);
+			log_trace("%s -> ifindex=%d", element.ifname, element.ifindex);
+		}
+
+		if (tb_msg[NL80211_ATTR_WDEV]) {
+			element.wdev = nla_get_u64(tb_msg[NL80211_ATTR_WDEV]);
+			log_trace("%s -> wdev=0x%llx", element.ifname, (unsigned long long)element.wdev);
+		}
+
+		if (tb_msg[NL80211_ATTR_MAC]) {
+			char mac_addr[20];
+			os_memcpy(element.addr, nla_data(tb_msg[NL80211_ATTR_MAC]), ETH_ALEN);
+			mac_addr_n2a(mac_addr, element.addr);
+			log_trace("%s -> addr=%s", element.ifname, mac_addr);
+		}
+
+		if (tb_msg[NL80211_ATTR_WIPHY]) {
+			element.wiphy = nla_get_u32(tb_msg[NL80211_ATTR_WIPHY]);
+			log_trace("%s -> wiphy=%d", element.ifname, element.wiphy);
+		}
+
+		utarray_push_back(arr, &element);
+	}
+
+	return NL_SKIP;
+}
+
+static int8_t nl_new(struct nl80211_state *nlstate, struct nl_cb **cb, struct nl_msg **msg, int *err)
+{
+	if (nl80211_init(nlstate)) {		
+		return -1;
+	}
+
+	*msg = nlmsg_alloc();
+	if (*msg == NULL) {
+		log_trace("failed to allocate netlink message");
+		nl_socket_free(nlstate->nl_sock);
+		return 1;
+	}
+
+	*cb = nl_cb_alloc(NL_CB_TYPE);
+	if (*cb ==  NULL) {
+		log_trace("failed to allocate netlink callbacks\n");
+		nlmsg_free(*msg);
+		nl_socket_free(nlstate->nl_sock);
+		return 1;
+	}
+
+	nl_cb_err(*cb, NL_CB_CUSTOM, error_handler, err);
+	nl_cb_set(*cb, NL_CB_FINISH, NL_CB_CUSTOM, finish_handler, err);
+	nl_cb_set(*cb, NL_CB_ACK, NL_CB_CUSTOM, ack_handler, err);
+
+	return 0;
+}
+
+bool iwace_isvlan(uint32_t wiphy)
+{
+	bool isvlan = false;
+	int err = 1;
+	struct nl_cb *cb;
+	struct nl_msg *msg;
+	struct nl80211_state nlstate;
+
+	if (nl_new(&nlstate, &cb, &msg, &err) != 0)
+		return false;
+
+	genlmsg_put(msg, 0, 0, nlstate.nl80211_id, 0, 0, NL80211_CMD_GET_WIPHY, 0);
+	NLA_PUT_U32(msg, NL80211_ATTR_WIPHY, wiphy);
+
+	if (nl_send_auto_complete(nlstate.nl_sock, msg) < 0) {
+		nl_cb_put(cb);
+		nlmsg_free(msg);
+		nl_socket_free(nlstate.nl_sock);
+		return false;
+	}
+
+	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, process_phy_handler, &isvlan);
+
+	while (err > 0) {
+		nl_recvmsgs(nlstate.nl_sock, cb);
+	}
+
+	nl_cb_put(cb);
+	nlmsg_free(msg);
+	nl_socket_free(nlstate.nl_sock);
+	return isvlan;
+
+ nla_put_failure:
+	log_trace("NLA_PUT_U32 failed");
+	nl_cb_put(cb);
+	nlmsg_free(msg);
+	nl_socket_free(nlstate.nl_sock);
+	return false;
+}
+
+UT_array *get_netiw_info(void)
+{
+	int err = 1;
+	struct nl80211_state nlstate;
+	struct nl_cb *cb;
+	struct nl_msg *msg;
+	UT_array *arr = NULL;
+	utarray_new(arr, &netiw_info_icd);
+
+	if (nl_new(&nlstate, &cb, &msg, &err) != 0)
+		return NULL;
+
+	genlmsg_put(msg, 0, 0, nlstate.nl80211_id, 0, NLM_F_DUMP, NL80211_CMD_GET_INTERFACE, 0);
+
+	if (nl_send_auto_complete(nlstate.nl_sock, msg) < 0) {
+		nl_cb_put(cb);
+		nlmsg_free(msg);
+		nl_socket_free(nlstate.nl_sock);
+		utarray_free(arr);
+		return NULL;
+	}
+
+	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, process_iface_handler, arr);
+
+	while (err > 0) {
+		nl_recvmsgs(nlstate.nl_sock, cb);
+	}
+
+	nl_cb_put(cb);
+	nlmsg_free(msg);
+	nl_socket_free(nlstate.nl_sock);
+	return arr;
+
+	log_trace("NLA_PUT_U32 failed");
+	nl_cb_put(cb);
+	nlmsg_free(msg);
+	nl_socket_free(nlstate.nl_sock);
+	utarray_free(arr);
+	return NULL;
+}
+
+int nl_is_iw_vlan(const char *ifname)
+{
+  log_debug("Checking %s exists", ifname);
+  if (!iface_exists(ifname)) {
+    log_trace("WiFi interface %s doesn't exist", ifname);
+    return 1;
+  }
+
+  UT_array *netif_list = get_netiw_info();
+
+  if (netif_list == NULL) {
+    log_trace("Couldn't list wifi interfaces");
+    return -1;
+  }
+
+  netiw_info_t *el;
+  for (el = (netiw_info_t*) utarray_front(netif_list); el != NULL; el = (netiw_info_t *) utarray_next(netif_list, el)) {
+    if (!strcmp(el->ifname, ifname)) {
+      if (!iwace_isvlan(el->wiphy)) {
+        log_trace("WiFi interface %s doesn't suport vlan tagging", ifname);
+        utarray_free(netif_list);
+        return 1;
+      } else {
+        utarray_free(netif_list);
+        return 0;
+      }
+    }
+  }
+
+  utarray_free(netif_list);
+  return -1;
+}
+
+char* nl_get_valid_iw(char *buf)
+{
+  UT_array *netif_list = get_netiw_info();
+
+  if (netif_list == NULL) {
+    log_trace("Couldn't list wifi interfaces");
+    return NULL;
+  }
+
+  if (buf == NULL) {
+    log_trace("if_buf param is NULL");
+    utarray_free(netif_list);
+    return NULL;
+  }
+
+  netiw_info_t *el;
+  for (el = (netiw_info_t*) utarray_front(netif_list); el != NULL; el = (netiw_info_t *) utarray_next(netif_list, el)) {
+    if (iwace_isvlan(el->wiphy)) {
+      os_strlcpy(buf, el->ifname, IFNAMSIZ);
+      utarray_free(netif_list);
+      return buf;
+    }
+  }
+
+  utarray_free(netif_list);
+  return NULL;
 }

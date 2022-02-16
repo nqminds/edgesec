@@ -17,7 +17,7 @@
 #include "utils/hashmap.h"
 #include "utils/log.h"
 #include "utils/utarray.h"
-#include "utils/iw.h"
+#include "utils/net.h"
 
 static const UT_icd netif_info_icd = {sizeof(netif_info_t), NULL, NULL, NULL};
 static const UT_icd config_ifinfo_icd = {sizeof(config_ifinfo_t), NULL, NULL, NULL};

@@ -41,32 +41,18 @@
 #include "iface.h"
 #include "ifaceu.h"
 
-#ifdef WITH_NETLINK_LIB
+#ifdef WITH_NETLINK_SERVICE
 #include "nl.h"
 #endif
 
 #include "utarray.h"
 
-bool iface_exists(const char *ifname)
+UT_array *get_interfaces(int id)
 {
-	if (ifname == NULL) {
-		log_trace("ifname param is NULL");
-		return false;
-	}
-
-	if (!iface_nametoindex(ifname)) {
-		return false;
-	}
-
-	return true;
-}
-
-UT_array *get_interfaces(int if_id)
-{
-#ifdef WITH_NETLINK_LIB
-	return nl_get_interfaces(if_id);
+#ifdef WITH_NETLINK_SERVICE
+	return nl_get_interfaces(id);
 #else
-  (void) if_id;
+  (void) id;
 
 	log_trace("get_interfaces not implemented");
 	return NULL;
@@ -74,12 +60,12 @@ UT_array *get_interfaces(int if_id)
 }
 
 
-bool create_interface(char *if_name, char *type)
+bool create_interface(char *ifname, char *type)
 {
-#ifdef WITH_NETLINK_LIB
-	return nl_create_interface(if_name, type);
+#ifdef WITH_NETLINK_SERVICE
+	return nl_create_interface(ifname, type);
 #else
-  (void) if_name;
+  (void) ifname;
   (void) type;
 
 	log_trace("create_interface not implemented");
@@ -88,26 +74,26 @@ bool create_interface(char *if_name, char *type)
 }
 
 
-bool set_interface_ip(char *ip_addr, char *brd_addr, char *if_name)
+bool set_interface_ip(char *ip_addr, char *brd_addr, char *ifname)
 {
-#ifdef WITH_NETLINK_LIB
-	return nl_set_interface_ip(ip_addr, brd_addr, if_name);
+#ifdef WITH_NETLINK_SERVICE
+	return nl_set_interface_ip(ip_addr, brd_addr, ifname);
 #else
   (void) ip_addr;
   (void) brd_addr;
-  (void) if_name;
+  (void) ifname;
 
 	log_trace("set_interface_ip not implemented");
 	return NULL;
 #endif
 }
 
-bool set_interface_state(char *if_name, bool state)
+bool set_interface_state(char *ifname, bool state)
 {
-#ifdef WITH_NETLINK_LIB
-	return nl_set_interface_state(if_name, state);
+#ifdef WITH_NETLINK_SERVICE
+	return nl_set_interface_state(ifname, state);
 #else
-  (void) if_name;
+  (void) ifname;
   (void) state;
 
 	log_trace("set_interface_state not implemented");
@@ -115,20 +101,44 @@ bool set_interface_state(char *if_name, bool state)
 #endif
 }
 
-bool reset_interface(char *if_name)
+bool reset_interface(char *ifname)
 {
-  log_trace("Resseting interface state for if_name=%s", if_name);
-  if (!set_interface_state(if_name, false)) {
+  log_trace("Resseting interface state for if_name=%s", ifname);
+  if (!set_interface_state(ifname, false)) {
     log_trace("set_interface_state fail");
     return false;
   }
 
-  if (!set_interface_state(if_name, true)) {
+  if (!set_interface_state(ifname, true)) {
     log_trace("set_interface_state fail");
     return false;
   }
 
   return true;
+}
+
+int is_interface_vlan(const char *ifname)
+{
+#ifdef WITH_NETLINK_SERVICE
+	return nl_is_iw_vlan(ifname);
+#else
+  (void) ifname;
+
+	log_trace("is_interface_vlan not implemented");
+	return NULL;
+#endif
+}
+
+char* get_vlan_interface(char *buf)
+{
+#ifdef WITH_NETLINK_SERVICE
+	return nl_get_valid_iw(buf);
+#else
+  (void) buf;
+
+	log_trace("get_vlan_interface not implemented");
+	return NULL;
+#endif
 }
 
 int get_if_mapper(hmap_if_conn **hmap, in_addr_t subnet, char *ifname)

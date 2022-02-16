@@ -13,18 +13,15 @@ target_include_directories(os PRIVATE ${LIBUUID_INCLUDE_DIR})
 target_link_libraries(os PRIVATE allocs log ${LIBUUID_LIB})
 
 add_library(ifaceu ifaceu.c)
+target_link_libraries(ifaceu PRIVATE log)
 
 add_library(iptables iptables.c)
 target_link_libraries(iptables PRIVATE os log)
 
 if (USE_NETLINK_SERVICE)
   add_library(nl nl.c)
-  target_include_directories(nl PRIVATE ${LIBNETLINK_UAPI_INCLUDE_PATH} ${LIBNETLINK_INCLUDE_PATH})
-  target_link_libraries(nl PRIVATE ${LIBNL_LIBRARY} ${LIBNL_GENL_LIBRARY} ${LIBNETLINK_LIB} MNL::mnl ${LL_MAP_LIB} ${UTILS_LIB} ${RT_NAMES_LIB} log os)
-
-  add_library(iw iw.c)
-  target_include_directories(iw PRIVATE ${LIBNL_INCLUDE_DIR})
-  target_link_libraries(iw PRIVATE ${LIBNL_LIBRARY} ${LIBNL_GENL_LIBRARY} ${LIBNETLINK_LIB} MNL::mnl ${LL_MAP_LIB} ${UTILS_LIB} ${RT_NAMES_LIB} log)
+  target_include_directories(nl PRIVATE ${LIBNETLINK_UAPI_INCLUDE_PATH} ${LIBNETLINK_INCLUDE_PATH} ${LIBNL_INCLUDE_DIR})
+  target_link_libraries(nl PRIVATE ifaceu ${LIBNL_LIBRARY} ${LIBNL_GENL_LIBRARY} ${LIBNETLINK_LIB} MNL::mnl ${LL_MAP_LIB} ${UTILS_LIB} ${RT_NAMES_LIB} log os)
 endif ()
 
 add_library(iface iface.c)

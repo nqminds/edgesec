@@ -37,33 +37,6 @@
 #include "allocs.h"
 #include "os.h"
 
-enum IF_STATE{
-	IF_STATE_UNKNOWN = 0,
-	IF_STATE_NOTPRESENT,
-	IF_STATE_DOWN,
-	IF_STATE_LOWERLAYERDOWN,
-	IF_STATE_TESTING,
-	IF_STATE_DORMANT,
-	IF_STATE_UP,
-	IF_STATE_OTHER,
-};
-
-/**
- * @brief Network interface definition structure
- * 
- */
-typedef struct {
-	char 			ifname[IFNAMSIZ];					/**< Interface string name */
-	uint32_t 		ifindex;							/**< Interface index value */
-	enum IF_STATE 	state;								/**< Interface state */
-	char 			link_type[LINK_TYPE_LEN];			/**< Interface link type */
-	uint8_t 		ifa_family;							/**< Interface family */
-	char 			ip_addr[IP_LEN];					/**< Interface string IP address */
-	char 			peer_addr[IP_LEN];					/**< Interface string peer IP address */
-	char 			brd_addr[IP_LEN];					/**< Interface string IP broadcast address */
-	uint8_t 		mac_addr[ETH_ALEN];					/**< Interface byte MAC address */
-} netif_info_t;
-
 /**
  * @brief Interface configuration info structure
  * 
@@ -216,30 +189,30 @@ bool iface_exists(const char *ifname);
 /**
  * @brief Create a interface object
  * 
- * @param if_name The interface string name
+ * @param ifname The interface string name
  * @param type The interface string type (ex. "bridge")
  * @return true on success, false otherwise
  */
-bool create_interface(char *if_name, char *type);
+bool create_interface(char *ifname, char *type);
 
 /**
  * @brief Set the interface IP
  * 
  * @param ip_addr The IP address string
  * @param brd_addr The broadcast IP address string
- * @param if_name The interface name string
+ * @param ifname The interface name string
  * @return true on success, false otherwise
  */
-bool set_interface_ip(char *ip_addr, char *brd_addr, char *if_name);
+bool set_interface_ip(char *ip_addr, char *brd_addr, char *ifname);
 
 /**
  * @brief Set the interface state
  * 
- * @param if_name The interface name string
+ * @param ifname The interface name string
  * @param state The interface state value (true - "up", false - "down")
  * @return true on success, false otherwise
  */
-bool set_interface_state(char *if_name, bool state);
+bool set_interface_state(char *ifname, bool state);
 
 /**
  * @brief Resets the interface
@@ -247,15 +220,31 @@ bool set_interface_state(char *if_name, bool state);
  * @param if_name The interface name string
  * @return true on success, false otherwise
  */
-bool reset_interface(char *if_name);
+bool reset_interface(char *ifname);
+
+/**
+ * @brief Check if interface has the VLAN capability
+ * 
+ * @param ap_interface Interface name string
+ * @return int 0 if VLAN capable, -1 on error and 1 if not VLAN capable
+ */
+int is_interface_vlan(const char *ifname);
+
+/**
+ * @brief Returns an exisiting WiFi interface name that supports VLAN
+ * 
+ * @param if_buf Interface working buffer
+ * @return char* WiFi interface name
+ */
+char* get_vlan_interface(char *if_buf);
 
 /**
  * @brief Get the array of @c struct netif_info_t for each available interface
  * 
- * @param if_id The intreface id, if 0 return all interfaces
+ * @param id The intreface id, if 0 return all interfaces
  * @return UT_array* The returned array of @c struct netif_info_t
  */
-UT_array *get_interfaces(int if_id);
+UT_array *get_interfaces(int id);
 
 /**
  * @brief Returns the subnet address as a in_addr_t type from an IP address and an array of interface configuration info structure.

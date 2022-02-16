@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (C) 2020 by NQMCyber Ltd                                       *
+ * Copyright (C) 2022 by NQMCyber Ltd                                       *
  *                                                                          *
  * This file is part of EDGESec.                                            *
  *                                                                          *
@@ -18,35 +18,44 @@
  ****************************************************************************/
 
 /**
- * @file ifaceu.c
+ * @file net.h 
  * @author Alexandru Mereacre
- * @brief File containing the implementation of the network interface utilities.
+ * @brief File containing the definition of the network utilities.
  */
-
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <linux/if.h>
+#include <inttypes.h>
 #include <stdbool.h>
-#include <net/if.h>
+#include <netinet/in.h>
+#include <net/ethernet.h>
 
-#include "log.h"
+#include "utarray.h"
+#include "uthash.h"
+#include "allocs.h"
+#include "os.h"
 
-unsigned int iface_nametoindex (const char *ifname)
-{
-    return if_nametoindex(ifname);
-}
+enum IF_STATE{
+	IF_STATE_UNKNOWN = 0,
+	IF_STATE_NOTPRESENT,
+	IF_STATE_DOWN,
+	IF_STATE_LOWERLAYERDOWN,
+	IF_STATE_TESTING,
+	IF_STATE_DORMANT,
+	IF_STATE_UP,
+	IF_STATE_OTHER,
+};
 
-bool iface_exists(const char *ifname)
-{
-	if (ifname == NULL) {
-		log_trace("ifname param is NULL");
-		return false;
-	}
-
-	if (!iface_nametoindex(ifname)) {
-		return false;
-	}
-
-	return true;
-}
+/**
+ * @brief Network interface definition structure
+ * 
+ */
+typedef struct {
+	char 			ifname[IFNAMSIZ];					/**< Interface string name */
+	uint32_t 		ifindex;							/**< Interface index value */
+	enum IF_STATE 	state;								/**< Interface state */
+	char 			link_type[LINK_TYPE_LEN];			/**< Interface link type */
+	uint8_t 		ifa_family;							/**< Interface family */
+	char 			ip_addr[IP_LEN];					/**< Interface string IP address */
+	char 			peer_addr[IP_LEN];					/**< Interface string peer IP address */
+	char 			brd_addr[IP_LEN];					/**< Interface string IP broadcast address */
+	uint8_t 		mac_addr[ETH_ALEN];					/**< Interface byte MAC address */
+} netif_info_t;
