@@ -1,5 +1,5 @@
 # Compile libmnl library used for libnetlink
-if (BUILD_MNL_LIB AND NOT (BUILD_ONLY_DOCS))
+if (BUILD_MNL_LIB AND NOT (BUILD_ONLY_DOCS) AND USE_MNL_LIB)
   set(LIBMNL_INSTALL_ROOT "${CMAKE_CURRENT_BINARY_DIR}/lib/mnl")
 
   # Tell find_package(MNL) to search in local built mnl dir
@@ -25,7 +25,7 @@ if (BUILD_MNL_LIB AND NOT (BUILD_ONLY_DOCS))
     find_package(MNL REQUIRED)
   endif ()
   message("Found libmnl library: ${MNL_LIBRARIES}")
-elseif(NOT BUILD_ONLY_DOCS)
+elseif(NOT BUILD_ONLY_DOCS AND USE_MNL_LIB)
   # finding system install libmnl (e.g. installed via apt)
   find_package(MNL REQUIRED)
   message("Found libmnl library: ${MNL_LIBRARIES}")

@@ -38,7 +38,7 @@
 #include <inttypes.h>
 
 #include "../utils/uthash.h"
-#include "../utils/iface.h"
+#include "../utils/ifaceu.h"
 #include "../utils/log.h"
 #include "../utils/eloop.h"
 #include "../utils/domain.h"
@@ -407,7 +407,7 @@ int init_reflections(hmap_vlan_conn **vlan_mapper, struct mdns_context *context)
 
     log_trace("Adding interface %s to mDNS reflector", ifname);
 
-    if ((ifindex = if_nametoindex(ifname)) == 0) {
+    if ((ifindex = iface_nametoindex(ifname)) == 0) {
       log_err("if_nametoindex");
       return -1;
     }

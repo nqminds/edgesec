@@ -32,7 +32,7 @@
 #include <pthread.h>
 #include <stdbool.h>
 #include <errno.h>
-#include <net/if.h>
+#include <linux/if.h>
 #include <libgen.h>
 #ifdef WITH_PCAP_SERVICE
 #include <pcap.h>

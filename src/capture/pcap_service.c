@@ -22,12 +22,12 @@
  * @author Alexandru Mereacre 
  * @brief File containing the implementation of the pcap service utilities.
  */
-#include <net/if.h>
+#include <linux/if.h>
 #include <pcap.h>
 
 #include "pcap_service.h"
 
-#include "../utils/if.h"
+#include "../utils/iface.h"
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/log.h"

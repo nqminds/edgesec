@@ -23,6 +23,7 @@
  * @brief File containing the implementation of the packet decoder utilities.
  */
 
+#define _GNU_SOURCE
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>

@@ -28,10 +28,9 @@
 #include <fcntl.h>
 #include <ctype.h>
 #include <unistd.h>
-#include <pthread.h>
 #include <stdbool.h>
 #include <errno.h>
-#include <net/if.h>
+#include <linux/if.h>
 #include <libgen.h>
 #include <pcap.h>
 
@@ -46,7 +45,6 @@
 
 #include "../utils/domain.h"
 #include "../utils/squeue.h"
-#include "../utils/if.h"
 #include "../utils/log.h"
 #include "../utils/eloop.h"
 #include "../utils/list.h"
@@ -59,8 +57,6 @@ uint32_t run_sync_db_statement(char *ca, char *address, char *name, bool default
 #endif
 
 static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL, NULL};
-
-// static const UT_icd pcap_context_icd = {sizeof(struct pcap_context*), NULL, NULL, NULL};
 
 void construct_header_db_name(char *name, char *db_name)
 {
