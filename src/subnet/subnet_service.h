@@ -29,7 +29,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
-#include "../utils/iface.h"
+#include "../utils/iface_mapper.h"
 
 /**
  * @brief Create the subnet interface

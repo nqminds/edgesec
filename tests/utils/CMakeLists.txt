@@ -2,8 +2,14 @@ include_directories(
   "${EDGESEC_SOURCE_DIR}/src"
 )
 
-add_executable(test_if test_if.c)
-target_link_libraries(test_if PRIVATE iface cmocka::cmocka)
+add_executable(test_iface_mapper test_iface_mapper.c)
+target_link_libraries(test_iface_mapper PRIVATE iface_mapper cmocka::cmocka)
+
+add_executable(test_ifaceu test_ifaceu.c)
+target_link_libraries(test_ifaceu PRIVATE ifaceu cmocka::cmocka)
+
+add_executable(test_net test_net.c)
+target_link_libraries(test_net PRIVATE net cmocka::cmocka)
 
 add_executable(test_os test_os.c)
 target_link_libraries(test_os PRIVATE os cmocka::cmocka)
@@ -29,8 +35,18 @@ target_link_libraries(test_log_level PRIVATE log)
 add_executable(test_log_err test_log_err.c)
 target_link_libraries(test_log_err PRIVATE log)
 
-add_test(NAME test_if COMMAND test_if)
-set_tests_properties(test_if
+add_test(NAME test_iface_mapper COMMAND test_iface_mapper)
+set_tests_properties(test_iface_mapper
+ PROPERTIES
+ WILL_FAIL FALSE)
+
+add_test(NAME test_ifaceu COMMAND test_ifaceu)
+set_tests_properties(test_ifaceu
+ PROPERTIES
+ WILL_FAIL FALSE)
+
+add_test(NAME test_net COMMAND test_net)
+set_tests_properties(test_net
  PROPERTIES
  WILL_FAIL FALSE)
 

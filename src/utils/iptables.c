@@ -34,7 +34,8 @@
 #include "allocs.h"
 #include "os.h"
 #include "log.h"
-#include "iface.h"
+#include "iface_mapper.h"
+#include "net.h"
 
 struct iptables_columns {
   long num;

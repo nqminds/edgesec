@@ -47,7 +47,7 @@
 #include "../utils/log.h"
 #include "../utils/allocs.h"
 #include "../utils/os.h"
-#include "../utils/iface.h"
+#include "../utils/net.h"
 #include "../utils/hash.h"
 #include "../utils/utarray.h"
 

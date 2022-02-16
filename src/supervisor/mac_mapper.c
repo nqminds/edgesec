@@ -25,6 +25,7 @@
 #include <stdbool.h>
 
 #include "utils/allocs.h"
+#include "utils/net.h"
 #include "utils/os.h"
 #include "utils/log.h"
 #include "utils/utarray.h"

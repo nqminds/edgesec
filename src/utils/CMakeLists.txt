@@ -15,8 +15,11 @@ target_link_libraries(os PRIVATE allocs log ${LIBUUID_LIB})
 add_library(ifaceu ifaceu.c)
 target_link_libraries(ifaceu PRIVATE log)
 
+add_library(net net.c)
+target_link_libraries(net PRIVATE log os)
+
 add_library(iptables iptables.c)
-target_link_libraries(iptables PRIVATE os log)
+target_link_libraries(iptables PRIVATE net os log)
 
 if (USE_NETLINK_SERVICE)
   add_library(nl nl.c)
@@ -24,11 +27,14 @@ if (USE_NETLINK_SERVICE)
   target_link_libraries(nl PRIVATE ifaceu ${LIBNL_LIBRARY} ${LIBNL_GENL_LIBRARY} ${LIBNETLINK_LIB} MNL::mnl ${LL_MAP_LIB} ${UTILS_LIB} ${RT_NAMES_LIB} log os)
 endif ()
 
+add_library(iface_mapper iface_mapper.c)
+target_link_libraries(iface_mapper PRIVATE net log os)
+
 add_library(iface iface.c)
 if (USE_NETLINK_SERVICE)
-  target_link_libraries(iface PRIVATE ifaceu nl log os)
+  target_link_libraries(iface PRIVATE ifaceu nl net log os)
 else ()
-  target_link_libraries(iface PRIVATE ifaceu log os)
+  target_link_libraries(iface PRIVATE ifaceu net log os)
 endif ()
 
 if (BUILD_NL_LIB)

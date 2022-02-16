@@ -18,14 +18,14 @@ if (BUILD_PCAP_LIB)
   add_library(packet_decoder packet_decoder.c)
   # packet_decoder.h has an #include <pcap.h>, so need to make it PUBLIC include
   target_include_directories(packet_decoder PUBLIC ${LIBPCAP_INCLUDE_PATH})
-  target_link_libraries(packet_decoder PUBLIC ${LIBPCAP_LIB} PRIVATE mdns_decoder dns_decoder hash iface log os hashmap)
+  target_link_libraries(packet_decoder PUBLIC ${LIBPCAP_LIB} PRIVATE mdns_decoder dns_decoder hash net log os hashmap)
 
   add_library(packet_queue packet_queue.c)
   target_link_libraries(packet_queue PRIVATE packet_decoder log os)
 
   add_library(pcap_service pcap_service.c)
   target_include_directories(pcap_service PRIVATE ${LIBPCAP_INCLUDE_PATH})
-  target_link_libraries(pcap_service PRIVATE iface log os ${LIBPCAP_LIB})
+  target_link_libraries(pcap_service PRIVATE net log os ${LIBPCAP_LIB})
 
   add_library(pcap_queue pcap_queue.c)
   target_include_directories(pcap_queue PRIVATE ${LIBPCAP_INCLUDE_PATH})

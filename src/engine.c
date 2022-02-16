@@ -38,7 +38,9 @@
 #include "utils/hashmap.h"
 #include "utils/allocs.h"
 #include "utils/os.h"
+#include "utils/net.h"
 #include "utils/eloop.h"
+#include "utils/iface_mapper.h"
 #include "utils/iptables.h"
 
 #include "supervisor/supervisor.h"

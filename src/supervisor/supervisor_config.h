@@ -32,7 +32,7 @@
 #include "../ap/ap_config.h"
 #include "../dhcp/dhcp_config.h"
 #include "../dns/dns_config.h"
-#include "../utils/iface.h"
+#include "../utils/iface_mapper.h"
 #include "../capture/capture_config.h"
 #include "../crypt/crypt_config.h"
 

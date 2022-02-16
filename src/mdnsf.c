@@ -48,6 +48,7 @@
 #include "utils/os.h"
 #include "utils/minIni.h"
 #include "utils/squeue.h"
+#include "utils/iface_mapper.h"
 
 static __thread char version_buf[10];
 

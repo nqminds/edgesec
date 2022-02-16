@@ -39,6 +39,7 @@
 
 #include "../utils/uthash.h"
 #include "../utils/ifaceu.h"
+#include "../utils/net.h"
 #include "../utils/log.h"
 #include "../utils/eloop.h"
 #include "../utils/domain.h"

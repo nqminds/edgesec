@@ -22,6 +22,10 @@
  * @author Alexandru Mereacre
  * @brief File containing the definition of the network utilities.
  */
+
+#ifndef NET_H_
+#define NET_H_
+
 #include <linux/if.h>
 #include <inttypes.h>
 #include <stdbool.h>
@@ -33,29 +37,58 @@
 #include "allocs.h"
 #include "os.h"
 
-enum IF_STATE{
-	IF_STATE_UNKNOWN = 0,
-	IF_STATE_NOTPRESENT,
-	IF_STATE_DOWN,
-	IF_STATE_LOWERLAYERDOWN,
-	IF_STATE_TESTING,
-	IF_STATE_DORMANT,
-	IF_STATE_UP,
-	IF_STATE_OTHER,
-};
+/**
+ * @brief Checks whether a string denotes a IPv4 address
+ * 
+ * @param ip The IP in fromat x.y.z.q
+ * @return true if the string is an IP, false otherwise 
+ */
+bool validate_ipv4_string(char *ip);
 
 /**
- * @brief Network interface definition structure
+ * @brief IP string to @c struct in_addr_t converter
  * 
+ * @param ip The IP address string
+ * @param subnetMask The IP address subnet mask
+ * @param addr The output @c struct in_addr_t value
+ * @return 0 on success, -1 on failure
  */
-typedef struct {
-	char 			ifname[IFNAMSIZ];					/**< Interface string name */
-	uint32_t 		ifindex;							/**< Interface index value */
-	enum IF_STATE 	state;								/**< Interface state */
-	char 			link_type[LINK_TYPE_LEN];			/**< Interface link type */
-	uint8_t 		ifa_family;							/**< Interface family */
-	char 			ip_addr[IP_LEN];					/**< Interface string IP address */
-	char 			peer_addr[IP_LEN];					/**< Interface string peer IP address */
-	char 			brd_addr[IP_LEN];					/**< Interface string IP broadcast address */
-	uint8_t 		mac_addr[ETH_ALEN];					/**< Interface byte MAC address */
-} netif_info_t;
+int ip_2_nbo(char *ip, char *subnetMask, in_addr_t *addr);
+
+/**
+ * @brief IP string to buffer
+ * 
+ * @param ip The IP address string
+ * @param buf The output buffer of size IP_ALEN
+ * @return 0 on success, -1 on failure
+ */
+int ip4_2_buf(char *ip, uint8_t *buf);
+
+/**
+ * @brief Convert a 32 bit number IP to an IP string (string needs to be freed)
+ * 
+ * @param addr The IP in 32 bit format
+ * @param ip The input buffer to store the IP
+ * @return char* Pointer to the returned IP
+ */
+const char *bit32_2_ip(uint32_t addr, char *ip);
+
+/**
+ * @brief Convert the in_addr encoded IP4 address to an IP string (string needs to be freed)
+ * 
+ * @param addr The in_addr encoded IP
+ * @param ip The input buffer to store the IP
+ * @return char* Pointer to the returned IP
+ */
+const char *inaddr4_2_ip(struct in_addr *addr, char *ip);
+
+/**
+ * @brief Convert the in6_addr encoded IP6 address to an IP string (string needs to be freed)
+ * 
+ * @param addr The in6_addr encoded IP
+ * @param ip The input buffer to store the IP
+ * @return char* Pointer to the returned IP
+ */
+const char *inaddr6_2_ip(struct in6_addr *addr, char *ip);
+
+#endif

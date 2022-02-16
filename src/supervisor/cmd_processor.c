@@ -42,6 +42,7 @@
 #include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/log.h"
+#include "utils/net.h"
 #include "utils/base64.h"
 #include "utils/utarray.h"
 #include "utils/iptables.h"

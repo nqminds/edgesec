@@ -6,7 +6,7 @@ add_library(bridge_list bridge_list.c)
 target_link_libraries(bridge_list PRIVATE log os)
 
 add_library(mac_mapper mac_mapper.c)
-target_link_libraries(mac_mapper PRIVATE bridge_list log os)
+target_link_libraries(mac_mapper PRIVATE bridge_list net log os)
 
 add_library(subscriber_events subscriber_events.c)
 target_include_directories(subscriber_events PRIVATE ${LIBSQLITE_INCLUDE_DIR})
@@ -26,7 +26,7 @@ target_link_libraries(sqlite_macconn_writer PRIVATE sqliteu squeue log os ${LIBS
 
 add_library(network_commands network_commands.c)
 target_include_directories(network_commands PRIVATE ${LIBSQLITE_INCLUDE_DIR})
-target_link_libraries(network_commands PRIVATE dhcp_service ap_service crypt_service sqlite_macconn_writer mac_mapper eloop iptables base64 log os)
+target_link_libraries(network_commands PRIVATE dhcp_service ap_service crypt_service sqlite_macconn_writer mac_mapper eloop iptables base64 net log os)
 
 add_library(monitor_commands monitor_commands.c)
 target_include_directories(monitor_commands PRIVATE ${LIBSQLITE_INCLUDE_DIR})
@@ -38,11 +38,11 @@ target_link_libraries(crypt_commands PRIVATE ap_service crypt_service sqlite_mac
 
 add_library(system_commands system_commands.c)
 target_include_directories(system_commands PRIVATE ${LIBSQLITE_INCLUDE_DIR})
-target_link_libraries(system_commands PRIVATE subscriber_events ap_service crypt_service sqlite_macconn_writer mac_mapper eloop iptables base64 log os)
+target_link_libraries(system_commands PRIVATE subscriber_events ap_service crypt_service sqlite_macconn_writer mac_mapper eloop iptables iface_mapper base64 log os)
 
 add_library(cmd_processor cmd_processor.c)
 target_include_directories(cmd_processor PRIVATE ${LIBSQLITE_INCLUDE_DIR})
-target_link_libraries(cmd_processor PRIVATE system_commands crypt_commands monitor_commands network_commands sqlite_fingerprint_writer mac_mapper domain log os iptables iface base64)
+target_link_libraries(cmd_processor PRIVATE system_commands crypt_commands monitor_commands network_commands sqlite_fingerprint_writer mac_mapper domain net log os iptables iface base64)
 
 add_library(supervisor supervisor.c)
 target_include_directories(supervisor PRIVATE ${LIBSQLITE_INCLUDE_DIR})

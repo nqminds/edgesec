@@ -58,7 +58,7 @@
 #include "os.h"
 #include "log.h"
 #include "nl.h"
-#include "net.h"
+#include "iface_mapper.h"
 #include "ifaceu.h"
 #include "utarray.h"
 

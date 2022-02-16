@@ -27,7 +27,7 @@
 
 #include "pcap_service.h"
 
-#include "../utils/iface.h"
+#include "../utils/net.h"
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/log.h"

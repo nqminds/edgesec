@@ -45,6 +45,7 @@
 #include "../utils/iptables.h"
 #include "../utils/domain.h"
 #include "../utils/utarray.h"
+#include "../utils/iface_mapper.h"
 
 #define PING_REPLY  "PONG"
 
