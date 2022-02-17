@@ -5,19 +5,12 @@ add_subdirectory(ap)
 add_subdirectory(dhcp)
 add_subdirectory(system)
 add_subdirectory(crypt)
-
 add_subdirectory(dns)
-
 add_subdirectory(capture)
 
 add_library(engine engine.c)
-if (BUILD_NL_LIB)
-  target_include_directories(engine PRIVATE ${LIBNL_INCLUDE_DIR} ${LIBSQLITE_INCLUDE_DIR})
-  target_link_libraries(engine crypt_service net log iface_mapper nl os sqlite_macconn_writer sqlite_fingerprint_writer system_checks eloop supervisor network_commands radius_service mac_mapper ap_service iptables dhcp_service)
-else ()
-  target_include_directories(engine PRIVATE ${LIBSQLITE_INCLUDE_DIR})
-  target_link_libraries(engine crypt_service net log iface_mapper os sqlite_macconn_writer sqlite_fingerprint_writer system_checks eloop supervisor network_commands radius_service mac_mapper ap_service iptables dhcp_service)
-endif ()
+target_include_directories(engine PRIVATE ${LIBSQLITE_INCLUDE_DIR})
+target_link_libraries(engine crypt_service net log iface_mapper os sqlite_macconn_writer sqlite_fingerprint_writer system_checks eloop supervisor network_commands radius_service mac_mapper ap_service iptables dhcp_service)
 
 add_library(config config.c)
 target_include_directories(config PUBLIC ${LIBSQLITE_INCLUDE_DIR})
