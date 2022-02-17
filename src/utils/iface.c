@@ -61,15 +61,15 @@ UT_array *get_interfaces(int id)
 }
 
 
-bool create_interface(char *ifname, char *type)
+bool new_interface(char *ifname, char *type)
 {
 #ifdef WITH_NETLINK_SERVICE
-	return nl_create_interface(ifname, type);
+	return nl_new_interface(ifname, type);
 #else
   (void) ifname;
   (void) type;
 
-	log_trace("create_interface not implemented");
+	log_trace("new_interface not implemented");
 	return NULL;
 #endif
 }
@@ -102,6 +102,18 @@ bool set_interface_state(char *ifname, bool state)
 #endif
 }
 
+char* get_vlan_interface(char *buf)
+{
+#ifdef WITH_NETLINK_SERVICE
+	return nl_get_valid_iw(buf);
+#else
+  (void) buf;
+
+	log_trace("get_vlan_interface not implemented");
+	return NULL;
+#endif
+}
+
 bool reset_interface(char *ifname)
 {
   log_trace("Resseting interface state for if_name=%s", ifname);
@@ -118,14 +130,51 @@ bool reset_interface(char *ifname)
   return true;
 }
 
-char* get_vlan_interface(char *buf)
+int create_interface_ip(char *ifname, char *type, char *ip_addr, char *brd_addr, char *subnet_mask)
 {
-#ifdef WITH_NETLINK_SERVICE
-	return nl_get_valid_iw(buf);
-#else
-  (void) buf;
+  char longip[IP_LONG_LEN];
 
-	log_trace("get_vlan_interface not implemented");
-	return NULL;
-#endif
+  if (ifname == NULL) {
+    log_trace("ifname param is NULL");
+    return -1;
+  }
+
+  if (type == NULL) {
+    log_trace("type param is NULL");
+    return -1;
+  }
+
+  if (ip_addr == NULL) {
+    log_trace("ip_addr param is NULL");
+    return -1;
+  }
+
+  if (brd_addr == NULL) {
+    log_trace("brd_addr param is NULL");
+    return -1;
+  }
+
+  if (subnet_mask == NULL) {
+    log_trace("subnet_mask param is NULL");
+    return -1;
+  }
+
+  snprintf(longip, IP_LONG_LEN, "%s/%d", ip_addr, (int)get_short_subnet(subnet_mask));
+
+  if (!new_interface(ifname, type)) {
+    log_trace("create_interface fail");
+    return -1;
+  }
+
+  if (!set_interface_ip(longip, brd_addr, ifname)) {
+    log_trace("set_interface fail");
+    return -1;
+  }
+
+  if (!set_interface_state(ifname, true)) {
+    log_trace("set_interface_state fail");
+    return -1;
+  }
+
+  return 0;
 }

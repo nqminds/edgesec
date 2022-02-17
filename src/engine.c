@@ -41,6 +41,8 @@
 #include "utils/net.h"
 #include "utils/eloop.h"
 #include "utils/iface_mapper.h"
+#include "utils/ifaceu.h"
+#include "utils/iface.h"
 #include "utils/iptables.h"
 
 #include "supervisor/supervisor.h"
@@ -56,7 +58,6 @@
 
 #include "engine.h"
 #include "system/system_checks.h"
-#include "subnet/subnet_service.h"
 #include "config.h"
 
 #define MACCONN_DB_NAME "macconn" SQLITE_EXTENSION
@@ -132,6 +133,68 @@ bool create_mac_mapper(struct supervisor_context *ctx)
 
   utarray_free(mac_conn_arr);
   return true;
+}
+
+bool create_subnet_interfaces(UT_array *ifinfo_array, bool ignore_error)
+{
+  int ret = 0;
+  config_ifinfo_t *p = NULL;
+
+  if (ifinfo_array == NULL) {
+    log_trace("ifinfo_array param is NULL");
+    return false;
+  }
+
+  while((p = (config_ifinfo_t*) utarray_next(ifinfo_array, p)) != NULL) {
+
+    log_trace("Creating ifname=%s ip_addr=%s brd_addr=%s subnet_mask=%s", p->ifname, p->ip_addr, p->brd_addr, p->subnet_mask);
+    ret = create_interface_ip(p->ifname, "bridge", p->ip_addr, p->brd_addr, p->subnet_mask);
+    if (ret < 0 && ignore_error) {
+      log_trace("create_interface_ip fail, ignoring");
+      continue;
+    } else if (ret < 0 && !ignore_error) {
+      log_trace("create_interface_ip fail");
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool get_nat_if_ip(const char *nat_interface, char *ip_buf)
+{
+  UT_array *netip_list = NULL;
+  unsigned int if_idx = iface_nametoindex(nat_interface);
+
+  if (!if_idx) {
+    log_err("iface_nametoindex");
+    goto err;
+  }
+
+  netip_list = get_interfaces(if_idx);
+
+  if (netip_list == NULL) {
+    log_err("Interface %s not found", nat_interface);
+    goto err;
+  }
+
+  netif_info_t *el = (netif_info_t*) utarray_back(netip_list);
+  if (el == NULL) {
+    log_err("Interfrace list empty");
+    goto err;
+  }
+
+  if (el->ifa_family == AF_INET) {
+    os_strlcpy(ip_buf, el->ip_addr, OS_INET_ADDRSTRLEN);
+  }
+
+  utarray_free(netip_list);
+  return true;
+
+err:
+  if (netip_list)
+    utarray_free(netip_list);
+  return false;
 }
 
 bool construct_ap_ctrlif(char *ctrl_interface, char *interface, char *ap_ctrl_if_path)
@@ -361,8 +424,8 @@ bool run_engine(struct app_config *app_config)
 
   if (app_config->create_interfaces) {
     log_info("Creating subnet interfaces...");
-    if (!create_subnet_ifs(app_config->config_ifinfo_array, app_config->ignore_if_error)) {
-      log_debug("create_subnet_ifs fail");
+    if (!create_subnet_interfaces(app_config->config_ifinfo_array, app_config->ignore_if_error)) {
+      log_debug("create_subnet_interfaces fail");
       goto run_engine_fail;
     }
   }

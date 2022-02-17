@@ -38,13 +38,13 @@
 #include "os.h"
 
 /**
- * @brief Create a interface object
+ * @brief Creates a new interface object
  * 
  * @param ifname The interface string name
  * @param type The interface string type (ex. "bridge")
  * @return true on success, false otherwise
  */
-bool create_interface(char *ifname, char *type);
+bool new_interface(char *ifname, char *type);
 
 /**
  * @brief Set the interface IP
@@ -88,4 +88,16 @@ char* get_vlan_interface(char *if_buf);
  * @return UT_array* The returned array of @c struct netif_info_t
  */
 UT_array *get_interfaces(int id);
+
+/**
+ * @brief Creates and interface and assigns an IP
+ * 
+ * @param ifname The interface name
+ * @param type The interface type
+ * @param ip_addr The interface IP4 address
+ * @param brd_addr The interface IP4 broadcast address
+ * @param subnet_mask The interface IP4 subnet mask
+ * @return int 0 on success, -1 on failure
+ */
+int create_interface_ip(char *ifname, char *type, char *ip_addr, char *brd_addr, char *subnet_mask);
 #endif

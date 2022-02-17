@@ -40,7 +40,6 @@
 
 #include "dns/dns_config.h"
 #include "dns/mdns_service.h"
-#include "subnet/subnet_service.h"
 #include "config.h"
 #include "version.h"
 #include "utils/log.h"

@@ -71,13 +71,13 @@ UT_array *nl_get_interfaces(int if_id);
 
 
 /**
- * @brief Create a interface object
+ * @brief Creates a new interface object
  * 
  * @param if_name The interface string name
  * @param type The interface string type (ex. "bridge")
  * @return true on success, false otherwise
  */
-bool nl_create_interface(char *if_name, char *type);
+bool nl_new_interface(char *if_name, char *type);
 
 /**
  * @brief Set the interface IP

@@ -239,3 +239,61 @@ bool get_ifname_from_ip(hmap_if_conn **if_mapper, UT_array *config_ifinfo_array,
 
   return true;
 }
+
+bool create_if_mapper(UT_array *config_ifinfo_array, hmap_if_conn **hmap)
+{
+  config_ifinfo_t *p = NULL;
+  in_addr_t addr;
+
+  if (config_ifinfo_array != NULL) {
+    while((p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) != NULL) {
+      log_trace("Adding ip=%s subnet=%s ifname=%s to mapper", p->ip_addr, p->ifname, p->subnet_mask);
+      if(ip_2_nbo(p->ip_addr, p->subnet_mask, &addr) < 0) {
+        log_trace("ip_2_nbo fail");
+        free_if_mapper(hmap);
+        return false;
+      }
+
+      if (!put_if_mapper(hmap, addr, p->ifname)) {
+        log_trace("put_if_mapper fail");
+        free_if_mapper(hmap);
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+bool create_vlan_mapper(UT_array *config_ifinfo_array, hmap_vlan_conn **hmap)
+{
+  config_ifinfo_t *p = NULL;
+  struct vlan_conn vlan_conn;
+  if (config_ifinfo_array != NULL) {
+    while((p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) != NULL) {
+      log_trace("Adding vlanid=%d and ifname=%s to mapper", p->vlanid, p->ifname);
+      vlan_conn.vlanid = p->vlanid;
+      os_memcpy(vlan_conn.ifname, p->ifname, IFNAMSIZ);
+      vlan_conn.analyser_pid = 0;
+      if (!put_vlan_mapper(hmap, &vlan_conn)) {
+        log_trace("put_if_mapper fail");
+        free_vlan_mapper(hmap);
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+bool init_ifbridge_names(UT_array *config_ifinfo_array, char *if_bridge)
+{
+  config_ifinfo_t *p = NULL;
+  if (config_ifinfo_array != NULL && if_bridge != NULL) {
+    while((p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) != NULL) {
+      if (snprintf(p->ifname, IFNAMSIZ, "%s%d", if_bridge, p->vlanid) < 0) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}

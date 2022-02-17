@@ -30,7 +30,7 @@
 #include "reflection_list.h"
 #include "mdns_mapper.h"
 #include "command_mapper.h"
-#include "../subnet/subnet_service.h"
+#include "../utils/iface_mapper.h"
 
 /**
  * @brief The mDNS context.

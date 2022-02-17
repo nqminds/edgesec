@@ -91,4 +91,11 @@ const char *inaddr4_2_ip(struct in_addr *addr, char *ip);
  */
 const char *inaddr6_2_ip(struct in6_addr *addr, char *ip);
 
+/**
+ * @brief Convert from a string subnet mask to a short integer version
+ * 
+ * @param subnet_mask The subnet mask string
+ * @return uint8_t The short integer version subnet mask
+ */
+uint8_t get_short_subnet(char *subnet_mask);
 #endif

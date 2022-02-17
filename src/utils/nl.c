@@ -748,12 +748,12 @@ err:
 	return NULL;
 }
 
-bool nl_create_interface(char *if_name, char *type)
+bool nl_new_interface(char *if_name, char *type)
 {
 	int ret;
 	char *argv[4] = {"name", if_name, "type", type};
 	
-	log_trace("create_interface for if_name=%s type=%s", if_name, type);
+	log_trace("nl_new_interface for if_name=%s type=%s", if_name, type);
 
 	if (rtnl_open(&rth, 0) < 0) {
 		log_trace("rtnl_open error");

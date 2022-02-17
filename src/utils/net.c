@@ -150,3 +150,22 @@ const char *inaddr6_2_ip(struct in6_addr *addr, char *ip)
   return inet_ntop(AF_INET6, addr, ip, OS_INET6_ADDRSTRLEN);
 }
 
+uint8_t get_short_subnet(char *subnet_mask)
+{
+  in_addr_t addr;
+  uint8_t short_mask = 0;
+  uint32_t shift = 0x80000000U;
+
+  if ((addr = inet_network(subnet_mask)) == INADDR_NONE) {
+		log_trace("Invalid subnet mask address");
+		return -1;
+	}
+
+  for (int i = 0; i < 31; i++) {
+    if (addr & shift) short_mask ++;
+    shift >>= 1U;
+  }
+
+  return short_mask;
+
+}
