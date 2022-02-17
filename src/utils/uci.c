@@ -32,4 +32,5 @@ void test_ubox(void)
 {
     uloop_init();
     uloop_run();
+    uloop_done();
 }

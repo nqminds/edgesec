@@ -29,7 +29,7 @@ endif ()
 
 add_library(uci uci.c)
 target_include_directories(uci PRIVATE ${ubox_SOURCE_DIR})
-target_link_libraries(uci PRIVATE os log ubox)
+target_link_libraries(uci PRIVATE os log ubox-static)
 
 add_library(iface_mapper iface_mapper.c)
 target_link_libraries(iface_mapper PRIVATE net log os)
