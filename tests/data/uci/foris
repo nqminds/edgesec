@@ -1,0 +1,14 @@
+
+config config 'auth'
+	option password '$p5k2$3e8$l8LKDROh$ObNHZEfxsRHCMun6fqrIxrQIEJD5FlED'
+
+config config 'wizard'
+	option workflow 'min'
+	option finished '1'
+	list passed 'password'
+	list passed 'profile'
+	list passed 'wan'
+	list passed 'finished'
+	list passed 'time'
+	list passed 'updater'
+

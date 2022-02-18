@@ -1,0 +1,16 @@
+config keep 'keep'
+        option max_single '-1'
+        option max_time '5'
+        option max_updater '5'
+        option max_rollback '3'
+
+config remote 'remote'
+#        option url 'nextcloud://cloud.example.com'|'webdav://dav.example.com'
+#        option path '/turris/backups'
+#        option user 'myself'
+#        option password 'password'
+        option sync_types 'single,time'
+
+#config encrypt 'encrypt'
+#        option pass 'password'
+

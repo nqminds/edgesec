@@ -1,0 +1,14 @@
+
+config smtp 'smtp'
+	option enable '0'
+	option use_turris_smtp '1'
+	option sender_name 'turris'
+
+config notifications 'notifications'
+	option severity '1'
+	option news '1'
+
+config reboot 'reboot'
+	option delay '3'
+	option time '03:30'
+

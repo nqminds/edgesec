@@ -1,0 +1,11 @@
+
+config turris 'turris'
+	option mode 'branch'
+
+config l10n 'l10n'
+	list langs 'ru'
+
+config autorun 'autorun'
+	option enable '1'
+	option approvals '0'
+
