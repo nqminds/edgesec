@@ -26,5 +26,5 @@
 #ifndef UCI_H_
 #define UCI_H_
 
-void test_ubox(void);
+void test_uci(void);
 #endif

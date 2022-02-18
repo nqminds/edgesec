@@ -49,6 +49,7 @@
 #include "dhcp/dhcp_config.h"
 #include "engine.h"
 #include "config.h"
+#include "utils/uci_wrt.h"
 
 #define OPT_STRING    ":c:s:f:dvh"
 #define USAGE_STRING  "\t%s [-c filename] [-s secret] [-f filename] [-d] [-h] [-v]\n"
@@ -245,6 +246,8 @@ int main(int argc, char *argv[])
 
   free_app_config(&config);
 
+  test_uci();
+  
   if (config_filename != NULL)
     os_free(config_filename);
   if (log_filename != NULL)

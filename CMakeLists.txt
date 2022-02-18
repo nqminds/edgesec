@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 3.11.0)
 
 option(CROSS_COMPILE_EDGESEC "Cross compile the EDGESec" ON)
 
+set(CMAKE_SYSTEM_NAME Linux)
 if (CROSS_COMPILE_EDGESEC)
-  set(CMAKE_SYSTEM_NAME Linux)
   set(CMAKE_SYSTEM_PROCESSOR arm)
   set(CROSS_COMPILE_PREFIX /usr/local/bin/arm-linux-musleabihf-)
   set(CMAKE_C_COMPILER "${CROSS_COMPILE_PREFIX}gcc")
@@ -197,7 +197,7 @@ include(grpc)
 include(openssl)
 include(sqlite)
 include(zymkey4)
-include(ubox)
+include(uci)
 
 if (USE_PTHREAD_LIB AND NOT (BUILD_ONLY_DOCS))
   find_library(LIBPTHREAD_LIB NAMES pthread libpthread)

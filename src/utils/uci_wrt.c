@@ -23,14 +23,10 @@
  * @brief File containing the implementation of the uci utilities.
  */
 
-#include <ustream.h>
-#include <uloop.h>
-#include <usock.h>
+#include <uci.h>
 
-
-void test_ubox(void)
+void test_uci(void)
 {
-    uloop_init();
-    uloop_run();
-    uloop_done();
+  struct uci_context *ctx = uci_alloc_context();
+  uci_free_context(ctx);
 }

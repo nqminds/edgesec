@@ -97,6 +97,7 @@
         "stat.h": "c",
         "subnet_service.h": "c",
         "os.h": "c",
-        "iface.h": "c"
+        "iface.h": "c",
+        "json.h": "c"
     }
 }
