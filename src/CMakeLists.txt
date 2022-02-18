@@ -63,6 +63,6 @@ endif ()
 
 add_executable(edgesec edgesec.c)
 target_include_directories(edgesec PRIVATE ${PROJECT_BINARY_DIR} ${LIBOPENSSL_INCLUDE_PATH})
-target_link_libraries(edgesec PRIVATE eloop config engine minIni os hashmap uci_wrt)
+target_link_libraries(edgesec PRIVATE eloop config engine minIni os hashmap)
 # link time optimization
 set_target_properties(edgesec PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)

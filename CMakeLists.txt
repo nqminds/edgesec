@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.11.0)
 # 3.11 required for FetchContent
 
-option(CROSS_COMPILE_EDGESEC "Cross compile the EDGESec" ON)
+option(CROSS_COMPILE_EDGESEC "Cross compile the EDGESec" OFF)
 
-set(CMAKE_SYSTEM_NAME Linux)
 if (CROSS_COMPILE_EDGESEC)
+  set(CMAKE_SYSTEM_NAME Linux)
   set(CMAKE_SYSTEM_PROCESSOR arm)
   set(CROSS_COMPILE_PREFIX /usr/local/bin/arm-linux-musleabihf-)
   set(CMAKE_C_COMPILER "${CROSS_COMPILE_PREFIX}gcc")
@@ -22,7 +22,6 @@ include(CTest)
 include(FetchContent)
 include(ExternalProject)
 include(glibc)
-# include(CodeCoverage)
 
 if (NOT CROSS_COMPILE_EDGESEC)
   CHECK_GLIBC_VERSION()
@@ -294,9 +293,9 @@ include(doxygen)
 
 if (NOT BUILD_ONLY_DOCS)
   add_subdirectory(src)
-  if (NOT CMAKE_CROSSCOMPILING)
+  #if (NOT CMAKE_CROSSCOMPILING)
     add_subdirectory(tests)
-  endif ()
+  #endif ()
   include(install)
 endif ()
 

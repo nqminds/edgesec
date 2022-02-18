@@ -26,5 +26,39 @@
 #ifndef UCI_H_
 #define UCI_H_
 
-void test_uci(void);
+#include "uci.h"
+
+#include "utarray.h"
+#include "os.h"
+
+struct uctx {
+  struct uci_context *uctx;
+  char path[MAX_OS_PATH_LEN];
+};
+
+/**
+ * @brief Initialises the uci context
+ * 
+ * @param path The path string to the config folder
+ * @return struct uctx* The uci context
+ */
+struct uctx* uwrt_init_context(char *path);
+
+/**
+ * @brief Frees the uci context
+ * 
+ * @param context The uci context
+ * @return struct uctx* The uci context
+ */
+void uwrt_free_context(struct uctx *context);
+
+/**
+ * @brief Get the array of @c struct netif_info_t for each available interface
+ * 
+ * @param context The uci context
+ * @param if_id The interface id, if 0 return all interfaces
+ * @return UT_array* The returned array of @c struct netif_info_t
+ */
+UT_array *uwrt_get_interfaces(struct uctx *context, int if_id);
+
 #endif

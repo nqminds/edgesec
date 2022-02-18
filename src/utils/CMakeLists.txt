@@ -36,7 +36,7 @@ elseif (USE_UCI_SERVICE)
   target_include_directories(uci_wrt PRIVATE ${LIBUCI_INCLUDE_PATH})
   target_link_libraries(uci_wrt PRIVATE os log ${LIBUCI_STATIC_LIB})
 
-  target_link_libraries(iface PRIVATE ifaceu net log os)
+  target_link_libraries(iface PRIVATE ifaceu uci_wrt net log os)
 else ()
   target_link_libraries(iface PRIVATE ifaceu net log os)
 endif ()

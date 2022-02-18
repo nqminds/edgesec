@@ -2,6 +2,13 @@ include_directories(
   "${EDGESEC_SOURCE_DIR}/src"
 )
 
+if (USE_UCI_SERVICE)
+  add_compile_definitions(TEST_UCI_CONFIG_DIR="${CMAKE_SOURCE_DIR}/tests/data/uci")
+  add_executable(test_uci_wrt test_uci_wrt.c)
+  target_include_directories(test_uci_wrt PRIVATE ${LIBUCI_INCLUDE_PATH})
+  target_link_libraries(test_uci_wrt PRIVATE uci_wrt cmocka::cmocka)
+endif ()
+
 add_executable(test_iface_mapper test_iface_mapper.c)
 target_link_libraries(test_iface_mapper PRIVATE iface_mapper cmocka::cmocka)
 
@@ -35,10 +42,12 @@ target_link_libraries(test_log_level PRIVATE log)
 add_executable(test_log_err test_log_err.c)
 target_link_libraries(test_log_err PRIVATE log)
 
-add_test(NAME test_iface_mapper COMMAND test_iface_mapper)
-set_tests_properties(test_iface_mapper
- PROPERTIES
- WILL_FAIL FALSE)
+if (USE_UCI_SERVICE)
+  add_test(NAME test_uci_wrt COMMAND test_uci_wrt)
+  set_tests_properties(test_uci_wrt
+   PROPERTIES
+   WILL_FAIL FALSE)
+endif ()
 
 add_test(NAME test_ifaceu COMMAND test_ifaceu)
 set_tests_properties(test_ifaceu

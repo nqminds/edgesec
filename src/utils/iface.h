@@ -37,6 +37,10 @@
 #include "allocs.h"
 #include "os.h"
 
+#ifdef WITH_UCI_SERVICE
+#include "uci_wrt.h"
+#endif
+
 /**
  * @brief Creates a new interface object
  * 
