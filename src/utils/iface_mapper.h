@@ -69,7 +69,7 @@ typedef struct {
  * 
  */
 typedef struct config_ifinfo_t{
-  int       			vlanid;                 /**< Interface VLAN ID */
+  int       				vlanid;                 /**< Interface VLAN ID */
   char 						ifname[IFNAMSIZ];		/**< Interface string name */
   char 						ip_addr[IP_LEN];		/**< Interface string IP address */
   char 						brd_addr[IP_LEN];		/**< Interface string IP broadcast address */

@@ -180,13 +180,11 @@ bool get_nat_if_ip(const char *nat_interface, char *ip_buf)
 
   netif_info_t *el = (netif_info_t*) utarray_back(netip_list);
   if (el == NULL) {
-    log_err("Interfrace list empty");
+    log_err("Interface list empty");
     goto err;
   }
 
-  if (el->ifa_family == AF_INET) {
-    os_strlcpy(ip_buf, el->ip_addr, OS_INET_ADDRSTRLEN);
-  }
+  os_strlcpy(ip_buf, el->ip_addr, OS_INET_ADDRSTRLEN);
 
   utarray_free(netip_list);
   return true;

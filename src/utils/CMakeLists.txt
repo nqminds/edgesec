@@ -34,7 +34,7 @@ if (USE_NETLINK_SERVICE)
 elseif (USE_UCI_SERVICE)
   add_library(uci_wrt uci_wrt.c)
   target_include_directories(uci_wrt PRIVATE ${LIBUCI_INCLUDE_PATH})
-  target_link_libraries(uci_wrt PRIVATE os log ${LIBUCI_STATIC_LIB})
+  target_link_libraries(uci_wrt PRIVATE squeue os log ${LIBUCI_STATIC_LIB})
 
   target_link_libraries(iface PRIVATE ifaceu uci_wrt net log os)
 else ()
