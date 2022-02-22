@@ -5,7 +5,7 @@ include_directories(
 if (USE_UCI_SERVICE)
   add_compile_definitions(TEST_UCI_CONFIG_DIR="${CMAKE_SOURCE_DIR}/tests/data/uci")
   add_executable(test_uci_wrt test_uci_wrt.c)
-  target_include_directories(test_uci_wrt PRIVATE ${LIBUCI_INCLUDE_PATH})
+  target_include_directories(test_uci_wrt PRIVATE $<TARGET_PROPERTY:iface,INCLUDE_DIRECTORIES>)
   target_link_libraries(test_uci_wrt PRIVATE uci_wrt cmocka::cmocka)
 endif ()
 

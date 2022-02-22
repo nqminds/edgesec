@@ -341,6 +341,30 @@ int uwrt_get_net_if(UT_array *kv, netif_info_t *nif)
   return 0;
 }
 
+int uwrt_set_property(struct uci_context *ctx, char *property)
+{
+	struct uci_ptr ptr;
+
+  log_trace("Setting property: %s", property);
+
+  if (uci_lookup_ptr(ctx, &ptr, property, true) != UCI_OK) {
+		uwrt_print_error(ctx, "uci_lookup_ptr");
+		return -1;
+	}
+
+  if (uci_set(ctx, &ptr) != UCI_OK) {
+		uwrt_print_error(ctx, "uci_set");
+		return -1;
+  }
+
+  if (uci_save(ctx, ptr.p) != UCI_OK) {
+		uwrt_print_error(ctx, "uci_save");
+		return -1;
+  }
+
+  return 0;
+}
+
 void uwrt_free_context(struct uctx *context)
 {
   if (context != NULL) {
@@ -429,8 +453,10 @@ uwrt_get_fail:
 }
 
 int uwrt_create_interface(struct uctx *context, char *ifname, char *type,
-                          char *ip_addr, char *brd_addr, char *subnet_mask)
+                          char *ip_addr, char *brd_addr, char *netmask)
 {
+  char property[128];
+
   if (ifname == NULL) {
     log_trace("ifname param is NULL");
     return -1;
@@ -451,10 +477,67 @@ int uwrt_create_interface(struct uctx *context, char *ifname, char *type,
     return -1;
   }
 
-  if (subnet_mask == NULL) {
+  if (netmask == NULL) {
     log_trace("subnet_mask param is NULL");
     return -1;
   }
 
+  sprintf(property, "network.%s=interface", ifname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "network.%s.ifname=%s", ifname, ifname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "network.%s.type=%s", ifname, type);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "network.%s.proto=static", ifname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "network.%s.ipaddr=%s", ifname, ip_addr);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "network.%s.netmask=%s", ifname, netmask);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  return 0;
+}
+
+int uwrt_commit_interface(struct uctx *context)
+{
+  struct uci_ptr ptr;
+  char *section = os_strdup("network");
+
+	if (uci_lookup_ptr(context->uctx, &ptr, section, true) != UCI_OK) {
+    os_free(section);
+		uwrt_print_error(context->uctx, "uci_lookup_ptr");
+		return -1;
+	}
+
+	if (uci_commit(context->uctx, &ptr.p, false) != UCI_OK) {
+		uwrt_print_error(context->uctx, "uci_commit");
+		os_free(section);
+    return -1;
+	}
+
+  os_free(section);
   return 0;
 }

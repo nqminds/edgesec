@@ -63,13 +63,22 @@ UT_array *uwrt_get_interfaces(struct uctx *context, char *ifname);
 /**
  * @brief Creates and interface and assigns an IP
  * 
+ * @param context The uci context
  * @param ifname The interface name
  * @param type The interface type
  * @param ip_addr The interface IP4 address
  * @param brd_addr The interface IP4 broadcast address
- * @param subnet_mask The interface IP4 subnet mask
+ * @param netmask The interface IP4 netmask
  * @return int 0 on success, -1 on failure
  */
 int uwrt_create_interface(struct uctx *context, char *ifname, char *type,
-                          char *ip_addr, char *brd_addr, char *subnet_mask);
+                          char *ip_addr, char *brd_addr, char *netmask);
+
+/**
+ * @brief Commit the interface changes
+ * 
+ * @param context The uci context
+ * @return int 0 on success, -1 on failure
+ */
+int uwrt_commit_interface(struct uctx *context);
 #endif

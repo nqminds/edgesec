@@ -13,6 +13,8 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
+#include "uci.h"
+
 #include "utils/log.h"
 #include "utils/uci_wrt.h"
 #include "utils/utarray.h"
@@ -83,9 +85,25 @@ static void test_uwrt_get_interfaces(void **state)
 static void test_uwrt_create_interface(void **state)
 {
   (void) state;
-  
+
+  struct uci_ptr p;
+  netif_info_t *ptr = NULL;
   struct uctx *context = uwrt_init_context(TEST_UCI_CONFIG_DIR);
-  uwrt_create_interface(context, "br0", "bridge", "10.0.0.1", "10.0.0.255", "255.255.255.0");
+  assert_int_equal(uwrt_create_interface(context, "br0", "bridge", "10.0.0.1", "10.0.0.255", "255.255.255.0"), 0);
+  UT_array *interfaces = uwrt_get_interfaces(context, "br0");
+  assert_non_null(interfaces);
+
+  ptr = (netif_info_t *) utarray_next(interfaces, ptr);
+  assert_string_equal(ptr->ifname, "br0");
+  assert_string_equal(ptr->ip_addr, "10.0.0.1");
+  utarray_free(interfaces);
+
+  char *property = os_strdup("network.br0");
+
+  assert_int_equal(uci_lookup_ptr(context->uctx, &p, property, true), UCI_OK);
+  assert_int_equal(uci_delete(context->uctx, &p), UCI_OK);
+  assert_int_equal(uci_save(context->uctx, p.p), UCI_OK);
+
   uwrt_free_context(context);
 }
 #endif

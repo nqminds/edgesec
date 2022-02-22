@@ -202,3 +202,17 @@ int iface_create(struct iface_context *ctx, char *ifname, char *type,
 	return -1;
 #endif
 }
+
+int iface_commit(struct iface_context *ctx)
+{
+  log_trace("Commiting interface changes");
+#ifdef WITH_NETLINK_SERVICE
+  return 0;
+#elif WITH_UCI_SERVICE
+  return uwrt_commit_interface(ctx->context);
+#else
+  (void) ctx;
+	log_trace("iface_commit not implemented");
+	return -1;
+#endif
+}

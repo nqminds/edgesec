@@ -158,6 +158,10 @@ bool create_subnet_interfaces(struct iface_context *context, UT_array *ifinfo_ar
     }
   }
 
+  if (iface_commit(context) < 0) {
+    log_debug("iface_commit fail");
+    return false;
+  }
   return true;
 }
 
