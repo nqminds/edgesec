@@ -13,12 +13,12 @@ target_include_directories(engine PRIVATE ${LIBSQLITE_INCLUDE_DIR})
 target_link_libraries(engine crypt_service net log iface_mapper os sqlite_macconn_writer sqlite_fingerprint_writer system_checks eloop supervisor network_commands radius_service mac_mapper ap_service iptables dhcp_service)
 
 add_library(config config.c)
-target_include_directories(config PUBLIC $<TARGET_PROPERTY:iface,INCLUDE_DIRECTORIES>)
+target_include_directories(config PRIVATE ${LIBSQLITE_INCLUDE_DIR} PUBLIC $<TARGET_PROPERTY:iface,INCLUDE_DIRECTORIES>)
 target_link_libraries(config PRIVATE minIni os log)
 
 if (BUILD_MDNS_SERVICE AND BUILD_CAPTURE_SERVICE)
   add_executable(mdnsf mdnsf.c)
-  target_include_directories(mdnsf PRIVATE ${LIBPCAP_INCLUDE_PATH} ${PROJECT_BINARY_DIR})
+  target_include_directories(mdnsf PRIVATE ${LIBPCAP_INCLUDE_PATH} ${PROJECT_BINARY_DIR} ${LIBSQLITE_INCLUDE_DIR})
   target_link_libraries(mdnsf PRIVATE mdns_service config minIni squeue iface_mapper log os)
   # link time optimization
   set_target_properties(mdnsf PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
@@ -26,7 +26,7 @@ endif ()
 
 if (BUILD_CAPTURE_SERVICE)
   add_executable(capsrv capsrv.c)
-  target_include_directories(capsrv PRIVATE ${LIBPCAP_INCLUDE_PATH} ${PROJECT_BINARY_DIR})
+  target_include_directories(capsrv PRIVATE ${LIBPCAP_INCLUDE_PATH} ${PROJECT_BINARY_DIR} ${LIBSQLITE_INCLUDE_DIR})
   target_link_libraries(capsrv capture_service capture_config config minIni os hashmap ${LIBPCAP_LIB})
   # link time optimization
   set_target_properties(capsrv PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
@@ -62,7 +62,7 @@ if (BUILD_REVERSE_SERVICE)
 endif ()
 
 add_executable(edgesec edgesec.c)
-target_include_directories(edgesec PRIVATE ${PROJECT_BINARY_DIR} ${LIBOPENSSL_INCLUDE_PATH})
+target_include_directories(edgesec PRIVATE ${PROJECT_BINARY_DIR} ${LIBOPENSSL_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
 target_link_libraries(edgesec PRIVATE eloop config engine minIni os hashmap)
 # link time optimization
 set_target_properties(edgesec PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
