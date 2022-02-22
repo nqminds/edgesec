@@ -39,43 +39,31 @@
 
 #ifdef WITH_UCI_SERVICE
 #include "uci_wrt.h"
+#elif WITH_NETLINK_SERVICE
+#include "nl.h"
 #endif
 
-/**
- * @brief Creates a new interface object
- * 
- * @param ifname The interface string name
- * @param type The interface string type (ex. "bridge")
- * @return true on success, false otherwise
- */
-bool new_interface(char *ifname, char *type);
+struct iface_context {
+#ifdef WITH_UCI_SERVICE
+  struct uctx *context;
+#elif WITH_NETLINK_SERVICE
+  struct nlctx *context;
+#endif
+};
 
 /**
- * @brief Set the interface IP
+ * @brief Initialises the interface context
  * 
- * @param ip_addr The IP address string
- * @param brd_addr The broadcast IP address string
- * @param ifname The interface name string
- * @return true on success, false otherwise
+ * @return struct iface_context* The interface context
  */
-bool set_interface_ip(char *ip_addr, char *brd_addr, char *ifname);
+struct iface_context* iface_init_context(void);
 
 /**
- * @brief Set the interface state
+ * @brief Initialises the interface context
  * 
- * @param ifname The interface name string
- * @param state The interface state value (true - "up", false - "down")
- * @return true on success, false otherwise
+ * @param context The interface context
  */
-bool set_interface_state(char *ifname, bool state);
-
-/**
- * @brief Resets the interface
- * 
- * @param if_name The interface name string
- * @return true on success, false otherwise
- */
-bool reset_interface(char *ifname);
+void iface_free_context(struct iface_context *xontext);
 
 /**
  * @brief Returns an exisiting WiFi interface name that supports VLAN
@@ -83,19 +71,20 @@ bool reset_interface(char *ifname);
  * @param if_buf Interface working buffer
  * @return char* WiFi interface name
  */
-char* get_vlan_interface(char *if_buf);
+char* iface_get_vlan(char *if_buf);
 
 /**
  * @brief Get the array of @c struct netif_info_t for each available interface
  * 
- * @param id The intreface id, if 0 return all interfaces
+ * @param id The interface name, if NULL return all interfaces
  * @return UT_array* The returned array of @c struct netif_info_t
  */
-UT_array *get_interfaces(int id);
+UT_array *iface_get(char *ifname);
 
 /**
  * @brief Creates and interface and assigns an IP
  * 
+ * @param context The interface context
  * @param ifname The interface name
  * @param type The interface type
  * @param ip_addr The interface IP4 address
@@ -103,5 +92,16 @@ UT_array *get_interfaces(int id);
  * @param subnet_mask The interface IP4 subnet mask
  * @return int 0 on success, -1 on failure
  */
-int create_interface_ip(char *ifname, char *type, char *ip_addr, char *brd_addr, char *subnet_mask);
+int iface_create(struct iface_context *context, char *ifname,
+                 char *type, char *ip_addr, char *brd_addr,
+                 char *subnet_mask);
+
+/**
+ * @brief Commits the interface changes
+ * 
+ * @param context The interface context
+ * @return int 0 on success, -1 on failure
+ */
+int iface_commit(struct iface_context *context);
+
 #endif

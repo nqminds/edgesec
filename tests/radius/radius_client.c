@@ -16,6 +16,7 @@
 #include <arpa/inet.h>
 #include <stdbool.h>
 #include <net/if.h>
+#include <netinet/if_ether.h>
 #include <errno.h>
 
 #include "radius/radius.h"
@@ -24,7 +25,6 @@
 #include "utils/eloop.h"
 #include "utils/allocs.h"
 #include "utils/os.h"
-#include "utils/iface.h"
 #include "utils/log.h"
 
 
@@ -492,6 +492,8 @@ static int radius_client_retransmit(struct radius_client_data *radius,
 
 static void radius_client_timer(void *eloop_ctx, void *timeout_ctx)
 {
+	(void) timeout_ctx;
+
 	struct radius_client_data *radius = eloop_ctx;
 	struct os_reltime now;
 	os_time_t first;
@@ -1204,6 +1206,7 @@ radius_change_server(struct radius_client_data *radius,
 
 static void radius_retry_primary_timer(void *eloop_ctx, void *timeout_ctx)
 {
+	(void) timeout_ctx;
 	struct radius_client_data *radius = eloop_ctx;
 	struct hostapd_radius_servers *conf = radius->conf;
 	struct hostapd_radius_server *oserv;

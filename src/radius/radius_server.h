@@ -25,7 +25,7 @@
 #include <arpa/inet.h>
 #include <stdbool.h>
 
-#include "../utils/iface.h"
+#include "../utils/os.h"
 
 #define RADIUS_SECRET_LEN				255
 

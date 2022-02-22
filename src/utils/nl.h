@@ -38,6 +38,10 @@
 #define NL_CB_TYPE NL_CB_DEFAULT
 #endif
 
+struct nlctx {
+  void *reserved;
+};
+
 struct nl80211_state {
 	struct nl_sock *nl_sock;
 	int nl80211_id;
@@ -60,6 +64,20 @@ struct iplink_req {
 	struct ifinfomsg	i;
 	char				buf[1024];
 };
+
+/**
+ * @brief Initialises the nl context
+ * 
+ * @return struct nlctx* The nl context
+ */
+struct nlctx* nl_init_context(void);
+
+/**
+ * @brief Frees the nl context
+ * 
+ * @param context The nl context
+ */
+void nl_free_context(struct nlctx *context);
 
 /**
  * @brief Get the array of @c struct netif_info_t for each available interface
@@ -97,6 +115,29 @@ bool nl_set_interface_ip(char *ip_addr, char *brd_addr, char *if_name);
  * @return true on success, false otherwise
  */
 bool nl_set_interface_state(char *if_name, bool state);
+
+
+/**
+ * @brief Creates and interface and assigns an IP
+ * 
+ * @param context The nl context interface
+ * @param ifname The interface name
+ * @param type The interface type
+ * @param ip_addr The interface IP4 address
+ * @param brd_addr The interface IP4 broadcast address
+ * @param subnet_mask The interface IP4 subnet mask
+ * @return int 0 on success, -1 on failure
+ */
+int nl_create_interface(struct nlctx *context, char *ifname, char *type,
+						char *ip_addr, char *brd_addr, char *subnet_mask);
+
+/**
+ * @brief Resets the interface
+ * 
+ * @param if_name The interface name string
+ * @return 0 on success, -1 otherwise
+ */
+int nl_reset_interface(char *ifname);
 
 /**
  * @brief Check if wireless physical interface has VLAN capability

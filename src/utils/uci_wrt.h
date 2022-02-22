@@ -48,7 +48,6 @@ struct uctx* uwrt_init_context(char *path);
  * @brief Frees the uci context
  * 
  * @param context The uci context
- * @return struct uctx* The uci context
  */
 void uwrt_free_context(struct uctx *context);
 
@@ -56,9 +55,21 @@ void uwrt_free_context(struct uctx *context);
  * @brief Get the array of @c struct netif_info_t for each available interface
  * 
  * @param context The uci context
- * @param if_id The interface id, if 0 return all interfaces
+ * @param ifname The interface name, if NULL return all interfaces
  * @return UT_array* The returned array of @c struct netif_info_t
  */
-UT_array *uwrt_get_interfaces(struct uctx *context, int if_id);
+UT_array *uwrt_get_interfaces(struct uctx *context, char *ifname);
 
+/**
+ * @brief Creates and interface and assigns an IP
+ * 
+ * @param ifname The interface name
+ * @param type The interface type
+ * @param ip_addr The interface IP4 address
+ * @param brd_addr The interface IP4 broadcast address
+ * @param subnet_mask The interface IP4 subnet mask
+ * @return int 0 on success, -1 on failure
+ */
+int uwrt_create_interface(struct uctx *context, char *ifname, char *type,
+                          char *ip_addr, char *brd_addr, char *subnet_mask);
 #endif

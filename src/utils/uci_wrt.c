@@ -378,9 +378,8 @@ struct uctx* uwrt_init_context(char *path)
   return context;
 }
 
-UT_array *uwrt_get_interfaces(struct uctx *context, int if_id)
+UT_array *uwrt_get_interfaces(struct uctx *context, char *ifname)
 {
-  (void) if_id;
   int ret, idx = 0;
   UT_array *kv = NULL;
   UT_array *interfaces = NULL;
@@ -390,7 +389,12 @@ UT_array *uwrt_get_interfaces(struct uctx *context, int if_id)
   utarray_new(interfaces, &netif_info_icd);
 
   while(true) {
-    sprintf(key, "network.@interface[%d]", idx++);
+    if (ifname == NULL) {
+      snprintf(key, 64, "network.@interface[%d]", idx++); 
+    } else {
+      snprintf(key, 64, "network.%s", ifname); 
+    }
+
     utarray_new(kv, &ut_str_icd);
     ret = uwrt_lookup_key(context->uctx, key, kv);
 
@@ -411,6 +415,10 @@ UT_array *uwrt_get_interfaces(struct uctx *context, int if_id)
 
     utarray_free(kv);
     utarray_push_back(interfaces, &nif);
+
+    if (ifname != NULL && ret > 0) {
+      break;
+    }
   }
 
   return interfaces;
@@ -418,4 +426,35 @@ UT_array *uwrt_get_interfaces(struct uctx *context, int if_id)
 uwrt_get_fail:
   utarray_free(interfaces);
   return NULL;
+}
+
+int uwrt_create_interface(struct uctx *context, char *ifname, char *type,
+                          char *ip_addr, char *brd_addr, char *subnet_mask)
+{
+  if (ifname == NULL) {
+    log_trace("ifname param is NULL");
+    return -1;
+  }
+
+  if (type == NULL) {
+    log_trace("type param is NULL");
+    return -1;
+  }
+
+  if (ip_addr == NULL) {
+    log_trace("ip_addr param is NULL");
+    return -1;
+  }
+
+  if (brd_addr == NULL) {
+    log_trace("brd_addr param is NULL");
+    return -1;
+  }
+
+  if (subnet_mask == NULL) {
+    log_trace("subnet_mask param is NULL");
+    return -1;
+  }
+
+  return 0;
 }

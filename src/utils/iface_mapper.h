@@ -58,7 +58,8 @@ typedef struct {
 	enum IF_STATE 	state;								/**< Interface state */
 	char 			link_type[LINK_TYPE_LEN];			/**< Interface link type */
 	uint8_t 		ifa_family;							/**< Interface family */
-	char 			ip_addr[IP_LEN];					/**< Interface string IP address */
+	char 			ip_addr[IP_LEN];					/**< Interface string IP4 address */
+	char 			ip_addr6[OS_INET6_ADDRSTRLEN];		/**< Interface string IP6 address */
 	char 			peer_addr[IP_LEN];					/**< Interface string peer IP address */
 	char 			brd_addr[IP_LEN];					/**< Interface string IP broadcast address */
 	uint8_t 		mac_addr[ETH_ALEN];					/**< Interface byte MAC address */

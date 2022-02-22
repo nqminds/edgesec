@@ -135,7 +135,7 @@ bool create_mac_mapper(struct supervisor_context *ctx)
   return true;
 }
 
-bool create_subnet_interfaces(UT_array *ifinfo_array, bool ignore_error)
+bool create_subnet_interfaces(struct iface_context *context, UT_array *ifinfo_array, bool ignore_error)
 {
   int ret = 0;
   config_ifinfo_t *p = NULL;
@@ -148,12 +148,12 @@ bool create_subnet_interfaces(UT_array *ifinfo_array, bool ignore_error)
   while((p = (config_ifinfo_t*) utarray_next(ifinfo_array, p)) != NULL) {
 
     log_trace("Creating ifname=%s ip_addr=%s brd_addr=%s subnet_mask=%s", p->ifname, p->ip_addr, p->brd_addr, p->subnet_mask);
-    ret = create_interface_ip(p->ifname, "bridge", p->ip_addr, p->brd_addr, p->subnet_mask);
+    ret = iface_create(context, p->ifname, "bridge", p->ip_addr, p->brd_addr, p->subnet_mask);
     if (ret < 0 && ignore_error) {
-      log_trace("create_interface_ip fail, ignoring");
+      log_trace("iface_create fail, ignoring");
       continue;
     } else if (ret < 0 && !ignore_error) {
-      log_trace("create_interface_ip fail");
+      log_trace("iface_create fail");
       return false;
     }
   }
@@ -161,24 +161,17 @@ bool create_subnet_interfaces(UT_array *ifinfo_array, bool ignore_error)
   return true;
 }
 
-bool get_nat_if_ip(const char *nat_interface, char *ip_buf)
+bool get_nat_if_ip(char *nat_interface, char *ip_buf)
 {
-  UT_array *netip_list = NULL;
-  unsigned int if_idx = iface_nametoindex(nat_interface);
+  UT_array *interfaces = NULL;
+  interfaces = iface_get(nat_interface);
 
-  if (!if_idx) {
-    log_err("iface_nametoindex");
-    goto err;
-  }
-
-  netip_list = get_interfaces(if_idx);
-
-  if (netip_list == NULL) {
+  if (interfaces == NULL) {
     log_err("Interface %s not found", nat_interface);
     goto err;
   }
 
-  netif_info_t *el = (netif_info_t*) utarray_back(netip_list);
+  netif_info_t *el = (netif_info_t*) utarray_back(interfaces);
   if (el == NULL) {
     log_err("Interface list empty");
     goto err;
@@ -186,12 +179,13 @@ bool get_nat_if_ip(const char *nat_interface, char *ip_buf)
 
   os_strlcpy(ip_buf, el->ip_addr, OS_INET_ADDRSTRLEN);
 
-  utarray_free(netip_list);
+  utarray_free(interfaces);
   return true;
 
 err:
-  if (netip_list)
-    utarray_free(netip_list);
+  if (interfaces != NULL) {
+    utarray_free(interfaces);
+  }
   return false;
 }
 
@@ -225,6 +219,7 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
   ctx->hmap_bin_paths = NULL;
   ctx->radius_srv = NULL;
   ctx->crypt_ctx = NULL;
+  ctx->iface_ctx = NULL;
   ctx->ticket = NULL;
   ctx->iptables_ctx = NULL;
   ctx->fingeprint_db = NULL;
@@ -274,6 +269,11 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
   os_free(db_path);
 
   log_info("Creating subnet to interface mapper...");
+  if ((ctx->iface_ctx = iface_init_context()) == NULL) {
+    log_debug("iface_init_context fail");
+    return false;   
+  }
+
   if (!create_if_mapper(app_config->config_ifinfo_array, &ctx->if_mapper)) {
     log_debug("create_if_mapper fail");
     return false;
@@ -393,8 +393,8 @@ bool run_engine(struct app_config *app_config)
 
   if (app_config->ap_detect) {
     log_info("Looking for VLAN capable wifi interface...");
-    if(get_vlan_interface(context.hconfig.interface) == NULL) {
-      log_debug("get_valid_iw fail");
+    if(iface_get_vlan(context.hconfig.interface) == NULL) {
+      log_debug("iface_get_vlan fail");
       goto run_engine_fail;
     }
   }
@@ -422,7 +422,9 @@ bool run_engine(struct app_config *app_config)
 
   if (app_config->create_interfaces) {
     log_info("Creating subnet interfaces...");
-    if (!create_subnet_interfaces(app_config->config_ifinfo_array, app_config->ignore_if_error)) {
+    if (!create_subnet_interfaces(context.iface_ctx, app_config->config_ifinfo_array,
+        app_config->ignore_if_error))
+    {
       log_debug("create_subnet_interfaces fail");
       goto run_engine_fail;
     }
@@ -491,6 +493,7 @@ bool run_engine(struct app_config *app_config)
   free_bridge_list(context.bridge_list);
   free_sqlite_macconn_db(context.macconn_db);
   free_crypt_service(context.crypt_ctx);
+  iface_free_context(context.iface_ctx);
 
   return true;
 
@@ -508,5 +511,6 @@ run_engine_fail:
   free_bridge_list(context.bridge_list);
   free_sqlite_macconn_db(context.macconn_db);
   free_crypt_service(context.crypt_ctx);
+  iface_free_context(context.iface_ctx);
   return false;
 }

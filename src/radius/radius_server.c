@@ -25,12 +25,11 @@
 #include <linux/if.h>
 
 
-#include "utils/eloop.h"
-#include "utils/log.h"
-#include "utils/allocs.h"
-#include "utils/os.h"
-#include "utils/iface.h"
-#include "utils/list.h"
+#include "../utils/eloop.h"
+#include "../utils/log.h"
+#include "../utils/allocs.h"
+#include "../utils/os.h"
+#include "../utils/list.h"
 #include "../supervisor/mac_mapper.h"
 
 #include "radius.h"

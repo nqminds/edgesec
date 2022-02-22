@@ -98,6 +98,9 @@
         "subnet_service.h": "c",
         "os.h": "c",
         "iface.h": "c",
-        "json.h": "c"
+        "json.h": "c",
+        "if_link.h": "c",
+        "ifaceu.h": "c",
+        "eloop.h": "c"
     }
 }

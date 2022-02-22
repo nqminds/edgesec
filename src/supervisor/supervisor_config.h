@@ -33,6 +33,7 @@
 #include "../dhcp/dhcp_config.h"
 #include "../dns/dns_config.h"
 #include "../utils/iface_mapper.h"
+#include "../utils/iface.h"
 #include "../capture/capture_config.h"
 #include "../crypt/crypt_config.h"
 
@@ -88,6 +89,7 @@ struct supervisor_context {
   struct radius_server_data *radius_srv;                      /**< The radius server context. */
   struct iptables_context *iptables_ctx;                      /**< The iptables context. */
   struct crypt_context *crypt_ctx;                            /**< The crypt context. */
+  struct iface_context *iface_ctx;                            /**< The interface context. */
   struct auth_ticket *ticket;                                 /**< The authentication ticket. */  
   int              ap_sock;                                   /**< The AP notifier socket. */
 };

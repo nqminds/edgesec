@@ -58,6 +58,7 @@
 #include "os.h"
 #include "log.h"
 #include "nl.h"
+#include "net.h"
 #include "iface_mapper.h"
 #include "ifaceu.h"
 #include "utarray.h"
@@ -842,6 +843,92 @@ bool nl_set_interface_state(char *if_name, bool state)
 err:
 	rtnl_close(&rth);
 	return false;
+}
+
+struct nlctx* nl_init_context(void)
+{
+  struct nlctx *context = os_zalloc(sizeof(struct nlctx));
+
+  if (context == NULL) {
+    log_err("os_zalloc");
+    return NULL;
+  }
+
+  return context;
+}
+
+void nl_free_context(struct nlctx *context)
+{
+  if (context != NULL) {
+    os_free(context);
+  }
+}
+
+int nl_create_interface(struct nlctx *context, char *ifname, char *type,
+						char *ip_addr, char *brd_addr, char *subnet_mask)
+{
+  (void) context;
+
+  char longip[IP_LONG_LEN];
+
+  if (ifname == NULL) {
+    log_trace("ifname param is NULL");
+    return -1;
+  }
+
+  if (type == NULL) {
+    log_trace("type param is NULL");
+    return -1;
+  }
+
+  if (ip_addr == NULL) {
+    log_trace("ip_addr param is NULL");
+    return -1;
+  }
+
+  if (brd_addr == NULL) {
+    log_trace("brd_addr param is NULL");
+    return -1;
+  }
+
+  if (subnet_mask == NULL) {
+    log_trace("subnet_mask param is NULL");
+    return -1;
+  }
+
+  snprintf(longip, IP_LONG_LEN, "%s/%d", ip_addr, (int)get_short_subnet(subnet_mask));
+
+  if (!nl_new_interface(ifname, type)) {
+    log_trace("nl_new_interface fail");
+    return -1;
+  }
+
+  if (!nl_set_interface_ip(longip, brd_addr, ifname)) {
+    log_trace("nl_set_interface_ip fail");
+    return -1;
+  }
+
+  if (!nl_set_interface_state(ifname, true)) {
+    log_trace("nl_set_interface_state fail");
+    return -1;
+  }
+
+  return 0;
+}
+
+int nl_reset_interface(char *ifname)
+{
+  if (!nl_set_interface_state(ifname, false)) {
+    log_trace("nl_set_interface_state fail");
+    return -1;
+  }
+
+  if (!nl_set_interface_state(ifname, true)) {
+    log_trace("nl_set_interface_state fail");
+    return -1;
+  }
+
+  return 0;
 }
 
 static void mac_addr_n2a(char *mac_addr, const unsigned char *arg)

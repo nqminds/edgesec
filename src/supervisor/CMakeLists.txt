@@ -9,7 +9,7 @@ add_library(mac_mapper mac_mapper.c)
 target_link_libraries(mac_mapper PRIVATE bridge_list net log os)
 
 add_library(subscriber_events subscriber_events.c)
-target_include_directories(subscriber_events PRIVATE ${LIBSQLITE_INCLUDE_DIR})
+target_include_directories(subscriber_events PRIVATE ${LIBSQLITE_INCLUDE_DIR} PUBLIC $<TARGET_PROPERTY:iface,INCLUDE_DIRECTORIES>)
 target_link_libraries(subscriber_events PRIVATE log os domain ${LIBSQLITE_LIB})
 
 add_library(sqlite_fingerprint_writer sqlite_fingerprint_writer.c)
@@ -45,5 +45,5 @@ target_include_directories(cmd_processor PRIVATE ${LIBSQLITE_INCLUDE_DIR})
 target_link_libraries(cmd_processor PRIVATE system_commands crypt_commands monitor_commands network_commands sqlite_fingerprint_writer mac_mapper domain net log os iptables iface base64)
 
 add_library(supervisor supervisor.c)
-target_include_directories(supervisor PRIVATE ${LIBSQLITE_INCLUDE_DIR})
+target_include_directories(supervisor PRIVATE ${LIBSQLITE_INCLUDE_DIR} PUBLIC $<TARGET_PROPERTY:iface,INCLUDE_DIRECTORIES>)
 target_link_libraries(supervisor PRIVATE capture_config network_commands sqlite_alert_writer sqlite_fingerprint_writer cmd_processor domain log iptables)
