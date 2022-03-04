@@ -54,6 +54,42 @@ bool generate_dnsmasq_conf(struct dhcp_conf *dconf, char *interface, UT_array *d
 
 bool generate_dnsmasq_script(char *dhcp_script_path, char *domain_server_path)
 {
+  // Delete the vlan config file if present
+  int stat = unlink(dhcp_script_path);
+
+  if (stat == -1 && errno != ENOENT) {
+    log_err("unlink");
+    return false;
+  }
+
+  FILE *fp = fopen(dhcp_script_path, "a+");
+
+  if (fp == NULL) {
+    log_err("fopen");
+    return false;
+  }
+
+  log_trace("Writing into %s", dhcp_script_path);
+
+  fprintf(fp, "#!/bin/sh\n");
+  fprintf(fp, "str=\"SET_IP $1 $2 $3\"\n");
+  fprintf(fp, "echo \"Sending $str ...\"\n");
+  fprintf(fp, "echo $str | socat - UNIX-CLIENT:edgesec-domain-server\n", domain_server_path);
+
+  int fd = fileno(fp);
+
+  if (fd == -1) {
+    log_err("fileno");
+    fclose(fp);
+    return false;
+  }
+
+  // Make file executable
+  if (make_file_exec_fd(fd) == -1) {
+    fclose(fp);
+    return false;
+  }
+  fclose(fp);
   return true;
 }
 

@@ -292,12 +292,6 @@ bool load_ap_conf(const char *filename, struct app_config *config)
   // Load ap bridge
   value = os_malloc(INI_BUFFERSIZE);
   ret = ini_gets("ap", "bridge", "", value, INI_BUFFERSIZE, filename);
-  if (!ret) {
-    log_debug("ap bridge was not specified\n");
-    os_free(value);
-    return false;
-  }
-
   os_strlcpy(config->hconfig.bridge, value, IFNAMSIZ);
   os_free(value);
 
