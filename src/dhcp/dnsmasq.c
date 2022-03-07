@@ -46,9 +46,28 @@
 #define MAX_DHCP_CHECK_COUNT  100 // number of tries
 
 #define DNSMASQ_BIND_INTERFACE_OPTION "--bind-interfaces"
+#define DNSMASQ_BIND_DYNAMIC_OPTION   "--bind-dynamic"
 #define DNSMASQ_NO_DAEMON_OPTION      "--no-daemon"
 #define DNSMASQ_LOG_QUERIES_OPTION    "--log-queries"
 #define DNSMASQ_CONF_FILE_OPTION      "--conf-file="
+
+#define DNSMASQ_SCRIPT_STR \
+  "#!/bin/sh\n" \
+  "sockpath=\"%s\"\n" \
+  "str=\"SET_IP $1 $2 $3\"\n" \
+  "\n" \
+  "nccheck=`nc -help 2>&1 >/dev/null | grep 'OpenBSD netcat'`\n" \
+  "if [ -z \"$nccheck\" ]\n" \
+  "then\n" \
+  "\techo \"Using socat\"\n" \
+  "\tcommand=\"socat - UNIX-CLIENT:$sockpath\"\n" \
+  "else\n" \
+  "\techo \"Using netcat\"\n" \
+  "\tcommand=\"nc -uU $sockpath -w2 -W1\"\n" \
+  "fi\n" \
+  "\n" \
+  "echo \"Sending $str ...\"\n" \
+  "echo $str | $command\n"
 
 static char dnsmasq_proc_name[MAX_OS_PATH_LEN];
 static bool dns_process_started = false;
@@ -112,10 +131,7 @@ bool generate_dnsmasq_script(char *dhcp_script_path, char *domain_server_path)
 
   log_trace("Writing into %s", dhcp_script_path);
 
-  fprintf(fp, "#!/bin/sh\n");
-  fprintf(fp, "str=\"SET_IP $1 $2 $3\"\n");
-  fprintf(fp, "echo \"Sending $str ...\"\n");
-  fprintf(fp, "echo $str | nc -uU %s -w2 -W1\n", domain_server_path);
+  fprintf(fp, DNSMASQ_SCRIPT_STR, domain_server_path);
 
   int fd = fileno(fp);
 
@@ -157,7 +173,7 @@ char* get_dnsmasq_args(char *dnsmasq_bin_path, char *dnsmasq_conf_path, char *ar
   strcat(conf_arg, dnsmasq_conf_path);
 
   argv[0] = dnsmasq_bin_path;
-  argv[1] = DNSMASQ_BIND_INTERFACE_OPTION;
+  argv[1] = DNSMASQ_BIND_DYNAMIC_OPTION;
   argv[2] = DNSMASQ_NO_DAEMON_OPTION;
   argv[3] = conf_arg;
 

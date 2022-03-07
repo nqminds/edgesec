@@ -81,7 +81,6 @@ option(USE_SQLITE3_LIB "Use sqlite3 library" ON)
 option(USE_UUID_LIB "Use uuid library" ON)
 option(USE_PTHREAD_LIB "Use pthread library" OFF)
 option(USE_M_LIB "Use m library" OFF)
-option(USE_OW_DNSMASQ "Use the OpenWrt dnsmasq service" OFF)
 option(USE_ZYMKEY4_HSM "Use the Zymkey4 HSM" OFF)
 
 if (USE_NETLINK_SERVICE AND USE_UCI_SERVICE)
