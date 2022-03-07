@@ -318,6 +318,17 @@ typedef void (*process_callback_fn)(void *ctx, void *buf, size_t count);
 int run_command(char *const argv[], char *const envp[], process_callback_fn, void *ctx);
 
 /**
+ * @brief Executes a command with argument
+ * 
+ * @param path The command path
+ * @param argv The command arguments without the process path
+ * @param process_callback_fn Callback function
+ * @param ctx The callback function context
+ * @return int excve status code
+ */
+int run_argv_command(char *path, char *argv[], process_callback_fn fn, void *ctx);
+
+/**
  * @brief Convert the string to upper case
  * 
  * @param s The input string

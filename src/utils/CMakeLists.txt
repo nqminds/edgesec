@@ -37,6 +37,12 @@ elseif (USE_UCI_SERVICE)
   target_link_libraries(uci_wrt PRIVATE squeue os log ${LIBUCI_STATIC_LIB})
 
   target_link_libraries(iface PUBLIC ifaceu uci_wrt net log os)
+elseif (USE_GENERIC_IP_SERVICE)
+  add_compile_definitions(WITH_IP_GENERIC_SERVICE)
+  add_library(ipgen ipgen.c)
+  target_link_libraries(ipgen PRIVATE os log net)
+
+  target_link_libraries(iface PUBLIC ifaceu ipgen net log os)
 else ()
   target_link_libraries(iface PRIVATE ifaceu net log os)
 endif ()

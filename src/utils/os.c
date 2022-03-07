@@ -352,6 +352,53 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn fn, 
   return status;
 }
 
+void log_run_command(char *argv[], int arg_count)
+{
+  char buf[255];
+
+  os_memset(buf, 0, 255);
+  for (int i = 0; i < arg_count; i++) {
+    strcat(buf, argv[i]);
+    strcat(buf, " ");
+  }
+
+  log_trace("Running %s", buf);
+}
+
+int run_argv_command(char *path, char *argv[], process_callback_fn fn, void *ctx)
+{
+  char **full_arg;
+  int arg_count = 0, count = 0;
+
+  if (path == NULL) {
+    log_trace("path param is NULL");
+    return -1;
+  }
+
+  if (argv == NULL) {
+    log_trace("argv param is NULL");
+    return -1;
+  }
+  
+  while(argv[arg_count++] != NULL);
+  
+  full_arg = (char **) os_malloc(sizeof(char *) * (arg_count + 1));
+
+  full_arg[0] = path;
+  while(count < arg_count - 1) {
+    full_arg[count + 1] = argv[count];
+    count ++;
+  }
+
+  full_arg[count + 1] = NULL;
+
+  log_run_command(full_arg, arg_count + 1);
+
+  int status = run_command(full_arg, NULL, fn, (void *)ctx);
+  os_free(full_arg);
+  return (!status ? 0 : -1);
+}
+
 int fn_split_string_array(const char *str, size_t len, void *data)
 {
   UT_array *strs = (UT_array *) data;

@@ -37,9 +37,9 @@
  * 
  * @param app_config The app config structure
  * @param ctx The app context structure
- * @return true on success, false otherwise
+ * @return 0 on success, -1 otherwise
  */
-bool init_context(struct app_config *app_config, struct supervisor_context *ctx);
+int init_context(struct app_config *app_config, struct supervisor_context *ctx);
 
 /**
  * @brief Executes the edgesec WiFi networking engine. Creates subnets and starts the supervisor, radius servers and hostapd service.

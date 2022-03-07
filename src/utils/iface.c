@@ -53,6 +53,8 @@
 #include "nl.h"
 #elif WITH_UCI_SERVICE
 #include "uci_wrt.h"
+#elif WITH_IP_GENERIC_SERVICE
+#include "ipgen.h"
 #endif
 
 #include "utarray.h"
@@ -70,12 +72,16 @@ void iface_free_context(struct iface_context *ctx)
     if (ctx->context != NULL) {
       nl_free_context(ctx->context);
     }
+#elif WITH_IP_GENERIC_SERVICE
+    if (ctx->context != NULL) {
+      ipgen_free_context(ctx->context);
+    }
 #endif
     os_free(ctx);
   }
 }
 
-struct iface_context* iface_init_context(void)
+struct iface_context* iface_init_context(void *params)
 {
   struct iface_context *ctx = os_zalloc(sizeof(struct iface_context));
 
@@ -85,14 +91,24 @@ struct iface_context* iface_init_context(void)
   }
 
 #ifdef WITH_UCI_SERVICE
+  (void) params;
+
   if ((ctx->context = uwrt_init_context(NULL)) == NULL) {
     log_trace("uwrt_init_context fail");
     iface_free_context(ctx);
     return NULL;
   }
 #elif WITH_NETLINK_SERVICE
+  (void) params;
+
   if ((ctx->context = nl_init_context()) == NULL) {
     log_trace("nl_init_context fail");
+    iface_free_context(ctx);
+    return NULL;
+  }
+#elif WITH_IP_GENERIC_SERVICE
+  if ((ctx->context = ipgen_init_context((char*) params)) == NULL) {
+    log_trace("ipgen_init_context fail");
     iface_free_context(ctx);
     return NULL;
   }
@@ -190,6 +206,8 @@ int iface_create(struct iface_context *ctx, char *ifname, char *type,
 	return nl_create_interface(ctx->context, ifname, type, ip_addr, brd_addr, subnet_mask);
 #elif WITH_UCI_SERVICE
 	return uwrt_create_interface(ctx->context, ifname, type, ip_addr, brd_addr, subnet_mask);
+#elif WITH_IP_GENERIC_SERVICE
+  return ipgen_create_interface(ctx->context, ifname, type, ip_addr, brd_addr, subnet_mask);
 #else
   (void) ctx;
   (void) ifname;

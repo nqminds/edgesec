@@ -41,6 +41,8 @@
 #include "uci_wrt.h"
 #elif WITH_NETLINK_SERVICE
 #include "nl.h"
+#elif WITH_IP_GENERIC_SERVICE
+#include "ipgen.h"
 #endif
 
 struct iface_context {
@@ -48,15 +50,18 @@ struct iface_context {
   struct uctx *context;
 #elif WITH_NETLINK_SERVICE
   struct nlctx *context;
+#elif WITH_IP_GENERIC_SERVICE
+  struct ipgenctx *context;
 #endif
 };
 
 /**
  * @brief Initialises the interface context
  * 
+ * @param params The parameters for interface context
  * @return struct iface_context* The interface context
  */
-struct iface_context* iface_init_context(void);
+struct iface_context* iface_init_context(void* params);
 
 /**
  * @brief Initialises the interface context

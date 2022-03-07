@@ -207,20 +207,32 @@ bool construct_ap_ctrlif(char *ctrl_interface, char *interface, char *ap_ctrl_if
   return true;
 }
 
-bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
+int init_context(struct app_config *app_config, struct supervisor_context *ctx)
 {
   char *db_path = NULL;
+  char *commands[] = {"ip", "iw", "iptables", "dnsmasq", "sysctl", NULL};
 
   os_memset(ctx, 0, sizeof(struct supervisor_context));
 
+  log_info("Checking system commands...");
+  if ((ctx->hmap_bin_paths = check_systems_commands(commands, app_config->bin_path_array, NULL)) == NULL) {
+    log_debug("check_systems_commands fail (no bin paths found)");
+    return -1;
+  }
+
+  char *ipcmd_path = hmap_str_keychar_get(&ctx->hmap_bin_paths, "ip");
+  if (ipcmd_path == NULL) {
+    log_debug("Couldn't find ip command");
+    return -1;
+  }
+
   if (!init_ifbridge_names(app_config->config_ifinfo_array, app_config->hconfig.vlan_bridge)) {
     log_trace("init_ifbridge_names fail");
-    return false;
+    return -1;
   }
 
   ctx->subscribers_array = NULL;
   ctx->ap_sock = -1;
-  ctx->hmap_bin_paths = NULL;
   ctx->radius_srv = NULL;
   ctx->crypt_ctx = NULL;
   ctx->iface_ctx = NULL;
@@ -254,7 +266,7 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
 
   if (ctx->default_open_vlanid == ctx->quarantine_vlanid) {
     log_trace("default and quarantine vlans have the same id");
-    return false;
+    return -1;
   }
 
   db_path = construct_path(ctx->db_path, MACCONN_DB_NAME);
@@ -267,26 +279,26 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
   if (open_sqlite_macconn_db(db_path, &ctx->macconn_db) < 0) {
     os_free(db_path);
     log_debug("open_sqlite_macconn_db fail");
-    return false;
+    return -1;
   }
 
   os_free(db_path);
 
   log_info("Creating subnet to interface mapper...");
-  if ((ctx->iface_ctx = iface_init_context()) == NULL) {
+  if ((ctx->iface_ctx = iface_init_context((char *)ipcmd_path)) == NULL) {
     log_debug("iface_init_context fail");
-    return false;   
+    return -1;
   }
 
   if (!create_if_mapper(app_config->config_ifinfo_array, &ctx->if_mapper)) {
     log_debug("create_if_mapper fail");
-    return false;
+    return -1;
   }
 
   log_info("Creating VLAN ID to interface mapper...");
   if (!create_vlan_mapper(app_config->config_ifinfo_array, &ctx->vlan_mapper)) {
     log_debug("create_if_mapper fail");
-    return false;
+    return -1;
   }
 
   // Init the list of bridges
@@ -294,17 +306,17 @@ bool init_context(struct app_config *app_config, struct supervisor_context *ctx)
 
   if (get_vlan_mapper(&ctx->vlan_mapper, ctx->default_open_vlanid, NULL) <= 0) {
     log_trace("default vlan id=%d doesn't exist", ctx->default_open_vlanid);
-    return false;
+    return -1;
   }
 
   if (ctx->quarantine_vlanid >= 0) {
      if (get_vlan_mapper(&ctx->vlan_mapper, ctx->quarantine_vlanid, NULL) <= 0) {
        log_trace("quarantine vlan id=%d doesn't exist", ctx->quarantine_vlanid);
-       return false;
+       return -1;
      }
   }
   
-  return true;
+  return 0;
 }
 
 int run_mdns_forwarder(char *mdns_bin_path, char *config_ini_path)
@@ -340,14 +352,12 @@ bool run_engine(struct app_config *app_config)
 {
   struct supervisor_context context;
 
-  char *commands[] = {"ip", "iw", "iptables", "dnsmasq", "sysctl", NULL};
-
   if (create_dir(app_config->db_path, S_IRWXU | S_IRWXG) < 0) {
     log_debug("create_dir fail");
     return false;
   }
 
-  if (!init_context(app_config, &context)) {
+  if (init_context(app_config, &context) < 0) {
     log_debug("init_context fail");
     goto run_engine_fail;
   }
@@ -355,12 +365,6 @@ bool run_engine(struct app_config *app_config)
   log_info("AP name: %s", context.hconfig.ssid);
   log_info("AP interface: %s", context.hconfig.interface);
   log_info("DB path: %s", context.db_path);
-
-  log_info("Checking system commands...");
-  if ((context.hmap_bin_paths = check_systems_commands(commands, app_config->bin_path_array, NULL)) == NULL) {
-    log_debug("check_systems_commands fail (no bin paths found)");
-    goto run_engine_fail;
-  }
 
   char *iptables_path = hmap_str_keychar_get(&context.hmap_bin_paths, "iptables");
   if (iptables_path == NULL) {

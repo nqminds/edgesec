@@ -62,19 +62,6 @@ struct iptables_columns {
 static const UT_icd iptables_icd = {sizeof(struct iptables_columns), NULL, NULL, NULL};
 // static UT_array *rule_list;
 
-void log_run_command(char *argv[], int arg_count)
-{
-  char buf[255];
-
-  os_memset(buf, 0, 255);
-  for (int i = 0; i < arg_count; i++) {
-    strcat(buf, argv[i]);
-    strcat(buf, " ");
-  }
-
-  log_trace("Running %s", buf);
-}
-
 struct iptables_columns process_rule_column(char *column)
 {
   struct iptables_columns row;
@@ -239,7 +226,7 @@ bool run_iptables(struct iptables_context *ctx, char *argv[], process_callback_f
 
   full_arg[count + 2] = NULL;
 
-  log_run_command(full_arg, arg_count + 1);
+  // log_run_command(full_arg, arg_count + 1);
 
   if (!ctx->exec_iptables) {
     os_free(full_arg);
