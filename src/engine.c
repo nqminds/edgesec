@@ -226,7 +226,7 @@ int init_context(struct app_config *app_config, struct supervisor_context *ctx)
     return -1;
   }
 
-  if (!init_ifbridge_names(app_config->config_ifinfo_array, app_config->hconfig.vlan_bridge)) {
+  if (!init_ifbridge_names(app_config->config_ifinfo_array, app_config->bridge_interface_prefix)) {
     log_trace("init_ifbridge_names fail");
     return -1;
   }

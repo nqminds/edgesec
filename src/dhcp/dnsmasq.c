@@ -152,7 +152,7 @@ bool generate_dnsmasq_script(char *dhcp_script_path, char *domain_server_path)
 
 char* get_dnsmasq_args(char *dnsmasq_bin_path, char *dnsmasq_conf_path, char *argv[])
 {
-  // sudo dnsmasq --bind-interfaces --no-daemon --log-queries --conf-file=/tmp/dnsmasq.conf
+  // sudo dnsmasq --bind-dynamic --no-daemon --log-queries --conf-file=/tmp/dnsmasq.conf
   // argv = {"dnsmasq", "--bind-interfaces", "--no-daemon", "--log-queries", "--conf-file=/tmp/dnsmasq.conf", NULL};
   // argv = {"dnsmasq", "--bind-interfaces", "--no-daemon", "--conf-file=/tmp/dnsmasq.conf", NULL};
 

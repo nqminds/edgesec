@@ -488,7 +488,7 @@ int uwrt_create_interface(struct uctx *context, char *ifname, char *type,
     return -1;
   }
 
-  sprintf(property, "network.%s.ifname=%s", ifname, ifname);
+  sprintf(property, "network.%s.enabled=1", ifname);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
@@ -513,6 +513,18 @@ int uwrt_create_interface(struct uctx *context, char *ifname, char *type,
   }
 
   sprintf(property, "network.%s.netmask=%s", ifname, netmask);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "network.%s.bridge_empty=1", ifname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "network.%s.ip6assign=60", ifname);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;

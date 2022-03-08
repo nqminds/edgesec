@@ -398,10 +398,10 @@ char *construct_path(char *path_left, char *path_right);
  * 
  * @param bin_path_arr The path string of binary
  * @param filename The binary name
- * @param filehash The binary hashstring
+ * @param real true to return the real link
  * @return char* the secure path
  */
-char* get_secure_path(UT_array *bin_path_arr, char *filename, char *filehash);
+char* get_secure_path(UT_array *bin_path_arr, char *filename, bool real);
 
 typedef bool(*list_dir_fn)(char *, void *args);
 

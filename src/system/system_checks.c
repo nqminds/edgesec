@@ -58,7 +58,7 @@ hmap_str_keychar *check_systems_commands(char *commands[], UT_array *bin_path_ar
   
   for(uint8_t idx = 0; commands[idx] != NULL; idx ++) {
     log_debug("Checking %s command...", commands[idx]);
-    char *path = get_secure_path(bin_path_arr, commands[idx], NULL);
+    char *path = get_secure_path(bin_path_arr, commands[idx], false);
     if (path == NULL) {
       log_debug("%s command not found", commands[idx]);
       free(path);

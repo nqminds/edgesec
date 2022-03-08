@@ -55,6 +55,7 @@ struct app_config {
   bool                exec_mdns_forward;                    /**< Flag to execute the mdns forwarding service. */
   bool                exec_iptables;                        /**< Flag to execute the iptables command. */
   char                nat_interface[IFNAMSIZ];              /**< The NAT interface string. */
+  char                bridge_interface_prefix[IFNAMSIZ];    /**< The bridge interface prefix. */
   bool                create_interfaces;                    /**< Flag to create the WiFi subnet interfaces. */
   bool                ignore_if_error;                      /**< Flag if set ignores the errors if subnet already exists. */
   bool                allocate_vlans;                       /**< Flag if set allocates a random vlan for a device. */

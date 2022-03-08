@@ -190,10 +190,12 @@ int reset_interface(struct iface_context *ctx, char *ifname)
 {
   log_trace("Reseting interface state for if_name=%s", ifname);
 #ifdef WITH_NETLINK_SERVICE
+  (void) ctx;
 	return nl_reset_interface(ifname);
 #elif WITH_IP_GENERIC_SERVICE
   return ipgen_reset_interface(ctx->context, ifname);
 #else
+  (void) ctx;
   (void) ifname;
 
 	log_trace("reset_interface not implemented");
@@ -207,7 +209,7 @@ int iface_create(struct iface_context *ctx, char *ifname, char *type,
 #ifdef WITH_NETLINK_SERVICE
 	return nl_create_interface(ctx->context, ifname, type, ip_addr, brd_addr, subnet_mask);
 #elif WITH_UCI_SERVICE
-	return uwrt_create_interface(ctx->context, ifname, type, ip_addr, brd_addr, subnet_mask);
+  return uwrt_create_interface(ctx->context, ifname, type, ip_addr, brd_addr, subnet_mask);
 #elif WITH_IP_GENERIC_SERVICE
   return ipgen_create_interface(ctx->context, ifname, type, ip_addr, brd_addr, subnet_mask);
 #else

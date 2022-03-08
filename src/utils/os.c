@@ -572,18 +572,7 @@ char *construct_path(char *path_left, char *path_right)
   return path;
 }
 
-bool check_file_hash(char *filename, const char *filehash)
-{
-  (void) filename;
-  (void) filehash;
-
-  if (filehash == NULL)
-    return true;
-  else
-    return false;
-}
-
-char* get_secure_path(UT_array *bin_path_arr, char *filename, char *filehash)
+char* get_secure_path(UT_array *bin_path_arr, char *filename, bool real)
 {
   char **p = NULL;
 
@@ -604,15 +593,20 @@ char* get_secure_path(UT_array *bin_path_arr, char *filename, char *filehash)
     // Check if file exists
     if (stat(path, &sb) != -1) {
       // Get the real path of the needed path in case it is symbolic link
-      char *real_path = realpath(path, NULL);
-      log_trace("got real path %s", real_path);
+      if (real) {
+        char *real_path = realpath(path, NULL);
+        if (real_path == NULL) {
+          log_err("realpath");
+          os_free(path);
+          return NULL;  
+        }
 
-      if (check_file_hash(real_path, filehash)) {
+        log_trace("got real path %s", real_path);
         os_free(path);
         return real_path;
       }
 
-      os_free(real_path);
+      return path;
     }
 
     os_free(path);

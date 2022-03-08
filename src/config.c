@@ -151,7 +151,7 @@ err:
 bool load_interface_list(const char *filename, struct app_config *config)
 {
   char *key = os_malloc(INI_BUFFERSIZE);
-  int idx = 0;
+  int idx = 0, ret = 0;
   UT_array *config_ifinfo_arr;
 
   if (config == NULL) {
@@ -159,6 +159,17 @@ bool load_interface_list(const char *filename, struct app_config *config)
     return false;
   }
 
+  // Load ap bin path
+  ret = ini_gets("interfaces", "prefix", "br", key, INI_BUFFERSIZE, filename);
+  if (!ret) {
+    log_debug("bridge prefix was not specified\n");
+    os_free(key);
+    return false;
+  }
+  os_strlcpy(config->bridge_interface_prefix, key, IFNAMSIZ);
+  os_free(key);
+
+  key = os_malloc(INI_BUFFERSIZE);
   config->config_ifinfo_array = NULL;
   utarray_new(config_ifinfo_arr, &config_ifinfo_icd);
 
