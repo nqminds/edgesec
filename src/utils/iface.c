@@ -186,11 +186,13 @@ char* iface_get_vlan(char *buf)
 #endif
 }
 
-int reset_interface(char *ifname)
+int reset_interface(struct iface_context *ctx, char *ifname)
 {
   log_trace("Reseting interface state for if_name=%s", ifname);
 #ifdef WITH_NETLINK_SERVICE
 	return nl_reset_interface(ifname);
+#elif WITH_IP_GENERIC_SERVICE
+  return ipgen_reset_interface(ctx->context, ifname);
 #else
   (void) ifname;
 
@@ -225,9 +227,13 @@ int iface_commit(struct iface_context *ctx)
 {
   log_trace("Commiting interface changes");
 #ifdef WITH_NETLINK_SERVICE
+  (void) ctx;
   return 0;
 #elif WITH_UCI_SERVICE
   return uwrt_commit_interface(ctx->context);
+#elif WITH_IP_GENERIC_SERVICE
+  (void) ctx;
+  return 0;
 #else
   (void) ctx;
 	log_trace("iface_commit not implemented");

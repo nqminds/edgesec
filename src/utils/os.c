@@ -391,8 +391,8 @@ int run_argv_command(char *path, char *argv[], process_callback_fn fn, void *ctx
   }
 
   full_arg[count + 1] = NULL;
-
-  log_run_command(full_arg, arg_count + 1);
+  
+  log_run_command(full_arg, arg_count);
 
   int status = run_command(full_arg, NULL, fn, (void *)ctx);
   os_free(full_arg);

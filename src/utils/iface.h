@@ -109,4 +109,12 @@ int iface_create(struct iface_context *context, char *ifname,
  */
 int iface_commit(struct iface_context *context);
 
+/**
+ * @brief Resets an interface
+ * 
+ * @param context The interface context
+ * @param ifname The interface name
+ * @return int 0 on success, -1 on failure
+ */
+int reset_interface(struct iface_context *context, char *ifname);
 #endif
