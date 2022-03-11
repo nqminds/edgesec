@@ -457,6 +457,11 @@ int uwrt_create_interface(struct uctx *context, char *ifname, char *type,
 {
   char property[128];
 
+  if (context == NULL) {
+    log_trace("context param is NULL");
+    return -1;
+  }
+
   if (ifname == NULL) {
     log_trace("ifname param is NULL");
     return -1;
@@ -559,8 +564,33 @@ int uwrt_commit_section(struct uctx *context, char *section)
   return 0;
 }
 
-int uwrt_gen_dnsmasq_instance(struct uctx *context, char *interface,
+int uwrt_gen_dnsmasq_instance(struct uctx *context, struct string_queue *ifname_queue,
   UT_array *server_array, char *leasefile, char *scriptfile)
 {
+  if (context == NULL) {
+    log_trace("context param is NULL");
+    return -1;
+  }
+
+  if (ifname_queue == NULL) {
+    log_trace("ifname_queue param is NULL");
+    return -1;
+  }
+
+  if (server_array == NULL) {
+    log_trace("server_array param is NULL");
+    return -1;
+  }
+
+  if (leasefile == NULL) {
+    log_trace("server_array param is NULL");
+    return -1;
+  }
+
+  if (scriptfile == NULL) {
+    log_trace("scriptfile param is NULL");
+    return -1;
+  }
+
   return 0;
 }

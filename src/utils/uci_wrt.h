@@ -30,6 +30,7 @@
 
 #include "utarray.h"
 #include "os.h"
+#include "squeue.h"
 
 struct uctx {
   struct uci_context *uctx;
@@ -87,13 +88,13 @@ int uwrt_commit_section(struct uctx *context, char *section);
  * @brief Generates a dnsmasq uci instance
  * 
  * @param context The uci context
- * @param interface The interface prefix
+ * @param ifname_queue The interface queue
  * @param server_array The array of servers
  * @param leasefile The lease file path string
  * @param scriptfile The script file path string
  * @return int 0 on success, -1 on failure
  */
-int uwrt_gen_dnsmasq_instance(struct uctx *context, char *interface,
+int uwrt_gen_dnsmasq_instance(struct uctx *context, struct string_queue *ifname_queue,
   UT_array *server_array, char *leasefile, char *scriptfile);
 
 #endif

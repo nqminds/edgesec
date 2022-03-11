@@ -40,6 +40,7 @@
 #include "../utils/log.h"
 #include "../utils/allocs.h"
 #include "../utils/os.h"
+#include "../utils/squeue.h"
 #include "../utils/utarray.h"
 
 #ifdef WITH_UCI_SERVICE
@@ -78,8 +79,30 @@ static char dnsmasq_proc_name[MAX_OS_PATH_LEN];
 static bool dns_process_started = false;
 
 #ifdef WITH_UCI_SERVICE
+struct string_queue* make_interface_list(struct dhcp_conf *dconf)
+{
+  config_dhcpinfo_t *el = NULL;
+  struct string_queue* squeue = init_string_queue(-1);
+  char buf[IFNAMSIZ];
+
+  if (squeue == NULL) {
+    log_trace("init_string_queue fail");
+    return NULL;
+  }
+  while((el = (config_dhcpinfo_t *) utarray_next(dconf->config_dhcpinfo_array, el)) != NULL) {
+    snprintf(buf, IFNAMSIZ, "%s%d", dconf->bridge_interface_prefix, el->vlanid);
+    if (push_string_queue(squeue, buf) < 0) {
+      log_trace("push_string_queue fail");
+      free_string_queue(squeue);
+      return NULL;
+    }
+  }
+  return squeue;
+}
+
 int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array)
 {
+  struct string_queue *squeue;
   struct uctx *context = uwrt_init_context(NULL);
 
   if (context == NULL) {
@@ -88,16 +111,23 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array)
   }
 
   log_trace("Writing dhcp config using uci");
-
-  if (uwrt_gen_dnsmasq_instance(context, dconf->bridge_interface_prefix, dns_server_array,
-                                dconf->dhcp_leasefile_path, dconf->dhcp_script_path) < 0)
-  {
-    log_trace("uwrt_gen_dnsmasq_instance fail");
+  if ((squeue = make_interface_list(dconf))) {
+    log_trace("make_interface_list fail");
     uwrt_free_context(context);
     return -1;
   }
 
+  if (uwrt_gen_dnsmasq_instance(context, squeue, dns_server_array,
+                                dconf->dhcp_leasefile_path, dconf->dhcp_script_path) < 0)
+  {
+    log_trace("uwrt_gen_dnsmasq_instance fail");
+    uwrt_free_context(context);
+    free_string_queue(squeue);
+    return -1;
+  }
+
   uwrt_free_context(context);
+  free_string_queue(squeue);
   return 0;
 }
 #else
