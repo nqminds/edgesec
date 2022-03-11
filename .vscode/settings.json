@@ -101,6 +101,9 @@
         "json.h": "c",
         "if_link.h": "c",
         "ifaceu.h": "c",
-        "eloop.h": "c"
+        "eloop.h": "c",
+        "dhcp_config.h": "c",
+        "capture_config.h": "c",
+        "iface_mapper.h": "c"
     }
 }

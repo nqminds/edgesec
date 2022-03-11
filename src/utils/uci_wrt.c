@@ -533,23 +533,34 @@ int uwrt_create_interface(struct uctx *context, char *ifname, char *type,
   return 0;
 }
 
-int uwrt_commit_interface(struct uctx *context)
+int uwrt_commit_section(struct uctx *context, char *section)
 {
   struct uci_ptr ptr;
-  char *section = os_strdup("network");
+  char *psection = os_strdup(section);
 
-	if (uci_lookup_ptr(context->uctx, &ptr, section, true) != UCI_OK) {
-    os_free(section);
+  if (psection == NULL) {
+    log_err("os_strdup");
+    return -1;
+  }
+
+	if (uci_lookup_ptr(context->uctx, &ptr, psection, true) != UCI_OK) {
 		uwrt_print_error(context->uctx, "uci_lookup_ptr");
+    os_free(psection);
 		return -1;
 	}
 
 	if (uci_commit(context->uctx, &ptr.p, false) != UCI_OK) {
 		uwrt_print_error(context->uctx, "uci_commit");
-		os_free(section);
+    os_free(psection);
     return -1;
 	}
 
-  os_free(section);
+  os_free(psection);
+  return 0;
+}
+
+int uwrt_gen_dnsmasq_instance(struct uctx *context, char *interface,
+  UT_array *server_array, char *leasefile, char *scriptfile)
+{
   return 0;
 }

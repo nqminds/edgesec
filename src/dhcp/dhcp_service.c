@@ -30,24 +30,23 @@
 #include "../utils/os.h"
 #include "../utils/utarray.h"
 
-int run_dhcp(char *dhcp_bin_path, struct dhcp_conf *dconf,
-  char *interface, UT_array *dns_server_array, char *domain_server_path,
+int run_dhcp(struct dhcp_conf *dconf, UT_array *dns_server_array, char *domain_server_path,
   bool exec_dhcp)
 {
-  if (!generate_dnsmasq_conf(dconf, interface, dns_server_array)) {
+  if (generate_dnsmasq_conf(dconf, dns_server_array) < 0) {
     log_trace("generate_dnsmasq_conf fail");
     return -1;
   }
   
-  if (!generate_dnsmasq_script(dconf->dhcp_script_path, domain_server_path)) {
+  if (generate_dnsmasq_script(dconf->dhcp_script_path, domain_server_path) < 0) {
     log_trace("generate_dnsmasq_script fail");
     return -1;
   }
 
   if (exec_dhcp)
-    return (run_dhcp_process(dhcp_bin_path, dconf->dhcp_conf_path) == NULL) ? -1 : 0;
+    return (run_dhcp_process(dconf->dhcp_bin_path, dconf->dhcp_conf_path) == NULL) ? -1 : 0;
   else
-    return signal_dhcp_process(dhcp_bin_path, dconf->dhcp_conf_path);
+    return signal_dhcp_process(dconf->dhcp_bin_path, dconf->dhcp_conf_path);
 }
 
 bool close_dhcp(void)

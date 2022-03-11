@@ -210,7 +210,7 @@ bool construct_ap_ctrlif(char *ctrl_interface, char *interface, char *ap_ctrl_if
 int init_context(struct app_config *app_config, struct supervisor_context *ctx)
 {
   char *db_path = NULL;
-  char *commands[] = {"ip", "iw", "iptables", "dnsmasq", "sysctl", NULL};
+  char *commands[] = {"ip", "iw", "iptables", "sysctl", NULL};
 
   os_memset(ctx, 0, sizeof(struct supervisor_context));
 
@@ -263,6 +263,9 @@ int init_context(struct app_config *app_config, struct supervisor_context *ctx)
   os_memcpy(&ctx->dconfig, &app_config->dhcp_config, sizeof(struct dhcp_conf));
   os_memcpy(&ctx->nconfig, &app_config->dns_config, sizeof(struct dns_conf));
   os_memcpy(&ctx->mconfig, &app_config->mdns_config, sizeof(struct mdns_conf));
+
+  strcpy(ctx->dconfig.bridge_interface_prefix, app_config->bridge_interface_prefix);
+  strcpy(ctx->dconfig.wifi_interface, app_config->hconfig.interface);
 
   if (ctx->default_open_vlanid == ctx->quarantine_vlanid) {
     log_trace("default and quarantine vlans have the same id");
@@ -462,14 +465,7 @@ bool run_engine(struct app_config *app_config)
   }
 
   log_info("Running the dhcp service...");
-  char *dnsmasq_path = hmap_str_keychar_get(&context.hmap_bin_paths, "dnsmasq");
-  if (dnsmasq_path == NULL) {
-    log_debug("Couldn't find dnsmasq binary");
-    goto run_engine_fail;
-  }
-
-  if (run_dhcp(dnsmasq_path, &context.dconfig, context.hconfig.interface,
-        context.nconfig.server_array, app_config->domain_server_path,
+  if (run_dhcp(&context.dconfig, context.nconfig.server_array, app_config->domain_server_path,
         app_config->exec_dhcp) == -1) {
     log_debug("run_dhcp fail");
     goto run_engine_fail;

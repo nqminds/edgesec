@@ -509,6 +509,18 @@ bool load_dhcp_conf(const char *filename, struct app_config *config)
   os_strlcpy(config->dhcp_config.dhcp_conf_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
+  // Load dhpc bin file path
+  value = os_malloc(INI_BUFFERSIZE);
+  ret = ini_gets("dhcp", "dhcpBinPath", "", value, INI_BUFFERSIZE, filename);
+  if (!ret) {
+    log_debug("dhcp dhcpBinPath was not specified\n");
+    os_free(value);
+    return false;
+  }
+
+  os_strlcpy(config->dhcp_config.dhcp_bin_path, value, MAX_OS_PATH_LEN);
+  os_free(value);
+
   // Load dhpc script file path
   value = os_malloc(INI_BUFFERSIZE);
   ret = ini_gets("dhcp", "dhcpScriptPath", "", value, INI_BUFFERSIZE, filename);

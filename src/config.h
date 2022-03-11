@@ -28,7 +28,6 @@
 #include "utils/utarray.h"
 #include "utils/hashmap.h"
 #include "utils/allocs.h"
-#include "utils/allocs.h"
 #include "utils/os.h"
 #include "ap/ap_config.h"
 #include "radius/radius_server.h"

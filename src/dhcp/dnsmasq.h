@@ -25,7 +25,6 @@
 
 #ifndef DNSMASQ_H
 #define DNSMASQ_H
-#include <net/if.h>
 
 #include "dhcp_config.h"
 
@@ -38,20 +37,19 @@
  * @brief Generates the dnsmasq configuration file
  * 
  * @param dconf The dhcp configuration structure.
- * @param interface The WiFi AP interface name.
  * @param dns_server_array The array including the DNS servers IP addresses.
  * @return true on success, false otherwise
  */
-bool generate_dnsmasq_conf(struct dhcp_conf *dconf, char *interface, UT_array *dns_server_array);
+int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array);
 
 /**
  * @brief Generates the dnsmasq executable script for DHCP requests.
  * 
  * @param dhcp_script_path The dhcp executable script path string.
  * @param domain_server_path The UNIX domains server path.
- * @return true on success, false otherwise
+ * @return 0 on success, -1 otherwise
  */
-bool generate_dnsmasq_script(char *dhcp_script_path, char *domain_server_path);
+int generate_dnsmasq_script(char *dhcp_script_path, char *domain_server_path);
 
 /**
  * @brief Execute the DHCP server

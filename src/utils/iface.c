@@ -232,7 +232,7 @@ int iface_commit(struct iface_context *ctx)
   (void) ctx;
   return 0;
 #elif WITH_UCI_SERVICE
-  return uwrt_commit_interface(ctx->context);
+  return uwrt_commit_section(ctx->context, "network");
 #elif WITH_IP_GENERIC_SERVICE
   (void) ctx;
   return 0;

@@ -34,17 +34,14 @@
 /**
  * @brief Run the DHCP server
  * 
- * @param dhcp_bin_path The dhcp server binary path
  * @param dconf The dhcp configuration structures.
- * @param interface The WiFi AP interface name.
  * @param dns_server_array The array including the DNS servers IP addresses.
  * @param domain_server_path The UNIX domain server path.
  * @param exec_dhcp Flag to execute/signal the DHCP process.
  * @return int 0 on success, -1 on error
  */
-int run_dhcp(char *dhcp_bin_path, struct dhcp_conf *dconf,
-  char *interface, UT_array *dns_server_array, char *domain_server_path,
-  bool exec_dhcp);
+int run_dhcp(struct dhcp_conf *dconf, UT_array *dns_server_array,
+  char *domain_server_path, bool exec_dhcp);
 
 /**
  * @brief Closes (terminates) dhcp process

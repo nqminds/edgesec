@@ -75,10 +75,25 @@ int uwrt_create_interface(struct uctx *context, char *ifname, char *type,
                           char *ip_addr, char *brd_addr, char *netmask);
 
 /**
- * @brief Commit the interface changes
+ * @brief Commit a uci section
  * 
  * @param context The uci context
+ * @param context The uci section
  * @return int 0 on success, -1 on failure
  */
-int uwrt_commit_interface(struct uctx *context);
+int uwrt_commit_section(struct uctx *context, char *section);
+
+/**
+ * @brief Generates a dnsmasq uci instance
+ * 
+ * @param context The uci context
+ * @param interface The interface prefix
+ * @param server_array The array of servers
+ * @param leasefile The lease file path string
+ * @param scriptfile The script file path string
+ * @return int 0 on success, -1 on failure
+ */
+int uwrt_gen_dnsmasq_instance(struct uctx *context, char *interface,
+  UT_array *server_array, char *leasefile, char *scriptfile);
+
 #endif
