@@ -365,6 +365,54 @@ int uwrt_set_property(struct uci_context *ctx, char *property)
   return 0;
 }
 
+int uwrt_add_list(struct uci_context *ctx, char *property)
+{
+	struct uci_ptr ptr;
+
+  log_trace("Add list property: %s", property);
+
+  if (uci_lookup_ptr(ctx, &ptr, property, true) != UCI_OK) {
+		uwrt_print_error(ctx, "uci_lookup_ptr");
+		return -1;
+	}
+
+  if (uci_add_list(ctx, &ptr) != UCI_OK) {
+		uwrt_print_error(ctx, "uci_add_list");
+		return -1;
+  }
+
+  if (uci_save(ctx, ptr.p) != UCI_OK) {
+		uwrt_print_error(ctx, "uci_save");
+		return -1;
+  }
+
+  return 0;
+}
+
+int uwrt_delete_property(struct uci_context *ctx, char *property)
+{
+	struct uci_ptr ptr;
+
+  log_trace("Delete property: %s", property);
+
+  if (uci_lookup_ptr(ctx, &ptr, property, true) != UCI_OK) {
+		uwrt_print_error(ctx, "uci_lookup_ptr");
+		return -1;
+	}
+
+  if (uci_delete(ctx, &ptr) != UCI_OK) {
+		uwrt_print_error(ctx, "uci_delete");
+		return -1;
+  }
+
+  if (uci_save(ctx, ptr.p) != UCI_OK) {
+		uwrt_print_error(ctx, "uci_save");
+		return -1;
+  }
+
+  return 0;
+}
+
 void uwrt_free_context(struct uctx *context)
 {
   if (context != NULL) {
@@ -567,6 +615,10 @@ int uwrt_commit_section(struct uctx *context, char *section)
 int uwrt_gen_dnsmasq_instance(struct uctx *context, struct string_queue *ifname_queue,
   UT_array *server_array, char *leasefile, char *scriptfile)
 {
+  char **p = NULL;
+  struct string_queue *el = NULL;
+  char property[128];
+
   if (context == NULL) {
     log_trace("context param is NULL");
     return -1;
@@ -589,6 +641,65 @@ int uwrt_gen_dnsmasq_instance(struct uctx *context, struct string_queue *ifname_
 
   if (scriptfile == NULL) {
     log_trace("scriptfile param is NULL");
+    return -1;
+  }
+
+  sprintf(property, "dhcp.edgesec");
+  if (uwrt_delete_property(context->uctx, property) < 0) {
+    log_trace("uwrt_delete_property fail for %s", property);
+  }
+
+  sprintf(property, "dhcp.edgesec=dnsmasq");
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "dhcp.edgesec.noresolv=1");
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "dhcp.edgesec.nonwildcard=1");
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  dl_list_for_each(el, &ifname_queue->list, struct string_queue, list) {
+    if (el != NULL) {
+      sprintf(property, "dhcp.edgesec.interface=%s", el->str);
+      if (uwrt_add_list(context->uctx, property) < 0) {
+        log_trace("uwrt_add_list fail for %s", property);
+        return -1;
+      }
+    }
+  }
+
+  sprintf(property, "dhcp.edgesec.notinterface=loopback");
+  if (uwrt_add_list(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  while((p = (char**)utarray_next(server_array, p)) != NULL) {
+    sprintf(property, "dhcp.edgesec.server=%s", *p);
+    if (uwrt_add_list(context->uctx, property) < 0) {
+      log_trace("uwrt_add_list fail for %s", property);
+      return -1;
+    }
+  }
+
+  sprintf(property, "dhcp.edgesec.leasefile=%s", leasefile);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "dhcp.edgesec.dhcpscript=%s", scriptfile);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 

@@ -89,6 +89,7 @@ struct string_queue* make_interface_list(struct dhcp_conf *dconf)
     log_trace("init_string_queue fail");
     return NULL;
   }
+
   while((el = (config_dhcpinfo_t *) utarray_next(dconf->config_dhcpinfo_array, el)) != NULL) {
     snprintf(buf, IFNAMSIZ, "%s%d", dconf->bridge_interface_prefix, el->vlanid);
     if (push_string_queue(squeue, buf) < 0) {
@@ -97,6 +98,7 @@ struct string_queue* make_interface_list(struct dhcp_conf *dconf)
       return NULL;
     }
   }
+
   return squeue;
 }
 
@@ -111,7 +113,7 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array)
   }
 
   log_trace("Writing dhcp config using uci");
-  if ((squeue = make_interface_list(dconf))) {
+  if ((squeue = make_interface_list(dconf)) == NULL) {
     log_trace("make_interface_list fail");
     uwrt_free_context(context);
     return -1;
@@ -121,6 +123,13 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array)
                                 dconf->dhcp_leasefile_path, dconf->dhcp_script_path) < 0)
   {
     log_trace("uwrt_gen_dnsmasq_instance fail");
+    uwrt_free_context(context);
+    free_string_queue(squeue);
+    return -1;
+  }
+
+  if (uwrt_commit_section(context, "dhcp") < 0) {
+    log_trace("uwrt_commit_section fail");
     uwrt_free_context(context);
     free_string_queue(squeue);
     return -1;
