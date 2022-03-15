@@ -21,6 +21,7 @@ if (BUILD_MDNS_SERVICE AND BUILD_CAPTURE_SERVICE)
     PROPERTIES
     LINK_FLAGS  "-Wl,--wrap=run_pcap -Wl,--wrap=eloop_register_read_sock -Wl,--wrap=eloop_init -Wl,--wrap=eloop_destroy -Wl,--wrap=eloop_run"
   )
+  target_include_directories(test_mdns_service PRIVATE ${LIBPCAP_INCLUDE_PATH})
 endif ()
 
 add_test(NAME test_mdns_list COMMAND test_mdns_list)

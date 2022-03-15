@@ -20,11 +20,11 @@
 
 static const UT_icd config_dhcpinfo_icd = {sizeof(config_dhcpinfo_t), NULL, NULL, NULL};
 
-static char *test_dhcp_conf_path = "/tmp/dnsmasq-test.conf";
-static char *test_dhcp_script_path = "/tmp/dnsmasq_exec-test.sh";
-static char *test_dhcp_leasefile_path = "/tmp/dnsmasq.leases";
-static char *test_domain_server_path = "/tmp/edgesec-domain-server";
-static char *test_dhcp_conf_content =
+static const char *test_dhcp_conf_path = "/tmp/dnsmasq-test.conf";
+static const char *test_dhcp_script_path = "/tmp/dnsmasq_exec-test.sh";
+static const char *test_dhcp_leasefile_path = "/tmp/dnsmasq.leases";
+static const char *test_domain_server_path = "/tmp/edgesec-domain-server";
+static const char *test_dhcp_conf_content =
 "no-resolv\n"
 "server=8.8.4.4\n"
 "server=8.8.8.8\n"
@@ -35,19 +35,32 @@ static char *test_dhcp_conf_content =
 "dhcp-range=wifi_if.2,10.0.2.2,10.0.2.254,255.255.255.0,24h\n"
 "dhcp-range=wifi_if.3,10.0.3.2,10.0.3.254,255.255.255.0,24h\n";
 
-static char *test_dhcp_script_content =
+// why aren't we using amazing C++11 which has the R"(...) string literal??? 😭
+static const char *test_dhcp_script_content =
 "#!/bin/sh\n"
+"sockpath=\"/tmp/edgesec-domain-server\"\n"
 "str=\"SET_IP $1 $2 $3\"\n"
+"\n"
+"nccheck=`nc -help 2>&1 >/dev/null | grep 'OpenBSD netcat'`\n"
+"if [ -z \"$nccheck\" ]\n"
+"then\n"
+"	echo \"Using socat\"\n"
+"	command=\"socat - UNIX-CLIENT:$sockpath\"\n"
+"else\n"
+"	echo \"Using netcat\"\n"
+"	command=\"nc -uU $sockpath -w2 -W1\"\n"
+"fi\n"
+"\n"
 "echo \"Sending $str ...\"\n"
-"echo $str | nc -uU /tmp/edgesec-domain-server -w2 -W1\n";
+"echo $str | $command\n";
 
-static char *test_dhcp_leasefile_content =
+static const char *test_dhcp_leasefile_content =
 "1635860140 11:22:33:44:55:66 10.0.1.10 pc 11:22:33:44:55:66\n"
 "1635860148 44:2a:60:db:f3:91 10.0.1.209 iMac 01:44:2a:60:db:f3:91\n"
 "1635860076 1c:bf:ce:17:1f:1c 10.0.2.178 * 01:1c:bf:ce:17:1f:1c\n";
 
-static char *interface="wifi_if";
-static char *dns_server="8.8.4.4,8.8.8.8";
+static const char *interface="wifi_if";
+static const char *dns_server="8.8.4.4,8.8.8.8";
 
 bool __wrap_signal_process(char *proc_name, int sig)
 {
@@ -86,7 +99,7 @@ bool get_config_dhcpinfo(char *info, config_dhcpinfo_t *el)
   utarray_new(info_arr, &ut_str_icd);
 
   ssize_t count = split_string_array(info, ',', info_arr);
-	
+
   log_trace("Number of substrings=%d", count);
 
   if (!utarray_len(info_arr))
@@ -152,6 +165,9 @@ static void test_generate_dnsmasq_conf(void **state)
   strcpy(dconf.dhcp_conf_path, test_dhcp_conf_path);
   strcpy(dconf.dhcp_script_path, test_dhcp_script_path);
   strcpy(dconf.dhcp_leasefile_path, test_dhcp_leasefile_path);
+  const size_t WIFI_INTERFACE_STR_LEN = sizeof(dconf.wifi_interface) / sizeof(dconf.wifi_interface[0]);
+  strncpy(dconf.wifi_interface, interface, WIFI_INTERFACE_STR_LEN);
+  assert_null(dconf.wifi_interface[WIFI_INTERFACE_STR_LEN - 1]);
 
   assert_true(get_config_dhcpinfo("0,10.0.0.2,10.0.0.254,255.255.255.0,24h", &el));
   utarray_push_back(dconf.config_dhcpinfo_array, &el);
@@ -164,8 +180,8 @@ static void test_generate_dnsmasq_conf(void **state)
 
   split_string_array(dns_server, ',', server_arr);
 
-  bool ret = generate_dnsmasq_conf(&dconf, interface, server_arr);
-  assert_true(ret);
+  error_t ret = generate_dnsmasq_conf(&dconf, server_arr);
+  assert_true(ret == 0);
 
   FILE *fp = fopen(test_dhcp_conf_path, "r");
   assert_non_null(fp);
@@ -195,8 +211,8 @@ static void test_generate_dnsmasq_script(void **state)
 {
   (void) state; /* unused */
 
-  bool ret = generate_dnsmasq_script(test_dhcp_script_path, test_domain_server_path);
-  assert_true(ret);
+  error_t ret = generate_dnsmasq_script(test_dhcp_script_path, test_domain_server_path);
+  assert_true(ret == 0);
 
   FILE *fp = fopen(test_dhcp_script_path, "r");
   assert_non_null(fp);
@@ -285,7 +301,7 @@ static void test_signal_dhcp_process(void **state)
 }
 
 int main(int argc, char *argv[])
-{  
+{
   (void) argc; /* unused */
   (void) argv; /* unused */
   log_set_quiet(false);
