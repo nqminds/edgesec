@@ -19,7 +19,7 @@
 
 /**
  * @file dnsmasq.h
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the definition of dnsmasq service configuration utilities.
  */
 
@@ -35,16 +35,16 @@
 
 /**
  * @brief Generates the dnsmasq configuration file
- * 
+ *
  * @param dconf The dhcp configuration structure.
  * @param dns_server_array The array including the DNS servers IP addresses.
- * @return true on success, false otherwise
+ * @return `0` on success, `-1` otherwise
  */
 int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array);
 
 /**
  * @brief Generates the dnsmasq executable script for DHCP requests.
- * 
+ *
  * @param dhcp_script_path The dhcp executable script path string.
  * @param domain_server_path The UNIX domains server path.
  * @return 0 on success, -1 otherwise
@@ -53,7 +53,7 @@ int generate_dnsmasq_script(char *dhcp_script_path, char *domain_server_path);
 
 /**
  * @brief Execute the DHCP server
- * 
+ *
  * @param dhcp_bin_path The DHCP server binary path
  * @param dhcp_conf_path The DHCP server config path
  * @return char* The pointer to the statically allocated process name, NULL on failure
@@ -62,14 +62,14 @@ char* run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path);
 
 /**
  * @brief Terminate the DHCP server
- * 
- * @return bool true on success, false otherwise 
+ *
+ * @return bool true on success, false otherwise
  */
 bool kill_dhcp_process(void);
 
 /**
  * @brief Signal the DHCP process to reload the config
- * 
+ *
  * @param dhcp_bin_path The DHCP server binary path
  * @param dhcp_conf_path The DHCP server config path
  * @return int 0 on success, -1 on failure
@@ -79,7 +79,7 @@ int signal_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path);
 
 /**
  * @brief Clear the DHCP lease entry for a MAC addrress
- * 
+ *
  * @param mac_addr The MAC address string
  * @param dhcp_leasefile_path The DHCP file path
  * @return int 0 on success, -1 on failure
