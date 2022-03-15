@@ -713,7 +713,6 @@ int uwrt_add_dhcp_pool(struct uctx *context, char *ifname,
                        int vlanid, char *ip_addr_low, char *ip_addr_upp,
                        char *subnet_mask, char *lease_time)
 {
-  struct sockaddr_in low, upp, mask;
   uint32_t start, limit;
   char property[128];
 
@@ -747,24 +746,17 @@ int uwrt_add_dhcp_pool(struct uctx *context, char *ifname,
     return -1;
   }
 
-  if (inet_pton(AF_INET, ip_addr_low, &(low.sin_addr)) == -1) {
-	  log_err("inet_pton");
-	  return -1;
+  if (get_ip_host(ip_addr_low, subnet_mask, &start) < 0) {
+    log_trace("get_ip_host fail");
+    return -1;
   }
 
-  if (inet_pton(AF_INET, ip_addr_upp, &(upp.sin_addr)) == -1) {
-	  log_err("inet_pton");
-	  return -1;
+  if (get_ip_host(ip_addr_upp, subnet_mask, &limit) < 0) {
+    log_trace("get_ip_host fail");
+    return -1;
   }
 
-  if (inet_pton(AF_INET, subnet_mask, &(mask.sin_addr)) == -1) {
-	  log_err("inet_pton");
-	  return -1;
-  }
-
-  start = low.sin_addr.s_addr & (~(mask.sin_addr.s_addr));
-
-  log_trace(">>Start %x %x %x %s", start, ~(mask.sin_addr.s_addr), mask.sin_addr.s_addr, subnet_mask);
+  limit = (limit < start) ? 0 : (limit - start) + 1;
 
   sprintf(property, "dhcp.%s%d=dhcp", ifname, vlanid);
   if (uwrt_set_property(context->uctx, property) < 0) {
@@ -772,13 +764,13 @@ int uwrt_add_dhcp_pool(struct uctx *context, char *ifname,
     return -1;
   }
 
-  sprintf(property, "dhcp.%s%d.interface=%s", ifname, vlanid, ifname);
+  sprintf(property, "dhcp.%s%d.interface=%s%d", ifname, vlanid, ifname, vlanid);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "dhcp.%s%d.networkid=br-%s", ifname, vlanid, ifname);
+  sprintf(property, "dhcp.%s%d.networkid=br-%s%d", ifname, vlanid, ifname, vlanid);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
@@ -808,10 +800,17 @@ int uwrt_add_dhcp_pool(struct uctx *context, char *ifname,
     return -1;
   }
 
+  sprintf(property, "dhcp.%s%d.start=%d", ifname, vlanid, start);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
 
-  // uci set dhcp.br1.start=2
-  // uci set dhcp.br1.limit=150
-
+  sprintf(property, "dhcp.%s%d.limit=%d", ifname, vlanid, limit);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
 
   sprintf(property, "dhcp.%s%d.leasetime=%s", ifname, vlanid, lease_time);
   if (uwrt_set_property(context->uctx, property) < 0) {

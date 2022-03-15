@@ -54,12 +54,12 @@ bool validate_ipv4_string(char *ip)
 	    log_trace("Invalid netmask");
 	    return false;
 	  }
-  
+
 	  if (!is_number(netmask_sep + 1)) {
 	    log_trace("Invalid netmask");
 	    return false;
 	  }
-  
+
 	  if (strtol(netmask_sep + 1, (char **)NULL, 10) > 32) {
 	    log_trace("Invalid netmask");
 	    return false;
@@ -187,7 +187,7 @@ int get_ip_host(char *ip, char *subnet_mask, uint32_t *host)
   }
 
   *host = (uint32_t)((ipbuf[0] << 24) + (ipbuf[1] << 16) + (ipbuf[2] << 8) + ipbuf[3]);
-  *host = * host & (uint32_t)~((mbuf[0] << 24) + (mbuf[1] << 16) + (mbuf[2] << 8) + mbuf[3]);
+  *host = *host & (uint32_t)~((mbuf[0] << 24) + (mbuf[1] << 16) + (mbuf[2] << 8) + mbuf[3]);
 
   return 0;
 }
