@@ -23,6 +23,8 @@
  * @brief File containing the implementation of the uci utilities.
  */
 
+#include <inttypes.h>
+#include <arpa/inet.h>
 #include <uci.h>
 
 #include "uci_wrt.h"
@@ -32,6 +34,7 @@
 #include "squeue.h"
 #include "allocs.h"
 #include "log.h"
+#include "net.h"
 
 #define IFNAME_EXPR ".ifname="
 #define IPADDR_EXPR ".ipaddr="
@@ -698,6 +701,119 @@ int uwrt_gen_dnsmasq_instance(struct uctx *context, struct string_queue *ifname_
   }
 
   sprintf(property, "dhcp.edgesec.dhcpscript=%s", scriptfile);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  return 0;
+}
+
+int uwrt_add_dhcp_pool(struct uctx *context, char *ifname,
+                       int vlanid, char *ip_addr_low, char *ip_addr_upp,
+                       char *subnet_mask, char *lease_time)
+{
+  struct sockaddr_in low, upp, mask;
+  uint32_t start, limit;
+  char property[128];
+
+  if (context == NULL) {
+    log_trace("context param is NULL");
+    return -1;
+  }
+
+  if (ifname == NULL) {
+    log_trace("ifname param is NULL");
+    return -1;
+  }
+
+  if (ip_addr_low == NULL) {
+    log_trace("ip_addr_low param is NULL");
+    return -1;
+  }
+
+  if (ip_addr_upp == NULL) {
+    log_trace("ip_addr_upp param is NULL");
+    return -1;
+  }
+
+  if (subnet_mask == NULL) {
+    log_trace("subnet_mask param is NULL");
+    return -1;
+  }
+
+  if (lease_time == NULL) {
+    log_trace("lease_time param is NULL");
+    return -1;
+  }
+
+  if (inet_pton(AF_INET, ip_addr_low, &(low.sin_addr)) == -1) {
+	  log_err("inet_pton");
+	  return -1;
+  }
+
+  if (inet_pton(AF_INET, ip_addr_upp, &(upp.sin_addr)) == -1) {
+	  log_err("inet_pton");
+	  return -1;
+  }
+
+  if (inet_pton(AF_INET, subnet_mask, &(mask.sin_addr)) == -1) {
+	  log_err("inet_pton");
+	  return -1;
+  }
+
+  start = low.sin_addr.s_addr & (~(mask.sin_addr.s_addr));
+
+  log_trace(">>Start %x %x %x %s", start, ~(mask.sin_addr.s_addr), mask.sin_addr.s_addr, subnet_mask);
+
+  sprintf(property, "dhcp.%s%d=dhcp", ifname, vlanid);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "dhcp.%s%d.interface=%s", ifname, vlanid, ifname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "dhcp.%s%d.networkid=br-%s", ifname, vlanid, ifname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "dhcp.%s%d.dhcpv4=server", ifname, vlanid);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "dhcp.%s%d.instance=edgesec", ifname, vlanid);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "dhcp.%s%d.ignore=0", ifname, vlanid);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "dhcp.%s%d.force=1", ifname, vlanid);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+
+  // uci set dhcp.br1.start=2
+  // uci set dhcp.br1.limit=150
+
+
+  sprintf(property, "dhcp.%s%d.leasetime=%s", ifname, vlanid, lease_time);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;

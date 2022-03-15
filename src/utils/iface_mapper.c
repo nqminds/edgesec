@@ -201,19 +201,19 @@ int find_subnet_address(UT_array *config_ifinfo_array, char *ip, in_addr_t *subn
   }
 
   while((p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) != NULL) {
-	if (ip_2_nbo(p->ip_addr, p->subnet_mask, &addr_config) < 0) {
-	  log_trace("ip_2_nbo fail");
-	  return -1;
-	}
-
-	if (ip_2_nbo(ip, p->subnet_mask, subnet_addr) < 0) {
-	  log_trace("ip_2_nbo fail");
-	  return -1;
-	}
-
-	if (addr_config == *subnet_addr) {
-	  return 0;
-	}
+	  if (ip_2_nbo(p->ip_addr, p->subnet_mask, &addr_config) < 0) {
+	    log_trace("ip_2_nbo fail");
+	    return -1;
+	  }
+  
+	  if (ip_2_nbo(ip, p->subnet_mask, subnet_addr) < 0) {
+	    log_trace("ip_2_nbo fail");
+	    return -1;
+	  }
+  
+	  if (addr_config == *subnet_addr) {
+	    return 0;
+	  }
   }
 
   return 1;

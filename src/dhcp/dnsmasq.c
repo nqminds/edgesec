@@ -105,6 +105,7 @@ struct string_queue* make_interface_list(struct dhcp_conf *dconf)
 int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array)
 {
   struct string_queue *squeue;
+  config_dhcpinfo_t *el = NULL;
   struct uctx *context = uwrt_init_context(NULL);
 
   if (context == NULL) {
@@ -126,6 +127,19 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array)
     uwrt_free_context(context);
     free_string_queue(squeue);
     return -1;
+  }
+
+  while((el = (config_dhcpinfo_t *) utarray_next(dconf->config_dhcpinfo_array, el)) != NULL) {
+
+    if (uwrt_add_dhcp_pool(context, dconf->bridge_interface_prefix,
+                       el->vlanid, el->ip_addr_low, el->ip_addr_upp,
+                       el->subnet_mask, el->lease_time) < 0)
+    {
+      log_trace("uwrt_add_dhcp_pool fail");
+      uwrt_free_context(context);
+      free_string_queue(squeue);
+      return -1;
+    }
   }
 
   if (uwrt_commit_section(context, "dhcp") < 0) {

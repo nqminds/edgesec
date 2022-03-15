@@ -39,8 +39,8 @@
  */
 typedef struct config_dhcpinfo_t {
 	int       			        vlanid;                             /**< Interface VLAN ID */
-	char 						ip_addr_low[IP_LEN];		                    /**< Interface string IP address lower bound*/
-	char 						ip_addr_upp[IP_LEN];		                    /**< Interface string IP address upper bound*/
+	char 						ip_addr_low[IP_LEN];		                    /**< Interface string IP address lower bound */
+	char 						ip_addr_upp[IP_LEN];		                    /**< Interface string IP address upper bound */
 	char 						subnet_mask[IP_LEN];	                      /**< Interface string IP subnet mask */
   char 						    lease_time[DHCP_LEASE_TIME_SIZE];	      /**< Interface lease time string */
 } config_dhcpinfo_t;

@@ -47,30 +47,30 @@ bool validate_ipv4_string(char *ip)
   os_memset(proc_ip, 0, IP_LEN);
   if (netmask_sep) {
     ip_len = strlen(ip) - strlen(netmask_sep);
-	os_strlcpy(proc_ip, ip, ip_len + 1);
+	  os_strlcpy(proc_ip, ip, ip_len + 1);
 
-	netmask_char_size = strlen(netmask_sep + 1);
-	if (netmask_char_size > 2 || netmask_char_size < 1) {
-	  log_trace("Invalid netmask");
-	  return false;
-	}
-
-	if (!is_number(netmask_sep + 1)) {
-	  log_trace("Invalid netmask");
-	  return false;
-	}
-
-	if (strtol(netmask_sep + 1, (char **)NULL, 10) > 32) {
-	  log_trace("Invalid netmask");
-	  return false;
-	}
+	  netmask_char_size = strlen(netmask_sep + 1);
+	  if (netmask_char_size > 2 || netmask_char_size < 1) {
+	    log_trace("Invalid netmask");
+	    return false;
+	  }
+  
+	  if (!is_number(netmask_sep + 1)) {
+	    log_trace("Invalid netmask");
+	    return false;
+	  }
+  
+	  if (strtol(netmask_sep + 1, (char **)NULL, 10) > 32) {
+	    log_trace("Invalid netmask");
+	    return false;
+	  }
   } else os_strlcpy(proc_ip, ip, IP_LEN);
 
   errno = 0;
   ret = inet_pton(AF_INET, proc_ip, &(sa.sin_addr));
   if (ret == -1) {
-	log_err("inet_pton");
-	return false;
+	  log_err("inet_pton");
+	  return false;
   }
 
   return ret > 0;
@@ -81,18 +81,18 @@ int ip_2_nbo(char *ip, char *subnet_mask, in_addr_t *addr)
   in_addr_t subnet;
 
   if (addr == NULL) {
-	log_trace("addr param is NULL");
-	return -1;
+	  log_trace("addr param is NULL");
+	  return -1;
   }
 
   if ((subnet = inet_network(subnet_mask)) == INADDR_NONE) {
-	log_trace("Invalid subnet mask address");
-	return -1;
+	  log_trace("Invalid subnet mask address");
+	  return -1;
   }
 
   if ((*addr = inet_network(ip)) == INADDR_NONE) {
-	log_trace("Invalid ip address");
-	return -1;
+	  log_trace("Invalid ip address");
+	  return -1;
   }
 
   *addr = *addr & subnet;
