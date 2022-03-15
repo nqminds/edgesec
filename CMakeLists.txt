@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.11.0)
 # 3.11 required for FetchContent
 
-option(CROSS_COMPILE_EDGESEC "Cross compile the EDGESec" ON)
+option(CROSS_COMPILE_EDGESEC "Cross compile the EDGESec" OFF)
 
 if (CROSS_COMPILE_EDGESEC)
   set(CMAKE_SYSTEM_NAME Linux)
@@ -75,8 +75,8 @@ option(BUILD_SQLSYNC_SERVICE "Build sqlsync service" OFF)
 option(BUILD_REVERSE_SERVICE "Build Reverse service" OFF)
 
 option(USE_NETLINK_SERVICE "Use netlink service" OFF)
-option(USE_UCI_SERVICE "Use OpenWRT uci service" ON)
-option(USE_GENERIC_IP_SERVICE "Use generic ip service" OFF)
+option(USE_UCI_SERVICE "Use OpenWRT uci service" OFF)
+option(USE_GENERIC_IP_SERVICE "Use generic ip service" ON)
 option(USE_GRPC_LIB "Use grpc library" OFF)
 option(USE_SQLITE3_LIB "Use sqlite3 library" ON)
 option(USE_UUID_LIB "Use uuid library" ON)

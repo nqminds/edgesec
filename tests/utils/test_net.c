@@ -77,6 +77,24 @@ static void test_validate_ipv4_string(void **state)
 }
 
 
+static void test_get_ip_host(void **state)
+{
+  (void) state;
+  uint32_t host;
+
+  assert_int_equal(get_ip_host("10.0.1.2", "255.255.255.0", &host), 0);
+  assert_int_equal(host, 2);
+
+  assert_int_equal(get_ip_host("10.0.1.0", "255.255.255.0", &host), 0);
+  assert_int_equal(host, 0);
+
+  assert_int_equal(get_ip_host("10.0.0.255", "255.255.255.0", &host), 0);
+  assert_int_equal(host, 255);
+
+  assert_int_equal(get_ip_host("10.0.10.2", "255.255.0.0", &host), 0);
+  assert_int_equal(host, 2562);
+}
+
 int main(int argc, char *argv[])
 {  
   (void) argc;
@@ -87,7 +105,8 @@ int main(int argc, char *argv[])
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_ip_2_nbo),
     cmocka_unit_test(test_ip4_2_buf),
-    cmocka_unit_test(test_validate_ipv4_string)
+    cmocka_unit_test(test_validate_ipv4_string),
+    cmocka_unit_test(test_get_ip_host)
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);
