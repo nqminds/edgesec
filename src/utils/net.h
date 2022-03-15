@@ -98,4 +98,14 @@ const char *inaddr6_2_ip(struct in6_addr *addr, char *ip);
  * @return uint8_t The short integer version subnet mask
  */
 uint8_t get_short_subnet(char *subnet_mask);
+
+/**
+ * @brief Get the host identifier from an IP address string
+ *
+ * @param ip The IP address string
+ * @param subnet_mask The subnet mask string
+ * @param host The returned host indentifier
+ * @return 0 on success, -1 on failure
+ */
+int get_ip_host(char *ip, char *subnet_mask, uint32_t *host);
 #endif

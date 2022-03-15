@@ -162,10 +162,32 @@ uint8_t get_short_subnet(char *subnet_mask)
 	}
 
   for (int i = 0; i < 31; i++) {
-    if (addr & shift) short_mask ++;
+    if (addr & shift) {
+      short_mask ++;
+    }
+
     shift >>= 1U;
   }
 
   return short_mask;
+}
 
+int get_ip_host(char *ip, char *subnet_mask, uint32_t *host)
+{
+  uint8_t ipbuf[4], mbuf[4];
+  
+  if (ip4_2_buf(ip, ipbuf) < 0) {
+    log_trace("ip4_2_buf fail");
+    return -1;
+  }
+
+  if (ip4_2_buf(subnet_mask, mbuf) < 0) {
+    log_trace("ip4_2_buf fail");
+    return -1;
+  }
+
+  *host = (uint32_t)((ipbuf[0] << 24) + (ipbuf[1] << 16) + (ipbuf[2] << 8) + ipbuf[3]);
+  *host = * host & (uint32_t)~((mbuf[0] << 24) + (mbuf[1] << 16) + (mbuf[2] << 8) + mbuf[3]);
+
+  return 0;
 }
