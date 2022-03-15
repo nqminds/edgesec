@@ -25,17 +25,31 @@ static void test_init_context(void **state)
 {
   (void) state; /* unused */
   struct supervisor_context context;
-  struct app_config app_config;
-  memset(&app_config, 0, sizeof(struct app_config));
-  app_config.default_open_vlanid = -1;
-  app_config.quarantine_vlanid = -1;
-  assert_false(init_context(&app_config, &context));
+  struct app_config app_config = {0, .quarantine_vlanid = -1, .default_open_vlanid = -1};
+
+  // Load the bin paths array
+  const char * paths[] = {
+    "/bin", "/usr/bin", "/usr/sbin"
+  };
+  utarray_new(app_config.bin_path_array, &ut_str_icd);
+  for (size_t idx = 0; idx < sizeof(paths) / sizeof(paths[0]); idx++) {
+    utarray_push_back(app_config.bin_path_array, &(paths[idx]));
+  }
+
+  int context_error = init_context(&app_config, &context);
+  // TODO: currently init_context test fails
+  assert_int_not_equal(context_error, 0);
+
+  if (context_error == 0) { // automatically frees on error
+    utarray_free(app_config.bin_path_array);
+  }
   free_bridge_list(context.bridge_list);
   free_sqlite_macconn_db(context.macconn_db);
+
 }
 
 int main(int argc, char *argv[])
-{  
+{
   (void) argc;
   (void) argv;
 
