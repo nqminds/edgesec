@@ -25,6 +25,12 @@ override_dh_auto_configure:
 	dh_auto_configure -- \
 	     -DCMAKE_LIBRARY_ARCHITECTURE="$(DEB_TARGET_MULTIARCH)" \
 		 -DCMAKE_BUILD_TYPE=Release \
+		 -DCROSS_COMPILE_EDGESEC=OFF \
+		 -DBUILD_MNL_LIB=ON\
+		 -DBUILD_NETLINK_LIB=ON\
+		 -DBUILD_NL_LIB=ON\
+		 -DUSE_NETLINK_SERVICE=ON\
+		 -DUSE_UCI_SERVICE=OFF\
 		 "-DLIB_MAKEFLAGS=--jobs=$(NUMJOBS)"
 
 # make sure to tell dh_shlibdeps about our private shared libs
