@@ -22,10 +22,9 @@
 char *dhcp_bin_path = "/tmp/sbin/dnsmasq";
 char *dnsmasq_proc_name = "dnsmasq";
 
-bool __wrap_generate_dnsmasq_conf(struct dhcp_conf *dconf, char *interface, UT_array *dns_server_array)
+bool __wrap_generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array)
 {
   (void) dconf;
-  (void) interface;
   (void) dns_server_array;
 
   return true;
@@ -64,22 +63,22 @@ static void test_run_dhcp(void **state)
 {
   (void) state;
 
-  struct dhcp_conf dconf;
+  struct dhcp_conf dconf = {.dhcp_bin_path="/tmp/sbin/dnsmasq", .wifi_interface="wlan0"};
   UT_array *dns_server_array = NULL;
 
   will_return(__wrap_run_dhcp_process, dnsmasq_proc_name);
-  assert_int_equal(run_dhcp("/tmp/sbin/dnsmasq", &dconf, "wlan0", dns_server_array, "/tmp/domain", true), 0);
+  assert_int_equal(run_dhcp(&dconf, dns_server_array, "/tmp/domain", true), 0);
 }
 
 static void test_close_dhcp(void **state)
 {
   (void) state;
 
-  struct dhcp_conf dconf;
+  struct dhcp_conf dconf = {.dhcp_bin_path="/tmp/sbin/dnsmasq", .wifi_interface="wlan0"};
   UT_array *dns_server_array = NULL;
 
   will_return(__wrap_run_dhcp_process, dnsmasq_proc_name);
-  run_dhcp("/tmp/sbin/dnsmasq", &dconf, "wlan0", dns_server_array, "/tmp/domain", true);
+  run_dhcp(&dconf, dns_server_array, "/tmp/domain", true);
   assert_true(close_dhcp());
 }
 
@@ -93,7 +92,7 @@ static void test_clear_dhcp_lease(void **state)
 }
 
 int main(int argc, char *argv[])
-{  
+{
   (void) argc; /* unused */
   (void) argv; /* unused */
   log_set_quiet(false);
