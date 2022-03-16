@@ -1,0 +1,26 @@
+uci set wireless.radio1.disabled="0"
+uci set wireless.radio1.log_level="0"
+uci delete wireless.radio1.hostapd_options
+uci add_list wireless.radio1.hostapd_options="auth_algs=1"
+uci add_list wireless.radio1.hostapd_options="wpa=2"
+uci add_list wireless.radio1.hostapd_options="wpa_key_mgmt=WPA-PSK"
+uci add_list wireless.radio1.hostapd_options="rsn_pairwise=CCMP"
+uci add_list wireless.radio1.hostapd_options="own_ip_addr=127.0.0.1"
+uci add_list wireless.radio1.hostapd_options="auth_server_addr=127.0.0.1"
+uci add_list wireless.radio1.hostapd_options="auth_server_port=1812"
+uci add_list wireless.radio1.hostapd_options="auth_server_shared_secret=radius"
+uci add_list wireless.radio1.hostapd_options="macaddr_acl=2"
+uci add_list wireless.radio1.hostapd_options="dynamic_vlan=1"
+uci add_list wireless.radio1.hostapd_options="vlan_file=/tmp/hostapd.vlan"
+uci add_list wireless.radio1.hostapd_options="ignore_broadcast_ssid=0"
+uci add_list wireless.radio1.hostapd_options="wpa_psk_radius=2"
+uci add_list wireless.radio1.hostapd_options="vlan_bridge=br-br"
+uci delete wireless.edgesec
+uci set wireless.edgesec=wifi-iface
+uci set wireless.edgesec.device="radio1"
+uci set wireless.edgesec.mode="ap"
+uci set wireless.edgesec.network="br0"
+uci set wireless.edgesec.ssid="turris"
+uci set wireless.edgesec.isolate="0"
+uci commit wireless
+/sbin/wifi reload
