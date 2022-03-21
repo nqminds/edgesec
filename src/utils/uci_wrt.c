@@ -820,3 +820,162 @@ int uwrt_add_dhcp_pool(struct uctx *context, char *ifname,
 
   return 0;
 }
+
+int uwrt_gen_hostapd_instance(struct uctx *context, struct hostapd_params *params)
+{
+  char property[128];
+
+  if (context == NULL) {
+    log_trace("context param is NULL");
+    return -1;
+  }
+
+  if (params == NULL) {
+    log_trace("params param is NULL");
+    return -1;
+  }
+
+  if (params->device == NULL) {
+    log_trace("device param is NULL");
+    return -1;    
+  }
+
+  sprintf(property, "wireless.%s=wifi-device", params->device);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "wireless.%s.disabled=0", params->device);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "wireless.%s.log_level=0", params->device);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "wireless.%s.hostapd_options", params->device);
+  if (uwrt_delete_property(context->uctx, property) < 0) {
+    log_trace("uwrt_delete_property fail for %s", property);
+  }
+
+  sprintf(property, "wireless.%s.hostapd_options=auth_algs=%d", params->device, params->auth_algs);
+  if (uwrt_add_list(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "wireless.%s.hostapd_options=wpa=%d", params->device, params->wpa);
+  if (uwrt_add_list(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "wireless.%s.hostapd_options=wpa_key_mgmt=%s", params->device, params->wpa_key_mgmt);
+  if (uwrt_add_list(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "wireless.%s.hostapd_options=rsn_pairwise=%s", params->device, params->rsn_pairwise);
+  if (uwrt_add_list(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "wireless.%s.hostapd_options=own_ip_addr=%s", params->device, params->radius_client_ip);
+  if (uwrt_add_list(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "wireless.%s.hostapd_options=auth_server_addr=%s", params->device, params->radius_server_ip);
+  if (uwrt_add_list(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "wireless.%s.hostapd_options=auth_server_port=%d", params->device, params->radius_port);
+  if (uwrt_add_list(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "wireless.%s.hostapd_options=auth_server_shared_secret=%s", params->device, params->radius_secret);
+  if (uwrt_add_list(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "wireless.%s.hostapd_options=macaddr_acl=%d", params->device, params->macaddr_acl);
+  if (uwrt_add_list(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "wireless.%s.hostapd_options=dynamic_vlan=%d", params->device, params->dynamic_vlan);
+  if (uwrt_add_list(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "wireless.%s.hostapd_options=vlan_file=%s", params->device, params->vlan_file);
+  if (uwrt_add_list(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "wireless.%s.hostapd_options=ignore_broadcast_ssid=%d", params->device, params->ignore_broadcast_ssid);
+  if (uwrt_add_list(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "wireless.%s.hostapd_options=wpa_psk_radius=%d", params->device, params->wpa_psk_radius);
+  if (uwrt_add_list(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "wireless.%s.hostapd_options=vlan_bridge=%s", params->device, params->vlan_bridge);
+  if (uwrt_add_list(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "wireless.edgesec=wifi-iface");
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "wireless.edgesec.device=%s", params->device);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "wireless.edgesec.mode=ap");
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "wireless.edgesec.ssid=%s", params->ssid);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "wireless.edgesec.isolate=0");
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  return 0;
+}

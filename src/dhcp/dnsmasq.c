@@ -45,6 +45,7 @@
 
 #ifdef WITH_UCI_SERVICE
 #include "../utils/uci_wrt.h"
+#define DNSMASQ_SERVICE_RESTART       "restart"
 #endif
 
 #define PROCESS_RESTART_TIME  5 // In seconds
@@ -55,7 +56,6 @@
 #define DNSMASQ_NO_DAEMON_OPTION      "--no-daemon"
 #define DNSMASQ_LOG_QUERIES_OPTION    "--log-queries"
 #define DNSMASQ_CONF_FILE_OPTION      "--conf-file="
-#define DNSMASQ_SERVICE_RESTART       "restart"
 
 #define DNSMASQ_SCRIPT_STR \
   "#!/bin/sh\n" \
@@ -91,7 +91,7 @@ struct string_queue* make_interface_list(struct dhcp_conf *dconf)
   }
 
   while((el = (config_dhcpinfo_t *) utarray_next(dconf->config_dhcpinfo_array, el)) != NULL) {
-    snprintf(buf, IFNAMSIZ, "%s%d", dconf->bridge_interface_prefix, el->vlanid);
+    snprintf(buf, IFNAMSIZ, "%s%d", dconf->bridge_prefix, el->vlanid);
     if (push_string_queue(squeue, buf) < 0) {
       log_trace("push_string_queue fail");
       free_string_queue(squeue);
@@ -131,8 +131,7 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array)
 
   while((el = (config_dhcpinfo_t *) utarray_next(dconf->config_dhcpinfo_array, el)) != NULL) {
 
-    if (uwrt_add_dhcp_pool(context, dconf->bridge_interface_prefix,
-                       el->vlanid, el->ip_addr_low, el->ip_addr_upp,
+    if (uwrt_add_dhcp_pool(context, dconf->bridge_prefix, el->vlanid, el->ip_addr_low, el->ip_addr_upp,
                        el->subnet_mask, el->lease_time) < 0)
     {
       log_trace("uwrt_add_dhcp_pool fail");

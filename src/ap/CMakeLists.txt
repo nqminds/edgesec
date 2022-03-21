@@ -3,7 +3,12 @@ include_directories (
 )
 
 add_library(hostapd hostapd.c)
-target_link_libraries(hostapd PRIVATE log os iface)
+if (USE_UCI_SERVICE)
+  target_include_directories(hostapd PRIVATE ${LIBUCI_INCLUDE_PATH})
+  target_link_libraries(hostapd PRIVATE log os iface ${LIBUCI_STATIC_LIB})
+else ()
+  target_link_libraries(hostapd PRIVATE log os iface)
+endif()
 
 add_library(ap_service ap_service.c)
 target_include_directories(ap_service PRIVATE ${LIBSQLITE_INCLUDE_DIR} PUBLIC $<TARGET_PROPERTY:iface,INCLUDE_DIRECTORIES>)

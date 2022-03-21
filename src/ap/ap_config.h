@@ -65,9 +65,9 @@ struct apconf {
   char ap_log_path[MAX_OS_PATH_LEN];             /**< The AP log path string */
   char ctrl_interface_path[MAX_OS_PATH_LEN];     /**< The path constructed as ctrl_interface/interface  */
   char interface[IFNAMSIZ];                           /**< The hostapd @c interface param @see https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf */
+  char device[IFNAMSIZ];                            /**< The hostapd uci device id*/
   char ssid[AP_NAME_LEN];                     /**< The hostapd @c ssid param @see https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf */
   char wpa_passphrase[AP_SECRET_LEN];         /**< WiFi AP password if @c struct app_config::allow_all_connections flag is set */
-  char bridge[IFNAMSIZ];                              /**< The hostapd @c bridge param @see https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf */
   char driver[AP_DRIVE_LEN];                     /**< The hostapd @c driver param @see https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf */
   char hw_mode[AP_HWMODE_LEN];                   /**< The hostapd @c hw_mode param @see https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf */
   int channel;                                        /**< The hostapd @c channel param @see https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf */

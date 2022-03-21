@@ -262,7 +262,7 @@ int run_ap(struct supervisor_context *context, bool exec_ap, bool generate_ssid,
 {
   char hostname[OS_HOST_NAME_MAX];
   int res;
-  if (!generate_vlan_conf(context->hconfig.vlan_file, context->hconfig.interface)) {
+  if (generate_vlan_conf(context->hconfig.vlan_file, context->hconfig.interface) < 0) {
     log_trace("generate_vlan_conf fail");
     return -1;
   }
@@ -276,7 +276,7 @@ int run_ap(struct supervisor_context *context, bool exec_ap, bool generate_ssid,
     log_info("Regenarating SSID=%s", context->hconfig.ssid);
   }
 
-  if (!generate_hostapd_conf(&context->hconfig, &context->rconfig)) {
+  if (generate_hostapd_conf(&context->hconfig, &context->rconfig) < 0) {
     unlink(context->hconfig.vlan_file);
     log_trace("generate_hostapd_conf fail");
     return -1;

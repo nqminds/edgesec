@@ -43,6 +43,12 @@
 #include "utils/os.h"
 #include "utils/iface.h"
 
+#ifdef WITH_UCI_SERVICE
+#include "../utils/uci_wrt.h"
+#define HOSTAPD_SERVICE_RELOAD        "reload"
+#define HOSTAPD_PROCESS_NAME          "hostapd"
+#endif
+
 #define HOSTAPD_LOG_FILE_OPTION "-f"
 
 #define PROCESS_RESTART_TIME  5       /* In seconds */
@@ -51,21 +57,21 @@
 static char hostapd_proc_name[MAX_OS_PATH_LEN];
 static bool ap_process_started = false;
 
-bool generate_vlan_conf(char *vlan_file, char *interface)
+int generate_vlan_conf(char *vlan_file, char *interface)
 {
   // Delete the vlan config file if present
   int stat = unlink(vlan_file);
 
   if (stat == -1 && errno != ENOENT) {
     log_err("unlink");
-    return false;
+    return -1;
   }
 
   FILE *fp = fopen(vlan_file, "a+");
 
   if (fp == NULL) {
     log_err("fopen");
-    return false;
+    return -1;
   }
 
   log_trace("Writing into %s", vlan_file);
@@ -73,30 +79,75 @@ bool generate_vlan_conf(char *vlan_file, char *interface)
   fprintf(fp, "*\t%s.#\n", interface);
 
   fclose(fp);
-  return true;
+  return 0;
 }
 
-bool generate_hostapd_conf(struct apconf *hconf, struct radius_conf *rconf)
+#ifdef WITH_UCI_SERVICE
+int generate_hostapd_conf(struct apconf *hconf, struct radius_conf *rconf)
+{
+  struct hostapd_params params;
+  struct uctx *context = uwrt_init_context(NULL);
+
+  if (context == NULL) {
+    log_trace("uwrt_init_context fail");
+    return -1;
+  }
+
+  log_trace("Writing hostapd config using uci");
+
+  params.device = hconf->device;
+  params.auth_algs = hconf->auth_algs;
+  params.wpa = hconf->wpa;
+  params.wpa_key_mgmt = hconf->wpa_key_mgmt;
+  params.rsn_pairwise = hconf->rsn_pairwise;
+  params.radius_client_ip = rconf->radius_client_ip;
+  params.radius_server_ip = rconf->radius_server_ip;
+  params.radius_port = rconf->radius_port;
+  params.radius_secret = rconf->radius_secret;
+  params.macaddr_acl = hconf->macaddr_acl;
+  params.dynamic_vlan = hconf->dynamic_vlan;
+  params.vlan_file = hconf->vlan_file;
+  params.ignore_broadcast_ssid = hconf->ignore_broadcast_ssid;
+  params.wpa_psk_radius = hconf->wpa_psk_radius;
+  params.vlan_bridge = hconf->vlan_bridge;
+  params.ssid = hconf->ssid;
+
+  if (uwrt_gen_hostapd_instance(context, &params) < 0) {
+    log_trace("uwrt_gen_hostapd_instance fail");
+    uwrt_free_context(context);
+    return -1;
+  }
+
+  if (uwrt_commit_section(context, "wireless") < 0) {
+    log_trace("uwrt_commit_section fail");
+    uwrt_free_context(context);
+    return -1;
+  }
+
+  uwrt_free_context(context);
+  return 0;
+}
+#else
+int generate_hostapd_conf(struct apconf *hconf, struct radius_conf *rconf)
 {
   // Delete the config file if present
   int stat = unlink(hconf->ap_file_path);
 
   if (stat == -1 && errno != ENOENT) {
     log_err("unlink");
-    return false;
+    return -1;
   }
 
   FILE *fp = fopen(hconf->ap_file_path, "a+");
 
   if (fp == NULL) {
     log_err("fopen");
-    return false;
+    return -1;
   }
 
   log_trace("Writing into %s", hconf->ap_file_path);
 
   fprintf(fp, "interface=%s\n", hconf->interface);
-  fprintf(fp, "bridge=%s\n", hconf->bridge);
   fprintf(fp, "driver=%s\n", hconf->driver);
   fprintf(fp, "ssid=%s\n", hconf->ssid);
   fprintf(fp, "hw_mode=%s\n", hconf->hw_mode);
@@ -126,9 +177,20 @@ bool generate_hostapd_conf(struct apconf *hconf, struct radius_conf *rconf)
     fprintf(fp, "vlan_tagged_interface=%s\n", hconf->vlan_tagged_interface);
   }
   fclose(fp);
-  return true;
+  return 0;
 }
+#endif
 
+#ifdef WITH_UCI_SERVICE
+void get_hostapd_args(char *hostapd_bin_path, char *hostapd_file_path, char *hostapd_log_path, char *argv[])
+{
+  (void) hostapd_file_path;
+  (void) hostapd_log_path;
+
+  argv[0] = hostapd_bin_path;
+  argv[1] = HOSTAPD_SERVICE_RELOAD;
+}
+#else
 void get_hostapd_args(char *hostapd_bin_path, char *hostapd_file_path, char *hostapd_log_path, char *argv[])
 {
   // argv = {"hostapd", "-B", hostapd_file_path, NULL};
@@ -143,6 +205,7 @@ void get_hostapd_args(char *hostapd_bin_path, char *hostapd_file_path, char *hos
     argv[1] = hostapd_file_path;        /* ./hostapd hostapd.conf */
   }
 }
+#endif
 
 int check_ap_running(char *name, char *if_name, int wait_time)
 {
@@ -160,7 +223,33 @@ int check_ap_running(char *name, char *if_name, int wait_time)
 
   return running;
 }
+#ifdef WITH_UCI_SERVICE
+int run_ap_process(struct apconf *hconf)
+{
+  pid_t child_pid = 0;
+  int ret;
+  char *process_argv[3] = {NULL, NULL, NULL};
 
+  os_strlcpy(hostapd_proc_name, HOSTAPD_PROCESS_NAME, MAX_OS_PATH_LEN);
+  get_hostapd_args(hconf->ap_bin_path, hconf->ap_file_path, hconf->ap_log_path, process_argv);
+
+  if((ret = run_process(process_argv, &child_pid)) < 0) {
+    log_trace("Restarting process in %d seconds", PROCESS_RESTART_TIME);
+    return -1;
+  }
+
+  log_trace("Checking ap proc running...");
+  if (check_ap_running(hostapd_proc_name, hconf->ctrl_interface_path, 1) <= 0) {
+    log_trace("check_ap_running or process not running");
+    return -1;
+  }
+
+  log_trace("hostapd running with pid=%d", child_pid);
+  ap_process_started = true;
+
+  return 0;
+}
+#else
 int run_ap_process(struct apconf *hconf)
 {
   pid_t child_pid = 0;
@@ -199,7 +288,7 @@ int run_ap_process(struct apconf *hconf)
   }
 
   log_trace("Checking ap proc running...");
-  if (check_ap_running(basename(process_argv[0]), hconf->ctrl_interface_path, 1) <= 0) {
+  if (check_ap_running(hostapd_proc_name, hconf->ctrl_interface_path, 1) <= 0) {
     log_trace("check_ap_running or process not running");
     return -1;
   }
@@ -209,6 +298,7 @@ int run_ap_process(struct apconf *hconf)
 
   return 0;
 }
+#endif
 
 bool kill_ap_process(void)
 {

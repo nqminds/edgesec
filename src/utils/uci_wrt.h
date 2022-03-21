@@ -37,6 +37,25 @@ struct uctx {
   char path[MAX_OS_PATH_LEN];
 };
 
+struct hostapd_params {
+  char *device;
+  int auth_algs;
+  int wpa;
+  char *wpa_key_mgmt;
+  char *rsn_pairwise;
+  char *radius_client_ip;
+  char *radius_server_ip;
+  int radius_port;
+  char *radius_secret;
+  int macaddr_acl;
+  int dynamic_vlan;
+  char *vlan_file;
+  int ignore_broadcast_ssid;
+  int wpa_psk_radius;
+  char *vlan_bridge;
+  char *ssid;
+};
+
 /**
  * @brief Initialises the uci context
  * 
@@ -112,4 +131,12 @@ int uwrt_add_dhcp_pool(struct uctx *context, char *ifname,
                        int vlanid, char *ip_addr_low, char *ip_addr_upp,
                        char *subnet_mask, char *lease_time);
 
+/**
+ * @brief Generate the hostapd configf
+ * 
+ * @param context The uci context
+ * @param params The hostapd params
+ * @return int 0 on success, -1 on failure
+ */
+int uwrt_gen_hostapd_instance(struct uctx *context, struct hostapd_params *params);
 #endif

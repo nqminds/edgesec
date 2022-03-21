@@ -42,18 +42,18 @@
  * 
  * @param hconf The hostapd configuration structure
  * @param rconf The radius configuration structure
- * @return true if config file saved, false otherwise
+ * @return 0 if config file saved, -1 otherwise
  */
-bool generate_hostapd_conf(struct apconf *hconf, struct radius_conf *rconf);
+int generate_hostapd_conf(struct apconf *hconf, struct radius_conf *rconf);
 
 /**
  * @brief Generates and save the VLAN configuration file
  * 
  * @param vlan_file The VLAN configuration file path
  * @param interface The WiFi AP interface name
- * @return true  if VLAN config file saved, false otherwise
+ * @return 0 if VLAN config file saved, -1 otherwise
  */
-bool generate_vlan_conf(char *vlan_file, char *interface);
+int generate_vlan_conf(char *vlan_file, char *interface);
 
 /**
  * @brief Executes the hostapd process

@@ -159,14 +159,25 @@ bool load_interface_list(const char *filename, struct app_config *config)
     return false;
   }
 
-  // Load ap bin path
-  ret = ini_gets("interfaces", "prefix", "br", key, INI_BUFFERSIZE, filename);
+  // Load the bridge prefix
+  ret = ini_gets("interfaces", "bridgePrefix", "", key, INI_BUFFERSIZE, filename);
   if (!ret) {
     log_debug("bridge prefix was not specified\n");
     os_free(key);
     return false;
   }
-  os_strlcpy(config->bridge_interface_prefix, key, IFNAMSIZ);
+  os_strlcpy(config->bridge_prefix, key, IFNAMSIZ);
+  os_free(key);
+
+  // Load the interface prefix
+  key = os_malloc(INI_BUFFERSIZE);
+  ret = ini_gets("interfaces", "interfacePrefix", "", key, INI_BUFFERSIZE, filename);
+  if (!ret) {
+    log_debug("interface prefix was not specified\n");
+    os_free(key);
+    return false;
+  }
+  os_strlcpy(config->interface_prefix, key, IFNAMSIZ);
   os_free(key);
 
   key = os_malloc(INI_BUFFERSIZE);
@@ -300,11 +311,11 @@ bool load_ap_conf(const char *filename, struct app_config *config)
   os_strlcpy(config->hconfig.ap_log_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
-  // Load ap bridge
-  value = os_malloc(INI_BUFFERSIZE);
-  ret = ini_gets("ap", "bridge", "", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->hconfig.bridge, value, IFNAMSIZ);
-  os_free(value);
+  // // Load ap bridge
+  // value = os_malloc(INI_BUFFERSIZE);
+  // ret = ini_gets("ap", "bridge", "", value, INI_BUFFERSIZE, filename);
+  // os_strlcpy(config->hconfig.bridge, value, IFNAMSIZ);
+  // os_free(value);
 
   // Load AP name
   value = os_malloc(INI_BUFFERSIZE);
@@ -333,6 +344,12 @@ bool load_ap_conf(const char *filename, struct app_config *config)
   }
 
   os_strlcpy(config->hconfig.interface, value, IFNAMSIZ);
+  os_free(value);
+
+  // Load device
+  value = os_malloc(INI_BUFFERSIZE);
+  ini_gets("ap", "device", "", value, INI_BUFFERSIZE, filename);
+  os_strlcpy(config->hconfig.device, value, IFNAMSIZ);
   os_free(value);
 
   // Load vlan_tagged_interface
@@ -388,18 +405,6 @@ bool load_ap_conf(const char *filename, struct app_config *config)
 
   // Load ap dynamicVlan
   config->hconfig.dynamic_vlan = (int) ini_getl("ap", "dynamicVlan", 1, filename);
-
-  // Load ap vlanBridge
-  value = os_malloc(INI_BUFFERSIZE);
-  ret = ini_gets("ap", "vlanBridge", "", value, INI_BUFFERSIZE, filename);
-  if (!ret) {
-    log_debug("ap vlanBridge was not specified\n");
-    os_free(value);
-    return false;
-  }
-
-  os_strlcpy(config->hconfig.vlan_bridge, value, IFNAMSIZ);
-  os_free(value);
 
   // Load ap vlanFile
   value = os_malloc(INI_BUFFERSIZE);

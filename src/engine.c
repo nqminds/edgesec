@@ -226,7 +226,7 @@ int init_context(struct app_config *app_config, struct supervisor_context *ctx)
     return -1;
   }
 
-  if (!init_ifbridge_names(app_config->config_ifinfo_array, app_config->bridge_interface_prefix)) {
+  if (!init_ifbridge_names(app_config->config_ifinfo_array, app_config->interface_prefix)) {
     log_trace("init_ifbridge_names fail");
     return -1;
   }
@@ -264,8 +264,9 @@ int init_context(struct app_config *app_config, struct supervisor_context *ctx)
   os_memcpy(&ctx->nconfig, &app_config->dns_config, sizeof(struct dns_conf));
   os_memcpy(&ctx->mconfig, &app_config->mdns_config, sizeof(struct mdns_conf));
 
-  strcpy(ctx->dconfig.bridge_interface_prefix, app_config->bridge_interface_prefix);
+  strcpy(ctx->dconfig.bridge_prefix, app_config->bridge_prefix);
   strcpy(ctx->dconfig.wifi_interface, app_config->hconfig.interface);
+  strcpy(ctx->hconfig.vlan_bridge, app_config->interface_prefix);
 
   if (ctx->default_open_vlanid == ctx->quarantine_vlanid) {
     log_trace("default and quarantine vlans have the same id");
