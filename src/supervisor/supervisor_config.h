@@ -36,6 +36,7 @@
 #include "../utils/iface.h"
 #include "../capture/capture_config.h"
 #include "../crypt/crypt_config.h"
+#include "../firewall/firewall_service.h"
 
 #include "mac_mapper.h"
 
@@ -87,7 +88,7 @@ struct supervisor_context {
   sqlite3         *alert_db;                                  /**< The alert sqlite db structure. */
   sqlite3         *macconn_db;                                /**< The macconn db structure. */
   struct radius_server_data *radius_srv;                      /**< The radius server context. */
-  struct iptables_context *iptables_ctx;                      /**< The iptables context. */
+  struct fwctx* fw_ctx;                                       /**< The firewall context. */
   struct crypt_context *crypt_ctx;                            /**< The crypt context. */
   struct iface_context *iface_ctx;                            /**< The interface context. */
   struct auth_ticket *ticket;                                 /**< The authentication ticket. */  

@@ -40,7 +40,6 @@
 #include "../utils/log.h"
 #include "../utils/base64.h"
 #include "../utils/eloop.h"
-#include "../utils/iptables.h"
 
 int put_crypt_cmd(struct supervisor_context *context, char *key, char *value)
 {

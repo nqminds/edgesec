@@ -700,8 +700,8 @@ bool load_system_config(const char *filename, struct app_config *config)
   // Load the exec mdns forward flag
   config->exec_mdns_forward = ini_getbool("system", "execMdnsForward", 0, filename);
 
-  // Load the exec iptables flag
-  config->exec_iptables = ini_getbool("system", "execIptables", 1, filename);
+  // Load the exec firewall flag
+  config->exec_firewall = ini_getbool("system", "execFirewall", 1, filename);
 
   // Load the allocateVlans flag
   config->allocate_vlans = ini_getbool("system", "allocateVlans", 0, filename);

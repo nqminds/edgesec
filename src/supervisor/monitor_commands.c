@@ -44,7 +44,6 @@
 #include "../utils/log.h"
 #include "../utils/base64.h"
 #include "../utils/eloop.h"
-#include "../utils/iptables.h"
 
 static const UT_icd fingerprint_icd = {sizeof(struct fingerprint_row), NULL, NULL, NULL};
 

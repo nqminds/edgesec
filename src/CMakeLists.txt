@@ -10,7 +10,7 @@ add_subdirectory(capture)
 
 add_library(engine engine.c)
 target_include_directories(engine PRIVATE ${LIBSQLITE_INCLUDE_DIR})
-target_link_libraries(engine crypt_service net log iface_mapper os sqlite_macconn_writer sqlite_fingerprint_writer firewall_service eloop supervisor network_commands radius_service mac_mapper ap_service iptables dhcp_service)
+target_link_libraries(engine crypt_service net log iface_mapper os sqlite_macconn_writer sqlite_fingerprint_writer firewall_service eloop supervisor network_commands radius_service mac_mapper ap_service firewall_service dhcp_service)
 
 add_library(config config.c)
 target_include_directories(config PUBLIC $<TARGET_PROPERTY:iface,INCLUDE_DIRECTORIES> ${LIBSQLITE_INCLUDE_DIR})

@@ -104,6 +104,8 @@
         "eloop.h": "c",
         "dhcp_config.h": "c",
         "capture_config.h": "c",
-        "iface_mapper.h": "c"
+        "iface_mapper.h": "c",
+        "hashmap.h": "c",
+        "firewall_config.h": "c"
     }
 }

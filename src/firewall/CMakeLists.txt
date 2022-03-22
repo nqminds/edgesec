@@ -3,4 +3,5 @@ include_directories (
 )
 
 add_library(firewall_service firewall_service.c)
-target_link_libraries(firewall_service PRIVATE log iface os hashmap)
+target_include_directories(firewall_service PUBLIC ${LIBSQLITE_INCLUDE_DIR})
+target_link_libraries(firewall_service PRIVATE iptables log iface os hashmap)

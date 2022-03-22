@@ -42,7 +42,6 @@
 #include "../utils/log.h"
 #include "../utils/base64.h"
 #include "../utils/eloop.h"
-#include "../utils/iptables.h"
 #include "../utils/domain.h"
 #include "../utils/utarray.h"
 #include "../utils/iface_mapper.h"

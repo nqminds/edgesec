@@ -41,7 +41,7 @@
 #include "../utils/net.h"
 #include "../utils/base64.h"
 #include "../utils/eloop.h"
-#include "../utils/iptables.h"
+#include "../firewall/firewall_service.h"
 
 #define ANALYSER_FILTER_FORMAT "\"ether dst " MACSTR " or ether src " MACSTR"\""
 
@@ -166,16 +166,9 @@ int deny_mac_cmd(struct supervisor_context *context, uint8_t *mac_addr)
 
 int add_nat_ip(struct supervisor_context *context, char *ip_addr)
 {
-  char ifname[IFNAMSIZ];
-
   if (validate_ipv4_string(ip_addr)) {
-    if (!get_ifname_from_ip(&context->if_mapper, context->config_ifinfo_array, ip_addr, ifname)) {
-      log_trace("get_ifname_from_ip fail");
-      return -1;
-    }
-    log_trace("Adding iptable rule for ip=%s if=%s", ip_addr, ifname);
-    if (!iptables_add_nat(context->iptables_ctx, ip_addr, ifname, context->nat_interface)) {
-      log_trace("iptables_add_nat fail");
+    if (fw_add_nat(context->fw_ctx, ip_addr) < 0) {
+      log_trace("fw_add_nat fail");
       return -1;
     }
   }
@@ -185,16 +178,9 @@ int add_nat_ip(struct supervisor_context *context, char *ip_addr)
 
 int remove_nat_ip(struct supervisor_context *context, char *ip_addr)
 {
-  char ifname[IFNAMSIZ];
-
   if (validate_ipv4_string(ip_addr)) {
-    if (!get_ifname_from_ip(&context->if_mapper, context->config_ifinfo_array, ip_addr, ifname)) {
-      log_trace("get_ifname_from_ip fail");
-      return -1;
-    }
-    log_trace("Removing iptable rule for ip=%s if=%s", ip_addr, ifname);
-    if (!iptables_delete_nat(context->iptables_ctx, ip_addr, ifname, context->nat_interface)) {
-      log_trace("iptables_delete_nat fail");
+    if (fw_remove_nat(context->fw_ctx, ip_addr) < 0) {
+      log_trace("fw_remove_nat fail");
       return -1;
     }
   }
@@ -295,22 +281,9 @@ int assign_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr,
 
 int add_bridge_ip(struct supervisor_context *context, char *ip_addr_left, char *ip_addr_right)
 {
-  char ifname_left[IFNAMSIZ], ifname_right[IFNAMSIZ];
-
   if (validate_ipv4_string(ip_addr_left) && validate_ipv4_string(ip_addr_right)) {
-    if (!get_ifname_from_ip(&context->if_mapper, context->config_ifinfo_array, ip_addr_left, ifname_left)) {
-      log_trace("get_ifname_from_ip fail");
-      return -1;
-    }
-
-    if (!get_ifname_from_ip(&context->if_mapper, context->config_ifinfo_array, ip_addr_right, ifname_right)) {
-      log_trace("get_ifname_from_ip fail");
-      return -1;
-    }
-
-    log_trace("Adding iptable rule for sip=%s sif=%s dip=%s dif=%s", ip_addr_left, ifname_left, ip_addr_right, ifname_right);
-    if (!iptables_add_bridge(context->iptables_ctx, ip_addr_left, ifname_left, ip_addr_right, ifname_right)) {
-      log_trace("iptables_add_bridge fail");
+    if (fw_add_bridge(context->fw_ctx, ip_addr_left, ip_addr_right) < 0) {
+      log_trace("fw_add_bridge fail");
       return -1;
     }
   }
@@ -320,22 +293,9 @@ int add_bridge_ip(struct supervisor_context *context, char *ip_addr_left, char *
 
 int delete_bridge_ip(struct supervisor_context *context, char *ip_addr_left, char *ip_addr_right)
 {
-  char ifname_left[IFNAMSIZ], ifname_right[IFNAMSIZ];
-
   if (validate_ipv4_string(ip_addr_left) && validate_ipv4_string(ip_addr_right)) {
-    if (!get_ifname_from_ip(&context->if_mapper, context->config_ifinfo_array, ip_addr_left, ifname_left)) {
-      log_trace("get_ifname_from_ip fail");
-      return -1;
-    }
-
-    if (!get_ifname_from_ip(&context->if_mapper, context->config_ifinfo_array, ip_addr_right, ifname_right)) {
-      log_trace("get_ifname_from_ip fail");
-      return -1;
-    }
-
-    log_trace("Removing iptable rule for sip=%s sif=%s dip=%s dif=%s", ip_addr_left, ifname_left, ip_addr_right, ifname_right);
-    if (!iptables_delete_bridge(context->iptables_ctx, ip_addr_left, ifname_left, ip_addr_right, ifname_right)) {
-      log_trace("iptables_add_bridge fail");
+    if (fw_remove_bridge(context->fw_ctx, ip_addr_left, ip_addr_right) < 0) {
+      log_trace("fw_remove_bridge fail");
       return -1;
     }
   }

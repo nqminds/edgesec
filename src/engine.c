@@ -43,7 +43,6 @@
 #include "utils/iface_mapper.h"
 #include "utils/ifaceu.h"
 #include "utils/iface.h"
-#include "utils/iptables.h"
 
 #include "supervisor/supervisor.h"
 #include "supervisor/network_commands.h"
@@ -294,7 +293,7 @@ int init_context(struct app_config *app_config, struct supervisor_context *ctx)
   ctx->crypt_ctx = NULL;
   ctx->iface_ctx = NULL;
   ctx->ticket = NULL;
-  ctx->iptables_ctx = NULL;
+  ctx->fw_ctx = NULL;
   ctx->fingeprint_db = NULL;
   ctx->alert_db = NULL;
   ctx->domain_sock = -1;
@@ -306,7 +305,6 @@ int init_context(struct app_config *app_config, struct supervisor_context *ctx)
   ctx->default_open_vlanid = app_config->default_open_vlanid;
   ctx->quarantine_vlanid = app_config->quarantine_vlanid;
   ctx->risk_score = app_config->risk_score;
-
   ctx->wpa_passphrase_len = os_strnlen_s(app_config->hconfig.wpa_passphrase, AP_SECRET_LEN);
   os_memcpy(ctx->wpa_passphrase, app_config->hconfig.wpa_passphrase, ctx->wpa_passphrase_len);
   
@@ -426,14 +424,11 @@ bool run_engine(struct app_config *app_config)
   log_info("AP interface: %s", context.hconfig.interface);
   log_info("DB path: %s", context.db_path);
 
-  char *iptables_path = hmap_str_keychar_get(&context.hmap_bin_paths, "iptables");
-  if (iptables_path == NULL) {
-    log_debug("Couldn't find xtables-multi binary");
-    goto run_engine_fail;
-  }
-
-  if ((context.iptables_ctx = iptables_init(iptables_path, context.config_ifinfo_array, app_config->exec_iptables)) == NULL) {
-    log_debug("iptables_init fail");
+  if ((context.fw_ctx = fw_init_context(context.if_mapper, context.vlan_mapper,
+                      context.hmap_bin_paths, context.config_ifinfo_array,
+                      context.nat_interface, app_config->exec_firewall)) == NULL)
+  {
+    log_debug("fw_init_context fail");
     goto run_engine_fail;
   }
 
@@ -547,7 +542,7 @@ bool run_engine(struct app_config *app_config)
   close_radius(context.radius_srv);
   eloop_destroy();
   hmap_str_keychar_free(&context.hmap_bin_paths);
-  iptables_free(context.iptables_ctx);
+  fw_free_context(context.fw_ctx);
   free_mac_mapper(&context.mac_mapper);
   free_if_mapper(&context.if_mapper);
   free_vlan_mapper(&context.vlan_mapper);
@@ -566,7 +561,7 @@ run_engine_fail:
   close_radius(context.radius_srv);
   eloop_destroy();
   hmap_str_keychar_free(&context.hmap_bin_paths);
-  iptables_free(context.iptables_ctx);
+  fw_free_context(context.fw_ctx);
   free_mac_mapper(&context.mac_mapper);
   free_if_mapper(&context.if_mapper);
   free_vlan_mapper(&context.vlan_mapper);

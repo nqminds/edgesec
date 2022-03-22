@@ -52,7 +52,7 @@ struct app_config {
   bool                exec_dhcp;                            /**< Flag to execute the dhcp service. */
   bool                exec_capture;                         /**< Flag to execute the capture service. */
   bool                exec_mdns_forward;                    /**< Flag to execute the mdns forwarding service. */
-  bool                exec_iptables;                        /**< Flag to execute the iptables command. */
+  bool                exec_firewall;                        /**< Flag to execute the firewall command. */
   char                nat_interface[IFNAMSIZ];              /**< The NAT interface string. */
   char                bridge_prefix[IFNAMSIZ];              /**< The bridge prefix. */
   char                interface_prefix[IFNAMSIZ];           /**< The interface prefix. */
