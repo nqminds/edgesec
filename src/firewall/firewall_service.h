@@ -34,8 +34,6 @@
 #include "../utils/hashmap.h"
 #include "../utils/iface_mapper.h"
 
-#include "../utils/iptables.h"
-
 #include "firewall_config.h"
 
 /**

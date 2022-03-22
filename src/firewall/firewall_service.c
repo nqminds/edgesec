@@ -43,6 +43,12 @@
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 
+#ifdef WITH_UCI_SERVICE
+#include "../utils/uci_wrt.h"
+#else
+#include "../utils/iptables.h"
+#endif
+
 #include "firewall_config.h"
 
 #define IP_FORWARD_PATH "/proc/sys/net/ipv4/ip_forward"
@@ -51,7 +57,11 @@ void fw_free_context(struct fwctx* context)
 {
   if (context != NULL) {
     if (context->ctx != NULL) {
+#ifdef WITH_UCI_SERVICE
+      uwrt_free_context(context->ctx);
+#else
       iptables_free(context->ctx);
+#endif
     }
     os_free(context);
   }
@@ -98,6 +108,13 @@ struct fwctx* fw_init_context(hmap_if_conn *if_mapper,
   fw_ctx->nat_interface = nat_interface;
   fw_ctx->exec_firewall = exec_firewall;
 
+#ifdef WITH_UCI_SERVICE
+  if ((fw_ctx->ctx = uwrt_init_context(NULL)) == NULL) {
+    log_debug("uwrt_init_context fail");
+    fw_free_context(fw_ctx);
+    return NULL;
+  }
+#else
   char *iptables_path = hmap_str_keychar_get(&hmap_bin_paths, "iptables");
   if (iptables_path == NULL) {
     log_debug("Couldn't find iptables binary");
@@ -110,6 +127,7 @@ struct fwctx* fw_init_context(hmap_if_conn *if_mapper,
     fw_free_context(fw_ctx);
     return NULL;
   }
+#endif
 
   return fw_ctx;
 }
@@ -155,12 +173,16 @@ int fw_add_nat(struct fwctx* context, char *ip_addr)
     return -1;
   }
 
+#ifdef WITH_UCI_SERVICE
+  return 0;
+#else
   log_trace("Adding iptable rule for ip=%s if=%s", ip_addr, ifname);
   if (!iptables_add_nat(context->ctx, ip_addr, ifname, context->nat_interface)) {
     log_trace("iptables_add_nat fail");
     return -1;
   }
-  
+#endif
+
   return 0;
 }
 
@@ -173,11 +195,15 @@ int fw_remove_nat(struct fwctx* context, char *ip_addr)
     return -1;
   }
 
+#ifdef WITH_UCI_SERVICE
+  return 0;
+#else
   log_trace("Removing iptable rule for ip=%s if=%s", ip_addr, ifname);
   if (!iptables_delete_nat(context->ctx, ip_addr, ifname, context->nat_interface)) {
     log_trace("iptables_delete_nat fail");
     return -1;
   }
+#endif
 
   return 0;
 }
@@ -196,12 +222,16 @@ int fw_add_bridge(struct fwctx* context, char *ip_addr_left, char *ip_addr_right
     return -1;
   }
 
+#ifdef WITH_UCI_SERVICE
+  return 0;
+#else
   log_trace("Adding iptable rule for sip=%s sif=%s dip=%s dif=%s", ip_addr_left, ifname_left, ip_addr_right, ifname_right);
   if (!iptables_add_bridge(context->ctx, ip_addr_left, ifname_left, ip_addr_right, ifname_right)) {
     log_trace("iptables_add_bridge fail");
     return -1;
   }
-  
+#endif
+
   return 0;
 }
 
@@ -219,11 +249,15 @@ int fw_remove_bridge(struct fwctx* context, char *ip_addr_left, char *ip_addr_ri
     return -1;
   }
 
+#ifdef WITH_UCI_SERVICE
+  return 0;
+#else
   log_trace("Removing iptable rule for sip=%s sif=%s dip=%s dif=%s", ip_addr_left, ifname_left, ip_addr_right, ifname_right);
   if (!iptables_delete_bridge(context->ctx, ip_addr_left, ifname_left, ip_addr_right, ifname_right)) {
     log_trace("iptables_add_bridge fail");
     return -1;
   }
+#endif
 
   return 0;
 }

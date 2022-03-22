@@ -33,7 +33,11 @@
 #include "../utils/hashmap.h"
 #include "../utils/iface_mapper.h"
 
+#ifdef WITH_UCI_SERVICE
+#include "../utils/uci_wrt.h"
+#else
 #include "../utils/iptables.h"
+#endif
 
 struct fwctx {
   hmap_if_conn    *if_mapper;                                 /**< WiFi subnet to interface mapper */
@@ -42,6 +46,10 @@ struct fwctx {
   UT_array        *config_ifinfo_array;                       /**< @c config_ifinfo_array from @c struct app_config */
   char *nat_interface;
   bool exec_firewall;
+#ifdef WITH_UCI_SERVICE
+  struct uctx* ctx;
+#else
   struct iptables_context* ctx;
+#endif
 };
 #endif
