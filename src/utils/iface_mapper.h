@@ -72,6 +72,7 @@ typedef struct {
 typedef struct config_ifinfo_t{
   int       				vlanid;                 /**< Interface VLAN ID */
   char 						ifname[IFNAMSIZ];		/**< Interface string name */
+  char 						brname[IFNAMSIZ];		/**< Bridge string name */
   char 						ip_addr[IP_LEN];		/**< Interface string IP address */
   char 						brd_addr[IP_LEN];		/**< Interface string IP broadcast address */
   char 						subnet_mask[IP_LEN];	/**< Interface string IP subnet mask */
@@ -200,11 +201,12 @@ bool create_if_mapper(UT_array *config_ifinfo_array, hmap_if_conn **hmap);
 bool create_vlan_mapper(UT_array *config_ifinfo_array, hmap_vlan_conn **hmap);
 
 /**
- * @brief Initialises interface name param in connection info array
+ * @brief Initialise the interface names
  * 
  * @param config_ifinfo_array The connection info array
- * @param if_bridge The interface array
- * @return true on success, false otherwise
+ * @param ifname The interface name prefix
+ * @param brname The bridge name prefix
+ * @return 0 on success, -1 otherwise
  */
-bool init_ifbridge_names(UT_array *config_ifinfo_array, char *if_bridge);
+int init_ifbridge_names(UT_array *config_ifinfo_array, char *ifname, char *brname);
 #endif

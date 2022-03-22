@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (C) 2020 by NQMCyber Ltd                                       *
+ * Copyright (C) 2022 by NQMCyber Ltd                                       *
  *                                                                          *
  * This file is part of EDGESec.                                            *
  *                                                                          *
@@ -18,29 +18,35 @@
  ****************************************************************************/
 
 /**
- * @file system_checks.h 
+ * @file firewall_service.h 
  * @author Alexandru Mereacre 
- * @brief File containing the definition of the systems commands checks.
+ * @brief File containing the definition of the firewall service commands.
  */
 
-#ifndef SYSTEM_CHECKS_H
-#define SYSTEM_CHECKS_H
+#ifndef FIREWALL_SERVICE_H
+#define FIREWALL_SERVICE_H
 
 #include <inttypes.h>
 #include <stdbool.h>
 
+#include "../supervisor/supervisor_config.h"
 #include "../utils/utarray.h"
 #include "../utils/hashmap.h"
 
 /**
- * @brief Check if the system binaries are present and return their absolute paths
+ * @brief Initialises the firewall service
  * 
- * @param commands Array of system binaries name strings
- * @param bin_path_arr Array of system binaries default fodler paths
- * @param hmap_bin_hashes Map of systems binaries to hashes
- * @return hmap_str_keychar* Map for binary to path 
+ * @param context The supervisor context
+ * @return 0 on success, -1 on failure
  */
-hmap_str_keychar *check_systems_commands(char *commands[], UT_array *bin_path_arr, hmap_str_keychar *hmap_bin_hashes);
+int fw_init(struct supervisor_context *context);
+
+/**
+ * @brief Frees the firewall service
+ * 
+ * @param context The supervisor context
+ */
+void fw_free(struct supervisor_context *context);
 
 /**
  * @brief Set the ip forward os system param
@@ -48,6 +54,6 @@ hmap_str_keychar *check_systems_commands(char *commands[], UT_array *bin_path_ar
  * @return int 0 on success, -1 on failure
  */
 
-int set_ip_forward(void);
+int fw_set_ip_forward(void);
 
 #endif

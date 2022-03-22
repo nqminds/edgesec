@@ -118,8 +118,8 @@ int get_vlan_mapper(hmap_vlan_conn **hmap, int vlanid, struct vlan_conn	*conn)
   hmap_vlan_conn *s;
 
   if (hmap == NULL) {
-	log_trace("hmap param is NULL");
-	return -1;
+	  log_trace("hmap param is NULL");
+	  return -1;
   }
 
   HASH_FIND(hh, *hmap, &vlanid, sizeof(int), s); /* id already in the hash? */
@@ -139,31 +139,32 @@ bool put_vlan_mapper(hmap_vlan_conn **hmap, struct vlan_conn *conn)
   hmap_vlan_conn *s;
 
   if (hmap == NULL) {
-	log_trace("hmap param is NULL");
-	return false;
+	  log_trace("hmap param is NULL");
+	  return false;
   }
 
   if (conn == NULL) {
-	log_trace("conn param is NULL");
-	return false;
+	  log_trace("conn param is NULL");
+	  return false;
   }
 
   HASH_FIND(hh, *hmap, &conn->vlanid, sizeof(int), s); /* id already in the hash? */
 
   if (s == NULL) {
     s = (hmap_vlan_conn *) os_malloc(sizeof(hmap_vlan_conn));
-	if (s == NULL) {
-	  log_err("os_malloc");
-	  return false;
-	}
 
-	// Copy the key and value
-	s->key = conn->vlanid;
+	  if (s == NULL) {
+	    log_err("os_malloc");
+	    return false;
+	  }
+
+	  // Copy the key and value
+	  s->key = conn->vlanid;
     os_memcpy(&s->value, conn, sizeof(struct vlan_conn));
 
     HASH_ADD(hh, *hmap, key, sizeof(int), s);
   } else {
-	// Copy the value
+	  // Copy the value
     os_memcpy(&s->value, conn, sizeof(struct vlan_conn));
   }
 
@@ -284,16 +285,21 @@ bool create_vlan_mapper(UT_array *config_ifinfo_array, hmap_vlan_conn **hmap)
   return true;
 }
 
-bool init_ifbridge_names(UT_array *config_ifinfo_array, char *if_bridge)
+int init_ifbridge_names(UT_array *config_ifinfo_array, char *ifname, char *brname)
 {
   config_ifinfo_t *p = NULL;
-  if (config_ifinfo_array != NULL && if_bridge != NULL) {
-    while((p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) != NULL) {
-      if (snprintf(p->ifname, IFNAMSIZ, "%s%d", if_bridge, p->vlanid) < 0) {
-        return false;
-      }
+
+  while((p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) != NULL) {
+    if (snprintf(p->ifname, IFNAMSIZ, "%s%d", ifname, p->vlanid) < 0) {
+      log_err("snprintf");
+      return -1;
+    }
+
+    if (snprintf(p->brname, IFNAMSIZ, "%s%d", brname, p->vlanid) < 0) {
+      log_err("snprintf");
+      return -1;
     }
   }
 
-  return true;
+  return 0;
 }

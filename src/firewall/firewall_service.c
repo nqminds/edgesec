@@ -18,9 +18,9 @@
  ****************************************************************************/
 
 /**
- * @file system_checks.c 
+ * @file firewall_service.c 
  * @author Alexandru Mereacre 
- * @brief File containing the implementation of the systems commands checks.
+ * @brief File containing the implementation of the firewall service commands.
  */
 
 #include <inttypes.h>
@@ -45,41 +45,7 @@
 
 #define IP_FORWARD_PATH "/proc/sys/net/ipv4/ip_forward"
 
-hmap_str_keychar *check_systems_commands(char *commands[], UT_array *bin_path_arr, hmap_str_keychar *hmap_bin_hashes)
-{
-  (void) hmap_bin_hashes;
-
-  if (commands == NULL) {
-    log_debug("commands param NULL");
-    return NULL;
-  }
-
-  hmap_str_keychar *hmap_bin_paths = hmap_str_keychar_new();
-  
-  for(uint8_t idx = 0; commands[idx] != NULL; idx ++) {
-    log_debug("Checking %s command...", commands[idx]);
-    char *path = get_secure_path(bin_path_arr, commands[idx], false);
-    if (path == NULL) {
-      log_debug("%s command not found", commands[idx]);
-      free(path);
-      return NULL;
-    } else {
-      log_debug("%s command found at %s", commands[idx], path);
-      if(!hmap_str_keychar_put(&hmap_bin_paths, commands[idx], path)) {
-        log_debug("hmap_str_keychar_put error");
-        free(path);
-        hmap_str_keychar_free(&hmap_bin_paths);
-        return NULL;
-      }
-    }
-
-    free(path);
-  }
-
-  return hmap_bin_paths;
-}
-
-int set_ip_forward(void)
+int fw_set_ip_forward(void)
 {
   char buf[2];
   int fd = open(IP_FORWARD_PATH, O_RDWR);

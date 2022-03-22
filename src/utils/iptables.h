@@ -39,7 +39,7 @@
 struct iptables_context {
   char iptables_path[MAX_OS_PATH_LEN];      /**< The iptables executable path */
   UT_array *rule_list;                      /**< Current iptables rules */  
-  bool  exec_iptables;                      /**< flag to execute iptables command */
+  bool  exec_iptables;                      /**< Flag to execute iptables command */
 };
 
 /**

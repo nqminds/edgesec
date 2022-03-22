@@ -265,7 +265,9 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE;
   }
 
-  if (!init_ifbridge_names(config.config_ifinfo_array, config.hconfig.vlan_bridge)) {
+  if (init_ifbridge_names(config.config_ifinfo_array, config.interface_prefix,
+                          config.bridge_prefix) < 0)
+  {
     fprintf(stderr, "init_ifbridge_names fail");
     return EXIT_FAILURE;
   }

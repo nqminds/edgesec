@@ -55,14 +55,66 @@
 #include "dhcp/dhcp_service.h"
 #include "dns/mdns_service.h"
 #include "crypt/crypt_service.h"
+#include "firewall/firewall_service.h"
 
 #include "engine.h"
-#include "system/system_checks.h"
 #include "config.h"
 
 #define MACCONN_DB_NAME "macconn" SQLITE_EXTENSION
 
 static const UT_icd mac_conn_icd = {sizeof(struct mac_conn), NULL, NULL, NULL};
+static const UT_icd config_ifinfo_icd = {sizeof(config_ifinfo_t), NULL, NULL, NULL};
+
+void copy_ifinfo(UT_array *in, UT_array *out)
+{
+  config_ifinfo_t *el = NULL;
+
+  while((el = (config_ifinfo_t *) utarray_next(in, el)) != NULL) {
+    utarray_push_back(out, el);
+  }
+}
+
+/**
+ * @brief Check if the system binaries are present and return their absolute paths
+ * 
+ * @param commands Array of system binaries name strings
+ * @param bin_path_arr Array of system binaries default fodler paths
+ * @param hmap_bin_hashes Map of systems binaries to hashes
+ * @return hmap_str_keychar* Map for binary to path 
+ */
+hmap_str_keychar *check_systems_commands(char *commands[], UT_array *bin_path_arr, hmap_str_keychar *hmap_bin_hashes)
+{
+  (void) hmap_bin_hashes;
+
+  if (commands == NULL) {
+    log_debug("commands param NULL");
+    return NULL;
+  }
+
+  hmap_str_keychar *hmap_bin_paths = hmap_str_keychar_new();
+  
+  for(uint8_t idx = 0; commands[idx] != NULL; idx ++) {
+    log_debug("Checking %s command...", commands[idx]);
+    char *path = get_secure_path(bin_path_arr, commands[idx], false);
+    if (path == NULL) {
+      log_debug("%s command not found", commands[idx]);
+      free(path);
+      return NULL;
+    } else {
+      log_debug("%s command found at %s", commands[idx], path);
+      if(!hmap_str_keychar_put(&hmap_bin_paths, commands[idx], path)) {
+        log_debug("hmap_str_keychar_put error");
+        free(path);
+        hmap_str_keychar_free(&hmap_bin_paths);
+        return NULL;
+      }
+    }
+
+    free(path);
+  }
+
+  return hmap_bin_paths;
+}
 
 bool init_mac_mapper_ifnames(UT_array *connections, hmap_vlan_conn **vlan_mapper)
 {
@@ -226,7 +278,12 @@ int init_context(struct app_config *app_config, struct supervisor_context *ctx)
     return -1;
   }
 
-  if (!init_ifbridge_names(app_config->config_ifinfo_array, app_config->interface_prefix)) {
+  utarray_new(ctx->config_ifinfo_array, &config_ifinfo_icd);
+  copy_ifinfo(app_config->config_ifinfo_array, ctx->config_ifinfo_array);
+
+  if (init_ifbridge_names(ctx->config_ifinfo_array, app_config->interface_prefix,
+                  app_config->bridge_prefix) < 0)
+  {
     log_trace("init_ifbridge_names fail");
     return -1;
   }
@@ -249,7 +306,6 @@ int init_context(struct app_config *app_config, struct supervisor_context *ctx)
   ctx->default_open_vlanid = app_config->default_open_vlanid;
   ctx->quarantine_vlanid = app_config->quarantine_vlanid;
   ctx->risk_score = app_config->risk_score;
-  ctx->config_ifinfo_array = app_config->config_ifinfo_array;
 
   ctx->wpa_passphrase_len = os_strnlen_s(app_config->hconfig.wpa_passphrase, AP_SECRET_LEN);
   os_memcpy(ctx->wpa_passphrase, app_config->hconfig.wpa_passphrase, ctx->wpa_passphrase_len);
@@ -294,13 +350,13 @@ int init_context(struct app_config *app_config, struct supervisor_context *ctx)
     return -1;
   }
 
-  if (!create_if_mapper(app_config->config_ifinfo_array, &ctx->if_mapper)) {
+  if (!create_if_mapper(ctx->config_ifinfo_array, &ctx->if_mapper)) {
     log_debug("create_if_mapper fail");
     return -1;
   }
 
   log_info("Creating VLAN ID to interface mapper...");
-  if (!create_vlan_mapper(app_config->config_ifinfo_array, &ctx->vlan_mapper)) {
+  if (!create_vlan_mapper(ctx->config_ifinfo_array, &ctx->vlan_mapper)) {
     log_debug("create_if_mapper fail");
     return -1;
   }
@@ -376,7 +432,7 @@ bool run_engine(struct app_config *app_config)
     goto run_engine_fail;
   }
 
-  if ((context.iptables_ctx = iptables_init(iptables_path, app_config->config_ifinfo_array, app_config->exec_iptables)) == NULL) {
+  if ((context.iptables_ctx = iptables_init(iptables_path, context.config_ifinfo_array, app_config->exec_iptables)) == NULL) {
     log_debug("iptables_init fail");
     goto run_engine_fail;
   }
@@ -391,7 +447,7 @@ bool run_engine(struct app_config *app_config)
 
   if (app_config->set_ip_forward) {
     log_debug("Setting the ip forward os system flag...");
-    if (set_ip_forward() < 0) {
+    if (fw_set_ip_forward() < 0) {
       log_debug("set_ip_forward fail");
       goto run_engine_fail;
     }
@@ -434,7 +490,7 @@ bool run_engine(struct app_config *app_config)
 
   if (app_config->create_interfaces) {
     log_info("Creating subnet interfaces...");
-    if (!create_subnet_interfaces(context.iface_ctx, app_config->config_ifinfo_array,
+    if (!create_subnet_interfaces(context.iface_ctx, context.config_ifinfo_array,
         app_config->ignore_if_error))
     {
       log_debug("create_subnet_interfaces fail");
@@ -499,6 +555,7 @@ bool run_engine(struct app_config *app_config)
   free_sqlite_macconn_db(context.macconn_db);
   free_crypt_service(context.crypt_ctx);
   iface_free_context(context.iface_ctx);
+  utarray_free(context.config_ifinfo_array);
 
   return true;
 
@@ -517,5 +574,7 @@ run_engine_fail:
   free_sqlite_macconn_db(context.macconn_db);
   free_crypt_service(context.crypt_ctx);
   iface_free_context(context.iface_ctx);
+  utarray_free(context.config_ifinfo_array);
+
   return false;
 }
