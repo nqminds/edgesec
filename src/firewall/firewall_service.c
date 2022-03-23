@@ -166,16 +166,24 @@ int fw_set_ip_forward(void)
 
 int fw_add_nat(struct fwctx* context, char *ip_addr)
 {
+#ifdef WITH_UCI_SERVICE
+  char brname[IFNAMSIZ];
+
+  if (get_brname_from_ip(context->config_ifinfo_array, ip_addr, brname) < 0) {
+    log_trace("get_brname_from_ip fail");
+    return -1;
+  }
+
+  log_trace("Adding uci rule for ip=%s br=%s", ip_addr, brname);
+  return 0;
+#else
   char ifname[IFNAMSIZ];
 
-  if (!get_ifname_from_ip(&context->if_mapper, context->config_ifinfo_array, ip_addr, ifname)) {
+  if (get_ifname_from_ip(context->config_ifinfo_array, ip_addr, ifname) < 0) {
     log_trace("get_ifname_from_ip fail");
     return -1;
   }
 
-#ifdef WITH_UCI_SERVICE
-  return 0;
-#else
   log_trace("Adding iptable rule for ip=%s if=%s", ip_addr, ifname);
   if (!iptables_add_nat(context->ctx, ip_addr, ifname, context->nat_interface)) {
     log_trace("iptables_add_nat fail");
@@ -188,16 +196,25 @@ int fw_add_nat(struct fwctx* context, char *ip_addr)
 
 int fw_remove_nat(struct fwctx* context, char *ip_addr)
 {
+#ifdef WITH_UCI_SERVICE
+  char brname[IFNAMSIZ];
+
+  if (get_brname_from_ip(context->config_ifinfo_array, ip_addr, brname) < 0) {
+    log_trace("get_brname_from_ip fail");
+    return -1;
+  }
+
+  log_trace("Removing uci rule for ip=%s br=%s", ip_addr, brname);
+
+  return 0;
+#else
   char ifname[IFNAMSIZ];
 
-  if (!get_ifname_from_ip(&context->if_mapper, context->config_ifinfo_array, ip_addr, ifname)) {
+  if (get_ifname_from_ip(context->config_ifinfo_array, ip_addr, ifname) < 0) {
     log_trace("get_ifname_from_ip fail");
     return -1;
   }
 
-#ifdef WITH_UCI_SERVICE
-  return 0;
-#else
   log_trace("Removing iptable rule for ip=%s if=%s", ip_addr, ifname);
   if (!iptables_delete_nat(context->ctx, ip_addr, ifname, context->nat_interface)) {
     log_trace("iptables_delete_nat fail");
@@ -210,21 +227,35 @@ int fw_remove_nat(struct fwctx* context, char *ip_addr)
 
 int fw_add_bridge(struct fwctx* context, char *ip_addr_left, char *ip_addr_right)
 {
-  char ifname_left[IFNAMSIZ], ifname_right[IFNAMSIZ];
-
-  if (!get_ifname_from_ip(&context->if_mapper, context->config_ifinfo_array, ip_addr_left, ifname_left)) {
-    log_trace("get_ifname_from_ip fail");
-    return -1;
-  }
-
-  if (!get_ifname_from_ip(&context->if_mapper, context->config_ifinfo_array, ip_addr_right, ifname_right)) {
-    log_trace("get_ifname_from_ip fail");
-    return -1;
-  }
-
 #ifdef WITH_UCI_SERVICE
+  char brname_left[IFNAMSIZ], brname_right[IFNAMSIZ];
+
+  if (get_brname_from_ip(context->config_ifinfo_array, ip_addr_left, brname_left) < 0) {
+    log_trace("get_brname_from_ip fail");
+    return -1;
+  }
+
+  if (get_brname_from_ip(context->config_ifinfo_array, ip_addr_right, brname_right) < 0) {
+    log_trace("get_brname_from_ip fail");
+    return -1;
+  }
+
+  log_trace("Adding uci rule for sip=%s sbr=%s dip=%s dbr=%s", ip_addr_left, brname_left, ip_addr_right, brname_right);
+
   return 0;
 #else
+  char ifname_left[IFNAMSIZ], ifname_right[IFNAMSIZ];
+
+  if (get_ifname_from_ip(context->config_ifinfo_array, ip_addr_left, ifname_left) < 0) {
+    log_trace("get_ifname_from_ip fail");
+    return -1;
+  }
+
+  if (get_ifname_from_ip(context->config_ifinfo_array, ip_addr_right, ifname_right) < 0) {
+    log_trace("get_ifname_from_ip fail");
+    return -1;
+  }
+
   log_trace("Adding iptable rule for sip=%s sif=%s dip=%s dif=%s", ip_addr_left, ifname_left, ip_addr_right, ifname_right);
   if (!iptables_add_bridge(context->ctx, ip_addr_left, ifname_left, ip_addr_right, ifname_right)) {
     log_trace("iptables_add_bridge fail");
@@ -237,21 +268,35 @@ int fw_add_bridge(struct fwctx* context, char *ip_addr_left, char *ip_addr_right
 
 int fw_remove_bridge(struct fwctx* context, char *ip_addr_left, char *ip_addr_right)
 {
-  char ifname_left[IFNAMSIZ], ifname_right[IFNAMSIZ];
-
-  if (!get_ifname_from_ip(&context->if_mapper, context->config_ifinfo_array, ip_addr_left, ifname_left)) {
-    log_trace("get_ifname_from_ip fail");
-    return -1;
-  }
-
-  if (!get_ifname_from_ip(&context->if_mapper, context->config_ifinfo_array, ip_addr_right, ifname_right)) {
-    log_trace("get_ifname_from_ip fail");
-    return -1;
-  }
-
 #ifdef WITH_UCI_SERVICE
+  char brname_left[IFNAMSIZ], brname_right[IFNAMSIZ];
+
+  if (get_brname_from_ip(context->config_ifinfo_array, ip_addr_left, brname_left) < 0) {
+    log_trace("get_brname_from_ip fail");
+    return -1;
+  }
+
+  if (get_brname_from_ip(context->config_ifinfo_array, ip_addr_right, brname_right) < 0) {
+    log_trace("get_brname_from_ip fail");
+    return -1;
+  }
+
+  log_trace("Removing uci rule for sip=%s sbr=%s dip=%s dbr=%s", ip_addr_left, brname_left, ip_addr_right, brname_right);
+
   return 0;
 #else
+  char ifname_left[IFNAMSIZ], ifname_right[IFNAMSIZ];
+
+  if (get_ifname_from_ip(context->config_ifinfo_array, ip_addr_left, ifname_left) < 0) {
+    log_trace("get_ifname_from_ip fail");
+    return -1;
+  }
+
+  if (get_ifname_from_ip(context->config_ifinfo_array, ip_addr_right, ifname_right) < 0) {
+    log_trace("get_ifname_from_ip fail");
+    return -1;
+  }
+
   log_trace("Removing iptable rule for sip=%s sif=%s dip=%s dif=%s", ip_addr_left, ifname_left, ip_addr_right, ifname_right);
   if (!iptables_delete_bridge(context->ctx, ip_addr_left, ifname_left, ip_addr_right, ifname_right)) {
     log_trace("iptables_add_bridge fail");

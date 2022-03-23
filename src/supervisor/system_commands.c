@@ -61,7 +61,7 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
 
   init_default_mac_info(&info, context->default_open_vlanid, context->allow_all_nat);
 
-  if (!get_ifname_from_ip(&context->if_mapper, context->config_ifinfo_array, ip_addr, ifname)) {
+  if (get_ifname_from_ip(context->config_ifinfo_array, ip_addr, ifname) < 0) {
     log_trace("get_ifname_from_ip fail");
     return -1;
   }

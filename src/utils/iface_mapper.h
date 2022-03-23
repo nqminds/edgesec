@@ -162,25 +162,24 @@ bool put_vlan_mapper(hmap_vlan_conn **hmap, struct vlan_conn *conn);
 void free_vlan_mapper(hmap_vlan_conn **hmap);
 
 /**
- * @brief Returns the subnet address as a in_addr_t type from an IP address and an array of interface configuration info structure.
- * 
- * @param config_ifinfo_array The array of interface configuration structures.
- * @param ip The IP Address
- * @param subnet_addr The returned subnet address
- * @return 0 on success, -1 on error and 1 if IP is not in any subnets
- */
-int find_subnet_address(UT_array *config_ifinfo_array, char *ip, in_addr_t *subnet_addr);
-
-/**
  * @brief Get the interface name from an IP string
  * 
- * @param if_mapper The mapper from subnet to interface
  * @param config_ifinfo_array The list of IP subnets
  * @param ip The input IP address
  * @param ifname The returned interface name (buffer has to be preallocated)
- * @return true on success, false otherwise
+ * @return 0 on success, -1 otherwise
  */
-bool get_ifname_from_ip(hmap_if_conn **if_mapper, UT_array *config_ifinfo_array, char *ip, char *ifname);
+int get_ifname_from_ip(UT_array *config_ifinfo_array, char *ip, char *ifname);
+
+/**
+ * @brief Get the bridge name from an IP string
+ * 
+ * @param config_ifinfo_array The list of IP subnets
+ * @param ip The input IP address
+ * @param ifname The returned interface name (buffer has to be preallocated)
+ * @return 0 on success, -1 otherwise
+ */
+int get_brname_from_ip(UT_array *config_ifinfo_array, char *ip_addr, char *brname);
 
 /**
  * @brief Create the subnet to interface mapper

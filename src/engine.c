@@ -199,7 +199,7 @@ bool create_subnet_interfaces(struct iface_context *context, UT_array *ifinfo_ar
   while((p = (config_ifinfo_t*) utarray_next(ifinfo_array, p)) != NULL) {
 
     log_trace("Creating ifname=%s ip_addr=%s brd_addr=%s subnet_mask=%s", p->ifname, p->ip_addr, p->brd_addr, p->subnet_mask);
-    ret = iface_create(context, p->ifname, "bridge", p->ip_addr, p->brd_addr, p->subnet_mask);
+    ret = iface_create(context, p->brname, p->ifname, "bridge", p->ip_addr, p->brd_addr, p->subnet_mask);
     if (ret < 0 && ignore_error) {
       log_trace("iface_create fail, ignoring");
       continue;

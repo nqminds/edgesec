@@ -90,6 +90,7 @@ UT_array *iface_get(char *ifname);
  * @brief Creates and interface and assigns an IP
  * 
  * @param context The interface context
+ * @param brname The bridge name
  * @param ifname The interface name
  * @param type The interface type
  * @param ip_addr The interface IP4 address
@@ -97,9 +98,8 @@ UT_array *iface_get(char *ifname);
  * @param subnet_mask The interface IP4 subnet mask
  * @return int 0 on success, -1 on failure
  */
-int iface_create(struct iface_context *context, char *ifname,
-                 char *type, char *ip_addr, char *brd_addr,
-                 char *subnet_mask);
+int iface_create(struct iface_context *context, char *brname, char *ifname,
+                 char *type, char *ip_addr, char *brd_addr, char *subnet_mask);
 
 /**
  * @brief Commits the interface changes

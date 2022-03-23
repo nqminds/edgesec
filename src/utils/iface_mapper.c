@@ -85,13 +85,13 @@ bool put_if_mapper(hmap_if_conn **hmap, in_addr_t subnet, char *ifname)
 
   if (s == NULL) {
     s = (hmap_if_conn *) os_malloc(sizeof(hmap_if_conn));
-	if (s == NULL) {
-	  log_err("os_malloc");
-	  return false;
-	}
+	  if (s == NULL) {
+	    log_err("os_malloc");
+	    return false;
+	  }
 
-	// Copy the key and value
-	s->key = subnet;
+	  // Copy the key and value
+	  s->key = subnet;
     os_memcpy(s->value, ifname, IFNAMSIZ);
 
     HASH_ADD(hh, *hmap, key, sizeof(in_addr_t), s);
@@ -125,9 +125,10 @@ int get_vlan_mapper(hmap_vlan_conn **hmap, int vlanid, struct vlan_conn	*conn)
   HASH_FIND(hh, *hmap, &vlanid, sizeof(int), s); /* id already in the hash? */
 
   if (s != NULL) {
-	if (conn != NULL) {
-	  *conn = s->value;
-	}	
+	  if (conn != NULL) {
+	    *conn = s->value;
+	  }
+
     return 1;
   }
  
@@ -181,38 +182,25 @@ void free_vlan_mapper(hmap_vlan_conn **hmap)
   }
 }
 
-int find_subnet_address(UT_array *config_ifinfo_array, char *ip, in_addr_t *subnet_addr)
+int find_ifinfo(UT_array *config_ifinfo_array, char *ip, config_ifinfo_t *ifinfo)
 {
   config_ifinfo_t *p = NULL;
-  in_addr_t addr_config;
-
-  if (config_ifinfo_array == NULL) {
-    log_trace("config_ifinfo_array param is NULL");
-    return false;
-  }
-
-  if (ip == NULL) {
-	log_trace("ip param is NULL");
-	return -1;
-  }
-
-  if (subnet_addr == NULL) {
-	log_trace("subnet_addr param is NULL");
-	return -1;
-  }
+  in_addr_t addr_subnet;
+  in_addr_t addr_ip;
 
   while((p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) != NULL) {
-	  if (ip_2_nbo(p->ip_addr, p->subnet_mask, &addr_config) < 0) {
+	  if (ip_2_nbo(p->ip_addr, p->subnet_mask, &addr_subnet) < 0) {
 	    log_trace("ip_2_nbo fail");
 	    return -1;
 	  }
   
-	  if (ip_2_nbo(ip, p->subnet_mask, subnet_addr) < 0) {
+	  if (ip_2_nbo(ip, p->subnet_mask, &addr_ip) < 0) {
 	    log_trace("ip_2_nbo fail");
 	    return -1;
 	  }
   
-	  if (addr_config == *subnet_addr) {
+	  if (addr_ip == addr_subnet) {
+      os_memcpy(ifinfo, p, sizeof(config_ifinfo_t));
 	    return 0;
 	  }
   }
@@ -220,25 +208,62 @@ int find_subnet_address(UT_array *config_ifinfo_array, char *ip, in_addr_t *subn
   return 1;
 }
 
-bool get_ifname_from_ip(hmap_if_conn **if_mapper, UT_array *config_ifinfo_array, char *ip, char *ifname)
+int get_brname_from_ip(UT_array *config_ifinfo_array, char *ip_addr, char *brname)
 {
-  in_addr_t subnet_addr;
+  config_ifinfo_t ifinfo;
 
-  if (find_subnet_address(config_ifinfo_array, ip, &subnet_addr) != 0) {
-    log_trace("find_subnet_address fail");
-    return false;
+  if (config_ifinfo_array == NULL) {
+    log_trace("config_ifinfo_array param is NULL");
+    return -1;
   }
 
-  int ret = get_if_mapper(if_mapper, subnet_addr, ifname);
-  if (ret < 0) {
-    log_trace("get_if_mapper fail");
-    return false;
-  } else if (ret == 0) {
-		log_trace("subnet not in mapper");
-		return false;
+  if (ip_addr == NULL) {
+	  log_trace("ip_addr param is NULL");
+	  return -1;
   }
 
-  return true;
+  if (brname == NULL) {
+	  log_trace("brname param is NULL");
+	  return -1;
+  }
+
+  if (find_ifinfo(config_ifinfo_array, ip_addr, &ifinfo) != 0) {
+    log_trace("find_ifinfo fail");
+    return -1;
+  }
+
+  strcpy(brname, ifinfo.brname);
+
+  return 0;
+}
+
+int get_ifname_from_ip(UT_array *config_ifinfo_array, char *ip_addr, char *ifname)
+{
+  config_ifinfo_t ifinfo;
+
+  if (config_ifinfo_array == NULL) {
+    log_trace("config_ifinfo_array param is NULL");
+    return -1;
+  }
+
+  if (ip_addr == NULL) {
+	  log_trace("ip_addr param is NULL");
+	  return -1;
+  }
+
+  if (ifname == NULL) {
+	  log_trace("brname param is NULL");
+	  return -1;
+  }
+
+  if (find_ifinfo(config_ifinfo_array, ip_addr, &ifinfo) != 0) {
+    log_trace("find_ifinfo fail");
+    return -1;
+  }
+
+  strcpy(ifname, ifinfo.ifname);
+
+  return 0;
 }
 
 bool create_if_mapper(UT_array *config_ifinfo_array, hmap_if_conn **hmap)
@@ -248,7 +273,7 @@ bool create_if_mapper(UT_array *config_ifinfo_array, hmap_if_conn **hmap)
 
   if (config_ifinfo_array != NULL) {
     while((p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) != NULL) {
-      log_trace("Adding ip=%s subnet=%s ifname=%s to mapper", p->ip_addr, p->ifname, p->subnet_mask);
+      log_trace("Adding ip=%s subnet=%s ifname=%s to mapper", p->ip_addr, p->subnet_mask, p->ifname);
       if(ip_2_nbo(p->ip_addr, p->subnet_mask, &addr) < 0) {
         log_trace("ip_2_nbo fail");
         free_if_mapper(hmap);
