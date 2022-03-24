@@ -29,6 +29,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
+#include "../utils/os.h"
 #include "../utils/utarray.h"
 #include "../utils/hashmap.h"
 #include "../utils/iface_mapper.h"
@@ -39,6 +40,10 @@
 #include "../utils/iptables.h"
 #endif
 
+struct firewall_conf {
+  char firewall_bin_path[MAX_OS_PATH_LEN];                    /**< The firewall binary path string */
+};
+
 struct fwctx {
   hmap_if_conn    *if_mapper;                                 /**< WiFi subnet to interface mapper */
   hmap_vlan_conn  *vlan_mapper;                               /**< WiFi VLAN to interface mapper */
@@ -46,6 +51,7 @@ struct fwctx {
   UT_array        *config_ifinfo_array;                       /**< @c config_ifinfo_array from @c struct app_config */
   char *nat_interface;
   bool exec_firewall;
+  char *firewall_bin_path;                    /**< The firewall binary path string */
 #ifdef WITH_UCI_SERVICE
   struct uctx* ctx;
 #else

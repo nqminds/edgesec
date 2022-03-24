@@ -979,3 +979,271 @@ int uwrt_gen_hostapd_instance(struct uctx *context, struct hostapd_params *param
 
   return 0;
 }
+
+int uwrt_gen_firewall_zone(struct uctx *context, char *brname)
+{
+  char property[128];
+
+  if (context == NULL) {
+    log_trace("context param is NULL");
+    return -1;
+  }
+
+  if (brname == NULL) {
+    log_trace("brname param is NULL");
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s=zone", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s.enabled=1", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s.name=%s", brname, brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s.network", brname);
+  if (uwrt_delete_property(context->uctx, property) < 0) {
+    log_trace("uwrt_delete_property fail for %s", property);
+  }
+
+  sprintf(property, "firewall.%s.network=%s", brname, brname);
+  if (uwrt_add_list(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s.input=REJECT", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s.forward=REJECT", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s.output=ACCEPT", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_icmp=rule", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_icmp.enabled=1", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_icmp.name=%s icmp", brname, brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_icmp.src=%s", brname, brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_icmp.proto=icmp", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_icmp.icmp_type=echo-request", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_icmp.family=ipv4", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_icmp.target=ACCEPT", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_dns=rule", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_dns.enabled=1", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_dns.name=%s dns", brname, brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_dns.src=%s", brname, brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_dns.proto=tcp udp", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_dns.dest_port=53", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_dns.target=ACCEPT", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_dhcp=rule", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_dhcp.enabled=1", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_dhcp.name=%s dhcp", brname, brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_dhcp.src=%s", brname, brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_dhcp.proto=udp", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_dhcp.src_port=67-68", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_dhcp.dest_port=67-68", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_dhcp.target=ACCEPT", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_dhcp6=rule", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_dhcp6.enabled=1", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_dhcp6.name=%s dhcp6", brname, brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_dhcp6.src=%s", brname, brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_dhcp6.proto=udp", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_dhcp6.src_ip=fe80::/10", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_dhcp6.src_port=546-547", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_dhcp6.dest_ip=fe80::/10", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_dhcp6.dest_port=546-547", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_dhcp6.family=ipv6", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall.%s_dhcp6.target=ACCEPT", brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  return 0;
+}

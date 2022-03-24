@@ -294,17 +294,33 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn fn, 
 
   case 0:             /* Child: exec command */
 
-    /* We ignore possible error returns because the only specified error
-       is for a failed exec(), and because errors in these calls can't
-       affect the caller of system() (which is a separate process) */
-    if (close(pfd[0]) == -1)      /* Read end is unused */
-      _exit(EXIT_FAILURE);
 
-    if (pfd[1] != STDOUT_FILENO) {              /* Defensive check */
-      if (dup2(pfd[1], STDOUT_FILENO) == -1)
+    if (fn == NULL) {
+      /* redirect stdout, stdin and stderr to /dev/null */
+      close(STDIN_FILENO);
+  
+      /* Reopen standard fd's to /dev/null */
+      int fd = open("/dev/null", O_RDWR);
+  
+      if (fd != STDIN_FILENO)         /* 'fd' should be 0 */
         _exit(EXIT_FAILURE);
-      if (close(pfd[1]) == -1)
+      if (dup2(STDIN_FILENO, STDOUT_FILENO) != STDOUT_FILENO)
         _exit(EXIT_FAILURE);
+      if (dup2(STDIN_FILENO, STDERR_FILENO) != STDERR_FILENO)
+        _exit(EXIT_FAILURE);
+    } else {
+      /* We ignore possible error returns because the only specified error
+         is for a failed exec(), and because errors in these calls can't
+         affect the caller of system() (which is a separate process) */
+      if (close(pfd[0]) == -1)      /* Read end is unused */
+        _exit(EXIT_FAILURE);
+
+      if (pfd[1] != STDOUT_FILENO) {              /* Defensive check */
+        if (dup2(pfd[1], STDOUT_FILENO) == -1)
+          _exit(EXIT_FAILURE);
+        if (close(pfd[1]) == -1)
+          _exit(EXIT_FAILURE);
+      }
     }
 
     execve(command, argv, envp);

@@ -81,6 +81,7 @@ struct app_config {
   struct mdns_conf    mdns_config;                          /**< mDNS service configuration. */
   struct dhcp_conf    dhcp_config;                          /**< DHCP service configuration. */
   struct capture_conf capture_config;                       /**< Capture service configuration. */
+  struct firewall_conf firewall_config;                     /**< Firewall service configuration. */
 };
 
 /**

@@ -45,6 +45,7 @@
  * @param config_ifinfo_array The @c config_ifinfo_array from @c struct app_config
  * @param nat_interface The nat interface string
  * @param exec_firewall if true runs the firewall system commands
+ * @param path The firewall bin path
  * @return struct fwctx* on success, NULL on failure
  */
 struct fwctx* fw_init_context(hmap_if_conn *if_mapper,
@@ -52,7 +53,8 @@ struct fwctx* fw_init_context(hmap_if_conn *if_mapper,
                               hmap_str_keychar *hmap_bin_paths,
                               UT_array *config_ifinfo_array,
                               char *nat_interface,
-                              bool exec_firewall);
+                              bool exec_firewall,
+                              char *path);
 
 
 /**

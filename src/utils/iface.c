@@ -207,8 +207,10 @@ int iface_create(struct iface_context *ctx, char *brname, char *ifname,
                  char *type, char *ip_addr, char *brd_addr, char *subnet_mask)
 {
 #ifdef WITH_NETLINK_SERVICE
+  (void) brname;
 	return nl_create_interface(ctx->context, ifname, type, ip_addr, brd_addr, subnet_mask);
 #elif WITH_UCI_SERVICE
+  (void) ifname;
   return uwrt_create_interface(ctx->context, brname, type, ip_addr, brd_addr, subnet_mask);
 #elif WITH_IP_GENERIC_SERVICE
   return ipgen_create_interface(ctx->context, ifname, type, ip_addr, brd_addr, subnet_mask);

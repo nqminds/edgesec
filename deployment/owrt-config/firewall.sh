@@ -136,6 +136,7 @@ uci set firewall.br5_dns_rule.src='br5'
 uci set firewall.br5_dns_rule.proto='tcpudp'
 uci set firewall.br5_dns_rule.dest_port='53'
 uci set firewall.br5_dns_rule.target='ACCEPT'
+
 uci set firewall.br5_dhcp_rule=rule
 uci set firewall.br5_dhcp_rule.enabled='1'
 uci set firewall.br5_dhcp_rule.name='br5 dhcp rule'
@@ -144,6 +145,7 @@ uci set firewall.br5_dhcp_rule.proto='udp'
 uci set firewall.br5_dhcp_rule.src_port='67-68'
 uci set firewall.br5_dhcp_rule.dest_port='67-68'
 uci set firewall.br5_dhcp_rule.target='ACCEPT'
+
 uci set firewall.br5_Allow_DHCPv6=rule
 uci set firewall.br5_Allow_DHCPv6.enabled='1'
 uci set firewall.br5_Allow_DHCPv6.name='br5 dhcp6 rule'
@@ -163,6 +165,7 @@ uci set firewall.br7_dns_rule.src='br7'
 uci set firewall.br7_dns_rule.proto='tcpudp'
 uci set firewall.br7_dns_rule.dest_port='53'
 uci set firewall.br7_dns_rule.target='ACCEPT'
+
 uci set firewall.br7_dhcp_rule=rule
 uci set firewall.br7_dhcp_rule.enabled='1'
 uci set firewall.br7_dhcp_rule.name='br7 dhcp rule'
@@ -171,6 +174,7 @@ uci set firewall.br7_dhcp_rule.proto='udp'
 uci set firewall.br7_dhcp_rule.src_port='67-68'
 uci set firewall.br7_dhcp_rule.dest_port='67-68'
 uci set firewall.br7_dhcp_rule.target='ACCEPT'
+
 uci set firewall.br7_Allow_DHCPv6=rule
 uci set firewall.br7_Allow_DHCPv6.enabled='1'
 uci set firewall.br7_Allow_DHCPv6.name='br7 dhcp6 rule'
@@ -190,6 +194,7 @@ uci set firewall.br9_dns_rule.src='br9'
 uci set firewall.br9_dns_rule.proto='tcpudp'
 uci set firewall.br9_dns_rule.dest_port='53'
 uci set firewall.br9_dns_rule.target='ACCEPT'
+
 uci set firewall.br9_dhcp_rule=rule
 uci set firewall.br9_dhcp_rule.enabled='1'
 uci set firewall.br9_dhcp_rule.name='br9 dhcp rule'
@@ -198,6 +203,7 @@ uci set firewall.br9_dhcp_rule.proto='udp'
 uci set firewall.br9_dhcp_rule.src_port='67-68'
 uci set firewall.br9_dhcp_rule.dest_port='67-68'
 uci set firewall.br9_dhcp_rule.target='ACCEPT'
+
 uci set firewall.br9_Allow_DHCPv6=rule
 uci set firewall.br9_Allow_DHCPv6.enabled='1'
 uci set firewall.br9_Allow_DHCPv6.name='br9 dhcp6 rule'
@@ -259,6 +265,109 @@ uci set firewall.1007191_1003209.dest='br3'
 uci set firewall.1007191_1003209.dest_ip='10.0.3.209'
 uci set firewall.1007191_1003209.proto='all'
 uci set firewall.1007191_1003209.target='ACCEPT'
+
+uci set firewall.1007191_1009141=rule
+uci set firewall.1007191_1009141.enabled='1'
+uci set firewall.1007191_1009141.name='Accept 10.0.7.191-10.0.9.141'
+uci set firewall.1007191_1009141.src='br7'
+uci set firewall.1007191_1009141.src_ip='10.0.7.191'
+uci set firewall.1007191_1009141.dest='br9'
+uci set firewall.1007191_1009141.dest_ip='10.0.9.141'
+uci set firewall.1007191_1009141.proto='all'
+uci set firewall.1007191_1009141.target='ACCEPT'
+
+uci set firewall.1007191_1009140=rule
+uci set firewall.1007191_1009140.enabled='1'
+uci set firewall.1007191_1009140.name='Accept 10.0.7.191-10.0.9.140'
+uci set firewall.1007191_1009140.src='br7'
+uci set firewall.1007191_1009140.src_ip='10.0.7.191'
+uci set firewall.1007191_1009140.dest='br9'
+uci set firewall.1007191_1009140.dest_ip='10.0.9.140'
+uci set firewall.1007191_1009140.proto='all'
+uci set firewall.1007191_1009140.target='ACCEPT'
+
+uci set firewall.1009140_1007191=rule
+uci set firewall.1009140_1007191.enabled='1'
+uci set firewall.1009140_1007191.name='Accept 10.0.9.140-10.0.7.191'
+uci set firewall.1009140_1007191.src='br9'
+uci set firewall.1009140_1007191.src_ip='10.0.9.140'
+uci set firewall.1009140_1007191.dest='br7'
+uci set firewall.1009140_1007191.dest_ip='10.0.7.191'
+uci set firewall.1009140_1007191.proto='all'
+uci set firewall.1009140_1007191.target='ACCEPT'
+
+uci set firewall.1009141_dnat=redirect
+uci set firewall.1009141_dnat.enabled='1'
+uci set firewall.1009141_dnat.name='DNAT 10.0.9.141'
+uci set firewall.1009141_dnat.src='wan'
+uci set firewall.1009141_snat.src_ip='0.0.0.0'
+uci set firewall.1009141_dnat.dest='br9'
+uci set firewall.1009141_dnat.dest_ip='10.0.9.141'
+uci set firewall.1009141_dnat.proto='all'
+uci set firewall.1009141_dnat.target='DNAT'
+
+uci set firewall.1009141_snat=redirect
+uci set firewall.1009141_snat.enabled='1'
+uci set firewall.1009141_snat.name='SNAT 10.0.9.141'
+uci set firewall.1009141_snat.src='br9'
+uci set firewall.1009141_snat.src_ip='10.0.9.141'
+uci set firewall.1009141_snat.dest='wan'
+uci set firewall.1009141_snat.proto='all'
+uci set firewall.1009141_snat.target='SNAT'
+
+uci set firewall.1009141_forward=rule
+uci set firewall.1009141_forward.enabled='1'
+uci set firewall.1009141_forward.name='Forward 10.0.9.141'
+uci set firewall.1009141_forward.src='br9'
+uci set firewall.1009141_forward.src_ip='10.0.9.141'
+uci set firewall.1009141_forward.dest='wan'
+uci set firewall.1009141_forward.proto='all'
+uci set firewall.1009141_forward.target='ACCEPT'
+
+uci set firewall.1009141_backward=rule
+uci set firewall.1009141_backward.enabled='1'
+uci set firewall.1009141_backward.name='Backward 10.0.9.141'
+uci set firewall.1009141_backward.src='wan'
+uci set firewall.1009141_backward.dest='br9'
+uci set firewall.1009141_backward.dest_ip='10.0.9.141'
+uci set firewall.1009141_backward.proto='all'
+uci set firewall.1009141_backward.target='ACCEPT'
+
+uci set firewall.1009140_dnat=redirect
+uci set firewall.1009140_dnat.enabled='1'
+uci set firewall.1009140_dnat.name='DNAT 10.0.9.140'
+uci set firewall.1009140_dnat.src='wan'
+uci set firewall.1009140_dnat.dest='br9'
+uci set firewall.1009140_dnat.dest_ip='10.0.9.140'
+uci set firewall.1009140_dnat.proto='all'
+uci set firewall.1009140_dnat.target='DNAT'
+
+uci set firewall.1009140_snat=redirect
+uci set firewall.1009140_snat.enabled='1'
+uci set firewall.1009140_snat.name='SNAT 10.0.9.140'
+uci set firewall.1009140_snat.src='br9'
+uci set firewall.1009140_snat.src_ip='10.0.9.140'
+uci set firewall.1009140_snat.dest='wan'
+uci set firewall.1009140_snat.proto='all'
+uci set firewall.1009140_snat.target='SNAT'
+
+uci set firewall.1009140_forward=rule
+uci set firewall.1009140_forward.enabled='1'
+uci set firewall.1009140_forward.name='Forward 10.0.9.140'
+uci set firewall.1009140_forward.src='br9'
+uci set firewall.1009140_forward.src_ip='10.0.9.140'
+uci set firewall.1009140_forward.dest='wan'
+uci set firewall.1009140_forward.proto='all'
+uci set firewall.1009140_forward.target='ACCEPT'
+
+uci set firewall.1009140_backward=rule
+uci set firewall.1009140_backward.enabled='1'
+uci set firewall.1009140_backward.name='Backward 10.0.9.140'
+uci set firewall.1009140_backward.src='wan'
+uci set firewall.1009140_backward.dest='br9'
+uci set firewall.1009140_backward.dest_ip='10.0.9.140'
+uci set firewall.1009140_backward.proto='all'
+uci set firewall.1009140_backward.target='ACCEPT'
 
 uci commit firewall
 /etc/init.d/firewall reload

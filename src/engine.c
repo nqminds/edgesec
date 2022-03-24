@@ -426,7 +426,8 @@ bool run_engine(struct app_config *app_config)
 
   if ((context.fw_ctx = fw_init_context(context.if_mapper, context.vlan_mapper,
                       context.hmap_bin_paths, context.config_ifinfo_array,
-                      context.nat_interface, app_config->exec_firewall)) == NULL)
+                      context.nat_interface, app_config->exec_firewall,
+                      app_config->firewall_config.firewall_bin_path)) == NULL)
   {
     log_debug("fw_init_context fail");
     goto run_engine_fail;

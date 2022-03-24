@@ -45,6 +45,7 @@
 
 #ifdef WITH_UCI_SERVICE
 #include "../utils/uci_wrt.h"
+#define FIREWALL_SERVICE_RELOAD "reload"
 #else
 #include "../utils/iptables.h"
 #endif
@@ -67,12 +68,31 @@ void fw_free_context(struct fwctx* context)
   }
 }
 
+#ifdef WITH_UCI_SERVICE
+int run_firewall(char *path)
+{
+  char *argv[2] = {FIREWALL_SERVICE_RELOAD, NULL};
+
+  if (path != NULL) {
+    return run_argv_command(path, argv, NULL, NULL);
+  }
+
+  return 0;
+}
+#else
+int run_firewall(char *path)
+{
+  return 0;
+}
+#endif
+
 struct fwctx* fw_init_context(hmap_if_conn *if_mapper,
                               hmap_vlan_conn  *vlan_mapper,
                               hmap_str_keychar *hmap_bin_paths,
                               UT_array *config_ifinfo_array,
                               char *nat_interface,
-                              bool exec_firewall)
+                              bool exec_firewall,
+                              char *path)
 {
   if (if_mapper == NULL) {
     log_trace("if_mapper param is NULL");
@@ -107,10 +127,25 @@ struct fwctx* fw_init_context(hmap_if_conn *if_mapper,
   fw_ctx->config_ifinfo_array = config_ifinfo_array;
   fw_ctx->nat_interface = nat_interface;
   fw_ctx->exec_firewall = exec_firewall;
-
+  fw_ctx->firewall_bin_path = path;
 #ifdef WITH_UCI_SERVICE
+  config_ifinfo_t *p = NULL;
   if ((fw_ctx->ctx = uwrt_init_context(NULL)) == NULL) {
     log_debug("uwrt_init_context fail");
+    fw_free_context(fw_ctx);
+    return NULL;
+  }
+
+  while((p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) != NULL) {
+    if (uwrt_gen_firewall_zone(fw_ctx->ctx, p->brname) < 0) {
+      log_debug("uwrt_init_context fail");
+      fw_free_context(fw_ctx);
+      return NULL;
+    }
+  }
+
+  if (uwrt_commit_section(fw_ctx->ctx, "firewall") < 0) {
+    log_trace("uwrt_commit_section fail");
     fw_free_context(fw_ctx);
     return NULL;
   }
@@ -128,6 +163,12 @@ struct fwctx* fw_init_context(hmap_if_conn *if_mapper,
     return NULL;
   }
 #endif
+
+  if (run_firewall(fw_ctx->firewall_bin_path) < 0) {
+    log_debug("run_firewall fail");
+    fw_free_context(fw_ctx);
+    return NULL;
+  }
 
   return fw_ctx;
 }

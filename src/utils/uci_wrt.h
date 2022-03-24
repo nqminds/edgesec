@@ -139,4 +139,13 @@ int uwrt_add_dhcp_pool(struct uctx *context, char *ifname,
  * @return int 0 on success, -1 on failure
  */
 int uwrt_gen_hostapd_instance(struct uctx *context, struct hostapd_params *params);
+
+/**
+ * @brief Generate a firewall zone for a bridge
+ * 
+ * @param context The uci context
+ * @param params The bridge name
+ * @return int 0 on success, -1 on failure
+ */
+int uwrt_gen_firewall_zone(struct uctx *context, char *brname);
 #endif

@@ -78,6 +78,7 @@ struct supervisor_context {
   char            domain_delim;                               /**< Control server command delimiter */
   int             domain_sock;                                /**< The domain socket */
   char            nat_ip[OS_INET_ADDRSTRLEN];                 /**< The NAT IP address */
+  struct firewall_conf firewall_config;                       /**< Firewall service configuration. */
   struct capture_conf capture_config;                         /**< Capture service configuration. */
   struct apconf       hconfig;                                /**< AP service configuration. */
   struct radius_conf  rconfig;                                /**< Radius service configuration. */

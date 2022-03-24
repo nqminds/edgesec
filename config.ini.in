@@ -91,6 +91,9 @@ secret = "radius"
 [nat]
 natInterface = "eth0" # raspberry pi default ethernet port
 
+[firewall]
+firewallBinPath = ""
+
 [dns]
 servers="8.8.4.4,8.8.8.8"
 mdnsBinPath = "@EDGESEC_full_bin_dir@/mdnsf"

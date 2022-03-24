@@ -817,6 +817,19 @@ bool load_nat_config(const char *filename, struct app_config *config)
   return true;
 }
 
+bool load_firewall_config(const char *filename, struct firewall_conf *config)
+{
+  char *value;
+
+  // Load firewall bin path
+  value = os_malloc(INI_BUFFERSIZE);
+  ini_gets("firewall", "firewallBinPath", "", value, INI_BUFFERSIZE, filename);
+  os_strlcpy(config->firewall_bin_path, value, MAX_OS_PATH_LEN);
+  os_free(value);
+
+  return true;
+}
+
 bool load_app_config(const char *filename, struct app_config *config)
 {
   FILE *fp = fopen(filename, "rb");
@@ -885,6 +898,13 @@ bool load_app_config(const char *filename, struct app_config *config)
     log_debug("Capture parsing error.\n");
     return false;
   }
+
+  // Load the firewall config
+  if (!load_firewall_config(filename, &config->firewall_config)) {
+    log_debug("Firewall parsing error.\n");
+    return false;
+  }
+
   return true;
 }
 
