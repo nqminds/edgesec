@@ -115,7 +115,7 @@ int ip4_2_buf(char *ip, uint8_t *buf)
   }
 
   if (!validate_ipv4_string(ip)) {
-	  log_trace("IP wroing format");
+	  log_trace("IP wrong format");
 	  return -1;
   }
 

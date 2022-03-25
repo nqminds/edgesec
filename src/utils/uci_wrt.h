@@ -148,4 +148,36 @@ int uwrt_gen_hostapd_instance(struct uctx *context, struct hostapd_params *param
  * @return int 0 on success, -1 on failure
  */
 int uwrt_gen_firewall_zone(struct uctx *context, char *brname);
+
+
+/**
+ * @brief Adds a firewall rule for an IP address
+ * 
+ * @param context The uci context
+ * @param params The bridge name
+ * @param ip_addr The IP address
+ * @return int 0 on success, -1 on failure
+ */
+int uwrt_add_firewall_nat(struct uctx *context, char *brname, char *ip_addr);
+
+/**
+ * @brief Deletes a firewall rule for an IP address
+ * 
+ * @param context The uci context
+ * @param ip_addr The IP address
+ * @return int 0 on success, -1 on failure
+ */
+int uwrt_delete_firewall_nat(struct uctx *context, char *ip_addr);
+
+/**
+ * @brief Adds a firewall bridge rule for two IP addresses
+ * 
+ * @param context The uci context
+ * @param sip The source IP address
+ * @param sbr The source bridge interface name
+ * @param dip The destination IP address
+ * @param dbr The destination bridge interface name
+ * @return int 0 on success, -1 on failure
+ */
+int uwrt_add_firewall_bridge(struct uctx *context, char *sip, char *sbr, char *dip, char *dbr);
 #endif

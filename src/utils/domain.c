@@ -207,6 +207,7 @@ ssize_t write_domain_data(int sock, char *data, size_t data_len, struct client_a
   }
 
   errno = 0;
+  log_trace("Sending to socket on %.*s", addr->len, addr->addr.sun_path);
   if ((num_bytes = sendto(sock, data, data_len, 0, (struct sockaddr *) &addr->addr, addr->len)) < 0) {
     log_err("sendto");
     return -1;
@@ -276,7 +277,7 @@ int writeread_domain_data_str(char *socket_path, char *write_str, char **reply)
       return -1;
     }
 
-    log_trace("Bytes available=%u", bytes_available);
+    log_trace("Socket received bytes available=%u", bytes_available);
     rec_data = os_zalloc(bytes_available + 1);
     if (rec_data == NULL) {
       log_err("os_zalloc");

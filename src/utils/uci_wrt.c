@@ -39,6 +39,8 @@
 #define IFNAME_EXPR ".ifname="
 #define IPADDR_EXPR ".ipaddr="
 
+#define IP_SECTION_STR "%d%d%d%d"
+
 struct uci_type_list {
 	unsigned int idx;
 	const char *name;
@@ -1243,6 +1245,281 @@ int uwrt_gen_firewall_zone(struct uctx *context, char *brname)
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_add_list fail for %s", property);
     return -1;
+  }
+
+  return 0;
+}
+
+int uwrt_add_firewall_nat(struct uctx *context, char *brname, char *ip_addr)
+{
+  char property[128];
+  uint8_t ip_buf[4];
+
+  if (context == NULL) {
+    log_trace("context param is NULL");
+    return -1;
+  }
+
+  if (brname == NULL) {
+    log_trace("brname param is NULL");
+    return -1;
+  }
+
+  if (ip_addr == NULL) {
+    log_trace("ip_addr param is NULL");
+    return -1;
+  }
+
+  if (ip4_2_buf(ip_addr, ip_buf) < 0) {
+    log_trace("ip4_2_buf fail");
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_dnat=redirect", IP2STR(ip_buf));
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_dnat.enabled=1", IP2STR(ip_buf));
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_dnat.name=DNAT %s", IP2STR(ip_buf), ip_addr);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_dnat.src=wan", IP2STR(ip_buf));
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_dnat.src_ip=0.0.0.0", IP2STR(ip_buf));
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_dnat.dest=%s", IP2STR(ip_buf), brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_dnat.dest_ip=%s", IP2STR(ip_buf), ip_addr);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_dnat.proto=all", IP2STR(ip_buf));
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_dnat.target=DNAT", IP2STR(ip_buf));
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_snat=redirect", IP2STR(ip_buf));
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_snat.enabled=1", IP2STR(ip_buf));
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_snat.name=MASQUERADE %s", IP2STR(ip_buf), ip_addr);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_snat.src=%s", IP2STR(ip_buf), brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_snat.src_ip=%s", IP2STR(ip_buf), ip_addr);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_snat.dest=wan", IP2STR(ip_buf));
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_snat.dest_ip=0.0.0.0", IP2STR(ip_buf));
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_snat.proto=all", IP2STR(ip_buf));
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_snat.target=MASQUERADE", IP2STR(ip_buf));
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_forward=rule", IP2STR(ip_buf));
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_forward.enabled=1", IP2STR(ip_buf));
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_forward.name=Forward %s", IP2STR(ip_buf), ip_addr);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_forward.src=%s", IP2STR(ip_buf), brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_forward.src_ip=%s", IP2STR(ip_buf), ip_addr);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_forward.dest=wan", IP2STR(ip_buf));
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_forward.proto=all", IP2STR(ip_buf));
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_forward.target=ACCEPT", IP2STR(ip_buf));
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_backward=rule", IP2STR(ip_buf));
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_backward.enabled=1", IP2STR(ip_buf));
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_backward.name=Backward %s", IP2STR(ip_buf), ip_addr);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_backward.src=wan", IP2STR(ip_buf));
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_backward.dest=%s", IP2STR(ip_buf), brname);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_backward.dest_ip=%s", IP2STR(ip_buf), ip_addr);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_backward.proto=all", IP2STR(ip_buf));
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_backward.target=ACCEPT", IP2STR(ip_buf));
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
+
+  return 0;
+}
+
+int uwrt_delete_firewall_nat(struct uctx *context, char *ip_addr)
+{
+  char property[128];
+  uint8_t ip_buf[4];
+
+  if (context == NULL) {
+    log_trace("context param is NULL");
+    return -1;
+  }
+
+  if (ip_addr == NULL) {
+    log_trace("ip_addr param is NULL");
+    return -1;
+  }
+
+  if (ip4_2_buf(ip_addr, ip_buf) < 0) {
+    log_trace("ip4_2_buf fail");
+    return -1;
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_backward", IP2STR(ip_buf));
+  if (uwrt_delete_property(context->uctx, property) < 0) {
+    log_trace("uwrt_delete_property fail for %s", property);
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_forward", IP2STR(ip_buf));
+  if (uwrt_delete_property(context->uctx, property) < 0) {
+    log_trace("uwrt_delete_property fail for %s", property);
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_snat", IP2STR(ip_buf));
+  if (uwrt_delete_property(context->uctx, property) < 0) {
+    log_trace("uwrt_delete_property fail for %s", property);
+  }
+
+  sprintf(property, "firewall."IP_SECTION_STR"_dnat", IP2STR(ip_buf));
+  if (uwrt_delete_property(context->uctx, property) < 0) {
+    log_trace("uwrt_delete_property fail for %s", property);
   }
 
   return 0;

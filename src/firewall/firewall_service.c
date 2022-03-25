@@ -215,8 +215,12 @@ int fw_add_nat(struct fwctx* context, char *ip_addr)
     return -1;
   }
 
-  log_trace("Adding uci rule for ip=%s br=%s", ip_addr, brname);
-  return 0;
+  log_trace("Adding uci rule for br=%s br=%s", ip_addr, brname);
+  if (uwrt_add_firewall_nat(context->ctx, brname, ip_addr) < 0) {
+    log_trace("uwrt_add_firewall_nat fail");
+    return -1;
+  }
+
 #else
   char ifname[IFNAMSIZ];
 
@@ -232,22 +236,23 @@ int fw_add_nat(struct fwctx* context, char *ip_addr)
   }
 #endif
 
+  if (run_firewall(context->firewall_bin_path) < 0) {
+    log_debug("run_firewall fail");
+    return -1;
+  }
+
   return 0;
 }
 
 int fw_remove_nat(struct fwctx* context, char *ip_addr)
 {
 #ifdef WITH_UCI_SERVICE
-  char brname[IFNAMSIZ];
-
-  if (get_brname_from_ip(context->config_ifinfo_array, ip_addr, brname) < 0) {
-    log_trace("get_brname_from_ip fail");
+  log_trace("Removing uci rule for ip=%s", ip_addr);
+  if (uwrt_delete_firewall_nat(context->ctx, ip_addr) < 0) {
+    log_trace("uwrt_delete_firewall_nat fail");
     return -1;
   }
 
-  log_trace("Removing uci rule for ip=%s br=%s", ip_addr, brname);
-
-  return 0;
 #else
   char ifname[IFNAMSIZ];
 
@@ -262,6 +267,11 @@ int fw_remove_nat(struct fwctx* context, char *ip_addr)
     return -1;
   }
 #endif
+
+  if (run_firewall(context->firewall_bin_path) < 0) {
+    log_debug("run_firewall fail");
+    return -1;
+  }
 
   return 0;
 }
