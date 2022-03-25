@@ -308,6 +308,7 @@ int init_context(struct app_config *app_config, struct supervisor_context *ctx)
   ctx->wpa_passphrase_len = os_strnlen_s(app_config->hconfig.wpa_passphrase, AP_SECRET_LEN);
   os_memcpy(ctx->wpa_passphrase, app_config->hconfig.wpa_passphrase, ctx->wpa_passphrase_len);
   
+  os_memcpy(ctx->nat_bridge, app_config->nat_bridge, IFNAMSIZ);
   os_memcpy(ctx->nat_interface, app_config->nat_interface, IFNAMSIZ);
   os_memcpy(ctx->db_path, app_config->db_path, MAX_OS_PATH_LEN);
 
@@ -426,7 +427,7 @@ bool run_engine(struct app_config *app_config)
 
   if ((context.fw_ctx = fw_init_context(context.if_mapper, context.vlan_mapper,
                       context.hmap_bin_paths, context.config_ifinfo_array,
-                      context.nat_interface, app_config->exec_firewall,
+                      context.nat_bridge, context.nat_interface, app_config->exec_firewall,
                       app_config->firewall_config.firewall_bin_path)) == NULL)
   {
     log_debug("fw_init_context fail");

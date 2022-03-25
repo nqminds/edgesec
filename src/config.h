@@ -53,6 +53,7 @@ struct app_config {
   bool                exec_capture;                         /**< Flag to execute the capture service. */
   bool                exec_mdns_forward;                    /**< Flag to execute the mdns forwarding service. */
   bool                exec_firewall;                        /**< Flag to execute the firewall command. */
+  char                nat_bridge[IFNAMSIZ];                 /**< The NAT bridge string. */
   char                nat_interface[IFNAMSIZ];              /**< The NAT interface string. */
   char                bridge_prefix[IFNAMSIZ];              /**< The bridge prefix. */
   char                interface_prefix[IFNAMSIZ];           /**< The interface prefix. */

@@ -808,6 +808,12 @@ bool load_nat_config(const char *filename, struct app_config *config)
 {
   char *value;
 
+  // Load NAT bridge
+  value = os_malloc(INI_BUFFERSIZE);
+  ini_gets("nat", "natBridge", "", value, INI_BUFFERSIZE, filename);
+  os_strlcpy(config->nat_bridge, value, IFNAMSIZ);
+  os_free(value);
+
   // Load NAT interface
   value = os_malloc(INI_BUFFERSIZE);
   ini_gets("nat", "natInterface", "", value, INI_BUFFERSIZE, filename);

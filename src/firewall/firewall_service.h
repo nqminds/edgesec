@@ -52,6 +52,7 @@ struct fwctx* fw_init_context(hmap_if_conn *if_mapper,
                               hmap_vlan_conn  *vlan_mapper,
                               hmap_str_keychar *hmap_bin_paths,
                               UT_array *config_ifinfo_array,
+                              char *nat_bridge,
                               char *nat_interface,
                               bool exec_firewall,
                               char *path);

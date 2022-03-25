@@ -89,6 +89,7 @@ serverMask = 32
 secret = "radius"
 
 [nat]
+natBridge = ""
 natInterface = "eth0" # raspberry pi default ethernet port
 
 [firewall]

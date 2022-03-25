@@ -49,6 +49,7 @@ struct fwctx {
   hmap_vlan_conn  *vlan_mapper;                               /**< WiFi VLAN to interface mapper */
   hmap_str_keychar *hmap_bin_paths;                           /**< Mapper for paths to systems binaries */
   UT_array        *config_ifinfo_array;                       /**< @c config_ifinfo_array from @c struct app_config */
+  char *nat_bridge;
   char *nat_interface;
   bool exec_firewall;
   char *firewall_bin_path;                    /**< The firewall binary path string */
