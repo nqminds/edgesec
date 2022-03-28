@@ -153,6 +153,12 @@ struct fwctx* fw_init_context(hmap_if_conn *if_mapper,
     return NULL;
   }
 
+  if (uwrt_cleanup_firewall(fw_ctx->ctx) < 0) {
+    log_debug("uwrt_cleanup_firewall fail");
+    fw_free_context(fw_ctx);
+    return NULL;
+  }
+
   while((p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) != NULL) {
     if (uwrt_gen_firewall_zone(fw_ctx->ctx, p->brname) < 0) {
       log_debug("uwrt_init_context fail");

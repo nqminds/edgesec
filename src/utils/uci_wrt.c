@@ -1723,3 +1723,55 @@ int uwrt_delete_firewall_bridge(struct uctx *context, char *sip, char *dip)
 
   return 0;
 }
+
+int uwrt_cleanup_firewall(struct uctx *context)
+{
+  int ret;
+  char **ptr = NULL, *fo = NULL;
+  UT_array *kv = NULL;
+  char key[10];
+  char property[256];
+
+  utarray_new(kv, &ut_str_icd);
+
+  sprintf(key, "firewall");
+
+  ret = uwrt_lookup_key(context->uctx, key, kv);
+
+  if (!ret) {
+    utarray_free(kv);
+    return 0;
+  } else if (ret < 0) {
+    log_trace("uwrt_lookup_key fail");
+    utarray_free(kv);
+    return -1;
+  }
+  while ((ptr = (char**) utarray_next(kv, ptr))) {
+    log_trace("%s", *ptr);
+    if(strstr(*ptr, "edgesec_") != NULL) {
+      log_trace("Found");
+      fo = strstr(*ptr, "=zone");
+      if (fo != NULL) {
+        os_strlcpy(property, *ptr, (size_t)(fo - *ptr));
+      }
+      fo = strstr(*ptr, "=rule");
+      if (fo != NULL) {
+        os_strlcpy(property, *ptr, (size_t)(fo - *ptr));
+      }
+
+      fo = strstr(*ptr, "=redirect");
+      if (fo != NULL) {
+        os_strlcpy(property, *ptr, (size_t)(fo - *ptr));
+      }
+
+      if (fo != NULL) {
+        log_trace("%s", property);
+      }
+      // utarray_push_back(kv, &kvstr);
+    }
+  }
+
+  utarray_free(kv);
+
+  return 0;
+}

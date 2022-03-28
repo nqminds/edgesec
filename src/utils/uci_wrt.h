@@ -192,4 +192,11 @@ int uwrt_add_firewall_bridge(struct uctx *context, char *sip, char *sbr, char *d
  */
 int uwrt_delete_firewall_bridge(struct uctx *context, char *sip, char *dip);
 
+/**
+ * @brief Removes all the firewall rules
+ * 
+ * @param context The uci context
+ * @return int 0 on success, -1 on failure
+ */
+int uwrt_cleanup_firewall(struct uctx *context);
 #endif
