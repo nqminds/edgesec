@@ -434,8 +434,6 @@ bool run_engine(struct app_config *app_config)
     goto run_engine_fail;
   }
 
-  exit(1);
-
   log_info("Loading crypt service...");
   if ((context.crypt_ctx = load_crypt_service(app_config->crypt_db_path, app_config->crypt_key_id,
                                               (uint8_t *)app_config->crypt_secret,
