@@ -32,35 +32,6 @@ if (BUILD_CAPTURE_SERVICE)
   set_target_properties(capsrv PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif ()
 
-if (BUILD_REST_SERVER AND BUILD_MICROHTTPD_LIB)
-  add_executable(restsrv restsrv.c)
-  target_include_directories(restsrv PRIVATE ${LIBMICROHTTPD_INCLUDE_DIR} ${PROJECT_BINARY_DIR})
-  target_link_libraries(restsrv config minIni base64 os hashmap ap_service cmd_processor ${LIBMICROHTTPD_LIB})
-  # link time optimization
-  set_target_properties(restsrv PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
-endif ()
-
-if (BUILD_SQLSYNC_SERVICE)
-  add_executable(sqlsyncsrv sqlsyncsrv.cc)
-  target_include_directories(sqlsyncsrv PRIVATE ${PROJECT_BINARY_DIR} ${LIBSQLITE_INCLUDE_DIR})
-  target_link_libraries(sqlsyncsrv PUBLIC sqlite_header_writer os sqlite_grpc_proto GRPC::grpc++_reflection ${LIBSQLITE_LIB})
-  # link time optimization
-  set_target_properties(sqlsyncsrv PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
-endif ()
-
-if (BUILD_REVERSE_SERVICE)
-  add_executable(revclient revclient.cc)
-  target_include_directories(revclient PRIVATE ${PROJECT_BINARY_DIR} ${LIBSQLITE_INCLUDE_DIR})
-  target_link_libraries(revclient PRIVATE base64 os log reverse_grpc_proto GRPC::grpc++_reflection ${LIBSQLITE_LIB})
-
-  add_executable(revsrv revsrv.cc)
-  target_include_directories(revsrv PRIVATE ${PROJECT_BINARY_DIR})
-  target_link_libraries(revsrv os log eloop domain reverse_grpc_proto GRPC::grpc++_reflection)
-
-  # link time optimization
-  set_target_properties(revclient revsrv PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
-endif ()
-
 add_executable(edgesec edgesec.c)
 target_include_directories(edgesec PRIVATE ${PROJECT_BINARY_DIR} ${LIBOPENSSL_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
 target_link_libraries(edgesec PRIVATE eloop config engine minIni os hashmap)

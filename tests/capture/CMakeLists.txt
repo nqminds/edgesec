@@ -10,16 +10,6 @@ set_target_properties(test_default_analyser
   LINK_FLAGS  "-Wl,--wrap=open_sqlite_header_db -Wl,--wrap=open_sqlite_pcap_db -Wl,--wrap=free_sqlite_header_db -Wl,--wrap=free_sqlite_pcap_db -Wl,--wrap=run_pcap -Wl,--wrap=close_pcap -Wl,--wrap=eloop_init -Wl,--wrap=eloop_register_read_sock -Wl,--wrap=eloop_register_timeout -Wl,--wrap=eloop_run -Wl,--wrap=eloop_destroy -Wl,--wrap=run_register_db -Wl,--wrap=extract_packets -Wl,--wrap=push_packet_queue -Wl,--wrap=push_pcap_queue"
 )
 
-if (BUILD_NDPI_LIB)
-  add_executable(test_ndpi_analyser test_ndpi_analyser.c)
-  target_include_directories(test_ndpi_analyser PRIVATE ${LIBNDPI_INCLUDE_PATH} ${LIBPCAP_INCLUDE_PATH})
-  target_link_libraries(test_ndpi_analyser PRIVATE ndpi_analyser os log cmocka::cmocka)
-  set_target_properties(test_ndpi_analyser
-    PROPERTIES
-    LINK_FLAGS  "-Wl,--wrap=pthread_mutex_init -Wl,--wrap=create_domain_client -Wl,--wrap=run_pcap -Wl,--wrap=pthread_create -Wl,--wrap=pthread_join -Wl,--wrap=close_domain -Wl,--wrap=capture_pcap_stop -Wl,--wrap=pthread_mutex_destroy"
-  )
-endif()
-
 add_executable(test_packet_queue test_packet_queue.c)
 target_include_directories(test_packet_queue PRIVATE ${LIBPCAP_INCLUDE_PATH})
 target_link_libraries(test_packet_queue PRIVATE packet_queue os log cmocka::cmocka)
