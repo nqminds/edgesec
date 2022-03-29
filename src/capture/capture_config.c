@@ -162,9 +162,6 @@ int capture_opt2config(char key, char *value, struct capture_conf *config)
     case 'w':
       config->db_write = true;
       break;
-    case 's':
-      config->db_sync = true;
-      break;
     case 'q':
       os_strlcpy(config->domain_server_path, value, MAX_OS_PATH_LEN);
       break;
@@ -179,20 +176,6 @@ int capture_opt2config(char key, char *value, struct capture_conf *config)
       break;
     case 'p':
       os_strlcpy(config->db_path, value, MAX_OS_PATH_LEN);
-      break;
-    case 'a':
-      os_strlcpy(config->db_sync_address, value, MAX_WEB_PATH_LEN);
-      break;
-    case 'k':
-      os_strlcpy(config->ca_path, value, MAX_OS_PATH_LEN);
-      break;
-    case 'o':
-      conversion = get_opt_num(value);
-      if (conversion <= 0 || conversion > 65535) {
-        return -1;
-      }
-
-      config->db_sync_port = (uint16_t) conversion;
       break;
     case 'r':
       if (process_sync_params(value, config) < 0) {
@@ -315,12 +298,6 @@ char** capture_config2opt(struct capture_conf *config)
     strcpy(opt_str[idx], "-w");
     idx ++;
   }
-  //db_sync, -s
-  if (config->db_sync) {
-    opt_str[idx] = os_zalloc(3);
-    strcpy(opt_str[idx], "-s");
-    idx ++;
-  }
 
   //domain_server_path, -q
   if (os_strnlen_s(config->domain_server_path, MAX_OS_PATH_LEN)) {
@@ -364,40 +341,6 @@ char** capture_config2opt(struct capture_conf *config)
 
     opt_str[idx] = os_malloc(MAX_OS_PATH_LEN);
     os_strlcpy(opt_str[idx], config->db_path, MAX_OS_PATH_LEN);
-    idx ++;
-  }
-
-  //db_sync_address, -a
-  if (strlen(config->db_sync_address)) {
-    opt_str[idx] = os_zalloc(3);
-    strcpy(opt_str[idx], "-a");
-    idx ++;
-
-    opt_str[idx] = os_malloc(MAX_WEB_PATH_LEN);
-    os_strlcpy(opt_str[idx], config->db_sync_address, MAX_WEB_PATH_LEN);
-    idx ++;
-  }
-
-  //db_sync_port, -o
-  if (config->db_sync_port) {
-    sprintf(buf, "%u", config->db_sync_port);
-    opt_str[idx] = os_zalloc(3);
-    strcpy(opt_str[idx], "-o");
-    idx ++;
-
-    opt_str[idx] = os_zalloc(strlen(buf) + 1);
-    strcpy(opt_str[idx], buf);
-    idx ++;
-  }
-
-  //ca_path, -k
-  if (strlen(config->ca_path)) {
-    opt_str[idx] = os_zalloc(3);
-    strcpy(opt_str[idx], "-k");
-    idx ++;
-
-    opt_str[idx] = os_malloc(MAX_OS_PATH_LEN);
-    os_strlcpy(opt_str[idx], config->ca_path, MAX_OS_PATH_LEN);
     idx ++;
   }
 

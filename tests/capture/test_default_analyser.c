@@ -124,6 +124,8 @@ uint32_t __wrap_run_register_db(char *address, char *name)
 int __wrap_extract_packets(const struct pcap_pkthdr *header, const uint8_t *packet,
                     char *interface, char *hostname, char *id, UT_array **tp_array)
 {
+  (void) header;
+  (void) packet;
   (void) id;
   (void) hostname;
   (void) interface;
@@ -170,11 +172,7 @@ void capture_config(struct capture_conf *config)
   strcpy(config->analyser, "ndpi");
   config->file_write = true;
   config->db_write = true;
-  config->db_sync = true;
   strcpy(config->db_path, "/tmp");
-  strcpy(config->db_sync_address, "localhost");
-  os_memset(config->ca_path, 0, MAX_OS_PATH_LEN);
-  config->db_sync_port = 12345;
   strcpy(config->filter, "port 80");
 }
 

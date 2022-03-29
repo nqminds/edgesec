@@ -15,7 +15,7 @@
 #include "utils/log.h"
 #include "capture/capture_service.h"
 
-char *out_opt_str = "./ -i wlan0 -f port 80 -m -t 100 -n 1000 -y ndpi -e -u -w -s -q ./test -x SET_FINGERPRINT -z 32 -p ./db -a localhost -o 12345 -k ./ca.pem -r -1,-1 -b 100 ";
+char *out_opt_str = "./ -i wlan0 -f port 80 -m -t 100 -n 1000 -y ndpi -e -u -w -q ./test -x SET_FINGERPRINT -z 32 -p ./db -r -1,-1 -b 100 ";
 
 void capture_config(struct capture_conf *config)
 {
@@ -33,15 +33,11 @@ void capture_config(struct capture_conf *config)
   strcpy(config->analyser, "ndpi");
   config->file_write = true;
   config->db_write = true;
-  config->db_sync = true;
   strcpy(config->db_path, "./db");
-  strcpy(config->db_sync_address, "localhost");
-  config->db_sync_port = 12345;
   strcpy(config->filter, "port 80");
   config->sync_store_size = -1;
   config->sync_send_size = -1;
   config->capture_store_size = 100; 
-  strcpy(config->ca_path, "./ca.pem");
 }
 
 static void test_capture_opt2config(void **state)
@@ -61,14 +57,10 @@ static void test_capture_opt2config(void **state)
   assert_int_equal(capture_opt2config('e', NULL, &in), 0);
   assert_int_equal(capture_opt2config('u', NULL, &in), 0);
   assert_int_equal(capture_opt2config('w', NULL, &in), 0);
-  assert_int_equal(capture_opt2config('s', NULL, &in), 0);
   assert_int_equal(capture_opt2config('q', "./test", &in), 0);
   assert_int_equal(capture_opt2config('x', "SET_FINGERPRINT", &in), 0);
   assert_int_equal(capture_opt2config('z', "32", &in), 0);
   assert_int_equal(capture_opt2config('p', "./db", &in), 0);
-  assert_int_equal(capture_opt2config('a', "localhost", &in), 0);
-  assert_int_equal(capture_opt2config('o', "12345", &in), 0);
-  assert_int_equal(capture_opt2config('k', "./ca.pem", &in), 0);
   assert_int_equal(capture_opt2config('r', "-1,-1", &in), 0);
   assert_int_equal(capture_opt2config('b', "100", &in), 0);
   assert_int_equal(os_memcmp(&in, &out, sizeof(struct capture_conf)), 0);
@@ -98,6 +90,8 @@ static void test_capture_config2opt(void **state)
 
 int main(int argc, char *argv[])
 {  
+  (void) argc;
+  (void) argv;
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {

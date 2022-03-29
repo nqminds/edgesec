@@ -68,8 +68,8 @@
 
 #define CAPTURE_MAX_OPT       26
                               
-#define CAPTURE_OPT_STRING    ":c:i:q:f:t:n:p:y:a:o:x:z:r:k:b:dvhmewus"   // gjl
-#define CAPTURE_USAGE_STRING  "\t%s [-c config] [-d] [-h] [-v] [(-y engine [-w] [-u] [-s -a address -o port -k path]) | (-b size)] [-i interface] [-q domain]" \
+#define CAPTURE_OPT_STRING    ":c:i:q:f:t:n:p:y:x:z:r:b:dvhmewu"   // gjlkoas
+#define CAPTURE_USAGE_STRING  "\t%s [-c config] [-d] [-h] [-v] [(-y engine [-w] [-u]) | (-b size)] [-i interface] [-q domain]" \
                               "[-f filter] [-m] [-t timeout] [-n interval] " \
                               "[-e] [-r params]\n"
 extern const char* const capture_description_string;
@@ -84,14 +84,10 @@ extern const char* const capture_description_string;
                               "\t-n interval\t The process interval (milliseconds)\n" \
                               "\t-y analyser\t Analyser\n" \
                               "\t-p path\t\t The db path\n" \
-                              "\t-a address\t The db sync address\n" \
-                              "\t-o port\t\t The db sync port\n" \
-                              "\t-k path\t\t The sync certificate authority path\n" \
                               "\t-m\t\t Promiscuous mode\n" \
                               "\t-e\t\t Immediate mode\n" \
                               "\t-u\t\t Write to file\n" \
                               "\t-w\t\t Write to db\n" \
-                              "\t-s\t\t Sync the db\n" \
                               "\t-r\t\t Sync store size and send size (val1,val2)\n" \
                               "\t-b size\t\t Maximum capture store size before cleanup (in KiB)\n" \
                               "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n" \
@@ -136,11 +132,7 @@ struct capture_conf {
   char analyser[MAX_ANALYSER_NAME_SIZE];                      /**< Specifies the packet analyser engine. */ 
   bool file_write;                                            /**< Specifies wether the packets should be saved to file(s). */
   bool db_write;                                              /**< Specifies wether the packets should be saved in a sqlite db. */
-  bool db_sync;                                               /**< Specifies wether the packets db should be synced. */
   char db_path[MAX_OS_PATH_LEN];                              /**< Specifies the path to the sqlite3 dbs */ 
-  char db_sync_address[MAX_WEB_PATH_LEN];                     /**< Specifies the web address for sqlite syncing */
-  char ca_path[MAX_OS_PATH_LEN];                              /**< Specifies the certificate authority path */
-  uint16_t db_sync_port;                                      /**< Specifies the port of the web address for sqlite syncing */
   char filter[MAX_FILTER_SIZE];                               /**< Specifies the filter expression or pcap lib */
   ssize_t sync_store_size;                                    /**< Specifies the sync store size */
   ssize_t sync_send_size;                                     /**< Specifies the sync send size */
