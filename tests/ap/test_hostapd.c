@@ -25,7 +25,6 @@ static char *test_hostapd_vlan_file = "/tmp/hostapd-test.vlan";
 static char *test_hostapd_conf_file = "/tmp/hostapd-test.conf";
 static char *test_hostapd_conf_content =
 "interface=wlan0\n"
-"bridge=br0\n"
 "driver=nl80211\n"
 "ssid=IOTH_IMX7\n"
 "hw_mode=g\n"
@@ -110,7 +109,6 @@ static void test_generate_hostapd_conf(void **state)
   strcpy(hconf.interface, "wlan0");
   strcpy(hconf.ssid, "IOTH_IMX7");
   strcpy(hconf.wpa_passphrase, "1234554321");
-  strcpy(hconf.bridge, "br0");
   strcpy(hconf.driver, "nl80211");
   strcpy(hconf.hw_mode, "g");
   hconf.channel = 11;
@@ -137,8 +135,8 @@ static void test_generate_hostapd_conf(void **state)
   strcpy(rconf.radius_client_ip, "192.168.1.2");
   rconf.radius_port = 1812;
   strcpy(rconf.radius_secret, "radius");
-  bool ret = generate_hostapd_conf(&hconf, &rconf);
-  assert_true(ret);
+  int ret = generate_hostapd_conf(&hconf, &rconf);
+  assert_int_equal(ret, 0);
 
   FILE *fp = fopen(test_hostapd_conf_file, "r");
   assert_non_null(fp);
@@ -165,9 +163,9 @@ static void test_generate_vlan_conf(void **state)
 {
   (void) state; /* unused */
 
-  bool ret = generate_vlan_conf(test_hostapd_vlan_file, "wlan0");
+  int ret = generate_vlan_conf(test_hostapd_vlan_file, "wlan0");
 
-  assert_true(ret);
+  assert_int_equal(ret, 0);
 
   FILE *fp = fopen(test_hostapd_vlan_file, "r");
   assert_non_null(fp);

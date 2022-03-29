@@ -16,7 +16,6 @@
 #include <ndpi_typedefs.h>
 #include <pcap.h>
 #include "utils/log.h"
-#include "utils/if.h"
 #include "capture/ndpi_analyser.h"
 #include "capture/pcap_service.h"
 

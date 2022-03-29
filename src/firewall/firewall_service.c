@@ -82,6 +82,8 @@ int run_firewall(char *path)
 #else
 int run_firewall(char *path)
 {
+  (void) path;
+
   return 0;
 }
 #endif

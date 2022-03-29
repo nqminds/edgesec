@@ -25,7 +25,7 @@ set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=subscribe_events_cmd")
 set_target_properties(test_cmd_processor PROPERTIES LINK_FLAGS ${TEST_CMD_PROPS})
 
 add_executable(test_mac_mapper test_mac_mapper.c)
-target_link_libraries(test_mac_mapper PRIVATE log system_checks os mac_mapper cmocka::cmocka)
+target_link_libraries(test_mac_mapper PRIVATE log os mac_mapper cmocka::cmocka)
 
 add_executable(test_sqlite_fingerprint_writer test_sqlite_fingerprint_writer.c)
 target_include_directories(test_sqlite_fingerprint_writer PRIVATE ${LIBSQLITE_INCLUDE_DIR})

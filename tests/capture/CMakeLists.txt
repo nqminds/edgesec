@@ -13,7 +13,7 @@ set_target_properties(test_default_analyser
 if (BUILD_NDPI_LIB)
   add_executable(test_ndpi_analyser test_ndpi_analyser.c)
   target_include_directories(test_ndpi_analyser PRIVATE ${LIBNDPI_INCLUDE_PATH} ${LIBPCAP_INCLUDE_PATH})
-  target_link_libraries(test_ndpi_analyser PRIVATE ndpi_analyser if os log cmocka::cmocka)
+  target_link_libraries(test_ndpi_analyser PRIVATE ndpi_analyser os log cmocka::cmocka)
   set_target_properties(test_ndpi_analyser
     PROPERTIES
     LINK_FLAGS  "-Wl,--wrap=pthread_mutex_init -Wl,--wrap=create_domain_client -Wl,--wrap=run_pcap -Wl,--wrap=pthread_create -Wl,--wrap=pthread_join -Wl,--wrap=close_domain -Wl,--wrap=capture_pcap_stop -Wl,--wrap=pthread_mutex_destroy"
