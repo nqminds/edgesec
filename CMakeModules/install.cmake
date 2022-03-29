@@ -18,25 +18,6 @@ if (BUILD_MDNS_SERVICE AND BUILD_PCAP_LIB)
   )
 endif ()
 
-if (BUILD_REST_SERVER AND LIBMICROHTTPD_LIB)
-  install(
-    TARGETS restsrv
-    RUNTIME
-  )
-endif ()
-if (BUILD_SQLSYNC_SERVICE AND LIBSQLITE_LIB)
-  install(
-    TARGETS sqlsyncsrv
-    RUNTIME
-  )
-endif ()
-if (BUILD_REVERSE_SERVICE)
-  install(
-    TARGETS revclient revsrv
-    RUNTIME
-  )
-endif ()
-
 # usually /usr/local/lib/edgesec (or /usr/lib/edgesec for .deb)
 # EDGESEC_private_lib_dir is set in main CMakeLists.txt, as we need it to set RPATH before targets
 # currently only hostapd, so it doesn't conflict with other hostapds
@@ -88,21 +69,9 @@ if (BUILD_NETLINK_LIB AND LIBNETLINK_LIB)
   install(DIRECTORY "${LIBNETLINK_LIB_PATH}/" DESTINATION ${EDGESEC_private_lib_dir})
 endif ()
 
-if (BUILD_NDPI_LIB AND LIBNDPI_LIB)
-  install(DIRECTORY "${LIBNDPI_LIB_DIR}/" DESTINATION ${EDGESEC_private_lib_dir})
-endif ()
-
 if (BUILD_MNL_LIB AND MNL_FOUND)
   get_filename_component(MNL_LIBRARY_DIR ${MNL_LIBRARY} DIRECTORY)
   install(DIRECTORY ${MNL_LIBRARY_DIR}/ DESTINATION ${EDGESEC_private_lib_dir} PATTERN "*.la" EXCLUDE)
-endif ()
-
-if (BUILD_MICROHTTPD_LIB AND LIBMICROHTTPD_LIB)
-  install(DIRECTORY "${LIBMICROHTTPD_LIB_DIR}/" DESTINATION ${EDGESEC_private_lib_dir} PATTERN "*.la" EXCLUDE)
-endif ()
-
-if (BUILD_GRPC_LIB AND (TARGET GRPC::grpc++))
-  install(DIRECTORY "${LIBGRPC_LIB_DIR}/" DESTINATION ${EDGESEC_private_lib_dir})
 endif ()
 
 if (BUILD_HOSTAPD AND HOSTAPD)
