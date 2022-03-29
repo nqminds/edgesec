@@ -34,9 +34,7 @@
 #include <errno.h>
 #include <linux/if.h>
 #include <libgen.h>
-#ifdef WITH_PCAP_SERVICE
 #include <pcap.h>
-#endif
 
 #include "dns/dns_config.h"
 #include "dns/mdns_service.h"

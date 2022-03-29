@@ -24,13 +24,7 @@
  */
 #include <errno.h>
 
-#ifdef WITH_NDPI_SERVICE
-#include "ndpi_analyser.h"
-#endif
-
-#ifdef WITH_PCAP_SERVICE
 #include "default_analyser.h"
-#endif
 #include "capture_config.h"
 #include "capture_service.h"
 #include "capture_cleaner.h"
@@ -44,15 +38,8 @@
 int run_capture(struct capture_conf *config)
 {
   if (strcmp(config->analyser, PACKET_ANALYSER_DEFAULT) == 0) {
-#ifdef WITH_PCAP_SERVICE
     log_info("Running default_analyser_engine");
     return start_default_analyser(config);
-#endif
-  } else if (strcmp(config->analyser, PACKET_ANALYSER_NDPI) == 0) {
-#ifdef WITH_NDPI_SERVICE
-    log_info("Running ndpi_analyser_engine");
-    return start_ndpi_analyser(config);
-#endif
   }
 
   return start_capture_cleaner(config);

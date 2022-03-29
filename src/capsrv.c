@@ -34,9 +34,7 @@
 #include <errno.h>
 #include <linux/if.h>
 #include <libgen.h>
-#ifdef WITH_PCAP_SERVICE
 #include <pcap.h>
-#endif
 
 #include "capture/capture_config.h"
 #include "capture/capture_service.h"
