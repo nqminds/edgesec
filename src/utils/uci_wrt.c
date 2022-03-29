@@ -25,6 +25,7 @@
 
 #include <inttypes.h>
 #include <arpa/inet.h>
+#include <string.h>
 #include <uci.h>
 
 #include "uci_wrt.h"
@@ -651,7 +652,7 @@ int uwrt_gen_dnsmasq_instance(struct uctx *context, struct string_queue *ifname_
 
   sprintf(property, "dhcp.edgesec");
   if (uwrt_delete_property(context->uctx, property) < 0) {
-    log_trace("uwrt_delete_property fail for %s", property);
+    log_trace("nothing to delete for %s", property);
   }
 
   sprintf(property, "dhcp.edgesec=dnsmasq");
@@ -862,7 +863,7 @@ int uwrt_gen_hostapd_instance(struct uctx *context, struct hostapd_params *param
 
   sprintf(property, "wireless.%s.hostapd_options", params->device);
   if (uwrt_delete_property(context->uctx, property) < 0) {
-    log_trace("uwrt_delete_property fail for %s", property);
+    log_trace("nothing to delete for %s", property);
   }
 
   sprintf(property, "wireless.%s.hostapd_options=auth_algs=%d", params->device, params->auth_algs);
@@ -1016,7 +1017,7 @@ int uwrt_gen_firewall_zone(struct uctx *context, char *brname)
 
   sprintf(property, "firewall.edgesec_%s.network", brname);
   if (uwrt_delete_property(context->uctx, property) < 0) {
-    log_trace("uwrt_delete_property fail for %s", property);
+    log_trace("nothing to delete for %s", property);
   }
 
   sprintf(property, "firewall.edgesec_%s.network=%s", brname, brname);
@@ -1509,22 +1510,22 @@ int uwrt_delete_firewall_nat(struct uctx *context, char *ip_addr)
 
   sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_backward", IP2STR(ip_buf));
   if (uwrt_delete_property(context->uctx, property) < 0) {
-    log_trace("uwrt_delete_property fail for %s", property);
+    log_trace("nothing to delete for %s", property);
   }
 
   sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_forward", IP2STR(ip_buf));
   if (uwrt_delete_property(context->uctx, property) < 0) {
-    log_trace("uwrt_delete_property fail for %s", property);
+    log_trace("nothing to delete for %s", property);
   }
 
   sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_snat", IP2STR(ip_buf));
   if (uwrt_delete_property(context->uctx, property) < 0) {
-    log_trace("uwrt_delete_property fail for %s", property);
+    log_trace("nothing to delete for %s", property);
   }
 
   sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_dnat", IP2STR(ip_buf));
   if (uwrt_delete_property(context->uctx, property) < 0) {
-    log_trace("uwrt_delete_property fail for %s", property);
+    log_trace("nothing to delete for %s", property);
   }
 
   return 0;
@@ -1713,24 +1714,35 @@ int uwrt_delete_firewall_bridge(struct uctx *context, char *sip, char *dip)
 
   sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_"IP_SECTION_STR, IP2STR(sip_buf), IP2STR(dip_buf));
   if (uwrt_delete_property(context->uctx, property) < 0) {
-    log_trace("uwrt_delete_property fail for %s", property);
+    log_trace("nothing to delete for %s", property);
   }
 
   sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_"IP_SECTION_STR, IP2STR(dip_buf), IP2STR(sip_buf));
   if (uwrt_delete_property(context->uctx, property) < 0) {
-    log_trace("uwrt_delete_property fail for %s", property);
+    log_trace("nothing to delete for %s", property);
   }
 
+  return 0;
+}
+
+int uwrt_delete_properties(struct uci_context *ctx, UT_array *properties)
+{
+  char **ptr = NULL;
+
+  while ((ptr = (char**) utarray_next(properties, ptr))) {
+    if (uwrt_delete_property(ctx, *ptr) < 0) {
+      log_trace("nothing to delete for %s", *ptr);
+    }
+  }
   return 0;
 }
 
 int uwrt_cleanup_firewall(struct uctx *context)
 {
   int ret;
-  char **ptr = NULL, *fo = NULL;
-  UT_array *kv = NULL;
-  char key[10];
-  char property[256];
+  char **ptr = NULL, *fo = NULL, *p = NULL;
+  UT_array *kv = NULL, *parray = NULL;
+  char key[10], property[256];
 
   utarray_new(kv, &ut_str_icd);
 
@@ -1746,32 +1758,41 @@ int uwrt_cleanup_firewall(struct uctx *context)
     utarray_free(kv);
     return -1;
   }
+
+  utarray_new(parray, &ut_str_icd);
+  p = &property[0];
   while ((ptr = (char**) utarray_next(kv, ptr))) {
-    log_trace("%s", *ptr);
+    property[0] = '\0';
+
     if(strstr(*ptr, "edgesec_") != NULL) {
-      log_trace("Found");
       fo = strstr(*ptr, "=zone");
       if (fo != NULL) {
-        os_strlcpy(property, *ptr, (size_t)(fo - *ptr));
+        os_strlcpy(property, *ptr, (size_t)(fo - *ptr) + 1);
       }
       fo = strstr(*ptr, "=rule");
       if (fo != NULL) {
-        os_strlcpy(property, *ptr, (size_t)(fo - *ptr));
+        os_strlcpy(property, *ptr, (size_t)(fo - *ptr) + 1);
       }
 
       fo = strstr(*ptr, "=redirect");
       if (fo != NULL) {
-        os_strlcpy(property, *ptr, (size_t)(fo - *ptr));
+        os_strlcpy(property, *ptr, (size_t)(fo - *ptr) + 1);
       }
 
-      if (fo != NULL) {
-        log_trace("%s", property);
+      if (strlen(property)) {
+        utarray_push_back(parray, &p);
       }
-      // utarray_push_back(kv, &kvstr);
     }
   }
 
-  utarray_free(kv);
+  if (uwrt_delete_properties(context->uctx, parray) < 0) {
+    log_trace("uwrt_delete_properties fail");
+    utarray_free(kv);
+    utarray_free(parray);
+    return -1;
+  }
 
+  utarray_free(kv);
+  utarray_free(parray);
   return 0;
 }
