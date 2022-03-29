@@ -46,7 +46,6 @@ struct capture_context {
   char *db_path;
   char pcap_path[MAX_OS_PATH_LEN];
   char *filter;
-  char cap_id[MAX_RANDOM_UUID_LEN];
   char hostname[OS_HOST_NAME_MAX];
   ssize_t sync_store_size;
   ssize_t sync_send_size;
@@ -56,6 +55,7 @@ struct capture_context {
   bool immediate;
   uint32_t buffer_timeout;
   char domain_server_path[MAX_OS_PATH_LEN];
+  int domain_client;
 };
 
 /**

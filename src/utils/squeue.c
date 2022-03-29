@@ -136,8 +136,10 @@ void empty_string_queue(struct string_queue* queue, ssize_t count)
 
 void free_string_queue(struct string_queue* queue)
 {
-  empty_string_queue(queue, -1);
-  free_string_queue_el(queue);
+  if (queue != NULL) {
+    empty_string_queue(queue, -1);
+    free_string_queue_el(queue);
+  }
 }
 
 ssize_t get_string_queue_length(struct string_queue* queue)
@@ -150,6 +152,11 @@ char* concat_string_queue(struct string_queue *queue, ssize_t count)
   struct string_queue *el;
   char *concat_str = NULL;
   ssize_t size = 1, num = 0;
+
+  if (queue == NULL) {
+    log_trace("queue param is NULL");
+    return NULL;
+  }
 
   dl_list_for_each(el, &queue->list, struct string_queue, list) {
     if (el != NULL && ((num < count && count > 0) || count < 0)) {

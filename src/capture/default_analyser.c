@@ -51,13 +51,9 @@
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 
-static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL, NULL};
+#define CAPTURE_DB_NAME   "capture" SQLITE_EXTENSION
 
-void construct_header_db_name(char *name, char *db_name)
-{
-  strcat(db_name, name);
-  strcat(db_name, SQLITE_EXTENSION);
-}
+static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL, NULL};
 
 void construct_pcap_file_name(char *file_name)
 {
@@ -85,12 +81,15 @@ void pcap_callback(const void *ctx, const void *pcap_ctx,
 {
   struct capture_context *context = (struct capture_context *)ctx;
   struct pcap_context *pc = (struct pcap_context *) pcap_ctx;
-
+  char cap_id[MAX_RANDOM_UUID_LEN];
   UT_array *tp_array = NULL;
 
   utarray_new(tp_array, &tp_list_icd);
+
+  generate_radom_uuid(cap_id);
+
   if (extract_packets(ltype, header, packet, pc->ifname,
-                      context->hostname, context->cap_id, tp_array) > 0) {
+                      context->hostname, cap_id, tp_array) > 0) {
     add_packet_queue(context, tp_array, context->pqueue);
   }
 
@@ -148,12 +147,50 @@ int save_pcap_file_data(struct pcap_pkthdr *header, uint8_t *packet,
   return 0;
 }
 
+void send_domain_data(struct capture_context *context, char *data)
+{
+  char *buf;
+  size_t send_len = 0;
+
+  if (!strlen(data)) {
+    return;
+  }
+
+  if (strlen(context->domain_command)) {
+    send_len = strlen(context->domain_command) + 1;
+  }
+
+  send_len += strlen(data) + 1;
+
+  if ((buf = os_zalloc(send_len)) == NULL) {
+    log_err("os_zalloc");
+    return;
+  }
+
+  if (strlen(context->domain_command)) {
+    sprintf(buf, "%s %s", context->domain_command, data);
+  } else {
+    strcpy(buf, data);
+  }
+
+  write_domain_data_s(context->domain_client, buf, send_len, context->domain_server_path);
+  os_free(buf);
+}
+
 void eloop_tout_handler(void *eloop_ctx, void *user_ctx)
 {
   struct pcap_context *pc = (struct pcap_context *) eloop_ctx;
   struct capture_context *context = (struct capture_context *) user_ctx;
   struct packet_queue *el_packet;
   struct pcap_queue *el_pcap;
+  struct string_queue* squeue = NULL;
+  struct eth_schema *eths = NULL;
+
+  char id[MAX_RANDOM_UUID_LEN + 2], *data;
+
+  if((squeue = init_string_queue(-1)) == NULL) {
+    log_trace("init_string_queue fail");
+  }
 
   // Process all packets in the queue
   while(is_packet_queue_empty(context->pqueue) < 1) {
@@ -161,10 +198,27 @@ void eloop_tout_handler(void *eloop_ctx, void *user_ctx)
       if (context->db_write) {
         save_packet_statement(context->header_db, &(el_packet->tp));
       }
+
+      if (squeue != NULL && el_packet->tp.type == PACKET_ETHERNET) {
+        eths = (struct eth_schema *)el_packet->tp.packet;
+        sprintf(id, "%s%c", eths->id, context->domain_delim);
+        push_string_queue(squeue, id);
+      }
+
       free_packet_tuple(&el_packet->tp);
       free_packet_queue_el(el_packet);
     }
   }
+
+  if (squeue != NULL) {
+    data = concat_string_queue(squeue, -1);
+    if (data != NULL) {
+      send_domain_data(context, data);
+      os_free(data);
+    }
+  }
+
+  free_string_queue(squeue);
 
   if (context->file_write) {
     while(is_pcap_queue_empty(context->cqueue) < 1) {
@@ -215,8 +269,6 @@ int start_default_analyser(struct capture_conf *config)
     return -1;
   }
 
-  generate_radom_uuid(context.cap_id);
-
   if (get_hostname(context.hostname) < 0) {
     log_debug("get_hostname fail");
     return -1;
@@ -237,8 +289,7 @@ int start_default_analyser(struct capture_conf *config)
   os_strlcpy(context.domain_command, config->domain_command, MAX_SUPERVISOR_CMD_SIZE);
   os_strlcpy(context.domain_server_path, config->domain_server_path, MAX_OS_PATH_LEN);
 
-  construct_header_db_name(context.cap_id, context.db_name);
-  if ((header_db_path = construct_path(context.db_path, context.db_name)) == NULL) {
+  if ((header_db_path = construct_path(context.db_path, CAPTURE_DB_NAME)) == NULL) {
     log_debug("construct_path fail");
     return -1;
   }
@@ -249,8 +300,13 @@ int start_default_analyser(struct capture_conf *config)
     return -1;
   }
   
+  if ((context.domain_client = create_domain_client(NULL)) < 0) {
+    log_trace("create_domain_client fail");
+    os_free(header_db_path);
+    return -1;
+  }
+
   log_info("Capturing hostname=%s", context.hostname);
-  log_info("Capturing id=%s", context.cap_id);
   log_info("Capturing pcap_path=%s", context.pcap_path);
   log_info("Capturing interface(s)=%s", config->capture_interface);
   log_info("Capturing filter=%s", context.filter);
@@ -274,6 +330,7 @@ int start_default_analyser(struct capture_conf *config)
     log_debug("init_packet_queue fail");
     os_free(header_db_path);
     os_free(pcap_db_path);
+    close(context.domain_client);
     return -1;
   }
 
@@ -284,6 +341,7 @@ int start_default_analyser(struct capture_conf *config)
     os_free(header_db_path);
     os_free(pcap_db_path);
     free_packet_queue(context.pqueue);
+    close(context.domain_client);
     return -1;
   }
 
@@ -296,6 +354,7 @@ int start_default_analyser(struct capture_conf *config)
       free_pcap_queue(context.cqueue);
       os_free(header_db_path);
       os_free(pcap_db_path);
+      close(context.domain_client);
       return -1;
     }
   }
@@ -308,6 +367,7 @@ int start_default_analyser(struct capture_conf *config)
       os_free(header_db_path);
       os_free(pcap_db_path);
       free_sqlite_header_db(context.header_db);
+      close(context.domain_client);
       return -1;
     }
   }
@@ -353,6 +413,7 @@ int start_default_analyser(struct capture_conf *config)
   free_sqlite_pcap_db(context.pcap_db);
   os_free(header_db_path);
   os_free(pcap_db_path);
+  close(context.domain_client);
   return 0;
 
 fail:
@@ -364,5 +425,6 @@ fail:
   free_sqlite_pcap_db(context.pcap_db);
   os_free(header_db_path);
   os_free(pcap_db_path);
+  close(context.domain_client);
   return -1;
 }
