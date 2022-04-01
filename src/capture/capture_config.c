@@ -345,7 +345,7 @@ char** capture_config2opt(struct capture_conf *config)
   }
 
   //sync params, -r
-  sprintf(buf, "%ld,%ld", config->sync_store_size, config->sync_send_size);
+  sprintf(buf, "%lld,%lld", (int64_t)config->sync_store_size, (int64_t)config->sync_send_size);
   opt_str[idx] = os_zalloc(3);
   strcpy(opt_str[idx], "-r");
   idx ++;
