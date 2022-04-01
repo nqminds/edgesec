@@ -5,7 +5,7 @@ if (BUILD_SQLITE_LIB AND NOT (BUILD_ONLY_DOCS))
   set(LIBSQLITE_INCLUDE_DIR "${LIBSQLITE_INSTALL_DIR}/include")
   set(LIBSQLITE_LIB_DIR "${LIBSQLITE_INSTALL_DIR}/lib")
 
-  find_library(LIBSQLITE_LIB NAMES sqlite3 libsqlite3 PATHS "${LIBSQLITE_LIB_DIR}" NO_DEFAULT_PATH)
+  find_library(LIBSQLITE_LIB NAMES libsqlite3.a sqlite3 PATHS "${LIBSQLITE_LIB_DIR}" NO_DEFAULT_PATH)
   if (LIBSQLITE_LIB)
     message("Found libsqlite library: ${LIBSQLITE_LIB}")
   ELSE ()
@@ -22,6 +22,6 @@ if (BUILD_SQLITE_LIB AND NOT (BUILD_ONLY_DOCS))
       ${LIBSQLITE_INSTALL_ROOT}
       ${target_autoconf_triple}
     )
-    find_library(LIBSQLITE_LIB NAMES sqlite3 libsqlite3 PATHS "${LIBSQLITE_LIB_DIR}" NO_DEFAULT_PATH)
+    find_library(LIBSQLITE_LIB NAMES libsqlite3.a sqlite3 PATHS "${LIBSQLITE_LIB_DIR}" NO_DEFAULT_PATH)
   endif ()
 endif ()

@@ -5,7 +5,7 @@ if (BUILD_PCAP_LIB AND NOT (BUILD_ONLY_DOCS))
   set(LIBPCAP_INCLUDE_PATH ${LIBPCAP_INSTALL_DIR}/include)
   set(LIBPCAP_LIB_DIR "${LIBPCAP_INSTALL_DIR}/lib")
 
-  find_library(LIBPCAP_LIB NAMES pcap libpcap PATHS "${LIBPCAP_LIB_DIR}" NO_DEFAULT_PATH)
+  find_library(LIBPCAP_LIB NAMES libpcap.a pcap PATHS "${LIBPCAP_LIB_DIR}" NO_DEFAULT_PATH)
   if (LIBPCAP_LIB)
     message("Found libpcap library: ${LIBPCAP_LIB}")
   ELSE ()
@@ -15,6 +15,6 @@ if (BUILD_PCAP_LIB AND NOT (BUILD_ONLY_DOCS))
       ${LIBPCAP_INSTALL_ROOT}
       ${target_autoconf_triple}
     )
-    find_library(LIBPCAP_LIB NAMES pcap libpcap PATHS "${LIBPCAP_LIB_DIR}" NO_DEFAULT_PATH)
+    find_library(LIBPCAP_LIB NAMES libpcap.a pcap PATHS "${LIBPCAP_LIB_DIR}" NO_DEFAULT_PATH)
   endif ()
 endif ()
