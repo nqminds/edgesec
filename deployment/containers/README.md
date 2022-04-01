@@ -36,3 +36,14 @@ Execute a command ```cmd``` in the currrent folder that is mounted to the contai
 docker run --rm -v "$PWD":/opt/EDGESec -w /opt/EDGESec openwrt cmd 
 ```
 where `openwrt` is the container name from Step 2.
+
+### Examples
+To run the cmake build for a cmake buidl folder
+```console
+docker run --rm -v "$PWD":/opt/EDGESec -w /opt/EDGESec openwrt cmake -B build/ -S .
+```
+
+To compile using cmake (on 4 cores)
+```console
+docker run --rm -v "$PWD":/opt/EDGESec -w /opt/EDGESec openwrt cmake --build build/ -j4
+```
