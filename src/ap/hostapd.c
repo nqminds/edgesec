@@ -43,6 +43,8 @@
 #include "utils/os.h"
 #include "utils/iface.h"
 
+#define WITH_HOSTAPD_UCI
+
 #ifdef WITH_UCI_SERVICE
 #include "../utils/uci_wrt.h"
 #define HOSTAPD_SERVICE_RELOAD        "reload"
@@ -82,7 +84,7 @@ int generate_vlan_conf(char *vlan_file, char *interface)
   return 0;
 }
 
-#ifdef WITH_UCI_SERVICE
+#if (defined(WITH_UCI_SERVICE) && defined(WITH_HOSTAPD_UCI))
 int generate_hostapd_conf(struct apconf *hconf, struct radius_conf *rconf)
 {
   struct hostapd_params params;
@@ -181,7 +183,7 @@ int generate_hostapd_conf(struct apconf *hconf, struct radius_conf *rconf)
 }
 #endif
 
-#ifdef WITH_UCI_SERVICE
+#if (defined(WITH_UCI_SERVICE) && defined(WITH_HOSTAPD_UCI))
 void get_hostapd_args(char *hostapd_bin_path, char *hostapd_file_path, char *hostapd_log_path, char *argv[])
 {
   (void) hostapd_file_path;
@@ -223,7 +225,7 @@ int check_ap_running(char *name, char *if_name, int wait_time)
 
   return running;
 }
-#ifdef WITH_UCI_SERVICE
+#if (defined(WITH_UCI_SERVICE) && defined(WITH_HOSTAPD_UCI))
 int run_ap_process(struct apconf *hconf)
 {
   pid_t child_pid = 0;
