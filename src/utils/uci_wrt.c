@@ -1299,7 +1299,7 @@ int uwrt_add_firewall_nat(struct uctx *context, char *brname, char *ip_addr, cha
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_dnat=redirect", IP2STR(ip_buf));
+  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_dnat=nat", IP2STR(ip_buf));
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
@@ -1353,7 +1353,7 @@ int uwrt_add_firewall_nat(struct uctx *context, char *brname, char *ip_addr, cha
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_snat=redirect", IP2STR(ip_buf));
+  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_snat=nat", IP2STR(ip_buf));
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
@@ -1792,7 +1792,7 @@ int uwrt_cleanup_firewall(struct uctx *context)
         os_strlcpy(property, *ptr, (size_t)(fo - *ptr) + 1);
       }
 
-      fo = strstr(*ptr, "=redirect");
+      fo = strstr(*ptr, "=nat");
       if (fo != NULL) {
         os_strlcpy(property, *ptr, (size_t)(fo - *ptr) + 1);
       }
