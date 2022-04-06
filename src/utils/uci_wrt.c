@@ -855,6 +855,24 @@ int uwrt_gen_hostapd_instance(struct uctx *context, struct hostapd_params *param
     return -1;
   }
 
+  sprintf(property, "wireless.%s.channel=11", params->device);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "wireless.%s.band=2g", params->device);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "wireless.%s.htmode=HT20", params->device);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
   sprintf(property, "wireless.%s.log_level=0", params->device);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
