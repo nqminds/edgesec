@@ -15,14 +15,23 @@ if (BUILD_PCAP_LIB AND NOT (BUILD_ONLY_DOCS))
       URL_HASH SHA3_256=9aedcbec09b7b3b01c78cc80822c505846d73928a72ae96eb907b1f467eee649
     )
     FetchContent_Populate(libpcap)
-    execute_process(COMMAND
-      bash
-      ${CMAKE_SOURCE_DIR}/lib/compile_pcap.sh
-      "${libpcap_SOURCE_DIR}"
-      "${libpcap_BINARY_DIR}"
-      "${LIBPCAP_INSTALL_ROOT}"
-      "${target_autoconf_triple}"
+    execute_process(COMMAND ${CMAKE_COMMAND}
+      -B build/ -S "${libpcap_SOURCE_DIR}"
+      "-DCMAKE_INSTALL_PREFIX=${LIBPCAP_INSTALL_DIR}"
+      # Pass C/CXX compiler for gcc/cross-compiling
+      "-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}"
+      "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
+      WORKING_DIRECTORY "${libpcap_BINARY_DIR}"
     )
+    execute_process(COMMAND ${CMAKE_COMMAND}
+      --build build/
+      WORKING_DIRECTORY "${libpcap_BINARY_DIR}"
+    )
+    execute_process(COMMAND ${CMAKE_COMMAND}
+      --install build/
+      WORKING_DIRECTORY "${libpcap_BINARY_DIR}"
+    )
+
     find_library(LIBPCAP_LIB NAMES libpcap.a pcap PATHS "${LIBPCAP_LIB_DIR}" NO_DEFAULT_PATH)
   endif ()
 
