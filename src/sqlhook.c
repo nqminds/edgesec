@@ -1,19 +1,22 @@
+// Set the environment variable ENV_DB_KEY=dbpath:dbprefix
+// Use SELECT load_extension("./src/libsqlhook.so"); to load the extension
 #include <stdio.h>
 #include <stdlib.h>
 #include <sqlite3ext.h> /* Do not use <sqlite3.h>! */
+
+#include "utils/os.h"
+#include "utils/utarray.h"
 SQLITE_EXTENSION_INIT1
 
 #define ENV_DB_KEY  "EDGESEC_DB"
 
+static char db_path[MAX_OS_PATH_LEN];
+static char db_prefix[MAX_OS_PATH_LEN];
+
 void update_hook(void *data, int type, char const *database, char const *table, sqlite3_int64 rowid)
 {
   (void) database;
-  char *db_path = NULL;
-
-  if ((db_path = getenv(ENV_DB_KEY)) == NULL) {
-    return;
-  }
-
+  
   FILE *f = fopen(db_path, "a+");
 
   if (f == NULL) {
@@ -23,6 +26,28 @@ void update_hook(void *data, int type, char const *database, char const *table, 
   fprintf(f, "%d %s %lld\n", type, table, rowid);
 
   fclose(f);
+}
+
+int decode_env_key_value(char *kvalue)
+{
+  UT_array *values;
+  char **p = NULL;
+
+  utarray_new(values, &ut_str_icd);
+
+  if (split_string_array(kvalue, ':', values) < 2) {
+    utarray_free(values);
+    return -1;
+  }
+
+  p = (char**) utarray_next(values, p);
+  strncpy(db_path, *p, MAX_OS_PATH_LEN);
+
+  p = (char**) utarray_next(values, p);
+  strncpy(db_prefix, *p, MAX_OS_PATH_LEN);
+
+  utarray_free(values);
+  return 0;
 }
 
 #ifdef _WIN32
@@ -41,10 +66,23 @@ int sqlite3_extension_init(
 ){
   (void) pzErrMsg;
 
+  char *env_key_value;
   int rc = SQLITE_OK;
+  
   SQLITE_EXTENSION_INIT2(pApi);
   
-  sqlite3_update_hook(db, update_hook, NULL);
+  FILE *f = fopen("/tmp/debug", "a+");
+  if ((env_key_value = getenv(ENV_DB_KEY)) == NULL) {
+    return rc;
+  }
 
+  if (decode_env_key_value(env_key_value) < 0) {
+    return rc;
+  }
+
+  fprintf(f, "%s %s\n", db_path, db_prefix);
+  //sqlite3_update_hook(db, update_hook, NULL);
+  
+  fclose(f);
   return rc;
 }

@@ -10,8 +10,9 @@ add_subdirectory(capture)
 
 
 add_library(sqlhook SHARED sqlhook.c)
+target_compile_options(sqlhook PRIVATE -fPIC)
 target_include_directories(sqlhook PRIVATE ${LIBSQLITE_INCLUDE_DIR})
-target_link_libraries(sqlhook PRIVATE SQLite::sqlite)
+target_link_libraries(sqlhook PRIVATE os SQLite::sqlite)
 
 add_library(engine engine.c)
 target_include_directories(engine PRIVATE ${LIBSQLITE_INCLUDE_DIR})
