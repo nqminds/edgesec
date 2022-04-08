@@ -63,7 +63,7 @@ target_link_libraries(squeue PRIVATE log os)
 
 add_library(sqliteu sqliteu.c)
 target_include_directories(sqliteu BEFORE PRIVATE ${LIBSQLITE_INCLUDE_DIR})
-target_link_libraries(sqliteu PRIVATE log os ${LIBSQLITE_LIB})
+target_link_libraries(sqliteu PRIVATE log os SQLite::sqlite)
 
 add_library(domain domain.c)
 target_link_libraries(domain PRIVATE log os)

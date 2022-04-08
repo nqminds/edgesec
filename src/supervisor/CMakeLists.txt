@@ -10,19 +10,19 @@ target_link_libraries(mac_mapper PRIVATE bridge_list net log os)
 
 add_library(subscriber_events subscriber_events.c)
 target_include_directories(subscriber_events PRIVATE ${LIBSQLITE_INCLUDE_DIR} PUBLIC $<TARGET_PROPERTY:iface,INCLUDE_DIRECTORIES>)
-target_link_libraries(subscriber_events PRIVATE log os domain ${LIBSQLITE_LIB})
+target_link_libraries(subscriber_events PRIVATE log os domain SQLite::sqlite)
 
 add_library(sqlite_fingerprint_writer sqlite_fingerprint_writer.c)
 target_include_directories(sqlite_fingerprint_writer PRIVATE ${LIBSQLITE_INCLUDE_DIR})
-target_link_libraries(sqlite_fingerprint_writer PRIVATE sqliteu squeue log os ${LIBSQLITE_LIB})
+target_link_libraries(sqlite_fingerprint_writer PRIVATE sqliteu squeue log os SQLite::sqlite)
 
 add_library(sqlite_alert_writer sqlite_alert_writer.c)
 target_include_directories(sqlite_alert_writer PRIVATE ${LIBSQLITE_INCLUDE_DIR})
-target_link_libraries(sqlite_alert_writer PRIVATE sqliteu squeue log os ${LIBSQLITE_LIB})
+target_link_libraries(sqlite_alert_writer PRIVATE sqliteu squeue log os SQLite::sqlite)
 
 add_library(sqlite_macconn_writer sqlite_macconn_writer.c)
 target_include_directories(sqlite_macconn_writer PRIVATE ${LIBSQLITE_INCLUDE_DIR})
-target_link_libraries(sqlite_macconn_writer PRIVATE sqliteu squeue log os ${LIBSQLITE_LIB})
+target_link_libraries(sqlite_macconn_writer PRIVATE sqliteu squeue log os SQLite::sqlite)
 
 add_library(network_commands network_commands.c)
 target_include_directories(network_commands PRIVATE ${LIBSQLITE_INCLUDE_DIR})
