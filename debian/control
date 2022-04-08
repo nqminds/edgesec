@@ -135,18 +135,6 @@ Description: NquiringMinds EDGESEC reverse connection server.
  use to create a reverse connection to a
  non-publically accessible EDGESEC device.
 
-Package: edgesec-sqlsyncsrv
-Architecture: any
-Multi-Arch: foreign
-Depends: libedgesec (= ${binary:Version}),
-    edgesec-common (= ${source:Version}),
-    ${shlibs:Depends},
-    ${misc:Depends}
-Description: NquiringMinds EDGESEC SQL Sync Server.
- A GRPC synchronization server that lets devices
- synchonise EDGESEC data to the cloud, including
- both stored packet data as well as other tool data.
-
 Package: libedgesec
 Section: libs
 Architecture: any
