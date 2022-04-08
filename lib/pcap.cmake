@@ -39,19 +39,11 @@ if (BUILD_PCAP_LIB AND NOT (BUILD_ONLY_DOCS))
     find_library(LIBPCAP_LIB NAMES libpcap.a pcap PATHS "${LIBPCAP_LIB_DIR}" NO_DEFAULT_PATH)
   endif ()
 
-  # static pcap needs -lnl-genl-3 -lnl-3 # maybe openssl and crypto too???
   if (NOT TARGET PCAP::pcap)
     add_library(PCAP::pcap UNKNOWN IMPORTED)
 
-    # these two may have already been loaded in a custom location with nl.cmake
-    find_library(LIBNL_LIBRARY NAMES nl nl-3 REQUIRED)
-    find_library(LIBNL_GENL_LIBRARY NAMES nl-genl nl-genl-3 REQUIRED)
-
-    set(pcap_link_libs ${LIBNL_LIBRARY} ${LIBNL_GENL_LIBRARY})
-
     set_target_properties(PCAP::pcap PROPERTIES
         IMPORTED_LOCATION "${LIBPCAP_LIB}"
-        INTERFACE_LINK_LIBRARIES "${pcap_link_libs}"
         INTERFACE_INCLUDE_DIRECTORIES "${LIBPCAP_INCLUDE_PATH}"
     )
   endif(NOT TARGET PCAP::pcap)
