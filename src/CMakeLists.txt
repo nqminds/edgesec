@@ -27,7 +27,7 @@ endif ()
 if (BUILD_CAPTURE_SERVICE)
   add_executable(capsrv capsrv.c)
   target_include_directories(capsrv PRIVATE ${LIBPCAP_INCLUDE_PATH} ${PROJECT_BINARY_DIR} ${LIBSQLITE_INCLUDE_DIR})
-  target_link_libraries(capsrv capture_service capture_config config minIni os hashmap ${LIBPCAP_LIB})
+  target_link_libraries(capsrv capture_service capture_config config minIni os hashmap PCAP::pcap)
   # link time optimization
   set_target_properties(capsrv PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif ()
