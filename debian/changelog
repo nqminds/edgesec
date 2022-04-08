@@ -1,8 +1,14 @@
 edgesec (0.9.9-alpha5) UNRELEASED; urgency=low
 
   * Add `edgesec-mdnsf` package that creates the `mdnsf` executable.
+  * Removed EDGESec cloud service packages:
+    - `sqlsyncsrv`
+    - `revclient`
+  * Removed EDGESec non-core packages
+    - `restsrv`
+    - `revsrv`
 
- -- Alois Klink <alois@nquiringminds.com>  Tue, 30 Nov 2021 10:04:50 +0000
+ -- Alois Klink <alois@nquiringminds.com>  Fri, 08 Apr 2022 13:29:50 +0100
 
 edgesec (0.9.9-alpha4) UNRELEASED; urgency=low
 

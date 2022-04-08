@@ -138,6 +138,10 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # use -std=c++11 rather than -std=gnu++11
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+# hostapd and libnetlink relies on GNU specific features, like strncasecmp
+set(CMAKE_C_EXTENSIONS ON)
 
 # The edgesec version number.
 set(EDGESEC_VERSION_MAJOR 0)

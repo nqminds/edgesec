@@ -20,7 +20,7 @@ if (BUILD_CAPTURE_SERVICE)
 
   # packet_decoder.h has an #include <pcap.h>, so need to make it PUBLIC include
   target_include_directories(packet_decoder PUBLIC ${LIBPCAP_INCLUDE_PATH})
-  target_link_libraries(packet_decoder PUBLIC ${LIBPCAP_LIB} PRIVATE mdns_decoder dns_decoder hash net log os hashmap)
+  target_link_libraries(packet_decoder PUBLIC PCAP::pcap PRIVATE mdns_decoder dns_decoder hash net log os hashmap)
 
   add_library(packet_queue packet_queue.c)
 
@@ -29,7 +29,7 @@ if (BUILD_CAPTURE_SERVICE)
   add_library(pcap_service pcap_service.c)
 
   target_include_directories(pcap_service PRIVATE ${LIBPCAP_INCLUDE_PATH})
-  target_link_libraries(pcap_service PRIVATE net log os ${LIBPCAP_LIB})
+  target_link_libraries(pcap_service PRIVATE net log os PCAP::pcap)
 
   add_library(pcap_queue pcap_queue.c)
 
@@ -39,12 +39,12 @@ if (BUILD_CAPTURE_SERVICE)
   add_library(sqlite_header_writer sqlite_header_writer.c)
 
   target_include_directories(sqlite_header_writer PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
-  target_link_libraries(sqlite_header_writer PRIVATE sqliteu squeue log os iface ${LIBSQLITE_LIB})
+  target_link_libraries(sqlite_header_writer PRIVATE sqliteu squeue log os iface SQLite::sqlite)
 
   add_library(sqlite_pcap_writer sqlite_pcap_writer.c)
 
   target_include_directories(sqlite_pcap_writer PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
-  target_link_libraries(sqlite_pcap_writer PRIVATE sqliteu log os ${LIBSQLITE_LIB})
+  target_link_libraries(sqlite_pcap_writer PRIVATE sqliteu log os SQLite::sqlite)
 
   add_library(default_analyser default_analyser.c)
 
@@ -53,7 +53,7 @@ if (BUILD_CAPTURE_SERVICE)
   add_library(capture_cleaner capture_cleaner.c)
 
   target_include_directories(capture_cleaner PRIVATE ${LIBSQLITE_INCLUDE_DIR})
-  target_link_libraries(capture_cleaner PRIVATE sqlite_pcap_writer eloop log os ${LIBSQLITE_LIB})
+  target_link_libraries(capture_cleaner PRIVATE sqlite_pcap_writer eloop log os SQLite::sqlite)
 
   target_link_libraries(default_analyser PRIVATE dns_decoder pcap_service sqlite_header_writer sqlite_pcap_writer pcap_queue packet_queue packet_decoder squeue eloop iface log os hashmap domain)
 
