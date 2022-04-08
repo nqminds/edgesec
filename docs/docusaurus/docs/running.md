@@ -53,15 +53,3 @@ sudo ./src/revclient -f ./db -a localhost -p 8514 -c ./cert/CA/CA.pem -dddddddd
 ```bash
 sudo ./src/revclient -f ./db -a localhost -p 8514
 ```
-
-##### Cloud server - Running revsrv on port `8514` (verbose):
-
-The following programs are designed to run on a publically accesible server, that an EDGESec toolset can connect to.
-
-The GRPC certificate authority (`-a <example.CA.pem>`) MUST match the certificate authority passed to `revclient` on the EDGEsec device.
-
-Make sure that your server SSL certificate has the appropriate hostname (e.g. `localhost`, or `edgesec-1.nqm-1.com`).
-
-```bash
-sudo ./revsrv -p 8514 -a /etc/edgesec/CA/CA.pem -c /etc/edgesec/revsrv/server.crt -k /etc/edgesec/revsrv/server.key -dddddd
-```

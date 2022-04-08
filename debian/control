@@ -110,18 +110,6 @@ Description: NquiringMinds EDGESEC reverse connection client.
  This is especially useful when the device is non-publically
  accessible due to NAT/router firewalls.
 
-Package: edgesec-revsrv
-Architecture: any
-Multi-Arch: foreign
-Depends: libedgesec (= ${binary:Version}),
-    edgesec-common (= ${source:Version}),
-    ${shlibs:Depends},
-    ${misc:Depends}
-Description: NquiringMinds EDGESEC reverse connection server.
- Creates a cloud endpoint that EDGESec client devices can
- use to create a reverse connection to a
- non-publically accessible EDGESEC device.
-
 Package: libedgesec
 Section: libs
 Architecture: any
