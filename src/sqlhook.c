@@ -50,6 +50,11 @@ int decode_env_key_value(char *kvalue)
   return 0;
 }
 
+bool list_dir(char *path, void *args)
+{
+  return true;
+}
+
 #ifdef _WIN32
 __declspec(dllexport)
 #endif
@@ -80,7 +85,9 @@ int sqlite3_extension_init(
     return rc;
   }
 
-  fprintf(f, "%s %s\n", db_path, db_prefix);
+  if (list_dir(db_path, list_dir_fn fun, (void *)db_prefix) < 0) {
+    return rc;
+  }
   //sqlite3_update_hook(db, update_hook, NULL);
   
   fclose(f);
