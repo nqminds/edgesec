@@ -21,6 +21,10 @@ if (BUILD_PCAP_LIB AND NOT (BUILD_ONLY_DOCS))
       # Pass C/CXX compiler for gcc/cross-compiling
       "-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}"
       "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
+      # Disable DBUS support (otherwise need to link dbus-1 when static linking)
+      -DDISABLE_DBUS=ON
+      # Disable RDMA support (otherwise need to link ibverbs when static linking)
+      -DDISABLE_RDMA=ON
       WORKING_DIRECTORY "${libpcap_BINARY_DIR}"
     )
     execute_process(COMMAND ${CMAKE_COMMAND}
@@ -35,11 +39,15 @@ if (BUILD_PCAP_LIB AND NOT (BUILD_ONLY_DOCS))
     find_library(LIBPCAP_LIB NAMES libpcap.a pcap PATHS "${LIBPCAP_LIB_DIR}" NO_DEFAULT_PATH)
   endif ()
 
-  # static pcap needs -libverbs -lnl-genl-3 -lnl-3  -ldbus-1
+  # static pcap needs -lnl-genl-3 -lnl-3 # maybe openssl and crypto too???
   if (NOT TARGET PCAP::pcap)
     add_library(PCAP::pcap UNKNOWN IMPORTED)
 
-    set(pcap_link_libs "ibverbs" "nl-genl-3" "nl-3" "dbus-1")
+    # these two may have already been loaded in a custom location with nl.cmake
+    find_library(LIBNL_LIBRARY NAMES nl nl-3 REQUIRED)
+    find_library(LIBNL_GENL_LIBRARY NAMES nl-genl nl-genl-3 REQUIRED)
+
+    set(pcap_link_libs ${LIBNL_LIBRARY} ${LIBNL_GENL_LIBRARY})
 
     set_target_properties(PCAP::pcap PROPERTIES
         IMPORTED_LOCATION "${LIBPCAP_LIB}"
@@ -47,5 +55,4 @@ if (BUILD_PCAP_LIB AND NOT (BUILD_ONLY_DOCS))
         INTERFACE_INCLUDE_DIRECTORIES "${LIBPCAP_INCLUDE_PATH}"
     )
   endif(NOT TARGET PCAP::pcap)
-
 endif ()
