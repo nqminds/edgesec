@@ -7,12 +7,11 @@ title: Network Capture
 
 The network capture has the purpose of monitoring network traffic for each connected device. The resulting traffic analytics is sent to the network controller for device management. The network capture contains the following services:
 
-* Packet decoder
-* Packet capture
-* SQLite header storer
-* Raw packet storer
-* GRPC Synchroniser
-* Device monitoring
+- Packet decoder
+- Packet capture
+- SQLite header storer
+- Raw packet storer
+- Device monitoring
 
 The capture service is implemented as a standalone executable that can be run on demand by the network controller. The configuration of the capture service is depicted below:
 
@@ -36,6 +35,7 @@ struct capture_conf {
 The capture service can be run on a given network interface with a given filter. The capture also has the ability to store the processed packet in SQLite databases or raw format. The databases can be synchronised with the cloud for remote access.
 
 ## Packet decoder
+
 The packet decoder extract the metadata from captured packet. The below structure represents all the protocols that are currently being decoded:
 
 ```c
@@ -71,7 +71,7 @@ struct capture_packet {
 
 For each decoded packet the service stores the hash of the header as well as the timestamp.
 
-## Packet capture 
+## Packet capture
 
 The packet capture implements the actual network sniffing process. Currently it uses pcap library. But it also allow interfacing with PF_RING module that implements zero-copy technique.
 
@@ -98,60 +98,17 @@ Ever column in the respective table contains the hash of the Ethernet protocol t
 ## Raw packet storer
 
 The raw packet storer stores the raw packet into pcap files and the metadata for each file is stored in a SQLite database. The file name for each packet is randomly generate and subsequently the name is stored in a SQLite database together with the timestamp and packet length. The schema for the SQLite database is depicted below:
+
 ```
 CREATE TABLE meta (id TEXT, timestamp INTEGER NOT NULL, name TEXT, interface TEXT, filter TEXT, caplen INTEGER, length INTEGER, PRIMARY KEY (id, timestamp, interface))
 ```
-
-## GRPC Synchroniser
-
-The GRPC syncroniser service implements the syncronisation process to the cloud for stored packet data as well as other tool data. The syncroniser can function in two ways:
-* Forward - the syncroniser pushes the tool data to a cloud endpoint
-* Reverse - the syncroniser connects to a cloud endpoint, which subsequently makes a reverse connection to the syncroniser service
-
-The syncronisation process is based on gRPC protocol, where the syncroniser service acts as a client and the cloud endpoint as a server. The connection can be made secure (using TLS) by providing a server certificate.
-
-The gRPC protocol uses procol buffers to define the remote execution function. The forward service is implemented by the below protocol buffer:
-```
-syntax = "proto3";
-
-package sqlite_sync;
-
-// The synchroniser service definition.
-service Synchroniser {
-  // Registers a db
-  rpc RegisterDb (RegisterDbRequest) returns (RegisterDbReply) {}
-
-  // Synchronise db statement
-  rpc SyncDbStatement (SyncDbStatementRequest) returns (SyncDbStatementReply) {}
-}
-
-// The request message containing the db name and other params.
-message RegisterDbRequest {
-  string name = 1;
-}
-
-// The response message containing the registration status
-message RegisterDbReply {
-  uint32 status = 1;
-}
-
-message SyncDbStatementRequest {
-  string name = 1;
-  string statement = 2;
-}
-
-message SyncDbStatementReply {
-  uint32 status = 1;
-}
-```
-
-The forward synchroniser is used for cases when one needs to syncronise only the metadata to the cloud. It is implemented as a queue that pushes the packets at given intervals of time.
 
 ## Device monitoring
 
 The device monitoring service decodes the network traffic and assembles nettwork flow. Each flow is denoted by a source and destination MAC address, and protcol type. For each flow the device monitoring service calculates a fingerpint using the SHA256 algorithm.
 
 The flow results in the following structure:
+
 ```c
 struct nDPI_flow_meta {
   char src_mac_addr[MACSTR_LEN];
@@ -172,30 +129,31 @@ CREATE TABLE fingerprint (mac TEXT NOT NULL, protocol TEXT, fingerprint TEXT, ti
 
 The timestamp is given as 64 bit microseconds value and the fingerprint string is encoded in base64.
 
-
 An example of the fingerprint table rows are below:
 
-|MACPROTOCOL|FINGERPRINT|TIMESTAMP|QUERY|
-|-----------|-----------|---------|-----|
-|84:e3:42:3a:cb:2f|TLS.Amazon|mI1ENXMPBQDVjwGh/o0bLSrD8+O2O5RCFQLbUVt4lzI|1625055051481102|a2.tuyaeu.com|
-|9c:ef:d5:fd:db:56|TLS.Amazon|mI1ENXMPBQDVjwGh/o0bLSrD8+O2O5RCFQLbUVt4lzI|1625055051481102|a2.tuyaeu.com|
-|84:e3:42:3a:cb:2f|DNS|NqRTRWiNdfG4zMkiXE9P0eRQIefPgMYV/vXUymxdvNw|1625055072748967|1.0.0.10.in-addr.arpa|
-|9c:ef:d5:fd:db:56|DNS|NqRTRWiNdfG4zMkiXE9P0eRQIefPgMYV/vXUymxdvNw|1625055072748967|1.0.0.10.in-addr.arpa|
-
+| MACPROTOCOL       | FINGERPRINT | TIMESTAMP                                   | QUERY            |
+| ----------------- | ----------- | ------------------------------------------- | ---------------- | --------------------- |
+| 84:e3:42:3a:cb:2f | TLS.Amazon  | mI1ENXMPBQDVjwGh/o0bLSrD8+O2O5RCFQLbUVt4lzI | 1625055051481102 | a2.tuyaeu.com         |
+| 9c:ef:d5:fd:db:56 | TLS.Amazon  | mI1ENXMPBQDVjwGh/o0bLSrD8+O2O5RCFQLbUVt4lzI | 1625055051481102 | a2.tuyaeu.com         |
+| 84:e3:42:3a:cb:2f | DNS         | NqRTRWiNdfG4zMkiXE9P0eRQIefPgMYV/vXUymxdvNw | 1625055072748967 | 1.0.0.10.in-addr.arpa |
+| 9c:ef:d5:fd:db:56 | DNS         | NqRTRWiNdfG4zMkiXE9P0eRQIefPgMYV/vXUymxdvNw | 1625055072748967 | 1.0.0.10.in-addr.arpa |
 
 The entries of the fingerprint table can be queried using the supervisor service.
 
 For instance to retrieve all fingerprints for the MAC address 84:e3:42:3a:cb:2f one could use the following command:
+
 ```
 QUERY_FINGERPRINT 84:e3:42:3a:cb:2f 0 >= all
 ```
 
 To retrieve all the fingerprints up to a given timestamp one could use the following command:
+
 ```
 QUERY_FINGERPRINT 84:e3:42:3a:cb:2f 1625055051481102 <= all
 ```
 
 To retrieve all the fingerprints for the DNS protocol one could use the following command:
+
 ```
 QUERY_FINGERPRINT 84:e3:42:3a:cb:2f 0 >= DNS
 ```

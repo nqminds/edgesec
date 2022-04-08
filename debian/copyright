@@ -6,11 +6,6 @@ Files: lib/hostapd/*
 Copyright: 2002-2014, Jouni Malinen <j@w1.fi>
 License: BSD-3-clause
 
-Files: lib/libmicrohttpd-*/*
-Copyright: 2006-2021, Christian Grothoff <christian@grothoff.org>
-           2006-2021, other contributing authors
-License: LGPL-2.1+
-
 Files: lib/mnl-*/*
 Copyright: 2010-2021, Pablo Neira Ayuso <pablo@netfilter.org>
            2010-2021, other contributing authors
