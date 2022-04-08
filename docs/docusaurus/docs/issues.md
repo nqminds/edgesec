@@ -10,26 +10,6 @@ cd lib/libmnl-1.0.4
 autoreconf -f -i
 ```
 
-## GRPC/Protobuf linking issues
-
-GRPC is only compatible with certain versions of Protobuf.
-
-Because of this, we recommend that you **only** use GRPC/Protobuf
-installed from your system (e.g. in your `apt` repository).
-
-If you have a custom version of GRPC installed in `/usr/local`,
-we recommend deleting it, by removing files in:
-
-- `/usr/local/bin` (e.g. `grpc-cpp-plugin`)
-- `/usr/local/include` (e.g. `grpc++/`)
-- `/usr/local/lib` (e.g. `libgrpc++.so`)
-- `/usr/local/lib/pkgconfig` (e.g. `grpc++.pc`)
-
-You can also compile GRPC and Protobuf from source,
-by setting `DBUILD_GRPC_LIB=ON` when running `cmake`.
-However, GRPC is difficult to cross-compile, which is why we recommend
-using the pre-compiled system version from `apt`.
-
 ## "Predictable names" for WiFi interfaces
 
 https://wiki.debian.org/NetworkInterfaceNames#legacy

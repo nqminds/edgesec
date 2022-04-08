@@ -10,7 +10,6 @@ Build-Depends: debhelper-compat (= 12),
     libtool-bin, pkg-config,
     libjson-c-dev,
     libgnutls28-dev, libssl-dev,
-    protobuf-compiler-grpc:native, libprotobuf-dev, libgrpc++-dev,
     libcmocka-dev (>=1.1.5),
     libmnl-dev (>= 1.0.4)
 Standards-Version: 4.5.0
@@ -24,7 +23,6 @@ Multi-Arch: foreign
 Depends: libedgesec (= ${binary:Version}),
     edgesec-common (= ${source:Version}),
     edgesec-capsrv (= ${binary:Version}),
-    edgesec-revclient (= ${binary:Version}),
     edgesec-mdnsf (= ${binary:Version}),
     ${shlibs:Depends},
     ${misc:Depends},
@@ -96,19 +94,6 @@ Description: NquiringMinds EDGESEC capture server.
  Monitors and captures EDGESEC network traffic for each connected device.
  The resulting traffic analytics is sent to the network controller
  for device management.
-
-Package: edgesec-revclient
-Architecture: any
-Multi-Arch: foreign
-Depends: libedgesec (= ${binary:Version}),
-    edgesec-common (= ${source:Version}),
-    ${shlibs:Depends},
-    ${misc:Depends}
-Description: NquiringMinds EDGESEC reverse connection client.
- Connects to a `edgesec-revsrv` cloud endpoint to
- create a reverse connection to the EDGESEC device.
- This is especially useful when the device is non-publically
- accessible due to NAT/router firewalls.
 
 Package: libedgesec
 Section: libs

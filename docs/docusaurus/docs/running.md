@@ -39,17 +39,3 @@ Scans `./db/pcap-meta.sqlite` until pcap capture has reached `-b 20971520` KiB (
 ```bash
 ./src/capsrv -p ./db -b 20971520 -dddddddd
 ```
-
-##### Running revclient to `localhost:8514` with grpc CA located in `/cert/CA/CA.pem` and data stored in `./db` folder (verbose):
-
-Normally, you'd want to connect to a cloud server, but for testing, we can use `localhost`. Port and cert should match parameters passed to `revsrv`:
-
-```bash
-sudo ./src/revclient -f ./db -a localhost -p 8514 -c ./cert/CA/CA.pem -dddddddd
-```
-
-##### Running revclient to `localhost:8514` without grpc CA and data stored in `./db` folder:
-
-```bash
-sudo ./src/revclient -f ./db -a localhost -p 8514
-```

@@ -26,8 +26,7 @@ build_dependencies=(
     libjson-c-dev # mystery requirement
     flex bison # required by pcap
     libgnutls28-dev # required by libmicrohttpd
-    libssl-dev # required by hostapd only. GRPC uses own version, and we compile OpenSSL 3 for EDGESec
-    protobuf-compiler-grpc libprotobuf-dev libgrpc++-dev # GRPC, can be removed if -DBUILD_GRPC_LIB=ON
+    libssl-dev # required by hostapd only. We compile OpenSSL 3 for EDGESec
     libcmocka-dev # cmocka, can be removed if -DBUILD_CMOCKA_LIB=ON
     libmnl-dev # libmnl, can be removed if -DBUILD_LIBMNL_LIB=ON
 )
