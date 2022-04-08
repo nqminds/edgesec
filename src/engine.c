@@ -278,6 +278,11 @@ int init_context(struct app_config *app_config, struct supervisor_context *ctx)
   }
 
   utarray_new(ctx->config_ifinfo_array, &config_ifinfo_icd);
+  if (app_config->config_ifinfo_array == NULL) {
+    errno = EINVAL;
+    log_err("Invalid app config, missing config_ifinfo_array");
+    return -1;
+  }
   copy_ifinfo(app_config->config_ifinfo_array, ctx->config_ifinfo_array);
 
   if (init_ifbridge_names(ctx->config_ifinfo_array, app_config->interface_prefix,
