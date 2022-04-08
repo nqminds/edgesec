@@ -6,10 +6,10 @@ Build-Depends: debhelper-compat (= 12),
     git, ca-certificates, cmake (>=3.15.0), 
     doxygen, graphviz, texinfo,
     libnl-genl-3-dev, libnl-route-3-dev,
-    automake, autoconf, flex, bison,
+    autoconf, flex, bison,
     libtool-bin, pkg-config,
     libjson-c-dev,
-    libgnutls28-dev, libssl-dev,
+    libssl-dev,
     libcmocka-dev (>=1.1.5),
     libmnl-dev (>= 1.0.4)
 Standards-Version: 4.5.0
