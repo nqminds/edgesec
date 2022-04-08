@@ -8,6 +8,11 @@ add_subdirectory(crypt)
 add_subdirectory(dns)
 add_subdirectory(capture)
 
+
+add_library(sqlhook SHARED sqlhook.c)
+target_include_directories(sqlhook PRIVATE ${LIBSQLITE_INCLUDE_DIR})
+target_link_libraries(sqlhook PRIVATE SQLite::sqlite)
+
 add_library(engine engine.c)
 target_include_directories(engine PRIVATE ${LIBSQLITE_INCLUDE_DIR})
 target_link_libraries(engine crypt_service net log iface_mapper os sqlite_macconn_writer sqlite_fingerprint_writer firewall_service eloop supervisor network_commands radius_service mac_mapper ap_service firewall_service dhcp_service)
