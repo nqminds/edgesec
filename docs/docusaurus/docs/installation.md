@@ -17,7 +17,6 @@ Install the below packages (replace `*` with the most up to dat eversion) with `
 
 - edgesec-capsrv\_\*\_arm64.deb
 - edgesec-common\_\*\_all.deb
-- edgesec-restsrv\_\*\_arm64.deb
 - edgesec-revclient\_\*\_arm64.deb
 - edgesec-revsrv\_\*\_arm64.deb
 - edgesec\_\*\_arm64.deb
@@ -35,7 +34,6 @@ Install the below packages (replace `*` with the most up to dat eversion) with `
 
 - edgesec-capsrv\_\*\_amd64.deb
 - edgesec-common\_\*\_all.deb
-- edgesec-restsrv\_\*\_amd64.deb
 - edgesec-revclient\_\*\_amd64.deb
 - edgesec-revsrv\_\*\_amd64.deb
 - edgesec\_\*\_amd64.deb

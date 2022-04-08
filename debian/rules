@@ -36,8 +36,6 @@ override_dh_auto_configure:
 		 -DUSE_PTHREAD_LIB=ON\
 		 -DUSE_M_LIB=ON\
 		 -DBUILD_HOSTAPD=ON\
-		 -DBUILD_REST_SERVER=ON\
-		 -DBUILD_MICROHTTPD_LIB=ON\
 		 "-DLIB_MAKEFLAGS=--jobs=$(NUMJOBS)"
 
 # make sure to tell dh_shlibdeps about our private shared libs

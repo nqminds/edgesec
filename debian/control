@@ -25,7 +25,6 @@ Depends: libedgesec (= ${binary:Version}),
     edgesec-common (= ${source:Version}),
     edgesec-capsrv (= ${binary:Version}),
     edgesec-revclient (= ${binary:Version}),
-    edgesec-restsrv (= ${binary:Version}),
     edgesec-mdnsf (= ${binary:Version}),
     ${shlibs:Depends},
     ${misc:Depends},
@@ -73,18 +72,6 @@ Architecture: all
 Description: NquiringMinds EDGESec common files.
  This includes config files and CA certificates
  that may be shared with all binaries.
-
-Package: edgesec-restsrv
-Architecture: any
-Multi-Arch: foreign
-Depends: libedgesec (= ${binary:Version}),
-    edgesec-common (= ${source:Version}),
-    ${shlibs:Depends},
-    ${misc:Depends}
-Description: NquiringMinds EDGESEC RESTful server.
- Provides a HTTP/HTTPS RESTful Server that can
- be used to communicate with the `edgesec` process,
- as it only provides an Unix Domain Socket.
 
 Package: edgesec-mdnsf
 Architecture: any
