@@ -9,11 +9,19 @@ if (BUILD_PCAP_LIB AND NOT (BUILD_ONLY_DOCS))
   if (LIBPCAP_LIB)
     message("Found libpcap library: ${LIBPCAP_LIB}")
   ELSE ()
+    FetchContent_Declare(
+      libpcap
+      URL https://github.com/the-tcpdump-group/libpcap/archive/refs/tags/libpcap-1.10.1.tar.gz
+      URL_HASH SHA3_256=9aedcbec09b7b3b01c78cc80822c505846d73928a72ae96eb907b1f467eee649
+    )
+    FetchContent_Populate(libpcap)
     execute_process(COMMAND
       bash
       ${CMAKE_SOURCE_DIR}/lib/compile_pcap.sh
-      ${LIBPCAP_INSTALL_ROOT}
-      ${target_autoconf_triple}
+      "${libpcap_SOURCE_DIR}"
+      "${libpcap_BINARY_DIR}"
+      "${LIBPCAP_INSTALL_ROOT}"
+      "${target_autoconf_triple}"
     )
     find_library(LIBPCAP_LIB NAMES libpcap.a pcap PATHS "${LIBPCAP_LIB_DIR}" NO_DEFAULT_PATH)
   endif ()
@@ -23,7 +31,6 @@ if (BUILD_PCAP_LIB AND NOT (BUILD_ONLY_DOCS))
     add_library(PCAP::pcap UNKNOWN IMPORTED)
 
     set(pcap_link_libs "ibverbs" "nl-genl-3" "nl-3" "dbus-1")
-
 
     set_target_properties(PCAP::pcap PROPERTIES
         IMPORTED_LOCATION "${LIBPCAP_LIB}"
