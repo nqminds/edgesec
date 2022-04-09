@@ -1,7 +1,9 @@
 // Set the environment variable ENV_DB_KEY=dbpath:dbprefix
 // Use SELECT load_extension("./src/libsqlhook.so"); to load the extension
+#include <libgen.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <sqlite3ext.h> /* Do not use <sqlite3.h>! */
 
 #include "utils/os.h"
@@ -9,15 +11,21 @@
 SQLITE_EXTENSION_INIT1
 
 #define ENV_DB_KEY  "EDGESEC_DB"
+#define DOMAIN_ID_STR   "domain"
+#define DELIMITER_CHAR  '_'
 
-static char db_path[MAX_OS_PATH_LEN];
-static char db_prefix[MAX_OS_PATH_LEN];
+struct dir_ctx {
+  UT_array *domain_sockets;
+  UT_array *ports;
+};
+
+static char sock_path[MAX_OS_PATH_LEN];
 
 void update_hook(void *data, int type, char const *database, char const *table, sqlite3_int64 rowid)
 {
   (void) database;
   
-  FILE *f = fopen(db_path, "a+");
+  FILE *f = fopen(sock_path, "a+");
 
   if (f == NULL) {
     return;
@@ -28,30 +36,37 @@ void update_hook(void *data, int type, char const *database, char const *table, 
   fclose(f);
 }
 
-int decode_env_key_value(char *kvalue)
+bool list_dir_function(char *path, void *args)
 {
-  UT_array *values;
-  char **p = NULL;
+  struct dir_ctx *ctx = (struct dir_ctx*) args;
+  char *filename, *del, port_str[6];
+  int port;
+  FILE *f = fopen("/tmp/debug", "a+");
 
-  utarray_new(values, &ut_str_icd);
+  if (strstr(path, SOCK_EXTENSION)) {
+    if ((filename = basename(path)) != NULL) {
+      if (strstr(filename, DOMAIN_ID_STR)) {
+        utarray_push_back(ctx->domain_sockets, &filename);
+        fprintf(f, "%s\n", path);
+      } else {
+        if ((del = strchr(filename, DELIMITER_CHAR)) != NULL) {
+          port = (int)(del - filename);
+          if (port > 0 && port < 6) {
+            os_memcpy(port_str, filename, port);
+            port_str[port] = '\0';
 
-  if (split_string_array(kvalue, ':', values) < 2) {
-    utarray_free(values);
-    return -1;
+            errno = 0;
+            port = (int) strtol(port_str, NULL, 10);
+            if (errno != EINVAL) {
+              fprintf(f, "%d\n", port);
+            }
+          }
+        }
+      }
+    }
   }
 
-  p = (char**) utarray_next(values, p);
-  strncpy(db_path, *p, MAX_OS_PATH_LEN);
-
-  p = (char**) utarray_next(values, p);
-  strncpy(db_prefix, *p, MAX_OS_PATH_LEN);
-
-  utarray_free(values);
-  return 0;
-}
-
-bool list_dir(char *path, void *args)
-{
+  fclose(f);
   return true;
 }
 
@@ -71,25 +86,26 @@ int sqlite3_extension_init(
 ){
   (void) pzErrMsg;
 
+  struct dir_ctx ctx = {NULL, NULL};
   char *env_key_value;
   int rc = SQLITE_OK;
   
   SQLITE_EXTENSION_INIT2(pApi);
   
-  FILE *f = fopen("/tmp/debug", "a+");
   if ((env_key_value = getenv(ENV_DB_KEY)) == NULL) {
     return rc;
   }
 
-  if (decode_env_key_value(env_key_value) < 0) {
-    return rc;
-  }
+  strncpy(sock_path, env_key_value, MAX_OS_PATH_LEN);
+  
+  utarray_new(ctx.domain_sockets, &ut_str_icd);
 
-  if (list_dir(db_path, list_dir_fn fun, (void *)db_prefix) < 0) {
+  if (list_dir(sock_path, list_dir_function, (void *)&ctx) < 0) {
+    utarray_free(ctx.domain_sockets);
     return rc;
   }
   //sqlite3_update_hook(db, update_hook, NULL);
-  
-  fclose(f);
+
+  utarray_free(ctx.domain_sockets);
   return rc;
 }
