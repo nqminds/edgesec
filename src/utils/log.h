@@ -61,7 +61,7 @@ static inline int snprintf_error(size_t size, int res)
  * Logs an error message using the value of `errno`.
  * This should be used for errors that set `errno` (e.g. system errors)
  */
-#define log_errno(...) log_error(LOGC_ERROR, __FILENAME__, __LINE__, __VA_ARGS__)
+#define log_errno(...) log_errno_error(LOGC_ERROR, __FILENAME__, __LINE__, __VA_ARGS__)
 
 #define log_err_ex(...) log_error_exit(LOGC_ERROR, __FILENAME__, __LINE__, __VA_ARGS__)
 #define log_err_exp(...) log_error_exit_proc(LOGC_ERROR, __FILENAME__, __LINE__, __VA_ARGS__)
@@ -76,7 +76,7 @@ int log_open_file(char *path);
 void log_close_file(void);
 
 void log_levels(uint8_t level, const char *file, uint32_t line, const char *format, ...);
-void log_error(uint8_t level, const char *file, uint32_t line, const char *format, ...);
+void log_errno_error(uint8_t level, const char *file, uint32_t line, const char *format, ...);
 void log_error_exit(uint8_t level, const char *file, uint32_t line, const char *format, ...);
 void log_error_exit_proc(uint8_t level, const char *file, uint32_t line, const char *format, ...);
 
