@@ -57,6 +57,11 @@ static inline int snprintf_error(size_t size, int res)
 #define log_info(...)  log_levels(LOGC_INFO,  __FILENAME__, __LINE__, __VA_ARGS__)
 #define log_warn(...)  log_levels(LOGC_WARN,  __FILENAME__, __LINE__, __VA_ARGS__)
 /**
+ * @brief Logs an error message.
+ * Do not use this for if you want to log `errno`, instead use `log_errno` for this.
+ */
+#define log_error(...) log_levels(LOGC_ERROR, __FILENAME__, __LINE__, __VA_ARGS__)
+/**
  * @brief
  * Logs an error message using the value of `errno`.
  * This should be used for errors that set `errno` (e.g. system errors)
