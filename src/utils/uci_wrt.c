@@ -92,7 +92,7 @@ char* uci_lookup_section_ref(struct uci_section *s, struct uci_type_list *list, 
 
 	if (ti == NULL) {
 		if ((ti = os_calloc(1, sizeof(struct uci_type_list))) == NULL) {
-      log_err("os_calloc");
+      log_errno("os_calloc");
       return NULL;
     }
 
@@ -105,13 +105,13 @@ char* uci_lookup_section_ref(struct uci_section *s, struct uci_type_list *list, 
 		maxlen = strlen(s->type) + 1 + 2 + 10;
 		if (*typestr == NULL) {
 			if ((*typestr = os_malloc(maxlen)) == NULL) {
-        log_err("os_malloc");
+        log_errno("os_malloc");
         return NULL;
       }
 		} else {
 			void *p = os_realloc(*typestr, maxlen);
 			if (p == NULL) {
-        log_err("os_realloc");
+        log_errno("os_realloc");
 				os_free(*typestr);
 				return NULL;
 			}
@@ -142,7 +142,7 @@ char* uwrt_get_option(struct uci_option *o)
 	switch(o->type) {
 	case UCI_TYPE_STRING:
     if ((vname = os_strdup(o->v.string)) == NULL) {
-      log_err("os_strdup");
+      log_errno("os_strdup");
       return NULL;
     }
     break;
@@ -188,7 +188,7 @@ int uwrt_lookup_option(struct uci_option *o, char *sref, UT_array *kv)
   }
 
   if ((kvstr = os_zalloc(strlen(cname) + strlen(sname) + strlen(oname) + strlen(vname) + 4)) == NULL) {
-    log_err("os_zalloc");
+    log_errno("os_zalloc");
     os_free(vname);
     return -1;
   }
@@ -210,7 +210,7 @@ int uwrt_lookup_section(struct uci_section *s, char *sref, UT_array *kv)
   char *kvstr = NULL;
 
   if ((kvstr = os_zalloc(strlen(cname) + strlen(sname) + strlen(vname) + 3)) == NULL) {
-    log_err("os_zalloc");
+    log_errno("os_zalloc");
     return -1;
   }
 
@@ -434,7 +434,7 @@ struct uctx* uwrt_init_context(char *path)
   struct uctx *context = os_zalloc(sizeof(struct uctx));
 
   if (context == NULL) {
-    log_err("os_zalloc");
+    log_errno("os_zalloc");
     return NULL;
   }
 
@@ -468,9 +468,9 @@ UT_array *uwrt_get_interfaces(struct uctx *context, char *ifname)
 
   while(true) {
     if (ifname == NULL) {
-      snprintf(key, 64, "network.@interface[%d]", idx++); 
+      snprintf(key, 64, "network.@interface[%d]", idx++);
     } else {
-      snprintf(key, 64, "network.%s", ifname); 
+      snprintf(key, 64, "network.%s", ifname);
     }
 
     utarray_new(kv, &ut_str_icd);
@@ -598,7 +598,7 @@ int uwrt_commit_section(struct uctx *context, char *section)
   char *psection = os_strdup(section);
 
   if (psection == NULL) {
-    log_err("os_strdup");
+    log_errno("os_strdup");
     return -1;
   }
 
@@ -840,7 +840,7 @@ int uwrt_gen_hostapd_instance(struct uctx *context, struct hostapd_params *param
 
   if (params->device == NULL) {
     log_trace("device param is NULL");
-    return -1;    
+    return -1;
   }
 
   sprintf(property, "wireless.%s=wifi-device", params->device);

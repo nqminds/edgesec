@@ -19,7 +19,7 @@
 
 /**
  * @file sqlite_fingerprint_writer.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the sqlite fingerprint writer utilities.
  */
 
@@ -47,8 +47,8 @@ int open_sqlite_fingerprint_db(char *db_path, sqlite3** sql)
 {
   sqlite3 *db = NULL;
   int rc;
-  
-  if ((rc = sqlite3_open(db_path, &db)) != SQLITE_OK) {     
+
+  if ((rc = sqlite3_open(db_path, &db)) != SQLITE_OK) {
     log_debug("Cannot open database: %s", sqlite3_errmsg(db));
     sqlite3_close(db);
     return -1;
@@ -174,7 +174,7 @@ int get_sqlite_fingerprint_rows(sqlite3 *db, char *mac, uint64_t timestamp, char
 
   statement = os_malloc(strlen(sql_statement) + 3);
   if (statement == NULL) {
-    log_err("os_malloc");
+    log_errno("os_malloc");
     return -1;
   }
 
@@ -185,7 +185,7 @@ int get_sqlite_fingerprint_rows(sqlite3 *db, char *mac, uint64_t timestamp, char
   } else {
     proto = os_malloc(strlen(protocol) + 3);
     if (proto == NULL) {
-      log_err("os_malloc");
+      log_errno("os_malloc");
       os_free(statement);
       return -1;
     }
@@ -237,7 +237,7 @@ int get_sqlite_fingerprint_rows(sqlite3 *db, char *mac, uint64_t timestamp, char
     if (value != NULL) {
       row.mac = os_strdup(value);
       if (row.mac == NULL) {
-        log_err("os_strdup");
+        log_errno("os_strdup");
         os_free(statement);
         if (proto != NULL) os_free(proto);
         sqlite3_finalize(res);
@@ -249,7 +249,7 @@ int get_sqlite_fingerprint_rows(sqlite3 *db, char *mac, uint64_t timestamp, char
     if (value != NULL) {
       row.protocol = os_strdup(value);
       if (row.protocol == NULL) {
-        log_err("os_strdup");
+        log_errno("os_strdup");
         free_sqlite_fingerprint_row(&row);
         os_free(statement);
         if (proto != NULL) os_free(proto);
@@ -262,7 +262,7 @@ int get_sqlite_fingerprint_rows(sqlite3 *db, char *mac, uint64_t timestamp, char
     if (value != NULL) {
       row.fingerprint = os_strdup(value);
       if (row.fingerprint == NULL) {
-        log_err("os_strdup");
+        log_errno("os_strdup");
         free_sqlite_fingerprint_row(&row);
         os_free(statement);
         if (proto != NULL) os_free(proto);
@@ -277,7 +277,7 @@ int get_sqlite_fingerprint_rows(sqlite3 *db, char *mac, uint64_t timestamp, char
     if (value != NULL) {
       row.query = os_strdup(value);
       if (row.query == NULL) {
-        log_err("os_strdup");
+        log_errno("os_strdup");
         free_sqlite_fingerprint_row(&row);
         os_free(statement);
         if (proto != NULL) os_free(proto);

@@ -19,7 +19,7 @@
 
 /**
  * @file supervisor.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the supervisor service.
  */
 
@@ -75,7 +75,7 @@ int run_analyser(struct capture_conf *config, pid_t *child_pid)
   ret = run_process(process_argv, child_pid);
 
   if ((proc_name = os_strdup(basename(process_argv[0]))) == NULL) {
-    log_err("os_malloc");
+    log_errno("os_malloc");
     capture_freeopt(process_argv);
     return -1;
   }
@@ -131,7 +131,7 @@ int allocate_vlan(struct supervisor_context *context)
   int vlanid, idx = 0, len;
   config_ifinfo_t *p = NULL;
   UT_array *config_ifinfo_array = context->config_ifinfo_array;
-  
+
   if (!context->allocate_vlans) {
     return context->default_open_vlanid;
   }
@@ -143,7 +143,7 @@ int allocate_vlan(struct supervisor_context *context)
 
   len = utarray_len(config_ifinfo_array) - 1;
   if ((vlan_arr = (int *) os_malloc(sizeof(int) * len)) == NULL) {
-    log_err("os_malloc");
+    log_errno("os_malloc");
     return -1;
   }
 
@@ -262,7 +262,7 @@ struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg)
 
     return info;
   }
-  
+
   log_trace("REJECTING mac=" MACSTR, MAC2STR(mac_addr));
   info.vlanid = -1;
   return info;
@@ -304,12 +304,12 @@ void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
   os_memset(&claddr, 0, sizeof(struct client_address));
 
   if (ioctl(sock, FIONREAD, &bytes_available) == -1) {
-    log_err("ioctl");
+    log_errno("ioctl");
     return;
   }
 
   if ((buf = os_malloc(bytes_available)) == NULL) {
-    log_err("os_malloc");
+    log_errno("os_malloc");
     return;
   }
 
@@ -317,7 +317,7 @@ void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
 
   if ((num_bytes = read_domain_data(sock, buf, bytes_available, &claddr, 0)) == -1) {
     log_trace("read_domain_data fail");
-    goto end;  
+    goto end;
   }
 
   log_trace("Supervisor received %ld bytes from socket length=%d", (long) num_bytes, claddr.len);
@@ -349,7 +349,7 @@ void close_supervisor(struct supervisor_context *context)
 
   if (context->domain_sock != -1) {
     if (close(context->domain_sock) == -1) {
-      log_err("close");
+      log_errno("close");
     }
   }
 

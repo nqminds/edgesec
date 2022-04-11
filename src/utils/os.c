@@ -190,7 +190,7 @@ int os_get_random(unsigned char *buf, size_t len)
 
 	f = fopen("/dev/urandom", "rb");
 	if (f == NULL) {
-		log_err("Could not open /dev/urandom.");
+		log_errno("Could not open /dev/urandom.");
 		return -1;
 	}
 
@@ -280,7 +280,7 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn fn, 
 
   /* Create pipe */
   if (pipe(pfd) == -1) {
-    log_err("pipe");
+    log_errno("pipe");
     return 1;
   }
 
@@ -289,7 +289,7 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn fn, 
 
   switch (childPid = fork()) {
   case -1:            /* fork() failed */
-    log_err("fork");
+    log_errno("fork");
     return 1;
 
   case 0:             /* Child: exec command */
@@ -298,10 +298,10 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn fn, 
     if (fn == NULL) {
       /* redirect stdout, stdin and stderr to /dev/null */
       close(STDIN_FILENO);
-  
+
       /* Reopen standard fd's to /dev/null */
       int fd = open("/dev/null", O_RDWR);
-  
+
       if (fd != STDIN_FILENO)         /* 'fd' should be 0 */
         _exit(EXIT_FAILURE);
       if (dup2(STDIN_FILENO, STDOUT_FILENO) != STDOUT_FILENO)
@@ -330,7 +330,7 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn fn, 
   default:  /* Parent: wait for our child to terminate */
     /* Write end is unused */
     if (close(pfd[1]) == -1) {
-      log_err("close");
+      log_errno("close");
       return 1;
     }
 
@@ -354,7 +354,7 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn fn, 
 
   /* Done with read end */
   if (close(pfd[0]) == -1) {
-    log_err("close");
+    log_errno("close");
     return 1;
   }
 
@@ -395,9 +395,9 @@ int run_argv_command(char *path, char *argv[], process_callback_fn fn, void *ctx
     log_trace("argv param is NULL");
     return -1;
   }
-  
+
   while(argv[arg_count++] != NULL);
-  
+
   full_arg = (char **) os_malloc(sizeof(char *) * (arg_count + 1));
 
   full_arg[0] = path;
@@ -407,7 +407,7 @@ int run_argv_command(char *path, char *argv[], process_callback_fn fn, void *ctx
   }
 
   full_arg[count + 1] = NULL;
-  
+
   log_run_command(full_arg, arg_count);
 
   int status = run_command(full_arg, NULL, fn, (void *)ctx);
@@ -420,7 +420,7 @@ int fn_split_string_array(const char *str, size_t len, void *data)
   UT_array *strs = (UT_array *) data;
   char *dest = (char *) os_malloc(len + 1);
   if (dest == NULL) {
-    log_err("os_malloc");
+    log_errno("os_malloc");
     return -1;
   }
 
@@ -472,7 +472,7 @@ ssize_t split_string_array(const char *str, char sep, UT_array *arr)
 {
   if (arr == NULL) {
     log_trace("input arr is NULL");
-    return -1;   
+    return -1;
   }
 
   return split_string(str, sep, fn_split_string_array, (void *)arr);
@@ -494,7 +494,7 @@ char *  concat_paths(char *path_left, char *path_right)
   char *concat = os_zalloc(concat_len);
 
   if (concat == NULL) {
-    log_err("os_zalloc");
+    log_errno("os_zalloc");
     return NULL;
   }
 
@@ -523,7 +523,7 @@ char *get_valid_path(char *path)
   if (dir == NULL && path != NULL) {
     log_trace("strdup fail");
     return NULL;
-  } 
+  }
 
   char *base = os_strdup(path);
   if (base == NULL && path != NULL) {
@@ -572,7 +572,7 @@ char *construct_path(char *path_left, char *path_right)
   char *valid_left = get_valid_path(path_left);
   char *valid_right = get_valid_path(path_right);
   char *beg_right = valid_right;
-  
+
   if (strlen(valid_right) >= 2) {
     if (valid_right[0] == '.' && valid_right[1] == '/')
       beg_right++;
@@ -612,9 +612,9 @@ char* get_secure_path(UT_array *bin_path_arr, char *filename, bool real)
       if (real) {
         char *real_path = realpath(path, NULL);
         if (real_path == NULL) {
-          log_err("realpath");
+          log_errno("realpath");
           os_free(path);
-          return NULL;  
+          return NULL;
         }
 
         log_trace("got real path %s", real_path);
@@ -653,7 +653,7 @@ int list_dir(char *dirpath, list_dir_fn fun, void *args)
   errno = 0;
   dirp = opendir(dirpath);
   if (dirp == NULL) {
-    log_err("opendir");
+    log_errno("opendir");
     return -1;
   }
 
@@ -682,13 +682,13 @@ int list_dir(char *dirpath, list_dir_fn fun, void *args)
   }
 
   if (errno != 0) {
-    log_err("readdir");
+    log_errno("readdir");
     return -1;
   }
 
 exit_list_dir:
   if (closedir(dirp) == -1) {
-    log_err("closedir");
+    log_errno("closedir");
     return -1;
   }
 
@@ -699,7 +699,7 @@ bool is_string_in_cmdline_file(char *filename, char *str)
 {
   FILE *fp = fopen(filename, "r");
   if (fp == NULL) {
-    log_err("fopen");
+    log_errno("fopen");
     return false;
   }
 
@@ -754,7 +754,7 @@ bool kill_dir_fn(char *path, void *args)
     if (current_pid != pid && pid != current_pid_group) {
       log_trace("Found process pid=%d current_pid=%d current_pid_group=%d", pid, current_pid, current_pid_group);
       if (kill(pid, SIGTERM) == -1) {
-        log_err("kill");
+        log_errno("kill");
         return false;
       } else
         log_trace("killed %s process with pid=%d", args, pid);
@@ -776,7 +776,7 @@ bool signal_dir_fn(char *path, void *args)
     if (current_pid != pid && pid != current_pid_group) {
       log_trace("Found process pid=%d current_pid=%d current_pid_group=%d", pid, current_pid, current_pid_group);
       if (kill(pid, sarg->sig) == -1) {
-        log_err("kill");
+        log_errno("kill");
         return false;
       } else
         log_trace("signalled %s process with pid=%d and sig=%d", sarg->proc_name, pid, sarg->sig);
@@ -885,7 +885,7 @@ int run_process(char *argv[], pid_t *child_pid)
 
   switch (*child_pid = fork()) {
   case -1:            /* fork() failed */
-    log_err("fork");
+    log_errno("fork");
     return -1;
 
   case 0:                           /* Child: exec command */
@@ -904,7 +904,7 @@ int run_process(char *argv[], pid_t *child_pid)
 
     execv(argv[0], argv);
 
-    log_err("execv");
+    log_errno("execv");
     return -1;       /* We could not exec the command */
   default:
     log_trace("process child created with id=%d", *child_pid);
@@ -912,7 +912,7 @@ int run_process(char *argv[], pid_t *child_pid)
 
     ret = waitpid(*child_pid, &status, WNOHANG);
     if (ret == -1) {
-        log_err("waitpid");
+        log_errno("waitpid");
         return -1;
     } else if (ret > 0 && WIFEXITED(status)) {
       log_trace("process with id=%d exited", *child_pid);
@@ -931,7 +931,7 @@ int make_file_exec_fd(int fd)
   mode_t mode;
 
   if(fstat(fd, &sb) == -1) {
-    log_err("fstat");
+    log_errno("fstat");
     return -1;
   }
 
@@ -939,7 +939,7 @@ int make_file_exec_fd(int fd)
   mode = (sb.st_mode | S_IXUSR);
 
   if (fchmod(fd, mode) == -1) {
-    log_err("fchmod");
+    log_errno("fchmod");
     return -1;
   }
 
@@ -1029,7 +1029,7 @@ size_t os_strnlen_s(char *str, size_t max_len)
 
   if (end == NULL)
     return max_len;
-  
+
   return end - str;
 }
 
@@ -1052,7 +1052,7 @@ int exist_dir(const char *dirpath)
   errno = 0;
   if ((dirp = opendir(dirpath)) == NULL) {
     if (errno != ENOENT) {
-      log_err("opendir");
+      log_errno("opendir");
       return -1;
     }
     return 0;
@@ -1079,7 +1079,7 @@ int make_dirs_to_path(const char* file_path, mode_t mode) {
         errno = 0;
         if (mkdir(file_path_tmp, mode) == -1) {
             if (errno != EEXIST) {
-                log_err("mkdir");
+                log_errno("mkdir");
                 *p = '/';
                 return -1;
             }
@@ -1106,7 +1106,7 @@ int create_dir(const char *dirpath, mode_t mode)
     errno = 0;
     if (mkdir(dirpath, mode) < 0) {
       if (errno != EEXIST) {
-        log_err("mkdir");
+        log_errno("mkdir");
         return -1;
       }
     }
@@ -1134,7 +1134,7 @@ int check_sock_file_exists(char *path)
   struct stat sb;
 
   if (check_file_exists(path, &sb) < 0) {
-    log_err("stat %s", path);
+    log_errno("stat %s", path);
     return -1;
   }
 
@@ -1147,7 +1147,7 @@ int check_sock_file_exists(char *path)
 int get_hostname(char *buf)
 {
   if (gethostname(buf, OS_HOST_NAME_MAX) < 0) {
-    log_err("gethostname");
+    log_errno("gethostname");
     return -1;
   }
 
@@ -1184,14 +1184,14 @@ int create_pid_file(const char *pid_file, int flags)
   if (fd == -1 && errno == ENOENT) {
     int ret = make_dirs_to_path(pid_file, 0755);
     if (ret) {
-      log_err("create_pid_file failed to create directories to path");
+      log_errno("create_pid_file failed to create directories to path");
       return -1;
     }
     fd = open(pid_file, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
   }
 
   if (fd == -1) {
-    log_err("open");
+    log_errno("open");
     return -1;
   }
 
@@ -1204,14 +1204,14 @@ int create_pid_file(const char *pid_file, int flags)
     flags = fcntl(fd, F_GETFD);                     /* Fetch flags */
 
     if (flags == -1) {
-      log_err("fcntl");
+      log_errno("fcntl");
       close(fd);
       return -1;
     }
 
     flags |= FD_CLOEXEC;                            /* Turn on FD_CLOEXEC */
     if (fcntl(fd, F_SETFD, flags) == -1){            /* Update flags */
-      log_err("fcntl");
+      log_errno("fcntl");
       close(fd);
       return -1;
     }
@@ -1219,25 +1219,25 @@ int create_pid_file(const char *pid_file, int flags)
 
   if (lock_region(fd, F_WRLCK, SEEK_SET, 0, 0) == -1) {
     if (errno  == EAGAIN || errno == EACCES) {
-      log_err("PID file '%s' is locked", pid_file);
+      log_errno("PID file '%s' is locked", pid_file);
       close(fd);
       return -1;
     }else {
-      log_err("lock_region");
+      log_errno("lock_region");
       close(fd);
       return -1;
     }
   }
 
   if (ftruncate(fd, 0) == -1) {
-    log_err("ftruncate");
+    log_errno("ftruncate");
     close(fd);
     return -1;
   }
 
   snprintf(buf, 100, "%ld\n", (long) getpid());
   if ((write_bytes = write(fd, buf, strlen(buf))) < 0) {
-    log_err("write");
+    log_errno("write");
     close(fd);
     return -1;
   }
@@ -1264,18 +1264,18 @@ ssize_t read_file(char *path, uint8_t **out)
   FILE *fp = fopen(path, "rb");
 
   if (fp == NULL) {
-    log_err("fopen");
+    log_errno("fopen");
     return -1;
   }
 
   if (fseek(fp, 0 , SEEK_END) < 0) {
-    log_err("fseek");
+    log_errno("fseek");
     fclose(fp);
     return -1;
   }
 
   if ((file_size = ftell(fp)) == -1L) {
-    log_err("ftell");
+    log_errno("ftell");
     fclose(fp);
     return -1;
   }
@@ -1283,7 +1283,7 @@ ssize_t read_file(char *path, uint8_t **out)
   rewind(fp);
 
   if ((buffer = (uint8_t *) os_malloc(sizeof(char) * file_size)) == NULL) {
-    log_err("os_malloc");
+    log_errno("os_malloc");
     fclose(fp);
     return -1;
   }
@@ -1316,7 +1316,7 @@ int read_file_string(char *path, char **out)
   }
 
   if ((buffer = (char *)os_zalloc(data_size + 1)) == NULL) {
-    log_err("os_zalloc");
+    log_errno("os_zalloc");
     return -1;
   }
 

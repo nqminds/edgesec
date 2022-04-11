@@ -18,11 +18,11 @@
  ****************************************************************************/
 
 /**
- * @file hostapd_service.c 
- * @author Alexandru Mereacre 
+ * @file hostapd_service.c
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the hostapd service.
- * 
- * Defines the functions to start and stop the acces point service (AP). It also 
+ *
+ * Defines the functions to start and stop the acces point service (AP). It also
  * defines auxiliary commands to manage the acces control list for stations
  * connected to the AP.
  */
@@ -80,7 +80,7 @@ int denyacl_ap_command(struct apconf *hconf, char *cmd, char *mac_addr)
   }
 
   if ((buffer = os_zalloc(strlen(cmd) + strlen(mac_addr) + 1)) == NULL) {
-    log_err("os_zalloc");
+    log_errno("os_zalloc");
     return -1;
   }
 
@@ -136,7 +136,7 @@ int check_sta_ap_command(struct apconf *hconf, char *mac_addr)
   }
 
   if ((buffer = os_zalloc(strlen(STA_AP_COMMAND) + strlen(mac_addr) + 1)) == NULL) {
-    log_err("os_zalloc");
+    log_errno("os_zalloc");
     return -1;
   }
 
@@ -205,13 +205,13 @@ void ap_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
   ap_service_fn fn = (ap_service_fn) eloop_ctx;
 
   if (ioctl(sock, FIONREAD, &bytes_available) == -1) {
-    log_err("ioctl");
+    log_errno("ioctl");
     return;
   }
 
   rec_data = os_zalloc(bytes_available + 1);
   if (rec_data == NULL) {
-    log_err("os_zalloc");
+    log_errno("os_zalloc");
     return;
   }
 

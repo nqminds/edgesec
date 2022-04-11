@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file command_mapper.c 
- * @author Alexandru Mereacre 
+ * @file command_mapper.c
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the command mapper.
  */
 
@@ -61,7 +61,7 @@ int put_command_mapper(hmap_command_conn **hmap, char *command)
   if (s == NULL) {
     s = (hmap_command_conn *) os_malloc(sizeof(hmap_command_conn));
 	if (s == NULL) {
-	  log_err("os_malloc");
+	  log_errno("os_malloc");
       return -1;
 	}
 
@@ -93,6 +93,6 @@ int check_command_mapper(hmap_command_conn **hmap, char *command)
   hash_key = md_hash(command, strlen(command));
 
   HASH_FIND(hh, *hmap, &hash_key, sizeof(uint32_t), s);
-    
+
   return (s != NULL);
 }

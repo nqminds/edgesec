@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file domain.c 
- * @author Alexandru Mereacre 
+ * @file domain.c
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the domain utils.
  */
 
@@ -72,7 +72,7 @@ int create_domain_client(char *addr)
 
   sock = socket(AF_UNIX, SOCK_DGRAM, 0);
   if (sock == -1) {
-    log_err("socket");
+    log_errno("socket");
     return -1;
   }
 
@@ -90,10 +90,10 @@ int create_domain_client(char *addr)
     addrlen = sizeof(struct sockaddr_un);
   }
 
-  
+
 
   if (bind(sock, (struct sockaddr *) &claddr, addrlen) == -1) {
-    log_err("bind");
+    log_errno("bind");
     return -1;
   }
 
@@ -107,7 +107,7 @@ int create_domain_server(char *server_path)
 
   sfd = socket(AF_UNIX, SOCK_DGRAM, 0);       /* Create server socket */
   if (sfd == -1) {
-    log_err("socket");
+    log_errno("socket");
     return -1;
   }
 
@@ -122,14 +122,14 @@ int create_domain_server(char *server_path)
   }
 
   if (remove(server_path) == -1 && errno != ENOENT) {
-    log_err("remove-%s", server_path);
+    log_errno("remove-%s", server_path);
     return -1;
   }
 
   init_domain_addr(&svaddr, server_path);
 
   if (bind(sfd, (struct sockaddr *) &svaddr, sizeof(struct sockaddr_un)) == -1) {
-    log_err("bind");
+    log_errno("bind");
     return -1;
   }
 
@@ -153,7 +153,7 @@ ssize_t read_domain_data(int sock, char *data, size_t data_len,
 
   ssize_t num_bytes = recvfrom(sock, data, data_len, flags, (struct sockaddr *) &addr->addr, (socklen_t *) &addr->len);
   if (num_bytes == -1) {
-    log_err("recvfrom");
+    log_errno("recvfrom");
     return -1;
   }
 
@@ -209,7 +209,7 @@ ssize_t write_domain_data(int sock, char *data, size_t data_len, struct client_a
   errno = 0;
   log_trace("Sending to socket on %.*s", addr->len, addr->addr.sun_path);
   if ((num_bytes = sendto(sock, data, data_len, 0, (struct sockaddr *) &addr->addr, addr->len)) < 0) {
-    log_err("sendto");
+    log_errno("sendto");
     return -1;
   }
 
@@ -250,13 +250,13 @@ int writeread_domain_data_str(char *socket_path, char *write_str, char **reply)
   log_trace("Sending to socket_path=%s", socket_path);
   send_count = write_domain_data_s(sfd, write_str, strlen(write_str), socket_path);
   if (send_count < 0) {
-    log_err("sendto");
+    log_errno("sendto");
     close(sfd);
     return -1;
   }
 
   if ((size_t)send_count != strlen(write_str)) {
-    log_err("write_domain_data_s fail");
+    log_errno("write_domain_data_s fail");
     close(sfd);
     return -1;
   }
@@ -265,14 +265,14 @@ int writeread_domain_data_str(char *socket_path, char *write_str, char **reply)
 
   errno = 0;
   if (select(sfd + 1, &readfds, NULL, NULL, &timeout) < 0) {
-    log_err("select");
+    log_errno("select");
     close(sfd);
     return -1;
   }
 
   if(FD_ISSET(sfd, &readfds)) {
     if (ioctl(sfd, FIONREAD, &bytes_available) == -1) {
-      log_err("ioctl");
+      log_errno("ioctl");
       close(sfd);
       return -1;
     }
@@ -280,7 +280,7 @@ int writeread_domain_data_str(char *socket_path, char *write_str, char **reply)
     log_trace("Socket received bytes available=%u", bytes_available);
     rec_data = os_zalloc(bytes_available + 1);
     if (rec_data == NULL) {
-      log_err("os_zalloc");
+      log_errno("os_zalloc");
       close(sfd);
       return -1;
     }

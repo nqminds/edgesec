@@ -19,7 +19,7 @@
 
 /**
  * @file packet_decoder.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the packet decoder utilities.
  */
 
@@ -377,7 +377,7 @@ int extract_packets(char *ltype, const struct pcap_pkthdr *header, const uint8_t
   if ((count = decode_packet(header, packet, &cpac)) > 0) {
     if (cpac.ethh != NULL) {
       if ((tp.packet = os_malloc(sizeof(struct eth_schema))) == NULL) {
-        log_err("os_malloc");
+        log_errno("os_malloc");
         return -1;
       }
       os_memcpy(tp.packet, &cpac.eths, sizeof(struct eth_schema));
@@ -386,7 +386,7 @@ int extract_packets(char *ltype, const struct pcap_pkthdr *header, const uint8_t
     }
     if (cpac.arph != NULL) {
       if ((tp.packet = os_malloc(sizeof(struct arp_schema))) == NULL) {
-        log_err("os_malloc");
+        log_errno("os_malloc");
         return -1;
       }
       os_memcpy(tp.packet, &cpac.arps, sizeof(struct arp_schema));
@@ -395,7 +395,7 @@ int extract_packets(char *ltype, const struct pcap_pkthdr *header, const uint8_t
     }
     if (cpac.ip4h != NULL) {
       if ((tp.packet = os_malloc(sizeof(struct ip4_schema))) == NULL) {
-        log_err("os_malloc");
+        log_errno("os_malloc");
         return -1;
       }
       os_memcpy(tp.packet, &cpac.ip4s, sizeof(struct ip4_schema));
@@ -404,7 +404,7 @@ int extract_packets(char *ltype, const struct pcap_pkthdr *header, const uint8_t
     };
     if (cpac.ip6h != NULL) {
       if ((tp.packet = os_malloc(sizeof(struct ip6_schema))) == NULL) {
-        log_err("os_malloc");
+        log_errno("os_malloc");
         return -1;
       }
       os_memcpy(tp.packet, &cpac.ip6s, sizeof(struct ip6_schema));
@@ -413,7 +413,7 @@ int extract_packets(char *ltype, const struct pcap_pkthdr *header, const uint8_t
     };
     if (cpac.tcph != NULL) {
       if ((tp.packet = os_malloc(sizeof(struct tcp_schema))) == NULL) {
-        log_err("os_malloc");
+        log_errno("os_malloc");
         return -1;
       }
       os_memcpy(tp.packet, &cpac.tcps, sizeof(struct tcp_schema));
@@ -422,7 +422,7 @@ int extract_packets(char *ltype, const struct pcap_pkthdr *header, const uint8_t
     };
     if (cpac.udph != NULL) {
       if ((tp.packet = os_malloc(sizeof(struct udp_schema))) == NULL) {
-        log_err("os_malloc");
+        log_errno("os_malloc");
         return -1;
       }
       os_memcpy(tp.packet, &cpac.udps, sizeof(struct udp_schema));
@@ -431,7 +431,7 @@ int extract_packets(char *ltype, const struct pcap_pkthdr *header, const uint8_t
     };
     if (cpac.icmp4h != NULL) {
       if ((tp.packet = os_malloc(sizeof(struct icmp4_schema))) == NULL) {
-        log_err("os_malloc");
+        log_errno("os_malloc");
         return -1;
       }
       os_memcpy(tp.packet, &cpac.icmp4s, sizeof(struct icmp4_schema));
@@ -440,7 +440,7 @@ int extract_packets(char *ltype, const struct pcap_pkthdr *header, const uint8_t
     };
     if (cpac.icmp6h != NULL) {
       if ((tp.packet = os_malloc(sizeof(struct icmp6_schema))) == NULL) {
-        log_err("os_malloc");
+        log_errno("os_malloc");
         return -1;
       }
       os_memcpy(tp.packet, &cpac.icmp6s, sizeof(struct icmp6_schema));
@@ -449,7 +449,7 @@ int extract_packets(char *ltype, const struct pcap_pkthdr *header, const uint8_t
     };
     if (cpac.dnsh != NULL) {
       if ((tp.packet = os_malloc(sizeof(struct dns_schema))) == NULL) {
-        log_err("os_malloc");
+        log_errno("os_malloc");
         return -1;
       }
       os_memcpy(tp.packet, &cpac.dnss, sizeof(struct dns_schema));
@@ -458,7 +458,7 @@ int extract_packets(char *ltype, const struct pcap_pkthdr *header, const uint8_t
     };
     if (cpac.mdnsh != NULL) {
       if ((tp.packet = os_malloc(sizeof(struct mdns_schema))) == NULL) {
-        log_err("os_malloc");
+        log_errno("os_malloc");
         return -1;
       }
       os_memcpy(tp.packet, &cpac.mdnss, sizeof(struct mdns_schema));
@@ -467,7 +467,7 @@ int extract_packets(char *ltype, const struct pcap_pkthdr *header, const uint8_t
     };
     if (cpac.dhcph != NULL) {
       if ((tp.packet = os_malloc(sizeof(struct dhcp_schema))) == NULL) {
-        log_err("os_malloc");
+        log_errno("os_malloc");
         return -1;
       }
       os_memcpy(tp.packet, &cpac.dhcps, sizeof(struct dhcp_schema));

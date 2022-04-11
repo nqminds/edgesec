@@ -19,7 +19,7 @@
 
 /**
  * @file mdns_service.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of mDNS service structures.
  */
 
@@ -71,7 +71,7 @@ int sockaddr2str(struct sockaddr_storage *sa, char *buffer, uint16_t *port) {
   if (sa->ss_family == AF_INET6) {
     struct sockaddr_in6 *sa6 = (struct sockaddr_in6 *) sa;
     if (inet_ntop(AF_INET6, &sa6->sin6_addr, buffer, INET6_ADDRSTRLEN) == NULL) {
-      log_err("inet_ntop");
+      log_errno("inet_ntop");
       return -1;
     }
 
@@ -80,7 +80,7 @@ int sockaddr2str(struct sockaddr_storage *sa, char *buffer, uint16_t *port) {
     struct sockaddr_in *sa4 = (struct sockaddr_in *) sa;
 
     if (inet_ntop(AF_INET, &sa4->sin_addr, buffer, INET_ADDRSTRLEN) == NULL) {
-      log_err("inet_ntop");
+      log_errno("inet_ntop");
       return -1;
     }
 
@@ -132,7 +132,7 @@ int forward_reflector_if6(uint8_t *send_buf, size_t len, struct reflection_list 
       if (errno == EWOULDBLOCK) {
         continue;
       }
-      log_err("sendto");
+      log_errno("sendto");
       return -1;
     }
   }
@@ -165,7 +165,7 @@ int forward_reflector_if4(uint8_t *send_buf, size_t len, struct reflection_list 
       if (errno == EWOULDBLOCK) {
         continue;
       }
-      log_err("sendto");
+      log_errno("sendto");
       return -1;
     }
   }
@@ -193,12 +193,12 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
   os_memset(&peer_addr, 0, sizeof(struct client_address));
 
   if (ioctl(sock, FIONREAD, &bytes_available) == -1) {
-    log_err("ioctl");
+    log_errno("ioctl");
     return;
   }
 
   if ((buf = os_malloc(bytes_available)) == NULL) {
-    log_err("os_malloc");
+    log_errno("os_malloc");
     return;
   }
 
@@ -218,7 +218,7 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
     if(ip4_2_buf(peer_addr_str, qip) < 0) {
       log_trace("Wrong IP4 mDNS address");
       os_free(buf);
-      return;      
+      return;
     }
   }
 
@@ -336,7 +336,7 @@ int register_reflector_if6(struct mdns_context *context)
 
     sa_group6.sin6_scope_id = el->ifindex;
     if (join_mcast(el->recv_fd, (struct sockaddr_storage *) &sa_group6, sizeof(sa_group6), el->ifindex) < 0) {
-      log_err("Failed to join interface %s to IPv6 multicast group", el->ifname);
+      log_errno("Failed to join interface %s to IPv6 multicast group", el->ifname);
       return -1;
     }
   }
@@ -379,11 +379,11 @@ int register_reflector_if4(struct mdns_context *context)
     }
 
     if (join_mcast(el->recv_fd, (struct sockaddr_storage *) &sa_group4, sizeof(sa_group4), el->ifindex) < 0) {
-      log_err("Failed to join interface %s to IPv4 multicast group", el->ifname);
+      log_errno("Failed to join interface %s to IPv4 multicast group", el->ifname);
       return -1;
     }
   }
-  
+
   return 0;
 }
 
@@ -409,7 +409,7 @@ int init_reflections(hmap_vlan_conn **vlan_mapper, struct mdns_context *context)
     log_trace("Adding interface %s to mDNS reflector", ifname);
 
     if ((ifindex = iface_nametoindex(ifname)) == 0) {
-      log_err("if_nametoindex");
+      log_errno("if_nametoindex");
       return -1;
     }
 
@@ -537,12 +537,12 @@ int send_bridge_command(struct mdns_context *context, struct tuple_packet *tp)
     log_trace("check_mdns_mapper_req fail");
     return -1;
   }
-  
+
   if ((retd = check_mdns_mapper_req(&context->imap, dip, MDNS_REQUEST_ANSWER)) < 0) {
     log_trace("check_mdns_mapper_req fail");
     return -1;
   }
-  
+
   if (!ret && !retd) {
     log_trace("Not found mDNS answer request for src ip=%s or dst ip=%s", sch->ip_src, sch->ip_dst);
     return -1;
@@ -553,7 +553,7 @@ int send_bridge_command(struct mdns_context *context, struct tuple_packet *tp)
   {
     log_trace("create_domain_command fail");
     return -1;
-  }  
+  }
 
   log_trace("%s", domain);
 
@@ -619,7 +619,7 @@ int run_capture(struct mdns_context *context)
 {
   UT_array *interfaces = NULL;
   char **ifname = NULL;
-  struct pcap_context *pctx = NULL; 
+  struct pcap_context *pctx = NULL;
   utarray_new(interfaces, &ut_str_icd);
 
   if (split_string_array(context->ifname, ',', interfaces) < 0) {
@@ -631,10 +631,10 @@ int run_capture(struct mdns_context *context)
   if ((context->pctx_list = create_pcap_list()) == NULL) {
     log_trace("create_pcap_context_list fail");
     utarray_free(interfaces);
-    return -1;  
+    return -1;
   }
 
-  while((ifname = (char**) utarray_next(interfaces, ifname)) != NULL) { 
+  while((ifname = (char**) utarray_next(interfaces, ifname)) != NULL) {
     if (!strlen(*ifname)) {
       continue;
     }
@@ -661,7 +661,7 @@ int run_capture(struct mdns_context *context)
 }
 
 int run_mdns(struct mdns_context *context)
-{ 
+{
   if (init_reflections(&context->vlan_mapper, context) < 0) {
     log_trace("init_reflections fail");
     return -1;

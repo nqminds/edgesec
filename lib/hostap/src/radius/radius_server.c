@@ -1942,7 +1942,7 @@ static int radius_server_open_socket(int port)
 
 	s = socket(PF_INET, SOCK_DGRAM, 0);
 	if (s < 0) {
-		log_err("RADIUS: socket");
+		log_errno("RADIUS: socket");
 		return -1;
 	}
 

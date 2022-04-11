@@ -19,7 +19,7 @@
 
 /**
  * @file mdns_list.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of mdns list utils.
  */
 
@@ -37,7 +37,7 @@ struct mdns_list* init_mdns_list(void)
   struct mdns_list *mlist;
 
   if ((mlist = os_zalloc(sizeof(struct mdns_list))) == NULL) {
-    log_err("os_zalloc");
+    log_errno("os_zalloc");
     return NULL;
   }
 
@@ -103,7 +103,7 @@ int push_mdns_list(struct mdns_list* mlist, struct mdns_list_info *info)
   el->info = *info;
 
   if ((el->info.name = os_strdup(info->name)) == NULL) {
-    log_err("os_strdup");
+    log_errno("os_strdup");
     free_mdns_list_el(el);
     return -1;
   }

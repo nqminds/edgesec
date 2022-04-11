@@ -19,7 +19,7 @@
 
 /**
  * @file zymkey4_driver.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of zymkey4 driver configuration utilities.
  */
 
@@ -34,7 +34,7 @@ zkCTX* init_zymkey4(void)
 {
   zkCTX* context = os_zalloc(sizeof(zkCTX));
   if (context == NULL) {
-    log_err("os_zalloc");
+    log_errno("os_zalloc");
     return NULL;
   }
 
@@ -66,7 +66,7 @@ int generate_zymkey4_key(zkCTX *ctx, uint8_t *key, size_t key_size)
     log_trace("zkGetRandBytes fail");
     return -1;
   }
-  
+
   if (rdata == NULL) {
     log_trace("zkGetRandBytes fail");
     return -1;

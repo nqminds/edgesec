@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file network_commands.c 
- * @author Alexandru Mereacre 
+ * @file network_commands.c
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the network commands.
  */
 #include <libgen.h>
@@ -444,7 +444,7 @@ uint8_t* register_ticket_cmd(struct supervisor_context *context, uint8_t *mac_ad
   context->ticket = os_zalloc(sizeof(struct auth_ticket));
 
   if (context->ticket == NULL) {
-    log_err("os_malloc");
+    log_errno("os_malloc");
     return NULL;
   }
 
@@ -469,7 +469,7 @@ uint8_t* register_ticket_cmd(struct supervisor_context *context, uint8_t *mac_ad
 }
 
 int clear_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr)
-{  
+{
   struct mac_conn conn;
   struct mac_conn_info info;
 
