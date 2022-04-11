@@ -25,6 +25,8 @@ if (BUILD_PCAP_LIB AND NOT (BUILD_ONLY_DOCS))
       -DDISABLE_DBUS=ON
       # Disable RDMA support (otherwise need to link ibverbs when static linking)
       -DDISABLE_RDMA=ON
+      # Disable libnl support (otherwise need to link nl-3 when static linking)
+      -DBUILD_WITH_LIBNL=OFF
       WORKING_DIRECTORY "${libpcap_BINARY_DIR}"
     )
     execute_process(COMMAND ${CMAKE_COMMAND}
@@ -44,6 +46,7 @@ if (BUILD_PCAP_LIB AND NOT (BUILD_ONLY_DOCS))
 
     set_target_properties(PCAP::pcap PROPERTIES
         IMPORTED_LOCATION "${LIBPCAP_LIB}"
+        # Check ./build/lib/pcap/lib/pkgconfig for linker dependencies
         INTERFACE_INCLUDE_DIRECTORIES "${LIBPCAP_INCLUDE_PATH}"
     )
   endif(NOT TARGET PCAP::pcap)
