@@ -21,33 +21,16 @@ struct dir_ctx {
 
 static char sock_path[MAX_OS_PATH_LEN];
 
-void update_hook(void *data, int type, char const *database, char const *table, sqlite3_int64 rowid)
-{
-  (void) database;
-  
-  FILE *f = fopen(sock_path, "a+");
-
-  if (f == NULL) {
-    return;
-  }
-
-  fprintf(f, "%d %s %lld\n", type, table, rowid);
-
-  fclose(f);
-}
-
 bool list_dir_function(char *path, void *args)
 {
   struct dir_ctx *ctx = (struct dir_ctx*) args;
   char *filename, *del, port_str[6];
   int port;
-  FILE *f = fopen("/tmp/debug", "a+");
 
   if (strstr(path, SOCK_EXTENSION)) {
     if ((filename = basename(path)) != NULL) {
       if (strstr(filename, DOMAIN_ID_STR)) {
-        utarray_push_back(ctx->domain_sockets, &filename);
-        fprintf(f, "%s\n", path);
+        utarray_push_back(ctx->domain_sockets, &path);
       } else {
         if ((del = strchr(filename, DELIMITER_CHAR)) != NULL) {
           port = (int)(del - filename);
@@ -58,7 +41,7 @@ bool list_dir_function(char *path, void *args)
             errno = 0;
             port = (int) strtol(port_str, NULL, 10);
             if (errno != EINVAL) {
-              fprintf(f, "%d\n", port);
+              utarray_push_back(ctx->ports, &port);
             }
           }
         }
@@ -66,8 +49,58 @@ bool list_dir_function(char *path, void *args)
     }
   }
 
-  fclose(f);
   return true;
+}
+
+int get_dir_file_sockets(struct dir_ctx *ctx)
+{
+  utarray_new(ctx->domain_sockets, &ut_str_icd);
+  utarray_new(ctx->ports, &ut_int_icd);
+
+  if (list_dir(sock_path, list_dir_function, (void *)ctx) < 0) {
+    utarray_free(ctx->domain_sockets);
+    utarray_free(ctx->ports);
+    return -1;
+  }
+
+  return 0;
+}
+
+void send_domain_message(char *path, char *message)
+{
+
+}
+
+void send_udp_message(int port, char *message)
+{
+  
+}
+
+void update_hook(void *data, int type, char const *database, char const *table, sqlite3_int64 rowid)
+{
+  (void) database;
+  char **domain = NULL;
+  int *port = NULL;
+  char message[256];
+
+  struct dir_ctx ctx = {NULL, NULL};
+
+  snprintf(message, 255, "%lld %d %s\n", rowid, type, table);
+
+  if(get_dir_file_sockets(&ctx) < 0) {
+    return;
+  }
+
+  while ((domain = (char**) utarray_next(ctx.domain_sockets, domain))) {
+    send_domain_message(*domain, message);
+  }
+
+  while ((port = (int*) utarray_next(ctx.ports, port))) {
+    send_udp_message(*port, message);
+  }
+
+  utarray_free(ctx.domain_sockets);
+  utarray_free(ctx.ports);
 }
 
 #ifdef _WIN32
@@ -86,7 +119,6 @@ int sqlite3_extension_init(
 ){
   (void) pzErrMsg;
 
-  struct dir_ctx ctx = {NULL, NULL};
   char *env_key_value;
   int rc = SQLITE_OK;
   
@@ -98,14 +130,7 @@ int sqlite3_extension_init(
 
   strncpy(sock_path, env_key_value, MAX_OS_PATH_LEN);
   
-  utarray_new(ctx.domain_sockets, &ut_str_icd);
+  sqlite3_update_hook(db, update_hook, NULL);
 
-  if (list_dir(sock_path, list_dir_function, (void *)&ctx) < 0) {
-    utarray_free(ctx.domain_sockets);
-    return rc;
-  }
-  //sqlite3_update_hook(db, update_hook, NULL);
-
-  utarray_free(ctx.domain_sockets);
   return rc;
 }
