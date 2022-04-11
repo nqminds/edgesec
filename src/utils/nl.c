@@ -125,7 +125,7 @@ void free_nlmsg_chain(struct nlmsg_chain *info)
 int ip_link_list(req_filter_fn_t filter_fn, struct nlmsg_chain *linfo)
 {
 	if (rtnl_linkdump_req_filter_fn(&rth, 0, filter_fn) < 0) {
-		log_err("Cannot send dump request");
+		log_errno("Cannot send dump request");
 		return 1;
 	}
 
@@ -151,7 +151,7 @@ static int iplink_filter_req(struct nlmsghdr *nlh, int reqlen)
 static int ipaddr_dump_filter(struct nlmsghdr *nlh, int reqlen)
 {
   (void) reqlen;
-	
+
   struct ifaddrmsg *ifa = NLMSG_DATA(nlh);
 
   ifa->ifa_index = ifindex;
@@ -164,7 +164,7 @@ static int ip_addr_list(struct nlmsg_chain *ainfo, int if_id)
 	ifindex = if_id;
 
 	if (rtnl_addrdump_req(&rth, 0, ipaddr_dump_filter) < 0) {
-		log_err("Cannot send dump request");
+		log_errno("Cannot send dump request");
 		return 1;
 	}
 
@@ -211,7 +211,7 @@ enum IF_STATE get_operstate(__u8 state)
 	if (state >= 7) {
 		return IF_STATE_OTHER;
 	} else {
-		return (enum IF_STATE) state; 
+		return (enum IF_STATE) state;
 	}
 }
 
@@ -244,7 +244,7 @@ int get_addrinfo(struct nlmsghdr *n, netif_info_t *info)
 
 	info->ifa_family = ifa->ifa_family;
 	const char *name = family_name(ifa->ifa_family);
-	
+
 	if (*name != '?') {
 		log_trace("ifindex=%d family=%s", info->ifindex, name);
 	} else {
@@ -327,7 +327,7 @@ int get_linkinfo(struct nlmsghdr *n, netif_info_t *info)
 	if (tb[IFLA_OPERSTATE]) {
 		info->state = get_operstate(rta_getattr_u8(tb[IFLA_OPERSTATE]));
 	} else
-		info->state = IF_STATE_UNKNOWN;	
+		info->state = IF_STATE_UNKNOWN;
 
 	log_trace("ifindex=%d state=%d", ifi->ifi_index, info->state);
 	os_strlcpy(info->link_type, ll_type_n2a(ifi->ifi_type, b1, sizeof(b1)), LINK_TYPE_LEN);
@@ -732,7 +732,7 @@ UT_array *nl_get_interfaces(int if_id)
 		res = get_linkinfo(n, &el);
 		if (res >= 0)
 			get_selected_addrinfo(ifi, ainfo->head, &el);
-		
+
 		utarray_push_back(arr, &el);
 	}
 
@@ -753,7 +753,7 @@ bool nl_new_interface(char *if_name, char *type)
 {
 	int ret;
 	char *argv[4] = {"name", if_name, "type", type};
-	
+
 	log_trace("nl_new_interface for if_name=%s type=%s", if_name, type);
 
 	if (rtnl_open(&rth, 0) < 0) {
@@ -762,7 +762,7 @@ bool nl_new_interface(char *if_name, char *type)
 	}
 
 	rtnl_set_strict_dump(&rth);
-	
+
 	if (iplink_have_newlink()) {
 		ret = iplink_modify(RTM_NEWLINK, NLM_F_CREATE|NLM_F_EXCL, 4, argv);
 		if (ret != 0) {
@@ -794,7 +794,7 @@ bool nl_set_interface_ip(char *ip_addr, char *brd_addr, char *if_name)
 	}
 
 	rtnl_set_strict_dump(&rth);
-	
+
 	int ret;
 	ret = ipaddr_modify(RTM_NEWADDR, NLM_F_CREATE|NLM_F_EXCL, 5, argv);
 	if (ret != 0) {
@@ -814,7 +814,7 @@ bool nl_set_interface_state(char *if_name, bool state)
 {
 	char *if_state = (state) ? "up" : "down";
 	char *argv[3] = {"dev", if_name, if_state};
-	
+
 	log_trace("set_interface_state for if_name=%s if_state=%s", if_name, if_state);
 
 	if (rtnl_open(&rth, 0) < 0) {
@@ -823,7 +823,7 @@ bool nl_set_interface_state(char *if_name, bool state)
 	}
 
 	rtnl_set_strict_dump(&rth);
-	
+
 	int ret;
 
 	if (iplink_have_newlink()) {
@@ -850,7 +850,7 @@ struct nlctx* nl_init_context(void)
   struct nlctx *context = os_zalloc(sizeof(struct nlctx));
 
   if (context == NULL) {
-    log_err("os_zalloc");
+    log_errno("os_zalloc");
     return NULL;
   }
 
@@ -1011,12 +1011,12 @@ static int nl80211_init(struct nl80211_state *state)
 
 	state->nl_sock = nl_socket_alloc();
 	if (!state->nl_sock) {
-		log_err("Failed to allocate netlink socket");
+		log_errno("Failed to allocate netlink socket");
 		return -ENOMEM;
 	}
 
 	if (genl_connect(state->nl_sock)) {
-		log_err("Failed to connect to generic netlink");
+		log_errno("Failed to connect to generic netlink");
 		err = -ENOLINK;
 		goto out_handle_destroy;
 	}
@@ -1030,7 +1030,7 @@ static int nl80211_init(struct nl80211_state *state)
 
 	state->nl80211_id = genl_ctrl_resolve(state->nl_sock, "nl80211");
 	if (state->nl80211_id < 0) {
-		log_err("nl80211 not found");
+		log_errno("nl80211 not found");
 		err = -ENOENT;
 		goto out_handle_destroy;
 	}
@@ -1115,7 +1115,7 @@ static int process_iface_handler(struct nl_msg *msg, void *arg)
 
 static int8_t nl_new(struct nl80211_state *nlstate, struct nl_cb **cb, struct nl_msg **msg, int *err)
 {
-	if (nl80211_init(nlstate)) {		
+	if (nl80211_init(nlstate)) {
 		return -1;
 	}
 

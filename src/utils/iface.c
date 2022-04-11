@@ -86,7 +86,7 @@ struct iface_context* iface_init_context(void *params)
   struct iface_context *ctx = os_zalloc(sizeof(struct iface_context));
 
   if (ctx == NULL) {
-    log_err("os_zalloc");
+    log_errno("os_zalloc");
     return NULL;
   }
 
@@ -126,7 +126,7 @@ UT_array *iface_get(char *ifname)
   netif_info_t nif;
 
   if (getifaddrs(&ifaddr) == -1) {
-    log_err("getifaddrs");
+    log_errno("getifaddrs");
     return NULL;
   }
 
@@ -147,7 +147,7 @@ UT_array *iface_get(char *ifname)
         ipaddr, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
 
       if (ret != 0) {
-        log_err("getnameinfo");
+        log_errno("getnameinfo");
         utarray_free(interfaces);
         return NULL;
       }

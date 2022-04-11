@@ -19,7 +19,7 @@
 
 /**
  * @file hashmap.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the hashmap utilities.
  */
 
@@ -79,7 +79,7 @@ bool hmap_str_keychar_put(hmap_str_keychar **hmap, char *keyptr, char *value)
   	if (s == NULL) {
   	  s = (hmap_str_keychar *) os_malloc(sizeof(hmap_str_keychar));
 	  if (s == NULL) {
-		log_err("os_malloc");
+		log_errno("os_malloc");
 		return false;
 	  }
 

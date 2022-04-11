@@ -7,7 +7,7 @@
  */
 
 /**
- * @file radius_server.h 
+ * @file radius_server.h
  * @authors Jouni Malinen, Alexandru Mereacre
  * @brief RADIUS authentication server.
  */
@@ -115,12 +115,12 @@ struct hostapd_radius_attr * get_password_attribute(const uint8_t *req_authentic
 		log_trace("os_get_random fail");
 		return NULL;
 	}
-	
+
 	salt |= 0x8000;
 
 	buf = os_zalloc(packet_len);
 	if (buf == NULL) {
-		log_err("os_zalloc");
+		log_errno("os_zalloc");
 		return 0;
 	}
 
@@ -132,7 +132,7 @@ struct hostapd_radius_attr * get_password_attribute(const uint8_t *req_authentic
 
 	attr = os_zalloc(sizeof(*attr));
 	if (!attr) {
-		log_err("os_zalloc");
+		log_errno("os_zalloc");
 		os_free(buf);
 		return NULL;
 	}
@@ -147,7 +147,7 @@ struct hostapd_radius_attr * get_password_attribute(const uint8_t *req_authentic
 struct hostapd_radius_attr * get_vlan_attribute(uint16_t vlan_id)
 {
 	char id_str[5];
-	struct hostapd_radius_attr *attr, 
+	struct hostapd_radius_attr *attr,
 		*attr_medium_type, *attr_id;
 
 #define RADIUS_ATTR_TUNNEL_VALUE 		13
@@ -155,7 +155,7 @@ struct hostapd_radius_attr * get_vlan_attribute(uint16_t vlan_id)
 
 	attr = os_zalloc(sizeof(*attr));
 	if (!attr) {
-		log_err("os_zalloc");
+		log_errno("os_zalloc");
 		return NULL;
 	}
 
@@ -163,10 +163,10 @@ struct hostapd_radius_attr * get_vlan_attribute(uint16_t vlan_id)
 	attr->val = wpabuf_alloc(4);
 	if (attr->val)
 		wpabuf_put_be32(attr->val, RADIUS_ATTR_TUNNEL_VALUE);
-	
+
 	attr_medium_type = os_zalloc(sizeof(*attr_medium_type));
 	if (!attr_medium_type) {
-		log_err("os_zalloc");
+		log_errno("os_zalloc");
 		free_radius_attr(attr);
 		return NULL;
 	}
@@ -177,7 +177,7 @@ struct hostapd_radius_attr * get_vlan_attribute(uint16_t vlan_id)
 
 	attr_id = os_zalloc(sizeof(*attr_id));
 	if (!attr_id) {
-		log_err("os_zalloc");
+		log_errno("os_zalloc");
 		free_radius_attr(attr);
 		free_radius_attr(attr_medium_type);
 		return NULL;
@@ -469,7 +469,7 @@ radius_server_macacl(struct radius_server_data *data,
 end:
 	if (attr != NULL)
 		free_radius_attr(attr);
-	return NULL;	
+	return NULL;
 }
 
 
@@ -513,7 +513,7 @@ static int radius_server_reject(struct radius_server_data *data,
 	buf = radius_msg_get_buf(msg);
 	if (sendto(data->auth_sock, wpabuf_head(buf), wpabuf_len(buf), 0,
 		   (struct sockaddr *) from, sizeof(*from)) < 0) {
-		log_err("sendto[RADIUS SRV]");
+		log_errno("sendto[RADIUS SRV]");
 		ret = -1;
 	}
 
@@ -580,7 +580,7 @@ static int radius_server_request(struct radius_server_data *data,
 				     wpabuf_len(buf), 0,
 				     (struct sockaddr *) from, fromlen);
 			if (res < 0) {
-				log_err("sendto[RADIUS SRV]");
+				log_errno("sendto[RADIUS SRV]");
 			}
 			return 0;
 		}
@@ -623,7 +623,7 @@ static int radius_server_request(struct radius_server_data *data,
 			     wpabuf_len(buf), 0,
 			     (struct sockaddr *) from, fromlen);
 		if (res < 0) {
-			log_err("sendto[RADIUS SRV]");
+			log_errno("sendto[RADIUS SRV]");
 		}
 		radius_msg_free(sess->last_reply);
 		sess->last_reply = reply;
@@ -675,7 +675,7 @@ static void radius_server_receive_auth(int sock, void *eloop_ctx,
 	len = recvfrom(sock, buf, RADIUS_MAX_MSG_LEN, 0,
 		       (struct sockaddr *) &from.ss, &fromlen);
 	if (len < 0) {
-		log_err("recvfrom[radius_server]");
+		log_errno("recvfrom[radius_server]");
 		goto fail;
 	}
 
@@ -743,7 +743,7 @@ static int radius_server_disable_pmtu_discovery(int s)
 	r = setsockopt(s, IPPROTO_IP, IP_MTU_DISCOVER, &action,
 		       sizeof(action));
 	if (r == -1)
-		log_err("Failed to set IP_MTU_DISCOVER:");
+		log_errno("Failed to set IP_MTU_DISCOVER:");
 #endif
 	return r;
 }
@@ -766,7 +766,7 @@ static int radius_server_open_socket(int port)
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(port);
 	if (bind(s, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
-		log_err("RADIUS: bind");
+		log_errno("RADIUS: bind");
 		close(s);
 		return -1;
 	}
@@ -818,13 +818,13 @@ struct radius_client *init_radius_client(struct radius_conf *conf,
 
 	entry = os_zalloc(sizeof(*entry));
 	if (entry == NULL) {
-		log_err("os_zalloc");
+		log_errno("os_zalloc");
 		return NULL;
 	}
 
 	entry->shared_secret = os_strdup(conf->radius_secret);
 	if (entry->shared_secret == NULL) {
-		log_err("os_strdup");
+		log_errno("os_strdup");
 		os_free(entry);
 		return NULL;
 	}

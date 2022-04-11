@@ -19,7 +19,7 @@
 
 /**
  * @file crypt_service.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of crypt service configuration utilities.
  */
 
@@ -61,7 +61,7 @@ struct secrets_row* prepare_secret_entry(char *key_id, uint8_t *key, int key_siz
   struct secrets_row *row = os_zalloc(sizeof(struct secrets_row));
 
   if (row == NULL) {
-    log_err("os_zalloc");
+    log_errno("os_zalloc");
     return NULL;
   }
 
@@ -89,7 +89,7 @@ int extract_secret_entry(struct secrets_row* row, uint8_t *key, int *key_size,
 {
   size_t out_len;
   char *buf;
-  
+
   if (row->value == NULL && key_size != NULL) {
     *key_size = 0;
   } else if (row->value != NULL && key != NULL && key_size != NULL) {
@@ -193,7 +193,7 @@ struct secrets_row * generate_user_crypto_key_entry(char *key_id, uint8_t *user_
   int enc_crypto_key_size;
   if (!crypto_gensalt(user_key_salt, SALT_SIZE)) {
     log_trace("crypto_gensalt fail");
-    return NULL;        
+    return NULL;
   }
 
   // Generate the enc/dec key using the user supplied key
@@ -238,7 +238,7 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
 
   context = (struct crypt_context*) os_zalloc(sizeof(struct crypt_context));
   if (context == NULL) {
-    log_err("os_zalloc");
+    log_errno("os_zalloc");
     free_sqlite_crypt_db(db);
     return NULL;
   }
@@ -268,7 +268,7 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
       }
 
       log_debug("Using user supplied secret");
-      
+
       if ((row_secret = generate_user_crypto_key_entry(key_id, user_secret, user_secret_size,
                                                     context->crypto_key)) == NULL)
       {
@@ -374,7 +374,7 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
       os_free(crypto_buf);
     }
   }
-  
+
   free_sqlite_secrets_row(row_secret);
   return context;
 }
@@ -409,7 +409,7 @@ struct crypt_pair* get_crypt_pair(struct crypt_context *ctx, char *key)
 
   pair = (struct crypt_pair *) os_malloc(sizeof(struct crypt_pair));
   if (pair == NULL) {
-    log_err("os_malloc");
+    log_errno("os_malloc");
     return NULL;
   }
 
@@ -434,7 +434,7 @@ struct crypt_pair* get_crypt_pair(struct crypt_context *ctx, char *key)
 
     pair->value = os_malloc(value_size);
     if (pair->value == NULL) {
-      log_err("os_malloc");
+      log_errno("os_malloc");
       os_free(iv);
       os_free(enc_value);
       free_crypt_pair(pair);
@@ -495,7 +495,7 @@ int put_crypt_pair(struct crypt_context *ctx, struct crypt_pair *pair)
     enc_value = os_malloc(pair->value_size + AES_BLOCK_SIZE);
 
     if (enc_value == NULL) {
-      log_err("os_malloc");
+      log_errno("os_malloc");
       return -1;
     }
 

@@ -18,7 +18,7 @@
  ****************************************************************************/
 /**
  * @file default_analyser.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the default analyser service.
  */
 
@@ -163,7 +163,7 @@ void send_domain_data(struct capture_context *context, char *data)
   send_len += strlen(data) + 1;
 
   if ((buf = os_zalloc(send_len)) == NULL) {
-    log_err("os_zalloc");
+    log_errno("os_zalloc");
     return;
   }
 
@@ -299,7 +299,7 @@ int start_default_analyser(struct capture_conf *config)
     os_free(header_db_path);
     return -1;
   }
-  
+
   if ((context.domain_client = create_domain_client(NULL)) < 0) {
     log_trace("create_domain_client fail");
     os_free(header_db_path);

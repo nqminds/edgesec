@@ -1942,7 +1942,7 @@ static int radius_server_open_socket(int port)
 
 	s = socket(PF_INET, SOCK_DGRAM, 0);
 	if (s < 0) {
-		log_err("RADIUS: socket");
+		log_errno("RADIUS: socket");
 		return -1;
 	}
 
@@ -1952,7 +1952,7 @@ static int radius_server_open_socket(int port)
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(port);
 	if (bind(s, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
-		log_trace("RADIUS: bind");
+		log_errno("RADIUS: bind");
 		close(s);
 		return -1;
 	}

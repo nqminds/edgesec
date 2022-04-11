@@ -19,7 +19,7 @@
 
 /**
  * @file mdns_mapper.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the mdns mapper utils.
  */
 
@@ -39,7 +39,7 @@ int put_mdns_info(hmap_mdns_conn **imap, uint8_t *ip, struct mdns_list_info *inf
 
   if (s == NULL) {
     if ((el = (hmap_mdns_conn *) os_malloc(sizeof(hmap_mdns_conn))) == NULL) {
-      log_err("os_malloc");
+      log_errno("os_malloc");
       return -1;
     }
 
@@ -91,7 +91,7 @@ int put_mdns_query_mapper(hmap_mdns_conn **imap, uint8_t *ip, struct mdns_query_
   info.name = query->qname;
   info.qtype = query->qtype;
   info.request = MDNS_REQUEST_QUERY;
-  
+
   if (put_mdns_info(imap, ip, &info) < 0) {
     log_trace("put_mdns_info fail");
     return -1;
@@ -123,7 +123,7 @@ int put_mdns_answer_mapper(hmap_mdns_conn **imap, uint8_t *ip, struct mdns_answe
   info.rrtype = answer->rrtype;
   info.ttl = answer->ttl;
   info.request = MDNS_REQUEST_ANSWER;
-  
+
   if (put_mdns_info(imap, ip, &info) < 0) {
     log_trace("put_mdns_info fail");
     return -1;
@@ -157,7 +157,7 @@ int check_mdns_mapper_req(hmap_mdns_conn **imap, uint8_t *ip, enum MDNS_REQUEST_
     log_trace("ip param is NULL");
     return -1;
   }
-  
+
   HASH_FIND(hh, *imap, ip, IP_ALEN, s);     /* IP already in the hash? */
 
   if (s == NULL) {

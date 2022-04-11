@@ -69,7 +69,7 @@ bool validate_ipv4_string(char *ip)
   errno = 0;
   ret = inet_pton(AF_INET, proc_ip, &(sa.sin_addr));
   if (ret == -1) {
-	  log_err("inet_pton");
+	  log_errno("inet_pton");
 	  return false;
   }
 
@@ -121,10 +121,10 @@ int ip4_2_buf(char *ip, uint8_t *buf)
 
   errno = 0;
   if (inet_pton(AF_INET, ip, &addr) < 0) {
-	  log_err("inet_pton");
+	  log_errno("inet_pton");
 	  return -1;
   }
-  
+
   buf[0] = (uint8_t) (addr.s_addr & 0x000000FF);
   buf[1] = (uint8_t) ((addr.s_addr >> 8) & 0x000000FF);
   buf[2] = (uint8_t) ((addr.s_addr >> 16) & 0x000000FF);
@@ -175,7 +175,7 @@ uint8_t get_short_subnet(char *subnet_mask)
 int get_ip_host(char *ip, char *subnet_mask, uint32_t *host)
 {
   uint8_t ipbuf[4], mbuf[4];
-  
+
   if (ip4_2_buf(ip, ipbuf) < 0) {
     log_trace("ip4_2_buf fail");
     return -1;

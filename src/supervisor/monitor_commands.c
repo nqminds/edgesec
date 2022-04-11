@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file monitor_commands.c 
- * @author Alexandru Mereacre 
+ * @file monitor_commands.c
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the monitor commands.
  */
 #include <libgen.h>
@@ -117,7 +117,7 @@ ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr
     if (p->mac != NULL) {
       row_array[0] = os_malloc(strlen(p->mac) + 2);
       if (row_array[0] == NULL) {
-        log_err("os_malloc");
+        log_errno("os_malloc");
         free_sqlite_fingerprint_rows(rows);
         if (*out != NULL) os_free(*out);
         return -1;
@@ -126,7 +126,7 @@ ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr
     } else {
       row_array[0] = os_malloc(2);
       if (row_array[0] == NULL) {
-        log_err("os_malloc");
+        log_errno("os_malloc");
         free_sqlite_fingerprint_rows(rows);
         if (*out != NULL) os_free(*out);
         return -1;
@@ -138,7 +138,7 @@ ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr
     if (p->protocol != NULL) {
       row_array[1] = os_malloc(strlen(p->protocol) + 2);
       if (row_array[1] == NULL) {
-        log_err("os_malloc");
+        log_errno("os_malloc");
         free_row_array(row_array);
         free_sqlite_fingerprint_rows(rows);
         if (*out != NULL) os_free(*out);
@@ -149,7 +149,7 @@ ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr
     } else {
       row_array[1] = os_malloc(2);
       if (row_array[1] == NULL) {
-        log_err("os_malloc");
+        log_errno("os_malloc");
         free_row_array(row_array);
         free_sqlite_fingerprint_rows(rows);
         if (*out != NULL) os_free(*out);
@@ -161,7 +161,7 @@ ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr
     if (p->fingerprint != NULL) {
       row_array[2] = os_malloc(strlen(p->fingerprint) + 2);
       if (row_array[2] == NULL) {
-        log_err("os_malloc");
+        log_errno("os_malloc");
         free_row_array(row_array);
         free_sqlite_fingerprint_rows(rows);
         if (*out != NULL) os_free(*out);
@@ -172,7 +172,7 @@ ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr
     } else {
       row_array[2] = os_malloc(2);
       if (row_array[2] == NULL) {
-        log_err("os_malloc");
+        log_errno("os_malloc");
         free_row_array(row_array);
         free_sqlite_fingerprint_rows(rows);
         if (*out != NULL) os_free(*out);
@@ -184,7 +184,7 @@ ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr
 
     row_array[3] = os_malloc(MAX_UINT64_DIGITS + 2);
     if (row_array[3] == NULL) {
-      log_err("os_malloc");
+      log_errno("os_malloc");
       free_row_array(row_array);
       free_sqlite_fingerprint_rows(rows);
       if (*out != NULL) os_free(*out);
@@ -195,7 +195,7 @@ ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr
     if (p->query != NULL) {
       row_array[4] = os_malloc(strlen(p->query) + 2);
       if (row_array[4] == NULL) {
-        log_err("os_malloc");
+        log_errno("os_malloc");
         free_row_array(row_array);
         free_sqlite_fingerprint_rows(rows);
         if (*out != NULL) os_free(*out);
@@ -205,7 +205,7 @@ ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr
     } else {
       row_array[4] = os_malloc(2);
       if (row_array[4] == NULL) {
-        log_err("os_malloc");
+        log_errno("os_malloc");
         free_row_array(row_array);
         free_sqlite_fingerprint_rows(rows);
         if (*out != NULL) os_free(*out);
@@ -218,7 +218,7 @@ ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr
                     strlen(row_array[3]) + strlen(row_array[4]) + 1);
 
     if (row == NULL) {
-      log_err("os_zalloc");
+      log_errno("os_zalloc");
       free_row_array(row_array);
       free_sqlite_fingerprint_rows(rows);
       return -1;
@@ -264,31 +264,31 @@ int set_alert_cmd(struct supervisor_context *context, struct alert_meta *meta,
             MAC2STR(meta->dst_mac_addr), meta->timestamp, meta->risk);
 
   if ((row.hostname = os_strdup(meta->hostname)) == NULL) {
-    log_err("os_strdup");
+    log_errno("os_strdup");
     return -1;
   }
 
   if ((row.analyser = os_strdup(meta->analyser)) == NULL) {
-    log_err("os_strdup");
+    log_errno("os_strdup");
     free_sqlite_alert_row(&row);
     return -1;
   }
 
   if ((row.ifname = os_strdup(meta->ifname)) == NULL) {
-    log_err("os_strdup");
+    log_errno("os_strdup");
     free_sqlite_alert_row(&row);
     return -1;
   }
 
   if ((row.src_mac_addr = os_zalloc(MACSTR_LEN)) == NULL) {
-    log_err("os_zalloc");
+    log_errno("os_zalloc");
     free_sqlite_alert_row(&row);
     return -1;
   }
   sprintf(row.src_mac_addr, MACSTR, MAC2STR(meta->src_mac_addr));
 
   if ((row.dst_mac_addr = os_zalloc(MACSTR_LEN)) == NULL) {
-    log_err("os_zalloc");
+    log_errno("os_zalloc");
     free_sqlite_alert_row(&row);
     return -1;
   }
@@ -298,7 +298,7 @@ int set_alert_cmd(struct supervisor_context *context, struct alert_meta *meta,
   row.risk = meta->risk;
 
   if ((row.info = os_zalloc(info_size + 1)) == NULL) {
-    log_err("os_zalloc");
+    log_errno("os_zalloc");
     free_sqlite_alert_row(&row);
     return -1;
   }

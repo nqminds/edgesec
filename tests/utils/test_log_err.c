@@ -8,6 +8,6 @@
 #include "utils/log.h"
 
 int main(int argc, char *argv[]) {
-    log_err("Hello %s", "world");
+    log_errno("Hello %s", "world");
     exit(0);
 }

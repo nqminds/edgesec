@@ -19,7 +19,7 @@
 
 /**
  * @file pcap_queue.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the pcap queue utilities.
  */
 
@@ -39,7 +39,7 @@ struct pcap_queue* init_pcap_queue(void)
   queue = os_zalloc(sizeof(*queue));
 
   if (queue == NULL) {
-    log_err("os_zalloc");
+    log_errno("os_zalloc");
     return NULL;
   }
 
@@ -75,7 +75,7 @@ struct pcap_queue* push_pcap_queue(struct pcap_queue* queue, struct pcap_pkthdr 
   os_memcpy(&el->header, header, sizeof(struct pcap_pkthdr));
   el->packet = os_malloc(header->caplen);
   if (el->packet ==  NULL) {
-    log_err("os_malloc");
+    log_errno("os_malloc");
     return NULL;
   }
 
