@@ -277,6 +277,10 @@ int init_context(struct app_config *app_config, struct supervisor_context *ctx)
     return -1;
   }
 
+  if (app_config->config_ifinfo_array == NULL) {
+    log_error("Invalid empty config_ifinfo_array");
+    return -1;
+  }
   utarray_new(ctx->config_ifinfo_array, &config_ifinfo_icd);
   copy_ifinfo(app_config->config_ifinfo_array, ctx->config_ifinfo_array);
 
