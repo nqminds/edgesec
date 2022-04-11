@@ -19,7 +19,7 @@
 
 /**
  * @file sqlite_header_writer.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the sqlite header writer utilities.
  */
 
@@ -106,7 +106,7 @@ int extract_arp_statement(struct sqlite_header_context *ctx, struct arp_schema *
 {
   int column_idx, rc;
   sqlite3_stmt *res = NULL;
-  
+
   rc = sqlite3_prepare_v2(ctx->db, ARP_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
@@ -230,7 +230,7 @@ int extract_ip6_statement(struct sqlite_header_context *ctx, struct ip6_schema *
 {
   int column_idx, rc;
   sqlite3_stmt *res = NULL;
-  
+
   rc = sqlite3_prepare_v2(ctx->db, IP6_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
@@ -283,7 +283,7 @@ int extract_tcp_statement(struct sqlite_header_context *ctx, struct tcp_schema *
 {
   int column_idx, rc;
   sqlite3_stmt *res = NULL;
-  
+
   rc = sqlite3_prepare_v2(ctx->db, TCP_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
@@ -359,7 +359,7 @@ int extract_udp_statement(struct sqlite_header_context *ctx, struct udp_schema *
 {
   int column_idx, rc;
   sqlite3_stmt *res = NULL;
-  
+
   rc = sqlite3_prepare_v2(ctx->db, UDP_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
@@ -402,7 +402,7 @@ int extract_icmp4_statement(struct sqlite_header_context *ctx, struct icmp4_sche
 {
   int column_idx, rc;
   sqlite3_stmt *res = NULL;
-  
+
   rc = sqlite3_prepare_v2(ctx->db, ICMP4_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
@@ -445,7 +445,7 @@ int extract_icmp6_statement(struct sqlite_header_context *ctx, struct icmp6_sche
 {
   int column_idx, rc;
   sqlite3_stmt *res = NULL;
-  
+
   rc = sqlite3_prepare_v2(ctx->db, ICMP6_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
@@ -488,7 +488,7 @@ int extract_dns_statement(struct sqlite_header_context *ctx, struct dns_schema *
 {
   int column_idx, rc;
   sqlite3_stmt *res = NULL;
-  
+
   rc = sqlite3_prepare_v2(ctx->db, DNS_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
@@ -593,7 +593,7 @@ int extract_dhcp_statement(struct sqlite_header_context *ctx, struct dhcp_schema
 {
   int column_idx, rc;
   sqlite3_stmt *res = NULL;
-  
+
   rc = sqlite3_prepare_v2(ctx->db, DHCP_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
@@ -717,7 +717,7 @@ int sqlite_trace_callback(unsigned int uMask, void* ctx, void* stm, void* X)
   if (sql_ctx->trace_fn != NULL) {
     sqlite_str = sqlite3_expanded_sql(statement);
     sql_ctx->trace_fn(sqlite_str, sql_ctx->trace_ctx);
-    sqlite3_free(sqlite_str);  
+    sqlite3_free(sqlite_str);
   }
 
   return 0;
@@ -726,7 +726,7 @@ int sqlite_trace_callback(unsigned int uMask, void* ctx, void* stm, void* X)
 int open_sqlite_header_db(char *db_path, trace_callback_fn fn,
                                void *trace_ctx, struct sqlite_header_context **ctx)
 {
-  
+
   sqlite3 *db;
   struct sqlite_header_context *context = NULL;
 

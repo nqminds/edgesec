@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file capsrv.c 
- * @author Alexandru Mereacre 
+ * @file capsrv.c
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the capture service.
  */
 
@@ -126,7 +126,7 @@ int process_app_options(int argc, char *argv[], uint8_t *verbosity,
       return log_cmdline_error("Missing argument for -%c\n", optopt);
     case '?':
       return log_cmdline_error("Unrecognized option -%c\n", optopt);
-    default: 
+    default:
       ret = capture_opt2config(opt, optarg, config);
       if (ret < 0) {
         return log_cmdline_error("Wrong argument value for -%c\n", optopt);

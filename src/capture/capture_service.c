@@ -19,7 +19,7 @@
 
 /**
  * @file capture_service.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the capture service.
  */
 #include <errno.h>

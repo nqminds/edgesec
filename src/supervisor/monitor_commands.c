@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file monitor_commands.c 
- * @author Alexandru Mereacre 
+ * @file monitor_commands.c
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the monitor commands.
  */
 #include <libgen.h>

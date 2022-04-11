@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file monitor_commands.h 
- * @author Alexandru Mereacre 
+ * @file monitor_commands.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the monitor commands.
  */
 
@@ -33,7 +33,7 @@
 
 /**
  * @brief SET_ALERT command
- * 
+ *
  * @param context The supervisor structure instance
  * @param meta The alert meta structure
  * @param info The info buffer
@@ -45,7 +45,7 @@ int set_alert_cmd(struct supervisor_context *context, struct alert_meta *meta,
 
 /**
  * @brief SET_FINGERPRINT command
- * 
+ *
  * @param context The supervisor structure instance
  * @param src_mac_addr The source MAC address string
  * @param dst_mac_addr The destination MAC address string
@@ -61,7 +61,7 @@ int set_fingerprint_cmd(struct supervisor_context *context, char *src_mac_addr,
 
 /**
  * @brief QUERY_FINGERPRINT command
- * 
+ *
  * @param context The supervisor structure instance
  * @param mac_addr The MAC address string
  * @param timestamp The timestamp 64 bit value

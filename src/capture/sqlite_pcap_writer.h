@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file sqlite_pcap_writer.h 
- * @author Alexandru Mereacre 
+ * @file sqlite_pcap_writer.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the sqlite pcap writer utilities.
  */
 
@@ -49,7 +49,7 @@ struct pcap_file_meta {
 
 /**
  * @brief Opens the sqlite pcap db
- * 
+ *
  * @param db_path The sqlite db path
  * @param sql The returned sqlite db structure pointer
  * @return 0 on success, -1 on failure
@@ -58,14 +58,14 @@ int open_sqlite_pcap_db(char *db_path, sqlite3** sql);
 
 /**
  * @brief Closes the sqlite db
- * 
+ *
  * @param ctx The sqlite db structure pointer
  */
 void free_sqlite_pcap_db(sqlite3 *db);
 
 /**
  * @brief Save a pcap entry into the sqlite db
- * 
+ *
  * @param db The sqlite db structure pointer
  * @param name The pcap file name
  * @param timestamp The timestamp value
@@ -81,7 +81,7 @@ int save_sqlite_pcap_entry(sqlite3 *db, char *name, uint64_t timestamp,
 
 /**
  * @brief Returns the first pcap entry timestamp
- * 
+ *
  * @param db The sqlite db structure pointer
  * @param timestamp The returned timestamp value
  * @param caplen The returned caplen value
@@ -91,7 +91,7 @@ int get_first_pcap_entry(sqlite3 *db, uint64_t *timestamp, uint64_t *caplen);
 
 /**
  * @brief Returns the pcap meta array
- * 
+ *
  * @param db The sqlite db structure pointer
  * @param lt The lower timestamp
  * @param lim The limit number of rows
@@ -102,7 +102,7 @@ int get_pcap_meta_array(sqlite3 *db, uint64_t lt, uint32_t lim, UT_array *pcap_m
 
 /**
  * @brief Removes a set of entries
- * 
+ *
  * @param db The sqlite db structure pointer
  * @param lt The lower timestamp
  * @param ht The higher timestamp
@@ -112,7 +112,7 @@ int delete_pcap_entries(sqlite3 *db, uint64_t lt, uint64_t ht);
 
 /**
  * @brief Calculates the sum of the group of a pcap
- * 
+ *
  * @param db The sqlite db structure pointer
  * @param lt The lower bound timestamp
  * @param lim The limit number of rows

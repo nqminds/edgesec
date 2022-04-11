@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file sqliteu.h 
- * @author Alexandru Mereacre 
+ * @file sqliteu.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the sqlite utilities.
  */
 
@@ -33,7 +33,7 @@
 
 /**
  * @brief Executes and sqlite query statement
- * 
+ *
  * @param db The sqlite db structure.
  * @param statement The sqlite query statement.
  * @return int 0 on success, -1 on failure.
@@ -42,7 +42,7 @@ int execute_sqlite_query(sqlite3 *db, char *statement);
 
 /**
  * @brief Check if sqlite table exists
- * 
+ *
  * @param db The sqlite db structure
  * @param table_name The table name
  * @return int 0 if it doesn't exist, 1 if it excists and -1 on failure

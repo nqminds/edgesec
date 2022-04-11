@@ -19,7 +19,7 @@
 
 /**
  * @file sqliteu.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the sqlite utilities.
  */
 #include <stdio.h>
@@ -37,7 +37,7 @@ int execute_sqlite_query(sqlite3 *db, char *statement)
   if (rc != SQLITE_OK ) {
     log_trace("Failed to execute statement %s", err);
     sqlite3_free(err);
-    
+
     return -1;
   }
 

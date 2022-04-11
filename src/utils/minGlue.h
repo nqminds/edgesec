@@ -9,7 +9,7 @@
  */
 
 /**
- * @file minGlue.h 
+ * @file minGlue.h
  * @author CompuPhase
  * @brief Glue functions for the minIni library.
  */

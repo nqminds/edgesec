@@ -19,7 +19,7 @@
 
 /**
  * @file sqlite_fingerprint_writer.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the sqlite fingerprint writer utilities.
  */
 
@@ -47,8 +47,8 @@ int open_sqlite_fingerprint_db(char *db_path, sqlite3** sql)
 {
   sqlite3 *db = NULL;
   int rc;
-  
-  if ((rc = sqlite3_open(db_path, &db)) != SQLITE_OK) {     
+
+  if ((rc = sqlite3_open(db_path, &db)) != SQLITE_OK) {
     log_debug("Cannot open database: %s", sqlite3_errmsg(db));
     sqlite3_close(db);
     return -1;

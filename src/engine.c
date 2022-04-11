@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file engine.c 
- * @author Alexandru Mereacre 
+ * @file engine.c
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the app configuration structure.
  */
 
@@ -75,11 +75,11 @@ void copy_ifinfo(UT_array *in, UT_array *out)
 
 /**
  * @brief Check if the system binaries are present and return their absolute paths
- * 
+ *
  * @param commands Array of system binaries name strings
  * @param bin_path_arr Array of system binaries default fodler paths
  * @param hmap_bin_hashes Map of systems binaries to hashes
- * @return hmap_str_keychar* Map for binary to path 
+ * @return hmap_str_keychar* Map for binary to path
  */
 hmap_str_keychar *check_systems_commands(char *commands[], UT_array *bin_path_arr, hmap_str_keychar *hmap_bin_hashes)
 {
@@ -91,7 +91,7 @@ hmap_str_keychar *check_systems_commands(char *commands[], UT_array *bin_path_ar
   }
 
   hmap_str_keychar *hmap_bin_paths = hmap_str_keychar_new();
-  
+
   for(uint8_t idx = 0; commands[idx] != NULL; idx ++) {
     log_debug("Checking %s command...", commands[idx]);
     char *path = get_secure_path(bin_path_arr, commands[idx], false);
@@ -157,7 +157,7 @@ bool create_mac_mapper(struct supervisor_context *ctx)
     utarray_free(mac_conn_arr);
     return false;
   }
-  
+
   if (mac_conn_arr != NULL) {
     while((p = (struct mac_conn *) utarray_next(mac_conn_arr, p)) != NULL) {
       log_trace("Adding mac=" MACSTR " with id=%s vlanid=%d ifname=%s nat=%d allow=%d label=%s status=%d",
@@ -307,7 +307,7 @@ int init_context(struct app_config *app_config, struct supervisor_context *ctx)
   ctx->risk_score = app_config->risk_score;
   ctx->wpa_passphrase_len = os_strnlen_s(app_config->hconfig.wpa_passphrase, AP_SECRET_LEN);
   os_memcpy(ctx->wpa_passphrase, app_config->hconfig.wpa_passphrase, ctx->wpa_passphrase_len);
-  
+
   os_memcpy(ctx->nat_bridge, app_config->nat_bridge, IFNAMSIZ);
   os_memcpy(ctx->nat_interface, app_config->nat_interface, IFNAMSIZ);
   os_memcpy(ctx->db_path, app_config->db_path, MAX_OS_PATH_LEN);
@@ -374,7 +374,7 @@ int init_context(struct app_config *app_config, struct supervisor_context *ctx)
        return -1;
      }
   }
-  
+
   return 0;
 }
 

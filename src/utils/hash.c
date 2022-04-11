@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file hash.c 
- * @author Alexandru Mereacre 
+ * @file hash.c
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the hash functions.
  */
 #include <stdio.h>

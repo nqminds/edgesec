@@ -19,7 +19,7 @@
 
 /**
  * @file mcast.h
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the definition of mDNS utils.
  */
 
@@ -31,7 +31,7 @@
 
 /**
  * @brief Join a multicast socket
- * 
+ *
  * @param fd The socket descriptor
  * @param sa The socket address
  * @param sa_len The socket address length
@@ -42,7 +42,7 @@ int join_mcast(int fd, const struct sockaddr_storage *sa, socklen_t sa_len, uint
 
 /**
  * @brief Create a receive multicast socket
- * 
+ *
  * @param sa The socket address
  * @param sa_len The socket address length
  * @param ifindex The interface index
@@ -52,7 +52,7 @@ int create_recv_mcast(const struct sockaddr_storage *sa, socklen_t sa_len, uint3
 
 /**
  * @brief Create a send multicast socket
- * 
+ *
  * @param sa The socket address
  * @param sa_len The socket address length
  * @param ifindex The interface index

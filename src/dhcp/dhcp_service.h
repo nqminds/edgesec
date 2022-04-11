@@ -19,7 +19,7 @@
 
 /**
  * @file dhcp_service.h
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the definition of dhcp service configuration utilities.
  */
 #ifndef DHCP_SERVICE_H
@@ -33,7 +33,7 @@
 
 /**
  * @brief Run the DHCP server
- * 
+ *
  * @param dconf The dhcp configuration structures.
  * @param dns_server_array The array including the DNS servers IP addresses.
  * @param domain_server_path The UNIX domain server path.
@@ -45,14 +45,14 @@ int run_dhcp(struct dhcp_conf *dconf, UT_array *dns_server_array,
 
 /**
  * @brief Closes (terminates) dhcp process
- * 
+ *
  * @return true success, false otherwise
  */
 bool close_dhcp(void);
 
 /**
  * @brief Clear the DHCP lease for a MAC addrress
- * 
+ *
  * @param mac_addr The MAC address string
  * @param dconf The dhcp configuration structures
  * @return int 0 on success, -1 on failure

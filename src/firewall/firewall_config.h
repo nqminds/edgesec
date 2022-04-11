@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file firewall_service.h 
- * @author Alexandru Mereacre 
+ * @file firewall_service.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the firewall structures.
  */
 

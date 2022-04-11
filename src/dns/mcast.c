@@ -19,7 +19,7 @@
 
 /**
  * @file mcast.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of mDNS utils.
  */
 

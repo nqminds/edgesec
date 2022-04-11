@@ -19,7 +19,7 @@
 
 /**
  * @file generic_hsm_driver.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of generic HSM driver configuration utilities.
  */
 #include <sys/types.h>

@@ -298,10 +298,10 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn fn, 
     if (fn == NULL) {
       /* redirect stdout, stdin and stderr to /dev/null */
       close(STDIN_FILENO);
-  
+
       /* Reopen standard fd's to /dev/null */
       int fd = open("/dev/null", O_RDWR);
-  
+
       if (fd != STDIN_FILENO)         /* 'fd' should be 0 */
         _exit(EXIT_FAILURE);
       if (dup2(STDIN_FILENO, STDOUT_FILENO) != STDOUT_FILENO)
@@ -395,9 +395,9 @@ int run_argv_command(char *path, char *argv[], process_callback_fn fn, void *ctx
     log_trace("argv param is NULL");
     return -1;
   }
-  
+
   while(argv[arg_count++] != NULL);
-  
+
   full_arg = (char **) os_malloc(sizeof(char *) * (arg_count + 1));
 
   full_arg[0] = path;
@@ -407,7 +407,7 @@ int run_argv_command(char *path, char *argv[], process_callback_fn fn, void *ctx
   }
 
   full_arg[count + 1] = NULL;
-  
+
   log_run_command(full_arg, arg_count);
 
   int status = run_command(full_arg, NULL, fn, (void *)ctx);
@@ -472,7 +472,7 @@ ssize_t split_string_array(const char *str, char sep, UT_array *arr)
 {
   if (arr == NULL) {
     log_trace("input arr is NULL");
-    return -1;   
+    return -1;
   }
 
   return split_string(str, sep, fn_split_string_array, (void *)arr);
@@ -523,7 +523,7 @@ char *get_valid_path(char *path)
   if (dir == NULL && path != NULL) {
     log_trace("strdup fail");
     return NULL;
-  } 
+  }
 
   char *base = os_strdup(path);
   if (base == NULL && path != NULL) {
@@ -572,7 +572,7 @@ char *construct_path(char *path_left, char *path_right)
   char *valid_left = get_valid_path(path_left);
   char *valid_right = get_valid_path(path_right);
   char *beg_right = valid_right;
-  
+
   if (strlen(valid_right) >= 2) {
     if (valid_right[0] == '.' && valid_right[1] == '/')
       beg_right++;
@@ -614,7 +614,7 @@ char* get_secure_path(UT_array *bin_path_arr, char *filename, bool real)
         if (real_path == NULL) {
           log_err("realpath");
           os_free(path);
-          return NULL;  
+          return NULL;
         }
 
         log_trace("got real path %s", real_path);
@@ -1029,7 +1029,7 @@ size_t os_strnlen_s(char *str, size_t max_len)
 
   if (end == NULL)
     return max_len;
-  
+
   return end - str;
 }
 

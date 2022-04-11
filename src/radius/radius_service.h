@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file radius_service.h 
- * @author Alexandru Mereacre 
+ * @file radius_service.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the radius service.
  */
 
@@ -31,7 +31,7 @@
 
 /**
  * @brief Runs the radius service
- * 
+ *
  * @param rconf The radius config
  * @param radius_callback_fn The radius callback function
  * @param radius_callback_args The Radius callback arguments
@@ -42,7 +42,7 @@ struct radius_server_data *run_radius(struct radius_conf *rconf,
 
 /**
  * @brief Closes the radius service
- * 
+ *
  * @param srv Pointer to private RADIUS server context
  */
 void close_radius(struct radius_server_data *srv);

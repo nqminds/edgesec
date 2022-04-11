@@ -19,7 +19,7 @@
 
 /**
  * @file supervisor.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the supervisor service.
  */
 
@@ -30,16 +30,16 @@
 
 /**
  * @brief Return a mac_conn_info for a given MAC address
- * 
+ *
  * @param mac_addr The input MAC adderss
  * @param mac_conn_arg The supervisor_context pointer
- * @return struct mac_conn_info 
+ * @return struct mac_conn_info
  */
 struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg);
 
 /**
  * @brief The AP service callback
- * 
+ *
  * @param context The supervisor context
  * @param mac_addr The STA mac address
  * @param status The STA connection status
@@ -49,7 +49,7 @@ void ap_service_callback(struct supervisor_context *context, uint8_t mac_addr[],
 
 /**
  * @brief Executes the supervisor service
- * 
+ *
  * @param server_path The domain socket path
  * @param context The supervisor structure
  * @return int The domain socket
@@ -58,7 +58,7 @@ int run_supervisor(char *server_path, struct supervisor_context *context);
 
 /**
  * @brief Closes the supervisor service
- * 
+ *
  * @param context The supervisor structure
  * @return true on success, false otherwise
  */

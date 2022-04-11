@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file firewall_service.c 
- * @author Alexandru Mereacre 
+ * @file firewall_service.c
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the firewall service commands.
  */
 
@@ -401,5 +401,5 @@ int fw_set_ip_forward(void)
     }
   }
   close(fd);
-  return 0; 
+  return 0;
 }

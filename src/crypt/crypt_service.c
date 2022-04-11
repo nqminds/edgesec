@@ -19,7 +19,7 @@
 
 /**
  * @file crypt_service.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of crypt service configuration utilities.
  */
 
@@ -89,7 +89,7 @@ int extract_secret_entry(struct secrets_row* row, uint8_t *key, int *key_size,
 {
   size_t out_len;
   char *buf;
-  
+
   if (row->value == NULL && key_size != NULL) {
     *key_size = 0;
   } else if (row->value != NULL && key != NULL && key_size != NULL) {
@@ -193,7 +193,7 @@ struct secrets_row * generate_user_crypto_key_entry(char *key_id, uint8_t *user_
   int enc_crypto_key_size;
   if (!crypto_gensalt(user_key_salt, SALT_SIZE)) {
     log_trace("crypto_gensalt fail");
-    return NULL;        
+    return NULL;
   }
 
   // Generate the enc/dec key using the user supplied key
@@ -268,7 +268,7 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
       }
 
       log_debug("Using user supplied secret");
-      
+
       if ((row_secret = generate_user_crypto_key_entry(key_id, user_secret, user_secret_size,
                                                     context->crypto_key)) == NULL)
       {
@@ -374,7 +374,7 @@ struct crypt_context* load_crypt_service(char *crypt_db_path, char *key_id,
       os_free(crypto_buf);
     }
   }
-  
+
   free_sqlite_secrets_row(row_secret);
   return context;
 }

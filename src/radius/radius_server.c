@@ -7,7 +7,7 @@
  */
 
 /**
- * @file radius_server.h 
+ * @file radius_server.h
  * @authors Jouni Malinen, Alexandru Mereacre
  * @brief RADIUS authentication server.
  */
@@ -147,7 +147,7 @@ struct hostapd_radius_attr * get_password_attribute(const uint8_t *req_authentic
 struct hostapd_radius_attr * get_vlan_attribute(uint16_t vlan_id)
 {
 	char id_str[5];
-	struct hostapd_radius_attr *attr, 
+	struct hostapd_radius_attr *attr,
 		*attr_medium_type, *attr_id;
 
 #define RADIUS_ATTR_TUNNEL_VALUE 		13

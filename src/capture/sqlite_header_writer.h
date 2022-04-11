@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file sqlite_header_writer.h 
- * @author Alexandru Mereacre 
+ * @file sqlite_header_writer.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the sqlite header writer utilities.
  */
 
@@ -121,7 +121,7 @@ extern "C" {
 
 /**
  * @brief Save packets to sqlite db
- * 
+ *
  * @param ctx The sqlite db context
  * @param tp The packet tuple structure
  * @return int 0 on success, -1 o failure
@@ -130,7 +130,7 @@ int save_packet_statement(struct sqlite_header_context *ctx, struct tuple_packet
 
 /**
  * @brief Opens the sqlite3 header database
- * 
+ *
  * @param db_path The path to sqlite3 db
  * @param trace_fn The callback to the trace callback function
  * @param trace_ctx The context for trace callback
@@ -142,7 +142,7 @@ int open_sqlite_header_db(char *db_path, trace_callback_fn fn,
 
 /**
  * @brief Closes the sqlite db
- * 
+ *
  * @param ctx The sqlite db context
  */
 void free_sqlite_header_db(struct sqlite_header_context *ctx);

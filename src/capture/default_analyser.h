@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file default_analyser.h 
- * @author Alexandru Mereacre 
+ * @file default_analyser.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the default analyser service.
  */
 
@@ -60,7 +60,7 @@ struct capture_context {
 
 /**
  * @brief Callback for pcap packet module
- * 
+ *
  * @param ctx The capture context
  * @param ctx The pcap context
  * @param ltype The link type
@@ -72,7 +72,7 @@ void pcap_callback(const void *ctx, const void *pcap_ctx,
 
 /**
  * @brief Starts the default analyser engine
- * 
+ *
  * @param config The capture config structure
  * @return int 0 on success, -1 on failure
  */

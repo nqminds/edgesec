@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file firewall_service.h 
- * @author Alexandru Mereacre 
+ * @file firewall_service.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the firewall service commands.
  */
 
@@ -38,7 +38,7 @@
 
 /**
  * @brief Initialises the firewall service context
- * 
+ *
  * @param if_mapper The WiFi subnet to interface mapper
  * @param vlan_mapper The WiFi VLAN to interface mapper
  * @param hmap_bin_paths The Mapper for paths to systems binaries
@@ -60,14 +60,14 @@ struct fwctx* fw_init_context(hmap_if_conn *if_mapper,
 
 /**
  * @brief Frees the firewall service context
- * 
+ *
  * @param context The firewall context
  */
 void fw_free_context(struct fwctx* context);
 
 /**
  * @brief Adds NAT rule to an IP
- * 
+ *
  * @param context The firewall context
  * @param ip_addr The IP address string
  * @return 0 on sucess, -1 on failure
@@ -76,7 +76,7 @@ int fw_add_nat(struct fwctx* context, char *ip_addr);
 
 /**
  * @brief Removes NAT rule to an IP
- * 
+ *
  * @param context The firewall context
  * @param ip_addr The IP address string
  * @return 0 on sucess, -1 on failure
@@ -85,7 +85,7 @@ int fw_remove_nat(struct fwctx* context, char *ip_addr);
 
 /**
  * @brief Adds bridge rule for two IPs
- * 
+ *
  * @param context The firewall context
  * @param ip_addr_left The IP address string left
  * @param ip_addr_right The IP address string right
@@ -95,7 +95,7 @@ int fw_add_bridge(struct fwctx* context, char *ip_addr_left, char *ip_addr_right
 
 /**
  * @brief Removes bridge rule for two IPs
- * 
+ *
  * @param context The firewall context
  * @param ip_addr_left The IP address string left
  * @param ip_addr_right The IP address string right
@@ -105,7 +105,7 @@ int fw_remove_bridge(struct fwctx* context, char *ip_addr_left, char *ip_addr_ri
 
 /**
  * @brief Set the ip forward os system param
- * 
+ *
  * @return int 0 on success, -1 on failure
  */
 

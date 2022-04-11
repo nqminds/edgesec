@@ -19,7 +19,7 @@
 
 /**
  * @file pcap_service.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the pcap service utilities.
  */
 #include <linux/if.h>
@@ -49,7 +49,7 @@ bool find_device(char *ifname, bpf_u_int32 *net, bpf_u_int32 *mask)
 
   if(pcap_findalldevs(&ifs, err) == -1) {
     log_trace("pcap_findalldevs fail with error %s", err);
-    return false;   
+    return false;
   }
 
   for(temp = ifs; temp; temp = temp->next) {
@@ -71,7 +71,7 @@ bool find_device(char *ifname, bpf_u_int32 *net, bpf_u_int32 *mask)
 
 void receive_pcap_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
 {
-  
+
   struct pcap_context *ctx = (struct pcap_context *) args;
   char *ltype = (char *) pcap_datalink_val_to_name(pcap_datalink(ctx->pd));
 
@@ -142,7 +142,7 @@ int run_pcap(char *interface, bool immediate, bool promiscuous,
   bit32_2_ip((uint32_t) net, ip_str);
   bit32_2_ip((uint32_t) mask, mask_str);
   log_debug("Found device=%s IP=" IPSTR " netmask=" IPSTR, interface, IP2STR(ip_str), IP2STR(mask_str));
-  
+
   ctx = os_zalloc(sizeof(struct pcap_context));
   *pctx = ctx;
 

@@ -19,7 +19,7 @@
 
 /**
  * @file cryptou.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the cryptographic utilities.
  */
 
@@ -157,7 +157,7 @@ ssize_t crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
 {
 #ifdef WITH_OPENSSL_SERVICE
   EVP_CIPHER_CTX *ctx;
-  
+
   int len = 0;
   int plaintext_len = 0;
 
@@ -266,13 +266,13 @@ EVP_PKEY *crypto_generate_ec_key(void)
   if(!EVP_PKEY_CTX_set_ec_paramgen_curve_nid(ctx, NID_X9_62_prime256v1)) {
     log_trace("EVP_PKEY_CTX_set_ec_paramgen_curve_nid fail with code=%d", ERR_get_error());
     EVP_PKEY_CTX_free(ctx);
-    return NULL;    
+    return NULL;
   }
 
   if (!EVP_PKEY_paramgen(ctx, &params)) {
     log_trace("EVP_PKEY_paramgen fail with code=%d", ERR_get_error());
     EVP_PKEY_CTX_free(ctx);
-    return NULL;    
+    return NULL;
   }
 
 
@@ -280,7 +280,7 @@ EVP_PKEY *crypto_generate_ec_key(void)
 
   if((ctx = EVP_PKEY_CTX_new(params, NULL)) == NULL) {
     log_trace("EVP_PKEY_CTX_new fail with code=%d", ERR_get_error());
-    EVP_PKEY_free(params); 
+    EVP_PKEY_free(params);
     return NULL;
   }
 
@@ -327,7 +327,7 @@ X509* crypto_generate_cert(EVP_PKEY *pkey, struct certificate_meta *meta)
   X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, (unsigned char*)meta->o, -1, -1, 0);
   X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, (unsigned char*)meta->ou, -1, -1, 0);
   X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, (unsigned char*)meta->cn, -1, -1, 0);
-  
+
   X509_set_issuer_name(x509, name);
 
   /* sign the certificate with the key. */

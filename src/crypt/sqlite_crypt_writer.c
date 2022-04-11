@@ -19,7 +19,7 @@
 
 /**
  * @file sqlite_crypt_writer.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the sqlite crypt writer utilities.
  */
 
@@ -37,8 +37,8 @@ int open_sqlite_crypt_db(char *db_path, sqlite3** sql)
 {
   sqlite3 *db = NULL;
   int rc;
-  
-  if ((rc = sqlite3_open(db_path, &db)) != SQLITE_OK) {     
+
+  if ((rc = sqlite3_open(db_path, &db)) != SQLITE_OK) {
     log_debug("Cannot open database: %s", sqlite3_errmsg(db));
     sqlite3_close(db);
     return -1;
@@ -218,7 +218,7 @@ struct store_row* get_sqlite_store_row(sqlite3 *db, char *key)
   struct store_row *row;
   sqlite3_stmt *res;
   int rc;
-  
+
   if (key == NULL) {
     log_trace("key param is NULL");
     return NULL;
@@ -343,6 +343,6 @@ struct secrets_row* get_sqlite_secrets_row(sqlite3 *db, char *id)
 
 
   sqlite3_finalize(res);
-  free_sqlite_secrets_row(row);  
+  free_sqlite_secrets_row(row);
   return NULL;
 }

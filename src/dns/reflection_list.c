@@ -19,7 +19,7 @@
 
 /**
  * @file reflection_list.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of reflection list structures.
  */
 
@@ -42,7 +42,7 @@ void setup_reflection_if_el(struct reflection_list *el, unsigned int ifindex, co
   if (ifname == NULL) {
     os_memset(el->ifname, 0, IFNAMSIZ);
   } else {
-    snprintf(el->ifname, IFNAMSIZ, "%s", ifname);   
+    snprintf(el->ifname, IFNAMSIZ, "%s", ifname);
   }
 }
 
@@ -68,7 +68,7 @@ struct reflection_list* push_reflection_list(struct reflection_list *rif, unsign
     log_debug("rif param is NULL");
     return NULL;
   }
-  
+
   if ((el = init_reflection_list()) == NULL) {
     log_debug("init_reflection_list fail");
     return NULL;
@@ -105,5 +105,5 @@ void free_reflection_list(struct reflection_list *rif)
     free_reflection_list_el(el);
   }
 
-  free_reflection_list_el(rif);  
+  free_reflection_list_el(rif);
 }

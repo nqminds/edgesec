@@ -19,7 +19,7 @@
 
 /**
  * @file crypt_config.h
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the definition of crypt configuration structure.
  */
 #ifndef CRYPT_CONFIG_H
@@ -35,7 +35,7 @@
 
 /**
  * @brief crypt context structure definition
- * 
+ *
  */
 struct crypt_context {
   struct hsm_context *hcontext;                       /**< The HSM context. */

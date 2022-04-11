@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file domain.c 
- * @author Alexandru Mereacre 
+ * @file domain.c
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the domain utils.
  */
 
@@ -90,7 +90,7 @@ int create_domain_client(char *addr)
     addrlen = sizeof(struct sockaddr_un);
   }
 
-  
+
 
   if (bind(sock, (struct sockaddr *) &claddr, addrlen) == -1) {
     log_err("bind");

@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file domain.h 
- * @author Alexandru Mereacre 
+ * @file domain.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the domain utilities.
  */
 
@@ -37,7 +37,7 @@ extern "C" {
 
 /**
  * @brief Client address structure definition
- * 
+ *
  */
 struct client_address {
   struct sockaddr_un addr;
@@ -46,7 +46,7 @@ struct client_address {
 
 /**
  * @brief Create a domain client object
- * 
+ *
  * @param addr The socket addr, if NULL is auto genereated and hidden
  * @return int Client socket
  */
@@ -54,7 +54,7 @@ int create_domain_client(char *add);
 
 /**
  * @brief Create a domain server object
- * 
+ *
  * @param server_path Server UNIX domain socket path
  * @return int Domain server socket
  */
@@ -62,7 +62,7 @@ int create_domain_server(char *server_path);
 
 /**
  * @brief Read data from the domain server socket
- * 
+ *
  * @param sock Domain Server socket
  * @param data Data buffer
  * @param data_len Data buffer length
@@ -74,7 +74,7 @@ ssize_t read_domain_data(int sock, char *data, size_t data_len, struct client_ad
 
 /**
  * @brief Read data from the domain server socket with a string address
- * 
+ *
  * @param sock Domain Server socket
  * @param data Data buffer
  * @param data_len Data buffer length
@@ -86,7 +86,7 @@ ssize_t read_domain_data_s(int sock, char *data, size_t data_len, char *addr, in
 
 /**
  * @brief Write data to the domain server socket
- * 
+ *
  * @param sock Domain server socket
  * @param data Data buffer
  * @param data_len Data buffer length
@@ -97,7 +97,7 @@ ssize_t write_domain_data(int sock, char *data, size_t data_len, struct client_a
 
 /**
  * @brief Write data to the domain server socket with a string address
- * 
+ *
  * @param sock Domain server socket
  * @param data Data buffer
  * @param data_len Data buffer length
@@ -108,7 +108,7 @@ ssize_t write_domain_data_s(int sock, char *data, size_t data_len, char *addr);
 
 /**
  * @brief Closes the domain socket
- * 
+ *
  * @param sfd The domain socket
  * @return int 0 on success, -1 on failure
  */
@@ -116,7 +116,7 @@ int close_domain(int sfd);
 
 /**
  * @brief Write and read a domain data string
- * 
+ *
  * @param socket_path The domain socket path
  * @param write_str The write string
  * @param reply The reply string

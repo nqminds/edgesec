@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file config.h 
- * @author Alexandru Mereacre 
+ * @file config.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the app configuration utilities.
  */
 #ifndef CONFIG_H
@@ -41,7 +41,7 @@
 
 /**
  * @brief The App configuration structures. Used for configuring the networking services.
- * 
+ *
  */
 struct app_config {
   UT_array            *bin_path_array;                      /**< The array including the paths of systems binaries. */
@@ -66,9 +66,9 @@ struct app_config {
   UT_array            *config_ifinfo_array;                 /**< Interface list mapping bridge interface name and IP address range. */
   char                domain_server_path[MAX_OS_PATH_LEN];  /**< Path to the control server. */
   char                db_path[MAX_OS_PATH_LEN];             /**< Specifies the path to the sqlite3 dbs */
-  char                crypt_db_path[MAX_OS_PATH_LEN];       /**< Specifies the crypt db path to the sqlite3 db */ 
-  char                crypt_key_id[MAX_KEY_ID_SIZE];        /**< Specifies the crypt key id */ 
-  char                crypt_secret[MAX_USER_SECRET];        /**< Specifies the crypt user master secret */ 
+  char                crypt_db_path[MAX_OS_PATH_LEN];       /**< Specifies the crypt db path to the sqlite3 db */
+  char                crypt_key_id[MAX_KEY_ID_SIZE];        /**< Specifies the crypt key id */
+  char                crypt_secret[MAX_USER_SECRET];        /**< Specifies the crypt user master secret */
   char                domain_delim;                         /**< Control server command delimiter. */
   bool                allow_all_connections;                /**< Flag to allow all connections. */
   bool                allow_all_nat;                        /**< Flag to allow all nat connections. */
@@ -87,7 +87,7 @@ struct app_config {
 
 /**
  * @brief Load the app configuration
- * 
+ *
  * @param filename The app configuration file
  * @param config The configuration structure
  * @return true on success, false otherwise
@@ -97,7 +97,7 @@ bool load_app_config(const char *filename, struct app_config *config);
 
 /**
  * @brief Frees the app configuration
- * 
+ *
  * @param config The app configuration structure
  * @return true on success, false otherwise
  */
@@ -105,7 +105,7 @@ void free_app_config(struct app_config *config);
 
 /**
  * @brief Loads the capture config
- * 
+ *
  * @param filename The app configuration file
  * @param config The capture configuration structure
  * @return true on success, false otherwise
@@ -114,7 +114,7 @@ bool load_capture_config(const char *filename, struct capture_conf *config);
 
 /**
  * @brief Loads the system config
- * 
+ *
  * @param filename The app configuration file
  * @param config The app configuration structure
  * @return true on success, false otherwise
@@ -123,7 +123,7 @@ bool load_system_config(const char *filename, struct app_config *config);
 
 /**
  * @brief Loads the supervisor config
- * 
+ *
  * @param filename The app configuration file
  * @param config The app configuration structure
  * @return true on success, false otherwise
@@ -132,7 +132,7 @@ bool load_supervisor_config(const char *filename, struct app_config *config);
 
 /**
  * @brief Loads the mDNS config
- * 
+ *
  * @param filename The app configuration file
  * @param config The app configuration structure
  * @return true on success, false otherwise
@@ -141,7 +141,7 @@ bool load_mdns_conf(const char *filename, struct app_config *config);
 
 /**
  * @brief Loads the list of interfaces
- * 
+ *
  * @param filename The app configuration file
  * @param config The app configuration structure
  * @return true on success, false otherwise
@@ -150,7 +150,7 @@ bool load_interface_list(const char *filename, struct app_config *config);
 
 /**
  * @brief Loads the AP config
- * 
+ *
  * @param filename The app configuration file
  * @param config The app configuration structure
  * @return true on success, false otherwise

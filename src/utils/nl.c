@@ -211,7 +211,7 @@ enum IF_STATE get_operstate(__u8 state)
 	if (state >= 7) {
 		return IF_STATE_OTHER;
 	} else {
-		return (enum IF_STATE) state; 
+		return (enum IF_STATE) state;
 	}
 }
 

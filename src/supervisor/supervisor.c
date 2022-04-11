@@ -19,7 +19,7 @@
 
 /**
  * @file supervisor.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the supervisor service.
  */
 
@@ -131,7 +131,7 @@ int allocate_vlan(struct supervisor_context *context)
   int vlanid, idx = 0, len;
   config_ifinfo_t *p = NULL;
   UT_array *config_ifinfo_array = context->config_ifinfo_array;
-  
+
   if (!context->allocate_vlans) {
     return context->default_open_vlanid;
   }
@@ -262,7 +262,7 @@ struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg)
 
     return info;
   }
-  
+
   log_trace("REJECTING mac=" MACSTR, MAC2STR(mac_addr));
   info.vlanid = -1;
   return info;
@@ -317,7 +317,7 @@ void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx)
 
   if ((num_bytes = read_domain_data(sock, buf, bytes_available, &claddr, 0)) == -1) {
     log_trace("read_domain_data fail");
-    goto end;  
+    goto end;
   }
 
   log_trace("Supervisor received %ld bytes from socket length=%d", (long) num_bytes, claddr.len);

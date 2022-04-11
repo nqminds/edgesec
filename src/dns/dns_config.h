@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file dns_config.h 
- * @author Alexandru Mereacre 
+ * @file dns_config.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of dns service configuration utilities.
  */
 #ifndef DNS_CONFIG_H
@@ -48,7 +48,7 @@
 
 /**
  * @brief The dns configuration structures.
- * 
+ *
  */
 struct dns_conf {
   UT_array *server_array;                      /**< The array including the DNS servers IP addresses. */
@@ -56,7 +56,7 @@ struct dns_conf {
 
 /**
  * @brief The mDNS configuration structures.
- * 
+ *
  */
 struct mdns_conf {
   char mdns_bin_path[MAX_OS_PATH_LEN];                        /**< Path to the mDNS binary */

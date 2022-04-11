@@ -19,7 +19,7 @@
 
 /**
  * @file iptables.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the IP tables utilities.
  */
 
@@ -175,7 +175,7 @@ bool process_rule_lines(struct iptables_context *ctx, char *rule_str)
           return true;
         }
       }
-    }    
+    }
   }
 
   utarray_free(line_arr);
@@ -223,7 +223,7 @@ bool flush_iptables(struct iptables_context *ctx)
 
     rule_count ++;
   }
-  
+
   return true;
 }
 
@@ -293,7 +293,7 @@ struct iptables_context* iptables_init(char *path, UT_array *ifinfo_array, bool 
 bool get_filter_rules(struct iptables_context *ctx)
 {
   char *list_rule[8] = {"-L", "FORWARD", "-t", "filter", "--line-numbers", "-n", "-v", NULL};
- 
+
   if (run_iptables(ctx, list_rule, list_rule_cb) < 0) {
     log_trace("run_iptables fail");
     return false;
@@ -305,7 +305,7 @@ bool get_filter_rules(struct iptables_context *ctx)
 bool get_nat_rules(struct iptables_context *ctx)
 {
   char *list_rule[8] = {"-L", "POSTROUTING", "-t", "nat", "--line-numbers", "-n", "-v", NULL};
- 
+
   if (run_iptables(ctx, list_rule, list_rule_cb) < 0) {
     log_trace("run_iptables fail");
     return false;

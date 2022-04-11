@@ -19,7 +19,7 @@
 
 /**
  * @file mdns_service.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of mDNS service structures.
  */
 
@@ -218,7 +218,7 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
     if(ip4_2_buf(peer_addr_str, qip) < 0) {
       log_trace("Wrong IP4 mDNS address");
       os_free(buf);
-      return;      
+      return;
     }
   }
 
@@ -383,7 +383,7 @@ int register_reflector_if4(struct mdns_context *context)
       return -1;
     }
   }
-  
+
   return 0;
 }
 
@@ -537,12 +537,12 @@ int send_bridge_command(struct mdns_context *context, struct tuple_packet *tp)
     log_trace("check_mdns_mapper_req fail");
     return -1;
   }
-  
+
   if ((retd = check_mdns_mapper_req(&context->imap, dip, MDNS_REQUEST_ANSWER)) < 0) {
     log_trace("check_mdns_mapper_req fail");
     return -1;
   }
-  
+
   if (!ret && !retd) {
     log_trace("Not found mDNS answer request for src ip=%s or dst ip=%s", sch->ip_src, sch->ip_dst);
     return -1;
@@ -553,7 +553,7 @@ int send_bridge_command(struct mdns_context *context, struct tuple_packet *tp)
   {
     log_trace("create_domain_command fail");
     return -1;
-  }  
+  }
 
   log_trace("%s", domain);
 
@@ -619,7 +619,7 @@ int run_capture(struct mdns_context *context)
 {
   UT_array *interfaces = NULL;
   char **ifname = NULL;
-  struct pcap_context *pctx = NULL; 
+  struct pcap_context *pctx = NULL;
   utarray_new(interfaces, &ut_str_icd);
 
   if (split_string_array(context->ifname, ',', interfaces) < 0) {
@@ -631,10 +631,10 @@ int run_capture(struct mdns_context *context)
   if ((context->pctx_list = create_pcap_list()) == NULL) {
     log_trace("create_pcap_context_list fail");
     utarray_free(interfaces);
-    return -1;  
+    return -1;
   }
 
-  while((ifname = (char**) utarray_next(interfaces, ifname)) != NULL) { 
+  while((ifname = (char**) utarray_next(interfaces, ifname)) != NULL) {
     if (!strlen(*ifname)) {
       continue;
     }
@@ -661,7 +661,7 @@ int run_capture(struct mdns_context *context)
 }
 
 int run_mdns(struct mdns_context *context)
-{ 
+{
   if (init_reflections(&context->vlan_mapper, context) < 0) {
     log_trace("init_reflections fail");
     return -1;

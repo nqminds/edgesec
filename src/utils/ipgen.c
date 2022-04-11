@@ -18,7 +18,7 @@
  ****************************************************************************/
 
 /**
- * @file ipgen.h 
+ * @file ipgen.h
  * @author Alexandru Mereacre
  * @brief File containing the definition of the ip generic interface utilities.
  */
@@ -57,7 +57,7 @@ struct ipgenctx* ipgen_init_context(char *path)
 
 /**
  * @brief Frees the ipgen context
- * 
+ *
  * @param context The ipgen context
  */
 void ipgen_free_context(struct ipgenctx *context)

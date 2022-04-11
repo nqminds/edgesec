@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file radius_service.h 
- * @author Alexandru Mereacre 
+ * @file radius_service.h
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the radius service.
  */
 

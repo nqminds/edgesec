@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file cmd_processor.h 
- * @author Alexandru Mereacre 
+ * @file cmd_processor.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the command processor functions.
  */
 
@@ -80,7 +80,7 @@ typedef ssize_t (*process_cmd_fn)(int sock, struct client_address *client_addr, 
 
 /**
  * @brief Processes the domain command string
- * 
+ *
  * @param domain_buffer The domain command string
  * @param domain_buffer_len The domain command string length
  * @param cmd_arr The processed command array
@@ -91,7 +91,7 @@ bool process_domain_buffer(char *domain_buffer, size_t domain_buffer_len, UT_arr
 
 /**
  * @brief Processes the PING command
- * 
+ *
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
@@ -102,7 +102,7 @@ ssize_t process_ping_cmd(int sock, struct client_address *client_addr, struct su
 
 /**
  * @brief Processes the SUBSCRIBE_EVENTS command
- * 
+ *
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
@@ -113,7 +113,7 @@ ssize_t process_subscribe_events_cmd(int sock, struct client_address *client_add
 
 /**
  * @brief Processes the ACCEPT_MAC command
- * 
+ *
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
@@ -124,7 +124,7 @@ ssize_t process_accept_mac_cmd(int sock, struct client_address *client_addr, str
 
 /**
  * @brief Processes the DENY_MAC command
- * 
+ *
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
@@ -135,7 +135,7 @@ ssize_t process_deny_mac_cmd(int sock, struct client_address *client_addr, struc
 
 /**
  * @brief Processes the ADD_NAT command
- * 
+ *
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
@@ -146,7 +146,7 @@ ssize_t process_add_nat_cmd(int sock, struct client_address *client_addr, struct
 
 /**
  * @brief Processes the REMOVE_NAT command
- * 
+ *
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
@@ -157,7 +157,7 @@ ssize_t process_remove_nat_cmd(int sock, struct client_address *client_addr, str
 
 /**
  * @brief Processes the ASSIGN_PSK command
- * 
+ *
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
@@ -168,7 +168,7 @@ ssize_t process_assign_psk_cmd(int sock, struct client_address *client_addr, str
 
 /**
  * @brief Processes the GET_MAP command
- * 
+ *
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
@@ -179,7 +179,7 @@ ssize_t process_get_map_cmd(int sock, struct client_address *client_addr, struct
 
 /**
  * @brief Processes the GET_ALL command
- * 
+ *
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
@@ -190,7 +190,7 @@ ssize_t process_get_all_cmd(int sock, struct client_address *client_addr, struct
 
 /**
  * @brief Processes the SET_IP command
- * 
+ *
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
@@ -201,7 +201,7 @@ ssize_t process_set_ip_cmd(int sock, struct client_address *client_addr, struct 
 
 /**
  * @brief Processes the ADD_BRIDGE command
- * 
+ *
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
@@ -212,7 +212,7 @@ ssize_t process_add_bridge_cmd(int sock, struct client_address *client_addr, str
 
 /**
  * @brief Processes the REMOVE_BRIDGE command
- * 
+ *
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
@@ -223,7 +223,7 @@ ssize_t process_remove_bridge_cmd(int sock, struct client_address *client_addr, 
 
 /**
  * @brief Processes the CLEAR_BRIDGES command
- * 
+ *
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
@@ -234,7 +234,7 @@ ssize_t process_clear_bridges_cmd(int sock, struct client_address *client_addr, 
 
 /**
  * @brief Processes the GET_BRIDGES command
- * 
+ *
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
@@ -245,7 +245,7 @@ ssize_t process_get_bridges_cmd(int sock, struct client_address *client_addr, st
 
 /**
  * @brief Processes the SET_FINGERPRINT command
- * 
+ *
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
@@ -256,7 +256,7 @@ ssize_t process_set_fingerprint_cmd(int sock, struct client_address *client_addr
 
 /**
  * @brief Processes the QUERY_FINGERPRINT command
- * 
+ *
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
@@ -267,7 +267,7 @@ ssize_t process_query_fingerprint_cmd(int sock, struct client_address *client_ad
 
 /**
  * @brief Processes the REGISTER_TICKET command
- * 
+ *
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
@@ -278,7 +278,7 @@ ssize_t process_register_ticket_cmd(int sock, struct client_address *client_addr
 
 /**
  * @brief Processes the CLEAR_PSK command
- * 
+ *
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
@@ -289,7 +289,7 @@ ssize_t process_clear_psk_cmd(int sock, struct client_address *client_addr, stru
 
 /**
  * @brief Processes the PUT_CRYPT command
- * 
+ *
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
@@ -300,7 +300,7 @@ ssize_t process_put_crypt_cmd(int sock, struct client_address *client_addr, stru
 
 /**
  * @brief Processes the GET_CRYPT command
- * 
+ *
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
@@ -311,7 +311,7 @@ ssize_t process_get_crypt_cmd(int sock, struct client_address *client_addr, stru
 
 /**
  * @brief Processes the GEN_RANDKEY command
- * 
+ *
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
@@ -322,7 +322,7 @@ ssize_t process_gen_randkey_cmd(int sock, struct client_address *client_addr, st
 
 /**
  * @brief Processes the GEN_PRIVKEY command
- * 
+ *
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
@@ -333,7 +333,7 @@ ssize_t process_gen_privkey_cmd(int sock, struct client_address *client_addr, st
 
 /**
  * @brief Processes the GEN_PUBKEY command
- * 
+ *
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
@@ -344,7 +344,7 @@ ssize_t process_gen_pubkey_cmd(int sock, struct client_address *client_addr, str
 
 /**
  * @brief Processes the GEN_CERT command
- * 
+ *
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
@@ -355,7 +355,7 @@ ssize_t process_gen_cert_cmd(int sock, struct client_address *client_addr, struc
 
 /**
  * @brief Processes the ENCRYPT_BLOB command
- * 
+ *
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
@@ -366,7 +366,7 @@ ssize_t process_encrypt_blob_cmd(int sock, struct client_address *client_addr, s
 
 /**
  * @brief Processes the DECRYPT_BLOB command
- * 
+ *
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
@@ -377,7 +377,7 @@ ssize_t process_decrypt_blob_cmd(int sock, struct client_address *client_addr, s
 
 /**
  * @brief Processes the SIGN_BLOB command
- * 
+ *
  * @param sock The domain server socket
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
@@ -388,7 +388,7 @@ ssize_t process_sign_blob_cmd(int sock, struct client_address *client_addr, stru
 
 /**
  * @brief Get the command function pointer
- * 
+ *
  * @param cmd The command string
  * @return process_cmd_fn The returned function pointer
  */

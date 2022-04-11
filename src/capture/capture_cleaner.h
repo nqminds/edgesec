@@ -18,12 +18,12 @@
  ****************************************************************************/
 
 /**
- * @file capture_cleaner.h 
- * @author Alexandru Mereacre 
+ * @file capture_cleaner.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the capture cleaner service structures.
- * 
+ *
  * Defines the start function for the capturte cleaner service, which
- * removes the capture files from the database folder when it 
+ * removes the capture files from the database folder when it
  * reaches a given size specified in the capture_conf structure. The
  * store size is give by the parameter capture_store_size in Kb.
  */
@@ -35,7 +35,7 @@
 
 /**
  * @brief Executes the capture cleaner service
- * 
+ *
  * @param config The capture service config structure
  * @return int 0 on success, -1 on error
  */

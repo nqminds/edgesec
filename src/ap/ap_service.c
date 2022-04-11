@@ -18,11 +18,11 @@
  ****************************************************************************/
 
 /**
- * @file hostapd_service.c 
- * @author Alexandru Mereacre 
+ * @file hostapd_service.c
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the hostapd service.
- * 
- * Defines the functions to start and stop the acces point service (AP). It also 
+ *
+ * Defines the functions to start and stop the acces point service (AP). It also
  * defines auxiliary commands to manage the acces control list for stations
  * connected to the AP.
  */

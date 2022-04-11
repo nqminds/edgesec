@@ -21,8 +21,8 @@
  */
 
 /**
- * @file log.h 
- * @authors rxi, Alexandru Mereacre 
+ * @file log.h
+ * @authors rxi, Alexandru Mereacre
  * @brief File containing the implementation of the logging functions.
  */
 
@@ -226,13 +226,13 @@ void print_to(uint8_t level, const char *file, uint32_t line,
 
   if (err > 0 && err <= MAX_ENAME)
     fprintf(stream, "[%s] ", strerror(err));
-  
+
   vfprintf(stream, format, args);
   fprintf(stream, "\n");
-  fflush(stream); 
+  fflush(stream);
 }
 
-void log_msg(uint8_t level, const char *file, uint32_t line, bool flush_std, 
+void log_msg(uint8_t level, const char *file, uint32_t line, bool flush_std,
   bool ignore_level, uint8_t err, const char *format, va_list args)
 {
   (void) flush_std; /* unused */

@@ -19,7 +19,7 @@
 
 /**
  * @file dhcp_service.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of dhcp service configuration utilities.
  */
 #include "dnsmasq.h"
@@ -37,7 +37,7 @@ int run_dhcp(struct dhcp_conf *dconf, UT_array *dns_server_array, char *domain_s
     log_trace("generate_dnsmasq_conf fail");
     return -1;
   }
-  
+
   if (generate_dnsmasq_script(dconf->dhcp_script_path, domain_server_path) < 0) {
     log_trace("generate_dnsmasq_script fail");
     return -1;

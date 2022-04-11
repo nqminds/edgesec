@@ -468,9 +468,9 @@ UT_array *uwrt_get_interfaces(struct uctx *context, char *ifname)
 
   while(true) {
     if (ifname == NULL) {
-      snprintf(key, 64, "network.@interface[%d]", idx++); 
+      snprintf(key, 64, "network.@interface[%d]", idx++);
     } else {
-      snprintf(key, 64, "network.%s", ifname); 
+      snprintf(key, 64, "network.%s", ifname);
     }
 
     utarray_new(kv, &ut_str_icd);
@@ -840,7 +840,7 @@ int uwrt_gen_hostapd_instance(struct uctx *context, struct hostapd_params *param
 
   if (params->device == NULL) {
     log_trace("device param is NULL");
-    return -1;    
+    return -1;
   }
 
   sprintf(property, "wireless.%s=wifi-device", params->device);

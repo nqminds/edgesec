@@ -7,7 +7,7 @@
  */
 
 /**
- * @file md5_internal.c 
+ * @file md5_internal.c
  * @author Jouni Malinen
  * @brief MD5 hash implementation and interface functions.
  */

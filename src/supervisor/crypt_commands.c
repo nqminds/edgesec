@@ -19,7 +19,7 @@
 
 /**
  * @file crypt_commands.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the crypt commands.
  */
 
@@ -222,7 +222,7 @@ char* encrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *iv
   if (keypair->value == NULL) {
     log_trace("value is empty");
     free_crypt_pair(keypair);
-    return NULL;  
+    return NULL;
   }
 
   if ((ivpair = get_crypt_pair(context->crypt_ctx, ivid)) == NULL) {
@@ -235,7 +235,7 @@ char* encrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *iv
     log_trace("value is empty");
     free_crypt_pair(keypair);
     free_crypt_pair(ivpair);
-    return NULL;  
+    return NULL;
   }
 
   if ((blob_data = (uint8_t *) base64_url_decode((unsigned char *)blob, strlen(blob), &blob_data_size)) == NULL) {
@@ -292,7 +292,7 @@ char* decrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *iv
   if (keypair->value == NULL) {
     log_trace("value is empty");
     free_crypt_pair(keypair);
-    return NULL;  
+    return NULL;
   }
 
   if ((ivpair = get_crypt_pair(context->crypt_ctx, ivid)) == NULL) {
@@ -305,7 +305,7 @@ char* decrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *iv
     log_trace("value is empty");
     free_crypt_pair(keypair);
     free_crypt_pair(ivpair);
-    return NULL;  
+    return NULL;
   }
 
   if ((blob_data = (uint8_t *) base64_url_decode((unsigned char *)blob, strlen(blob), &blob_data_size)) == NULL) {
@@ -362,7 +362,7 @@ char* sign_blob_cmd(struct supervisor_context *context, char *keyid, char *blob)
   if (pair->value == NULL) {
     log_trace("value is empty");
     free_crypt_pair(pair);
-    return NULL;  
+    return NULL;
   }
 
   if ((blob_data = (uint8_t *) base64_url_decode((unsigned char *)blob, strlen(blob), &blob_data_size)) == NULL) {

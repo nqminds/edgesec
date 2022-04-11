@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file sqlite_crypt_writer.h 
- * @author Alexandru Mereacre 
+ * @file sqlite_crypt_writer.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the sqlite crypt writer utilities.
  */
 
@@ -48,7 +48,7 @@
 
 /**
  * @brief The store row structure definition
- * 
+ *
  */
 struct store_row {
   char *key;      /**< The key */
@@ -60,7 +60,7 @@ struct store_row {
 
 /**
  * @brief The secrets row structure definition
- * 
+ *
  */
 struct secrets_row {
   char *id;       /**< The key ID */
@@ -71,7 +71,7 @@ struct secrets_row {
 
 /**
  * @brief Opens the sqlite crypt db
- * 
+ *
  * @param db_path The sqlite db path
  * @param sql The returned sqlite db structure pointer
  * @return 0 on success, -1 on failure
@@ -80,14 +80,14 @@ int open_sqlite_crypt_db(char *db_path, sqlite3** sql);
 
 /**
  * @brief Closes the sqlite db
- * 
+ *
  * @param ctx The sqlite db structure pointer
  */
 void free_sqlite_crypt_db(sqlite3 *db);
 
 /**
  * @brief Save a store entry into the sqlite db
- * 
+ *
  * @param db The sqlite db structure pointer
  * @param row The store row structure
  * @return int 0 on success, -1 on failure
@@ -96,7 +96,7 @@ int save_sqlite_store_entry(sqlite3 *db, struct store_row *row);
 
 /**
  * @brief Save a secrets entry into the sqlite db
- * 
+ *
  * @param db The sqlite db structure pointer
  * @param row The secrets row structure
  * @return int 0 on success, -1 on failure
@@ -105,7 +105,7 @@ int save_sqlite_secrets_entry(sqlite3 *db, struct secrets_row *row);
 
 /**
  * @brief Get the sqlite store entry object
- * 
+ *
  * @param db The sqlite db structure pointer
  * @param key The store column key
  * @return struct store_row* row value, NULL on failure
@@ -114,14 +114,14 @@ struct store_row* get_sqlite_store_row(sqlite3 *db, char *key);
 
 /**
  * @brief Frees a store row entry
- * 
+ *
  * @param column The store row value
  */
 void free_sqlite_store_row(struct store_row *row);
 
 /**
  * @brief Get the sqlite secrets entry object
- * 
+ *
  * @param db The sqlite db structure pointer
  * @param id The secrets column id
  * @return struct secrets_row* row value, NULL on failure
@@ -130,7 +130,7 @@ struct secrets_row* get_sqlite_secrets_row(sqlite3 *db, char *id);
 
 /**
  * @brief Frees a secrets row entry
- * 
+ *
  * @param column The secrets row value
  */
 void free_sqlite_secrets_row(struct secrets_row *row);

@@ -19,7 +19,7 @@
 
 /**
  * @file packet_decoder.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the packet decoder utilities.
  */
 

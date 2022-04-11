@@ -19,7 +19,7 @@
 
 /**
  * @file hashmap.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the hashmap utilities.
  */
 

@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file packet_decoder.h 
- * @author Alexandru Mereacre 
+ * @file packet_decoder.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the packet decoder utilities.
  */
 
@@ -36,7 +36,7 @@
 
 /**
  * @brief Extract packets from pcap packet data
- * 
+ *
  * @param ltype The link type
  * @param header The packet header as per pcap
  * @param packet The packet data

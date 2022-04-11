@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file engine.h 
- * @author Alexandru Mereacre 
+ * @file engine.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the app configuration structure.
  */
 #ifndef ENGINE_H
@@ -34,7 +34,7 @@
 
 /**
  * @brief Initialises the app context structure
- * 
+ *
  * @param app_config The app config structure
  * @param ctx The app context structure
  * @return 0 on success, -1 otherwise
@@ -43,7 +43,7 @@ int init_context(struct app_config *app_config, struct supervisor_context *ctx);
 
 /**
  * @brief Executes the edgesec WiFi networking engine. Creates subnets and starts the supervisor, radius servers and hostapd service.
- * 
+ *
  * @param app_config The app configuration structures, setting WiFi network config params.
  * @return @c true if succes, @c false if a service fails to start.
  */

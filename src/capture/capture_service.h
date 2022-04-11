@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file capture_service.h 
- * @author Alexandru Mereacre 
+ * @file capture_service.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the capture service structures.
  */
 
@@ -31,7 +31,7 @@
 
 /**
  * @brief Executes the capture service
- * 
+ *
  * @param config The capture service config structure
  * @return int 0 on success, -1 on error
  */

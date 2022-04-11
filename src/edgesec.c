@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file edgesec.c 
- * @author Alexandru Mereacre 
+ * @file edgesec.c
+ * @author Alexandru Mereacre
  * @brief File containing the edgesec tool implementations.
  */
 
@@ -182,7 +182,7 @@ int main(int argc, char *argv[])
   uint8_t level = 0;
   char *config_filename = NULL, *log_filename = NULL;
   struct app_config config;
-  
+
   // Init the app config struct
   memset(&config, 0, sizeof(struct app_config));
 
@@ -195,7 +195,7 @@ int main(int argc, char *argv[])
   } else {
     level = MAX_LOG_LEVELS - verbosity;
   }
-  
+
   // Set the log level
   log_set_level(level);
 

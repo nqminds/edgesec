@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file hash.h 
- * @author Alexandru Mereacre 
+ * @file hash.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the hash functions.
  */
 
@@ -36,7 +36,7 @@
 
 /**
  * @brief Computes the Merkle–Damgård construction hash for a message
- * 
+ *
  * @param msg The message pointer
  * @param length The message length
  * @return uint32_t The hash value
@@ -45,7 +45,7 @@ uint32_t md_hash(const char* msg, size_t length);
 
 /**
  * @brief Computes the sha256 for an array
- * 
+ *
  * @param hash The resulting 32 byte hash
  * @param input The input array
  * @param len The size of the array

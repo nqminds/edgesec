@@ -18,11 +18,11 @@
  ****************************************************************************/
 
 /**
- * @file ap_config.h 
- * @author Alexandru Mereacre 
+ * @file ap_config.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of AP config structures.
- * 
- * Defines the access point (AP) configuration structure used to configure the 
+ *
+ * Defines the access point (AP) configuration structure used to configure the
  * AP service.
  */
 
@@ -46,7 +46,7 @@
 
 /**
  * @brief The AP conection status
- * 
+ *
  * Defines the connection state for a station connected to the AP.
  */
 enum AP_CONNECTION_STATUS {
@@ -57,7 +57,7 @@ enum AP_CONNECTION_STATUS {
 
 /**
  * @brief The hostapd configuration structure
- * 
+ *
  */
 struct apconf {
   char ap_bin_path[MAX_OS_PATH_LEN];             /**< The AP binary path string */

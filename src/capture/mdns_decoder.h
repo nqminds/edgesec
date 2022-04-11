@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file mdns_decoder.h 
- * @author Alexandru Mereacre 
+ * @file mdns_decoder.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the mdns packet decoder utilities.
  */
 
@@ -45,7 +45,7 @@ struct mdns_answer_entry {
 
 /**
  * @brief Decodes the mdns queries
- * 
+ *
  * @param payload The mdns payload
  * @param len The mdns payload length
  * @param first The starting index to the queries field
@@ -57,7 +57,7 @@ int decode_mdns_queries(uint8_t *payload, size_t len, size_t *first, uint16_t nq
 
 /**
  * @brief Decodes the mdns answers
- * 
+ *
  * @param payload The mdns payload
  * @param len The mdns payload length
  * @param first The starting index to the answers field
@@ -69,7 +69,7 @@ int decode_mdns_answers(uint8_t *payload, size_t len, size_t *first, uint16_t na
 
 /**
  * @brief Decodes the mdns header
- * 
+ *
  * @param packet The mdns packet
  * @param out The output mdns decoded header
  * @return 0 Success, -1 on failure
@@ -78,7 +78,7 @@ int decode_mdns_header(uint8_t *packet, struct mdns_header *out);
 
 /**
  * @brief Decode mdns packet
- * 
+ *
  * @param cpac The capture packet structure
  * @return true Success, false otherwise
  */

@@ -18,7 +18,7 @@
  ****************************************************************************/
 
 /**
- * @file ipgen.h 
+ * @file ipgen.h
  * @author Alexandru Mereacre
  * @brief File containing the definition of the ip generic interface utilities.
  */
@@ -40,7 +40,7 @@ struct ipgenctx {
 
 /**
  * @brief Initialises the ipgen context
- * 
+ *
  * @param path The path string to the ip command
  * @return struct ipgenctx* The ip generic context
  */
@@ -49,7 +49,7 @@ struct ipgenctx* ipgen_init_context(char *path);
 
 /**
  * @brief Frees the ipgen context
- * 
+ *
  * @param context The ipgen context
  */
 void ipgen_free_context(struct ipgenctx *context);
@@ -57,7 +57,7 @@ void ipgen_free_context(struct ipgenctx *context);
 
 /**
  * @brief Creates and interface and assigns an IP
- * 
+ *
  * @param context The ipgen context interface
  * @param ifname The interface name
  * @param type The interface type
@@ -71,7 +71,7 @@ int ipgen_create_interface(struct ipgenctx *context, char *ifname, char *type,
 
 /**
  * @brief Resets the interface
- * 
+ *
  * @param context The ipgen context interface
  * @param ifname The interface name
  * @return int 0 on success, -1 on failure

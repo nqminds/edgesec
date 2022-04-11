@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file os.h 
- * @author Alexandru Mereacre 
+ * @file os.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the os functionalities.
  */
 
@@ -120,7 +120,7 @@ extern "C" {
 
 /**
  * @brief Get current time (sec, usec)
- * 
+ *
  * @param t Pointer to buffer for the time
  * @return int 0 on success, -1 on failure
  */
@@ -128,7 +128,7 @@ int os_get_time(struct os_time *t);
 
 /**
  * @brief Get relative time (sec, usec)
- * 
+ *
  * @param t Pointer to buffer for the time
  * @return int 0 on success, -1 on failure
  */
@@ -137,7 +137,7 @@ int os_get_reltime(struct os_reltime *t);
 
 /**
  * @brief Compares the seconds value of two time params
- * 
+ *
  * @param a struct os_reltime first param
  * @param b struct os_reltime second param
  * @return int true if a->sec < b->sec
@@ -151,7 +151,7 @@ static inline int os_reltime_before(struct os_reltime *a,
 
 /**
  * @brief Subtracts the time value of two time params
- * 
+ *
  * @param a struct os_reltime first param
  * @param b struct os_reltime second param
  * @param res The resulting difference of the time params
@@ -169,7 +169,7 @@ static inline void os_reltime_sub(struct os_reltime *a, struct os_reltime *b,
 
 /**
  * @brief get the timestamp in microseconds from system time
- * 
+ *
  * @patat, timestamp The returned timestamp
  * @return int 0 on success, -1 on failure
  */
@@ -177,7 +177,7 @@ int os_get_timestamp(uint64_t *timestamp);
 
 /**
  * @brief get the timestamp in microseconds from struct timeval
- * 
+ *
  * @param ts The input struct timeval
  * @param timestamp The returned timestamp
  */
@@ -185,7 +185,7 @@ void os_to_timestamp(struct timeval ts, uint64_t *timestamp);
 
 /**
  * @brief Get cryptographically strong pseudo random data
- * 
+ *
  * @param buf Buffer for pseudo random data.
  * @param len Length of the buffer.
  * @return int 0 on success, -1 on failure
@@ -195,7 +195,7 @@ int os_get_random(unsigned char *buf, size_t len);
 
 /**
  * @brief Return a random int from a give range
- * 
+ *
  * @param low The range lower bound
  * @param up The range upper bound
  * @return int The returned random int
@@ -204,13 +204,13 @@ int os_get_random_int_range(int low, int up);
 
 /**
  * @brief Initialises the random seed
- * 
+ *
  */
 void os_init_random_seed(void);
 
 /**
  * @brief Get a random number string
- * 
+ *
  * @param buf Buffer for the random string.
  * @param len Length of the buffer.
  * @return int 0 on success, -1 on failure
@@ -218,8 +218,8 @@ void os_init_random_seed(void);
 int os_get_random_number_s(unsigned char *buf, size_t len);
 
 /**
- * @brief Hex two char string to byte convertes 
- * 
+ * @brief Hex two char string to byte convertes
+ *
  * @param hex Two char string
  * @return int Converted byte
  */
@@ -227,7 +227,7 @@ int hex2byte(const char *hex);
 
 /**
  * @brief Convert ASCII hex string into binary data
- * 
+ *
  * @param hex ASCII hex string (e.g., "01ab")
  * @param buf Buffer for the binary data
  * @param len Length of the text to convert in bytes (of buf); hex will be double this size
@@ -237,7 +237,7 @@ int hexstr2bin(const char *hex, uint8_t *buf, size_t len);
 
 /**
  * @brief Convert ASCII string to MAC address (in any known format)
- * 
+ *
  * @param txt MAC address as a string (e.g., 00:11:22:33:44:55 or 0011.2233.4455)
  * @param addr Buffer for the MAC address (ETH_ALEN = 6 bytes)
  * @return int Characters used (> 0) on success, -1 on failure
@@ -246,7 +246,7 @@ int hwaddr_aton2(const char *txt, uint8_t *addr);
 
 /**
  * @brief Check if a string is a number
- * 
+ *
  * @param ptr String pointer
  * @return true if numer, false otherwise
  */
@@ -254,9 +254,9 @@ bool is_number(const char *ptr);
 
 /**
  * @brief Copy a string with size bound and NUL-termination
- * 
+ *
  * This function matches in behavior with the strlcpy(3) function in OpenBSD.
- * 
+ *
  * @param dest Destination string
  * @param src Source string
  * @param siz Size of the target buffer
@@ -266,7 +266,7 @@ size_t os_strlcpy(char *dest, const char *src, size_t siz);
 
 /**
  * @brief Returns the size of string with a give max length
- * 
+ *
  * @param str The string pointer
  * @param max_len The string max length
  * @return size_t Total length of the string
@@ -308,7 +308,7 @@ typedef void (*process_callback_fn)(void *ctx, void *buf, size_t count);
 
 /**
  * @brief Executes a command
- * 
+ *
  * @param argv The command arguments including the process path
  * @param envp The environment variables
  * @param process_callback_fn Callback function
@@ -319,7 +319,7 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn, voi
 
 /**
  * @brief Executes a command with argument
- * 
+ *
  * @param path The command path
  * @param argv The command arguments without the process path
  * @param process_callback_fn Callback function
@@ -330,14 +330,14 @@ int run_argv_command(char *path, char *argv[], process_callback_fn fn, void *ctx
 
 /**
  * @brief Convert the string to upper case
- * 
+ *
  * @param s The input string
  */
 void upper_string(char *s);
 
 /**
  * @brief Replace a character in a string with a given characater
- * 
+ *
  * @param s The input string
  * @param in The character to be replaced
  * @param out The character to replace with
@@ -348,7 +348,7 @@ typedef int(*split_string_fn)(const char *, size_t, void *);
 
 /**
  * @brief Splits a string into substrings (execute callback function)
- * 
+ *
  * @param str String to split
  * @param sep String separator
  * @param fun Callback function
@@ -359,7 +359,7 @@ ssize_t split_string(const char *str, char sep, split_string_fn fun, void *data)
 
 /**
  * @brief Splits a string into substrings (save to array)
- * 
+ *
  * @param str String to split
  * @param sep String separator
  * @param arr Array to save the substrings
@@ -369,7 +369,7 @@ ssize_t split_string_array(const char *str, char sep, UT_array *arr);
 
 /**
  * @brief Concatenate two string paths
- * 
+ *
  * @param path_left First string path
  * @param path_right Second string path
  * @return char* Concatenated paths
@@ -378,7 +378,7 @@ char *concat_paths(char *path_left, char *path_right);
 
 /**
  * @brief Get the valid path string
- * 
+ *
  * @param path Input string path
  * @return char* output valid path
  */
@@ -386,7 +386,7 @@ char *get_valid_path(char *path);
 
 /**
  * @brief Construct a valid path from two paths
- * 
+ *
  * @param path_left First path
  * @param path_right Second path
  * @return char* output valid path
@@ -395,7 +395,7 @@ char *construct_path(char *path_left, char *path_right);
 
 /**
  * @brief Get the secure path string of a binary
- * 
+ *
  * @param bin_path_arr The path string of binary
  * @param filename The binary name
  * @param real true to return the real link
@@ -407,17 +407,17 @@ typedef bool(*list_dir_fn)(char *, void *args);
 
 /**
  * @brief List the files in a directory
- * 
+ *
  * @param dirpath The directory path
  * @param fun The callback function
  * @param args The callback function arguments
- * @return int 
+ * @return int
  */
 int list_dir(char *dirpath, list_dir_fn fun, void *args);
 
 /**
  * @brief Check if a process path from /proc folder contains the process name
- * 
+ *
  * @param path The process path from /proc fodler
  * @param proc_name The process name
  * @return long The process PID
@@ -426,15 +426,15 @@ long is_proc_app(char *path, char *proc_name);
 
 /**
  * @brief Kill a process by name
- * 
+ *
  * @param proc_name The process name
- * @return bool true on success, false otherwise 
+ * @return bool true on success, false otherwise
  */
 bool kill_process(char *proc_name);
 
 /**
  * @brief Signal a process
- * 
+ *
  * @param proc_name The process name
  * @param sig The signal value
  * @return true on success, false on failure
@@ -443,7 +443,7 @@ bool signal_process(char *proc_name, int sig);
 
 /**
  * @brief Executes a process with an array of strign arguments
- * 
+ *
  * @param argv The array of string arguments terminated with NULL and the first argument is the absolute path of the process.
  * @param child_pid The returned child pid
  * @return int 1 if process started, 0 if the child specified by pid exist, but have not yet changed state, -1 on error
@@ -452,7 +452,7 @@ int run_process(char *argv[], pid_t *child_pid);
 
 /**
  * @brief Check if a process is running
- * 
+ *
  * @param name The process name
  * @return int 1 if running, 0 otherwise, -1 on failure
  */
@@ -460,7 +460,7 @@ int is_proc_running(char *name);
 
 /**
  * @brief Makes a file given by descriptor executable
- * 
+ *
  * @param fd File descriptor
  * @return int 0 on succes, -1 on error
  */
@@ -468,7 +468,7 @@ int make_file_exec_fd(int fd);
 
 /**
  * @brief Right trim the string
- * 
+ *
  * @param str The source string
  * @param seps The separator string, if NULL then the separator used is "\t\n\v\f\r "
  * @return char* The pointer to the source string
@@ -477,7 +477,7 @@ char *rtrim(char *str, const char *seps);
 
 /**
  * @brief Concatenates an array of strings into a single string
- * 
+ *
  * @param strings The array of string, the last element is NULL
  * @return char* The concatenated string
  */
@@ -485,14 +485,14 @@ char* string_array2string(char *strings[]);
 
 /**
  * @brief Generates a random UUID string of MAX_RANDOM_UUID_LEN - 1 characters long not including '\0'
- * 
+ *
  * @param rid The output string of MAX_RANDOM_UUID_LEN bytes
  */
 void generate_radom_uuid(char *rid);
 
 /**
  * @brief Callback function for list_dir function to check if process running
- * 
+ *
  * @param path The process path
  * @param args The callback arguments of type struct find_dir_type
  * @return bool true if process running, false otherwise
@@ -501,7 +501,7 @@ bool find_dir_proc_fn(char *path, void *args);
 
 /**
  * @brief Check if folder exists
- * 
+ *
  * @param dirpath The folder path
  * @return int 1 if exists, 0 otherwise, -1 on failure
  */
@@ -538,30 +538,30 @@ int make_dirs_to_path(const char* file_path, mode_t mode);
  *
  * @param[in] dirpath The folder path
  * @param mode The folder creation mode
- * @return 0 on success, -1 on failure 
+ * @return 0 on success, -1 on failure
  */
 int create_dir(const char *dirpath, mode_t mode);
 
 /**
  * @brief Check if a file exists
- * 
+ *
  * @param path The path to the file
  * @param sb Optional stat struct
- * @return 0 if it exists, -1 on failure 
+ * @return 0 if it exists, -1 on failure
  */
 int check_file_exists(char *path, struct stat *sb);
 
 /**
  * @brief Check if a socket file exists
- * 
+ *
  * @param path The path to the socket file
- * @return 0 if it exists, -1 otherwise 
+ * @return 0 if it exists, -1 otherwise
  */
 int check_sock_file_exists(char *path);
 
 /**
  * @brief Get the hostname of the running machine
- * 
+ *
  * @param buf The returned hostname
  * @return int 0 on success, -1 on failure
  */
@@ -576,7 +576,7 @@ int get_hostname(char *buf);
    name of the calling program (i.e., argv[0] or similar), and is used only for
    diagnostic messages. If we can't open 'pidFile', or we encounter some other
    error, then we print an appropriate diagnostic and terminate.
- * 
+ *
  * @param pid_file The pid file path to create
  * @param flags The pid file open flags
  * @return int The pif file descriptor, -1 on failure
@@ -585,7 +585,7 @@ int create_pid_file(const char *pid_file, int flags);
 
 /**
  * @brief Read the entire file
- * 
+ *
  * @param path The file path
  * @param out The output buffer
  * @return ssize_t The file size, -1 on failure
@@ -594,7 +594,7 @@ ssize_t read_file(char *path, uint8_t **out);
 
 /**
  * @brief Read the entire file into a string
- * 
+ *
  * @param path The file path
  * @param out The output string
  * @return 0 on success, -1 on failure

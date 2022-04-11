@@ -19,7 +19,7 @@
 
 /**
  * @file sqlite_pcap_writer.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the sqlite pcap writer utilities.
  */
 
@@ -48,7 +48,7 @@ int open_sqlite_pcap_db(char *db_path, sqlite3** sql)
   sqlite3 *db = NULL;
   int rc;
 
-  if ((rc = sqlite3_open(db_path, &db)) != SQLITE_OK) {     
+  if ((rc = sqlite3_open(db_path, &db)) != SQLITE_OK) {
     log_debug("Cannot open database: %s %s", sqlite3_errmsg(db), db_path);
     sqlite3_close(db);
     return -1;

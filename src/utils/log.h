@@ -6,8 +6,8 @@
  */
 
 /**
- * @file log.h 
- * @authors rxi, Alexandru Mereacre 
+ * @file log.h
+ * @authors rxi, Alexandru Mereacre
  * @brief File containing the definition of the logging functions.
  */
 

@@ -18,12 +18,12 @@
  ****************************************************************************/
 
 /**
- * @file capture_config.h 
- * @author Alexandru Mereacre 
+ * @file capture_config.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the capture config structures.
- * 
- * Defines the function to generate the config parameters for the capture 
- * service. It also defines all the metadata and database schema for the 
+ *
+ * Defines the function to generate the config parameters for the capture
+ * service. It also defines all the metadata and database schema for the
  * captured packets.
  */
 
@@ -67,7 +67,7 @@
 #define MAX_QUERY_LEN 	            MAX_OS_PATH_LEN
 
 #define CAPTURE_MAX_OPT       26
-                              
+
 #define CAPTURE_OPT_STRING    ":c:i:q:f:t:n:p:y:x:z:r:b:dvhmewu"   // gjlkoas
 #define CAPTURE_USAGE_STRING  "\t%s [-c config] [-d] [-h] [-v] [(-y engine [-w] [-u]) | (-b size)] [-i interface] [-q domain]" \
                               "[-f filter] [-m] [-t timeout] [-n interval] " \
@@ -117,7 +117,7 @@ typedef enum packet_types {
 
 /**
  * @brief The capture configuration structure
- * 
+ *
  */
 struct capture_conf {
   char capture_bin_path[MAX_OS_PATH_LEN];                     /**< The capture binary path string */
@@ -128,11 +128,11 @@ struct capture_conf {
   bool promiscuous;                                           /**< Specifies whether the interface is to be put into promiscuous mode. If promiscuous param is non-zero, promiscuous mode will be set, otherwise it will not be set */
   bool immediate;                                             /**< Sets whether immediate mode should be set on a capture handle when the handle is activated. If immediate param is non-zero, immediate mode will be set, otherwise it will not be set. */
   uint32_t buffer_timeout;                                    /**< Specifies the packet buffer timeout, as a non-negative value, in milliseconds. (See pcap(3PCAP) for an explanation of the packet buffer timeout.) */
-  uint32_t process_interval;                                  /**< Specifies the packet process interval, in milliseconds. */ 
-  char analyser[MAX_ANALYSER_NAME_SIZE];                      /**< Specifies the packet analyser engine. */ 
+  uint32_t process_interval;                                  /**< Specifies the packet process interval, in milliseconds. */
+  char analyser[MAX_ANALYSER_NAME_SIZE];                      /**< Specifies the packet analyser engine. */
   bool file_write;                                            /**< Specifies wether the packets should be saved to file(s). */
   bool db_write;                                              /**< Specifies wether the packets should be saved in a sqlite db. */
-  char db_path[MAX_OS_PATH_LEN];                              /**< Specifies the path to the sqlite3 dbs */ 
+  char db_path[MAX_OS_PATH_LEN];                              /**< Specifies the path to the sqlite3 dbs */
   char filter[MAX_FILTER_SIZE];                               /**< Specifies the filter expression or pcap lib */
   ssize_t sync_store_size;                                    /**< Specifies the sync store size */
   ssize_t sync_send_size;                                     /**< Specifies the sync send size */
@@ -146,7 +146,7 @@ struct tuple_packet {
 
 /**
  * @brief Ethernet protocol schema definition
- * 
+ *
  */
 struct eth_schema {
   uint32_t hash;                                    /**< Packet hash */
@@ -163,7 +163,7 @@ struct eth_schema {
 
 /**
  * @brief ARP protocol schema definition
- * 
+ *
  */
 struct arp_schema {
   uint32_t hash;                                    /**< Packet hash */
@@ -183,7 +183,7 @@ struct arp_schema {
 
 /**
  * @brief IP4 protocol schema definition
- * 
+ *
  */
 struct ip4_schema {
   uint32_t hash;                                    /**< Packet hash */
@@ -206,7 +206,7 @@ struct ip4_schema {
 
 /**
  * @brief IP6 protocol schema definition
- * 
+ *
  */
 struct ip6_schema {
   uint32_t hash;                                    /**< Packet hash */
@@ -224,7 +224,7 @@ struct ip6_schema {
 
 /**
  * @brief TCP protocol schema definition
- * 
+ *
  */
 struct tcp_schema {
   uint32_t hash;                                    /**< Packet hash */
@@ -250,7 +250,7 @@ struct tcp_schema {
 
 /**
  * @brief UDP protocol schema definition
- * 
+ *
  */
 struct udp_schema {
   uint32_t hash;                                    /**< Packet hash */
@@ -265,7 +265,7 @@ struct udp_schema {
 
 /**
  * @brief ICMP4 protocol schema definition
- * 
+ *
  */
 struct icmp4_schema {
   uint32_t hash;                                    /**< Packet hash */
@@ -280,7 +280,7 @@ struct icmp4_schema {
 
 /**
  * @brief ICMP6 protocol schema definition
- * 
+ *
  */
 struct icmp6_schema {
   uint32_t hash;                                    /**< Packet hash */
@@ -295,7 +295,7 @@ struct icmp6_schema {
 
 /**
  * @brief DNS protocol schema definition
- * 
+ *
  */
 struct dns_schema {
   uint32_t hash;                                    /**< Packet hash */
@@ -313,7 +313,7 @@ struct dns_schema {
 
 /**
  * @brief mDNS protocol schema definition
- * 
+ *
  */
 struct mdns_schema {
   uint32_t hash;                                    /**< Packet hash */
@@ -331,7 +331,7 @@ struct mdns_schema {
 
 /**
  * @brief DHCP protocol schema definition
- * 
+ *
  */
 struct dhcp_schema {
   uint32_t hash;                                    /**< Packet hash */
@@ -353,7 +353,7 @@ struct dhcp_schema {
 
 /**
  * @brief DNS header definition
- * 
+ *
  */
 struct dns_header {
 	uint16_t tid;		                      /**< Transaction ID */
@@ -366,7 +366,7 @@ struct dns_header {
 
 /**
  * @brief mDNS header definition
- * 
+ *
  */
 struct mdns_header {
 	uint16_t tid;		                      /**< Transaction ID */
@@ -379,7 +379,7 @@ struct mdns_header {
 
 /**
  * @brief mDNS query meta definition
- * 
+ *
  */
 struct mdns_query_meta {
   uint16_t qtype;                         /**< The type of the query, i.e. the type of RR which should be returned in response */
@@ -389,7 +389,7 @@ struct mdns_query_meta {
 
 /**
  * @brief mDNS response meta definition
- * 
+ *
  */
 struct mdns_answer_meta {
   uint16_t rrtype;                        /**< The type of the Resource Record */
@@ -401,7 +401,7 @@ struct mdns_answer_meta {
 
 /**
  * @brief DHCP header definition (truncated)
- * 
+ *
  */
 struct dhcp_header {
   uint8_t  op;                          /**< packet type */
@@ -419,7 +419,7 @@ struct dhcp_header {
 
 /**
  * @brief Capture structure definition
- * 
+ *
  */
 struct capture_packet {
   struct ether_header *ethh;           /**< Ethernet header.  */
@@ -475,7 +475,7 @@ struct alert_meta {
 
 /**
  * @brief Translate a capture process option to a config structure value
- * 
+ *
  * @param key Capture process option key
  * @param opt Capture process option value
  * @param config The config structure
@@ -485,7 +485,7 @@ int capture_opt2config(char key, char *value, struct capture_conf *config);
 
 /**
  * @brief Transforms a config structure to opt string array
- * 
+ *
  * @param config The config structure
  * @return char** the opt string array, NULL on failure
  */
@@ -493,7 +493,7 @@ int capture_opt2config(char key, char *value, struct capture_conf *config);
 char** capture_config2opt(struct capture_conf *config);
 /**
  * @brief Free opt string array
- * 
+ *
  * @param opt_str Opt string array
  */
 void capture_freeopt(char **opt_str);

@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file mdnsf.c 
- * @author Alexandru Mereacre 
+ * @file mdnsf.c
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the mdns forwarder.
  */
 
@@ -127,7 +127,7 @@ int process_app_options(int argc, char *argv[], uint8_t *verbosity, const char *
       return log_cmdline_error("Missing argument for -%c\n", optopt);
     case '?':
       return log_cmdline_error("Unrecognized option -%c\n", optopt);
-    default: 
+    default:
       return show_app_help(argv[0]);
     }
   }

@@ -19,7 +19,7 @@
 
 /**
  * @file mdns_list.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of mdns list utils.
  */
 

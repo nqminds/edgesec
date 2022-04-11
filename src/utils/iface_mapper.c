@@ -63,7 +63,7 @@ int get_if_mapper(hmap_if_conn **hmap, in_addr_t subnet, char *ifname)
 	os_memcpy(ifname, s->value, IFNAMSIZ);
     return 1;
   }
- 
+
   return 0;
 }
 
@@ -131,7 +131,7 @@ int get_vlan_mapper(hmap_vlan_conn **hmap, int vlanid, struct vlan_conn	*conn)
 
     return 1;
   }
- 
+
   return 0;
 }
 
@@ -193,12 +193,12 @@ int find_ifinfo(UT_array *config_ifinfo_array, char *ip, config_ifinfo_t *ifinfo
 	    log_trace("ip_2_nbo fail");
 	    return -1;
 	  }
-  
+
 	  if (ip_2_nbo(ip, p->subnet_mask, &addr_ip) < 0) {
 	    log_trace("ip_2_nbo fail");
 	    return -1;
 	  }
-  
+
 	  if (addr_ip == addr_subnet) {
       os_memcpy(ifinfo, p, sizeof(config_ifinfo_t));
 	    return 0;

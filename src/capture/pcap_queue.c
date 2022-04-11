@@ -19,7 +19,7 @@
 
 /**
  * @file pcap_queue.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the pcap queue utilities.
  */
 

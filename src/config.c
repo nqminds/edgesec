@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file config.c 
- * @author Alexandru Mereacre 
+ * @file config.c
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the app configuration utilities.
  */
 
@@ -393,7 +393,7 @@ bool load_ap_conf(const char *filename, struct app_config *config)
   ini_gets("ap", "rsnPairwise", "CCMP", value, INI_BUFFERSIZE, filename);
   os_strlcpy(config->hconfig.rsn_pairwise, value, AP_RSN_PAIRWISE_LEN);
   os_free(value);
-  
+
   // Load ap ctrlInterface
   value = os_malloc(INI_BUFFERSIZE);
   ini_gets("ap", "ctrlInterface", "/var/run/hostapd", value, INI_BUFFERSIZE, filename);
@@ -913,7 +913,7 @@ void free_app_config(struct app_config *config)
   if (config->dhcp_config.config_dhcpinfo_array != NULL) {
     utarray_free(config->dhcp_config.config_dhcpinfo_array);
   }
-  
+
   if (config->dns_config.server_array != NULL) {
     utarray_free(config->dns_config.server_array);
   }

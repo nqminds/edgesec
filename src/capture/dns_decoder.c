@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file dns_decoder.c 
- * @author Alexandru Mereacre 
+ * @file dns_decoder.c
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the dns packet decoder utilities.
  */
 
@@ -96,7 +96,7 @@ bool decode_dns_packet(struct capture_packet *cpac)
     if (cpac->dnss.nqueries)
         decode_dns_questions((uint8_t *)payload, cpac);
   }
-  
+
   // log_trace("DNS id=%d flags=0x%x nqueries=%d nanswers=%d nauth=%d nother=%d qname=%s",
   //   cpac->dnss.tid, cpac->dnss.flags, cpac->dnss.nqueries, cpac->dnss.nanswers,
   //   cpac->dnss.nauth, cpac->dnss.nother, cpac->dnss.qname);

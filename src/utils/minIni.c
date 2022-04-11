@@ -21,7 +21,7 @@
  */
 
 /**
- * @file minIni.c 
+ * @file minIni.c
  * @author CompuPhase
  * @brief minIni - Multi-Platform INI file parser, suitable for embedded systems.
  */

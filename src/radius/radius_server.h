@@ -7,7 +7,7 @@
  */
 
 /**
- * @file radius_server.h 
+ * @file radius_server.h
  * @authors Jouni Malinen, Alexandru Mereacre
  * @brief RADIUS authentication server.
  */
@@ -135,7 +135,7 @@ struct radius_server_data {
 
 /**
  * @brief Radius configuration structure
- * 
+ *
  */
 struct radius_conf {
   	int                 radius_port;							/**< Radius port */
