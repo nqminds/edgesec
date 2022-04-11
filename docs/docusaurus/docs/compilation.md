@@ -39,23 +39,32 @@ sudo apt install -y "${build_dependencies[@]}" "${runtime_dependencies[@]}"
 
 Compiling EDGESec is done with CMake.
 
-First, configure `cmake` in the `build/` directory by running the following.
+### Configure
+
+Configure `cmake` in the `build/` directory by running the following:
 
 ```bash
-mkdir build && cd build && cmake ../
+# or for old versions of cmake, do: mkdir build/ && cd build/ && cmake ..
+cmake -S . -B build -DLIB_MAKEFLAGS="--jobs=$(nproc)"
 ```
+
+The configure stage will download and compile most of the EDGESec dependencies,
+so this may take a while.
 
 Setting `-DLIB_MAKEFLAGS="--jobs=$(nproc)"` will mean that while compiling library dependencies,
 `make` commands will run using all CPU cores, greatly speeding this building (set a lower number if you have less RAM).
 
 ```bash
-cmake -B build/ -S . -DLIB_MAKEFLAGS="--jobs=$(nproc)"
+cmake -S . -B build -DLIB_MAKEFLAGS="--jobs=$(nproc)"
 ```
+
+### Building
 
 To build, you can then run:
 
 ```bash
-make
+# or for old versions of cmake, do: cd build/ && make
+cmake --build build/
 ```
 
 or to built on multiple core run:
