@@ -95,7 +95,7 @@ int eloop_init(void)
 	dl_list_init(&eloop.timeout);
 	eloop.epollfd = epoll_create1(0);
 	if (eloop.epollfd < 0) {
-		log_err("epoll_create1 failed");
+		log_errno("epoll_create1 failed");
 		return -1;
 	}
 	eloop.readers.type = EVENT_TYPE_READ;
@@ -127,7 +127,7 @@ static int eloop_sock_queue(int sock, eloop_event_type type)
 	}
 	ev.data.fd = sock;
 	if (epoll_ctl(eloop.epollfd, EPOLL_CTL_ADD, sock, &ev) < 0) {
-		log_err("epoll_ctl(ADD) for fd=%d failed", sock);
+		log_errno("epoll_ctl(ADD) for fd=%d failed", sock);
 		return -1;
 	}
 	return 0;
@@ -168,7 +168,7 @@ static int eloop_sock_table_add_sock(struct eloop_sock_table *table,
 		temp_events = os_realloc_array(eloop.epoll_events, next,
 					       sizeof(struct epoll_event));
 		if (temp_events == NULL) {
-			log_err("os_malloc for epoll failed");
+			log_errno("os_malloc for epoll failed");
 			return -1;
 		}
 
@@ -186,7 +186,7 @@ static int eloop_sock_table_add_sock(struct eloop_sock_table *table,
 	tmp[table->count].eloop_data = eloop_data;
 	tmp[table->count].user_data = user_data;
 	tmp[table->count].handler = handler;
-	
+
 	table->count++;
 	table->table = tmp;
 	eloop.max_sock = new_max_sock;
@@ -226,7 +226,7 @@ static void eloop_sock_table_remove_sock(struct eloop_sock_table *table,
 	table->changed = 1;
 
 	if (epoll_ctl(eloop.epollfd, EPOLL_CTL_DEL, sock, NULL) < 0) {
-		log_err("epoll_ctl(DEL) for fd=%d failed", sock);
+		log_errno("epoll_ctl(DEL) for fd=%d failed", sock);
 		return;
 	}
 	os_memset(&eloop.fd_table[sock], 0, sizeof(struct eloop_sock));
@@ -644,7 +644,7 @@ void eloop_run(void)
 					 eloop.count, timeout_ms);
 		}
 		if (res < 0 && errno != EINTR && errno != 0) {
-			log_err("eloop");
+			log_errno("eloop");
 			goto out;
 		}
 

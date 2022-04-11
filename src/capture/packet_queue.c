@@ -19,7 +19,7 @@
 
 /**
  * @file packet_queue.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the packet queue utilities.
  */
 
@@ -39,7 +39,7 @@ struct packet_queue* init_packet_queue(void)
   queue = os_zalloc(sizeof(*queue));
 
   if (queue == NULL) {
-    log_err("os_zalloc");
+    log_errno("os_zalloc");
     return NULL;
   }
 
@@ -56,7 +56,7 @@ struct packet_queue* push_packet_queue(struct packet_queue* queue, struct tuple_
     log_debug("queue param is NULL");
     return NULL;
   }
-  
+
   if ((el = init_packet_queue()) == NULL) {
     log_debug("init_packet_queue fail");
     return NULL;

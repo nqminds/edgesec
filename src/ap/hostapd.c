@@ -19,9 +19,9 @@
 
 /**
  * @file hostapd.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of hostapd config generation utilities.
- * 
+ *
  * Defines function that generate the hostapd daemon configuration file and
  * manages (execute, kill and signal) the hostapd process.
  */
@@ -65,14 +65,14 @@ int generate_vlan_conf(char *vlan_file, char *interface)
   int stat = unlink(vlan_file);
 
   if (stat == -1 && errno != ENOENT) {
-    log_err("unlink");
+    log_errno("unlink");
     return -1;
   }
 
   FILE *fp = fopen(vlan_file, "a+");
 
   if (fp == NULL) {
-    log_err("fopen");
+    log_errno("fopen");
     return -1;
   }
 
@@ -136,14 +136,14 @@ int generate_hostapd_conf(struct apconf *hconf, struct radius_conf *rconf)
   int stat = unlink(hconf->ap_file_path);
 
   if (stat == -1 && errno != ENOENT) {
-    log_err("unlink");
+    log_errno("unlink");
     return -1;
   }
 
   FILE *fp = fopen(hconf->ap_file_path, "a+");
 
   if (fp == NULL) {
-    log_err("fopen");
+    log_errno("fopen");
     return -1;
   }
 

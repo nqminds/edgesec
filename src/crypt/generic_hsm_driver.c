@@ -19,7 +19,7 @@
 
 /**
  * @file generic_hsm_driver.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of generic HSM driver configuration utilities.
  */
 #include <sys/types.h>
@@ -39,7 +39,7 @@ struct hsm_context* init_hsm(void)
   struct hsm_context* context = os_zalloc(sizeof(struct hsm_context));
 
   if (context == NULL) {
-    log_err("os_zalloc");
+    log_errno("os_zalloc");
     return NULL;
   }
 

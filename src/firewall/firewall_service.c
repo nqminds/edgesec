@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file firewall_service.c 
- * @author Alexandru Mereacre 
+ * @file firewall_service.c
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the firewall service commands.
  */
 
@@ -135,7 +135,7 @@ struct fwctx* fw_init_context(hmap_if_conn *if_mapper,
   struct fwctx* fw_ctx = os_zalloc(sizeof(struct fwctx));
 
   if (fw_ctx == NULL) {
-    log_err("os_zalloc");
+    log_errno("os_zalloc");
     return NULL;
   }
 
@@ -377,7 +377,7 @@ int fw_set_ip_forward(void)
   char buf[2];
   int fd = open(IP_FORWARD_PATH, O_RDWR);
   if (read(fd, buf, 1) < 0) {
-    log_err("read");
+    log_errno("read");
     close(fd);
     return -1;
   }
@@ -387,7 +387,7 @@ int fw_set_ip_forward(void)
   if (buf[0] == 0x30) {
     log_trace("Setting IP forward flag to 1");
     if (lseek(fd, 0 , SEEK_SET) < 0) {
-      log_err("lseek")  ;
+      log_errno("lseek")  ;
       close(fd);
       return -1;
     }
@@ -395,11 +395,11 @@ int fw_set_ip_forward(void)
     buf[0] = 0x31;
 
 	  if (write(fd, buf, 1) < 0) {
-      log_err("write");
+      log_errno("write");
         close(fd);
         return -1;
     }
   }
   close(fd);
-  return 0; 
+  return 0;
 }

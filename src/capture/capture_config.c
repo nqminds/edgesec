@@ -19,11 +19,11 @@
 
 /**
  * @file capture_config.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the capture config structures.
- * 
- * Defines the function to generate the config parameters for the capture 
- * service. It also defines all the metadata and database schema for the 
+ *
+ * Defines the function to generate the config parameters for the capture
+ * service. It also defines all the metadata and database schema for the
  * captured packets.
  */
 
@@ -58,7 +58,7 @@ long get_opt_num(char *num)
 {
   if (!is_number(num))
     return -1;
-  
+
   return strtol(num, NULL, 10);
 }
 
@@ -188,7 +188,7 @@ int capture_opt2config(char key, char *value, struct capture_conf *config)
         return -1;
       }
       if (UINT32_MAX != ULONG_MAX && conversion > UINT32_MAX) {
-        log_err("Overflow, byte size %s exceeds uint32", value);
+        log_errno("Overflow, byte size %s exceeds uint32", value);
         return -1;
       }
 
@@ -276,7 +276,7 @@ char** capture_config2opt(struct capture_conf *config)
 
     opt_str[idx] = os_malloc(MAX_ANALYSER_NAME_SIZE);
     os_strlcpy(opt_str[idx], config->analyser, MAX_ANALYSER_NAME_SIZE);
-    idx ++; 
+    idx ++;
   }
 
   //immediate, -e

@@ -19,7 +19,7 @@
 
 /**
  * @file subscriber_events.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the subscriber events structure.
  */
 
@@ -52,7 +52,7 @@ int add_events_subscriber(struct supervisor_context *context, struct client_addr
   p = utarray_find(context->subscribers_array, addr, sort_subscribers_arrray);
   if (p != NULL) {
     log_trace("Client already subscribed with size=%d", p->len);
-    return 0;    
+    return 0;
   }
 
   utarray_push_back(context->subscribers_array, addr);
@@ -69,7 +69,7 @@ int send_events(struct supervisor_context *context,
   vsnprintf(args_buf, MAX_SEND_EVENTS_BUF_SIZE, format, args);
 
   if ((send_buf = os_zalloc(strlen(name) + strlen(args_buf) + 2)) == NULL) {
-    log_err("os_malloc");
+    log_errno("os_malloc");
     return -1;
   }
 

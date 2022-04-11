@@ -18,12 +18,12 @@
  ****************************************************************************/
 
 /**
- * @file capture_cleaner.c 
- * @author Alexandru Mereacre 
+ * @file capture_cleaner.c
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the capture cleaner service structures.
- * 
+ *
  * Defines the start function for the capturte cleaner service, which
- * removes the capture files from the database folder when it 
+ * removes the capture files from the database folder when it
  * reaches a given size specified in the capture_conf structure. The
  * store size is give by the parameter capture_store_size in Kb.
  */
@@ -55,9 +55,9 @@ int clean_capture(struct cleaner_context *context)
   struct pcap_file_meta *p = NULL;
   UT_array *pcap_meta_arr = NULL;
   uint64_t timestamp = context->low_timestamp, lt;
-  char *path; 
+  char *path;
   utarray_new(pcap_meta_arr, &pcap_file_meta_icd);
-  
+
   while(timestamp <= context->next_timestamp) {
     lt = timestamp;
     if (get_pcap_meta_array(context->pcap_db, timestamp, CLEANER_GROUP_INTERVAL, pcap_meta_arr) < 0) {
@@ -68,12 +68,12 @@ int clean_capture(struct cleaner_context *context)
 
     while((p = (struct pcap_file_meta *) utarray_next(pcap_meta_arr, p)) != NULL) {
       if ((path = construct_path(context->pcap_path, p->name)) == NULL) {
-        log_err("os_malloc");
+        log_errno("os_malloc");
       }
 
       log_trace("deleting %s at timestamp=%llu", path, p->timestamp);
       if (remove(path) < 0) {
-        log_err("remove");
+        log_errno("remove");
       }
 
       if (path != NULL) {
@@ -90,7 +90,7 @@ int clean_capture(struct cleaner_context *context)
     if (delete_pcap_entries(context->pcap_db, lt, timestamp) < 0) {
       log_trace("delete_pcap_entries fail");
       utarray_free(pcap_meta_arr);
-      return -1;    
+      return -1;
     }
   }
 
@@ -119,7 +119,7 @@ void eloop_cleaner_handler(void *eloop_ctx, void *user_ctx)
     context->low_timestamp = lt;
     context->store_sum = caplen;
   }
-  
+
   ht = lt;
 
   if (lt) {
@@ -188,7 +188,7 @@ int start_capture_cleaner(struct capture_conf *config)
   if (open_sqlite_pcap_db(pcap_db_path, (sqlite3**)&context.pcap_db) < 0) {
     log_trace("open_sqlite_pcap_db fail");
     os_free(pcap_db_path);
-    return -1;  
+    return -1;
   }
   os_free(pcap_db_path);
 

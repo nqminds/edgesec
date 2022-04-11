@@ -63,7 +63,7 @@ int get_if_mapper(hmap_if_conn **hmap, in_addr_t subnet, char *ifname)
 	os_memcpy(ifname, s->value, IFNAMSIZ);
     return 1;
   }
- 
+
   return 0;
 }
 
@@ -86,7 +86,7 @@ bool put_if_mapper(hmap_if_conn **hmap, in_addr_t subnet, char *ifname)
   if (s == NULL) {
     s = (hmap_if_conn *) os_malloc(sizeof(hmap_if_conn));
 	  if (s == NULL) {
-	    log_err("os_malloc");
+	    log_errno("os_malloc");
 	    return false;
 	  }
 
@@ -100,7 +100,7 @@ bool put_if_mapper(hmap_if_conn **hmap, in_addr_t subnet, char *ifname)
     os_memcpy(s->value, ifname, IFNAMSIZ);
   }
 
-  return true;	
+  return true;
 }
 
 void free_if_mapper(hmap_if_conn **hmap)
@@ -131,7 +131,7 @@ int get_vlan_mapper(hmap_vlan_conn **hmap, int vlanid, struct vlan_conn	*conn)
 
     return 1;
   }
- 
+
   return 0;
 }
 
@@ -155,7 +155,7 @@ bool put_vlan_mapper(hmap_vlan_conn **hmap, struct vlan_conn *conn)
     s = (hmap_vlan_conn *) os_malloc(sizeof(hmap_vlan_conn));
 
 	  if (s == NULL) {
-	    log_err("os_malloc");
+	    log_errno("os_malloc");
 	    return false;
 	  }
 
@@ -169,7 +169,7 @@ bool put_vlan_mapper(hmap_vlan_conn **hmap, struct vlan_conn *conn)
     os_memcpy(&s->value, conn, sizeof(struct vlan_conn));
   }
 
-  return true;	
+  return true;
 }
 
 void free_vlan_mapper(hmap_vlan_conn **hmap)
@@ -193,12 +193,12 @@ int find_ifinfo(UT_array *config_ifinfo_array, char *ip, config_ifinfo_t *ifinfo
 	    log_trace("ip_2_nbo fail");
 	    return -1;
 	  }
-  
+
 	  if (ip_2_nbo(ip, p->subnet_mask, &addr_ip) < 0) {
 	    log_trace("ip_2_nbo fail");
 	    return -1;
 	  }
-  
+
 	  if (addr_ip == addr_subnet) {
       os_memcpy(ifinfo, p, sizeof(config_ifinfo_t));
 	    return 0;
@@ -316,12 +316,12 @@ int init_ifbridge_names(UT_array *config_ifinfo_array, char *ifname, char *brnam
 
   while((p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) != NULL) {
     if (snprintf(p->ifname, IFNAMSIZ, "%s%d", ifname, p->vlanid) < 0) {
-      log_err("snprintf");
+      log_errno("snprintf");
       return -1;
     }
 
     if (snprintf(p->brname, IFNAMSIZ, "%s%d", brname, p->vlanid) < 0) {
-      log_err("snprintf");
+      log_errno("snprintf");
       return -1;
     }
   }

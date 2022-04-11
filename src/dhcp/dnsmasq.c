@@ -19,7 +19,7 @@
 
 /**
  * @file dnsmasq.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of dnsmasq service configuration utilities.
  */
 
@@ -162,14 +162,14 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array)
   int stat = unlink(dconf->dhcp_conf_path);
 
   if (stat == -1 && errno != ENOENT) {
-    log_err("unlink");
+    log_errno("unlink");
     return -1;
   }
 
   FILE *fp = fopen(dconf->dhcp_conf_path, "a+");
 
   if (fp == NULL) {
-    log_err("fopen");
+    log_errno("fopen");
     return -1;
   }
 
@@ -200,14 +200,14 @@ int generate_dnsmasq_script(char *dhcp_script_path, char *domain_server_path)
   int stat = unlink(dhcp_script_path);
 
   if (stat == -1 && errno != ENOENT) {
-    log_err("unlink");
+    log_errno("unlink");
     return -1;
   }
 
   FILE *fp = fopen(dhcp_script_path, "a+");
 
   if (fp == NULL) {
-    log_err("fopen");
+    log_errno("fopen");
     return -1;
   }
 
@@ -218,7 +218,7 @@ int generate_dnsmasq_script(char *dhcp_script_path, char *domain_server_path)
   int fd = fileno(fp);
 
   if (fd == -1) {
-    log_err("fileno");
+    log_errno("fileno");
     fclose(fp);
     return -1;
   }
@@ -255,7 +255,7 @@ char* get_dnsmasq_args(char *dnsmasq_bin_path, char *dnsmasq_conf_path, char *ar
   char *conf_arg = os_malloc(sizeof(char)*(MAX_OS_PATH_LEN + strlen(DNSMASQ_CONF_FILE_OPTION) + 1));
 
   if (conf_arg == NULL) {
-    log_err("os_malloc");
+    log_errno("os_malloc");
     return NULL;
   }
 
@@ -468,7 +468,7 @@ int clear_dhcp_lease_entry(char *mac_addr, char *dhcp_leasefile_path)
   }
 
   if ((fp = fopen(dhcp_leasefile_path, "w+")) == NULL) {
-    log_err("fopen");
+    log_errno("fopen");
     os_free(out);
     return -1;
   }

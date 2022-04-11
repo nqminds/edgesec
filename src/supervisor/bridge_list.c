@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file bridge_list.c 
- * @author Alexandru Mereacre 
+ * @file bridge_list.c
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the bridge creation functions.
  */
 
@@ -41,7 +41,7 @@ struct bridge_mac_list *init_bridge_list(void)
   e = os_zalloc(sizeof(*e));
 
   if (e == NULL) {
-    log_err("os_zalloc");
+    log_errno("os_zalloc");
     return NULL;
   }
 
@@ -155,16 +155,16 @@ int add_bridge_mac(struct bridge_mac_list *ml, const uint8_t *mac_addr_left, con
   // Existing edge
 	if(ret.left_edge && ret.right_edge)
     return 0;
-  
+
 	src_el = os_zalloc(sizeof(*src_el));
 	if (src_el == NULL) {
-    log_err("os_zalloc");
+    log_errno("os_zalloc");
     return -1;
   }
 
 	dst_el = os_zalloc(sizeof(*dst_el));
 	if (dst_el == NULL) {
-    log_err("os_zalloc");
+    log_errno("os_zalloc");
     return -1;
   }
 
@@ -200,10 +200,10 @@ int remove_bridge_mac(struct bridge_mac_list *ml, const uint8_t *mac_addr_left, 
 	if (e.left_edge == NULL || e.right_edge == NULL) {
     log_trace("Missing edge");
   }
-  
+
   bridge_mac_list_free(e.left_edge);
   bridge_mac_list_free(e.right_edge);
-  
+
   return 0;
 }
 

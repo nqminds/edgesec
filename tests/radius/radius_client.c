@@ -355,7 +355,7 @@ static int radius_client_handle_send_error(struct radius_client_data *radius,
 {
 #ifndef CONFIG_NATIVE_WINDOWS
 	int _errno = errno;
-	log_err("send[RADIUS,s=%d]", s);
+	log_errno("send[RADIUS,s=%d]", s);
 	if (_errno == ENOTCONN || _errno == EDESTADDRREQ || _errno == EINVAL ||
 	    _errno == EBADF || _errno == ENETUNREACH || _errno == EACCES) {
 		log_trace("Send failed - maybe interface status changed - try to connect again");
@@ -825,7 +825,7 @@ static void radius_client_receive(int sock, void *eloop_ctx, void *sock_ctx)
 
 	len = recv(sock, buf, sizeof(buf), MSG_DONTWAIT);
 	if (len < 0) {
-		log_err("recv[RADIUS]");
+		log_errno("recv[RADIUS]");
 		return;
 	}
 	log_trace("Received %d bytes from RADIUS server", len);
@@ -1153,7 +1153,7 @@ radius_change_server(struct radius_client_data *radius,
 		}
 
 		if (bind(sel_sock, cl_addr, claddrlen) < 0) {
-			log_err("bind[radius]");
+			log_errno("bind[radius]");
 			return -1;
 		}
 	}
@@ -1164,7 +1164,7 @@ radius_change_server(struct radius_client_data *radius,
 		log_trace("disconnect[radius]");
 
 	if (connect(sel_sock, addr, addrlen) < 0) {
-		log_err("connect[radius]");
+		log_errno("connect[radius]");
 		return -1;
 	}
 
@@ -1255,7 +1255,7 @@ static int radius_client_disable_pmtu_discovery(int s)
 	r = setsockopt(s, IPPROTO_IP, IP_MTU_DISCOVER, &action,
 		       sizeof(action));
 	if (r == -1)
-		log_err("RADIUS: Failed to set IP_MTU_DISCOVER");
+		log_errno("RADIUS: Failed to set IP_MTU_DISCOVER");
 #endif
 	return r;
 }
@@ -1308,7 +1308,7 @@ static int radius_client_init_auth(struct radius_client_data *radius)
 
 	radius->auth_serv_sock = socket(PF_INET, SOCK_DGRAM, 0);
 	if (radius->auth_serv_sock < 0)
-		log_err("RADIUS: socket[PF_INET,SOCK_DGRAM]");
+		log_errno("RADIUS: socket[PF_INET,SOCK_DGRAM]");
 	else {
 		radius_client_disable_pmtu_discovery(radius->auth_serv_sock);
 		ok++;
@@ -1363,7 +1363,7 @@ static int radius_client_init_acct(struct radius_client_data *radius)
 
 	radius->acct_serv_sock = socket(PF_INET, SOCK_DGRAM, 0);
 	if (radius->acct_serv_sock < 0)
-		log_err("RADIUS: socket[PF_INET,SOCK_DGRAM]");
+		log_errno("RADIUS: socket[PF_INET,SOCK_DGRAM]");
 	else {
 		radius_client_disable_pmtu_discovery(radius->acct_serv_sock);
 		ok++;

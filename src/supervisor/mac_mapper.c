@@ -19,7 +19,7 @@
 
 /**
  * @file mac_mapper.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the mac mapper.
  */
 #include <stdbool.h>
@@ -59,7 +59,7 @@ int get_mac_mapper(hmap_mac_conn **hmap, uint8_t mac_addr[ETH_ALEN], struct mac_
 		*info = s->value;
     return 1;
   }
- 
+
   return 0;
 }
 
@@ -77,7 +77,7 @@ bool put_mac_mapper(hmap_mac_conn **hmap, struct mac_conn conn)
   if (s == NULL) {
     s = (hmap_mac_conn *) os_malloc(sizeof(hmap_mac_conn));
 		if (s == NULL) {
-			log_err("os_malloc");
+			log_errno("os_malloc");
       return false;
 		}
 

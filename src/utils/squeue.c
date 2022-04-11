@@ -19,7 +19,7 @@
 
 /**
  * @file squeue.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the string queue utilities.
  */
 
@@ -38,7 +38,7 @@ struct string_queue* init_string_queue(ssize_t max_length)
   queue = os_zalloc(sizeof(*queue));
 
   if (queue == NULL) {
-    log_err("os_zalloc");
+    log_errno("os_zalloc");
     return NULL;
   }
 
@@ -166,7 +166,7 @@ char* concat_string_queue(struct string_queue *queue, ssize_t count)
       } else concat_str = os_realloc(concat_str, size);
 
       if (concat_str == NULL) {
-        log_err("os_malloc");
+        log_errno("os_malloc");
         return NULL;
       }
 
@@ -184,7 +184,7 @@ char* concat_string_queue(struct string_queue *queue, ssize_t count)
   //     } else concat_str = os_realloc(concat_str, size);
 
   //     if (concat_str == NULL) {
-  //       log_err("os_malloc");
+  //       log_errno("os_malloc");
   //       return NULL;
   //     }
 

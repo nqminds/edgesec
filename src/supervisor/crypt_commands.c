@@ -19,7 +19,7 @@
 
 /**
  * @file crypt_commands.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the crypt commands.
  */
 
@@ -99,7 +99,7 @@ int gen_randkey_cmd(struct supervisor_context *context, char *keyid, uint8_t siz
   log_trace("GEN_RANDKEY for key=%s and size=%d", keyid, size);
 
   if ((pair.value = os_malloc(pair.value_size)) == NULL) {
-    log_err("os_malloc");
+    log_errno("os_malloc");
     return -1;
   }
   if (crypto_genkey(pair.value, pair.value_size) < 0) {
@@ -222,7 +222,7 @@ char* encrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *iv
   if (keypair->value == NULL) {
     log_trace("value is empty");
     free_crypt_pair(keypair);
-    return NULL;  
+    return NULL;
   }
 
   if ((ivpair = get_crypt_pair(context->crypt_ctx, ivid)) == NULL) {
@@ -235,7 +235,7 @@ char* encrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *iv
     log_trace("value is empty");
     free_crypt_pair(keypair);
     free_crypt_pair(ivpair);
-    return NULL;  
+    return NULL;
   }
 
   if ((blob_data = (uint8_t *) base64_url_decode((unsigned char *)blob, strlen(blob), &blob_data_size)) == NULL) {
@@ -246,7 +246,7 @@ char* encrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *iv
   }
 
   if ((encrypted_data = os_malloc(blob_data_size + AES_BLOCK_SIZE)) == NULL) {
-    log_err("os_malloc");
+    log_errno("os_malloc");
     free_crypt_pair(keypair);
     free_crypt_pair(ivpair);
     os_free(blob_data);
@@ -292,7 +292,7 @@ char* decrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *iv
   if (keypair->value == NULL) {
     log_trace("value is empty");
     free_crypt_pair(keypair);
-    return NULL;  
+    return NULL;
   }
 
   if ((ivpair = get_crypt_pair(context->crypt_ctx, ivid)) == NULL) {
@@ -305,7 +305,7 @@ char* decrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *iv
     log_trace("value is empty");
     free_crypt_pair(keypair);
     free_crypt_pair(ivpair);
-    return NULL;  
+    return NULL;
   }
 
   if ((blob_data = (uint8_t *) base64_url_decode((unsigned char *)blob, strlen(blob), &blob_data_size)) == NULL) {
@@ -316,7 +316,7 @@ char* decrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *iv
   }
 
   if ((decrypted_data = os_malloc(blob_data_size + AES_BLOCK_SIZE)) == NULL) {
-    log_err("os_malloc");
+    log_errno("os_malloc");
     free_crypt_pair(keypair);
     free_crypt_pair(ivpair);
     os_free(blob_data);
@@ -362,7 +362,7 @@ char* sign_blob_cmd(struct supervisor_context *context, char *keyid, char *blob)
   if (pair->value == NULL) {
     log_trace("value is empty");
     free_crypt_pair(pair);
-    return NULL;  
+    return NULL;
   }
 
   if ((blob_data = (uint8_t *) base64_url_decode((unsigned char *)blob, strlen(blob), &blob_data_size)) == NULL) {
