@@ -1,4 +1,5 @@
 add_library(log log.c)
+target_compile_options(log PRIVATE -fPIC)
 add_library(allocs allocs.c)
 
 add_library(cryptou cryptou.c)
@@ -9,6 +10,7 @@ add_library(base64 base64.c)
 target_link_libraries(base64 PRIVATE os log)
 
 add_library(os os.c)
+target_compile_options(os PRIVATE -fPIC)
 target_include_directories(os PRIVATE ${LIBUUID_INCLUDE_DIR})
 target_link_libraries(os PRIVATE allocs log ${LIBUUID_LIB})
 

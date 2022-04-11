@@ -20,7 +20,7 @@ AL_OPTS="-I/usr/share/aclocal" ./autogen.sh
 # Load LIB_MAKEFLAGS from CMake if set
 export MAKEFLAGS="${MAKEFLAGS-""} ${LIB_MAKEFLAGS-""}"
 
-make
+make CFLAGS='-fPIC'
 make install
 #make install-strip # make install, except with symbols removed
 make distclean

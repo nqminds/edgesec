@@ -60,6 +60,7 @@
 
 #define SQLITE_EXTENSION              ".sqlite"
 #define PCAP_EXTENSION                ".pcap"
+#define SOCK_EXTENSION                ".sock"
 
 #define MAX_UINT64_DIGITS		20
 
