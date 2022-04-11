@@ -131,7 +131,7 @@ The timestamp is given as 64 bit microseconds value and the fingerprint string i
 
 An example of the fingerprint table rows are below:
 
-| MACPROTOCOL       | FINGERPRINT | TIMESTAMP                                   | QUERY            |
+| MAC               | PROTOCOL    | FINGERPRINT                                 | TIMESTAMP        | QUERY                 |
 | ----------------- | ----------- | ------------------------------------------- | ---------------- | --------------------- |
 | 84:e3:42:3a:cb:2f | TLS.Amazon  | mI1ENXMPBQDVjwGh/o0bLSrD8+O2O5RCFQLbUVt4lzI | 1625055051481102 | a2.tuyaeu.com         |
 | 9c:ef:d5:fd:db:56 | TLS.Amazon  | mI1ENXMPBQDVjwGh/o0bLSrD8+O2O5RCFQLbUVt4lzI | 1625055051481102 | a2.tuyaeu.com         |
