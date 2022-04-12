@@ -3,4 +3,10 @@ Language:      Cpp
 BasedOnStyle:  LLVM
 # indent case in switch statement
 IndentCaseLabels: true
+IncludeCategories:
+  - Regex: '^<std'
+    SortPriority: 1
+  - Regex: '^<cmocka.h>'
+    # <cmocha.h> relies on <std...h> being included first
+    SortPriority: 2
 ...
