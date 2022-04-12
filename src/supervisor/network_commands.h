@@ -32,6 +32,7 @@
 #define TICKET_PASSPHRASE_SIZE  16
 #define TICKET_TIMEOUT          60  // In seconds
 
+#include "supervisor_config.h"
 #include "../ap/ap_config.h"
 
 
