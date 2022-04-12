@@ -1,0 +1,6 @@
+---
+Language:      Cpp
+BasedOnStyle:  LLVM
+# indent case in switch statement
+IndentCaseLabels: true
+...

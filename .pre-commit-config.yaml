@@ -10,3 +10,10 @@ repos:
     -   id: check-added-large-files
     -   id: check-merge-conflict
     -   id: check-case-conflict # in case somebody is using Windows
+-   repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v14.0.0
+    hooks:
+    -   id: clang-format
+        types_or: [c++, c, cuda]
+        # we want to keep the lib/ directory closer to the original source code
+        exclude: ^lib/
