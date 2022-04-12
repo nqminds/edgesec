@@ -19,7 +19,7 @@
 
 /**
  * @file mdns_mapper.h
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the definition of mdns mapper utils.
  */
 
@@ -35,10 +35,10 @@
 
 /**
  * @brief MDNS connection structure
- * 
+ *
  */
 typedef struct hashmap_mdns_conn {            /**< hashmap key */
-    uint8_t key[IP_ALEN];               
+    uint8_t key[IP_ALEN];
     struct mdns_list* value;                /**< mDNS list structure */
     UT_hash_handle hh;         		        /**< hashmap handle */
 } hmap_mdns_conn;
@@ -65,14 +65,14 @@ int put_mdns_answer_mapper(hmap_mdns_conn **imap, uint8_t *ip, struct mdns_answe
 
 /**
  * @brief Frees the mDNS mapper connection object
- * 
+ *
  * @param hmap mDNS mapper connection object
  */
 void free_mdns_mapper(hmap_mdns_conn **imap);
 
 /**
  * @brief Checks if mDNS mapper has an element with a given request type
- * 
+ *
  * @param imap mDNS mapper object
  * @param ip The IP
  * @param request The request type

@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file sqlite_alert_writer.h 
- * @author Alexandru Mereacre 
+ * @file sqlite_alert_writer.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the sqlite alert writer utilities.
  */
 
@@ -40,7 +40,7 @@
 
 /**
  * @brief The alert row definition
- * 
+ *
  */
 struct alert_row {
   char *hostname;               /**< The machine hostname */
@@ -55,7 +55,7 @@ struct alert_row {
 
 /**
  * @brief Opens the sqlite alert db
- * 
+ *
  * @param db_path The sqlite db path
  * @param sql The returned sqlite db structure pointer
  * @return 0 on success, -1 on failure
@@ -64,21 +64,21 @@ int open_sqlite_alert_db(char *db_path, sqlite3** sql);
 
 /**
  * @brief Closes the sqlite db
- * 
+ *
  * @param ctx The sqlite db structure pointer
  */
 void free_sqlite_alert_db(sqlite3 *db);
 
 /**
  * @brief Frees a row element
- * 
+ *
  * @param row The row structure
  */
 void free_sqlite_alert_row(struct alert_row *row);
 
 /**
  * @brief Save an alert row into the sqlite db
- * 
+ *
  * @param db The sqlite db structure pointer
  * @param row The entry row
  * @return int 0 on success, -1 on failure

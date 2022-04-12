@@ -19,7 +19,7 @@
 
 /**
  * @file subscriber_events.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the subscriber events structure.
  */
 
@@ -48,7 +48,7 @@ enum SUBSCRIBER_EVENT {
 
 /**
  * @brief Add a subscriber to the subscriber events array
- * 
+ *
  * @param context The supervisor context
  * @param addr The subscriber address
  * @return 0 on success, -1 on failure
@@ -57,7 +57,7 @@ int add_events_subscriber(struct supervisor_context *context, struct client_addr
 
 /**
  * @brief Send an event to the subscribers array
- * 
+ *
  * @param context The supervisor context
  * @param type The event type
  * @param format The event text

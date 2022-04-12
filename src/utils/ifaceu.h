@@ -18,7 +18,7 @@
  ****************************************************************************/
 
 /**
- * @file ifaceu.h 
+ * @file ifaceu.h
  * @author Alexandru Mereacre
  * @brief File containing the definition of the network interface utilities.
  */
@@ -34,13 +34,13 @@
 
 /**
  * @brief if_nametoindex from net/if.h
- * 
+ *
  */
 unsigned int iface_nametoindex (const char *ifname);
 
 /**
  * @brief Check if interface exists
- * 
+ *
  * @param ifname The interface name string
  * @return true if it exists, false otherwise
  */

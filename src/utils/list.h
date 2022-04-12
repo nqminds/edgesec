@@ -7,7 +7,7 @@
  */
 
 /**
- * @file list.h 
+ * @file list.h
  * @authora Jouni Malinen, Alexandru Mereacre
  * @brief Doubly-linked list.
  */

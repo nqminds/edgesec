@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file pcap_service.h 
- * @author Alexandru Mereacre 
+ * @file pcap_service.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the pcap service utilities.
  */
 
@@ -38,7 +38,7 @@ typedef void (*capture_callback_fn)(const void *ctx, const void *pcap_ctx,
 
 /**
  * @brief Pcap context structure definition
- * 
+ *
  */
 struct pcap_context {
   int pcap_fd;                  /**< The pcap selectable fd */
@@ -50,7 +50,7 @@ struct pcap_context {
 
 /**
  * @brief Starts the blocking pcap loop
- * 
+ *
  * @param ctx The pcap context
  * @return int 0 on success, -1 on error, -2 if the loop terminated
  */
@@ -58,14 +58,14 @@ int capture_pcap_start(struct pcap_context *ctx);
 
 /**
  * @brief Stops the blocking pcap loop
- * 
+ *
  * @param ctx The pcap context
  */
 void capture_pcap_stop(struct pcap_context *ctx);
 
 /**
  * @brief Get the pcap config datalink value
- * 
+ *
  * @param ctx The pcap context
  * @return int the config value
  */
@@ -73,7 +73,7 @@ int get_pcap_datalink(struct pcap_context *ctx);
 
 /**
  * @brief Executes the libpcap service
- * 
+ *
  * @param interface The capture interface
  * @param immediate The immediate mode flag
  * @param promiscuous The promiscuous mode flag
@@ -91,7 +91,7 @@ int run_pcap(char *interface, bool immediate, bool promiscuous,
 
 /**
  * @brief Captures a pcap packet
- * 
+ *
  * @param ctx The pcap context structure
  * @return int 0 on success, -1 otherwise
  */
@@ -99,7 +99,7 @@ int capture_pcap_packet(struct pcap_context *ctx);
 
 /**
  * @brief Saves a packet packet into file
- * 
+ *
  * @param ctx The pcap context
  * @param file_path The file path to save the packet
  * @param header The packet header
@@ -110,21 +110,21 @@ int dump_file_pcap(struct pcap_context *ctx, char *file_path, struct pcap_pkthdr
 
 /**
  * @brief Closes the pcap service
- * 
+ *
  * @param ctx The pcap context
  */
 void close_pcap(struct pcap_context *ctx);
 
 /**
  * @brief Frees a pcap list
- * 
+ *
  * @param ctx_list The pcap list
  */
 void free_pcap_list(UT_array *ctx_list);
 
 /**
  * @brief Creates a pcap list
- * 
+ *
  * @return UT_array* The pcap list, NULL on failure
  */
 UT_array * create_pcap_list(void);

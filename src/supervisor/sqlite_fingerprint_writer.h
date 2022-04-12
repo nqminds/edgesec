@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file sqlite_fingerprint_writer.h 
- * @author Alexandru Mereacre 
+ * @file sqlite_fingerprint_writer.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the sqlite fingerprint writer utilities.
  */
 
@@ -44,7 +44,7 @@
 
 /**
  * @brief The fingerprint row definition
- * 
+ *
  */
 struct fingerprint_row {
   char *mac;                /**< The MAC */
@@ -56,7 +56,7 @@ struct fingerprint_row {
 
 /**
  * @brief Opens the sqlite fingerprint db
- * 
+ *
  * @param db_path The sqlite db path
  * @param sql The returned sqlite db structure pointer
  * @return 0 on success, -1 on failure
@@ -65,14 +65,14 @@ int open_sqlite_fingerprint_db(char *db_path, sqlite3** sql);
 
 /**
  * @brief Closes the sqlite db
- * 
+ *
  * @param ctx The sqlite db structure pointer
  */
 void free_sqlite_fingerprint_db(sqlite3 *db);
 
 /**
  * @brief Save a fingerprint row into the sqlite db
- * 
+ *
  * @param db The sqlite db structure pointer
  * @param row The entry row
  * @return int 0 on success, -1 on failure
@@ -82,7 +82,7 @@ int save_sqlite_fingerprint_row(sqlite3 *db, struct fingerprint_row *row);
 
 /**
  * @brief Retrieves all the fingerprint rows satifying a query
- * 
+ *
  * @param db The sqlite db structure pointer
  * @param mac The MAC value for
  * @param timestamp The timestamp value
@@ -96,7 +96,7 @@ int get_sqlite_fingerprint_rows(sqlite3 *db, char *mac, uint64_t timestamp, char
 
 /**
  * @brief Frees all the rows an an array of rows
- * 
+ *
  * @param rows The array of rows
  */
 void free_sqlite_fingerprint_rows(UT_array *rows);

@@ -19,7 +19,7 @@
 
 /**
  * @file allocs.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the allocs functionalities.
  */
 

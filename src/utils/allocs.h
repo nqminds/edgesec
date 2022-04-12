@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file allocs.h 
- * @author Alexandru Mereacre 
+ * @file allocs.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the allocs functionalities.
  */
 #ifndef ALLOCS_H
@@ -41,9 +41,9 @@ extern "C" {
 
 /**
  * @brief Allocate and zero memory
- * 
+ *
  * Caller is responsible for freeing the returned buffer with os_free().
- * 
+ *
  * @param size Number of bytes to allocate
  * @return void* Pointer to allocated and zeroed memory or %NULL on failure
  */
@@ -51,7 +51,7 @@ void * os_zalloc(size_t size);
 
 /**
  * @brief Allocate and zero memory for an array
- * 
+ *
  * This function can be used as a wrapper for os_zalloc(nmemb * size) when an
  * allocation is used for an array. The main benefit over os_zalloc() is in
  * having an extra check to catch integer overflows in multiplication.
@@ -97,7 +97,7 @@ static inline void * os_realloc_array(void *ptr, size_t nmemb, size_t size)
 
 /**
  * @brief Allocate duplicate of passed memory chunk
- * 
+ *
  * This function allocates a memory block like os_malloc() would, and
  * copies the given source buffer into it.
  *
@@ -122,7 +122,7 @@ void * os_memdup(const void *src, size_t len);
 
 /**
  * @brief Returns a pointer to a new string which is a duplicate of the string s
- * 
+ *
  * @param s The input string
  * @return char* The dublicate string pointer, NULL on error
  */

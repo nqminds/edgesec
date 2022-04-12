@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file dns_decoder.h 
- * @author Alexandru Mereacre 
+ * @file dns_decoder.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the dns packet decoder utilities.
  */
 
@@ -31,7 +31,7 @@
 
 /**
  * @brief Decode dns packet
- * 
+ *
  * @param cpac The captyure packet structure
  * @return true Success, false otherwise
  */

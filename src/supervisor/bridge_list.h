@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file bridge_list.h 
- * @author Alexandru Mereacre 
+ * @file bridge_list.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the bridge creation functions.
  */
 
@@ -34,7 +34,7 @@
 
 /**
  * @brief The bridge MAc tuple definition
- * 
+ *
  */
 struct bridge_mac_tuple {
   uint8_t src_addr[ETH_ALEN];            /**< MAC address in byte format for source node*/
@@ -42,7 +42,7 @@ struct bridge_mac_tuple {
 };
 /**
  * @brief The MAC bridge address store list
- * 
+ *
  */
 struct bridge_mac_list {
   struct bridge_mac_tuple mac_tuple;          /**< The MAC address tuple */
@@ -51,7 +51,7 @@ struct bridge_mac_list {
 
 /**
  * @brief The structure for edge definition
- * 
+ *
  */
 struct bridge_mac_list_tuple {
   struct bridge_mac_list *left_edge;
@@ -60,21 +60,21 @@ struct bridge_mac_list_tuple {
 
 /**
  * @brief Init the MAC brideg address list for bridge assignment
- * 
+ *
  * @return struct bridge_mac_list* The initialised list
  */
 struct bridge_mac_list *init_bridge_list(void);
 
 /**
  * @brief Free MAC bridge address list
- * 
+ *
  * @param ml The MAC bridge address list
  */
 void free_bridge_list(struct bridge_mac_list *ml);
 
 /**
  * @brief Add bridge connection to the MAC bridge address list
- * 
+ *
  * @param ml The MAC bridge address list
  * @param mac_addr_left The MAC address in byte format for left node
  * @param mac_addr_right The MAC address in byte format for right node
@@ -84,7 +84,7 @@ int add_bridge_mac(struct bridge_mac_list *ml, const uint8_t *mac_addr_left, con
 
 /**
  * @brief Removes a bridge connection from the MAC address list
- * 
+ *
  * @param ml The MAC bridge address list
  * @param mac_addr_left The MAC address in byte format for left node
  * @param mac_addr_right The MAC address in byte format for right node
@@ -94,7 +94,7 @@ int remove_bridge_mac(struct bridge_mac_list *ml, const uint8_t *mac_addr_left, 
 
 /**
  * @brief Get the bridge mac object from a bridge connection
- * 
+ *
  * @param ml The MAC bridge address list
  * @param mac_addr_left The MAC address in byte format for left node
  * @param mac_addr_right The MAC address in byte format for rigth node
@@ -104,7 +104,7 @@ struct bridge_mac_list_tuple get_bridge_mac(struct bridge_mac_list *ml, const ui
 
 /**
  * @brief Get the MAC address dst list array for a src MAC address
- * 
+ *
  * @param ml The MAC bridge address list
  * @param src_addr The source MAC address in byte format
  * @param mac_list_arr The returned array of MAC addresses
@@ -114,7 +114,7 @@ int get_src_mac_list(struct bridge_mac_list *ml, const uint8_t *src_addr, UT_arr
 
 /**
  * @brief Get the all the bridge edges as tuple list array
- * 
+ *
  * @param ml The MAC bridge address list
  * @param tuple_list_arr The returned array of tuples
  * @return int The total number of tuples, -1 on error
@@ -123,7 +123,7 @@ int get_all_bridge_edges(struct bridge_mac_list *ml, UT_array **tuple_list_arr);
 
 /**
  * @brief Check if a bridge exist
- * 
+ *
  * @param ml The MAC bridge address list
  * @param mac_addr_left The MAC address in byte format for left node
  * @param mac_addr_right The MAC address in byte format for rigth node

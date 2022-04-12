@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file command_mapper.h 
- * @author Alexandru Mereacre 
+ * @file command_mapper.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the command mapper.
  */
 
@@ -37,24 +37,24 @@
 
 /**
  * @brief Command mapper connection structure
- * 
+ *
  */
 typedef struct hashmap_command_conn {           /**< hashmap key */
-    uint32_t key;               
+    uint32_t key;
     int value;                                  /**< Command info TBD */
     UT_hash_handle hh;         		            /**< hashmap handle */
 } hmap_command_conn;
 
 /**
  * @brief Frees the command mapper connection object
- * 
+ *
  * @param hmap Command mapper connection object
  */
 void free_command_mapper(hmap_command_conn **hmap);
 
 /**
  * @brief Insert a command into the command mapper connection object
- * 
+ *
  * @param hmap Command mapper object
  * @param command The command string
  * @return 0 on success, -1 on failure
@@ -63,7 +63,7 @@ int put_command_mapper(hmap_command_conn **hmap, char *command);
 
 /**
  * @brief Check if a command is in the command mapper connection object
- * 
+ *
  * @param hmap Command mapper object
  * @param command The command string
  * @return 1 if command is in hmap, 0 otherwise, -1 on failure

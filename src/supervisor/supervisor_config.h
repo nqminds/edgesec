@@ -19,7 +19,7 @@
 
 /**
  * @file supervisor_config.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the supervisor service structure.
  */
 
@@ -42,7 +42,7 @@
 
 /**
  * @brief Authentication ticket structure definition
- * 
+ *
  */
 struct auth_ticket {
   uint8_t         passphrase[AP_SECRET_LEN];              /**< the ticket passphrase */
@@ -54,7 +54,7 @@ struct auth_ticket {
 
 /**
  * @brief Supervisor structure definition
- * 
+ *
  */
 struct supervisor_context {
   hmap_mac_conn   *mac_mapper;                                /**< MAC mapper connection structure */
@@ -63,7 +63,7 @@ struct supervisor_context {
   hmap_str_keychar *hmap_bin_paths;                           /**< Mapper for paths to systems binaries */
   bool            allow_all_connections;                      /**< @c allow_all_connections Flag from @c struct app_config */
   bool            allow_all_nat;                              /**< @c allow_all_nat Flag from @c struct app_config */
-  bool            exec_capture;                               /**< @c execute_capture from @c struct app_config */  
+  bool            exec_capture;                               /**< @c execute_capture from @c struct app_config */
   uint8_t         wpa_passphrase[AP_SECRET_LEN];              /**< @c wpa_passphrase from @c struct hostapd_conf */
   ssize_t         wpa_passphrase_len;                         /**< the length of @c wpa_passphrase*/
   char            nat_bridge[IFNAMSIZ];                       /**< @c nat_bridge param from @c struct app_config */
@@ -93,7 +93,7 @@ struct supervisor_context {
   struct fwctx* fw_ctx;                                       /**< The firewall context. */
   struct crypt_context *crypt_ctx;                            /**< The crypt context. */
   struct iface_context *iface_ctx;                            /**< The interface context. */
-  struct auth_ticket *ticket;                                 /**< The authentication ticket. */  
+  struct auth_ticket *ticket;                                 /**< The authentication ticket. */
   int              ap_sock;                                   /**< The AP notifier socket. */
 };
 

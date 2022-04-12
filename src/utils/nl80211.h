@@ -1,6 +1,6 @@
 /**
- * @file nl80211.h 
- * @author Intel Corporation 
+ * @file nl80211.h
+ * @author Intel Corporation
  * @brief 802.11 netlink interface public header.
  */
 

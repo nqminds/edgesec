@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file sqlite_macconn_writer.h 
- * @author Alexandru Mereacre 
+ * @file sqlite_macconn_writer.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the sqlite macconn writer utilities.
  */
 
@@ -45,7 +45,7 @@
 
 /**
  * @brief Opens the sqlite macconn db
- * 
+ *
  * @param db_path The sqlite db path
  * @param sql The returned sqlite db structure pointer
  * @return 0 on success, -1 on failure
@@ -54,14 +54,14 @@ int open_sqlite_macconn_db(char *db_path, sqlite3** sql);
 
 /**
  * @brief Closes the sqlite db
- * 
+ *
  * @param ctx The sqlite db structure pointer
  */
 void free_sqlite_macconn_db(sqlite3 *db);
 
 /**
  * @brief Saves a macconn entry in the sqlite db
- * 
+ *
  * @param db The sqlite db structure pointer
  * @param conn The MAC connection structure
  * @return int 0 on success, -1 on failure
@@ -70,7 +70,7 @@ int save_sqlite_macconn_entry(sqlite3 *db, struct mac_conn *conn);
 
 /**
  * @brief Saves a macconn entries in the sqlite db
- * 
+ *
  * @param db The sqlite db structure pointer
  * @param entries The macconn entries
  * @return int 0 on success, -1 on failure

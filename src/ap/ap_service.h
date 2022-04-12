@@ -18,11 +18,11 @@
  ****************************************************************************/
 
 /**
- * @file ap_service.h 
- * @author Alexandru Mereacre 
+ * @file ap_service.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the ap service.
- * 
- * Defines the functions to start and stop the acces point service (AP). It also 
+ *
+ * Defines the functions to start and stop the acces point service (AP). It also
  * defines auxiliary commands to manage the acces control list for stations
  * connected to the AP.
  */
@@ -53,7 +53,7 @@
 
 /**
  * @brief Runs the AP service
- * 
+ *
  * @param context The supervisor context structure
  * @param exec_ap Flag to execute/signal the AP process
  * @param generate_ssid Flag to generate the SSID for AP
@@ -65,15 +65,15 @@ int run_ap(struct supervisor_context *context, bool exec_ap, bool generate_ssid,
 
 /**
  * @brief Closes (terminates) AP process
- * 
+ *
  * @param context The supervisor context structure
  * @return true success, false otherwise
  */
 bool close_ap(struct supervisor_context *context);
 
 /**
- * @brief Deny ACL ADD AP command 
- * 
+ * @brief Deny ACL ADD AP command
+ *
  * @param hconf AP config structure
  * @param mac_addr The mac address to add to deny list
  * @return int 0 on success, -1 on failure
@@ -81,8 +81,8 @@ bool close_ap(struct supervisor_context *context);
 int denyacl_add_ap_command(struct apconf *hconf, char *mac_addr);
 
 /**
- * @brief Deny ACL DEL AP command 
- * 
+ * @brief Deny ACL DEL AP command
+ *
  * @param hconf AP config structure
  * @param mac_addr The mac address to remove from deny list
  * @return int 0 on success, -1 on failure
@@ -91,7 +91,7 @@ int denyacl_del_ap_command(struct apconf *hconf, char *mac_addr);
 
 /**
  * @brief Disconnect and reconnect a MAC device from the AP
- * 
+ *
  * @param hconf AP config structure
  * @param mac_addr The mac address to disconnect
  * @return int 0 on success, -1 on failure
@@ -100,7 +100,7 @@ int disconnect_ap_command(struct apconf *hconf, char *mac_addr);
 
 /**
  * @brief Check if a station is registered on the AP
- * 
+ *
  * @param hconf AP config structure
  * @param mac_addr The mac address of the station
  * @return int 0 on success, -1 on failure

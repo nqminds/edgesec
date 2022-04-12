@@ -19,7 +19,7 @@
 
 /**
  * @file reflection_list.h
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the definition of reflection list structures.
  */
 
@@ -43,14 +43,14 @@ struct reflection_list {
 
 /**
  * @brief Initialises the reflection list
- * 
+ *
  * @return struct reflection_list * The reflection list or %NULL on failure
  */
 struct reflection_list * init_reflection_list(void);
 
 /**
  * @brief Pushes an interface element to the reflection list
- * 
+ *
  * @param rif The reflection list
  * @param ifindex The interface index
  * @param ifname The interface name
@@ -60,7 +60,7 @@ struct reflection_list* push_reflection_list(struct reflection_list *rif, unsign
 
 /**
  * @brief Frees the reflection list
- * 
+ *
  * @param rif The reflection list
  */
 void free_reflection_list(struct reflection_list *rif);

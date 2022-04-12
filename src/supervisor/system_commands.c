@@ -19,7 +19,7 @@
 
 /**
  * @file system_commands.c
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the implementation of the system commands.
  */
 #include <sys/un.h>

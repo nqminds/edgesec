@@ -7,7 +7,7 @@
  */
 
 /**
- * @file md5_internal.h 
+ * @file md5_internal.h
  * @author Jouni Malinen
  * @brief MD5 internal definitions.
  */

@@ -41,7 +41,7 @@ enum MDNS_REQUEST_TYPE {
 
 /**
  * @brief MDNS info list
- * 
+ *
  */
 struct mdns_list_info {
   enum MDNS_REQUEST_TYPE request;       /**< MDNS request type */
@@ -53,7 +53,7 @@ struct mdns_list_info {
 
 /**
  * @brief MDNS info list
- * 
+ *
  */
 struct mdns_list {
   struct mdns_list_info info;   /**< MDNS info structure */
@@ -78,21 +78,21 @@ int push_mdns_list(struct mdns_list* mlist, struct mdns_list_info *info);
 
 /**
  * @brief Delete a mdns list entry
- * 
+ *
  * @param el The mdns list entry
  */
 void free_mdns_list_el(struct mdns_list* el);
 
 /**
  * @brief Frees the mdns list
- * 
+ *
  * @param mlist The pointer to the mdns list
  */
 void free_mdns_list(struct mdns_list* mlist);
 
 /**
  * @brief Checks if MDNS list has an element with a given request type
- * 
+ *
  * @param mlist The pointer to the mdns list
  * @param request The request type
  * @return 1 request present, 0 otherwise and -1 on failure

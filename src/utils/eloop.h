@@ -15,7 +15,7 @@
  */
 
 /**
- * @file eloop.h 
+ * @file eloop.h
  * @author Jouni Malinen
  * @brief Event loop.
  */

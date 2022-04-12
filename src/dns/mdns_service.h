@@ -19,7 +19,7 @@
 
 /**
  * @file mdns_service.h
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the definition of mDNS service structures.
  */
 
@@ -34,7 +34,7 @@
 
 /**
  * @brief The mDNS context.
- * 
+ *
  */
 struct mdns_context {
   struct reflection_list *rif4;                 /**< IP4 reflection list. */
@@ -44,18 +44,18 @@ struct mdns_context {
   hmap_command_conn *command_mapper;            /**< The command mapper */
   UT_array *pctx_list;                          /**< The list of pcap context */
   struct mdns_conf config;                      /**< mDNS config. */
-  char *ifname;                                 /**< Specifies the interface for pcap lib. */      
+  char *ifname;                                 /**< Specifies the interface for pcap lib. */
   char filter[MAX_FILTER_SIZE];                 /**< Specifies the filter expression for pcap lib */
   char cap_id[MAX_RANDOM_UUID_LEN];             /**< Auto generated capture ID */
   char hostname[OS_HOST_NAME_MAX];              /**< The capture hostname */
   char domain_server_path[MAX_OS_PATH_LEN];     /**< Specifies the path to the UNIX domain socket server */
   char domain_delim;                            /**< Specifies the UNIX domain command delimiter */
-  int sfd;                                      /**< Domain client file descriptor */  
+  int sfd;                                      /**< Domain client file descriptor */
 };
 
 /**
  * @brief Runs the mDNS forwarder service
- * 
+ *
  * @param config The mDNS config structure
  * @return int 0 on success, -1 on failure
  */
@@ -63,7 +63,7 @@ int run_mdns(struct mdns_context *context);
 
 /**
  * @brief Closes mDNS service
- * 
+ *
  * @param context The mDNS context structure
  * @return 0 on success, -1 on failure
  */

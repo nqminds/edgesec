@@ -7,7 +7,7 @@
  */
 
 /**
- * @file md5.h 
+ * @file md5.h
  * @author Jouni Malinen
  * @brief MD5 hash implementation and interface functions.
  */

@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file hashmap.h 
- * @author Alexandru Mereacre 
+ * @file hashmap.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the hashmap utilities.
  */
 
@@ -34,7 +34,7 @@
 
 /**
  * @brief keyd array hasmap structure definition
- * 
+ *
  */
 typedef struct hashmap_str_keychar {
     char key[HASH_KEY_CHAR_SIZE];       /**< key (string is WITHIN the structure) */
@@ -44,7 +44,7 @@ typedef struct hashmap_str_keychar {
 
 /**
  * @brief string hasmap structure definition
- * 
+ *
  */
 typedef struct hashmap_str_keyptr {
     char *key;             			    /**< key (string is WITHIN the structure) */
@@ -54,14 +54,14 @@ typedef struct hashmap_str_keyptr {
 
 /**
  * @brief Creates a new string hasmap
- * 
+ *
  * @return hmap_str_keychar* The string hashmap object
  */
 hmap_str_keychar *hmap_str_keychar_new(void);
 
 /**
  * @brief Retrieves a string from string hashmap for a given key
- * 
+ *
  * @param hmap The string hashmap object
  * @param keyptr The hashmap key
  * @return char* Returned string, NULL if not found
@@ -70,7 +70,7 @@ char *hmap_str_keychar_get(hmap_str_keychar **hmap, char *keyptr);
 
 /**
  * @brief Inserts a string into a string hashmap for a given key
- * 
+ *
  * @param hmap The string hashmap object
  * @param keyptr The hashmap key
  * @param value The hashmap string value
@@ -79,8 +79,8 @@ char *hmap_str_keychar_get(hmap_str_keychar **hmap, char *keyptr);
 bool hmap_str_keychar_put(hmap_str_keychar **hmap, char *keyptr, char *value);
 
 /**
- * @brief Deletes the string hashmap object 
- * 
+ * @brief Deletes the string hashmap object
+ *
  * @param hmap The string hashmap object
  */
 void hmap_str_keychar_free(hmap_str_keychar **hmap);

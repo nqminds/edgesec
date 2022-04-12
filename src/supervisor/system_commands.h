@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file system_commands.h 
- * @author Alexandru Mereacre 
+ * @file system_commands.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the system commands.
  */
 
@@ -42,7 +42,7 @@ enum DHCP_IP_TYPE {
 
 /**
  * @brief SET_IP command
- * 
+ *
  * @param context The supervisor structure instance
  * @param mac_addr The MAC address
  * @param ip_addr The IP address
@@ -54,14 +54,14 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
 
 /**
  * @brief SUPERVISOR_PING command
- * 
+ *
  * @return char* the ping reply string, NULL on failure
  */
 char* ping_cmd(void);
 
 /**
  * @brief SUBSCRIBE_EVENTS command
- * 
+ *
  * @param context The supervisor structure instance
  * @param addr The subscriber address
  * @return 0 on success, -1 on failure

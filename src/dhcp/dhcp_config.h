@@ -19,7 +19,7 @@
 
 /**
  * @file dhcp_config.h
- * @author Alexandru Mereacre 
+ * @author Alexandru Mereacre
  * @brief File containing the definition of dhcp configuration structures.
  */
 #ifndef DHCP_CONFIG_H
@@ -35,7 +35,7 @@
 
 /**
  * @brief The dhcp mapping structure
- * 
+ *
  */
 typedef struct config_dhcpinfo_t {
 	int       			        vlanid;                             /**< Interface VLAN ID */
@@ -47,7 +47,7 @@ typedef struct config_dhcpinfo_t {
 
 /**
  * @brief The dhcp configuration structures.
- * 
+ *
  */
 struct dhcp_conf {
   char dhcp_bin_path[MAX_OS_PATH_LEN];                  /**< The dhcp bin path string */

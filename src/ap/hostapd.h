@@ -18,10 +18,10 @@
  ****************************************************************************/
 
 /**
- * @file hostapd.h 
- * @author Alexandru Mereacre 
+ * @file hostapd.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of hostapd config generation utilities.
- * 
+ *
  * Defines function that generate the hostapd daemon configuration file and
  * manages (execute, kill and signal) the hostapd process.
  */
@@ -39,7 +39,7 @@
 
 /**
  * @brief Generates and saves the hostapd configuration files
- * 
+ *
  * @param hconf The hostapd configuration structure
  * @param rconf The radius configuration structure
  * @return 0 if config file saved, -1 otherwise
@@ -48,7 +48,7 @@ int generate_hostapd_conf(struct apconf *hconf, struct radius_conf *rconf);
 
 /**
  * @brief Generates and save the VLAN configuration file
- * 
+ *
  * @param vlan_file The VLAN configuration file path
  * @param interface The WiFi AP interface name
  * @return 0 if VLAN config file saved, -1 otherwise
@@ -57,7 +57,7 @@ int generate_vlan_conf(char *vlan_file, char *interface);
 
 /**
  * @brief Executes the hostapd process
- * 
+ *
  * @param hconf The hostapd process config structure
  * @return int 0 on success, -1 on failure
  */
@@ -65,7 +65,7 @@ int run_ap_process(struct apconf *hconf);
 
 /**
  * @brief Signal the AP process to reload the config
- * 
+ *
  * @param hconf The hostapd process config structure
  * @return int 0 on success, -1 on failure
  */
@@ -73,8 +73,8 @@ int signal_ap_process(struct apconf *hconf);
 
 /**
  * @brief Terminate the AP service
- * 
- * @return bool true on success, false otherwise 
+ *
+ * @return bool true on success, false otherwise
  */
 bool kill_ap_process(void);
 

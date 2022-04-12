@@ -18,8 +18,8 @@
  ****************************************************************************/
 
 /**
- * @file cryptou.h 
- * @author Alexandru Mereacre 
+ * @file cryptou.h
+ * @author Alexandru Mereacre
  * @brief File containing the definition of the cryptographic utilities.
  */
 
@@ -48,7 +48,7 @@ struct certificate_meta {
   char c[MAX_CERT_FIELD_SIZE];
   char o[MAX_CERT_FIELD_SIZE];
   char ou[MAX_CERT_FIELD_SIZE];
-  char cn[MAX_CERT_FIELD_SIZE]; 
+  char cn[MAX_CERT_FIELD_SIZE];
 };
 
 enum CRYPTO_KEY_TYPE {
@@ -59,7 +59,7 @@ enum CRYPTO_KEY_TYPE {
 
 /**
  * @brief Generate IV
- * 
+ *
  * @param The output buffer
  * @param The IV size
  * @return 1 on success, 0 on failure
@@ -68,7 +68,7 @@ int crypto_geniv(uint8_t *buf, int iv_size);
 
 /**
  * @brief Generate salt
- * 
+ *
  * @param buf The output buffer
  * @param salt_size The salt size in bytes
  * @return 1 on success, 0 on failure
@@ -77,7 +77,7 @@ int crypto_gensalt(uint8_t *buf, int salt_size);
 
 /**
  * @brief Generate a random key
- * 
+ *
  * @param buf The output buffer
  * @param key_size The key size in bytes
  * @return 1 on success, 0 on failure
@@ -86,7 +86,7 @@ int crypto_genkey(uint8_t *buf, int key_size);
 
 /**
  * @brief Transforms a secret buf into a key
- * 
+ *
  * @param buf The secret buf
  * @param buf_size The buf size
  * @param salt The salt buf
@@ -100,7 +100,7 @@ int crypto_buf2key(uint8_t *buf, int buf_size, uint8_t *salt, int salt_size,
 
 /**
  * @brief Encrypts a buffer with AES CBC 256
- * 
+ *
  * @param in The input buffer
  * @param in_size The input buffer size
  * @param key The 256 bit key
@@ -113,7 +113,7 @@ ssize_t crypto_encrypt(uint8_t *in, int in_size, uint8_t *key,
 
 /**
  * @brief Decrypts a buffer with AES CBC 256
- * 
+ *
  * @param in The input buffer
  * @param in_size The input buffer size
  * @param key The 256 bit key
@@ -126,7 +126,7 @@ ssize_t crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
 
 /**
  * @brief Generate a private RSA key string
- * 
+ *
  * @param type The key type
  * @param bits Number of key bits
  * @param key The output key string
@@ -136,7 +136,7 @@ int crypto_generate_privkey_str(enum CRYPTO_KEY_TYPE type, int bits, char **key)
 
 /**
  * @brief Generates a public key string from a private key
- * 
+ *
  * @param key The private key buffer
  * @param key_size The private key buffer size
  * @param pub The public key string
@@ -146,7 +146,7 @@ int crypto_generate_pubkey_str(uint8_t *key, size_t key_size, char **pub);
 
 /**
  * @brief Generates a pair of private key and certificate strings
- * 
+ *
  * @param meta Certificate metadata
  * @param key The private key buffer
  * @param key_size The private key buffer size
@@ -157,7 +157,7 @@ int crypto_generate_cert_str(struct certificate_meta *meta, uint8_t *key, size_t
 
 /**
  * @brief Signs a buffer with a private key string
- * 
+ *
  * @param key The private key buffer
  * @param key_size The private key buffer size
  * @param in The input buffer
