@@ -14,9 +14,9 @@
     "lint": "eslint *.js src/"
   },
   "dependencies": {
-    "@docusaurus/core": "2.0.0-beta.18",
-    "@docusaurus/mdx-loader": "2.0.0-beta.18",
-    "@docusaurus/preset-classic": "2.0.0-beta.18",
+    "@docusaurus/core": "^2.0.0-beta.18",
+    "@docusaurus/mdx-loader": "^2.0.0-beta.18",
+    "@docusaurus/preset-classic": "^2.0.0-beta.18",
     "clsx": "^1.1.1",
     "docusaurus-lunr-search": "^2.1.15",
     "docusaurus-pdf": "^1.2.0",
