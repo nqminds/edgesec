@@ -183,14 +183,14 @@ void eloop_tout_handler(void *eloop_ctx, void *user_ctx)
   struct capture_context *context = (struct capture_context *) user_ctx;
   struct packet_queue *el_packet;
   struct pcap_queue *el_pcap;
-  struct string_queue* squeue = NULL;
-  struct eth_schema *eths = NULL;
+  // struct string_queue* squeue = NULL;
+  // struct eth_schema *eths = NULL;
 
-  char id[MAX_RANDOM_UUID_LEN + 2], *data;
+  // char id[MAX_RANDOM_UUID_LEN + 2], *data;
 
-  if((squeue = init_string_queue(-1)) == NULL) {
-    log_trace("init_string_queue fail");
-  }
+  // if((squeue = init_string_queue(-1)) == NULL) {
+  //   log_trace("init_string_queue fail");
+  // }
 
   // Process all packets in the queue
   while(is_packet_queue_empty(context->pqueue) < 1) {
@@ -199,26 +199,26 @@ void eloop_tout_handler(void *eloop_ctx, void *user_ctx)
         save_packet_statement(context->header_db, &(el_packet->tp));
       }
 
-      if (squeue != NULL && el_packet->tp.type == PACKET_ETHERNET) {
-        eths = (struct eth_schema *)el_packet->tp.packet;
-        sprintf(id, "%s%c", eths->id, context->domain_delim);
-        push_string_queue(squeue, id);
-      }
+      // if (squeue != NULL && el_packet->tp.type == PACKET_ETHERNET) {
+      //   eths = (struct eth_schema *)el_packet->tp.packet;
+      //   sprintf(id, "%s%c", eths->id, context->domain_delim);
+      //   push_string_queue(squeue, id);
+      // }
 
       free_packet_tuple(&el_packet->tp);
       free_packet_queue_el(el_packet);
     }
   }
 
-  if (squeue != NULL) {
-    data = concat_string_queue(squeue, -1);
-    if (data != NULL) {
-      send_domain_data(context, data);
-      os_free(data);
-    }
-  }
+  // if (squeue != NULL) {
+  //   data = concat_string_queue(squeue, -1);
+  //   if (data != NULL) {
+  //     send_domain_data(context, data);
+  //     os_free(data);
+  //   }
+  // }
 
-  free_string_queue(squeue);
+  // free_string_queue(squeue);
 
   if (context->file_write) {
     while(is_pcap_queue_empty(context->cqueue) < 1) {

@@ -80,12 +80,12 @@ int run_analyser(struct capture_conf *config, pid_t *child_pid)
     return -1;
   }
 
-  if (is_proc_running(proc_name) <= 0) {
-    log_trace("is_proc_running fail (%s)", proc_name);
-    os_free(proc_name);
-    capture_freeopt(process_argv);
-    return -1;
-  }
+  // if (is_proc_running(proc_name) <= 0) {
+  //   log_trace("is_proc_running fail (%s)", proc_name);
+  //   os_free(proc_name);
+  //   capture_freeopt(process_argv);
+  //   return -1;
+  // }
 
   log_trace("Found capture process running with pid=%d (%s)", *child_pid, proc_name);
   os_free(proc_name);
