@@ -509,7 +509,7 @@ def llcp_worker(llc):
             print("Starting handover client")
             p2p_handover_client(llc)
             return
-            
+
     clear_raw_mode()
     print("Exiting llcp_worker thread")
 

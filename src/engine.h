@@ -42,9 +42,11 @@
 int init_context(struct app_config *app_config, struct supervisor_context *ctx);
 
 /**
- * @brief Executes the edgesec WiFi networking engine. Creates subnets and starts the supervisor, radius servers and hostapd service.
+ * @brief Executes the edgesec WiFi networking engine. Creates subnets and
+ * starts the supervisor, radius servers and hostapd service.
  *
- * @param app_config The app configuration structures, setting WiFi network config params.
+ * @param app_config The app configuration structures, setting WiFi network
+ * config params.
  * @return @c true if succes, @c false if a service fails to start.
  */
 bool run_engine(struct app_config *app_config);

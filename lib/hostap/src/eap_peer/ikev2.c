@@ -411,7 +411,7 @@ static int ikev2_process_kei(struct ikev2_responder_data *data,
 
 	wpa_hexdump_buf(MSG_DEBUG, "IKEV2: KEi Diffie-Hellman Public Value",
 			data->i_dh_public);
-	
+
 	return 0;
 }
 

@@ -31,8 +31,8 @@
 
 #include "capture_config.h"
 
-#define MAX_DB_NAME_LENGTH            MAX_RANDOM_UUID_LEN + STRLEN(SQLITE_EXTENSION)
-#define MAX_PCAP_FILE_NAME_LENGTH     MAX_RANDOM_UUID_LEN + STRLEN(PCAP_EXTENSION)
+#define MAX_DB_NAME_LENGTH MAX_RANDOM_UUID_LEN + STRLEN(SQLITE_EXTENSION)
+#define MAX_PCAP_FILE_NAME_LENGTH MAX_RANDOM_UUID_LEN + STRLEN(PCAP_EXTENSION)
 
 struct capture_context {
   uint32_t process_interval;
@@ -67,8 +67,8 @@ struct capture_context {
  * @param header pcap header structure
  * @param packet Returned pcap packet
  */
-void pcap_callback(const void *ctx, const void *pcap_ctx,
-                   char *ltype, struct pcap_pkthdr *header, uint8_t *packet);
+void pcap_callback(const void *ctx, const void *pcap_ctx, char *ltype,
+                   struct pcap_pkthdr *header, uint8_t *packet);
 
 /**
  * @brief Starts the default analyser engine

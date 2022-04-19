@@ -32,8 +32,7 @@
 #include "os.h"
 #include "log.h"
 
-struct string_queue* init_string_queue(ssize_t max_length)
-{
+struct string_queue *init_string_queue(ssize_t max_length) {
   struct string_queue *queue;
   queue = os_zalloc(sizeof(*queue));
 
@@ -49,9 +48,8 @@ struct string_queue* init_string_queue(ssize_t max_length)
   return queue;
 }
 
-int push_string_queue(struct string_queue* queue, char *str)
-{
-  struct string_queue* el;
+int push_string_queue(struct string_queue *queue, char *str) {
+  struct string_queue *el;
   ssize_t max_length;
 
   if (str == NULL) {
@@ -83,18 +81,16 @@ int push_string_queue(struct string_queue* queue, char *str)
   return 0;
 }
 
-void free_string_queue_el(struct string_queue* el)
-{
+void free_string_queue_el(struct string_queue *el) {
   if (el != NULL) {
     dl_list_del(&el->list);
     os_free(el->str);
-	  os_free(el);
+    os_free(el);
   }
 }
 
-int peek_string_queue(struct string_queue* queue, char **str)
-{
-  struct string_queue* el = NULL;
+int peek_string_queue(struct string_queue *queue, char **str) {
+  struct string_queue *el = NULL;
   *str = NULL;
 
   if (queue == NULL)
@@ -108,9 +104,8 @@ int peek_string_queue(struct string_queue* queue, char **str)
   return 0;
 }
 
-int pop_string_queue(struct string_queue* queue, char **str)
-{
-  struct string_queue* el = NULL;
+int pop_string_queue(struct string_queue *queue, char **str) {
+  struct string_queue *el = NULL;
   int ret = peek_string_queue(queue, str);
 
   if (ret == 0) {
@@ -121,34 +116,30 @@ int pop_string_queue(struct string_queue* queue, char **str)
   return ret;
 }
 
-void empty_string_queue(struct string_queue* queue, ssize_t count)
-{
-  struct string_queue* el;
+void empty_string_queue(struct string_queue *queue, ssize_t count) {
+  struct string_queue *el;
   ssize_t num = 0;
 
-  while ((el = dl_list_first(&queue->list, struct string_queue, list)) != NULL &&
-         ((num < count && count > 0) || count < 0))
-  {
+  while ((el = dl_list_first(&queue->list, struct string_queue, list)) !=
+             NULL &&
+         ((num < count && count > 0) || count < 0)) {
     free_string_queue_el(el);
-    num ++;
+    num++;
   }
 }
 
-void free_string_queue(struct string_queue* queue)
-{
+void free_string_queue(struct string_queue *queue) {
   if (queue != NULL) {
     empty_string_queue(queue, -1);
     free_string_queue_el(queue);
   }
 }
 
-ssize_t get_string_queue_length(struct string_queue* queue)
-{
+ssize_t get_string_queue_length(struct string_queue *queue) {
   return (queue != NULL) ? dl_list_len(&queue->list) : 0;
 }
 
-char* concat_string_queue(struct string_queue *queue, ssize_t count)
-{
+char *concat_string_queue(struct string_queue *queue, ssize_t count) {
   struct string_queue *el;
   char *concat_str = NULL;
   ssize_t size = 1, num = 0;
@@ -163,7 +154,8 @@ char* concat_string_queue(struct string_queue *queue, ssize_t count)
       size += strlen(el->str);
       if (concat_str == NULL) {
         concat_str = os_zalloc(size);
-      } else concat_str = os_realloc(concat_str, size);
+      } else
+        concat_str = os_realloc(concat_str, size);
 
       if (concat_str == NULL) {
         log_errno("os_malloc");
@@ -172,7 +164,7 @@ char* concat_string_queue(struct string_queue *queue, ssize_t count)
 
       strcat(concat_str, el->str);
     }
-    num ++;
+    num++;
   }
 
   // // Process all strings in the queue

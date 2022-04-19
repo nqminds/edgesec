@@ -43,15 +43,14 @@
 #define IP_SECTION_STR "%d%d%d%d"
 
 struct uci_type_list {
-	unsigned int idx;
-	const char *name;
-	struct uci_type_list *next;
+  unsigned int idx;
+  const char *name;
+  struct uci_type_list *next;
 };
 
 static const UT_icd netif_info_icd = {sizeof(netif_info_t), NULL, NULL, NULL};
 
-void uwrt_print_error(struct uci_context *ctx, char *name)
-{
+void uwrt_print_error(struct uci_context *ctx, char *name) {
   char *error = NULL;
 
   uci_get_errorstr(ctx, &error, NULL);
@@ -64,120 +63,117 @@ void uwrt_print_error(struct uci_context *ctx, char *name)
   }
 }
 
-void uci_reset_typelist(struct uci_type_list *list)
-{
-	struct uci_type_list *type = NULL;
+void uci_reset_typelist(struct uci_type_list *list) {
+  struct uci_type_list *type = NULL;
 
-	while (list != NULL) {
+  while (list != NULL) {
     type = list;
-		list = list->next;
-		os_free(type);
-	}
+    list = list->next;
+    os_free(type);
+  }
 }
 
-char* uci_lookup_section_ref(struct uci_section *s, struct uci_type_list *list, char **typestr)
-{
-	struct uci_type_list *ti = list;
-	char *ret;
-	int maxlen;
+char *uci_lookup_section_ref(struct uci_section *s, struct uci_type_list *list,
+                             char **typestr) {
+  struct uci_type_list *ti = list;
+  char *ret;
+  int maxlen;
 
-	/* look up in section type list */
-	while (ti != NULL) {
-		if (strcmp(ti->name, s->type) == 0) {
+  /* look up in section type list */
+  while (ti != NULL) {
+    if (strcmp(ti->name, s->type) == 0) {
       break;
     }
 
-		ti = ti->next;
-	}
+    ti = ti->next;
+  }
 
-	if (ti == NULL) {
-		if ((ti = os_calloc(1, sizeof(struct uci_type_list))) == NULL) {
+  if (ti == NULL) {
+    if ((ti = os_calloc(1, sizeof(struct uci_type_list))) == NULL) {
       log_errno("os_calloc");
       return NULL;
     }
 
-		ti->next = list;
-		list = ti;
-		ti->name = s->type;
-	}
+    ti->next = list;
+    list = ti;
+    ti->name = s->type;
+  }
 
-	if (s->anonymous) {
-		maxlen = strlen(s->type) + 1 + 2 + 10;
-		if (*typestr == NULL) {
-			if ((*typestr = os_malloc(maxlen)) == NULL) {
+  if (s->anonymous) {
+    maxlen = strlen(s->type) + 1 + 2 + 10;
+    if (*typestr == NULL) {
+      if ((*typestr = os_malloc(maxlen)) == NULL) {
         log_errno("os_malloc");
         return NULL;
       }
-		} else {
-			void *p = os_realloc(*typestr, maxlen);
-			if (p == NULL) {
+    } else {
+      void *p = os_realloc(*typestr, maxlen);
+      if (p == NULL) {
         log_errno("os_realloc");
-				os_free(*typestr);
-				return NULL;
-			}
+        os_free(*typestr);
+        return NULL;
+      }
 
-			*typestr = p;
-		}
-
-		if (*typestr != NULL) {
-			sprintf(*typestr, "@%s[%d]", ti->name, ti->idx);
+      *typestr = p;
     }
 
-		ret = *typestr;
-	} else {
-		ret = s->e.name;
-	}
+    if (*typestr != NULL) {
+      sprintf(*typestr, "@%s[%d]", ti->name, ti->idx);
+    }
 
-	ti->idx++;
+    ret = *typestr;
+  } else {
+    ret = s->e.name;
+  }
 
-	return ret;
+  ti->idx++;
+
+  return ret;
 }
 
-char* uwrt_get_option(struct uci_option *o)
-{
-	struct uci_element *e = NULL;
+char *uwrt_get_option(struct uci_option *o) {
+  struct uci_element *e = NULL;
   char *vname = NULL;
-  struct string_queue* squeue = NULL;
+  struct string_queue *squeue = NULL;
 
-	switch(o->type) {
-	case UCI_TYPE_STRING:
-    if ((vname = os_strdup(o->v.string)) == NULL) {
-      log_errno("os_strdup");
-      return NULL;
-    }
-    break;
-	case UCI_TYPE_LIST:
-    if ((squeue = init_string_queue(-1)) == NULL) {
-      log_trace("init_string_queue fail");
-      return NULL;
-    }
+  switch (o->type) {
+    case UCI_TYPE_STRING:
+      if ((vname = os_strdup(o->v.string)) == NULL) {
+        log_errno("os_strdup");
+        return NULL;
+      }
+      break;
+    case UCI_TYPE_LIST:
+      if ((squeue = init_string_queue(-1)) == NULL) {
+        log_trace("init_string_queue fail");
+        return NULL;
+      }
 
-		uci_foreach_element(&o->v.list, e) {
-      if (push_string_queue(squeue, e->name) < 0) {
+      uci_foreach_element(&o->v.list, e) {
+        if (push_string_queue(squeue, e->name) < 0) {
+          log_trace("push_string_queue fail");
+          free_string_queue(squeue);
+          return NULL;
+        }
+      }
+
+      if ((vname = concat_string_queue(squeue, -1)) == NULL) {
         log_trace("push_string_queue fail");
         free_string_queue(squeue);
         return NULL;
       }
-		}
-
-    if ((vname = concat_string_queue(squeue, -1)) == NULL) {
-      log_trace("push_string_queue fail");
       free_string_queue(squeue);
-      return NULL;
-    }
-    free_string_queue(squeue);
-		break;
-	default:
-		log_trace("unknown uci type");
-	}
+      break;
+    default:
+      log_trace("unknown uci type");
+  }
 
   return vname;
 }
 
-int uwrt_lookup_option(struct uci_option *o, char *sref, UT_array *kv)
-{
-	char *cname = o->section->package->e.name;
-	char *sname = (sref != NULL ? sref : o->section->e.name);
+int uwrt_lookup_option(struct uci_option *o, char *sref, UT_array *kv) {
+  char *cname = o->section->package->e.name;
+  char *sname = (sref != NULL ? sref : o->section->e.name);
   char *oname = o->e.name;
   char *vname = NULL;
   char *kvstr = NULL;
@@ -187,13 +183,14 @@ int uwrt_lookup_option(struct uci_option *o, char *sref, UT_array *kv)
     return -1;
   }
 
-  if ((kvstr = os_zalloc(strlen(cname) + strlen(sname) + strlen(oname) + strlen(vname) + 4)) == NULL) {
+  if ((kvstr = os_zalloc(strlen(cname) + strlen(sname) + strlen(oname) +
+                         strlen(vname) + 4)) == NULL) {
     log_errno("os_zalloc");
     os_free(vname);
     return -1;
   }
 
-	sprintf(kvstr, "%s.%s.%s=%s", cname, sname, oname, vname);
+  sprintf(kvstr, "%s.%s.%s=%s", cname, sname, oname, vname);
   utarray_push_back(kv, &kvstr);
   os_free(vname);
   os_free(kvstr);
@@ -201,120 +198,116 @@ int uwrt_lookup_option(struct uci_option *o, char *sref, UT_array *kv)
   return 0;
 }
 
-int uwrt_lookup_section(struct uci_section *s, char *sref, UT_array *kv)
-{
-	struct uci_element *e = NULL;
-	char *cname = s->package->e.name;
-	char *sname = (sref != NULL ? sref : s->e.name);
+int uwrt_lookup_section(struct uci_section *s, char *sref, UT_array *kv) {
+  struct uci_element *e = NULL;
+  char *cname = s->package->e.name;
+  char *sname = (sref != NULL ? sref : s->e.name);
   char *vname = s->type;
   char *kvstr = NULL;
 
-  if ((kvstr = os_zalloc(strlen(cname) + strlen(sname) + strlen(vname) + 3)) == NULL) {
+  if ((kvstr = os_zalloc(strlen(cname) + strlen(sname) + strlen(vname) + 3)) ==
+      NULL) {
     log_errno("os_zalloc");
     return -1;
   }
 
-	sprintf(kvstr, "%s.%s=%s", cname, sname, vname);
+  sprintf(kvstr, "%s.%s=%s", cname, sname, vname);
   utarray_push_back(kv, &kvstr);
   os_free(kvstr);
 
-	uci_foreach_element(&s->options, e) {
-		if (uwrt_lookup_option(uci_to_option(e), sref, kv) < 0) {
+  uci_foreach_element(&s->options, e) {
+    if (uwrt_lookup_option(uci_to_option(e), sref, kv) < 0) {
       log_trace("uwrt_lookup_option fail");
       return -1;
     }
-	}
+  }
 
   return 0;
 }
 
-int uwrt_lookup_package(struct uci_package *p, UT_array *kv)
-{
-	struct uci_element *e = NULL;
+int uwrt_lookup_package(struct uci_package *p, UT_array *kv) {
+  struct uci_element *e = NULL;
   struct uci_type_list *list = NULL;
   char *typestr = NULL;
   char *sref = NULL;
   int ret = 0;
 
-	uci_foreach_element(&p->sections, e) {
-		struct uci_section *s = uci_to_section(e);
-		if ((sref = uci_lookup_section_ref(s, list, &typestr)) == NULL) {
+  uci_foreach_element(&p->sections, e) {
+    struct uci_section *s = uci_to_section(e);
+    if ((sref = uci_lookup_section_ref(s, list, &typestr)) == NULL) {
       log_trace("uci_lookup_section_ref fail");
       ret = -1;
       goto uwrt_lookup_package_fail;
     }
-		if (uwrt_lookup_section(s, sref, kv) < 0) {
+    if (uwrt_lookup_section(s, sref, kv) < 0) {
       log_trace("uwrt_lookup_section fail");
       ret = -1;
       goto uwrt_lookup_package_fail;
     }
-	}
+  }
 
 uwrt_lookup_package_fail:
-	uci_reset_typelist(list);
+  uci_reset_typelist(list);
 
-	if (typestr != NULL) {
-		os_free(typestr);
-	}
+  if (typestr != NULL) {
+    os_free(typestr);
+  }
 
   return ret;
 }
 
+int uwrt_lookup_key(struct uci_context *ctx, char *key, UT_array *kv) {
+  struct uci_element *e = NULL;
+  struct uci_ptr ptr;
+  int ret = -1;
 
-int uwrt_lookup_key(struct uci_context *ctx, char *key, UT_array *kv)
-{
-	struct uci_element *e = NULL;
-	struct uci_ptr ptr;
-	int ret = -1;
+  if (uci_lookup_ptr(ctx, &ptr, key, true) != UCI_OK) {
+    uwrt_print_error(ctx, "uci_lookup_ptr");
+    return -1;
+  }
 
-	if (uci_lookup_ptr(ctx, &ptr, key, true) != UCI_OK) {
-		uwrt_print_error(ctx, "uci_lookup_ptr");
-		return -1;
-	}
-
-	e = ptr.last;
-	if (!(ptr.flags & UCI_LOOKUP_COMPLETE)) {
-		ctx->err = UCI_ERR_NOTFOUND;
-	} else {
-	  switch(e->type) {
-	  	case UCI_TYPE_PACKAGE:
-	  		if (uwrt_lookup_package(ptr.p, kv) < 0) {
+  e = ptr.last;
+  if (!(ptr.flags & UCI_LOOKUP_COMPLETE)) {
+    ctx->err = UCI_ERR_NOTFOUND;
+  } else {
+    switch (e->type) {
+      case UCI_TYPE_PACKAGE:
+        if (uwrt_lookup_package(ptr.p, kv) < 0) {
           log_trace("uwrt_lookup_package fail");
           goto uwrt_lookup_fail;
         }
-	  		break;
-	  	case UCI_TYPE_SECTION:
-	  		if (uwrt_lookup_section(ptr.s, NULL, kv) < 0) {
+        break;
+      case UCI_TYPE_SECTION:
+        if (uwrt_lookup_section(ptr.s, NULL, kv) < 0) {
           log_trace("uwrt_lookup_section fail");
           goto uwrt_lookup_fail;
         }
-	  		break;
-	  	case UCI_TYPE_OPTION:
-	  		if (uwrt_lookup_option(ptr.o, NULL, kv) < 0) {
+        break;
+      case UCI_TYPE_OPTION:
+        if (uwrt_lookup_option(ptr.o, NULL, kv) < 0) {
           log_trace("uwrt_lookup_option fail");
           goto uwrt_lookup_fail;
         }
-	  		break;
-	  	default:
-	  		/* should not happen */
-	  		goto uwrt_lookup_fail;
-	  }
+        break;
+      default:
+        /* should not happen */
+        goto uwrt_lookup_fail;
+    }
   }
 
-	ret = utarray_len(kv);
+  ret = utarray_len(kv);
 
 uwrt_lookup_fail:
-	if (ptr.p != NULL) {
-		uci_unload(ctx, ptr.p);
+  if (ptr.p != NULL) {
+    uci_unload(ctx, ptr.p);
   }
-	return ret;
+  return ret;
 }
 
-char* uwrt_extract_value(char *str, char *key)
-{
+char *uwrt_extract_value(char *str, char *key) {
   char *value = NULL;
 
-  if((value = strstr(str, key)) == NULL) {
+  if ((value = strstr(str, key)) == NULL) {
     return NULL;
   }
 
@@ -327,14 +320,13 @@ char* uwrt_extract_value(char *str, char *key)
   return value;
 }
 
-int uwrt_get_net_if(UT_array *kv, netif_info_t *nif)
-{
+int uwrt_get_net_if(UT_array *kv, netif_info_t *nif) {
   char **ptr = NULL;
   char *value = NULL;
 
   os_memset(nif, 0, sizeof(netif_info_t));
 
-  while ((ptr = (char**) utarray_next(kv, ptr))) {
+  while ((ptr = (char **)utarray_next(kv, ptr))) {
     if ((value = uwrt_extract_value(*ptr, IFNAME_EXPR)) != NULL) {
       strcpy(nif->ifname, value);
     }
@@ -347,80 +339,76 @@ int uwrt_get_net_if(UT_array *kv, netif_info_t *nif)
   return 0;
 }
 
-int uwrt_set_property(struct uci_context *ctx, char *property)
-{
-	struct uci_ptr ptr;
+int uwrt_set_property(struct uci_context *ctx, char *property) {
+  struct uci_ptr ptr;
 
   log_trace("Setting property: %s", property);
 
   if (uci_lookup_ptr(ctx, &ptr, property, true) != UCI_OK) {
-		uwrt_print_error(ctx, "uci_lookup_ptr");
-		return -1;
-	}
+    uwrt_print_error(ctx, "uci_lookup_ptr");
+    return -1;
+  }
 
   if (uci_set(ctx, &ptr) != UCI_OK) {
-		uwrt_print_error(ctx, "uci_set");
-		return -1;
+    uwrt_print_error(ctx, "uci_set");
+    return -1;
   }
 
   if (uci_save(ctx, ptr.p) != UCI_OK) {
-		uwrt_print_error(ctx, "uci_save");
-		return -1;
+    uwrt_print_error(ctx, "uci_save");
+    return -1;
   }
 
   return 0;
 }
 
-int uwrt_add_list(struct uci_context *ctx, char *property)
-{
-	struct uci_ptr ptr;
+int uwrt_add_list(struct uci_context *ctx, char *property) {
+  struct uci_ptr ptr;
 
   log_trace("Add list property: %s", property);
 
   if (uci_lookup_ptr(ctx, &ptr, property, true) != UCI_OK) {
-		uwrt_print_error(ctx, "uci_lookup_ptr");
-		return -1;
-	}
+    uwrt_print_error(ctx, "uci_lookup_ptr");
+    return -1;
+  }
 
   if (uci_add_list(ctx, &ptr) != UCI_OK) {
-		uwrt_print_error(ctx, "uci_add_list");
-		return -1;
+    uwrt_print_error(ctx, "uci_add_list");
+    return -1;
   }
 
   if (uci_save(ctx, ptr.p) != UCI_OK) {
-		uwrt_print_error(ctx, "uci_save");
-		return -1;
+    uwrt_print_error(ctx, "uci_save");
+    return -1;
   }
 
   return 0;
 }
 
-int uwrt_delete_property(struct uci_context *ctx, char *property)
-{
-	struct uci_ptr ptr;
+int uwrt_delete_property(struct uci_context *ctx, char *property) {
+  struct uci_ptr ptr;
 
   log_trace("Delete property: %s", property);
 
   if (uci_lookup_ptr(ctx, &ptr, property, true) != UCI_OK) {
-		uwrt_print_error(ctx, "uci_lookup_ptr");
-		return -1;
-	}
+    uwrt_print_error(ctx, "uci_lookup_ptr");
+    return -1;
+  }
 
   if (uci_delete(ctx, &ptr) != UCI_OK) {
-		uwrt_print_error(ctx, "uci_delete");
-		return -1;
+    uwrt_print_error(ctx, "uci_delete");
+    return -1;
   }
 
   if (uci_save(ctx, ptr.p) != UCI_OK) {
-		uwrt_print_error(ctx, "uci_save");
-		return -1;
+    uwrt_print_error(ctx, "uci_save");
+    return -1;
   }
 
   return 0;
 }
 
-void uwrt_free_context(struct uctx *context)
-{
+void uwrt_free_context(struct uctx *context) {
   if (context != NULL) {
     if (context->uctx != NULL) {
       uci_free_context(context->uctx);
@@ -429,8 +417,7 @@ void uwrt_free_context(struct uctx *context)
   }
 }
 
-struct uctx* uwrt_init_context(char *path)
-{
+struct uctx *uwrt_init_context(char *path) {
   struct uctx *context = os_zalloc(sizeof(struct uctx));
 
   if (context == NULL) {
@@ -456,8 +443,7 @@ struct uctx* uwrt_init_context(char *path)
   return context;
 }
 
-UT_array *uwrt_get_interfaces(struct uctx *context, char *ifname)
-{
+UT_array *uwrt_get_interfaces(struct uctx *context, char *ifname) {
   int ret, idx = 0;
   UT_array *kv = NULL;
   UT_array *interfaces = NULL;
@@ -466,7 +452,7 @@ UT_array *uwrt_get_interfaces(struct uctx *context, char *ifname)
 
   utarray_new(interfaces, &netif_info_icd);
 
-  while(true) {
+  while (true) {
     if (ifname == NULL) {
       snprintf(key, 64, "network.@interface[%d]", idx++);
     } else {
@@ -507,8 +493,7 @@ uwrt_get_fail:
 }
 
 int uwrt_create_interface(struct uctx *context, char *ifname, char *type,
-                          char *ip_addr, char *brd_addr, char *netmask)
-{
+                          char *ip_addr, char *brd_addr, char *netmask) {
   char property[128];
 
   if (context == NULL) {
@@ -592,8 +577,7 @@ int uwrt_create_interface(struct uctx *context, char *ifname, char *type,
   return 0;
 }
 
-int uwrt_commit_section(struct uctx *context, char *section)
-{
+int uwrt_commit_section(struct uctx *context, char *section) {
   struct uci_ptr ptr;
   char *psection = os_strdup(section);
 
@@ -602,25 +586,26 @@ int uwrt_commit_section(struct uctx *context, char *section)
     return -1;
   }
 
-	if (uci_lookup_ptr(context->uctx, &ptr, psection, true) != UCI_OK) {
-		uwrt_print_error(context->uctx, "uci_lookup_ptr");
-    os_free(psection);
-		return -1;
-	}
-
-	if (uci_commit(context->uctx, &ptr.p, false) != UCI_OK) {
-		uwrt_print_error(context->uctx, "uci_commit");
+  if (uci_lookup_ptr(context->uctx, &ptr, psection, true) != UCI_OK) {
+    uwrt_print_error(context->uctx, "uci_lookup_ptr");
     os_free(psection);
     return -1;
-	}
+  }
+
+  if (uci_commit(context->uctx, &ptr.p, false) != UCI_OK) {
+    uwrt_print_error(context->uctx, "uci_commit");
+    os_free(psection);
+    return -1;
+  }
 
   os_free(psection);
   return 0;
 }
 
-int uwrt_gen_dnsmasq_instance(struct uctx *context, struct string_queue *ifname_queue,
-  UT_array *server_array, char *leasefile, char *scriptfile)
-{
+int uwrt_gen_dnsmasq_instance(struct uctx *context,
+                              struct string_queue *ifname_queue,
+                              UT_array *server_array, char *leasefile,
+                              char *scriptfile) {
   char **p = NULL;
   struct string_queue *el = NULL;
   char property[128];
@@ -689,7 +674,7 @@ int uwrt_gen_dnsmasq_instance(struct uctx *context, struct string_queue *ifname_
     return -1;
   }
 
-  while((p = (char**)utarray_next(server_array, p)) != NULL) {
+  while ((p = (char **)utarray_next(server_array, p)) != NULL) {
     sprintf(property, "dhcp.edgesec.server=%s", *p);
     if (uwrt_add_list(context->uctx, property) < 0) {
       log_trace("uwrt_add_list fail for %s", property);
@@ -712,10 +697,9 @@ int uwrt_gen_dnsmasq_instance(struct uctx *context, struct string_queue *ifname_
   return 0;
 }
 
-int uwrt_add_dhcp_pool(struct uctx *context, char *ifname,
-                       int vlanid, char *ip_addr_low, char *ip_addr_upp,
-                       char *subnet_mask, char *lease_time)
-{
+int uwrt_add_dhcp_pool(struct uctx *context, char *ifname, int vlanid,
+                       char *ip_addr_low, char *ip_addr_upp, char *subnet_mask,
+                       char *lease_time) {
   uint32_t start, limit;
   char property[128];
 
@@ -773,7 +757,8 @@ int uwrt_add_dhcp_pool(struct uctx *context, char *ifname,
     return -1;
   }
 
-  sprintf(property, "dhcp.%s%d.networkid=br-%s%d", ifname, vlanid, ifname, vlanid);
+  sprintf(property, "dhcp.%s%d.networkid=br-%s%d", ifname, vlanid, ifname,
+          vlanid);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
@@ -824,8 +809,8 @@ int uwrt_add_dhcp_pool(struct uctx *context, char *ifname,
   return 0;
 }
 
-int uwrt_gen_hostapd_instance(struct uctx *context, struct hostapd_params *params)
-{
+int uwrt_gen_hostapd_instance(struct uctx *context,
+                              struct hostapd_params *params) {
   char property[128];
 
   if (context == NULL) {
@@ -884,85 +869,99 @@ int uwrt_gen_hostapd_instance(struct uctx *context, struct hostapd_params *param
     log_trace("nothing to delete for %s", property);
   }
 
-  sprintf(property, "wireless.%s.hostapd_options=auth_algs=%d", params->device, params->auth_algs);
+  sprintf(property, "wireless.%s.hostapd_options=auth_algs=%d", params->device,
+          params->auth_algs);
   if (uwrt_add_list(context->uctx, property) < 0) {
     log_trace("uwrt_add_list fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "wireless.%s.hostapd_options=wpa=%d", params->device, params->wpa);
+  sprintf(property, "wireless.%s.hostapd_options=wpa=%d", params->device,
+          params->wpa);
   if (uwrt_add_list(context->uctx, property) < 0) {
     log_trace("uwrt_add_list fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "wireless.%s.hostapd_options=wpa_key_mgmt=%s", params->device, params->wpa_key_mgmt);
+  sprintf(property, "wireless.%s.hostapd_options=wpa_key_mgmt=%s",
+          params->device, params->wpa_key_mgmt);
   if (uwrt_add_list(context->uctx, property) < 0) {
     log_trace("uwrt_add_list fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "wireless.%s.hostapd_options=rsn_pairwise=%s", params->device, params->rsn_pairwise);
+  sprintf(property, "wireless.%s.hostapd_options=rsn_pairwise=%s",
+          params->device, params->rsn_pairwise);
   if (uwrt_add_list(context->uctx, property) < 0) {
     log_trace("uwrt_add_list fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "wireless.%s.hostapd_options=own_ip_addr=%s", params->device, params->radius_client_ip);
+  sprintf(property, "wireless.%s.hostapd_options=own_ip_addr=%s",
+          params->device, params->radius_client_ip);
   if (uwrt_add_list(context->uctx, property) < 0) {
     log_trace("uwrt_add_list fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "wireless.%s.hostapd_options=auth_server_addr=%s", params->device, params->radius_server_ip);
+  sprintf(property, "wireless.%s.hostapd_options=auth_server_addr=%s",
+          params->device, params->radius_server_ip);
   if (uwrt_add_list(context->uctx, property) < 0) {
     log_trace("uwrt_add_list fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "wireless.%s.hostapd_options=auth_server_port=%d", params->device, params->radius_port);
+  sprintf(property, "wireless.%s.hostapd_options=auth_server_port=%d",
+          params->device, params->radius_port);
   if (uwrt_add_list(context->uctx, property) < 0) {
     log_trace("uwrt_add_list fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "wireless.%s.hostapd_options=auth_server_shared_secret=%s", params->device, params->radius_secret);
+  sprintf(property, "wireless.%s.hostapd_options=auth_server_shared_secret=%s",
+          params->device, params->radius_secret);
   if (uwrt_add_list(context->uctx, property) < 0) {
     log_trace("uwrt_add_list fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "wireless.%s.hostapd_options=macaddr_acl=%d", params->device, params->macaddr_acl);
+  sprintf(property, "wireless.%s.hostapd_options=macaddr_acl=%d",
+          params->device, params->macaddr_acl);
   if (uwrt_add_list(context->uctx, property) < 0) {
     log_trace("uwrt_add_list fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "wireless.%s.hostapd_options=dynamic_vlan=%d", params->device, params->dynamic_vlan);
+  sprintf(property, "wireless.%s.hostapd_options=dynamic_vlan=%d",
+          params->device, params->dynamic_vlan);
   if (uwrt_add_list(context->uctx, property) < 0) {
     log_trace("uwrt_add_list fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "wireless.%s.hostapd_options=vlan_file=%s", params->device, params->vlan_file);
+  sprintf(property, "wireless.%s.hostapd_options=vlan_file=%s", params->device,
+          params->vlan_file);
   if (uwrt_add_list(context->uctx, property) < 0) {
     log_trace("uwrt_add_list fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "wireless.%s.hostapd_options=ignore_broadcast_ssid=%d", params->device, params->ignore_broadcast_ssid);
+  sprintf(property, "wireless.%s.hostapd_options=ignore_broadcast_ssid=%d",
+          params->device, params->ignore_broadcast_ssid);
   if (uwrt_add_list(context->uctx, property) < 0) {
     log_trace("uwrt_add_list fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "wireless.%s.hostapd_options=wpa_psk_radius=%d", params->device, params->wpa_psk_radius);
+  sprintf(property, "wireless.%s.hostapd_options=wpa_psk_radius=%d",
+          params->device, params->wpa_psk_radius);
   if (uwrt_add_list(context->uctx, property) < 0) {
     log_trace("uwrt_add_list fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "wireless.%s.hostapd_options=vlan_bridge=%s", params->device, params->vlan_bridge);
+  sprintf(property, "wireless.%s.hostapd_options=vlan_bridge=%s",
+          params->device, params->vlan_bridge);
   if (uwrt_add_list(context->uctx, property) < 0) {
     log_trace("uwrt_add_list fail for %s", property);
     return -1;
@@ -1001,8 +1000,7 @@ int uwrt_gen_hostapd_instance(struct uctx *context, struct hostapd_params *param
   return 0;
 }
 
-int uwrt_gen_firewall_zone(struct uctx *context, char *brname)
-{
+int uwrt_gen_firewall_zone(struct uctx *context, char *brname) {
   char property[256];
 
   if (context == NULL) {
@@ -1269,8 +1267,8 @@ int uwrt_gen_firewall_zone(struct uctx *context, char *brname)
   return 0;
 }
 
-int uwrt_add_firewall_nat(struct uctx *context, char *brname, char *ip_addr, char *nat_name)
-{
+int uwrt_add_firewall_nat(struct uctx *context, char *brname, char *ip_addr,
+                          char *nat_name) {
   char property[256];
   uint8_t ip_buf[4];
 
@@ -1299,205 +1297,242 @@ int uwrt_add_firewall_nat(struct uctx *context, char *brname, char *ip_addr, cha
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_dnat=nat", IP2STR(ip_buf));
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_dnat=nat",
+          IP2STR(ip_buf));
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_dnat.enabled=1", IP2STR(ip_buf));
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_dnat.enabled=1",
+          IP2STR(ip_buf));
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_dnat.name=DNAT %s", IP2STR(ip_buf), ip_addr);
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_dnat.name=DNAT %s",
+          IP2STR(ip_buf), ip_addr);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_dnat.src=%s", IP2STR(ip_buf), nat_name);
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_dnat.src=%s",
+          IP2STR(ip_buf), nat_name);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_dnat.src_ip=0.0.0.0", IP2STR(ip_buf));
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_dnat.src_ip=0.0.0.0",
+          IP2STR(ip_buf));
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_dnat.dest=%s", IP2STR(ip_buf), brname);
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_dnat.dest=%s",
+          IP2STR(ip_buf), brname);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_dnat.dest_ip=%s", IP2STR(ip_buf), ip_addr);
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_dnat.dest_ip=%s",
+          IP2STR(ip_buf), ip_addr);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_dnat.proto=all", IP2STR(ip_buf));
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_dnat.proto=all",
+          IP2STR(ip_buf));
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_dnat.target=DNAT", IP2STR(ip_buf));
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_dnat.target=DNAT",
+          IP2STR(ip_buf));
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_snat=nat", IP2STR(ip_buf));
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_snat=nat",
+          IP2STR(ip_buf));
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_snat.enabled=1", IP2STR(ip_buf));
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_snat.enabled=1",
+          IP2STR(ip_buf));
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_snat.name=SNAT %s", IP2STR(ip_buf), ip_addr);
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_snat.name=SNAT %s",
+          IP2STR(ip_buf), ip_addr);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_snat.src=%s", IP2STR(ip_buf), brname);
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_snat.src=%s",
+          IP2STR(ip_buf), brname);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_snat.src_ip=%s", IP2STR(ip_buf), ip_addr);
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_snat.src_ip=%s",
+          IP2STR(ip_buf), ip_addr);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_snat.dest=%s", IP2STR(ip_buf), nat_name);
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_snat.dest=%s",
+          IP2STR(ip_buf), nat_name);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_snat.dest_ip=0.0.0.0", IP2STR(ip_buf));
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_snat.dest_ip=0.0.0.0",
+          IP2STR(ip_buf));
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_snat.proto=all", IP2STR(ip_buf));
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_snat.proto=all",
+          IP2STR(ip_buf));
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_snat.target=SNAT", IP2STR(ip_buf));
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_snat.target=SNAT",
+          IP2STR(ip_buf));
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_forward=rule", IP2STR(ip_buf));
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_forward=rule",
+          IP2STR(ip_buf));
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_forward.enabled=1", IP2STR(ip_buf));
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_forward.enabled=1",
+          IP2STR(ip_buf));
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_forward.name=Forward %s", IP2STR(ip_buf), ip_addr);
+  sprintf(property,
+          "firewall.edgesec_" IP_SECTION_STR "_forward.name=Forward %s",
+          IP2STR(ip_buf), ip_addr);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_forward.src=%s", IP2STR(ip_buf), brname);
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_forward.src=%s",
+          IP2STR(ip_buf), brname);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_forward.src_ip=%s", IP2STR(ip_buf), ip_addr);
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_forward.src_ip=%s",
+          IP2STR(ip_buf), ip_addr);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_forward.dest=%s", IP2STR(ip_buf), nat_name);
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_forward.dest=%s",
+          IP2STR(ip_buf), nat_name);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_forward.proto=all", IP2STR(ip_buf));
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_forward.proto=all",
+          IP2STR(ip_buf));
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_forward.target=ACCEPT", IP2STR(ip_buf));
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_forward.target=ACCEPT",
+          IP2STR(ip_buf));
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_backward=rule", IP2STR(ip_buf));
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_backward=rule",
+          IP2STR(ip_buf));
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_backward.enabled=1", IP2STR(ip_buf));
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_backward.enabled=1",
+          IP2STR(ip_buf));
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_backward.name=Backward %s", IP2STR(ip_buf), ip_addr);
+  sprintf(property,
+          "firewall.edgesec_" IP_SECTION_STR "_backward.name=Backward %s",
+          IP2STR(ip_buf), ip_addr);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_backward.src=%s", IP2STR(ip_buf), nat_name);
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_backward.src=%s",
+          IP2STR(ip_buf), nat_name);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_backward.dest=%s", IP2STR(ip_buf), brname);
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_backward.dest=%s",
+          IP2STR(ip_buf), brname);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_backward.dest_ip=%s", IP2STR(ip_buf), ip_addr);
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_backward.dest_ip=%s",
+          IP2STR(ip_buf), ip_addr);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_backward.proto=all", IP2STR(ip_buf));
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_backward.proto=all",
+          IP2STR(ip_buf));
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_backward.target=ACCEPT", IP2STR(ip_buf));
+  sprintf(property,
+          "firewall.edgesec_" IP_SECTION_STR "_backward.target=ACCEPT",
+          IP2STR(ip_buf));
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
@@ -1506,8 +1541,7 @@ int uwrt_add_firewall_nat(struct uctx *context, char *brname, char *ip_addr, cha
   return 0;
 }
 
-int uwrt_delete_firewall_nat(struct uctx *context, char *ip_addr)
-{
+int uwrt_delete_firewall_nat(struct uctx *context, char *ip_addr) {
   char property[256];
   uint8_t ip_buf[4];
 
@@ -1526,22 +1560,24 @@ int uwrt_delete_firewall_nat(struct uctx *context, char *ip_addr)
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_backward", IP2STR(ip_buf));
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_backward",
+          IP2STR(ip_buf));
   if (uwrt_delete_property(context->uctx, property) < 0) {
     log_trace("nothing to delete for %s", property);
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_forward", IP2STR(ip_buf));
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_forward",
+          IP2STR(ip_buf));
   if (uwrt_delete_property(context->uctx, property) < 0) {
     log_trace("nothing to delete for %s", property);
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_snat", IP2STR(ip_buf));
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_snat", IP2STR(ip_buf));
   if (uwrt_delete_property(context->uctx, property) < 0) {
     log_trace("nothing to delete for %s", property);
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_dnat", IP2STR(ip_buf));
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_dnat", IP2STR(ip_buf));
   if (uwrt_delete_property(context->uctx, property) < 0) {
     log_trace("nothing to delete for %s", property);
   }
@@ -1549,8 +1585,8 @@ int uwrt_delete_firewall_nat(struct uctx *context, char *ip_addr)
   return 0;
 }
 
-int uwrt_add_firewall_bridge(struct uctx *context, char *sip, char *sbr, char *dip, char *dbr)
-{
+int uwrt_add_firewall_bridge(struct uctx *context, char *sip, char *sbr,
+                             char *dip, char *dbr) {
   char property[256];
   uint8_t sip_buf[4], dip_buf[4];
 
@@ -1589,109 +1625,149 @@ int uwrt_add_firewall_bridge(struct uctx *context, char *sip, char *sbr, char *d
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_"IP_SECTION_STR"=rule", IP2STR(sip_buf), IP2STR(dip_buf));
+  sprintf(property,
+          "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR "=rule",
+          IP2STR(sip_buf), IP2STR(dip_buf));
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_"IP_SECTION_STR".enabled=1", IP2STR(sip_buf), IP2STR(dip_buf));
+  sprintf(property,
+          "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR ".enabled=1",
+          IP2STR(sip_buf), IP2STR(dip_buf));
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_"IP_SECTION_STR".name=Bridge %s->%s", IP2STR(sip_buf), IP2STR(dip_buf), sip, dip);
+  sprintf(property,
+          "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR
+          ".name=Bridge %s->%s",
+          IP2STR(sip_buf), IP2STR(dip_buf), sip, dip);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_"IP_SECTION_STR".src=%s", IP2STR(sip_buf), IP2STR(dip_buf), sbr);
+  sprintf(property,
+          "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR ".src=%s",
+          IP2STR(sip_buf), IP2STR(dip_buf), sbr);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_"IP_SECTION_STR".src_ip=%s", IP2STR(sip_buf), IP2STR(dip_buf), sip);
+  sprintf(property,
+          "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR ".src_ip=%s",
+          IP2STR(sip_buf), IP2STR(dip_buf), sip);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_"IP_SECTION_STR".dest=%s", IP2STR(sip_buf), IP2STR(dip_buf), dbr);
+  sprintf(property,
+          "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR ".dest=%s",
+          IP2STR(sip_buf), IP2STR(dip_buf), dbr);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_"IP_SECTION_STR".dest_ip=%s", IP2STR(sip_buf), IP2STR(dip_buf), dip);
+  sprintf(property,
+          "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR ".dest_ip=%s",
+          IP2STR(sip_buf), IP2STR(dip_buf), dip);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_"IP_SECTION_STR".proto=all", IP2STR(sip_buf), IP2STR(dip_buf));
+  sprintf(property,
+          "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR ".proto=all",
+          IP2STR(sip_buf), IP2STR(dip_buf));
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_"IP_SECTION_STR".target=ACCEPT", IP2STR(sip_buf), IP2STR(dip_buf));
+  sprintf(property,
+          "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR
+          ".target=ACCEPT",
+          IP2STR(sip_buf), IP2STR(dip_buf));
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_"IP_SECTION_STR"=rule", IP2STR(dip_buf), IP2STR(sip_buf));
+  sprintf(property,
+          "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR "=rule",
+          IP2STR(dip_buf), IP2STR(sip_buf));
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_"IP_SECTION_STR".enabled=1", IP2STR(dip_buf), IP2STR(sip_buf));
+  sprintf(property,
+          "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR ".enabled=1",
+          IP2STR(dip_buf), IP2STR(sip_buf));
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_"IP_SECTION_STR".name=Bridge %s->%s", IP2STR(dip_buf), IP2STR(sip_buf), dip, sip);
+  sprintf(property,
+          "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR
+          ".name=Bridge %s->%s",
+          IP2STR(dip_buf), IP2STR(sip_buf), dip, sip);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_"IP_SECTION_STR".src=%s", IP2STR(dip_buf), IP2STR(sip_buf), dbr);
+  sprintf(property,
+          "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR ".src=%s",
+          IP2STR(dip_buf), IP2STR(sip_buf), dbr);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_"IP_SECTION_STR".src_ip=%s", IP2STR(dip_buf), IP2STR(sip_buf), dip);
+  sprintf(property,
+          "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR ".src_ip=%s",
+          IP2STR(dip_buf), IP2STR(sip_buf), dip);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_"IP_SECTION_STR".dest=%s", IP2STR(dip_buf), IP2STR(sip_buf), sbr);
+  sprintf(property,
+          "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR ".dest=%s",
+          IP2STR(dip_buf), IP2STR(sip_buf), sbr);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_"IP_SECTION_STR".dest_ip=%s", IP2STR(dip_buf), IP2STR(sip_buf), sip);
+  sprintf(property,
+          "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR ".dest_ip=%s",
+          IP2STR(dip_buf), IP2STR(sip_buf), sip);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_"IP_SECTION_STR".proto=all", IP2STR(dip_buf), IP2STR(sip_buf));
+  sprintf(property,
+          "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR ".proto=all",
+          IP2STR(dip_buf), IP2STR(sip_buf));
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_"IP_SECTION_STR".target=ACCEPT", IP2STR(dip_buf), IP2STR(sip_buf));
+  sprintf(property,
+          "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR
+          ".target=ACCEPT",
+          IP2STR(dip_buf), IP2STR(sip_buf));
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
@@ -1700,8 +1776,7 @@ int uwrt_add_firewall_bridge(struct uctx *context, char *sip, char *sbr, char *d
   return 0;
 }
 
-int uwrt_delete_firewall_bridge(struct uctx *context, char *sip, char *dip)
-{
+int uwrt_delete_firewall_bridge(struct uctx *context, char *sip, char *dip) {
   char property[256];
   uint8_t sip_buf[4], dip_buf[4];
 
@@ -1730,12 +1805,14 @@ int uwrt_delete_firewall_bridge(struct uctx *context, char *sip, char *dip)
     return -1;
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_"IP_SECTION_STR, IP2STR(sip_buf), IP2STR(dip_buf));
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR,
+          IP2STR(sip_buf), IP2STR(dip_buf));
   if (uwrt_delete_property(context->uctx, property) < 0) {
     log_trace("nothing to delete for %s", property);
   }
 
-  sprintf(property, "firewall.edgesec_"IP_SECTION_STR"_"IP_SECTION_STR, IP2STR(dip_buf), IP2STR(sip_buf));
+  sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR,
+          IP2STR(dip_buf), IP2STR(sip_buf));
   if (uwrt_delete_property(context->uctx, property) < 0) {
     log_trace("nothing to delete for %s", property);
   }
@@ -1743,11 +1820,10 @@ int uwrt_delete_firewall_bridge(struct uctx *context, char *sip, char *dip)
   return 0;
 }
 
-int uwrt_delete_properties(struct uci_context *ctx, UT_array *properties)
-{
+int uwrt_delete_properties(struct uci_context *ctx, UT_array *properties) {
   char **ptr = NULL;
 
-  while ((ptr = (char**) utarray_next(properties, ptr))) {
+  while ((ptr = (char **)utarray_next(properties, ptr))) {
     if (uwrt_delete_property(ctx, *ptr) < 0) {
       log_trace("nothing to delete for %s", *ptr);
     }
@@ -1755,8 +1831,7 @@ int uwrt_delete_properties(struct uci_context *ctx, UT_array *properties)
   return 0;
 }
 
-int uwrt_cleanup_firewall(struct uctx *context)
-{
+int uwrt_cleanup_firewall(struct uctx *context) {
   int ret;
   char **ptr = NULL, *fo = NULL, *p = NULL;
   UT_array *kv = NULL, *parray = NULL;
@@ -1779,10 +1854,10 @@ int uwrt_cleanup_firewall(struct uctx *context)
 
   utarray_new(parray, &ut_str_icd);
   p = &property[0];
-  while ((ptr = (char**) utarray_next(kv, ptr))) {
+  while ((ptr = (char **)utarray_next(kv, ptr))) {
     property[0] = '\0';
 
-    if(strstr(*ptr, "edgesec_") != NULL) {
+    if (strstr(*ptr, "edgesec_") != NULL) {
       fo = strstr(*ptr, "=zone");
       if (fo != NULL) {
         os_strlcpy(property, *ptr, (size_t)(fo - *ptr) + 1);

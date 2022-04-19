@@ -57,7 +57,8 @@ int get_crypt_cmd(struct supervisor_context *context, char *key, char **value);
  * @param size The key size in bytes
  * @return 0 on success, -1 on failure
  */
-int gen_randkey_cmd(struct supervisor_context *context, char *keyid, uint8_t size);
+int gen_randkey_cmd(struct supervisor_context *context, char *keyid,
+                    uint8_t size);
 
 /**
  * @brief GEN_PRIVKEY command
@@ -67,7 +68,8 @@ int gen_randkey_cmd(struct supervisor_context *context, char *keyid, uint8_t siz
  * @param size The key size in bytes
  * @return 0 on success, -1 on failure
  */
-int gen_privkey_cmd(struct supervisor_context *context, char *keyid, uint8_t size);
+int gen_privkey_cmd(struct supervisor_context *context, char *keyid,
+                    uint8_t size);
 
 /**
  * @brief GEN_PUBKEY command
@@ -77,7 +79,8 @@ int gen_privkey_cmd(struct supervisor_context *context, char *keyid, uint8_t siz
  * @param keyid The private key id
  * @return 0 on success, -1 on failure
  */
-int gen_pubkey_cmd(struct supervisor_context *context, char *pubid, char *keyid);
+int gen_pubkey_cmd(struct supervisor_context *context, char *pubid,
+                   char *keyid);
 
 /**
  * @brief GEN_CERT command
@@ -100,7 +103,8 @@ int gen_cert_cmd(struct supervisor_context *context, char *certid, char *keyid,
  * @param blob The blob base64 string to encrypt
  * @return char* the encrypted blob in base64, NULL on failure
  */
-char* encrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *ivid, char *blob);
+char *encrypt_blob_cmd(struct supervisor_context *context, char *keyid,
+                       char *ivid, char *blob);
 
 /**
  * @brief DECRYPT_BLOB command
@@ -111,7 +115,8 @@ char* encrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *iv
  * @param blob The blob base64 string to decrypt
  * @return char* the decrypted blob in base64, NULL on failure
  */
-char* decrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *ivid, char *blob);
+char *decrypt_blob_cmd(struct supervisor_context *context, char *keyid,
+                       char *ivid, char *blob);
 
 /**
  * @brief SIGN_BLOB command
@@ -121,6 +126,7 @@ char* decrypt_blob_cmd(struct supervisor_context *context, char *keyid, char *iv
  * @param blob The blob base64 string to sign
  * @return char* the signed blob in base64, NULL on failure
  */
-char* sign_blob_cmd(struct supervisor_context *context, char *keyid, char *blob);
+char *sign_blob_cmd(struct supervisor_context *context, char *keyid,
+                    char *blob);
 
 #endif

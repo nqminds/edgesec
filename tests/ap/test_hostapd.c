@@ -23,87 +23,78 @@
 
 static char *test_hostapd_vlan_file = "/tmp/hostapd-test.vlan";
 static char *test_hostapd_conf_file = "/tmp/hostapd-test.conf";
-static char *test_hostapd_conf_content =
-"interface=wlan0\n"
-"driver=nl80211\n"
-"ssid=IOTH_IMX7\n"
-"hw_mode=g\n"
-"channel=11\n"
-"wmm_enabled=1\n"
-"auth_algs=1\n"
-"wpa=2\n"
-"wpa_key_mgmt=WPA-PSK\n"
-"rsn_pairwise=CCMP\n"
-"ctrl_interface=/var/run/hostapd\n"
-"own_ip_addr=192.168.1.2\n"
-"auth_server_addr=192.168.1.1\n"
-"auth_server_port=1812\n"
-"auth_server_shared_secret=radius\n"
-"macaddr_acl=2\n"
-"dynamic_vlan=1\n"
-"vlan_bridge=br\n"
-"vlan_file=/tmp/hostapd-test.vlan\n"
-"logger_stdout=-1\n"
-"logger_stdout_level=0\n"
-"logger_syslog=-1\n"
-"logger_syslog_level=0\n"
-"ignore_broadcast_ssid=0\n"
-"wpa_psk_radius=2\n";
+static char *test_hostapd_conf_content = "interface=wlan0\n"
+                                         "driver=nl80211\n"
+                                         "ssid=IOTH_IMX7\n"
+                                         "hw_mode=g\n"
+                                         "channel=11\n"
+                                         "wmm_enabled=1\n"
+                                         "auth_algs=1\n"
+                                         "wpa=2\n"
+                                         "wpa_key_mgmt=WPA-PSK\n"
+                                         "rsn_pairwise=CCMP\n"
+                                         "ctrl_interface=/var/run/hostapd\n"
+                                         "own_ip_addr=192.168.1.2\n"
+                                         "auth_server_addr=192.168.1.1\n"
+                                         "auth_server_port=1812\n"
+                                         "auth_server_shared_secret=radius\n"
+                                         "macaddr_acl=2\n"
+                                         "dynamic_vlan=1\n"
+                                         "vlan_bridge=br\n"
+                                         "vlan_file=/tmp/hostapd-test.vlan\n"
+                                         "logger_stdout=-1\n"
+                                         "logger_stdout_level=0\n"
+                                         "logger_syslog=-1\n"
+                                         "logger_syslog_level=0\n"
+                                         "ignore_broadcast_ssid=0\n"
+                                         "wpa_psk_radius=2\n";
 
 static char *test_hostapd_vlan_content = "*\twlan0.#\n";
 
 static char *test_ap_bin_path = "/tmp/hostapd";
 static char *test_ap_log_path = "/tmp/hostapd.log";
 
-bool __wrap_signal_process(char *proc_name, int sig)
-{
-  (void) sig;
+bool __wrap_signal_process(char *proc_name, int sig) {
+  (void)sig;
   check_expected(proc_name);
   return true;
 }
 
-bool __wrap_kill_process(char *proc_name)
-{
+bool __wrap_kill_process(char *proc_name) {
   check_expected(proc_name);
   return true;
 }
 
-bool __wrap_reset_interface(char *if_name)
-{
-  (void) if_name;
+bool __wrap_reset_interface(char *if_name) {
+  (void)if_name;
 
   return true;
 }
 
-int __wrap_run_process(char *argv[], pid_t *child_pid)
-{
-  (void) argv;
-  (void) child_pid;
+int __wrap_run_process(char *argv[], pid_t *child_pid) {
+  (void)argv;
+  (void)child_pid;
 
   return 0;
 }
 
-int __wrap_list_dir(char *dirpath, list_dir_fn fun, void *args)
-{
-  (void) fun;
-  (void) dirpath;
+int __wrap_list_dir(char *dirpath, list_dir_fn fun, void *args) {
+  (void)fun;
+  (void)dirpath;
 
-  struct find_dir_type *dir_args = (struct find_dir_type *) args;
+  struct find_dir_type *dir_args = (struct find_dir_type *)args;
   dir_args->proc_running = 1;
   return 0;
 }
 
-int __wrap_check_sock_file_exists(char *path)
-{
-  (void) path;
+int __wrap_check_sock_file_exists(char *path) {
+  (void)path;
 
   return mock_type(int);
 }
 
-
-static void test_generate_hostapd_conf(void **state)
-{
-  (void) state; /* unused */
+static void test_generate_hostapd_conf(void **state) {
+  (void)state; /* unused */
   struct apconf hconf;
   strcpy(hconf.ap_file_path, test_hostapd_conf_file);
   strcpy(hconf.interface, "wlan0");
@@ -129,7 +120,7 @@ static void test_generate_hostapd_conf(void **state)
   hconf.ignore_broadcast_ssid = 0;
   hconf.wpa_psk_radius = 2;
   strcpy(hconf.vlan_tagged_interface, "");
-  
+
   struct radius_conf rconf;
   strcpy(rconf.radius_server_ip, "192.168.1.1");
   strcpy(rconf.radius_client_ip, "192.168.1.2");
@@ -142,12 +133,12 @@ static void test_generate_hostapd_conf(void **state)
   assert_non_null(fp);
 
   long lSize;
-  char * buffer;
+  char *buffer;
 
-  fseek(fp, 0 , SEEK_END);
+  fseek(fp, 0, SEEK_END);
   lSize = ftell(fp);
   rewind(fp);
-  buffer = (char*) malloc(sizeof(char)*lSize);
+  buffer = (char *)malloc(sizeof(char) * lSize);
   assert_non_null(buffer);
 
   size_t result = fread(buffer, 1, lSize, fp);
@@ -159,9 +150,8 @@ static void test_generate_hostapd_conf(void **state)
   free(buffer);
 }
 
-static void test_generate_vlan_conf(void **state)
-{
-  (void) state; /* unused */
+static void test_generate_vlan_conf(void **state) {
+  (void)state; /* unused */
 
   int ret = generate_vlan_conf(test_hostapd_vlan_file, "wlan0");
 
@@ -171,12 +161,12 @@ static void test_generate_vlan_conf(void **state)
   assert_non_null(fp);
 
   long lSize;
-  char * buffer;
+  char *buffer;
 
-  fseek(fp, 0 , SEEK_END);
+  fseek(fp, 0, SEEK_END);
   lSize = ftell(fp);
   rewind(fp);
-  buffer = (char*) malloc(sizeof(char)*lSize);
+  buffer = (char *)malloc(sizeof(char) * lSize);
   assert_non_null(buffer);
 
   size_t result = fread(buffer, 1, lSize, fp);
@@ -189,9 +179,8 @@ static void test_generate_vlan_conf(void **state)
   free(buffer);
 }
 
-static void test_run_ap_process(void **state)
-{
-  (void) state; /* unused */
+static void test_run_ap_process(void **state) {
+  (void)state; /* unused */
 
   struct apconf hconf;
 
@@ -210,9 +199,8 @@ static void test_run_ap_process(void **state)
   kill_ap_process();
 }
 
-static void test_kill_ap_process(void **state)
-{
-  (void) state; /* unused */
+static void test_kill_ap_process(void **state) {
+  (void)state; /* unused */
 
   struct apconf hconf;
 
@@ -231,9 +219,8 @@ static void test_kill_ap_process(void **state)
   assert_true(kill_ap_process());
 }
 
-static void test_signal_ap_process(void **state)
-{
-  (void) state; /* unused */
+static void test_signal_ap_process(void **state) {
+  (void)state; /* unused */
 
   struct apconf hconf;
 
@@ -242,7 +229,7 @@ static void test_signal_ap_process(void **state)
   strcpy(hconf.ap_bin_path, test_ap_bin_path);
   strcpy(hconf.ap_file_path, test_hostapd_conf_file);
   strcpy(hconf.ap_log_path, test_ap_log_path);
-  
+
   will_return(__wrap_check_sock_file_exists, 1);
   expect_any(__wrap_kill_process, proc_name);
   int ret = run_ap_process(&hconf);
@@ -254,20 +241,18 @@ static void test_signal_ap_process(void **state)
   assert_int_equal(ret, 0);
 }
 
-int main(int argc, char *argv[])
-{  
-  (void) argc;
-  (void) argv;
+int main(int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
 
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
-    cmocka_unit_test(test_generate_hostapd_conf),
-    cmocka_unit_test(test_generate_vlan_conf),
-    cmocka_unit_test(test_run_ap_process),
-    cmocka_unit_test(test_kill_ap_process),
-    cmocka_unit_test(test_signal_ap_process)
-  };
+      cmocka_unit_test(test_generate_hostapd_conf),
+      cmocka_unit_test(test_generate_vlan_conf),
+      cmocka_unit_test(test_run_ap_process),
+      cmocka_unit_test(test_kill_ap_process),
+      cmocka_unit_test(test_signal_ap_process)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

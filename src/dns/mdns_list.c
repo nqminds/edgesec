@@ -32,8 +32,7 @@
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 
-struct mdns_list* init_mdns_list(void)
-{
+struct mdns_list *init_mdns_list(void) {
   struct mdns_list *mlist;
 
   if ((mlist = os_zalloc(sizeof(struct mdns_list))) == NULL) {
@@ -48,18 +47,16 @@ struct mdns_list* init_mdns_list(void)
   return mlist;
 }
 
-void free_mdns_list_el(struct mdns_list* el)
-{
+void free_mdns_list_el(struct mdns_list *el) {
   if (el != NULL) {
     dl_list_del(&el->list);
     os_free(el->info.name);
-	os_free(el);
+    os_free(el);
   }
 }
 
-void free_mdns_list(struct mdns_list* mlist)
-{
-  struct mdns_list* el;
+void free_mdns_list(struct mdns_list *mlist) {
+  struct mdns_list *el;
 
   while ((el = dl_list_first(&mlist->list, struct mdns_list, list)) != NULL) {
     free_mdns_list_el(el);
@@ -68,8 +65,7 @@ void free_mdns_list(struct mdns_list* mlist)
   free_mdns_list_el(mlist);
 }
 
-int push_mdns_list(struct mdns_list* mlist, struct mdns_list_info *info)
-{
+int push_mdns_list(struct mdns_list *mlist, struct mdns_list_info *info) {
   struct mdns_list *el;
 
   if (mlist == NULL) {
@@ -89,7 +85,8 @@ int push_mdns_list(struct mdns_list* mlist, struct mdns_list_info *info)
 
   dl_list_for_each(el, &mlist->list, struct mdns_list, list) {
     if (el != NULL) {
-      if (el->info.request == info->request && strcmp(el->info.name, info->name) == 0) {
+      if (el->info.request == info->request &&
+          strcmp(el->info.name, info->name) == 0) {
         return 0;
       }
     }
@@ -112,8 +109,8 @@ int push_mdns_list(struct mdns_list* mlist, struct mdns_list_info *info)
   return 0;
 }
 
-int check_mdns_list_req(struct mdns_list* mlist, enum MDNS_REQUEST_TYPE request)
-{
+int check_mdns_list_req(struct mdns_list *mlist,
+                        enum MDNS_REQUEST_TYPE request) {
   struct mdns_list *el;
 
   if (mlist == NULL) {

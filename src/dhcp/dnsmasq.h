@@ -20,7 +20,8 @@
 /**
  * @file dnsmasq.h
  * @author Alexandru Mereacre
- * @brief File containing the definition of dnsmasq service configuration utilities.
+ * @brief File containing the definition of dnsmasq service configuration
+ * utilities.
  */
 
 #ifndef DNSMASQ_H
@@ -31,7 +32,6 @@
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/utarray.h"
-
 
 /**
  * @brief Generates the dnsmasq configuration file
@@ -56,9 +56,10 @@ int generate_dnsmasq_script(char *dhcp_script_path, char *domain_server_path);
  *
  * @param dhcp_bin_path The DHCP server binary path
  * @param dhcp_conf_path The DHCP server config path
- * @return char* The pointer to the statically allocated process name, NULL on failure
+ * @return char* The pointer to the statically allocated process name, NULL on
+ * failure
  */
-char* run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path);
+char *run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path);
 
 /**
  * @brief Terminate the DHCP server
@@ -75,7 +76,6 @@ bool kill_dhcp_process(void);
  * @return int 0 on success, -1 on failure
  */
 int signal_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path);
-
 
 /**
  * @brief Clear the DHCP lease entry for a MAC addrress

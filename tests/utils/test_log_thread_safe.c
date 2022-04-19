@@ -11,30 +11,28 @@
 
 static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
 
-static void lock_fn(bool lock)
-{
+static void lock_fn(bool lock) {
   int res;
 
   if (lock) {
     res = pthread_mutex_lock(&mtx);
     if (res != 0) {
-        perror("pthread_mutex_lock\n");
-        exit(1);
+      perror("pthread_mutex_lock\n");
+      exit(1);
     }
   } else {
     res = pthread_mutex_unlock(&mtx);
     if (res != 0) {
-        perror("pthread_mutex_unlock\n");
-        exit(1);
+      perror("pthread_mutex_unlock\n");
+      exit(1);
     }
   }
 }
 
-static void * threadFunc(void *arg)
-{
-    for (int i=0; i< 1000; i++)
-      log_trace((char*)arg);
-    return NULL;
+static void *threadFunc(void *arg) {
+  for (int i = 0; i < 1000; i++)
+    log_trace((char *)arg);
+  return NULL;
 }
 
 int main(int argc, char *argv[]) {
@@ -61,14 +59,16 @@ int main(int argc, char *argv[]) {
   pthread_t test_thread_one, test_thread_two;
   int thread_output_one, thread_output_two;
 
-  thread_output_one = pthread_create(&test_thread_one, NULL, threadFunc, (char*)thread_one_text);
+  thread_output_one = pthread_create(&test_thread_one, NULL, threadFunc,
+                                     (char *)thread_one_text);
 
   if (thread_output_one != 0) {
     perror("pthread_create one error\n");
     exit(1);
   }
 
-  thread_output_two = pthread_create(&test_thread_two, NULL, threadFunc, (char*)thread_two_text);
+  thread_output_two = pthread_create(&test_thread_two, NULL, threadFunc,
+                                     (char *)thread_two_text);
 
   if (thread_output_two != 0) {
     perror("pthread_create two error\n");
@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
   dup2(save_err, fileno(stderr));
   close(save_err);
 
-  char * line = NULL;
+  char *line = NULL;
   size_t len = 0;
   ssize_t read;
 
@@ -108,14 +108,16 @@ int main(int argc, char *argv[]) {
     int8_t result_two = strcmp(line, "two\n");
     if (result_one != 0 && result_two != 0) {
       perror("Race condition detected error\n");
-      if (line) free(line);
+      if (line)
+        free(line);
       unlink(tmp_file);
       fclose(fp);
       exit(1);
     }
   }
 
-  if (line) free(line);
+  if (line)
+    free(line);
   unlink(tmp_file);
   fclose(fp);
 

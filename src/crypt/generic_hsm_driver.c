@@ -20,7 +20,8 @@
 /**
  * @file generic_hsm_driver.c
  * @author Alexandru Mereacre
- * @brief File containing the implementation of generic HSM driver configuration utilities.
+ * @brief File containing the implementation of generic HSM driver configuration
+ * utilities.
  */
 #include <sys/types.h>
 
@@ -34,9 +35,8 @@
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 
-struct hsm_context* init_hsm(void)
-{
-  struct hsm_context* context = os_zalloc(sizeof(struct hsm_context));
+struct hsm_context *init_hsm(void) {
+  struct hsm_context *context = os_zalloc(sizeof(struct hsm_context));
 
   if (context == NULL) {
     log_errno("os_zalloc");
@@ -44,7 +44,7 @@ struct hsm_context* init_hsm(void)
   }
 
 #ifdef WITH_ZYMKEY4_HSM
-  zkCTX* zk_ctx = init_zymkey4();
+  zkCTX *zk_ctx = init_zymkey4();
   if (zk_ctx == NULL) {
     log_trace("init_zymkey4 fail");
     os_free(context);
@@ -53,16 +53,15 @@ struct hsm_context* init_hsm(void)
   context->hsm_ctx = (void *)zk_ctx;
 
 #else
-    log_debug("No HSM implemented");
-    os_free(context);
-    return NULL;
+  log_debug("No HSM implemented");
+  os_free(context);
+  return NULL;
 #endif
 
   return context;
 }
 
-int close_hsm(struct hsm_context *context)
-{
+int close_hsm(struct hsm_context *context) {
   int ret = -1;
 
   if (context == NULL) {
@@ -80,8 +79,8 @@ int close_hsm(struct hsm_context *context)
   return ret;
 }
 
-int generate_hsm_key(struct hsm_context *context, uint8_t *key, size_t key_size)
-{
+int generate_hsm_key(struct hsm_context *context, uint8_t *key,
+                     size_t key_size) {
   if (context == NULL) {
     log_trace("context param is NULL");
     return -1;
@@ -95,14 +94,14 @@ int generate_hsm_key(struct hsm_context *context, uint8_t *key, size_t key_size)
 #ifdef WITH_ZYMKEY4_HSM
   return generate_zymkey4_key((zkCTX *)context->hsm_ctx, key, key_size);
 #else
-  (void) key_size;
+  (void)key_size;
   log_debug("No HSM implemented");
   return -1;
 #endif
 }
 
-int encrypt_hsm_blob(struct hsm_context *context, uint8_t *in, size_t in_size, uint8_t **out, size_t *out_size)
-{
+int encrypt_hsm_blob(struct hsm_context *context, uint8_t *in, size_t in_size,
+                     uint8_t **out, size_t *out_size) {
   if (context == NULL) {
     log_trace("context param is NULL");
     return -1;
@@ -124,16 +123,17 @@ int encrypt_hsm_blob(struct hsm_context *context, uint8_t *in, size_t in_size, u
   }
 
 #ifdef WITH_ZYMKEY4_HSM
-  return encrypt_zymkey4_blob((zkCTX *)context->hsm_ctx, in, in_size, out, out_size);
+  return encrypt_zymkey4_blob((zkCTX *)context->hsm_ctx, in, in_size, out,
+                              out_size);
 #else
-  (void) in_size;
+  (void)in_size;
   log_debug("No HSM implemented");
   return -1;
 #endif
 }
 
-int decrypt_hsm_blob(struct hsm_context *context, uint8_t *in, size_t in_size, uint8_t **out, size_t *out_size)
-{
+int decrypt_hsm_blob(struct hsm_context *context, uint8_t *in, size_t in_size,
+                     uint8_t **out, size_t *out_size) {
   if (context == NULL) {
     log_trace("context param is NULL");
     return -1;
@@ -155,9 +155,10 @@ int decrypt_hsm_blob(struct hsm_context *context, uint8_t *in, size_t in_size, u
   }
 
 #ifdef WITH_ZYMKEY4_HSM
-  return decrypt_zymkey4_blob((zkCTX *)context->hsm_ctx, in, in_size, out, out_size);
+  return decrypt_zymkey4_blob((zkCTX *)context->hsm_ctx, in, in_size, out,
+                              out_size);
 #else
-  (void) in_size;
+  (void)in_size;
 
   log_debug("No HSM implemented");
   return -1;

@@ -31,21 +31,21 @@
 #include "../utils/uthash.h"
 #include "../capture/mdns_decoder.h"
 
-int put_mdns_info(hmap_mdns_conn **imap, uint8_t *ip, struct mdns_list_info *info)
-{
+int put_mdns_info(hmap_mdns_conn **imap, uint8_t *ip,
+                  struct mdns_list_info *info) {
   hmap_mdns_conn *s = NULL, *el = NULL;
 
-  HASH_FIND(hh, *imap, ip, IP_ALEN, s);     /* IP already in the hash? */
+  HASH_FIND(hh, *imap, ip, IP_ALEN, s); /* IP already in the hash? */
 
   if (s == NULL) {
-    if ((el = (hmap_mdns_conn *) os_malloc(sizeof(hmap_mdns_conn))) == NULL) {
+    if ((el = (hmap_mdns_conn *)os_malloc(sizeof(hmap_mdns_conn))) == NULL) {
       log_errno("os_malloc");
       return -1;
     }
 
     os_memcpy(el->key, ip, IP_ALEN);
 
-    if((el->value = init_mdns_list()) == NULL) {
+    if ((el->value = init_mdns_list()) == NULL) {
       log_trace("init_mdns_list fail");
       os_free(el);
       return -1;
@@ -54,7 +54,7 @@ int put_mdns_info(hmap_mdns_conn **imap, uint8_t *ip, struct mdns_list_info *inf
     el = s;
   }
 
-  if (push_mdns_list(el->value, info) < 0 ) {
+  if (push_mdns_list(el->value, info) < 0) {
     log_trace("push_mdns_list fail");
     if (el != NULL && s == NULL) {
       os_free(el);
@@ -69,8 +69,8 @@ int put_mdns_info(hmap_mdns_conn **imap, uint8_t *ip, struct mdns_list_info *inf
   return 0;
 }
 
-int put_mdns_query_mapper(hmap_mdns_conn **imap, uint8_t *ip, struct mdns_query_entry *query)
-{
+int put_mdns_query_mapper(hmap_mdns_conn **imap, uint8_t *ip,
+                          struct mdns_query_entry *query) {
   struct mdns_list_info info;
 
   if (imap == NULL) {
@@ -100,8 +100,8 @@ int put_mdns_query_mapper(hmap_mdns_conn **imap, uint8_t *ip, struct mdns_query_
   return 0;
 }
 
-int put_mdns_answer_mapper(hmap_mdns_conn **imap, uint8_t *ip, struct mdns_answer_entry *answer)
-{
+int put_mdns_answer_mapper(hmap_mdns_conn **imap, uint8_t *ip,
+                           struct mdns_answer_entry *answer) {
   struct mdns_list_info info;
 
   if (imap == NULL) {
@@ -132,8 +132,7 @@ int put_mdns_answer_mapper(hmap_mdns_conn **imap, uint8_t *ip, struct mdns_answe
   return 0;
 }
 
-void free_mdns_mapper(hmap_mdns_conn **imap)
-{
+void free_mdns_mapper(hmap_mdns_conn **imap) {
   hmap_mdns_conn *current, *tmp;
 
   HASH_ITER(hh, *imap, current, tmp) {
@@ -143,8 +142,8 @@ void free_mdns_mapper(hmap_mdns_conn **imap)
   }
 }
 
-int check_mdns_mapper_req(hmap_mdns_conn **imap, uint8_t *ip, enum MDNS_REQUEST_TYPE request)
-{
+int check_mdns_mapper_req(hmap_mdns_conn **imap, uint8_t *ip,
+                          enum MDNS_REQUEST_TYPE request) {
   hmap_mdns_conn *s = NULL;
   int ret;
 
@@ -158,7 +157,7 @@ int check_mdns_mapper_req(hmap_mdns_conn **imap, uint8_t *ip, enum MDNS_REQUEST_
     return -1;
   }
 
-  HASH_FIND(hh, *imap, ip, IP_ALEN, s);     /* IP already in the hash? */
+  HASH_FIND(hh, *imap, ip, IP_ALEN, s); /* IP already in the hash? */
 
   if (s == NULL) {
     return 0;
@@ -167,6 +166,7 @@ int check_mdns_mapper_req(hmap_mdns_conn **imap, uint8_t *ip, enum MDNS_REQUEST_
     if (ret < 0) {
       log_trace("check_mdns_list_req fail");
       return -1;
-    } else return ret;
+    } else
+      return ret;
   }
 }

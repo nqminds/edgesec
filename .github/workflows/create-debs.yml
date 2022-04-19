@@ -7,7 +7,7 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  
+
 
 name: Build Debian Packages
 
@@ -76,10 +76,10 @@ jobs:
           script: |
             const fs = require('fs').promises;
             const {basename} = require("path");
-            
+
             const globber = await glob.create("/var/cache/pbuilder/result/*.deb");
             const files = await globber.glob();
-            
+
             for (const filePath of files) {
               console.log(`Uploading ${filePath}`);
               const filePromise = fs.readFile(filePath);

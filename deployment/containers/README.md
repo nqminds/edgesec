@@ -33,7 +33,7 @@ docker build -t openwrt .
 ## Run
 Execute a command ```cmd``` in the currrent folder that is mounted to the container folder `/opt/EDGESec` use:
 ```console
-docker run --rm -v "$PWD":/opt/EDGESec -w /opt/EDGESec openwrt cmd 
+docker run --rm -v "$PWD":/opt/EDGESec -w /opt/EDGESec openwrt cmd
 ```
 where `openwrt` is the container name from Step 2.
 

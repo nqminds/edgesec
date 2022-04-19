@@ -35,7 +35,7 @@
 #include "os.h"
 
 struct ipgenctx {
-  char ipcmd_path[MAX_OS_PATH_LEN];      /**< The ip command path */
+  char ipcmd_path[MAX_OS_PATH_LEN]; /**< The ip command path */
 };
 
 /**
@@ -44,8 +44,7 @@ struct ipgenctx {
  * @param path The path string to the ip command
  * @return struct ipgenctx* The ip generic context
  */
-struct ipgenctx* ipgen_init_context(char *path);
-
+struct ipgenctx *ipgen_init_context(char *path);
 
 /**
  * @brief Frees the ipgen context
@@ -53,7 +52,6 @@ struct ipgenctx* ipgen_init_context(char *path);
  * @param context The ipgen context
  */
 void ipgen_free_context(struct ipgenctx *context);
-
 
 /**
  * @brief Creates and interface and assigns an IP
@@ -67,7 +65,7 @@ void ipgen_free_context(struct ipgenctx *context);
  * @return int 0 on success, -1 on failure
  */
 int ipgen_create_interface(struct ipgenctx *context, char *ifname, char *type,
-						char *ip_addr, char *brd_addr, char *subnet_mask);
+                           char *ip_addr, char *brd_addr, char *subnet_mask);
 
 /**
  * @brief Resets the interface

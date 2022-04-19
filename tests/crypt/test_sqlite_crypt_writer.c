@@ -16,26 +16,23 @@
 #include "utils/sqliteu.h"
 #include "crypt/sqlite_crypt_writer.h"
 
-int __wrap_sqlite3_open(const char *filename, sqlite3 **ppDb)
-{
+int __wrap_sqlite3_open(const char *filename, sqlite3 **ppDb) {
   return __real_sqlite3_open(filename, ppDb);
 }
 
-static void test_open_sqlite_crypt_db(void **state)
-{
-  (void) state; /* unused */
-  sqlite3* db;
+static void test_open_sqlite_crypt_db(void **state) {
+  (void)state; /* unused */
+  sqlite3 *db;
 
   assert_int_equal(open_sqlite_crypt_db(":memory:", &db), 0);
-  
+
   free_sqlite_crypt_db(db);
 }
 
-static void test_save_sqlite_store_entry(void **state)
-{
-  (void) state; /* unused */
+static void test_save_sqlite_store_entry(void **state) {
+  (void)state; /* unused */
 
-  sqlite3* db;
+  sqlite3 *db;
   char *key = "key";
   char *value = "value";
   char *id = "id";
@@ -48,11 +45,10 @@ static void test_save_sqlite_store_entry(void **state)
   free_sqlite_crypt_db(db);
 }
 
-static void test_get_sqlite_store_row(void **state)
-{
-  (void) state; /* unused */
+static void test_get_sqlite_store_row(void **state) {
+  (void)state; /* unused */
 
-  sqlite3* db;
+  sqlite3 *db;
   char *key = "key";
   char *value = "value";
   char *id = "id";
@@ -88,11 +84,10 @@ static void test_get_sqlite_store_row(void **state)
   free_sqlite_crypt_db(db);
 }
 
-static void test_save_sqlite_secrets_entry(void **state)
-{
-  (void) state; /* unused */
+static void test_save_sqlite_secrets_entry(void **state) {
+  (void)state; /* unused */
 
-  sqlite3* db;
+  sqlite3 *db;
   char *salt = "salt";
   char *value = "value";
   char *id = "id";
@@ -105,11 +100,10 @@ static void test_save_sqlite_secrets_entry(void **state)
   free_sqlite_crypt_db(db);
 }
 
-static void test_get_sqlite_secrets_row(void **state)
-{
-  (void) state; /* unused */
+static void test_get_sqlite_secrets_row(void **state) {
+  (void)state; /* unused */
 
-  sqlite3* db;
+  sqlite3 *db;
   char *salt = "salt";
   char *value = "value";
   char *id = "id";
@@ -145,17 +139,15 @@ static void test_get_sqlite_secrets_row(void **state)
   free_sqlite_crypt_db(db);
 }
 
-int main(int argc, char *argv[])
-{  
+int main(int argc, char *argv[]) {
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
-    cmocka_unit_test(test_open_sqlite_crypt_db),
-    cmocka_unit_test(test_save_sqlite_store_entry),
-    cmocka_unit_test(test_get_sqlite_store_row),
-    cmocka_unit_test(test_save_sqlite_secrets_entry),
-    cmocka_unit_test(test_get_sqlite_secrets_row)
-  };
+      cmocka_unit_test(test_open_sqlite_crypt_db),
+      cmocka_unit_test(test_save_sqlite_store_entry),
+      cmocka_unit_test(test_get_sqlite_store_row),
+      cmocka_unit_test(test_save_sqlite_secrets_entry),
+      cmocka_unit_test(test_get_sqlite_secrets_row)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

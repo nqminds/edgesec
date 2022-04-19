@@ -34,8 +34,8 @@
 
 #include "reflection_list.h"
 
-void setup_reflection_if_el(struct reflection_list *el, unsigned int ifindex, const char *ifname)
-{
+void setup_reflection_if_el(struct reflection_list *el, unsigned int ifindex,
+                            const char *ifname) {
   el->recv_fd = -1;
   el->send_fd = -1;
   el->ifindex = ifindex;
@@ -46,8 +46,7 @@ void setup_reflection_if_el(struct reflection_list *el, unsigned int ifindex, co
   }
 }
 
-struct reflection_list * init_reflection_list(void)
-{
+struct reflection_list *init_reflection_list(void) {
   struct reflection_list *rif = os_zalloc(sizeof(struct reflection_list));
   if (rif == NULL) {
     log_errno("os_zalloc");
@@ -60,9 +59,10 @@ struct reflection_list * init_reflection_list(void)
   return rif;
 }
 
-struct reflection_list* push_reflection_list(struct reflection_list *rif, unsigned int ifindex, const char *ifname)
-{
-  struct reflection_list* el;
+struct reflection_list *push_reflection_list(struct reflection_list *rif,
+                                             unsigned int ifindex,
+                                             const char *ifname) {
+  struct reflection_list *el;
 
   if (rif == NULL) {
     log_debug("rif param is NULL");
@@ -81,24 +81,21 @@ struct reflection_list* push_reflection_list(struct reflection_list *rif, unsign
   return el;
 }
 
-struct reflection_list* pop_reflection_list(struct reflection_list *rif)
-{
+struct reflection_list *pop_reflection_list(struct reflection_list *rif) {
   if (rif == NULL)
     return NULL;
 
   return dl_list_first(&rif->list, struct reflection_list, list);
 }
 
-void free_reflection_list_el(struct reflection_list *el)
-{
+void free_reflection_list_el(struct reflection_list *el) {
   if (el != NULL) {
     dl_list_del(&el->list);
-	os_free(el);
+    os_free(el);
   }
 }
 
-void free_reflection_list(struct reflection_list *rif)
-{
+void free_reflection_list(struct reflection_list *rif) {
   struct reflection_list *el;
 
   while ((el = pop_reflection_list(rif)) != NULL) {

@@ -17,29 +17,26 @@
 #include "utils/log.h"
 #include "utils/squeue.h"
 
-static void test_init_string_queue(void **state)
-{
-  (void) state; /* unused */
+static void test_init_string_queue(void **state) {
+  (void)state; /* unused */
 
-  struct string_queue* sq = init_string_queue(-1);
+  struct string_queue *sq = init_string_queue(-1);
   assert_int_equal(sq->max_length, -1);
   free_string_queue(sq);
 }
 
-static void test_free_string_queue(void **state)
-{
-  (void) state; /* unused */
+static void test_free_string_queue(void **state) {
+  (void)state; /* unused */
 
-  struct string_queue* sq = init_string_queue(-1);
+  struct string_queue *sq = init_string_queue(-1);
 
   free_string_queue(sq);
 }
 
-static void test_push_string_queue(void **state)
-{
-  (void) state; /* unused */
+static void test_push_string_queue(void **state) {
+  (void)state; /* unused */
 
-  struct string_queue* sq = init_string_queue(-1);
+  struct string_queue *sq = init_string_queue(-1);
   assert_int_equal(push_string_queue(sq, NULL), -1);
   assert_int_equal(get_string_queue_length(sq), 0);
 
@@ -81,15 +78,13 @@ static void test_push_string_queue(void **state)
   push_string_queue(sq, "test3");
   assert_int_equal(get_string_queue_length(sq), 3);
   free_string_queue(sq);
-
 }
 
-static void test_pop_string_queue(void **state)
-{
-  (void) state; /* unused */
+static void test_pop_string_queue(void **state) {
+  (void)state; /* unused */
   char *str = NULL;
 
-  struct string_queue* sq = init_string_queue(-1);
+  struct string_queue *sq = init_string_queue(-1);
   assert_int_equal(pop_string_queue(sq, &str), 0);
   assert_null(str);
   free_string_queue(sq);
@@ -140,11 +135,10 @@ static void test_pop_string_queue(void **state)
   free_string_queue(sq);
 }
 
-static void test_empty_string_queue(void **state)
-{
-  (void) state; /* unused */
+static void test_empty_string_queue(void **state) {
+  (void)state; /* unused */
   char *str = NULL;
-  struct string_queue* sq = init_string_queue(-1);
+  struct string_queue *sq = init_string_queue(-1);
   push_string_queue(sq, "test1");
   push_string_queue(sq, "test2");
   push_string_queue(sq, "test3");
@@ -216,11 +210,10 @@ static void test_empty_string_queue(void **state)
   free_string_queue(sq);
 }
 
-static void test_peep_string_queue(void **state)
-{
-  (void) state; /* unused */
+static void test_peep_string_queue(void **state) {
+  (void)state; /* unused */
   char *str = NULL;
-  struct string_queue* sq = init_string_queue(-1);
+  struct string_queue *sq = init_string_queue(-1);
   push_string_queue(sq, "test1");
   push_string_queue(sq, "test2");
   push_string_queue(sq, "test3");
@@ -233,12 +226,11 @@ static void test_peep_string_queue(void **state)
   free_string_queue(sq);
 }
 
-static void test_concat_string_queue(void **state)
-{
-  (void) state; /* unused */
+static void test_concat_string_queue(void **state) {
+  (void)state; /* unused */
   char *str;
 
-  struct string_queue* sq = init_string_queue(-1);
+  struct string_queue *sq = init_string_queue(-1);
   push_string_queue(sq, "test1");
   push_string_queue(sq, "test2");
   push_string_queue(sq, "test3");
@@ -271,19 +263,17 @@ static void test_concat_string_queue(void **state)
   free_string_queue(sq);
 }
 
-int main(int argc, char *argv[])
-{  
+int main(int argc, char *argv[]) {
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
-    cmocka_unit_test(test_init_string_queue),
-    cmocka_unit_test(test_free_string_queue),
-    cmocka_unit_test(test_push_string_queue),
-    cmocka_unit_test(test_pop_string_queue),
-    cmocka_unit_test(test_empty_string_queue),
-    cmocka_unit_test(test_peep_string_queue),
-    cmocka_unit_test(test_concat_string_queue)
-  };
+      cmocka_unit_test(test_init_string_queue),
+      cmocka_unit_test(test_free_string_queue),
+      cmocka_unit_test(test_push_string_queue),
+      cmocka_unit_test(test_pop_string_queue),
+      cmocka_unit_test(test_empty_string_queue),
+      cmocka_unit_test(test_peep_string_queue),
+      cmocka_unit_test(test_concat_string_queue)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

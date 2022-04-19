@@ -62,7 +62,7 @@ struct hostapd_params {
  * @param path The path string to the config folder
  * @return struct uctx* The uci context
  */
-struct uctx* uwrt_init_context(char *path);
+struct uctx *uwrt_init_context(char *path);
 
 /**
  * @brief Frees the uci context
@@ -113,8 +113,10 @@ int uwrt_commit_section(struct uctx *context, char *section);
  * @param scriptfile The script file path string
  * @return int 0 on success, -1 on failure
  */
-int uwrt_gen_dnsmasq_instance(struct uctx *context, struct string_queue *ifname_queue,
-                              UT_array *server_array, char *leasefile, char *scriptfile);
+int uwrt_gen_dnsmasq_instance(struct uctx *context,
+                              struct string_queue *ifname_queue,
+                              UT_array *server_array, char *leasefile,
+                              char *scriptfile);
 
 /**
  * @brief Adds a dhcp pool entry
@@ -127,9 +129,9 @@ int uwrt_gen_dnsmasq_instance(struct uctx *context, struct string_queue *ifname_
  * @param lease_time Interface lease time string
  * @return int 0 on success, -1 on failure
  */
-int uwrt_add_dhcp_pool(struct uctx *context, char *ifname,
-                       int vlanid, char *ip_addr_low, char *ip_addr_upp,
-                       char *subnet_mask, char *lease_time);
+int uwrt_add_dhcp_pool(struct uctx *context, char *ifname, int vlanid,
+                       char *ip_addr_low, char *ip_addr_upp, char *subnet_mask,
+                       char *lease_time);
 
 /**
  * @brief Generate the hostapd configf
@@ -138,7 +140,8 @@ int uwrt_add_dhcp_pool(struct uctx *context, char *ifname,
  * @param params The hostapd params
  * @return int 0 on success, -1 on failure
  */
-int uwrt_gen_hostapd_instance(struct uctx *context, struct hostapd_params *params);
+int uwrt_gen_hostapd_instance(struct uctx *context,
+                              struct hostapd_params *params);
 
 /**
  * @brief Generate a firewall zone for a bridge
@@ -149,7 +152,6 @@ int uwrt_gen_hostapd_instance(struct uctx *context, struct hostapd_params *param
  */
 int uwrt_gen_firewall_zone(struct uctx *context, char *brname);
 
-
 /**
  * @brief Adds a firewall rule for an IP address
  *
@@ -159,7 +161,8 @@ int uwrt_gen_firewall_zone(struct uctx *context, char *brname);
  * @param nat_name The NAT bridge name
  * @return int 0 on success, -1 on failure
  */
-int uwrt_add_firewall_nat(struct uctx *context, char *brname, char *ip_addr, char *nat_name);
+int uwrt_add_firewall_nat(struct uctx *context, char *brname, char *ip_addr,
+                          char *nat_name);
 
 /**
  * @brief Deletes a firewall rule for an IP address
@@ -180,7 +183,8 @@ int uwrt_delete_firewall_nat(struct uctx *context, char *ip_addr);
  * @param dbr The destination bridge interface name
  * @return int 0 on success, -1 on failure
  */
-int uwrt_add_firewall_bridge(struct uctx *context, char *sip, char *sbr, char *dip, char *dbr);
+int uwrt_add_firewall_bridge(struct uctx *context, char *sip, char *sbr,
+                             char *dip, char *dbr);
 
 /**
  * @brief Deletes a firewall bridge rule for two IP addresses

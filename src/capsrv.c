@@ -49,17 +49,15 @@ static __thread char version_buf[10];
 
 pthread_mutex_t log_lock;
 
-void log_lock_fun(bool lock)
-{
-    if (lock) {
-        pthread_mutex_lock(&log_lock);
-    } else {
-        pthread_mutex_unlock(&log_lock);
-    }
+void log_lock_fun(bool lock) {
+  if (lock) {
+    pthread_mutex_lock(&log_lock);
+  } else {
+    pthread_mutex_unlock(&log_lock);
+  }
 }
 
-char *get_static_version_string(uint8_t major, uint8_t minor, uint8_t patch)
-{
+char *get_static_version_string(uint8_t major, uint8_t minor, uint8_t patch) {
   int ret = snprintf(version_buf, 10, "%d.%d.%d", major, minor, patch);
 
   if (ret < 0) {
@@ -70,15 +68,15 @@ char *get_static_version_string(uint8_t major, uint8_t minor, uint8_t patch)
   return version_buf;
 }
 
-int show_app_version(void)
-{
+int show_app_version(void) {
   fprintf(stdout, "capture app version %s\n",
-    get_static_version_string(CAPTURE_VERSION_MAJOR,CAPTURE_VERSION_MINOR,CAPTURE_VERSION_PATCH));
+          get_static_version_string(CAPTURE_VERSION_MAJOR,
+                                    CAPTURE_VERSION_MINOR,
+                                    CAPTURE_VERSION_PATCH));
   return 1;
 }
 
-int show_app_help(char *app_name)
-{
+int show_app_help(char *app_name) {
   show_app_version();
   fprintf(stdout, "Usage:\n");
   fprintf(stdout, CAPTURE_USAGE_STRING, basename(app_name));
@@ -90,57 +88,54 @@ int show_app_help(char *app_name)
 }
 
 /* Diagnose an error in command-line arguments and terminate the process */
-int log_cmdline_error(const char *format, ...)
-{
-    va_list argList;
+int log_cmdline_error(const char *format, ...) {
+  va_list argList;
 
-    fflush(stdout);           /* Flush any pending stdout */
+  fflush(stdout); /* Flush any pending stdout */
 
-    fprintf(stdout, "Command-line usage error: ");
-    va_start(argList, format);
-    vfprintf(stdout, format, argList);
-    va_end(argList);
+  fprintf(stdout, "Command-line usage error: ");
+  va_start(argList, format);
+  vfprintf(stdout, format, argList);
+  va_end(argList);
 
-    fflush(stderr);           /* In case stderr is not line-buffered */
-    return -1;
+  fflush(stderr); /* In case stderr is not line-buffered */
+  return -1;
 }
 
 int process_app_options(int argc, char *argv[], uint8_t *verbosity,
-                          const char **filename, struct capture_conf *config)
-{
+                        const char **filename, struct capture_conf *config) {
   int opt, ret;
 
   while ((opt = getopt(argc, argv, CAPTURE_OPT_STRING)) != -1) {
     switch (opt) {
-    case 'd':
-      (*verbosity)++;
-      break;
-    case 'h':
-      return show_app_help(argv[0]);
-    case 'v':
-      return show_app_version();
-    case 'c':
-      *filename = optarg;
-      break;
-    case ':':
-      return log_cmdline_error("Missing argument for -%c\n", optopt);
-    case '?':
-      return log_cmdline_error("Unrecognized option -%c\n", optopt);
-    default:
-      ret = capture_opt2config(opt, optarg, config);
-      if (ret < 0) {
-        return log_cmdline_error("Wrong argument value for -%c\n", optopt);
-      } else if (ret > 0) {
+      case 'd':
+        (*verbosity)++;
+        break;
+      case 'h':
         return show_app_help(argv[0]);
-      }
+      case 'v':
+        return show_app_version();
+      case 'c':
+        *filename = optarg;
+        break;
+      case ':':
+        return log_cmdline_error("Missing argument for -%c\n", optopt);
+      case '?':
+        return log_cmdline_error("Unrecognized option -%c\n", optopt);
+      default:
+        ret = capture_opt2config(opt, optarg, config);
+        if (ret < 0) {
+          return log_cmdline_error("Wrong argument value for -%c\n", optopt);
+        } else if (ret > 0) {
+          return show_app_help(argv[0]);
+        }
     }
   }
 
   return 0;
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
   int ret;
   uint8_t verbosity = 0;
   uint8_t level = 0;
@@ -177,8 +172,8 @@ int main(int argc, char *argv[])
   }
 
   if (pthread_mutex_init(&log_lock, NULL) != 0) {
-      fprintf(stderr, "mutex init has failed\n");
-      return EXIT_FAILURE;
+    fprintf(stderr, "mutex init has failed\n");
+    return EXIT_FAILURE;
   }
 
   log_set_lock(log_lock_fun);

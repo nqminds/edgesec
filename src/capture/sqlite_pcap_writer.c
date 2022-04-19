@@ -20,7 +20,8 @@
 /**
  * @file sqlite_pcap_writer.c
  * @author Alexandru Mereacre
- * @brief File containing the implementation of the sqlite pcap writer utilities.
+ * @brief File containing the implementation of the sqlite pcap writer
+ * utilities.
  */
 
 #include <stdio.h>
@@ -36,15 +37,13 @@
 #include "../utils/log.h"
 #include "../utils/sqliteu.h"
 
-void free_sqlite_pcap_db(sqlite3 *db)
-{
+void free_sqlite_pcap_db(sqlite3 *db) {
   if (db != NULL) {
     sqlite3_close(db);
   }
 }
 
-int open_sqlite_pcap_db(char *db_path, sqlite3** sql)
-{
+int open_sqlite_pcap_db(char *db_path, sqlite3 **sql) {
   sqlite3 *db = NULL;
   int rc;
 
@@ -74,9 +73,9 @@ int open_sqlite_pcap_db(char *db_path, sqlite3** sql)
   return 0;
 }
 
-int save_sqlite_pcap_entry(sqlite3 *db, char *name, uint64_t timestamp, uint32_t caplen, uint32_t length,
-                           char *interface, char *filter)
-{
+int save_sqlite_pcap_entry(sqlite3 *db, char *name, uint64_t timestamp,
+                           uint32_t caplen, uint32_t length, char *interface,
+                           char *filter) {
   sqlite3_stmt *res = NULL;
   int column_idx;
 
@@ -86,7 +85,7 @@ int save_sqlite_pcap_entry(sqlite3 *db, char *name, uint64_t timestamp, uint32_t
   }
 
   column_idx = sqlite3_bind_parameter_index(res, "@timestamp");
-  if(sqlite3_bind_int64(res, column_idx, timestamp) != SQLITE_OK) {
+  if (sqlite3_bind_int64(res, column_idx, timestamp) != SQLITE_OK) {
     log_trace("sqlite3_bind_int64 fail");
     sqlite3_finalize(res);
     return -1;
@@ -133,12 +132,12 @@ int save_sqlite_pcap_entry(sqlite3 *db, char *name, uint64_t timestamp, uint32_t
   return 0;
 }
 
-int get_first_pcap_entry(sqlite3 *db, uint64_t *timestamp, uint64_t *caplen)
-{
+int get_first_pcap_entry(sqlite3 *db, uint64_t *timestamp, uint64_t *caplen) {
   int rc;
   sqlite3_stmt *res = NULL;
 
-  if (sqlite3_prepare_v2(db, PCAP_SELECT_FIRST_ENTRY, -1, &res, 0) != SQLITE_OK) {
+  if (sqlite3_prepare_v2(db, PCAP_SELECT_FIRST_ENTRY, -1, &res, 0) !=
+      SQLITE_OK) {
     log_trace("Failed to prepare statement: %s", sqlite3_errmsg(db));
     return -1;
   }
@@ -148,7 +147,7 @@ int get_first_pcap_entry(sqlite3 *db, uint64_t *timestamp, uint64_t *caplen)
 
   rc = sqlite3_step(res);
 
-  if(rc == SQLITE_ROW) {
+  if (rc == SQLITE_ROW) {
     *timestamp = sqlite3_column_int64(res, 0);
     *caplen = sqlite3_column_int64(res, 1);
   } else if (rc == SQLITE_OK || rc == SQLITE_DONE) {
@@ -165,8 +164,8 @@ int get_first_pcap_entry(sqlite3 *db, uint64_t *timestamp, uint64_t *caplen)
   return 0;
 }
 
-int sum_pcap_group(sqlite3 *db, uint64_t lt, uint32_t lim, uint64_t *ht, uint64_t *sum)
-{
+int sum_pcap_group(sqlite3 *db, uint64_t lt, uint32_t lim, uint64_t *ht,
+                   uint64_t *sum) {
   int rc;
   sqlite3_stmt *res = NULL;
   int column_idx;
@@ -179,14 +178,14 @@ int sum_pcap_group(sqlite3 *db, uint64_t lt, uint32_t lim, uint64_t *ht, uint64_
   }
 
   column_idx = sqlite3_bind_parameter_index(res, "@lt");
-  if(sqlite3_bind_int64(res, column_idx, lt) != SQLITE_OK) {
+  if (sqlite3_bind_int64(res, column_idx, lt) != SQLITE_OK) {
     log_trace("sqlite3_bind_int64 fail");
     sqlite3_finalize(res);
     return -1;
   }
 
   column_idx = sqlite3_bind_parameter_index(res, "@lim");
-  if(sqlite3_bind_int64(res, column_idx, lim) != SQLITE_OK) {
+  if (sqlite3_bind_int64(res, column_idx, lim) != SQLITE_OK) {
     log_trace("sqlite3_bind_int64 fail");
     sqlite3_finalize(res);
     return -1;
@@ -203,13 +202,12 @@ int sum_pcap_group(sqlite3 *db, uint64_t lt, uint32_t lim, uint64_t *ht, uint64_
     return -1;
   }
 
-
   sqlite3_finalize(res);
   return 0;
 }
 
-int get_pcap_meta_array(sqlite3 *db, uint64_t lt, uint32_t lim, UT_array *pcap_meta_arr)
-{
+int get_pcap_meta_array(sqlite3 *db, uint64_t lt, uint32_t lim,
+                        UT_array *pcap_meta_arr) {
   int rc;
   struct pcap_file_meta p;
   sqlite3_stmt *res = NULL;
@@ -221,14 +219,14 @@ int get_pcap_meta_array(sqlite3 *db, uint64_t lt, uint32_t lim, UT_array *pcap_m
   }
 
   column_idx = sqlite3_bind_parameter_index(res, "@lt");
-  if(sqlite3_bind_int64(res, column_idx, lt) != SQLITE_OK) {
+  if (sqlite3_bind_int64(res, column_idx, lt) != SQLITE_OK) {
     log_trace("sqlite3_bind_int64 fail");
     sqlite3_finalize(res);
     return -1;
   }
 
   column_idx = sqlite3_bind_parameter_index(res, "@lim");
-  if(sqlite3_bind_int64(res, column_idx, lim) != SQLITE_OK) {
+  if (sqlite3_bind_int64(res, column_idx, lim) != SQLITE_OK) {
     log_trace("sqlite3_bind_int64 fail");
     sqlite3_finalize(res);
     return -1;
@@ -237,7 +235,7 @@ int get_pcap_meta_array(sqlite3 *db, uint64_t lt, uint32_t lim, UT_array *pcap_m
   while ((rc = sqlite3_step(res)) == SQLITE_ROW) {
     os_memset(&p, 0, sizeof(struct pcap_file_meta));
     p.timestamp = sqlite3_column_int64(res, 0);
-    p.name = os_strdup((char*) sqlite3_column_text(res, 1));
+    p.name = os_strdup((char *)sqlite3_column_text(res, 1));
     utarray_push_back(pcap_meta_arr, &p);
   }
 
@@ -247,13 +245,11 @@ int get_pcap_meta_array(sqlite3 *db, uint64_t lt, uint32_t lim, UT_array *pcap_m
     return -1;
   }
 
-
   sqlite3_finalize(res);
   return 0;
 }
 
-int delete_pcap_entries(sqlite3 *db, uint64_t lt, uint64_t ht)
-{
+int delete_pcap_entries(sqlite3 *db, uint64_t lt, uint64_t ht) {
   int rc;
   sqlite3_stmt *res = NULL;
   int column_idx;
@@ -264,14 +260,14 @@ int delete_pcap_entries(sqlite3 *db, uint64_t lt, uint64_t ht)
   }
 
   column_idx = sqlite3_bind_parameter_index(res, "@lt");
-  if(sqlite3_bind_int64(res, column_idx, lt) != SQLITE_OK) {
+  if (sqlite3_bind_int64(res, column_idx, lt) != SQLITE_OK) {
     log_trace("sqlite3_bind_int64 fail");
     sqlite3_finalize(res);
     return -1;
   }
 
   column_idx = sqlite3_bind_parameter_index(res, "@ht");
-  if(sqlite3_bind_int64(res, column_idx, ht) != SQLITE_OK) {
+  if (sqlite3_bind_int64(res, column_idx, ht) != SQLITE_OK) {
     log_trace("sqlite3_bind_int64 fail");
     sqlite3_finalize(res);
     return -1;

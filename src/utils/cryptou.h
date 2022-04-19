@@ -30,13 +30,13 @@
 #include <stddef.h>
 #include <sys/types.h>
 
-#define AES_BLOCK_SIZE      16
-#define IV_SIZE             AES_BLOCK_SIZE
-#define SALT_SIZE           16
-#define AES_KEY_SIZE        32
-#define MAX_KEY_ITERATIONS  1000
+#define AES_BLOCK_SIZE 16
+#define IV_SIZE AES_BLOCK_SIZE
+#define SALT_SIZE 16
+#define AES_KEY_SIZE 32
+#define MAX_KEY_ITERATIONS 1000
 
-#define MAX_CERT_FIELD_SIZE  64
+#define MAX_CERT_FIELD_SIZE 64
 
 #ifdef __cplusplus
 extern "C" {
@@ -51,11 +51,7 @@ struct certificate_meta {
   char cn[MAX_CERT_FIELD_SIZE];
 };
 
-enum CRYPTO_KEY_TYPE {
-  CRYPTO_KEY_NONE = 0,
-  CRYPTO_KEY_RSA,
-  CRYPTO_KEY_EC
-};
+enum CRYPTO_KEY_TYPE { CRYPTO_KEY_NONE = 0, CRYPTO_KEY_RSA, CRYPTO_KEY_EC };
 
 /**
  * @brief Generate IV
@@ -108,8 +104,8 @@ int crypto_buf2key(uint8_t *buf, int buf_size, uint8_t *salt, int salt_size,
  * @param out The output buffer
  * @return The output size, -1 on error
  */
-ssize_t crypto_encrypt(uint8_t *in, int in_size, uint8_t *key,
-                   uint8_t *iv, uint8_t *out);
+ssize_t crypto_encrypt(uint8_t *in, int in_size, uint8_t *key, uint8_t *iv,
+                       uint8_t *out);
 
 /**
  * @brief Decrypts a buffer with AES CBC 256
@@ -121,8 +117,8 @@ ssize_t crypto_encrypt(uint8_t *in, int in_size, uint8_t *key,
  * @param out The output buffer
  * @return The output size, -1 on error
  */
-ssize_t crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
-                   uint8_t *iv, uint8_t *out);
+ssize_t crypto_decrypt(uint8_t *in, int in_size, uint8_t *key, uint8_t *iv,
+                       uint8_t *out);
 
 /**
  * @brief Generate a private RSA key string
@@ -132,7 +128,8 @@ ssize_t crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
  * @param key The output key string
  * @return int 0 on success, -1 on failure
  */
-int crypto_generate_privkey_str(enum CRYPTO_KEY_TYPE type, int bits, char **key);
+int crypto_generate_privkey_str(enum CRYPTO_KEY_TYPE type, int bits,
+                                char **key);
 
 /**
  * @brief Generates a public key string from a private key
@@ -153,7 +150,8 @@ int crypto_generate_pubkey_str(uint8_t *key, size_t key_size, char **pub);
  * @param cert The certificate string
  * @return int 0 on success, -1 on failure
  */
-int crypto_generate_cert_str(struct certificate_meta *meta, uint8_t *key, size_t key_size, char **cert);
+int crypto_generate_cert_str(struct certificate_meta *meta, uint8_t *key,
+                             size_t key_size, char **cert);
 
 /**
  * @brief Signs a buffer with a private key string
@@ -165,7 +163,8 @@ int crypto_generate_cert_str(struct certificate_meta *meta, uint8_t *key, size_t
  * @param out The output signature
  * @return ssize_t the length of the signature, -1 on failure
  */
-ssize_t crypto_sign_data(uint8_t *key, size_t key_size, uint8_t *in, size_t in_size, uint8_t **out);
+ssize_t crypto_sign_data(uint8_t *key, size_t key_size, uint8_t *in,
+                         size_t in_size, uint8_t **out);
 #ifdef __cplusplus
 }
 #endif

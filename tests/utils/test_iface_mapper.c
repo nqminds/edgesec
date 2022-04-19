@@ -18,11 +18,11 @@
 #include "utils/net.h"
 #include "utils/utarray.h"
 
-static const UT_icd config_ifinfo_icd = {sizeof(config_ifinfo_t), NULL, NULL, NULL};
+static const UT_icd config_ifinfo_icd = {sizeof(config_ifinfo_t), NULL, NULL,
+                                         NULL};
 
-static void test_get_if_mapper(void **state)
-{
-  (void) state; /* unused */
+static void test_get_if_mapper(void **state) {
+  (void)state; /* unused */
   hmap_if_conn *hmap = NULL;
   char ifname[IFNAMSIZ];
 
@@ -38,9 +38,8 @@ static void test_get_if_mapper(void **state)
   free_if_mapper(&hmap);
 }
 
-static void test_put_if_mapper(void **state)
-{
-  (void) state; /* unused */
+static void test_put_if_mapper(void **state) {
+  (void)state; /* unused */
 
   hmap_if_conn *hmap = NULL;
   char ifname[IFNAMSIZ];
@@ -55,9 +54,8 @@ static void test_put_if_mapper(void **state)
   free_if_mapper(&hmap);
 }
 
-static void test_create_if_mapper(void **state)
-{
-  (void) state; /* unused */
+static void test_create_if_mapper(void **state) {
+  (void)state; /* unused */
 
   UT_array *arr;
   hmap_if_conn *hmap = NULL;
@@ -111,9 +109,8 @@ static void test_create_if_mapper(void **state)
   free_if_mapper(&hmap);
 }
 
-static void test_create_vlan_mapper(void **state)
-{
-  (void) state; /* unused */
+static void test_create_vlan_mapper(void **state) {
+  (void)state; /* unused */
   UT_array *arr = NULL;
   hmap_vlan_conn *hmap = NULL;
   config_ifinfo_t el;
@@ -163,19 +160,16 @@ static void test_create_vlan_mapper(void **state)
   utarray_free(arr);
 }
 
-int main(int argc, char *argv[])
-{  
-  (void) argc;
-  (void) argv;
+int main(int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
 
   log_set_quiet(false);
 
-  const struct CMUnitTest tests[] = {
-    cmocka_unit_test(test_get_if_mapper),
-    cmocka_unit_test(test_put_if_mapper),
-    cmocka_unit_test(test_create_if_mapper),
-    cmocka_unit_test(test_create_vlan_mapper)
-  };
+  const struct CMUnitTest tests[] = {cmocka_unit_test(test_get_if_mapper),
+                                     cmocka_unit_test(test_put_if_mapper),
+                                     cmocka_unit_test(test_create_if_mapper),
+                                     cmocka_unit_test(test_create_vlan_mapper)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

@@ -16,7 +16,7 @@ WPAS_DBUS_BSS_INTERFACE = "fi.w1.wpa_supplicant1.BSS"
 
 def byte_array_to_string(s):
 	import urllib
-	r = ""    
+	r = ""
 	for c in s:
 		if c >= 32 and c < 127:
 			r += "%c" % c
@@ -77,7 +77,7 @@ def showBss(bss):
 
 def scanDone(success):
 	print("Scan done: success=%s" % success)
-	
+
 	res = if_obj.Get(WPAS_DBUS_INTERFACES_INTERFACE, 'BSSs',
 			 dbus_interface=dbus.PROPERTIES_IFACE)
 
@@ -146,4 +146,3 @@ def main():
 
 if __name__ == "__main__":
 	main()
-

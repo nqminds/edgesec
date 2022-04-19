@@ -20,16 +20,14 @@
 #include "supervisor/supervisor_config.h"
 #include "engine.h"
 
-static void test_init_context(void **state)
-{
-  (void) state; /* unused */
+static void test_init_context(void **state) {
+  (void)state; /* unused */
   struct supervisor_context context;
-  struct app_config app_config = {0, .quarantine_vlanid = -1, .default_open_vlanid = -1};
+  struct app_config app_config = {0, .quarantine_vlanid = -1,
+                                  .default_open_vlanid = -1};
 
   // Load the bin paths array
-  const char * paths[] = {
-    "/bin", "/usr/bin", "/usr/sbin"
-  };
+  const char *paths[] = {"/bin", "/usr/bin", "/usr/sbin"};
   utarray_new(app_config.bin_path_array, &ut_str_icd);
   for (size_t idx = 0; idx < sizeof(paths) / sizeof(paths[0]); idx++) {
     utarray_push_back(app_config.bin_path_array, &(paths[idx]));
@@ -49,20 +47,19 @@ static void test_init_context(void **state)
 }
 
 /**
- * @brief Tests whether the init_context function fails when the config_ifinfo_array
- * param is invalid.
- * This should also log an error message (not a debug/info message)
- * (run test manually to see whether this appears in your console)
+ * @brief Tests whether the init_context function fails when the
+ * config_ifinfo_array param is invalid. This should also log an error message
+ * (not a debug/info message) (run test manually to see whether this appears in
+ * your console)
  */
 static void test_init_context_failure(void **state) {
-  (void) state; /* unused */
+  (void)state; /* unused */
   struct supervisor_context context;
-  struct app_config app_config = {0, .quarantine_vlanid = -1, .default_open_vlanid = -1};
+  struct app_config app_config = {0, .quarantine_vlanid = -1,
+                                  .default_open_vlanid = -1};
 
   // Load the bin paths array
-  const char * paths[] = {
-    "/bin", "/usr/bin", "/usr/sbin"
-  };
+  const char *paths[] = {"/bin", "/usr/bin", "/usr/sbin"};
   utarray_new(app_config.bin_path_array, &ut_str_icd);
   for (size_t idx = 0; idx < sizeof(paths) / sizeof(paths[0]); idx++) {
     utarray_push_back(app_config.bin_path_array, &(paths[idx]));
@@ -79,17 +76,15 @@ static void test_init_context_failure(void **state) {
   free_sqlite_macconn_db(context.macconn_db);
 }
 
-int main(int argc, char *argv[])
-{
-  (void) argc;
-  (void) argv;
+int main(int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
 
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
-    cmocka_unit_test(test_init_context),
-    cmocka_unit_test(test_init_context_failure)
-  };
+      cmocka_unit_test(test_init_context),
+      cmocka_unit_test(test_init_context_failure)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

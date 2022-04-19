@@ -62,28 +62,30 @@
 #define MACCONN_DB_NAME "macconn" SQLITE_EXTENSION
 
 static const UT_icd mac_conn_icd = {sizeof(struct mac_conn), NULL, NULL, NULL};
-static const UT_icd config_ifinfo_icd = {sizeof(config_ifinfo_t), NULL, NULL, NULL};
+static const UT_icd config_ifinfo_icd = {sizeof(config_ifinfo_t), NULL, NULL,
+                                         NULL};
 
-void copy_ifinfo(UT_array *in, UT_array *out)
-{
+void copy_ifinfo(UT_array *in, UT_array *out) {
   config_ifinfo_t *el = NULL;
 
-  while((el = (config_ifinfo_t *) utarray_next(in, el)) != NULL) {
+  while ((el = (config_ifinfo_t *)utarray_next(in, el)) != NULL) {
     utarray_push_back(out, el);
   }
 }
 
 /**
- * @brief Check if the system binaries are present and return their absolute paths
+ * @brief Check if the system binaries are present and return their absolute
+ * paths
  *
  * @param commands Array of system binaries name strings
  * @param bin_path_arr Array of system binaries default fodler paths
  * @param hmap_bin_hashes Map of systems binaries to hashes
  * @return hmap_str_keychar* Map for binary to path
  */
-hmap_str_keychar *check_systems_commands(char *commands[], UT_array *bin_path_arr, hmap_str_keychar *hmap_bin_hashes)
-{
-  (void) hmap_bin_hashes;
+hmap_str_keychar *check_systems_commands(char *commands[],
+                                         UT_array *bin_path_arr,
+                                         hmap_str_keychar *hmap_bin_hashes) {
+  (void)hmap_bin_hashes;
 
   if (commands == NULL) {
     log_debug("commands param NULL");
@@ -92,7 +94,7 @@ hmap_str_keychar *check_systems_commands(char *commands[], UT_array *bin_path_ar
 
   hmap_str_keychar *hmap_bin_paths = hmap_str_keychar_new();
 
-  for(uint8_t idx = 0; commands[idx] != NULL; idx ++) {
+  for (uint8_t idx = 0; commands[idx] != NULL; idx++) {
     log_debug("Checking %s command...", commands[idx]);
     char *path = get_secure_path(bin_path_arr, commands[idx], false);
     if (path == NULL) {
@@ -101,7 +103,7 @@ hmap_str_keychar *check_systems_commands(char *commands[], UT_array *bin_path_ar
       return NULL;
     } else {
       log_debug("%s command found at %s", commands[idx], path);
-      if(!hmap_str_keychar_put(&hmap_bin_paths, commands[idx], path)) {
+      if (!hmap_str_keychar_put(&hmap_bin_paths, commands[idx], path)) {
         log_debug("hmap_str_keychar_put error");
         free(path);
         hmap_str_keychar_free(&hmap_bin_paths);
@@ -115,13 +117,13 @@ hmap_str_keychar *check_systems_commands(char *commands[], UT_array *bin_path_ar
   return hmap_bin_paths;
 }
 
-bool init_mac_mapper_ifnames(UT_array *connections, hmap_vlan_conn **vlan_mapper)
-{
+bool init_mac_mapper_ifnames(UT_array *connections,
+                             hmap_vlan_conn **vlan_mapper) {
   struct mac_conn *p = NULL;
   struct vlan_conn vlan_conn;
 
   if (connections != NULL) {
-    while((p = (struct mac_conn *) utarray_next(connections, p)) != NULL) {
+    while ((p = (struct mac_conn *)utarray_next(connections, p)) != NULL) {
       int ret = get_vlan_mapper(vlan_mapper, p->info.vlanid, &vlan_conn);
       os_memcpy(p->info.ifname, vlan_conn.ifname, IFNAMSIZ);
       if (ret < 0) {
@@ -137,8 +139,7 @@ bool init_mac_mapper_ifnames(UT_array *connections, hmap_vlan_conn **vlan_mapper
   return true;
 }
 
-bool create_mac_mapper(struct supervisor_context *ctx)
-{
+bool create_mac_mapper(struct supervisor_context *ctx) {
   struct mac_conn *p = NULL;
   UT_array *mac_conn_arr;
   struct crypt_pair *pair;
@@ -159,10 +160,12 @@ bool create_mac_mapper(struct supervisor_context *ctx)
   }
 
   if (mac_conn_arr != NULL) {
-    while((p = (struct mac_conn *) utarray_next(mac_conn_arr, p)) != NULL) {
-      log_trace("Adding mac=" MACSTR " with id=%s vlanid=%d ifname=%s nat=%d allow=%d label=%s status=%d",
-                MAC2STR(p->mac_addr), p->info.id, p->info.vlanid, p->info.ifname, p->info.nat,
-                p->info.allow_connection, p->info.label, p->info.status);
+    while ((p = (struct mac_conn *)utarray_next(mac_conn_arr, p)) != NULL) {
+      log_trace(
+          "Adding mac=" MACSTR
+          " with id=%s vlanid=%d ifname=%s nat=%d allow=%d label=%s status=%d",
+          MAC2STR(p->mac_addr), p->info.id, p->info.vlanid, p->info.ifname,
+          p->info.nat, p->info.allow_connection, p->info.label, p->info.status);
       pair = get_crypt_pair(ctx->crypt_ctx, p->info.id);
       if (pair != NULL) {
         if (pair->value_size <= AP_SECRET_LEN) {
@@ -186,8 +189,8 @@ bool create_mac_mapper(struct supervisor_context *ctx)
   return true;
 }
 
-bool create_subnet_interfaces(struct iface_context *context, UT_array *ifinfo_array, bool ignore_error)
-{
+bool create_subnet_interfaces(struct iface_context *context,
+                              UT_array *ifinfo_array, bool ignore_error) {
   int ret = 0;
   config_ifinfo_t *p = NULL;
 
@@ -196,10 +199,12 @@ bool create_subnet_interfaces(struct iface_context *context, UT_array *ifinfo_ar
     return false;
   }
 
-  while((p = (config_ifinfo_t*) utarray_next(ifinfo_array, p)) != NULL) {
+  while ((p = (config_ifinfo_t *)utarray_next(ifinfo_array, p)) != NULL) {
 
-    log_trace("Creating ifname=%s ip_addr=%s brd_addr=%s subnet_mask=%s", p->ifname, p->ip_addr, p->brd_addr, p->subnet_mask);
-    ret = iface_create(context, p->brname, p->ifname, "bridge", p->ip_addr, p->brd_addr, p->subnet_mask);
+    log_trace("Creating ifname=%s ip_addr=%s brd_addr=%s subnet_mask=%s",
+              p->ifname, p->ip_addr, p->brd_addr, p->subnet_mask);
+    ret = iface_create(context, p->brname, p->ifname, "bridge", p->ip_addr,
+                       p->brd_addr, p->subnet_mask);
     if (ret < 0 && ignore_error) {
       log_trace("iface_create fail, ignoring");
       continue;
@@ -216,8 +221,7 @@ bool create_subnet_interfaces(struct iface_context *context, UT_array *ifinfo_ar
   return true;
 }
 
-bool get_nat_if_ip(char *nat_interface, char *ip_buf)
-{
+bool get_nat_if_ip(char *nat_interface, char *ip_buf) {
   UT_array *interfaces = NULL;
   interfaces = iface_get(nat_interface);
 
@@ -226,7 +230,7 @@ bool get_nat_if_ip(char *nat_interface, char *ip_buf)
     goto err;
   }
 
-  netif_info_t *el = (netif_info_t*) utarray_back(interfaces);
+  netif_info_t *el = (netif_info_t *)utarray_back(interfaces);
   if (el == NULL) {
     log_errno("Interface list empty");
     goto err;
@@ -244,8 +248,8 @@ err:
   return false;
 }
 
-bool construct_ap_ctrlif(char *ctrl_interface, char *interface, char *ap_ctrl_if_path)
-{
+bool construct_ap_ctrlif(char *ctrl_interface, char *interface,
+                         char *ap_ctrl_if_path) {
   char *ctrl_if_path = construct_path(ctrl_interface, interface);
   if (ctrl_if_path == NULL) {
     log_trace("construct_path fail");
@@ -258,15 +262,16 @@ bool construct_ap_ctrlif(char *ctrl_interface, char *interface, char *ap_ctrl_if
   return true;
 }
 
-int init_context(struct app_config *app_config, struct supervisor_context *ctx)
-{
+int init_context(struct app_config *app_config,
+                 struct supervisor_context *ctx) {
   char *db_path = NULL;
   char *commands[] = {"ip", "iw", "iptables", "sysctl", NULL};
 
   os_memset(ctx, 0, sizeof(struct supervisor_context));
 
   log_info("Checking system commands...");
-  if ((ctx->hmap_bin_paths = check_systems_commands(commands, app_config->bin_path_array, NULL)) == NULL) {
+  if ((ctx->hmap_bin_paths = check_systems_commands(
+           commands, app_config->bin_path_array, NULL)) == NULL) {
     log_debug("check_systems_commands fail (no bin paths found)");
     return -1;
   }
@@ -284,9 +289,9 @@ int init_context(struct app_config *app_config, struct supervisor_context *ctx)
   utarray_new(ctx->config_ifinfo_array, &config_ifinfo_icd);
   copy_ifinfo(app_config->config_ifinfo_array, ctx->config_ifinfo_array);
 
-  if (init_ifbridge_names(ctx->config_ifinfo_array, app_config->interface_prefix,
-                  app_config->bridge_prefix) < 0)
-  {
+  if (init_ifbridge_names(ctx->config_ifinfo_array,
+                          app_config->interface_prefix,
+                          app_config->bridge_prefix) < 0) {
     log_trace("init_ifbridge_names fail");
     return -1;
   }
@@ -309,14 +314,17 @@ int init_context(struct app_config *app_config, struct supervisor_context *ctx)
   ctx->default_open_vlanid = app_config->default_open_vlanid;
   ctx->quarantine_vlanid = app_config->quarantine_vlanid;
   ctx->risk_score = app_config->risk_score;
-  ctx->wpa_passphrase_len = os_strnlen_s(app_config->hconfig.wpa_passphrase, AP_SECRET_LEN);
-  os_memcpy(ctx->wpa_passphrase, app_config->hconfig.wpa_passphrase, ctx->wpa_passphrase_len);
+  ctx->wpa_passphrase_len =
+      os_strnlen_s(app_config->hconfig.wpa_passphrase, AP_SECRET_LEN);
+  os_memcpy(ctx->wpa_passphrase, app_config->hconfig.wpa_passphrase,
+            ctx->wpa_passphrase_len);
 
   os_memcpy(ctx->nat_bridge, app_config->nat_bridge, IFNAMSIZ);
   os_memcpy(ctx->nat_interface, app_config->nat_interface, IFNAMSIZ);
   os_memcpy(ctx->db_path, app_config->db_path, MAX_OS_PATH_LEN);
 
-  os_memcpy(&ctx->capture_config, &app_config->capture_config, sizeof(struct capture_conf));
+  os_memcpy(&ctx->capture_config, &app_config->capture_config,
+            sizeof(struct capture_conf));
   os_memcpy(&ctx->hconfig, &app_config->hconfig, sizeof(struct apconf));
   os_memcpy(&ctx->rconfig, &app_config->rconfig, sizeof(struct radius_conf));
   os_memcpy(&ctx->dconfig, &app_config->dhcp_config, sizeof(struct dhcp_conf));
@@ -373,17 +381,16 @@ int init_context(struct app_config *app_config, struct supervisor_context *ctx)
   }
 
   if (ctx->quarantine_vlanid >= 0) {
-     if (get_vlan_mapper(&ctx->vlan_mapper, ctx->quarantine_vlanid, NULL) <= 0) {
-       log_trace("quarantine vlan id=%d doesn't exist", ctx->quarantine_vlanid);
-       return -1;
-     }
+    if (get_vlan_mapper(&ctx->vlan_mapper, ctx->quarantine_vlanid, NULL) <= 0) {
+      log_trace("quarantine vlan id=%d doesn't exist", ctx->quarantine_vlanid);
+      return -1;
+    }
   }
 
   return 0;
 }
 
-int run_mdns_forwarder(char *mdns_bin_path, char *config_ini_path)
-{
+int run_mdns_forwarder(char *mdns_bin_path, char *config_ini_path) {
   int ret;
   pid_t child_pid;
   char *proc_name;
@@ -405,14 +412,14 @@ int run_mdns_forwarder(char *mdns_bin_path, char *config_ini_path)
     return -1;
   }
 
-  log_trace("Found mdns process running with pid=%d (%s)", child_pid, proc_name);
+  log_trace("Found mdns process running with pid=%d (%s)", child_pid,
+            proc_name);
   os_free(proc_name);
 
   return ret;
 }
 
-bool run_engine(struct app_config *app_config)
-{
+bool run_engine(struct app_config *app_config) {
   struct supervisor_context context;
 
   if (create_dir(app_config->db_path, S_IRWXU | S_IRWXG) < 0) {
@@ -429,19 +436,20 @@ bool run_engine(struct app_config *app_config)
   log_info("AP interface: %s", context.hconfig.interface);
   log_info("DB path: %s", context.db_path);
 
-  if ((context.fw_ctx = fw_init_context(context.if_mapper, context.vlan_mapper,
-                      context.hmap_bin_paths, context.config_ifinfo_array,
-                      context.nat_bridge, context.nat_interface, app_config->exec_firewall,
-                      app_config->firewall_config.firewall_bin_path)) == NULL)
-  {
+  if ((context.fw_ctx = fw_init_context(
+           context.if_mapper, context.vlan_mapper, context.hmap_bin_paths,
+           context.config_ifinfo_array, context.nat_bridge,
+           context.nat_interface, app_config->exec_firewall,
+           app_config->firewall_config.firewall_bin_path)) == NULL) {
     log_debug("fw_init_context fail");
     goto run_engine_fail;
   }
 
   log_info("Loading crypt service...");
-  if ((context.crypt_ctx = load_crypt_service(app_config->crypt_db_path, app_config->crypt_key_id,
-                                              (uint8_t *)app_config->crypt_secret,
-                                              os_strnlen_s(app_config->crypt_secret, MAX_USER_SECRET))) == NULL) {
+  if ((context.crypt_ctx = load_crypt_service(
+           app_config->crypt_db_path, app_config->crypt_key_id,
+           (uint8_t *)app_config->crypt_secret,
+           os_strnlen_s(app_config->crypt_secret, MAX_USER_SECRET))) == NULL) {
     log_debug("load_crypt_service fail");
     goto run_engine_fail;
   }
@@ -462,7 +470,7 @@ bool run_engine(struct app_config *app_config)
 
   if (app_config->ap_detect) {
     log_info("Looking for VLAN capable wifi interface...");
-    if(iface_get_vlan(context.hconfig.interface) == NULL) {
+    if (iface_get_vlan(context.hconfig.interface) == NULL) {
       log_debug("iface_get_vlan fail");
       goto run_engine_fail;
     }
@@ -470,8 +478,9 @@ bool run_engine(struct app_config *app_config)
 
   log_info("Using wifi interface %s", context.hconfig.interface);
 
-  if(!construct_ap_ctrlif(context.hconfig.ctrl_interface, context.hconfig.interface,
-                          context.hconfig.ctrl_interface_path)) {
+  if (!construct_ap_ctrlif(context.hconfig.ctrl_interface,
+                           context.hconfig.interface,
+                           context.hconfig.ctrl_interface_path)) {
     log_debug("construct_ap_ctrlif fail");
     goto run_engine_fail;
   }
@@ -491,9 +500,9 @@ bool run_engine(struct app_config *app_config)
 
   if (app_config->create_interfaces) {
     log_info("Creating subnet interfaces...");
-    if (!create_subnet_interfaces(context.iface_ctx, context.config_ifinfo_array,
-        app_config->ignore_if_error))
-    {
+    if (!create_subnet_interfaces(context.iface_ctx,
+                                  context.config_ifinfo_array,
+                                  app_config->ignore_if_error)) {
       log_debug("create_subnet_interfaces fail");
       goto run_engine_fail;
     }
@@ -506,32 +515,34 @@ bool run_engine(struct app_config *app_config)
   }
 
   log_info("Running the ap service...");
-  if (run_ap(&context, app_config->exec_ap, app_config->generate_ssid, ap_service_callback) < 0) {
+  if (run_ap(&context, app_config->exec_ap, app_config->generate_ssid,
+             ap_service_callback) < 0) {
     log_debug("run_ap fail");
     goto run_engine_fail;
   }
 
   if (app_config->exec_radius) {
     log_info("Creating the radius server on port %d with client ip %s",
-      context.rconfig.radius_port, context.rconfig.radius_client_ip);
+             context.rconfig.radius_port, context.rconfig.radius_client_ip);
 
-    if ((context.radius_srv = run_radius(&context.rconfig,
-                                        (void*) get_mac_conn_cmd, &context)) == NULL) {
+    if ((context.radius_srv = run_radius(
+             &context.rconfig, (void *)get_mac_conn_cmd, &context)) == NULL) {
       log_debug("run_radius fail");
       goto run_engine_fail;
     }
   }
 
   log_info("Running the dhcp service...");
-  if (run_dhcp(&context.dconfig, context.nconfig.server_array, app_config->domain_server_path,
-        app_config->exec_dhcp) == -1) {
+  if (run_dhcp(&context.dconfig, context.nconfig.server_array,
+               app_config->domain_server_path, app_config->exec_dhcp) == -1) {
     log_debug("run_dhcp fail");
     goto run_engine_fail;
   }
 
   if (app_config->exec_mdns_forward) {
     log_info("Running the mdns forwarder service...");
-    if (run_mdns_forwarder(app_config->mdns_config.mdns_bin_path, app_config->config_ini_path) < 0) {
+    if (run_mdns_forwarder(app_config->mdns_config.mdns_bin_path,
+                           app_config->config_ini_path) < 0) {
       log_trace("run_mdns_forwarder fail");
       goto run_engine_fail;
     }

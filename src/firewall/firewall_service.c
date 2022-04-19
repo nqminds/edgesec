@@ -36,7 +36,6 @@
 #include <libgen.h>
 #include <fcntl.h>
 
-
 #include "../utils/utarray.h"
 #include "../utils/hashmap.h"
 #include "../utils/log.h"
@@ -54,8 +53,7 @@
 
 #define IP_FORWARD_PATH "/proc/sys/net/ipv4/ip_forward"
 
-void fw_free_context(struct fwctx* context)
-{
+void fw_free_context(struct fwctx *context) {
   if (context != NULL) {
     if (context->ctx != NULL) {
 #ifdef WITH_UCI_SERVICE
@@ -69,8 +67,7 @@ void fw_free_context(struct fwctx* context)
 }
 
 #ifdef WITH_UCI_SERVICE
-int run_firewall(char *path)
-{
+int run_firewall(char *path) {
   char *argv[2] = {FIREWALL_SERVICE_RELOAD, NULL};
 
   if (path != NULL) {
@@ -80,23 +77,19 @@ int run_firewall(char *path)
   return 0;
 }
 #else
-int run_firewall(char *path)
-{
-  (void) path;
+int run_firewall(char *path) {
+  (void)path;
 
   return 0;
 }
 #endif
 
-struct fwctx* fw_init_context(hmap_if_conn *if_mapper,
-                              hmap_vlan_conn  *vlan_mapper,
+struct fwctx *fw_init_context(hmap_if_conn *if_mapper,
+                              hmap_vlan_conn *vlan_mapper,
                               hmap_str_keychar *hmap_bin_paths,
-                              UT_array *config_ifinfo_array,
-                              char *nat_bridge,
-                              char *nat_interface,
-                              bool exec_firewall,
-                              char *path)
-{
+                              UT_array *config_ifinfo_array, char *nat_bridge,
+                              char *nat_interface, bool exec_firewall,
+                              char *path) {
   if (if_mapper == NULL) {
     log_trace("if_mapper param is NULL");
     return NULL;
@@ -132,7 +125,7 @@ struct fwctx* fw_init_context(hmap_if_conn *if_mapper,
     return NULL;
   }
 
-  struct fwctx* fw_ctx = os_zalloc(sizeof(struct fwctx));
+  struct fwctx *fw_ctx = os_zalloc(sizeof(struct fwctx));
 
   if (fw_ctx == NULL) {
     log_errno("os_zalloc");
@@ -161,7 +154,8 @@ struct fwctx* fw_init_context(hmap_if_conn *if_mapper,
     return NULL;
   }
 
-  while((p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) != NULL) {
+  while ((p = (config_ifinfo_t *)utarray_next(config_ifinfo_array, p)) !=
+         NULL) {
     if (uwrt_gen_firewall_zone(fw_ctx->ctx, p->brname) < 0) {
       log_debug("uwrt_init_context fail");
       fw_free_context(fw_ctx);
@@ -182,7 +176,8 @@ struct fwctx* fw_init_context(hmap_if_conn *if_mapper,
     return NULL;
   }
 
-  if ((fw_ctx->ctx = iptables_init(iptables_path, config_ifinfo_array, exec_firewall)) == NULL) {
+  if ((fw_ctx->ctx = iptables_init(iptables_path, config_ifinfo_array,
+                                   exec_firewall)) == NULL) {
     log_debug("iptables_init fail");
     fw_free_context(fw_ctx);
     return NULL;
@@ -198,8 +193,7 @@ struct fwctx* fw_init_context(hmap_if_conn *if_mapper,
   return fw_ctx;
 }
 
-int fw_add_nat(struct fwctx* context, char *ip_addr)
-{
+int fw_add_nat(struct fwctx *context, char *ip_addr) {
 #ifdef WITH_UCI_SERVICE
   char brname[IFNAMSIZ];
 
@@ -209,7 +203,8 @@ int fw_add_nat(struct fwctx* context, char *ip_addr)
   }
 
   log_trace("Adding uci rule for br=%s br=%s", ip_addr, brname);
-  if (uwrt_add_firewall_nat(context->ctx, brname, ip_addr, context->nat_bridge) < 0) {
+  if (uwrt_add_firewall_nat(context->ctx, brname, ip_addr,
+                            context->nat_bridge) < 0) {
     log_trace("uwrt_add_firewall_nat fail");
     return -1;
   }
@@ -227,7 +222,8 @@ int fw_add_nat(struct fwctx* context, char *ip_addr)
   }
 
   log_trace("Adding iptable rule for ip=%s if=%s", ip_addr, ifname);
-  if (!iptables_add_nat(context->ctx, ip_addr, ifname, context->nat_interface)) {
+  if (!iptables_add_nat(context->ctx, ip_addr, ifname,
+                        context->nat_interface)) {
     log_trace("iptables_add_nat fail");
     return -1;
   }
@@ -241,8 +237,7 @@ int fw_add_nat(struct fwctx* context, char *ip_addr)
   return 0;
 }
 
-int fw_remove_nat(struct fwctx* context, char *ip_addr)
-{
+int fw_remove_nat(struct fwctx *context, char *ip_addr) {
 #ifdef WITH_UCI_SERVICE
   log_trace("Removing uci rule for ip=%s", ip_addr);
   if (uwrt_delete_firewall_nat(context->ctx, ip_addr) < 0) {
@@ -263,7 +258,8 @@ int fw_remove_nat(struct fwctx* context, char *ip_addr)
   }
 
   log_trace("Removing iptable rule for ip=%s if=%s", ip_addr, ifname);
-  if (!iptables_delete_nat(context->ctx, ip_addr, ifname, context->nat_interface)) {
+  if (!iptables_delete_nat(context->ctx, ip_addr, ifname,
+                           context->nat_interface)) {
     log_trace("iptables_delete_nat fail");
     return -1;
   }
@@ -277,22 +273,25 @@ int fw_remove_nat(struct fwctx* context, char *ip_addr)
   return 0;
 }
 
-int fw_add_bridge(struct fwctx* context, char *ip_addr_left, char *ip_addr_right)
-{
+int fw_add_bridge(struct fwctx *context, char *ip_addr_left,
+                  char *ip_addr_right) {
 #ifdef WITH_UCI_SERVICE
   char brname_left[IFNAMSIZ], brname_right[IFNAMSIZ];
 
-  if (get_brname_from_ip(context->config_ifinfo_array, ip_addr_left, brname_left) < 0) {
+  if (get_brname_from_ip(context->config_ifinfo_array, ip_addr_left,
+                         brname_left) < 0) {
     log_trace("get_brname_from_ip fail");
     return -1;
   }
 
-  if (get_brname_from_ip(context->config_ifinfo_array, ip_addr_right, brname_right) < 0) {
+  if (get_brname_from_ip(context->config_ifinfo_array, ip_addr_right,
+                         brname_right) < 0) {
     log_trace("get_brname_from_ip fail");
     return -1;
   }
 
-  log_trace("Adding uci rule for sip=%s sbr=%s dip=%s dbr=%s", ip_addr_left, brname_left, ip_addr_right, brname_right);
+  log_trace("Adding uci rule for sip=%s sbr=%s dip=%s dbr=%s", ip_addr_left,
+            brname_left, ip_addr_right, brname_right);
   if (uwrt_add_firewall_bridge(context->ctx, ip_addr_left, brname_left,
                                ip_addr_right, brname_right) < 0) {
     log_trace("uwrt_add_firewall_bridge fail");
@@ -306,18 +305,22 @@ int fw_add_bridge(struct fwctx* context, char *ip_addr_left, char *ip_addr_right
 #else
   char ifname_left[IFNAMSIZ], ifname_right[IFNAMSIZ];
 
-  if (get_ifname_from_ip(context->config_ifinfo_array, ip_addr_left, ifname_left) < 0) {
+  if (get_ifname_from_ip(context->config_ifinfo_array, ip_addr_left,
+                         ifname_left) < 0) {
     log_trace("get_ifname_from_ip fail");
     return -1;
   }
 
-  if (get_ifname_from_ip(context->config_ifinfo_array, ip_addr_right, ifname_right) < 0) {
+  if (get_ifname_from_ip(context->config_ifinfo_array, ip_addr_right,
+                         ifname_right) < 0) {
     log_trace("get_ifname_from_ip fail");
     return -1;
   }
 
-  log_trace("Adding iptable rule for sip=%s sif=%s dip=%s dif=%s", ip_addr_left, ifname_left, ip_addr_right, ifname_right);
-  if (!iptables_add_bridge(context->ctx, ip_addr_left, ifname_left, ip_addr_right, ifname_right)) {
+  log_trace("Adding iptable rule for sip=%s sif=%s dip=%s dif=%s", ip_addr_left,
+            ifname_left, ip_addr_right, ifname_right);
+  if (!iptables_add_bridge(context->ctx, ip_addr_left, ifname_left,
+                           ip_addr_right, ifname_right)) {
     log_trace("iptables_add_bridge fail");
     return -1;
   }
@@ -331,11 +334,12 @@ int fw_add_bridge(struct fwctx* context, char *ip_addr_left, char *ip_addr_right
   return 0;
 }
 
-int fw_remove_bridge(struct fwctx* context, char *ip_addr_left, char *ip_addr_right)
-{
+int fw_remove_bridge(struct fwctx *context, char *ip_addr_left,
+                     char *ip_addr_right) {
 #ifdef WITH_UCI_SERVICE
   log_trace("Removing uci rule for sip=%s dip=%s", ip_addr_left, ip_addr_right);
-  if (uwrt_delete_firewall_bridge(context->ctx, ip_addr_left, ip_addr_right) < 0) {
+  if (uwrt_delete_firewall_bridge(context->ctx, ip_addr_left, ip_addr_right) <
+      0) {
     log_trace("uwrt_delete_firewall_bridge fail");
     return -1;
   }
@@ -347,18 +351,22 @@ int fw_remove_bridge(struct fwctx* context, char *ip_addr_left, char *ip_addr_ri
 #else
   char ifname_left[IFNAMSIZ], ifname_right[IFNAMSIZ];
 
-  if (get_ifname_from_ip(context->config_ifinfo_array, ip_addr_left, ifname_left) < 0) {
+  if (get_ifname_from_ip(context->config_ifinfo_array, ip_addr_left,
+                         ifname_left) < 0) {
     log_trace("get_ifname_from_ip fail");
     return -1;
   }
 
-  if (get_ifname_from_ip(context->config_ifinfo_array, ip_addr_right, ifname_right) < 0) {
+  if (get_ifname_from_ip(context->config_ifinfo_array, ip_addr_right,
+                         ifname_right) < 0) {
     log_trace("get_ifname_from_ip fail");
     return -1;
   }
 
-  log_trace("Removing iptable rule for sip=%s sif=%s dip=%s dif=%s", ip_addr_left, ifname_left, ip_addr_right, ifname_right);
-  if (!iptables_delete_bridge(context->ctx, ip_addr_left, ifname_left, ip_addr_right, ifname_right)) {
+  log_trace("Removing iptable rule for sip=%s sif=%s dip=%s dif=%s",
+            ip_addr_left, ifname_left, ip_addr_right, ifname_right);
+  if (!iptables_delete_bridge(context->ctx, ip_addr_left, ifname_left,
+                              ip_addr_right, ifname_right)) {
     log_trace("iptables_add_bridge fail");
     return -1;
   }
@@ -372,8 +380,7 @@ int fw_remove_bridge(struct fwctx* context, char *ip_addr_left, char *ip_addr_ri
   return 0;
 }
 
-int fw_set_ip_forward(void)
-{
+int fw_set_ip_forward(void) {
   char buf[2];
   int fd = open(IP_FORWARD_PATH, O_RDWR);
   if (read(fd, buf, 1) < 0) {
@@ -386,18 +393,18 @@ int fw_set_ip_forward(void)
 
   if (buf[0] == 0x30) {
     log_trace("Setting IP forward flag to 1");
-    if (lseek(fd, 0 , SEEK_SET) < 0) {
-      log_errno("lseek")  ;
+    if (lseek(fd, 0, SEEK_SET) < 0) {
+      log_errno("lseek");
       close(fd);
       return -1;
     }
 
     buf[0] = 0x31;
 
-	  if (write(fd, buf, 1) < 0) {
+    if (write(fd, buf, 1) < 0) {
       log_errno("write");
-        close(fd);
-        return -1;
+      close(fd);
+      return -1;
     }
   }
   close(fd);

@@ -31,7 +31,7 @@ pidFilePath = "@EDGESEC_full_runstate_dir@/edgesec.pid"
 [capture]
 captureBinPath = "@EDGESEC_full_bin_dir@/capsrv"
 captureInterface = ""
-filter = "" 
+filter = ""
 promiscuous = false
 bufferTimeout = 10
 processInterval = 10

@@ -39,9 +39,9 @@
  *
  */
 struct pcap_queue {
-  struct pcap_pkthdr header;            /**< pcap header */
-  uint8_t *packet;                      /**< pointer to the packet data */
-  struct dl_list list;                  /**< List definition */
+  struct pcap_pkthdr header; /**< pcap header */
+  uint8_t *packet;           /**< pointer to the packet data */
+  struct dl_list list;       /**< List definition */
 };
 
 /**
@@ -49,7 +49,7 @@ struct pcap_queue {
  *
  * @return struct pcap_queue* Returned initialised empty pcap queue
  */
-struct pcap_queue* init_pcap_queue(void);
+struct pcap_queue *init_pcap_queue(void);
 
 /**
  * @brief Pushes a packet in the pcap queue
@@ -59,7 +59,8 @@ struct pcap_queue* init_pcap_queue(void);
  * @param packet The pcap packet
  * @return struct pcap_queue* Returned the pcap queue element
  */
-struct pcap_queue* push_pcap_queue(struct pcap_queue* queue, struct pcap_pkthdr *header, uint8_t *packet);
+struct pcap_queue *push_pcap_queue(struct pcap_queue *queue,
+                                   struct pcap_pkthdr *header, uint8_t *packet);
 
 /**
  * @brief Extract the first pcap element from the pcap queueu
@@ -67,14 +68,14 @@ struct pcap_queue* push_pcap_queue(struct pcap_queue* queue, struct pcap_pkthdr 
  * @param queue The pcap queue
  * @return struct pcap_queue* The returned pcap (NULL if queue is empty)
  */
-struct pcap_queue* pop_pcap_queue(struct pcap_queue* queue);
+struct pcap_queue *pop_pcap_queue(struct pcap_queue *queue);
 
 /**
  * @brief Delete a pcap entry
  *
  * @param el The pcap queue entry
  */
-void free_pcap_queue_el(struct pcap_queue* el);
+void free_pcap_queue_el(struct pcap_queue *el);
 
 /**
  * @brief Returns the pcap queue length
@@ -82,14 +83,14 @@ void free_pcap_queue_el(struct pcap_queue* el);
  * @param el The pointer to the pcap queue
  * @return ssize_t The pcap queue length
  */
-ssize_t get_pcap_queue_length(struct pcap_queue* queue);
+ssize_t get_pcap_queue_length(struct pcap_queue *queue);
 
 /**
  * @brief Frees the pcap queue
  *
  * @param queue The pointer to the pcap queue
  */
-void free_pcap_queue(struct pcap_queue* queue);
+void free_pcap_queue(struct pcap_queue *queue);
 
 /**
  * @brief Checks if pcap queue is empty
@@ -97,5 +98,5 @@ void free_pcap_queue(struct pcap_queue* queue);
  * @param queue The pointer to the packet queue
  * @return 1, is empty, 0 otherwise, -1 for error
  */
-int is_pcap_queue_empty(struct pcap_queue* queue);
+int is_pcap_queue_empty(struct pcap_queue *queue);
 #endif

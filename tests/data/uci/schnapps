@@ -13,4 +13,3 @@ config remote 'remote'
 
 #config encrypt 'encrypt'
 #        option pass 'password'
-

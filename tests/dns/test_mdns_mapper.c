@@ -18,13 +18,12 @@
 #include "utils/os.h"
 #include "dns/mdns_mapper.h"
 
-static void test_put_mdns_answer_mapper(void **state)
-{
-  (void) state; /* unused */
+static void test_put_mdns_answer_mapper(void **state) {
+  (void)state; /* unused */
 
   hmap_mdns_conn *imap = NULL;
-  uint8_t ip[IP_ALEN] = {10,0,0,23};
-  uint8_t ip1[IP_ALEN] = {10,0,0,24};
+  uint8_t ip[IP_ALEN] = {10, 0, 0, 23};
+  uint8_t ip1[IP_ALEN] = {10, 0, 0, 24};
 
   struct mdns_answer_entry answer = {};
 
@@ -34,13 +33,12 @@ static void test_put_mdns_answer_mapper(void **state)
   free_mdns_mapper(&imap);
 }
 
-static void test_put_mdns_query_mapper(void **state)
-{
-  (void) state;
+static void test_put_mdns_query_mapper(void **state) {
+  (void)state;
 
   hmap_mdns_conn *imap = NULL;
-  uint8_t ip[IP_ALEN] = {10,0,0,23};
-  uint8_t ip1[IP_ALEN] = {10,0,0,24};
+  uint8_t ip[IP_ALEN] = {10, 0, 0, 23};
+  uint8_t ip1[IP_ALEN] = {10, 0, 0, 24};
 
   struct mdns_query_entry query = {};
 
@@ -50,13 +48,12 @@ static void test_put_mdns_query_mapper(void **state)
   free_mdns_mapper(&imap);
 }
 
-static void test_check_mdns_mapper_req(void **state)
-{
-  (void) state; /* unused */
+static void test_check_mdns_mapper_req(void **state) {
+  (void)state; /* unused */
 
   hmap_mdns_conn *imap = NULL;
-  uint8_t ip[IP_ALEN] = {10,0,0,23};
-  uint8_t ip1[IP_ALEN] = {10,0,0,24};
+  uint8_t ip[IP_ALEN] = {10, 0, 0, 23};
+  uint8_t ip1[IP_ALEN] = {10, 0, 0, 24};
   char *test1 = "test1";
   char *test2 = "test2";
 
@@ -75,21 +72,19 @@ static void test_check_mdns_mapper_req(void **state)
   assert_int_equal(check_mdns_mapper_req(&imap, ip1, MDNS_REQUEST_ANSWER), 0);
   assert_int_equal(check_mdns_mapper_req(&imap, ip1, MDNS_REQUEST_QUERY), 1);
 
-  free_mdns_mapper(&imap); 
+  free_mdns_mapper(&imap);
 }
 
-int main(int argc, char *argv[])
-{  
-  (void) argc; /* unused */
-  (void) argv; /* unused */
+int main(int argc, char *argv[]) {
+  (void)argc; /* unused */
+  (void)argv; /* unused */
 
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
-    cmocka_unit_test(test_put_mdns_answer_mapper),
-    cmocka_unit_test(test_put_mdns_query_mapper),
-    cmocka_unit_test(test_check_mdns_mapper_req)
-  };
+      cmocka_unit_test(test_put_mdns_answer_mapper),
+      cmocka_unit_test(test_put_mdns_query_mapper),
+      cmocka_unit_test(test_check_mdns_mapper_req)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

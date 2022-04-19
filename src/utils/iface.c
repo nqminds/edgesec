@@ -23,7 +23,7 @@
  * @brief File containing the implementation of the network interface utilities.
  */
 
-#define _GNU_SOURCE     /* To get defns of NI_MAXSERV and NI_MAXHOST */
+#define _GNU_SOURCE /* To get defns of NI_MAXSERV and NI_MAXHOST */
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -61,8 +61,7 @@
 
 static const UT_icd netif_info_icd = {sizeof(netif_info_t), NULL, NULL, NULL};
 
-void iface_free_context(struct iface_context *ctx)
-{
+void iface_free_context(struct iface_context *ctx) {
   if (ctx != NULL) {
 #ifdef WITH_UCI_SERVICE
     if (ctx->context != NULL) {
@@ -81,8 +80,7 @@ void iface_free_context(struct iface_context *ctx)
   }
 }
 
-struct iface_context* iface_init_context(void *params)
-{
+struct iface_context *iface_init_context(void *params) {
   struct iface_context *ctx = os_zalloc(sizeof(struct iface_context));
 
   if (ctx == NULL) {
@@ -91,7 +89,7 @@ struct iface_context* iface_init_context(void *params)
   }
 
 #ifdef WITH_UCI_SERVICE
-  (void) params;
+  (void)params;
 
   if ((ctx->context = uwrt_init_context(NULL)) == NULL) {
     log_trace("uwrt_init_context fail");
@@ -99,7 +97,7 @@ struct iface_context* iface_init_context(void *params)
     return NULL;
   }
 #elif WITH_NETLINK_SERVICE
-  (void) params;
+  (void)params;
 
   if ((ctx->context = nl_init_context()) == NULL) {
     log_trace("nl_init_context fail");
@@ -107,7 +105,7 @@ struct iface_context* iface_init_context(void *params)
     return NULL;
   }
 #elif WITH_IP_GENERIC_SERVICE
-  if ((ctx->context = ipgen_init_context((char*) params)) == NULL) {
+  if ((ctx->context = ipgen_init_context((char *)params)) == NULL) {
     log_trace("ipgen_init_context fail");
     iface_free_context(ctx);
     return NULL;
@@ -117,8 +115,7 @@ struct iface_context* iface_init_context(void *params)
   return ctx;
 }
 
-UT_array *iface_get(char *ifname)
-{
+UT_array *iface_get(char *ifname) {
   struct ifaddrs *ifaddr;
   int ret;
   char ipaddr[NI_MAXHOST];
@@ -142,9 +139,11 @@ UT_array *iface_get(char *ifname)
     strcpy(nif.ifname, ifa->ifa_name);
 
     if (nif.ifa_family == AF_INET || nif.ifa_family == AF_INET6) {
-      ret = getnameinfo(ifa->ifa_addr,
-        (nif.ifa_family == AF_INET) ? sizeof(struct sockaddr_in) : sizeof(struct sockaddr_in6),
-        ipaddr, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
+      ret =
+          getnameinfo(ifa->ifa_addr,
+                      (nif.ifa_family == AF_INET) ? sizeof(struct sockaddr_in)
+                                                  : sizeof(struct sockaddr_in6),
+                      ipaddr, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
 
       if (ret != 0) {
         log_errno("getnameinfo");
@@ -173,76 +172,74 @@ UT_array *iface_get(char *ifname)
   return interfaces;
 }
 
-
-char* iface_get_vlan(char *buf)
-{
+char *iface_get_vlan(char *buf) {
 #ifdef WITH_NETLINK_SERVICE
-	return nl_get_valid_iw(buf);
+  return nl_get_valid_iw(buf);
 #else
-  (void) buf;
+  (void)buf;
 
-	log_trace("iface_get_vlan not implemented");
-	return NULL;
+  log_trace("iface_get_vlan not implemented");
+  return NULL;
 #endif
 }
 
-int reset_interface(struct iface_context *ctx, char *ifname)
-{
+int reset_interface(struct iface_context *ctx, char *ifname) {
   log_trace("Reseting interface state for if_name=%s", ifname);
 #ifdef WITH_NETLINK_SERVICE
-  (void) ctx;
-	return nl_reset_interface(ifname);
+  (void)ctx;
+  return nl_reset_interface(ifname);
 #elif WITH_IP_GENERIC_SERVICE
   return ipgen_reset_interface(ctx->context, ifname);
 #else
-  (void) ctx;
-  (void) ifname;
+  (void)ctx;
+  (void)ifname;
 
-	log_trace("reset_interface not implemented");
-	return -1;
+  log_trace("reset_interface not implemented");
+  return -1;
 #endif
 }
 
 int iface_create(struct iface_context *ctx, char *brname, char *ifname,
-                 char *type, char *ip_addr, char *brd_addr, char *subnet_mask)
-{
+                 char *type, char *ip_addr, char *brd_addr, char *subnet_mask) {
 #ifdef WITH_NETLINK_SERVICE
-  (void) brname;
-	return nl_create_interface(ctx->context, ifname, type, ip_addr, brd_addr, subnet_mask);
+  (void)brname;
+  return nl_create_interface(ctx->context, ifname, type, ip_addr, brd_addr,
+                             subnet_mask);
 #elif WITH_UCI_SERVICE
-  (void) ifname;
-  return uwrt_create_interface(ctx->context, brname, type, ip_addr, brd_addr, subnet_mask);
+  (void)ifname;
+  return uwrt_create_interface(ctx->context, brname, type, ip_addr, brd_addr,
+                               subnet_mask);
 #elif WITH_IP_GENERIC_SERVICE
-  (void) brname;
-  return ipgen_create_interface(ctx->context, ifname, type, ip_addr, brd_addr, subnet_mask);
+  (void)brname;
+  return ipgen_create_interface(ctx->context, ifname, type, ip_addr, brd_addr,
+                                subnet_mask);
 #else
-  (void) ctx;
-  (void) brname;
-  (void) ifname;
-  (void) type;
-  (void) ip_addr;
-  (void) brd_addr;
-  (void) subnet_mask;
+  (void)ctx;
+  (void)brname;
+  (void)ifname;
+  (void)type;
+  (void)ip_addr;
+  (void)brd_addr;
+  (void)subnet_mask;
 
-	log_trace("iface_create not implemented");
-	return -1;
+  log_trace("iface_create not implemented");
+  return -1;
 #endif
 }
 
-int iface_commit(struct iface_context *ctx)
-{
+int iface_commit(struct iface_context *ctx) {
   log_trace("Commiting interface changes");
 #ifdef WITH_NETLINK_SERVICE
-  (void) ctx;
+  (void)ctx;
   return 0;
 #elif WITH_UCI_SERVICE
   return uwrt_commit_section(ctx->context, "network");
 #elif WITH_IP_GENERIC_SERVICE
-  (void) ctx;
+  (void)ctx;
   return 0;
 #else
-  (void) ctx;
-	log_trace("iface_commit not implemented");
-	return -1;
+  (void)ctx;
+  log_trace("iface_commit not implemented");
+  return -1;
 #endif
 }

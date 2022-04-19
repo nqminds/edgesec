@@ -19,21 +19,19 @@
 #include "utils/os.h"
 #include "dns/reflection_list.h"
 
-static void test_init_reflection_list(void **state)
-{
-  (void) state;
+static void test_init_reflection_list(void **state) {
+  (void)state;
 
   struct reflection_list *list = NULL;
-  
+
   list = init_reflection_list();
   assert_non_null(list);
 
   free_reflection_list(list);
 }
 
-static void test_push_reflection_list(void **state)
-{
-  (void) state;
+static void test_push_reflection_list(void **state) {
+  (void)state;
 
   struct reflection_list *el;
   struct reflection_list *list = init_reflection_list();
@@ -47,17 +45,15 @@ static void test_push_reflection_list(void **state)
   free_reflection_list(list);
 }
 
-int main(int argc, char *argv[])
-{  
-  (void) argc; /* unused */
-  (void) argv; /* unused */
+int main(int argc, char *argv[]) {
+  (void)argc; /* unused */
+  (void)argv; /* unused */
 
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
-    cmocka_unit_test(test_init_reflection_list),
-    cmocka_unit_test(test_push_reflection_list)
-  };
+      cmocka_unit_test(test_init_reflection_list),
+      cmocka_unit_test(test_push_reflection_list)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

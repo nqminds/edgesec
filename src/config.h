@@ -40,49 +40,58 @@
 #define MAX_SALT_STRING_SIZE 255
 
 /**
- * @brief The App configuration structures. Used for configuring the networking services.
+ * @brief The App configuration structures. Used for configuring the networking
+ * services.
  *
  */
 struct app_config {
-  UT_array            *bin_path_array;                      /**< The array including the paths of systems binaries. */
-  bool                ap_detect;                            /**< Flag to detect an existing wifi interface to create the access point. */
-  bool                exec_ap;                              /**< Flag to execute the ap service. */
-  bool                generate_ssid;                        /**< Flag to generate the SSID for AP. */
-  bool                exec_radius;                          /**< Flag to execute the radius service. */
-  bool                exec_dhcp;                            /**< Flag to execute the dhcp service. */
-  bool                exec_capture;                         /**< Flag to execute the capture service. */
-  bool                exec_mdns_forward;                    /**< Flag to execute the mdns forwarding service. */
-  bool                exec_firewall;                        /**< Flag to execute the firewall command. */
-  char                nat_bridge[IFNAMSIZ];                 /**< The NAT bridge string. */
-  char                nat_interface[IFNAMSIZ];              /**< The NAT interface string. */
-  char                bridge_prefix[IFNAMSIZ];              /**< The bridge prefix. */
-  char                interface_prefix[IFNAMSIZ];           /**< The interface prefix. */
-  bool                create_interfaces;                    /**< Flag to create the WiFi subnet interfaces. */
-  bool                ignore_if_error;                      /**< Flag if set ignores the errors if subnet already exists. */
-  bool                allocate_vlans;                       /**< Flag if set allocates a random vlan for a device. */
-  int                 default_open_vlanid;                  /**< Sets the default vlan index for open connections or if MAC is not in the list of connections. */
-  int                 quarantine_vlanid;                    /**< Sets the vlan index for the quarantine MACs, -1 if there's no quarantine vlan. */
-  int                 risk_score;                           /**< Sets the risk score. */
-  UT_array            *config_ifinfo_array;                 /**< Interface list mapping bridge interface name and IP address range. */
-  char                domain_server_path[MAX_OS_PATH_LEN];  /**< Path to the control server. */
-  char                db_path[MAX_OS_PATH_LEN];             /**< Specifies the path to the sqlite3 dbs */
-  char                crypt_db_path[MAX_OS_PATH_LEN];       /**< Specifies the crypt db path to the sqlite3 db */
-  char                crypt_key_id[MAX_KEY_ID_SIZE];        /**< Specifies the crypt key id */
-  char                crypt_secret[MAX_USER_SECRET];        /**< Specifies the crypt user master secret */
-  char                domain_delim;                         /**< Control server command delimiter. */
-  bool                allow_all_connections;                /**< Flag to allow all connections. */
-  bool                allow_all_nat;                        /**< Flag to allow all nat connections. */
-  bool                kill_running_proc;                    /**< Flag to terminate running app processes. */
-  bool                set_ip_forward;                       /**< Flag to set the ip forward os system param. */
-  char                pid_file_path[MAX_OS_PATH_LEN];       /**< Path to the pid file. */
-  char                config_ini_path[MAX_OS_PATH_LEN];     /**< Path to the config.ini file. */
-  struct radius_conf  rconfig;                              /**< Radius service configuration. */
-  struct apconf       hconfig;                              /**< AP service configuration. */
-  struct dns_conf     dns_config;                           /**< DNS service configuration. */
-  struct mdns_conf    mdns_config;                          /**< mDNS service configuration. */
-  struct dhcp_conf    dhcp_config;                          /**< DHCP service configuration. */
-  struct capture_conf capture_config;                       /**< Capture service configuration. */
-  struct firewall_conf firewall_config;                     /**< Firewall service configuration. */
+  UT_array *
+      bin_path_array; /**< The array including the paths of systems binaries. */
+  bool ap_detect; /**< Flag to detect an existing wifi interface to create the
+                     access point. */
+  bool exec_ap;   /**< Flag to execute the ap service. */
+  bool generate_ssid;     /**< Flag to generate the SSID for AP. */
+  bool exec_radius;       /**< Flag to execute the radius service. */
+  bool exec_dhcp;         /**< Flag to execute the dhcp service. */
+  bool exec_capture;      /**< Flag to execute the capture service. */
+  bool exec_mdns_forward; /**< Flag to execute the mdns forwarding service. */
+  bool exec_firewall;     /**< Flag to execute the firewall command. */
+  char nat_bridge[IFNAMSIZ];       /**< The NAT bridge string. */
+  char nat_interface[IFNAMSIZ];    /**< The NAT interface string. */
+  char bridge_prefix[IFNAMSIZ];    /**< The bridge prefix. */
+  char interface_prefix[IFNAMSIZ]; /**< The interface prefix. */
+  bool create_interfaces; /**< Flag to create the WiFi subnet interfaces. */
+  bool ignore_if_error;   /**< Flag if set ignores the errors if subnet already
+                             exists. */
+  bool allocate_vlans; /**< Flag if set allocates a random vlan for a device. */
+  int default_open_vlanid; /**< Sets the default vlan index for open connections
+                              or if MAC is not in the list of connections. */
+  int quarantine_vlanid; /**< Sets the vlan index for the quarantine MACs, -1 if
+                            there's no quarantine vlan. */
+  int risk_score;        /**< Sets the risk score. */
+  UT_array *config_ifinfo_array; /**< Interface list mapping bridge interface
+                                    name and IP address range. */
+  char domain_server_path[MAX_OS_PATH_LEN]; /**< Path to the control server. */
+  char db_path[MAX_OS_PATH_LEN]; /**< Specifies the path to the sqlite3 dbs */
+  char crypt_db_path[MAX_OS_PATH_LEN]; /**< Specifies the crypt db path to the
+                                          sqlite3 db */
+  char crypt_key_id[MAX_KEY_ID_SIZE];  /**< Specifies the crypt key id */
+  char crypt_secret[MAX_USER_SECRET];  /**< Specifies the crypt user master
+                                          secret */
+  char domain_delim;                   /**< Control server command delimiter. */
+  bool allow_all_connections;          /**< Flag to allow all connections. */
+  bool allow_all_nat;     /**< Flag to allow all nat connections. */
+  bool kill_running_proc; /**< Flag to terminate running app processes. */
+  bool set_ip_forward;    /**< Flag to set the ip forward os system param. */
+  char pid_file_path[MAX_OS_PATH_LEN];   /**< Path to the pid file. */
+  char config_ini_path[MAX_OS_PATH_LEN]; /**< Path to the config.ini file. */
+  struct radius_conf rconfig;            /**< Radius service configuration. */
+  struct apconf hconfig;                 /**< AP service configuration. */
+  struct dns_conf dns_config;            /**< DNS service configuration. */
+  struct mdns_conf mdns_config;          /**< mDNS service configuration. */
+  struct dhcp_conf dhcp_config;          /**< DHCP service configuration. */
+  struct capture_conf capture_config;    /**< Capture service configuration. */
+  struct firewall_conf firewall_config;  /**< Firewall service configuration. */
 };
 
 /**
@@ -93,7 +102,6 @@ struct app_config {
  * @return true on success, false otherwise
  */
 bool load_app_config(const char *filename, struct app_config *config);
-
 
 /**
  * @brief Frees the app configuration

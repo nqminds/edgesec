@@ -517,7 +517,7 @@ int eloop_register_signal_terminate(eloop_signal_handler handler,
 
 	eloop.term_signal.handler = handler;
 	eloop.term_signal.user_data = user_data;
-		
+
 	return 0;
 }
 

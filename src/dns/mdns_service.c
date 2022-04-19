@@ -55,29 +55,39 @@
 #include "reflection_list.h"
 #include "mcast.h"
 
-#define MDNS_PORT       5353
-#define MDNS_ADDR4      (uint32_t)0xE00000FB  /* 224.0.0.251 */
-#define MDNS_ADDR6_INIT \
-{{{ 0xff, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, \
-0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xfb }}}
+#define MDNS_PORT 5353
+#define MDNS_ADDR4 (uint32_t)0xE00000FB /* 224.0.0.251 */
+#define MDNS_ADDR6_INIT                                                        \
+  {                                                                            \
+    {                                                                          \
+      {                                                                        \
+        0xff, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,      \
+            0x00, 0x00, 0x00, 0x00, 0xfb                                       \
+      }                                                                        \
+    }                                                                          \
+  }
 
 #define MDNS_PCAP_BUFFER_TIMEOUT 10
 
-static const UT_icd mdns_answers_icd = {sizeof(struct mdns_answer_entry), NULL, NULL, NULL};
-static const UT_icd mdns_queries_icd = {sizeof(struct mdns_query_entry), NULL, NULL, NULL};
-static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL, NULL};
+static const UT_icd mdns_answers_icd = {sizeof(struct mdns_answer_entry), NULL,
+                                        NULL, NULL};
+static const UT_icd mdns_queries_icd = {sizeof(struct mdns_query_entry), NULL,
+                                        NULL, NULL};
+static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL,
+                                   NULL};
 
 int sockaddr2str(struct sockaddr_storage *sa, char *buffer, uint16_t *port) {
   if (sa->ss_family == AF_INET6) {
-    struct sockaddr_in6 *sa6 = (struct sockaddr_in6 *) sa;
-    if (inet_ntop(AF_INET6, &sa6->sin6_addr, buffer, INET6_ADDRSTRLEN) == NULL) {
+    struct sockaddr_in6 *sa6 = (struct sockaddr_in6 *)sa;
+    if (inet_ntop(AF_INET6, &sa6->sin6_addr, buffer, INET6_ADDRSTRLEN) ==
+        NULL) {
       log_errno("inet_ntop");
       return -1;
     }
 
     *port = ntohs(sa6->sin6_port);
   } else if (sa->ss_family == AF_INET) {
-    struct sockaddr_in *sa4 = (struct sockaddr_in *) sa;
+    struct sockaddr_in *sa4 = (struct sockaddr_in *)sa;
 
     if (inet_ntop(AF_INET, &sa4->sin_addr, buffer, INET_ADDRSTRLEN) == NULL) {
       log_errno("inet_ntop");
@@ -93,8 +103,7 @@ int sockaddr2str(struct sockaddr_storage *sa, char *buffer, uint16_t *port) {
   return 0;
 }
 
-void close_reflector_if(struct reflection_list *rif)
-{
+void close_reflector_if(struct reflection_list *rif) {
   struct reflection_list *el;
   dl_list_for_each(el, &(rif)->list, struct reflection_list, list) {
     if (el->recv_fd > -1) {
@@ -106,24 +115,24 @@ void close_reflector_if(struct reflection_list *rif)
   }
 }
 
-int forward_reflector_if6(uint8_t *send_buf, size_t len, struct reflection_list *rif)
-{
+int forward_reflector_if6(uint8_t *send_buf, size_t len,
+                          struct reflection_list *rif) {
   struct reflection_list *el;
   struct sockaddr *dst;
   socklen_t dst_len;
   struct sockaddr_in6 sa_group6 = {
-    .sin6_family=AF_INET6,
-    .sin6_port = htons(MDNS_PORT),
-    .sin6_addr = MDNS_ADDR6_INIT,
+      .sin6_family = AF_INET6,
+      .sin6_port = htons(MDNS_PORT),
+      .sin6_addr = MDNS_ADDR6_INIT,
   };
 
   log_trace("mDNS forwarding to IP6 interfaces");
 
-  dst = (struct sockaddr *) &sa_group6;
+  dst = (struct sockaddr *)&sa_group6;
   dst_len = sizeof(sa_group6);
 
   dl_list_for_each(el, &(rif)->list, struct reflection_list, list) {
-    if (el == rif){
+    if (el == rif) {
       continue;
     }
 
@@ -140,20 +149,20 @@ int forward_reflector_if6(uint8_t *send_buf, size_t len, struct reflection_list 
   return 0;
 }
 
-int forward_reflector_if4(uint8_t *send_buf, size_t len, struct reflection_list *rif)
-{
+int forward_reflector_if4(uint8_t *send_buf, size_t len,
+                          struct reflection_list *rif) {
   struct reflection_list *el;
   struct sockaddr *dst;
   socklen_t dst_len;
 
   struct sockaddr_in sa_group4 = {
-    .sin_family = AF_INET,
-    .sin_port = htons(MDNS_PORT),
-    .sin_addr.s_addr = htonl(MDNS_ADDR4),
+      .sin_family = AF_INET,
+      .sin_port = htons(MDNS_PORT),
+      .sin_addr.s_addr = htonl(MDNS_ADDR4),
   };
 
   log_trace("mDNS forwarding to IP4 interfaces");
-  dst = (struct sockaddr *) &sa_group4;
+  dst = (struct sockaddr *)&sa_group4;
   dst_len = sizeof(sa_group4);
 
   dl_list_for_each(el, &(rif)->list, struct reflection_list, list) {
@@ -173,8 +182,7 @@ int forward_reflector_if4(uint8_t *send_buf, size_t len, struct reflection_list 
   return 0;
 }
 
-void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
-{
+void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx) {
   struct client_address peer_addr;
   uint32_t bytes_available;
   uint8_t *buf, qip[IP_ALEN];
@@ -187,8 +195,8 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
   UT_array *answers, *queries;
   struct mdns_answer_entry *ael = NULL;
   struct mdns_query_entry *qel = NULL;
-  struct reflection_list *rif = (struct reflection_list *) sock_ctx;
-  struct mdns_context *context = (struct mdns_context *) eloop_ctx;
+  struct reflection_list *rif = (struct reflection_list *)sock_ctx;
+  struct mdns_context *context = (struct mdns_context *)eloop_ctx;
 
   os_memset(&peer_addr, 0, sizeof(struct client_address));
 
@@ -202,34 +210,37 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
     return;
   }
 
-  if ((num_bytes = read_domain_data(sock, (char *)buf, bytes_available, &peer_addr, 0)) == -1) {
+  if ((num_bytes = read_domain_data(sock, (char *)buf, bytes_available,
+                                    &peer_addr, 0)) == -1) {
     log_trace("read_domain_data fail");
     os_free(buf);
     return;
   }
 
-  if (sockaddr2str((struct sockaddr_storage *)&peer_addr.addr, peer_addr_str, &port) < 0) {
+  if (sockaddr2str((struct sockaddr_storage *)&peer_addr.addr, peer_addr_str,
+                   &port) < 0) {
     log_trace("sockaddr2str fail");
     os_free(buf);
     return;
   }
 
   if (peer_addr.addr.sun_family == AF_INET) {
-    if(ip4_2_buf(peer_addr_str, qip) < 0) {
+    if (ip4_2_buf(peer_addr_str, qip) < 0) {
       log_trace("Wrong IP4 mDNS address");
       os_free(buf);
       return;
     }
   }
 
-  log_trace("mDNS received %u bytes from IP=%s and port=%d", num_bytes, peer_addr_str, port);
+  log_trace("mDNS received %u bytes from IP=%s and port=%d", num_bytes,
+            peer_addr_str, port);
   if (decode_mdns_header((uint8_t *)buf, &header) < 0) {
     log_trace("decode_mdns_header fail");
     os_free(buf);
     return;
   }
 
-  if ((size_t) num_bytes < sizeof(struct mdns_header)) {
+  if ((size_t)num_bytes < sizeof(struct mdns_header)) {
     log_trace("Not enough bytes to process mdns");
     os_free(buf);
     return;
@@ -238,7 +249,8 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
   first = sizeof(struct mdns_header);
   utarray_new(queries, &mdns_queries_icd);
 
-  if (decode_mdns_queries((uint8_t *) buf, (size_t) num_bytes, &first, header.nqueries, queries) < 0) {
+  if (decode_mdns_queries((uint8_t *)buf, (size_t)num_bytes, &first,
+                          header.nqueries, queries) < 0) {
     log_trace("decode_mdns_questions fail");
     utarray_free(queries);
     os_free(buf);
@@ -247,7 +259,8 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
 
   utarray_new(answers, &mdns_answers_icd);
 
-  if (decode_mdns_answers((uint8_t *) buf, (size_t) num_bytes, &first, header.nanswers, answers) < 0) {
+  if (decode_mdns_answers((uint8_t *)buf, (size_t)num_bytes, &first,
+                          header.nanswers, answers) < 0) {
     log_trace("decode_mdns_questions fail");
     utarray_free(queries);
     utarray_free(answers);
@@ -258,7 +271,8 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
     return;
   }
 
-  while((qel = (struct mdns_query_entry *) utarray_next(queries, qel)) != NULL) {
+  while ((qel = (struct mdns_query_entry *)utarray_next(queries, qel)) !=
+         NULL) {
     if (peer_addr.addr.sun_family == AF_INET) {
       if (put_mdns_query_mapper(&context->imap, qip, qel) < 0) {
         log_trace("put_mdns_query_mapper fail");
@@ -266,7 +280,8 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
     }
   }
 
-  while((ael = (struct mdns_answer_entry *) utarray_next(answers, ael)) != NULL) {
+  while ((ael = (struct mdns_answer_entry *)utarray_next(answers, ael)) !=
+         NULL) {
     if (put_mdns_answer_mapper(&context->imap, ael->ip, ael) < 0) {
       log_trace("put_mdns_answer_mapper fail");
     }
@@ -301,42 +316,47 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx)
   os_free(buf);
 }
 
-int register_reflector_if6(struct mdns_context *context)
-{
+int register_reflector_if6(struct mdns_context *context) {
   struct reflection_list *el, *rif = context->rif6;
   struct sockaddr_in6 sa6 = {
-    .sin6_family=AF_INET6,
-    .sin6_port = htons(MDNS_PORT),
-    .sin6_addr = IN6ADDR_ANY_INIT,
+      .sin6_family = AF_INET6,
+      .sin6_port = htons(MDNS_PORT),
+      .sin6_addr = IN6ADDR_ANY_INIT,
   };
 
   struct sockaddr_in6 sa_group6 = {
-    .sin6_family=AF_INET6,
-    .sin6_port = htons(MDNS_PORT),
-    .sin6_addr = MDNS_ADDR6_INIT,
+      .sin6_family = AF_INET6,
+      .sin6_port = htons(MDNS_PORT),
+      .sin6_addr = MDNS_ADDR6_INIT,
   };
 
   dl_list_for_each(el, &rif->list, struct reflection_list, list) {
-    log_trace("Configuring IP6 for ifname=%s ifindex=%d", el->ifname, el->ifindex);
-    el->send_fd = create_send_mcast((struct sockaddr_storage *) &sa6, sizeof(sa6), el->ifindex);
+    log_trace("Configuring IP6 for ifname=%s ifindex=%d", el->ifname,
+              el->ifindex);
+    el->send_fd = create_send_mcast((struct sockaddr_storage *)&sa6,
+                                    sizeof(sa6), el->ifindex);
     if (el->send_fd < 0) {
       log_trace("create_send_mcast fail for interface %s", el->ifname);
       return -1;
     }
-    el->recv_fd = create_recv_mcast((struct sockaddr_storage *) &sa6, sizeof(sa6), el->ifindex);
+    el->recv_fd = create_recv_mcast((struct sockaddr_storage *)&sa6,
+                                    sizeof(sa6), el->ifindex);
     if (el->recv_fd < 0) {
       log_trace("create_recv_mcast fail for interface %s", el->ifname);
       return -1;
     }
 
-    if (eloop_register_read_sock(el->recv_fd, eloop_reflector_handler, (void *) context, (void *) rif) < 0) {
+    if (eloop_register_read_sock(el->recv_fd, eloop_reflector_handler,
+                                 (void *)context, (void *)rif) < 0) {
       log_trace("eloop_register_read_sock fail");
       return -1;
     }
 
     sa_group6.sin6_scope_id = el->ifindex;
-    if (join_mcast(el->recv_fd, (struct sockaddr_storage *) &sa_group6, sizeof(sa_group6), el->ifindex) < 0) {
-      log_errno("Failed to join interface %s to IPv6 multicast group", el->ifname);
+    if (join_mcast(el->recv_fd, (struct sockaddr_storage *)&sa_group6,
+                   sizeof(sa_group6), el->ifindex) < 0) {
+      log_errno("Failed to join interface %s to IPv6 multicast group",
+                el->ifname);
       return -1;
     }
   }
@@ -344,42 +364,47 @@ int register_reflector_if6(struct mdns_context *context)
   return 0;
 }
 
-int register_reflector_if4(struct mdns_context *context)
-{
+int register_reflector_if4(struct mdns_context *context) {
   struct reflection_list *el, *rif = context->rif4;
   struct sockaddr_in sa4 = {
-    .sin_family = AF_INET,
-    .sin_port = htons(MDNS_PORT),
-    .sin_addr.s_addr = htonl(INADDR_ANY),
+      .sin_family = AF_INET,
+      .sin_port = htons(MDNS_PORT),
+      .sin_addr.s_addr = htonl(INADDR_ANY),
   };
 
   struct sockaddr_in sa_group4 = {
-    .sin_family = AF_INET,
-    .sin_port = htons(MDNS_PORT),
-    .sin_addr.s_addr = htonl(MDNS_ADDR4),
+      .sin_family = AF_INET,
+      .sin_port = htons(MDNS_PORT),
+      .sin_addr.s_addr = htonl(MDNS_ADDR4),
   };
 
   dl_list_for_each(el, &rif->list, struct reflection_list, list) {
-    log_trace("Configuring IP4 for ifname=%s ifindex=%d", el->ifname, el->ifindex);
-    el->send_fd = create_send_mcast((struct sockaddr_storage *) &sa4, sizeof(sa4), el->ifindex);
+    log_trace("Configuring IP4 for ifname=%s ifindex=%d", el->ifname,
+              el->ifindex);
+    el->send_fd = create_send_mcast((struct sockaddr_storage *)&sa4,
+                                    sizeof(sa4), el->ifindex);
     if (el->send_fd < 0) {
       log_trace("create_send_mcast fail for interface %s", el->ifname);
       return -1;
     }
 
-    el->recv_fd = create_recv_mcast((struct sockaddr_storage *) &sa4, sizeof(sa4), el->ifindex);
+    el->recv_fd = create_recv_mcast((struct sockaddr_storage *)&sa4,
+                                    sizeof(sa4), el->ifindex);
     if (el->recv_fd < 0) {
       log_trace("create_recv_mcast fail for interface %s", el->ifname);
       return -1;
     }
 
-    if (eloop_register_read_sock(el->recv_fd, eloop_reflector_handler, (void *) context, (void *) rif) < 0) {
+    if (eloop_register_read_sock(el->recv_fd, eloop_reflector_handler,
+                                 (void *)context, (void *)rif) < 0) {
       log_trace("eloop_register_read_sock fail");
       return -1;
     }
 
-    if (join_mcast(el->recv_fd, (struct sockaddr_storage *) &sa_group4, sizeof(sa_group4), el->ifindex) < 0) {
-      log_errno("Failed to join interface %s to IPv4 multicast group", el->ifname);
+    if (join_mcast(el->recv_fd, (struct sockaddr_storage *)&sa_group4,
+                   sizeof(sa_group4), el->ifindex) < 0) {
+      log_errno("Failed to join interface %s to IPv4 multicast group",
+                el->ifname);
       return -1;
     }
   }
@@ -387,8 +412,8 @@ int register_reflector_if4(struct mdns_context *context)
   return 0;
 }
 
-int init_reflections(hmap_vlan_conn **vlan_mapper, struct mdns_context *context)
-{
+int init_reflections(hmap_vlan_conn **vlan_mapper,
+                     struct mdns_context *context) {
   char *ifname = NULL;
   unsigned int ifindex;
   hmap_vlan_conn *current, *tmp;
@@ -403,7 +428,7 @@ int init_reflections(hmap_vlan_conn **vlan_mapper, struct mdns_context *context)
     return -1;
   }
 
-	HASH_ITER(hh, *vlan_mapper, current, tmp) {
+  HASH_ITER(hh, *vlan_mapper, current, tmp) {
     ifname = current->value.ifname;
 
     log_trace("Adding interface %s to mDNS reflector", ifname);
@@ -426,8 +451,7 @@ int init_reflections(hmap_vlan_conn **vlan_mapper, struct mdns_context *context)
   return 0;
 }
 
-int close_mdns(struct mdns_context *context)
-{
+int close_mdns(struct mdns_context *context) {
   if (context != NULL) {
     if (context->rif4 != NULL) {
       close_reflector_if(context->rif4);
@@ -457,9 +481,8 @@ int close_mdns(struct mdns_context *context)
   return 0;
 }
 
-int create_domain_command(char *src_ip, char *dst_ip, char delim, char **out)
-{
-  struct string_queue* squeue = NULL;
+int create_domain_command(char *src_ip, char *dst_ip, char delim, char **out) {
+  struct string_queue *squeue = NULL;
   char delim_str[2];
 
   sprintf(delim_str, "%c", delim);
@@ -510,47 +533,48 @@ int create_domain_command(char *src_ip, char *dst_ip, char delim, char **out)
   return 0;
 }
 
-int send_bridge_command(struct mdns_context *context, struct tuple_packet *tp)
-{
+int send_bridge_command(struct mdns_context *context, struct tuple_packet *tp) {
   struct ip4_schema *sch = NULL;
   char *domain = NULL;
   uint8_t sip[IP_ALEN], dip[IP_ALEN];
   int ret, retd;
 
   if (tp->type == PACKET_IP4) {
-    sch = (struct ip4_schema *) tp->packet;
+    sch = (struct ip4_schema *)tp->packet;
   } else {
     return 0;
   }
 
-  if(ip4_2_buf(sch->ip_src, sip) < 0) {
+  if (ip4_2_buf(sch->ip_src, sip) < 0) {
     log_trace("Wrong source IP4");
     return -1;
   }
 
-  if(ip4_2_buf(sch->ip_dst, dip) < 0) {
+  if (ip4_2_buf(sch->ip_dst, dip) < 0) {
     log_trace("Wrong source IP4");
     return -1;
   }
 
-  if ((ret = check_mdns_mapper_req(&context->imap, sip, MDNS_REQUEST_ANSWER)) < 0) {
+  if ((ret = check_mdns_mapper_req(&context->imap, sip, MDNS_REQUEST_ANSWER)) <
+      0) {
     log_trace("check_mdns_mapper_req fail");
     return -1;
   }
 
-  if ((retd = check_mdns_mapper_req(&context->imap, dip, MDNS_REQUEST_ANSWER)) < 0) {
+  if ((retd = check_mdns_mapper_req(&context->imap, dip, MDNS_REQUEST_ANSWER)) <
+      0) {
     log_trace("check_mdns_mapper_req fail");
     return -1;
   }
 
   if (!ret && !retd) {
-    log_trace("Not found mDNS answer request for src ip=%s or dst ip=%s", sch->ip_src, sch->ip_dst);
+    log_trace("Not found mDNS answer request for src ip=%s or dst ip=%s",
+              sch->ip_src, sch->ip_dst);
     return -1;
   }
 
-  if (create_domain_command(sch->ip_src, sch->ip_dst,
-                            context->domain_delim, &domain) < 0)
-  {
+  if (create_domain_command(sch->ip_src, sch->ip_dst, context->domain_delim,
+                            &domain) < 0) {
     log_trace("create_domain_command fail");
     return -1;
   }
@@ -567,7 +591,8 @@ int send_bridge_command(struct mdns_context *context, struct tuple_packet *tp)
       return -1;
     }
 
-    if (write_domain_data_s(context->sfd, domain, strlen(domain), context->domain_server_path) < 0) {
+    if (write_domain_data_s(context->sfd, domain, strlen(domain),
+                            context->domain_server_path) < 0) {
       log_debug("write_domain_data_s fail");
       os_free(domain);
       return -1;
@@ -582,18 +607,17 @@ int send_bridge_command(struct mdns_context *context, struct tuple_packet *tp)
   return 0;
 }
 
-void mdns_pcap_callback(const void *ctx, const void *pcap_ctx,
-                   char *ltype, struct pcap_pkthdr *header, uint8_t *packet)
-{
+void mdns_pcap_callback(const void *ctx, const void *pcap_ctx, char *ltype,
+                        struct pcap_pkthdr *header, uint8_t *packet) {
   struct mdns_context *context = (struct mdns_context *)ctx;
-  struct pcap_context *pc = (struct pcap_context *) pcap_ctx;
+  struct pcap_context *pc = (struct pcap_context *)pcap_ctx;
   struct tuple_packet *p = NULL;
   UT_array *tp_array = NULL;
 
   utarray_new(tp_array, &tp_list_icd);
-  if (extract_packets(ltype, header, packet, pc->ifname,
-                      context->hostname, context->cap_id, tp_array) > 0) {
-    while((p = (struct tuple_packet *) utarray_next(tp_array, p)) != NULL) {
+  if (extract_packets(ltype, header, packet, pc->ifname, context->hostname,
+                      context->cap_id, tp_array) > 0) {
+    while ((p = (struct tuple_packet *)utarray_next(tp_array, p)) != NULL) {
       if (send_bridge_command(context, p) < 0) {
         log_trace("send_pcap_meta fail");
       }
@@ -604,19 +628,17 @@ void mdns_pcap_callback(const void *ctx, const void *pcap_ctx,
   utarray_free(tp_array);
 }
 
-void eloop_read_fd_handler(int sock, void *eloop_ctx, void *sock_ctx)
-{
-  (void) sock;
-  (void) sock_ctx;
-  struct pcap_context *pc = (struct pcap_context *) eloop_ctx;
+void eloop_read_fd_handler(int sock, void *eloop_ctx, void *sock_ctx) {
+  (void)sock;
+  (void)sock_ctx;
+  struct pcap_context *pc = (struct pcap_context *)eloop_ctx;
 
   if (capture_pcap_packet(pc) < 0) {
     log_trace("capture_pcap_packet fail");
   }
 }
 
-int run_capture(struct mdns_context *context)
-{
+int run_capture(struct mdns_context *context) {
   UT_array *interfaces = NULL;
   char **ifname = NULL;
   struct pcap_context *pctx = NULL;
@@ -634,14 +656,15 @@ int run_capture(struct mdns_context *context)
     return -1;
   }
 
-  while((ifname = (char**) utarray_next(interfaces, ifname)) != NULL) {
+  while ((ifname = (char **)utarray_next(interfaces, ifname)) != NULL) {
     if (!strlen(*ifname)) {
       continue;
     }
 
     log_info("Registering pcap for ifname=%s", *ifname);
     if (run_pcap(*ifname, false, false, MDNS_PCAP_BUFFER_TIMEOUT,
-                 context->filter, true, mdns_pcap_callback, (void *)context, &pctx) < 0) {
+                 context->filter, true, mdns_pcap_callback, (void *)context,
+                 &pctx) < 0) {
       log_trace("run_pcap fail");
       utarray_free(interfaces);
       return -1;
@@ -649,7 +672,8 @@ int run_capture(struct mdns_context *context)
 
     utarray_push_back(context->pctx_list, &pctx);
 
-    if (eloop_register_read_sock(pctx->pcap_fd, eloop_read_fd_handler, (void*) pctx, (void *) NULL) ==  -1) {
+    if (eloop_register_read_sock(pctx->pcap_fd, eloop_read_fd_handler,
+                                 (void *)pctx, (void *)NULL) == -1) {
       log_debug("eloop_register_read_sock fail");
       utarray_free(interfaces);
       return -1;
@@ -660,8 +684,7 @@ int run_capture(struct mdns_context *context)
   return 0;
 }
 
-int run_mdns(struct mdns_context *context)
-{
+int run_mdns(struct mdns_context *context) {
   if (init_reflections(&context->vlan_mapper, context) < 0) {
     log_trace("init_reflections fail");
     return -1;
@@ -674,10 +697,10 @@ int run_mdns(struct mdns_context *context)
   }
 
   if (eloop_init() < 0) {
-		log_trace("eloop_init fail");
+    log_trace("eloop_init fail");
     close_mdns(context);
-		return -1;
-	}
+    return -1;
+  }
 
   if (register_reflector_if6(context) < 0) {
     log_trace("register_reflector_if6 fail");

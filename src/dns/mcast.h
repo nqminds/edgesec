@@ -38,7 +38,8 @@
  * @param ifindex The interface index
  * @return 0 on success, -1 on failuer
  */
-int join_mcast(int fd, const struct sockaddr_storage *sa, socklen_t sa_len, uint32_t ifindex);
+int join_mcast(int fd, const struct sockaddr_storage *sa, socklen_t sa_len,
+               uint32_t ifindex);
 
 /**
  * @brief Create a receive multicast socket
@@ -48,7 +49,8 @@ int join_mcast(int fd, const struct sockaddr_storage *sa, socklen_t sa_len, uint
  * @param ifindex The interface index
  * @return 0 on success, -1 on failuer
  */
-int create_recv_mcast(const struct sockaddr_storage *sa, socklen_t sa_len, uint32_t ifindex);
+int create_recv_mcast(const struct sockaddr_storage *sa, socklen_t sa_len,
+                      uint32_t ifindex);
 
 /**
  * @brief Create a send multicast socket
@@ -58,6 +60,7 @@ int create_recv_mcast(const struct sockaddr_storage *sa, socklen_t sa_len, uint3
  * @param ifindex The interface index
  * @return 0 on success, -1 on failuer
  */
-int create_send_mcast(const struct sockaddr_storage *sa, socklen_t sa_len, uint32_t ifindex);
+int create_send_mcast(const struct sockaddr_storage *sa, socklen_t sa_len,
+                      uint32_t ifindex);
 
-#endif //MCAST_H
+#endif // MCAST_H

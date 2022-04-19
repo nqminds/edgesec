@@ -40,4 +40,3 @@ config internal 'diag'
 	option dns 'www.turris.cz'
 	option ping 'www.turris.cz'
 	option route 'www.turris.cz'
-

@@ -277,7 +277,7 @@ static struct wpabuf * eap_tnc_process(struct eap_sm *sm, void *priv,
 		ret->ignore = TRUE;
 		return NULL;
 	}
-		
+
 	if (flags & EAP_TNC_FLAGS_MORE_FRAGMENTS) {
 		return eap_tnc_process_fragment(data, ret, id, flags,
 						message_length, pos,

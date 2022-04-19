@@ -45,7 +45,8 @@ struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg);
  * @param status The STA connection status
  * @return 0 on success, -1 on failure
  */
-void ap_service_callback(struct supervisor_context *context, uint8_t mac_addr[], enum AP_CONNECTION_STATUS status);
+void ap_service_callback(struct supervisor_context *context, uint8_t mac_addr[],
+                         enum AP_CONNECTION_STATUS status);
 
 /**
  * @brief Executes the supervisor service

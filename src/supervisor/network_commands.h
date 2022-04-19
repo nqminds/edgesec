@@ -29,12 +29,11 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
-#define TICKET_PASSPHRASE_SIZE  16
-#define TICKET_TIMEOUT          60  // In seconds
+#define TICKET_PASSPHRASE_SIZE 16
+#define TICKET_TIMEOUT 60 // In seconds
 
 #include "supervisor_config.h"
 #include "../ap/ap_config.h"
-
 
 /**
  * @brief Save a MAC entry into the mapper
@@ -61,7 +60,8 @@ void free_ticket(struct supervisor_context *context);
  * @param vlanid The VLAN ID
  * @return int 0 on success, -1 on failure
  */
-int accept_mac_cmd(struct supervisor_context *context, uint8_t *mac_addr, int vlanid);
+int accept_mac_cmd(struct supervisor_context *context, uint8_t *mac_addr,
+                   int vlanid);
 
 /**
  * @brief DENY_MAC command
@@ -100,7 +100,7 @@ int remove_nat_cmd(struct supervisor_context *context, uint8_t *mac_addr);
  * @return int 0 on success, -1 on failure
  */
 int assign_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr,
-  char *pass, int pass_len);
+                   char *pass, int pass_len);
 
 /**
  * @brief ADD_BRIDGE command (MAC address input)
@@ -110,7 +110,8 @@ int assign_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr,
  * @param right_mac_addr The right MAC address
  * @return int 0 on success, -1 on failure
  */
-int add_bridge_mac_cmd(struct supervisor_context *context, uint8_t *left_mac_addr, uint8_t *right_mac_addr);
+int add_bridge_mac_cmd(struct supervisor_context *context,
+                       uint8_t *left_mac_addr, uint8_t *right_mac_addr);
 
 /**
  * @brief ADD_BRIDGE command (IP address input)
@@ -120,7 +121,8 @@ int add_bridge_mac_cmd(struct supervisor_context *context, uint8_t *left_mac_add
  * @param right_ip_addr The right IP address
  * @return int 0 on success, -1 on failure
  */
-int add_bridge_ip_cmd(struct supervisor_context *context, char *left_ip_addr, char *right_ip_addr);
+int add_bridge_ip_cmd(struct supervisor_context *context, char *left_ip_addr,
+                      char *right_ip_addr);
 
 /**
  * @brief REMOVE_BRIDGE command
@@ -130,7 +132,8 @@ int add_bridge_ip_cmd(struct supervisor_context *context, char *left_ip_addr, ch
  * @param right_mac_addr The right MAC address
  * @return int 0 on success, -1 on failure
  */
-int remove_bridge_cmd(struct supervisor_context *context, uint8_t *left_mac_addr, uint8_t *right_mac_addr);
+int remove_bridge_cmd(struct supervisor_context *context,
+                      uint8_t *left_mac_addr, uint8_t *right_mac_addr);
 
 /**
  * @brief CLEAR_BRIDGES command
@@ -139,7 +142,8 @@ int remove_bridge_cmd(struct supervisor_context *context, uint8_t *left_mac_addr
  * @param mac_addr The MAC address
  * @return int 0 on success, -1 on failure
  */
-int clear_bridges_cmd(struct supervisor_context *context, uint8_t *left_mac_addr);
+int clear_bridges_cmd(struct supervisor_context *context,
+                      uint8_t *left_mac_addr);
 
 /**
  * @brief REGISTER_TICKET command
@@ -150,8 +154,8 @@ int clear_bridges_cmd(struct supervisor_context *context, uint8_t *left_mac_addr
  * @param vlanid The VLAN ID
  * @return char* passphrase string, NULL on failure
  */
-uint8_t* register_ticket_cmd(struct supervisor_context *context, uint8_t *mac_addr, char *label,
-                        int vlanid);
+uint8_t *register_ticket_cmd(struct supervisor_context *context,
+                             uint8_t *mac_addr, char *label, int vlanid);
 
 /**
  * @brief CLEAR_PSK command
@@ -188,7 +192,8 @@ int remove_nat_ip(struct supervisor_context *context, char *ip_addr);
  * @param ip_addr_right The right IP address string
  * @return 0 on success, -1 on failure
  */
-int add_bridge_ip(struct supervisor_context *context, char *ip_addr_left, char *ip_addr_right);
+int add_bridge_ip(struct supervisor_context *context, char *ip_addr_left,
+                  char *ip_addr_right);
 
 /**
  * @brief Deletes an IP bridge
@@ -198,5 +203,6 @@ int add_bridge_ip(struct supervisor_context *context, char *ip_addr_left, char *
  * @param ip_addr_right The right IP address string
  * @return 0 on success, -1 on failure
  */
-int delete_bridge_ip(struct supervisor_context *context, char *ip_addr_left, char *ip_addr_right);
+int delete_bridge_ip(struct supervisor_context *context, char *ip_addr_left,
+                     char *ip_addr_right);
 #endif

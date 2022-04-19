@@ -51,8 +51,7 @@ static __thread char version_buf[10];
 
 pthread_mutex_t log_lock;
 
-void log_lock_fun(bool lock)
-{
+void log_lock_fun(bool lock) {
   if (lock) {
     pthread_mutex_lock(&log_lock);
   } else {
@@ -60,8 +59,7 @@ void log_lock_fun(bool lock)
   }
 }
 
-char *get_static_version_string(uint8_t major, uint8_t minor, uint8_t patch)
-{
+char *get_static_version_string(uint8_t major, uint8_t minor, uint8_t patch) {
   int ret = snprintf(version_buf, 10, "%d.%d.%d", major, minor, patch);
 
   if (ret < 0) {
@@ -72,15 +70,14 @@ char *get_static_version_string(uint8_t major, uint8_t minor, uint8_t patch)
   return version_buf;
 }
 
-int show_app_version(void)
-{
+int show_app_version(void) {
   fprintf(stdout, "mdnsf app version %s\n",
-    get_static_version_string(MDNSF_VERSION_MAJOR,MDNSF_VERSION_MINOR,MDNSF_VERSION_PATCH));
+          get_static_version_string(MDNSF_VERSION_MAJOR, MDNSF_VERSION_MINOR,
+                                    MDNSF_VERSION_PATCH));
   return 1;
 }
 
-int show_app_help(char *app_name)
-{
+int show_app_help(char *app_name) {
   show_app_version();
   fprintf(stdout, "Usage:\n");
   fprintf(stdout, MDNS_USAGE_STRING, basename(app_name));
@@ -92,56 +89,55 @@ int show_app_help(char *app_name)
 }
 
 /* Diagnose an error in command-line arguments and terminate the process */
-int log_cmdline_error(const char *format, ...)
-{
-    va_list argList;
+int log_cmdline_error(const char *format, ...) {
+  va_list argList;
 
-    fflush(stdout);           /* Flush any pending stdout */
+  fflush(stdout); /* Flush any pending stdout */
 
-    fprintf(stdout, "Command-line usage error: ");
-    va_start(argList, format);
-    vfprintf(stdout, format, argList);
-    va_end(argList);
+  fprintf(stdout, "Command-line usage error: ");
+  va_start(argList, format);
+  vfprintf(stdout, format, argList);
+  va_end(argList);
 
-    fflush(stderr);           /* In case stderr is not line-buffered */
-    return -1;
+  fflush(stderr); /* In case stderr is not line-buffered */
+  return -1;
 }
 
-int process_app_options(int argc, char *argv[], uint8_t *verbosity, const char **filename)
-{
+int process_app_options(int argc, char *argv[], uint8_t *verbosity,
+                        const char **filename) {
   int opt;
 
   while ((opt = getopt(argc, argv, MDNS_OPT_STRING)) != -1) {
     switch (opt) {
-    case 'd':
-      (*verbosity)++;
-      break;
-    case 'h':
-      return show_app_help(argv[0]);
-    case 'v':
-      return show_app_version();
-    case 'c':
-      *filename = optarg;
-      break;
-    case ':':
-      return log_cmdline_error("Missing argument for -%c\n", optopt);
-    case '?':
-      return log_cmdline_error("Unrecognized option -%c\n", optopt);
-    default:
-      return show_app_help(argv[0]);
+      case 'd':
+        (*verbosity)++;
+        break;
+      case 'h':
+        return show_app_help(argv[0]);
+      case 'v':
+        return show_app_version();
+      case 'c':
+        *filename = optarg;
+        break;
+      case ':':
+        return log_cmdline_error("Missing argument for -%c\n", optopt);
+      case '?':
+        return log_cmdline_error("Unrecognized option -%c\n", optopt);
+      default:
+        return show_app_help(argv[0]);
     }
   }
 
   return 0;
 }
 
-int init_mdns_context(struct app_config *config, struct mdns_context *context)
-{
+int init_mdns_context(struct app_config *config, struct mdns_context *context) {
   os_memset(context, 0, sizeof(struct mdns_context));
 
   context->config = config->mdns_config;
   context->pctx_list = NULL;
-  os_strlcpy(context->domain_server_path, config->domain_server_path, MAX_OS_PATH_LEN);
+  os_strlcpy(context->domain_server_path, config->domain_server_path,
+             MAX_OS_PATH_LEN);
   context->domain_delim = config->domain_delim;
   context->command_mapper = NULL;
   context->sfd = 0;
@@ -163,9 +159,8 @@ int init_mdns_context(struct app_config *config, struct mdns_context *context)
   return 0;
 }
 
-int get_interface_list_str(UT_array *config_ifinfo_array, char **ifname)
-{
-  struct string_queue* squeue = NULL;
+int get_interface_list_str(UT_array *config_ifinfo_array, char **ifname) {
+  struct string_queue *squeue = NULL;
   config_ifinfo_t *p = NULL;
 
   *ifname = NULL;
@@ -175,7 +170,8 @@ int get_interface_list_str(UT_array *config_ifinfo_array, char **ifname)
     return -1;
   }
 
-  while((p = (config_ifinfo_t *) utarray_next(config_ifinfo_array, p)) != NULL) {
+  while ((p = (config_ifinfo_t *)utarray_next(config_ifinfo_array, p)) !=
+         NULL) {
     if (push_string_queue(squeue, p->ifname) < 0) {
       fprintf(stderr, "push_string_queue fail");
       free_string_queue(squeue);
@@ -198,8 +194,7 @@ int get_interface_list_str(UT_array *config_ifinfo_array, char **ifname)
   return 0;
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
   int ret;
   uint8_t verbosity = 0;
   uint8_t level = 0;
@@ -248,12 +243,12 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE;
   }
 
-  if(!load_mdns_conf(filename, &config)) {
+  if (!load_mdns_conf(filename, &config)) {
     fprintf(stderr, "load_mdns_conf fail");
     return EXIT_FAILURE;
   }
 
-  if(!load_interface_list(filename, &config)) {
+  if (!load_interface_list(filename, &config)) {
     fprintf(stderr, "load_interface_list fail");
     return EXIT_FAILURE;
   }
@@ -264,8 +259,7 @@ int main(int argc, char *argv[])
   }
 
   if (init_ifbridge_names(config.config_ifinfo_array, config.interface_prefix,
-                          config.bridge_prefix) < 0)
-  {
+                          config.bridge_prefix) < 0) {
     fprintf(stderr, "init_ifbridge_names fail");
     return EXIT_FAILURE;
   }
@@ -277,7 +271,7 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE;
   }
 
-  if(get_interface_list_str(config.config_ifinfo_array, &context.ifname) < 0) {
+  if (get_interface_list_str(config.config_ifinfo_array, &context.ifname) < 0) {
     fprintf(stderr, "get_interface_list_str fail");
     utarray_free(config.config_ifinfo_array);
     free_vlan_mapper(&context.vlan_mapper);

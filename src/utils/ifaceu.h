@@ -36,7 +36,7 @@
  * @brief if_nametoindex from net/if.h
  *
  */
-unsigned int iface_nametoindex (const char *ifname);
+unsigned int iface_nametoindex(const char *ifname);
 
 /**
  * @brief Check if interface exists

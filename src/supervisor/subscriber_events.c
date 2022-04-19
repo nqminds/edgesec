@@ -34,7 +34,7 @@
 #include "../utils/utarray.h"
 #include "../utils/log.h"
 
-#define MAX_SEND_EVENTS_BUF_SIZE    4096
+#define MAX_SEND_EVENTS_BUF_SIZE 4096
 
 int sort_subscribers_arrray(const void *a, const void *b) {
   struct client_address *a_el = (struct client_address *)a;
@@ -42,11 +42,12 @@ int sort_subscribers_arrray(const void *a, const void *b) {
 
   if (a_el->len != b_el->len)
     return (a_el->len < b_el->len) ? -1 : (a_el->len > b_el->len);
-  else return os_memcmp(&a_el->addr, &b_el->addr, a_el->len);
+  else
+    return os_memcmp(&a_el->addr, &b_el->addr, a_el->len);
 }
 
-int add_events_subscriber(struct supervisor_context *context, struct client_address *addr)
-{
+int add_events_subscriber(struct supervisor_context *context,
+                          struct client_address *addr) {
   struct client_address *p = NULL;
 
   p = utarray_find(context->subscribers_array, addr, sort_subscribers_arrray);
@@ -60,9 +61,8 @@ int add_events_subscriber(struct supervisor_context *context, struct client_addr
   return 0;
 }
 
-int send_events(struct supervisor_context *context,
-                           char *name, const char *format, va_list args)
-{
+int send_events(struct supervisor_context *context, char *name,
+                const char *format, va_list args) {
   struct client_address *p = NULL;
   char *send_buf = NULL;
   char args_buf[MAX_SEND_EVENTS_BUF_SIZE];
@@ -75,8 +75,10 @@ int send_events(struct supervisor_context *context,
 
   sprintf(send_buf, "%s %s", name, args_buf);
 
-  while((p = (struct client_address *) utarray_next(context->subscribers_array, p)) != NULL) {
-    if (write_domain_data(context->domain_sock, send_buf, strlen(send_buf), p) <= 0) {
+  while ((p = (struct client_address *)utarray_next(context->subscribers_array,
+                                                    p)) != NULL) {
+    if (write_domain_data(context->domain_sock, send_buf, strlen(send_buf),
+                          p) <= 0) {
       log_trace("Error sending event to client with size=%d", p->len);
     }
   }
@@ -86,11 +88,11 @@ int send_events(struct supervisor_context *context,
 }
 
 int send_events_subscriber(struct supervisor_context *context,
-                           enum SUBSCRIBER_EVENT type, const char *format, ...)
-{
+                           enum SUBSCRIBER_EVENT type, const char *format,
+                           ...) {
   va_list args;
   va_start(args, format);
-  switch(type) {
+  switch (type) {
     case SUBSCRIBER_EVENT_ALERT:
       return send_events(context, EVENT_ALERT_TEXT, format, args);
       break;

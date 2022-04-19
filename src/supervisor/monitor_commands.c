@@ -45,22 +45,27 @@
 #include "../utils/base64.h"
 #include "../utils/eloop.h"
 
-static const UT_icd fingerprint_icd = {sizeof(struct fingerprint_row), NULL, NULL, NULL};
+static const UT_icd fingerprint_icd = {sizeof(struct fingerprint_row), NULL,
+                                       NULL, NULL};
 
 int set_fingerprint_cmd(struct supervisor_context *context, char *src_mac_addr,
                         char *dst_mac_addr, char *protocol, char *fingerprint,
-                        uint64_t timestamp, char *query)
-{
-  struct fingerprint_row row_src = {.mac = src_mac_addr, .protocol = protocol,
-                                .fingerprint = fingerprint, .timestamp = timestamp,
-                                .query = query};
+                        uint64_t timestamp, char *query) {
+  struct fingerprint_row row_src = {.mac = src_mac_addr,
+                                    .protocol = protocol,
+                                    .fingerprint = fingerprint,
+                                    .timestamp = timestamp,
+                                    .query = query};
 
-  struct fingerprint_row row_dst = {.mac = dst_mac_addr, .protocol = protocol,
-                                .fingerprint = fingerprint, .timestamp = timestamp,
-                                .query = query};
+  struct fingerprint_row row_dst = {.mac = dst_mac_addr,
+                                    .protocol = protocol,
+                                    .fingerprint = fingerprint,
+                                    .timestamp = timestamp,
+                                    .query = query};
 
-  log_trace("SET_FINGERPRINT for src_mac=%s, dst_mac=%s, protocol=%s and timestamp=%"PRIu64, src_mac_addr,
-            dst_mac_addr, protocol, timestamp);
+  log_trace("SET_FINGERPRINT for src_mac=%s, dst_mac=%s, protocol=%s and "
+            "timestamp=%" PRIu64,
+            src_mac_addr, dst_mac_addr, protocol, timestamp);
   if (save_sqlite_fingerprint_row(context->fingeprint_db, &row_src) < 0) {
     log_trace("save_sqlite_fingerprint_entry fail");
     return -1;
@@ -74,18 +79,17 @@ int set_fingerprint_cmd(struct supervisor_context *context, char *src_mac_addr,
   return 0;
 }
 
-void free_row_array(char *row_array[])
-{
+void free_row_array(char *row_array[]) {
   int idx = 0;
-  while(row_array[idx] != NULL) {
+  while (row_array[idx] != NULL) {
     os_free(row_array[idx]);
-    idx ++;
+    idx++;
   }
 }
 
-ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr, uint64_t timestamp,
-                        char *op, char *protocol, char **out)
-{
+ssize_t query_fingerprint_cmd(struct supervisor_context *context,
+                              char *mac_addr, uint64_t timestamp, char *op,
+                              char *protocol, char **out) {
   UT_array *rows = NULL;
   ssize_t out_size = 0;
   struct fingerprint_row *p = NULL;
@@ -101,17 +105,17 @@ ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr
   }
 
   *out = NULL;
-  log_trace("QUERY_FINGERPRINT for mac=%s, protocol=%s op=\"%s\" and timestamp=%"PRIu64, mac_addr,
-            protocol, op, timestamp);
-  if (get_sqlite_fingerprint_rows(context->fingeprint_db, mac_addr,
-                                     timestamp, op, proto, rows) < 0)
-  {
+  log_trace("QUERY_FINGERPRINT for mac=%s, protocol=%s op=\"%s\" and "
+            "timestamp=%" PRIu64,
+            mac_addr, protocol, op, timestamp);
+  if (get_sqlite_fingerprint_rows(context->fingeprint_db, mac_addr, timestamp,
+                                  op, proto, rows) < 0) {
     log_trace("get_sqlite_fingerprint_rows fail");
     free_sqlite_fingerprint_rows(rows);
     return -1;
   }
 
-  while((p = (struct fingerprint_row *) utarray_next(rows, p)) != NULL) {
+  while ((p = (struct fingerprint_row *)utarray_next(rows, p)) != NULL) {
     os_memset(row_array, 0, 6);
 
     if (p->mac != NULL) {
@@ -119,7 +123,8 @@ ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr
       if (row_array[0] == NULL) {
         log_errno("os_malloc");
         free_sqlite_fingerprint_rows(rows);
-        if (*out != NULL) os_free(*out);
+        if (*out != NULL)
+          os_free(*out);
         return -1;
       }
       sprintf(row_array[0], "%s,", p->mac);
@@ -128,7 +133,8 @@ ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr
       if (row_array[0] == NULL) {
         log_errno("os_malloc");
         free_sqlite_fingerprint_rows(rows);
-        if (*out != NULL) os_free(*out);
+        if (*out != NULL)
+          os_free(*out);
         return -1;
       }
 
@@ -141,7 +147,8 @@ ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr
         log_errno("os_malloc");
         free_row_array(row_array);
         free_sqlite_fingerprint_rows(rows);
-        if (*out != NULL) os_free(*out);
+        if (*out != NULL)
+          os_free(*out);
         return -1;
       }
 
@@ -152,7 +159,8 @@ ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr
         log_errno("os_malloc");
         free_row_array(row_array);
         free_sqlite_fingerprint_rows(rows);
-        if (*out != NULL) os_free(*out);
+        if (*out != NULL)
+          os_free(*out);
         return -1;
       }
       sprintf(row_array[1], ",");
@@ -164,7 +172,8 @@ ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr
         log_errno("os_malloc");
         free_row_array(row_array);
         free_sqlite_fingerprint_rows(rows);
-        if (*out != NULL) os_free(*out);
+        if (*out != NULL)
+          os_free(*out);
         return -1;
       }
 
@@ -175,7 +184,8 @@ ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr
         log_errno("os_malloc");
         free_row_array(row_array);
         free_sqlite_fingerprint_rows(rows);
-        if (*out != NULL) os_free(*out);
+        if (*out != NULL)
+          os_free(*out);
         return -1;
       }
 
@@ -187,10 +197,11 @@ ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr
       log_errno("os_malloc");
       free_row_array(row_array);
       free_sqlite_fingerprint_rows(rows);
-      if (*out != NULL) os_free(*out);
+      if (*out != NULL)
+        os_free(*out);
       return -1;
     }
-    sprintf(row_array[3], "%"PRIu64",", p->timestamp);
+    sprintf(row_array[3], "%" PRIu64 ",", p->timestamp);
 
     if (p->query != NULL) {
       row_array[4] = os_malloc(strlen(p->query) + 2);
@@ -198,7 +209,8 @@ ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr
         log_errno("os_malloc");
         free_row_array(row_array);
         free_sqlite_fingerprint_rows(rows);
-        if (*out != NULL) os_free(*out);
+        if (*out != NULL)
+          os_free(*out);
         return -1;
       }
       sprintf(row_array[4], "%s\n", p->query);
@@ -208,14 +220,16 @@ ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr
         log_errno("os_malloc");
         free_row_array(row_array);
         free_sqlite_fingerprint_rows(rows);
-        if (*out != NULL) os_free(*out);
+        if (*out != NULL)
+          os_free(*out);
         return -1;
       }
       sprintf(row_array[4], "\n");
     }
 
-    row = os_zalloc(strlen(row_array[0]) + strlen(row_array[1]) + strlen(row_array[2]) +
-                    strlen(row_array[3]) + strlen(row_array[4]) + 1);
+    row = os_zalloc(strlen(row_array[0]) + strlen(row_array[1]) +
+                    strlen(row_array[2]) + strlen(row_array[3]) +
+                    strlen(row_array[4]) + 1);
 
     if (row == NULL) {
       log_errno("os_zalloc");
@@ -224,7 +238,7 @@ ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr
       return -1;
     }
 
-    for (int idx = 0; idx < 5; idx ++) {
+    for (int idx = 0; idx < 5; idx++) {
       strcat(row, row_array[idx]);
     }
 
@@ -254,14 +268,15 @@ ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr
 }
 
 int set_alert_cmd(struct supervisor_context *context, struct alert_meta *meta,
-                        uint8_t *info, size_t info_size)
-{
+                  uint8_t *info, size_t info_size) {
   struct alert_row row;
 
   os_memset(&row, 0, sizeof(struct alert_row));
 
-  log_trace("SET_ALERT for src_mac="MACSTR", dst_mac="MACSTR", timestamp=%"PRIu64" and score=%d", MAC2STR(meta->src_mac_addr),
-            MAC2STR(meta->dst_mac_addr), meta->timestamp, meta->risk);
+  log_trace("SET_ALERT for src_mac=" MACSTR ", dst_mac=" MACSTR
+            ", timestamp=%" PRIu64 " and score=%d",
+            MAC2STR(meta->src_mac_addr), MAC2STR(meta->dst_mac_addr),
+            meta->timestamp, meta->risk);
 
   if ((row.hostname = os_strdup(meta->hostname)) == NULL) {
     log_errno("os_strdup");
@@ -317,15 +332,18 @@ int set_alert_cmd(struct supervisor_context *context, struct alert_meta *meta,
       return -1;
     }
 
-    log_trace("Moving mac="MACSTR" to quarantine vlanid=%d", MAC2STR(meta->src_mac_addr), context->quarantine_vlanid);
-    if (accept_mac_cmd(context, meta->src_mac_addr, context->quarantine_vlanid) < 0) {
+    log_trace("Moving mac=" MACSTR " to quarantine vlanid=%d",
+              MAC2STR(meta->src_mac_addr), context->quarantine_vlanid);
+    if (accept_mac_cmd(context, meta->src_mac_addr,
+                       context->quarantine_vlanid) < 0) {
       log_trace("accept_mac_cmd fail");
       return -1;
     }
 
-    if (send_events_subscriber(context, SUBSCRIBER_EVENT_ALERT, MACSTR" "MACSTR" %d %"PRIu64,
-                               MAC2STR(meta->src_mac_addr), MAC2STR(meta->dst_mac_addr),
-                               meta->risk, meta->timestamp) < 0) {
+    if (send_events_subscriber(
+            context, SUBSCRIBER_EVENT_ALERT, MACSTR " " MACSTR " %d %" PRIu64,
+            MAC2STR(meta->src_mac_addr), MAC2STR(meta->dst_mac_addr),
+            meta->risk, meta->timestamp) < 0) {
       log_trace("send_events_subscriber fail");
       return -1;
     }

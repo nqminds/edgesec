@@ -29,12 +29,11 @@
 
 #include "../utils/log.h"
 
-int execute_sqlite_query(sqlite3 *db, char *statement)
-{
+int execute_sqlite_query(sqlite3 *db, char *statement) {
   char *err = NULL;
   int rc = sqlite3_exec(db, statement, 0, 0, &err);
 
-  if (rc != SQLITE_OK ) {
+  if (rc != SQLITE_OK) {
     log_trace("Failed to execute statement %s", err);
     sqlite3_free(err);
 
@@ -44,12 +43,10 @@ int execute_sqlite_query(sqlite3 *db, char *statement)
   return 0;
 }
 
-int check_table_exists(sqlite3 *db, char *table_name)
-{
+int check_table_exists(sqlite3 *db, char *table_name) {
   sqlite3_stmt *res;
   char *sql = "SELECT name FROM sqlite_master WHERE type='table' AND name=?;";
   int rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
-
 
   if (rc == SQLITE_OK)
     sqlite3_bind_text(res, 1, table_name, -1, NULL);

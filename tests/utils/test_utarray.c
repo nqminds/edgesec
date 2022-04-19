@@ -15,9 +15,8 @@
 #include "utils/utarray.h"
 #include "utils/log.h"
 
-static void test_utarray(void **state)
-{
-  (void) state; /* unused */
+static void test_utarray(void **state) {
+  (void)state; /* unused */
 
   UT_array *strs;
   /* Testing utarray string insert */
@@ -31,23 +30,20 @@ static void test_utarray(void **state)
   utarray_push_back(strs, &str);
 
   char **p = NULL;
-  p = (char**)utarray_next(strs, p);
+  p = (char **)utarray_next(strs, p);
   assert_string_equal(*p, "one");
 
-  p = (char**)utarray_next(strs, p);
+  p = (char **)utarray_next(strs, p);
   assert_string_equal(*p, "two");
 
-  p = (char**)utarray_next(strs, p);
+  p = (char **)utarray_next(strs, p);
   assert_string_equal(*p, "three");
 
   utarray_free(strs);
 }
 
-int main(int argc, char *argv[])
-{  
-  const struct CMUnitTest tests[] = {
-    cmocka_unit_test(test_utarray)
-  };
+int main(int argc, char *argv[]) {
+  const struct CMUnitTest tests[] = {cmocka_unit_test(test_utarray)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

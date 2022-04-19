@@ -40,32 +40,30 @@
 #include "log.h"
 
 /* Common costant definitions */
-#define MAX_OS_PATH_LEN			4096
-#define MAX_WEB_PATH_LEN		2048
-#define IP_ALEN 				4
-#define IP_LEN 					20
-#define IP_LONG_LEN 			24
-#define LINK_TYPE_LEN 			64
+#define MAX_OS_PATH_LEN 4096
+#define MAX_WEB_PATH_LEN 2048
+#define IP_ALEN 4
+#define IP_LEN 20
+#define IP_LONG_LEN 24
+#define LINK_TYPE_LEN 64
 
-#define MAX_RANDOM_UUID_LEN		37
+#define MAX_RANDOM_UUID_LEN 37
 
-#define OS_HOST_NAME_MAX		64
+#define OS_HOST_NAME_MAX 64
 
-
-#define OS_INET_ADDRSTRLEN  		22
-#define OS_INET6_ADDRSTRLEN 		63
-
+#define OS_INET_ADDRSTRLEN 22
+#define OS_INET6_ADDRSTRLEN 63
 
 #define MAX_SUPERVISOR_CMD_SIZE 40
 
-#define SQLITE_EXTENSION              ".sqlite"
-#define PCAP_EXTENSION                ".pcap"
-#define SOCK_EXTENSION                ".sock"
+#define SQLITE_EXTENSION ".sqlite"
+#define PCAP_EXTENSION ".pcap"
+#define SOCK_EXTENSION ".sock"
 
-#define MAX_UINT64_DIGITS		20
+#define MAX_UINT64_DIGITS 20
 
 #ifdef __GNUC__
-#define STRUCT_PACKED __attribute__ ((packed))
+#define STRUCT_PACKED __attribute__((packed))
 #else
 #define STRUCT_PACKED
 #endif
@@ -73,13 +71,13 @@
 #ifndef MAC2STR
 #define MAC2STR(a) (a)[0], (a)[1], (a)[2], (a)[3], (a)[4], (a)[5]
 #define MACSTR "%02x:%02x:%02x:%02x:%02x:%02x"
-#define MACSTR_LEN	18		// Including the '\0' character
+#define MACSTR_LEN 18 // Including the '\0' character
 /*
  * Compact form for string representation of MAC address
  * To be used, e.g., for constructing dbus paths for P2P Devices
  */
 #define COMPACT_MACSTR "%02x%02x%02x%02x%02x%02x"
-#define COMPACT_MACSTR_LEN	13 // Including the '\0' character
+#define COMPACT_MACSTR_LEN 13 // Including the '\0' character
 #endif
 
 #ifndef IP2STR
@@ -88,15 +86,18 @@
 #endif
 
 #ifndef IP62STR
-#define IP62STR(a) (a)[0], (a)[1], (a)[2], (a)[3], (a)[4], (a)[5], (a)[6], (a)[7], (a)[8], (a)[9], (a)[10], (a)[11], (a)[12], (a)[13], (a)[14], (a)[15]
-#define IP6STR "%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x"
+#define IP62STR(a)                                                             \
+  (a)[0], (a)[1], (a)[2], (a)[3], (a)[4], (a)[5], (a)[6], (a)[7], (a)[8],      \
+      (a)[9], (a)[10], (a)[11], (a)[12], (a)[13], (a)[14], (a)[15]
+#define IP6STR                                                                 \
+  "%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x"
 #endif
 
 #ifndef BIT
 #define BIT(x) (1U << (x))
 #endif
 
-#define STRLEN(s) (sizeof(s)/sizeof(s[0]))
+#define STRLEN(s) (sizeof(s) / sizeof(s[0]))
 
 struct find_dir_type {
   int proc_running;
@@ -106,13 +107,13 @@ struct find_dir_type {
 typedef long os_time_t;
 
 struct os_time {
-	os_time_t sec;
-	os_time_t usec;
+  os_time_t sec;
+  os_time_t usec;
 };
 
 struct os_reltime {
-	os_time_t sec;
-	os_time_t usec;
+  os_time_t sec;
+  os_time_t usec;
 };
 
 #ifdef __cplusplus
@@ -135,7 +136,6 @@ int os_get_time(struct os_time *t);
  */
 int os_get_reltime(struct os_reltime *t);
 
-
 /**
  * @brief Compares the seconds value of two time params
  *
@@ -144,10 +144,8 @@ int os_get_reltime(struct os_reltime *t);
  * @return int true if a->sec < b->sec
  */
 static inline int os_reltime_before(struct os_reltime *a,
-				    struct os_reltime *b)
-{
-	return (a->sec < b->sec) ||
-	       (a->sec == b->sec && a->usec < b->usec);
+                                    struct os_reltime *b) {
+  return (a->sec < b->sec) || (a->sec == b->sec && a->usec < b->usec);
 }
 
 /**
@@ -158,14 +156,13 @@ static inline int os_reltime_before(struct os_reltime *a,
  * @param res The resulting difference of the time params
  */
 static inline void os_reltime_sub(struct os_reltime *a, struct os_reltime *b,
-				  struct os_reltime *res)
-{
-	res->sec = a->sec - b->sec;
-	res->usec = a->usec - b->usec;
-	if (res->usec < 0) {
-		res->sec--;
-		res->usec += 1000000;
-	}
+                                  struct os_reltime *res) {
+  res->sec = a->sec - b->sec;
+  res->usec = a->usec - b->usec;
+  if (res->usec < 0) {
+    res->sec--;
+    res->usec += 1000000;
+  }
 }
 
 /**
@@ -192,7 +189,6 @@ void os_to_timestamp(struct timeval ts, uint64_t *timestamp);
  * @return int 0 on success, -1 on failure
  */
 int os_get_random(unsigned char *buf, size_t len);
-
 
 /**
  * @brief Return a random int from a give range
@@ -231,7 +227,8 @@ int hex2byte(const char *hex);
  *
  * @param hex ASCII hex string (e.g., "01ab")
  * @param buf Buffer for the binary data
- * @param len Length of the text to convert in bytes (of buf); hex will be double this size
+ * @param len Length of the text to convert in bytes (of buf); hex will be
+ * double this size
  * @return int 0 on success, -1 on failure (invalid hex string)
  */
 int hexstr2bin(const char *hex, uint8_t *buf, size_t len);
@@ -239,7 +236,8 @@ int hexstr2bin(const char *hex, uint8_t *buf, size_t len);
 /**
  * @brief Convert ASCII string to MAC address (in any known format)
  *
- * @param txt MAC address as a string (e.g., 00:11:22:33:44:55 or 0011.2233.4455)
+ * @param txt MAC address as a string (e.g., 00:11:22:33:44:55 or
+ * 0011.2233.4455)
  * @param addr Buffer for the MAC address (ETH_ALEN = 6 bytes)
  * @return int Characters used (> 0) on success, -1 on failure
  */
@@ -261,7 +259,8 @@ bool is_number(const char *ptr);
  * @param dest Destination string
  * @param src Source string
  * @param siz Size of the target buffer
- * @return size_t Total length of the target string (length of src) (not including NUL-termination)
+ * @return size_t Total length of the target string (length of src) (not
+ * including NUL-termination)
  */
 size_t os_strlcpy(char *dest, const char *src, size_t siz);
 
@@ -273,7 +272,6 @@ size_t os_strlcpy(char *dest, const char *src, size_t siz);
  * @return size_t Total length of the string
  */
 size_t os_strnlen_s(char *str, size_t max_len);
-
 
 /**
  * @brief Constant time memory comparison
@@ -302,8 +300,8 @@ int os_memcmp_const(const void *a, const void *b, size_t len);
  * typecast from aliasing for now. A cleaner solution will hopefully be found
  * in the future to handle these cases.
  */
-void * __hide_aliasing_typecast(void *foo);
-#define aliasing_hide_typecast(a,t) (t *) __hide_aliasing_typecast((a))
+void *__hide_aliasing_typecast(void *foo);
+#define aliasing_hide_typecast(a, t) (t *)__hide_aliasing_typecast((a))
 
 typedef void (*process_callback_fn)(void *ctx, void *buf, size_t count);
 
@@ -316,7 +314,8 @@ typedef void (*process_callback_fn)(void *ctx, void *buf, size_t count);
  * @param ctx The callback function context
  * @return int excve status code
  */
-int run_command(char *const argv[], char *const envp[], process_callback_fn, void *ctx);
+int run_command(char *const argv[], char *const envp[], process_callback_fn,
+                void *ctx);
 
 /**
  * @brief Executes a command with argument
@@ -327,7 +326,8 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn, voi
  * @param ctx The callback function context
  * @return int excve status code
  */
-int run_argv_command(char *path, char *argv[], process_callback_fn fn, void *ctx);
+int run_argv_command(char *path, char *argv[], process_callback_fn fn,
+                     void *ctx);
 
 /**
  * @brief Convert the string to upper case
@@ -345,7 +345,7 @@ void upper_string(char *s);
  */
 void replace_string_char(char *s, char in, char out);
 
-typedef int(*split_string_fn)(const char *, size_t, void *);
+typedef int (*split_string_fn)(const char *, size_t, void *);
 
 /**
  * @brief Splits a string into substrings (execute callback function)
@@ -356,7 +356,8 @@ typedef int(*split_string_fn)(const char *, size_t, void *);
  * @param data Param for callback function
  * @return ssize_t number of stubstrings
  */
-ssize_t split_string(const char *str, char sep, split_string_fn fun, void *data);
+ssize_t split_string(const char *str, char sep, split_string_fn fun,
+                     void *data);
 
 /**
  * @brief Splits a string into substrings (save to array)
@@ -402,9 +403,9 @@ char *construct_path(char *path_left, char *path_right);
  * @param real true to return the real link
  * @return char* the secure path
  */
-char* get_secure_path(UT_array *bin_path_arr, char *filename, bool real);
+char *get_secure_path(UT_array *bin_path_arr, char *filename, bool real);
 
-typedef bool(*list_dir_fn)(char *, void *args);
+typedef bool (*list_dir_fn)(char *, void *args);
 
 /**
  * @brief List the files in a directory
@@ -445,9 +446,11 @@ bool signal_process(char *proc_name, int sig);
 /**
  * @brief Executes a process with an array of strign arguments
  *
- * @param argv The array of string arguments terminated with NULL and the first argument is the absolute path of the process.
+ * @param argv The array of string arguments terminated with NULL and the first
+ * argument is the absolute path of the process.
  * @param child_pid The returned child pid
- * @return int 1 if process started, 0 if the child specified by pid exist, but have not yet changed state, -1 on error
+ * @return int 1 if process started, 0 if the child specified by pid exist, but
+ * have not yet changed state, -1 on error
  */
 int run_process(char *argv[], pid_t *child_pid);
 
@@ -471,7 +474,8 @@ int make_file_exec_fd(int fd);
  * @brief Right trim the string
  *
  * @param str The source string
- * @param seps The separator string, if NULL then the separator used is "\t\n\v\f\r "
+ * @param seps The separator string, if NULL then the separator used is
+ * "\t\n\v\f\r "
  * @return char* The pointer to the source string
  */
 char *rtrim(char *str, const char *seps);
@@ -482,10 +486,11 @@ char *rtrim(char *str, const char *seps);
  * @param strings The array of string, the last element is NULL
  * @return char* The concatenated string
  */
-char* string_array2string(char *strings[]);
+char *string_array2string(char *strings[]);
 
 /**
- * @brief Generates a random UUID string of MAX_RANDOM_UUID_LEN - 1 characters long not including '\0'
+ * @brief Generates a random UUID string of MAX_RANDOM_UUID_LEN - 1 characters
+ * long not including '\0'
  *
  * @param rid The output string of MAX_RANDOM_UUID_LEN bytes
  */
@@ -530,7 +535,7 @@ int exist_dir(const char *dirpath);
  * @see Original source-code used under fair-use from
  *   https://stackoverflow.com/a/9210960
  */
-int make_dirs_to_path(const char* file_path, mode_t mode);
+int make_dirs_to_path(const char *file_path, mode_t mode);
 
 /**
  * @brief Creates a folder recursively.

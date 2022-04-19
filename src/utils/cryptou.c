@@ -44,8 +44,7 @@
 #include "../utils/os.h"
 #include "../utils/log.h"
 
-int crypto_geniv(uint8_t *buf, int iv_size)
-{
+int crypto_geniv(uint8_t *buf, int iv_size) {
 #ifdef WITH_OPENSSL_SERVICE
   return RAND_bytes(buf, iv_size);
 #else
@@ -54,8 +53,7 @@ int crypto_geniv(uint8_t *buf, int iv_size)
 #endif
 }
 
-int crypto_gensalt(uint8_t *buf, int salt_size)
-{
+int crypto_gensalt(uint8_t *buf, int salt_size) {
 #ifdef WITH_OPENSSL_SERVICE
   return RAND_bytes(buf, salt_size);
 #else
@@ -64,8 +62,7 @@ int crypto_gensalt(uint8_t *buf, int salt_size)
 #endif
 }
 
-int crypto_genkey(uint8_t *buf, int key_size)
-{
+int crypto_genkey(uint8_t *buf, int key_size) {
 #ifdef WITH_OPENSSL_SERVICE
   return RAND_bytes(buf, key_size);
 #else
@@ -75,11 +72,10 @@ int crypto_genkey(uint8_t *buf, int key_size)
 }
 
 int crypto_buf2key(uint8_t *buf, int buf_size, uint8_t *salt, int salt_size,
-                   uint8_t *key, int key_size)
-{
+                   uint8_t *key, int key_size) {
 #ifdef WITH_OPENSSL_SERVICE
-  if (PKCS5_PBKDF2_HMAC((char *)buf, buf_size, salt, salt_size, MAX_KEY_ITERATIONS,
-                    EVP_sha256(), key_size, key) < 1) {
+  if (PKCS5_PBKDF2_HMAC((char *)buf, buf_size, salt, salt_size,
+                        MAX_KEY_ITERATIONS, EVP_sha256(), key_size, key) < 1) {
     log_trace("PKCS5_PBKDF2_HMAC fail wit code=%d", ERR_get_error());
     return -1;
   }
@@ -91,16 +87,15 @@ int crypto_buf2key(uint8_t *buf, int buf_size, uint8_t *salt, int salt_size,
 #endif
 }
 
-ssize_t crypto_encrypt(uint8_t *in, int in_size, uint8_t *key,
-                   uint8_t *iv, uint8_t *out)
-{
+ssize_t crypto_encrypt(uint8_t *in, int in_size, uint8_t *key, uint8_t *iv,
+                       uint8_t *out) {
 #ifdef WITH_OPENSSL_SERVICE
   EVP_CIPHER_CTX *ctx;
   int len;
   ssize_t ciphertext_len;
 
   /* Create and initialise the context */
-  if(!(ctx = EVP_CIPHER_CTX_new())) {
+  if (!(ctx = EVP_CIPHER_CTX_new())) {
     log_trace("EVP_CIPHER_CTX_new fail with code=%d", ERR_get_error());
     return -1;
   }
@@ -112,7 +107,7 @@ ssize_t crypto_encrypt(uint8_t *in, int in_size, uint8_t *key,
    * IV size for *most* modes is the same as the block size. For AES this
    * is 128 bits
    */
-  if(1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv)) {
+  if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv)) {
     log_trace("EVP_EncryptInit_ex fail with code=%d", ERR_get_error());
     EVP_CIPHER_CTX_free(ctx);
     return -1;
@@ -122,7 +117,7 @@ ssize_t crypto_encrypt(uint8_t *in, int in_size, uint8_t *key,
    * Provide the message to be encrypted, and obtain the encrypted output.
    * EVP_EncryptUpdate can be called multiple times if necessary
    */
-  if(1 != EVP_EncryptUpdate(ctx, out, &len, in, in_size)) {
+  if (1 != EVP_EncryptUpdate(ctx, out, &len, in, in_size)) {
     log_trace("EVP_EncryptUpdate fail with code=%d", ERR_get_error());
     EVP_CIPHER_CTX_free(ctx);
     return -1;
@@ -134,7 +129,7 @@ ssize_t crypto_encrypt(uint8_t *in, int in_size, uint8_t *key,
    * Finalise the encryption. Further ciphertext bytes may be written at
    * this stage.
    */
-  if(1 != EVP_EncryptFinal_ex(ctx, out + len, &len)) {
+  if (1 != EVP_EncryptFinal_ex(ctx, out + len, &len)) {
     log_trace("EVP_EncryptFinal_ex fail with code=%d", ERR_get_error());
     EVP_CIPHER_CTX_free(ctx);
     return -1;
@@ -147,14 +142,13 @@ ssize_t crypto_encrypt(uint8_t *in, int in_size, uint8_t *key,
 
   return ciphertext_len;
 #else
-   log_trace("crypto_encrypt not implemented");
+  log_trace("crypto_encrypt not implemented");
   return -1;
 #endif
 }
 
-ssize_t crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
-                   uint8_t *iv, uint8_t *out)
-{
+ssize_t crypto_decrypt(uint8_t *in, int in_size, uint8_t *key, uint8_t *iv,
+                       uint8_t *out) {
 #ifdef WITH_OPENSSL_SERVICE
   EVP_CIPHER_CTX *ctx;
 
@@ -162,7 +156,7 @@ ssize_t crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
   int plaintext_len = 0;
 
   /* Create and initialise the context */
-  if((ctx = EVP_CIPHER_CTX_new()) == NULL) {
+  if ((ctx = EVP_CIPHER_CTX_new()) == NULL) {
     log_trace("EVP_CIPHER_CTX_new fail with code=%d", ERR_get_error());
     return -1;
   }
@@ -174,7 +168,7 @@ ssize_t crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
    * IV size for *most* modes is the same as the block size. For AES this
    * is 128 bits
    */
-  if(1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv)) {
+  if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv)) {
     log_trace("EVP_DecryptInit_ex fail with code=%d", ERR_get_error());
     EVP_CIPHER_CTX_free(ctx);
     return -1;
@@ -184,7 +178,7 @@ ssize_t crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
    * Provide the message to be decrypted, and obtain the plaintext output.
    * EVP_DecryptUpdate can be called multiple times if necessary.
    */
-  if(1 != EVP_DecryptUpdate(ctx, out, &len, in, in_size)) {
+  if (1 != EVP_DecryptUpdate(ctx, out, &len, in, in_size)) {
     log_trace("EVP_DecryptUpdate fail with code=%d", ERR_get_error());
     EVP_CIPHER_CTX_free(ctx);
     return -1;
@@ -196,7 +190,7 @@ ssize_t crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
    * Finalise the decryption. Further plaintext bytes may be written at
    * this stage.
    */
-  if(1 != EVP_DecryptFinal_ex(ctx, out + len, &len)) {
+  if (1 != EVP_DecryptFinal_ex(ctx, out + len, &len)) {
     log_trace("EVP_DecryptFinal_ex fail with code=%d", ERR_get_error());
     EVP_CIPHER_CTX_free(ctx);
     return -1;
@@ -215,8 +209,7 @@ ssize_t crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
 }
 
 #ifdef WITH_OPENSSL_SERVICE
-EVP_PKEY *crypto_generate_rsa_key(int bits)
-{
+EVP_PKEY *crypto_generate_rsa_key(int bits) {
   EVP_PKEY_CTX *ctx;
   EVP_PKEY *pkey = NULL;
 
@@ -232,7 +225,8 @@ EVP_PKEY *crypto_generate_rsa_key(int bits)
   }
 
   if (!EVP_PKEY_CTX_set_rsa_keygen_bits(ctx, bits)) {
-    log_trace("EVP_PKEY_CTX_set_rsa_keygen_bits fail with code=%d", ERR_get_error());
+    log_trace("EVP_PKEY_CTX_set_rsa_keygen_bits fail with code=%d",
+              ERR_get_error());
     EVP_PKEY_CTX_free(ctx);
     return NULL;
   }
@@ -247,8 +241,7 @@ EVP_PKEY *crypto_generate_rsa_key(int bits)
   return pkey;
 }
 
-EVP_PKEY *crypto_generate_ec_key(void)
-{
+EVP_PKEY *crypto_generate_ec_key(void) {
   EVP_PKEY_CTX *ctx;
   EVP_PKEY *pkey = NULL, *params = NULL;
 
@@ -263,8 +256,9 @@ EVP_PKEY *crypto_generate_ec_key(void)
     return NULL;
   }
 
-  if(!EVP_PKEY_CTX_set_ec_paramgen_curve_nid(ctx, NID_X9_62_prime256v1)) {
-    log_trace("EVP_PKEY_CTX_set_ec_paramgen_curve_nid fail with code=%d", ERR_get_error());
+  if (!EVP_PKEY_CTX_set_ec_paramgen_curve_nid(ctx, NID_X9_62_prime256v1)) {
+    log_trace("EVP_PKEY_CTX_set_ec_paramgen_curve_nid fail with code=%d",
+              ERR_get_error());
     EVP_PKEY_CTX_free(ctx);
     return NULL;
   }
@@ -275,10 +269,9 @@ EVP_PKEY *crypto_generate_ec_key(void)
     return NULL;
   }
 
-
   EVP_PKEY_CTX_free(ctx);
 
-  if((ctx = EVP_PKEY_CTX_new(params, NULL)) == NULL) {
+  if ((ctx = EVP_PKEY_CTX_new(params, NULL)) == NULL) {
     log_trace("EVP_PKEY_CTX_new fail with code=%d", ERR_get_error());
     EVP_PKEY_free(params);
     return NULL;
@@ -286,7 +279,7 @@ EVP_PKEY *crypto_generate_ec_key(void)
 
   EVP_PKEY_free(params);
 
-  if(!EVP_PKEY_keygen_init(ctx)) {
+  if (!EVP_PKEY_keygen_init(ctx)) {
     log_trace("EVP_PKEY_keygen_init fail with code=%d", ERR_get_error());
     EVP_PKEY_CTX_free(ctx);
     return NULL;
@@ -302,9 +295,8 @@ EVP_PKEY *crypto_generate_ec_key(void)
   return pkey;
 }
 
-X509* crypto_generate_cert(EVP_PKEY *pkey, struct certificate_meta *meta)
-{
-  X509* x509 = X509_new();
+X509 *crypto_generate_cert(EVP_PKEY *pkey, struct certificate_meta *meta) {
+  X509 *x509 = X509_new();
 
   if (x509 == NULL) {
     log_trace("X509_new fail");
@@ -322,11 +314,15 @@ X509* crypto_generate_cert(EVP_PKEY *pkey, struct certificate_meta *meta)
   }
 
   /* set the name of the issuer to the name of the subject. */
-  X509_NAME* name = X509_get_subject_name(x509);
-  X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, (unsigned char*)meta->c, -1, -1, 0);
-  X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, (unsigned char*)meta->o, -1, -1, 0);
-  X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, (unsigned char*)meta->ou, -1, -1, 0);
-  X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, (unsigned char*)meta->cn, -1, -1, 0);
+  X509_NAME *name = X509_get_subject_name(x509);
+  X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, (unsigned char *)meta->c,
+                             -1, -1, 0);
+  X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, (unsigned char *)meta->o,
+                             -1, -1, 0);
+  X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC,
+                             (unsigned char *)meta->ou, -1, -1, 0);
+  X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC,
+                             (unsigned char *)meta->cn, -1, -1, 0);
 
   X509_set_issuer_name(x509, name);
 
@@ -340,8 +336,7 @@ X509* crypto_generate_cert(EVP_PKEY *pkey, struct certificate_meta *meta)
   return x509;
 }
 
-EVP_PKEY* crypto_key2evp(uint8_t *key, size_t key_size)
-{
+EVP_PKEY *crypto_key2evp(uint8_t *key, size_t key_size) {
   EVP_PKEY *pkey = NULL;
   BIO *mem = BIO_new_ex(NULL, BIO_s_mem());
 
@@ -361,8 +356,7 @@ EVP_PKEY* crypto_key2evp(uint8_t *key, size_t key_size)
   return pkey;
 }
 
-EVP_PKEY *crypto_priv2pub(EVP_PKEY *key)
-{
+EVP_PKEY *crypto_priv2pub(EVP_PKEY *key) {
   EVP_PKEY *pubkey = NULL;
   BIO *mem = BIO_new_ex(NULL, BIO_s_mem());
 
@@ -390,8 +384,7 @@ EVP_PKEY *crypto_priv2pub(EVP_PKEY *key)
   return pubkey;
 }
 
-char* crypto_get_key_str(bool private, EVP_PKEY *pkey)
-{
+char *crypto_get_key_str(bool private, EVP_PKEY *pkey) {
   char *key_str = NULL;
   BUF_MEM *ptr = NULL;
   BIO *mem = BIO_new_ex(NULL, BIO_s_mem());
@@ -416,7 +409,7 @@ char* crypto_get_key_str(bool private, EVP_PKEY *pkey)
   }
 
   BIO_get_mem_ptr(mem, &ptr);
-  if ((key_str = (char *) os_zalloc(ptr->length + 1)) == NULL) {
+  if ((key_str = (char *)os_zalloc(ptr->length + 1)) == NULL) {
     log_errno("os_zalloc");
     BIO_free(mem);
     return NULL;
@@ -430,12 +423,12 @@ char* crypto_get_key_str(bool private, EVP_PKEY *pkey)
 
 #endif
 
-int crypto_generate_privkey_str(enum CRYPTO_KEY_TYPE type, int bits, char **key)
-{
+int crypto_generate_privkey_str(enum CRYPTO_KEY_TYPE type, int bits,
+                                char **key) {
 #ifdef WITH_OPENSSL_SERVICE
   EVP_PKEY *pkey = NULL;
 
-  switch(type) {
+  switch (type) {
     case CRYPTO_KEY_RSA:
       if ((pkey = crypto_generate_rsa_key(bits)) == NULL) {
         log_trace("crypto_generate_RSA_key fail");
@@ -462,11 +455,10 @@ int crypto_generate_privkey_str(enum CRYPTO_KEY_TYPE type, int bits, char **key)
 #endif
 }
 
-int crypto_generate_pubkey_str(uint8_t *key, size_t key_size, char **pub)
-{
+int crypto_generate_pubkey_str(uint8_t *key, size_t key_size, char **pub) {
 #ifdef WITH_OPENSSL_SERVICE
-  EVP_PKEY* pubkey = NULL;
-  EVP_PKEY* privkey = crypto_key2evp(key, key_size);
+  EVP_PKEY *pubkey = NULL;
+  EVP_PKEY *privkey = crypto_key2evp(key, key_size);
 
   *pub = NULL;
 
@@ -495,10 +487,10 @@ int crypto_generate_pubkey_str(uint8_t *key, size_t key_size, char **pub)
 #endif
 }
 
-int crypto_generate_cert_str(struct certificate_meta *meta, uint8_t *key, size_t key_size, char **cert)
-{
+int crypto_generate_cert_str(struct certificate_meta *meta, uint8_t *key,
+                             size_t key_size, char **cert) {
 #ifdef WITH_OPENSSL_SERVICE
-  X509* x509 = NULL;
+  X509 *x509 = NULL;
   EVP_PKEY *pkey = NULL;
   BUF_MEM *ptr = NULL;
   BIO *mem = BIO_new_ex(NULL, BIO_s_mem());
@@ -529,7 +521,7 @@ int crypto_generate_cert_str(struct certificate_meta *meta, uint8_t *key, size_t
   }
 
   BIO_get_mem_ptr(mem, &ptr);
-  if ((*cert = (char *) os_zalloc(ptr->length + 1)) == NULL) {
+  if ((*cert = (char *)os_zalloc(ptr->length + 1)) == NULL) {
     log_errno("os_zalloc");
     X509_free(x509);
     EVP_PKEY_free(pkey);
@@ -548,11 +540,11 @@ int crypto_generate_cert_str(struct certificate_meta *meta, uint8_t *key, size_t
 #endif
 }
 
-int crypto_verify_data(uint8_t *key, size_t key_size, uint8_t *in, size_t in_size, uint8_t *sig, size_t sig_size)
-{
+int crypto_verify_data(uint8_t *key, size_t key_size, uint8_t *in,
+                       size_t in_size, uint8_t *sig, size_t sig_size) {
   EVP_MD_CTX *ctx = NULL;
-  EVP_PKEY* pubkey = NULL;
-  EVP_PKEY* privkey = crypto_key2evp(key, key_size);
+  EVP_PKEY *pubkey = NULL;
+  EVP_PKEY *privkey = crypto_key2evp(key, key_size);
 
   if (privkey == NULL) {
     log_trace("crypto_key2evp fail");
@@ -566,7 +558,7 @@ int crypto_verify_data(uint8_t *key, size_t key_size, uint8_t *in, size_t in_siz
   }
 
   /* Create the Message Digest Context */
-  if((ctx = EVP_MD_CTX_create()) == NULL) {
+  if ((ctx = EVP_MD_CTX_create()) == NULL) {
     log_trace("EVP_MD_CTX_create fail with code=%d", ERR_get_error());
     EVP_PKEY_free(privkey);
     EVP_PKEY_free(pubkey);
@@ -574,7 +566,7 @@ int crypto_verify_data(uint8_t *key, size_t key_size, uint8_t *in, size_t in_siz
   }
 
   /* Initialize `key` with a public key */
-  if(!EVP_DigestVerifyInit(ctx, NULL, EVP_sha256(), NULL, pubkey)) {
+  if (!EVP_DigestVerifyInit(ctx, NULL, EVP_sha256(), NULL, pubkey)) {
     log_trace("EVP_DigestVerifyInit fail with code=%d", ERR_get_error());
     EVP_PKEY_free(privkey);
     EVP_PKEY_free(pubkey);
@@ -582,7 +574,7 @@ int crypto_verify_data(uint8_t *key, size_t key_size, uint8_t *in, size_t in_siz
     return -1;
   }
 
-  if(!EVP_DigestVerifyUpdate(ctx, in, in_size)) {
+  if (!EVP_DigestVerifyUpdate(ctx, in, in_size)) {
     log_trace("EVP_DigestVerifyUpdate fail with code=%d", ERR_get_error());
     EVP_PKEY_free(privkey);
     EVP_PKEY_free(pubkey);
@@ -590,7 +582,7 @@ int crypto_verify_data(uint8_t *key, size_t key_size, uint8_t *in, size_t in_siz
     return -1;
   }
 
-  if(EVP_DigestVerifyFinal(ctx, sig, sig_size) != 1) {
+  if (EVP_DigestVerifyFinal(ctx, sig, sig_size) != 1) {
     log_trace("EVP_DigestVerifyFinal fail with code=%d", ERR_get_error());
     EVP_PKEY_free(privkey);
     EVP_PKEY_free(pubkey);
@@ -604,14 +596,14 @@ int crypto_verify_data(uint8_t *key, size_t key_size, uint8_t *in, size_t in_siz
   return 0;
 }
 
-ssize_t crypto_sign_data(uint8_t *key, size_t key_size, uint8_t *in, size_t in_size, uint8_t **out)
-{
+ssize_t crypto_sign_data(uint8_t *key, size_t key_size, uint8_t *in,
+                         size_t in_size, uint8_t **out) {
 #ifdef WITH_OPENSSL_SERVICE
   size_t sig_len = -1;
-  EVP_MD_CTX* ctx = NULL;
+  EVP_MD_CTX *ctx = NULL;
   uint8_t *out_sig = NULL;
-  const EVP_MD* md = EVP_get_digestbyname("SHA256");
-  EVP_PKEY* pkey = crypto_key2evp(key, key_size);
+  const EVP_MD *md = EVP_get_digestbyname("SHA256");
+  EVP_PKEY *pkey = crypto_key2evp(key, key_size);
 
   *out = NULL;
 
@@ -626,16 +618,17 @@ ssize_t crypto_sign_data(uint8_t *key, size_t key_size, uint8_t *in, size_t in_s
     return -1;
   }
 
-  /* Initialise the DigestSign operation with SHA-256 as the message digest function */
-  if(EVP_DigestSignInit(ctx, NULL, md, NULL, pkey) != 1) {
+  /* Initialise the DigestSign operation with SHA-256 as the message digest
+   * function */
+  if (EVP_DigestSignInit(ctx, NULL, md, NULL, pkey) != 1) {
     log_trace("EVP_DigestSignInit fail with code=%d", ERR_get_error());
     EVP_PKEY_free(pkey);
     EVP_MD_CTX_destroy(ctx);
     return -1;
   }
 
-   /* Call update with the message */
-  if(EVP_DigestSignUpdate(ctx, in, in_size) != 1) {
+  /* Call update with the message */
+  if (EVP_DigestSignUpdate(ctx, in, in_size) != 1) {
     log_trace("EVP_DigestSignUpdate fail with code=%d", ERR_get_error());
     EVP_PKEY_free(pkey);
     EVP_MD_CTX_destroy(ctx);
@@ -643,8 +636,9 @@ ssize_t crypto_sign_data(uint8_t *key, size_t key_size, uint8_t *in, size_t in_s
   }
 
   /* Finalise the DigestSign operation */
-  /* First call EVP_DigestSignFinal with a NULL sig parameter to obtain the length of the signature.*/
-  if(EVP_DigestSignFinal(ctx, NULL, &sig_len) != 1) {
+  /* First call EVP_DigestSignFinal with a NULL sig parameter to obtain the
+   * length of the signature.*/
+  if (EVP_DigestSignFinal(ctx, NULL, &sig_len) != 1) {
     log_trace("EVP_DigestSignFinal fail with code=%d", ERR_get_error());
     EVP_PKEY_free(pkey);
     EVP_MD_CTX_destroy(ctx);
@@ -659,7 +653,7 @@ ssize_t crypto_sign_data(uint8_t *key, size_t key_size, uint8_t *in, size_t in_s
   }
 
   /* Obtain the signature */
-  if(EVP_DigestSignFinal(ctx, out_sig, &sig_len) != 1) {
+  if (EVP_DigestSignFinal(ctx, out_sig, &sig_len) != 1) {
     log_trace("EVP_DigestSignFinal fail with code=%d", ERR_get_error());
     os_free(out_sig);
     EVP_PKEY_free(pkey);

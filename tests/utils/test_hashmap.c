@@ -15,10 +15,8 @@
 #include "utils/log.h"
 #include "utils/hashmap.h"
 
-
-static void test_hashmap_str_keychar(void **state)
-{
-  (void) state; /* unused */
+static void test_hashmap_str_keychar(void **state) {
+  (void)state; /* unused */
 
   hmap_str_keychar *hmap = hmap_str_keychar_new();
 
@@ -60,13 +58,11 @@ static void test_hashmap_str_keychar(void **state)
   hmap_str_keychar_free(&hmap);
 }
 
-int main(int argc, char *argv[])
-{  
+int main(int argc, char *argv[]) {
   log_set_quiet(true);
 
   const struct CMUnitTest tests[] = {
-    cmocka_unit_test(test_hashmap_str_keychar)
-  };
+      cmocka_unit_test(test_hashmap_str_keychar)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

@@ -787,7 +787,7 @@ be reinvoked.
 
 remove_network <network id>
 
-Remove a network entry from configuration. 
+Remove a network entry from configuration.
 
 
 P2PS Events/Responses:

@@ -45,7 +45,8 @@
 
 #include "mcast.h"
 
-int join_mcast(int fd, const struct sockaddr_storage *sa, socklen_t sa_len, uint32_t ifindex) {
+int join_mcast(int fd, const struct sockaddr_storage *sa, socklen_t sa_len,
+               uint32_t ifindex) {
   int level;
   struct group_req req;
   struct ip_mreq mreq4;
@@ -68,50 +69,53 @@ int join_mcast(int fd, const struct sockaddr_storage *sa, socklen_t sa_len, uint
   memcpy(&req.gr_group, sa, sa_len);
 
 #if defined(__unix__) && !defined(__linux__) || defined(__APPLE__)
-  // At least FreeBSD and macOS requires ss_len, otherwise we'll get an `Invalid argument` error.
-  req.gr_group.ss_len = (uint8_t) sa_len;
+  // At least FreeBSD and macOS requires ss_len, otherwise we'll get an `Invalid
+  // argument` error.
+  req.gr_group.ss_len = (uint8_t)sa_len;
 #endif
-  (void) ifreq;
-  (void) mreq4;
-  if (setsockopt(fd, level, MCAST_JOIN_GROUP, &req, sizeof(struct group_req)) < 0) {
+  (void)ifreq;
+  (void)mreq4;
+  if (setsockopt(fd, level, MCAST_JOIN_GROUP, &req, sizeof(struct group_req)) <
+      0) {
     log_errno("setsockopt");
     return -1;
   }
 #else
-  (void) sa_len;
+  (void)sa_len;
 
   switch (sa->ss_family) {
     case AF_INET6: {
       struct ipv6_mreq mreq6;
       mreq6.ipv6mr_interface = ifindex;
-      memcpy(&mreq6.ipv6mr_multiaddr, &((struct sockaddr_in6 *) sa)->sin6_addr, sizeof(struct in6_addr));
-      if (setsockopt(fd, IPPROTO_IPV6, IPV6_JOIN_GROUP, &mreq6, sizeof(mreq6)) < 0) {
-        log_errno("setsockopt")
-        return -1;
+      memcpy(&mreq6.ipv6mr_multiaddr, &((struct sockaddr_in6 *)sa)->sin6_addr,
+             sizeof(struct in6_addr));
+      if (setsockopt(fd, IPPROTO_IPV6, IPV6_JOIN_GROUP, &mreq6, sizeof(mreq6)) <
+          0) {
+        log_errno("setsockopt") return -1;
       }
       break;
     }
     case AF_INET: {
       if (ifindex > 0) {
         if (if_indextoname(ifindex, ifreq.ifr_name) == NULL) {
-          log_errno("if_indextoname")
-          return -1;
+          log_errno("if_indextoname") return -1;
         }
 
         if (ioctl(fd, SIOCGIFADDR, &ifreq) == -1) {
-          log_errno("ioctl")
-          return -1;
+          log_errno("ioctl") return -1;
         }
 
-        memcpy(&mreq4.imr_interface, &((struct sockaddr_in *) &ifreq.ifr_ifru.ifru_addr)->sin_addr,
+        memcpy(&mreq4.imr_interface,
+               &((struct sockaddr_in *)&ifreq.ifr_ifru.ifru_addr)->sin_addr,
                sizeof(struct in_addr));
       } else {
         mreq4.imr_interface.s_addr = htonl(INADDR_ANY);
       }
-      memcpy(&mreq4.imr_multiaddr, &((struct sockaddr_in *) sa)->sin_addr, sizeof(struct in_addr));
-      if (setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq4, sizeof(mreq4)) < 0) {
-        log_errno("setsockopt")
-        return -1;
+      memcpy(&mreq4.imr_multiaddr, &((struct sockaddr_in *)sa)->sin_addr,
+             sizeof(struct in_addr));
+      if (setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq4, sizeof(mreq4)) <
+          0) {
+        log_errno("setsockopt") return -1;
       }
       break;
     }
@@ -124,7 +128,8 @@ int join_mcast(int fd, const struct sockaddr_storage *sa, socklen_t sa_len, uint
   return 0;
 }
 
-int create_recv_mcast(const struct sockaddr_storage *sa, socklen_t sa_len, uint32_t ifindex) {
+int create_recv_mcast(const struct sockaddr_storage *sa, socklen_t sa_len,
+                      uint32_t ifindex) {
   struct ifreq ifr;
   int on = 1;
   int fd, flags;
@@ -162,13 +167,14 @@ int create_recv_mcast(const struct sockaddr_storage *sa, socklen_t sa_len, uint3
         return -1;
       }
 #elif defined(IPV6_BOUND_IF)
-      if (setsockopt(fd, IPPROTO_IPV6, IPV6_BOUND_IF, &ifindex, sizeof(ifindex)) < 0) {
+      if (setsockopt(fd, IPPROTO_IPV6, IPV6_BOUND_IF, &ifindex,
+                     sizeof(ifindex)) < 0) {
         log_errno("setsockopt");
         close(fd);
         return -1;
       }
 #endif
-        break;
+      break;
     case AF_INET:
       if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         log_errno("socket");
@@ -200,7 +206,8 @@ int create_recv_mcast(const struct sockaddr_storage *sa, socklen_t sa_len, uint3
         return -1;
       }
 #elif defined(IP_BOUND_IF)
-      if (setsockopt(fd, IPPROTO_IP, IP_BOUND_IF, &ifindex, sizeof(ifindex)) < 0) {
+      if (setsockopt(fd, IPPROTO_IP, IP_BOUND_IF, &ifindex, sizeof(ifindex)) <
+          0) {
         log_errno("setsockopt");
         close(fd);
         return -1;
@@ -236,7 +243,7 @@ int create_recv_mcast(const struct sockaddr_storage *sa, socklen_t sa_len, uint3
     return -1;
   }
 
-  if (bind(fd, (struct sockaddr *) sa, sa_len) < 0) {
+  if (bind(fd, (struct sockaddr *)sa, sa_len) < 0) {
     log_errno("bind");
     close(fd);
     return -1;
@@ -245,7 +252,8 @@ int create_recv_mcast(const struct sockaddr_storage *sa, socklen_t sa_len, uint3
   return fd;
 }
 
-int create_send_mcast(const struct sockaddr_storage *sa, socklen_t sa_len, uint32_t ifindex) {
+int create_send_mcast(const struct sockaddr_storage *sa, socklen_t sa_len,
+                      uint32_t ifindex) {
   int on = 1;
   int off = 0;
   int fd, flags;
@@ -265,13 +273,15 @@ int create_send_mcast(const struct sockaddr_storage *sa, socklen_t sa_len, uint3
         return -1;
       }
 
-      if (setsockopt(fd, IPPROTO_IPV6, IPV6_MULTICAST_IF, &ifindex, sizeof(ifindex)) < 0) {
+      if (setsockopt(fd, IPPROTO_IPV6, IPV6_MULTICAST_IF, &ifindex,
+                     sizeof(ifindex)) < 0) {
         log_errno("setsockopt");
         close(fd);
         return -1;
       }
 
-      if (setsockopt(fd, IPPROTO_IPV6, IPV6_MULTICAST_LOOP, &off, sizeof(off)) < 0) {
+      if (setsockopt(fd, IPPROTO_IPV6, IPV6_MULTICAST_LOOP, &off, sizeof(off)) <
+          0) {
         log_errno("setsockopt");
         close(fd);
         return -1;
@@ -289,14 +299,15 @@ int create_send_mcast(const struct sockaddr_storage *sa, socklen_t sa_len, uint3
         return -1;
       }
 
-      src_addr4 = (struct sockaddr_in *) &ifreq.ifr_addr;
+      src_addr4 = (struct sockaddr_in *)&ifreq.ifr_addr;
 
       if (ioctl(fd, SIOCGIFADDR, &ifreq) < 0) {
         close(fd);
         return -1;
       }
 
-      if (setsockopt(fd, IPPROTO_IP, IP_MULTICAST_IF, &src_addr4->sin_addr, sizeof(src_addr4->sin_addr)) < 0) {
+      if (setsockopt(fd, IPPROTO_IP, IP_MULTICAST_IF, &src_addr4->sin_addr,
+                     sizeof(src_addr4->sin_addr)) < 0) {
         log_errno("setsockopt");
         close(fd);
         return -1;
@@ -337,7 +348,7 @@ int create_send_mcast(const struct sockaddr_storage *sa, socklen_t sa_len, uint3
     return -1;
   }
 
-  if (bind(fd, (struct sockaddr *) sa, sa_len) < 0) {
+  if (bind(fd, (struct sockaddr *)sa, sa_len) < 0) {
     log_errno("bind");
     close(fd);
     return -1;

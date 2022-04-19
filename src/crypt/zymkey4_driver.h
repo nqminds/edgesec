@@ -20,7 +20,8 @@
 /**
  * @file zymkey4_driver.h
  * @author Alexandru Mereacre
- * @brief File containing the definition of zymkey4 driver configuration utilities.
+ * @brief File containing the definition of zymkey4 driver configuration
+ * utilities.
  */
 #ifndef ZYMKEY4_DRIVER_H
 #define ZYMKEY4_DRIVER_H
@@ -32,7 +33,7 @@
  *
  * @return zkCTX* The returned Zymkey4 context, NULL on error
  */
-zkCTX* init_zymkey4(void);
+zkCTX *init_zymkey4(void);
 
 /**
  * @brief Closes the zymkey4 context
@@ -62,7 +63,8 @@ int generate_zymkey4_key(zkCTX *ctx, uint8_t *key, size_t key_size);
  * @param out_size The output array size
  * @return int 0 on success, -1 on failure
  */
-int encrypt_zymkey4_blob(zkCTX *ctx, uint8_t *in, size_t in_size, uint8_t **out, size_t *out_size);
+int encrypt_zymkey4_blob(zkCTX *ctx, uint8_t *in, size_t in_size, uint8_t **out,
+                         size_t *out_size);
 
 /**
  * @brief Decrypt a byte array wiht the Zymkey4 HSM
@@ -74,5 +76,6 @@ int encrypt_zymkey4_blob(zkCTX *ctx, uint8_t *in, size_t in_size, uint8_t **out,
  * @param out_size The output array size
  * @return int 0 on success, -1 on failure
  */
-int decrypt_zymkey4_blob(zkCTX *ctx, uint8_t *in, size_t in_size, uint8_t **out, size_t *out_size);
+int decrypt_zymkey4_blob(zkCTX *ctx, uint8_t *in, size_t in_size, uint8_t **out,
+                         size_t *out_size);
 #endif

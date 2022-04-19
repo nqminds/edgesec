@@ -20,7 +20,8 @@
 /**
  * @file sqlite_fingerprint_writer.h
  * @author Alexandru Mereacre
- * @brief File containing the definition of the sqlite fingerprint writer utilities.
+ * @brief File containing the definition of the sqlite fingerprint writer
+ * utilities.
  */
 
 #ifndef SQLITE_FINGERPRINT_WRITER_H
@@ -34,24 +35,32 @@
 #include "../utils/squeue.h"
 
 #define FINGERPRINT_TABLE_NAME "fingerprint"
-#define FINGERPRINT_CREATE_TABLE "CREATE TABLE " FINGERPRINT_TABLE_NAME " (mac TEXT NOT NULL, protocol TEXT, fingerprint TEXT, " \
-                                 "timestamp INTEGER NOT NULL, query TEXT, PRIMARY KEY (mac, timestamp));"
-#define FINGERPRINT_INSERT_INTO "INSERT INTO " FINGERPRINT_TABLE_NAME " VALUES(@mac, @protocol, @fingerprint, @timestamp, @query);"
-#define FINGERPRINT_SELECT_FROM_NO_PROTO "SELECT mac, protocol, fingerprint, timestamp, query FROM " FINGERPRINT_TABLE_NAME \
-                                         " WHERE mac=@mac AND timestamp%.2s@timestamp;"
-#define FINGERPRINT_SELECT_FROM_PROTO "SELECT mac, protocol, fingerprint, timestamp, query FROM " FINGERPRINT_TABLE_NAME \
-                                      " WHERE mac=@mac AND timestamp%.2s@timestamp AND protocol LIKE @protocol;"
+#define FINGERPRINT_CREATE_TABLE                                               \
+  "CREATE TABLE " FINGERPRINT_TABLE_NAME                                       \
+  " (mac TEXT NOT NULL, protocol TEXT, fingerprint TEXT, "                     \
+  "timestamp INTEGER NOT NULL, query TEXT, PRIMARY KEY (mac, timestamp));"
+#define FINGERPRINT_INSERT_INTO                                                \
+  "INSERT INTO " FINGERPRINT_TABLE_NAME                                        \
+  " VALUES(@mac, @protocol, @fingerprint, @timestamp, @query);"
+#define FINGERPRINT_SELECT_FROM_NO_PROTO                                       \
+  "SELECT mac, protocol, fingerprint, timestamp, query "                       \
+  "FROM " FINGERPRINT_TABLE_NAME                                               \
+  " WHERE mac=@mac AND timestamp%.2s@timestamp;"
+#define FINGERPRINT_SELECT_FROM_PROTO                                          \
+  "SELECT mac, protocol, fingerprint, timestamp, query "                       \
+  "FROM " FINGERPRINT_TABLE_NAME                                               \
+  " WHERE mac=@mac AND timestamp%.2s@timestamp AND protocol LIKE @protocol;"
 
 /**
  * @brief The fingerprint row definition
  *
  */
 struct fingerprint_row {
-  char *mac;                /**< The MAC */
-  char *protocol;           /**< The protocol idenitifier */
-  char *fingerprint;        /**< The fingerprint */
-  uint64_t timestamp;       /**< The timestamp */
-  char *query;              /**< The query string */
+  char *mac;          /**< The MAC */
+  char *protocol;     /**< The protocol idenitifier */
+  char *fingerprint;  /**< The fingerprint */
+  uint64_t timestamp; /**< The timestamp */
+  char *query;        /**< The query string */
 };
 
 /**
@@ -61,7 +70,7 @@ struct fingerprint_row {
  * @param sql The returned sqlite db structure pointer
  * @return 0 on success, -1 on failure
  */
-int open_sqlite_fingerprint_db(char *db_path, sqlite3** sql);
+int open_sqlite_fingerprint_db(char *db_path, sqlite3 **sql);
 
 /**
  * @brief Closes the sqlite db
@@ -79,7 +88,6 @@ void free_sqlite_fingerprint_db(sqlite3 *db);
  */
 int save_sqlite_fingerprint_row(sqlite3 *db, struct fingerprint_row *row);
 
-
 /**
  * @brief Retrieves all the fingerprint rows satifying a query
  *
@@ -91,8 +99,8 @@ int save_sqlite_fingerprint_row(sqlite3 *db, struct fingerprint_row *row);
  * @param rows The output rows
  * @return int 0 on success, -1 on failure
  */
-int get_sqlite_fingerprint_rows(sqlite3 *db, char *mac, uint64_t timestamp, char *op,
-                                   char *protocol, UT_array *rows);
+int get_sqlite_fingerprint_rows(sqlite3 *db, char *mac, uint64_t timestamp,
+                                char *op, char *protocol, UT_array *rows);
 
 /**
  * @brief Frees all the rows an an array of rows

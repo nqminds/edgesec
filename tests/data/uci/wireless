@@ -46,4 +46,3 @@ config wifi-iface 'guest_iface_0'
 config wifi-iface 'guest_iface_1'
 	option disabled '1'
 	option device 'radio1'
-

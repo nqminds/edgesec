@@ -97,4 +97,3 @@ add_test(NAME test_log_err COMMAND test_log_err)
 set_tests_properties(test_log_err
   PROPERTIES
   PASS_REGULAR_EXPRESSION ".+ERROR")
-

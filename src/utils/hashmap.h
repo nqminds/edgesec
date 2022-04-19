@@ -30,16 +30,16 @@
 
 #include "uthash.h"
 
-#define HASH_KEY_CHAR_SIZE  20
+#define HASH_KEY_CHAR_SIZE 20
 
 /**
  * @brief keyd array hasmap structure definition
  *
  */
 typedef struct hashmap_str_keychar {
-    char key[HASH_KEY_CHAR_SIZE];       /**< key (string is WITHIN the structure) */
-    char *value;                        /**< value of the hashmap */
-    UT_hash_handle hh;         		    /**< makes this structure hashable */
+  char key[HASH_KEY_CHAR_SIZE]; /**< key (string is WITHIN the structure) */
+  char *value;                  /**< value of the hashmap */
+  UT_hash_handle hh;            /**< makes this structure hashable */
 } hmap_str_keychar;
 
 /**
@@ -47,9 +47,9 @@ typedef struct hashmap_str_keychar {
  *
  */
 typedef struct hashmap_str_keyptr {
-    char *key;             			    /**< key (string is WITHIN the structure) */
-    char *value;                        /**< value of the hashmap */
-    UT_hash_handle hh;         		    /**< makes this structure hashable */
+  char *key;         /**< key (string is WITHIN the structure) */
+  char *value;       /**< value of the hashmap */
+  UT_hash_handle hh; /**< makes this structure hashable */
 } hmap_str_keyptr;
 
 /**

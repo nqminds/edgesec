@@ -20,7 +20,8 @@
 /**
  * @file capture_cleaner.c
  * @author Alexandru Mereacre
- * @brief File containing the implementation of the capture cleaner service structures.
+ * @brief File containing the implementation of the capture cleaner service
+ * structures.
  *
  * Defines the start function for the capturte cleaner service, which
  * removes the capture files from the database folder when it
@@ -36,10 +37,14 @@
 #include "../utils/eloop.h"
 #include "../utils/utarray.h"
 
-#define CLEANER_CHECK_INTERVAL  5        /* Frequency in sec to run the cleaner function*/
-#define CLEANER_GROUP_INTERVAL  1000     /* Number of rows to sum from the pcap metadata to calculate the store size*/
+#define CLEANER_CHECK_INTERVAL                                                 \
+  5 /* Frequency in sec to run the cleaner function*/
+#define CLEANER_GROUP_INTERVAL                                                 \
+  1000 /* Number of rows to sum from the pcap metadata to calculate the store  \
+          size*/
 
-static const UT_icd pcap_file_meta_icd = {sizeof(struct pcap_file_meta), NULL, NULL, NULL};
+static const UT_icd pcap_file_meta_icd = {sizeof(struct pcap_file_meta), NULL,
+                                          NULL, NULL};
 
 struct cleaner_context {
   sqlite3 *pcap_db;
@@ -50,23 +55,24 @@ struct cleaner_context {
   uint64_t next_timestamp;
 };
 
-int clean_capture(struct cleaner_context *context)
-{
+int clean_capture(struct cleaner_context *context) {
   struct pcap_file_meta *p = NULL;
   UT_array *pcap_meta_arr = NULL;
   uint64_t timestamp = context->low_timestamp, lt;
   char *path;
   utarray_new(pcap_meta_arr, &pcap_file_meta_icd);
 
-  while(timestamp <= context->next_timestamp) {
+  while (timestamp <= context->next_timestamp) {
     lt = timestamp;
-    if (get_pcap_meta_array(context->pcap_db, timestamp, CLEANER_GROUP_INTERVAL, pcap_meta_arr) < 0) {
+    if (get_pcap_meta_array(context->pcap_db, timestamp, CLEANER_GROUP_INTERVAL,
+                            pcap_meta_arr) < 0) {
       log_trace("get_pcap_array fail");
       utarray_free(pcap_meta_arr);
       return -1;
     }
 
-    while((p = (struct pcap_file_meta *) utarray_next(pcap_meta_arr, p)) != NULL) {
+    while ((p = (struct pcap_file_meta *)utarray_next(pcap_meta_arr, p)) !=
+           NULL) {
       if ((path = construct_path(context->pcap_path, p->name)) == NULL) {
         log_errno("os_malloc");
       }
@@ -98,13 +104,12 @@ int clean_capture(struct cleaner_context *context)
   return 0;
 }
 
-void eloop_cleaner_handler(void *eloop_ctx, void *user_ctx)
-{
-  (void) eloop_ctx;
+void eloop_cleaner_handler(void *eloop_ctx, void *user_ctx) {
+  (void)eloop_ctx;
   int res = 0;
   uint64_t lt, ht, sum = 0;
   uint64_t caplen = 0;
-  struct cleaner_context *context = (struct cleaner_context *) user_ctx;
+  struct cleaner_context *context = (struct cleaner_context *)user_ctx;
 
   lt = context->next_timestamp;
 
@@ -123,7 +128,8 @@ void eloop_cleaner_handler(void *eloop_ctx, void *user_ctx)
   ht = lt;
 
   if (lt) {
-    if (sum_pcap_group(context->pcap_db, lt, CLEANER_GROUP_INTERVAL, &ht, &sum) < 0) {
+    if (sum_pcap_group(context->pcap_db, lt, CLEANER_GROUP_INTERVAL, &ht,
+                       &sum) < 0) {
       log_trace("sum_pcap_group fail");
     } else {
       if (ht != lt) {
@@ -141,13 +147,13 @@ void eloop_cleaner_handler(void *eloop_ctx, void *user_ctx)
     context->next_timestamp = 0;
   }
 
-  if (eloop_register_timeout(CLEANER_CHECK_INTERVAL, 0, eloop_cleaner_handler, (void *)NULL, (void *)user_ctx) == -1) {
+  if (eloop_register_timeout(CLEANER_CHECK_INTERVAL, 0, eloop_cleaner_handler,
+                             (void *)NULL, (void *)user_ctx) == -1) {
     log_debug("eloop_register_timeout fail");
   }
 }
 
-int start_capture_cleaner(struct capture_conf *config)
-{
+int start_capture_cleaner(struct capture_conf *config) {
   struct cleaner_context context;
 
   char *pcap_db_path = NULL;
@@ -168,7 +174,8 @@ int start_capture_cleaner(struct capture_conf *config)
   // Transform to bytes
   context.store_size = (uint64_t)(config->capture_store_size) * 1024;
 
-  if ((pcap_subfolder_path = construct_path(config->db_path, PCAP_SUBFOLDER_NAME)) == NULL) {
+  if ((pcap_subfolder_path =
+           construct_path(config->db_path, PCAP_SUBFOLDER_NAME)) == NULL) {
     log_trace("construct_path fail");
     return -1;
   }
@@ -185,7 +192,7 @@ int start_capture_cleaner(struct capture_conf *config)
   log_info("Cleaning pcap_db_path=%s", pcap_db_path);
   log_info("Cleaning store_size=%llu bytes", context.store_size);
 
-  if (open_sqlite_pcap_db(pcap_db_path, (sqlite3**)&context.pcap_db) < 0) {
+  if (open_sqlite_pcap_db(pcap_db_path, (sqlite3 **)&context.pcap_db) < 0) {
     log_trace("open_sqlite_pcap_db fail");
     os_free(pcap_db_path);
     return -1;
@@ -198,7 +205,8 @@ int start_capture_cleaner(struct capture_conf *config)
     return -1;
   }
 
-  if (eloop_register_timeout(CLEANER_CHECK_INTERVAL, 0, eloop_cleaner_handler, (void *)NULL, (void *)&context) == -1) {
+  if (eloop_register_timeout(CLEANER_CHECK_INTERVAL, 0, eloop_cleaner_handler,
+                             (void *)NULL, (void *)&context) == -1) {
     log_debug("eloop_register_timeout fail");
     free_sqlite_pcap_db(context.pcap_db);
     eloop_destroy();

@@ -36,8 +36,7 @@
 
 #include "ipgen.h"
 
-struct ipgenctx* ipgen_init_context(char *path)
-{
+struct ipgenctx *ipgen_init_context(char *path) {
   if (path == NULL) {
     log_trace("ip param is NULL");
     return NULL;
@@ -60,41 +59,37 @@ struct ipgenctx* ipgen_init_context(char *path)
  *
  * @param context The ipgen context
  */
-void ipgen_free_context(struct ipgenctx *context)
-{
+void ipgen_free_context(struct ipgenctx *context) {
   if (context != NULL) {
     os_free(context);
   }
 }
 
-int run_ip(char *path, char *argv[])
-{
+int run_ip(char *path, char *argv[]) {
   return run_argv_command(path, argv, NULL, NULL);
 }
 
-int ipgen_new_interface(char *path, char *ifname, char *type)
-{
+int ipgen_new_interface(char *path, char *ifname, char *type) {
   char *argv[7] = {"link", "add", "name", ifname, "type", type, NULL};
   return run_ip(path, argv);
 }
 
-int ipgen_set_interface_ip(char *path, char *ifname, char *ip_addr, char *brd_addr)
-{
-  char *argv[8] = {"addr", "add", ip_addr, "brd", brd_addr, "dev", ifname, NULL};
+int ipgen_set_interface_ip(char *path, char *ifname, char *ip_addr,
+                           char *brd_addr) {
+  char *argv[8] = {"addr",   "add", ip_addr, "brd",
+                   brd_addr, "dev", ifname,  NULL};
   return run_ip(path, argv);
 }
 
-int ipgen_set_interface_state(char *path, char *ifname, bool state)
-{
+int ipgen_set_interface_state(char *path, char *ifname, bool state) {
   char *argv[5] = {"link", "set", ifname, NULL, NULL};
   argv[3] = (state) ? "up" : "down";
   return run_ip(path, argv);
 }
 
 int ipgen_create_interface(struct ipgenctx *context, char *ifname, char *type,
-						char *ip_addr, char *brd_addr, char *subnet_mask)
-{
-  (void) context;
+                           char *ip_addr, char *brd_addr, char *subnet_mask) {
+  (void)context;
 
   char longip[IP_LONG_LEN];
 
@@ -123,14 +118,16 @@ int ipgen_create_interface(struct ipgenctx *context, char *ifname, char *type,
     return -1;
   }
 
-  snprintf(longip, IP_LONG_LEN, "%s/%d", ip_addr, (int)get_short_subnet(subnet_mask));
+  snprintf(longip, IP_LONG_LEN, "%s/%d", ip_addr,
+           (int)get_short_subnet(subnet_mask));
 
   if (ipgen_new_interface(context->ipcmd_path, ifname, type) < 0) {
     log_trace("ipgen_new_interface fail");
     return -1;
   }
 
-  if (ipgen_set_interface_ip(context->ipcmd_path, ifname, longip, brd_addr) < 0) {
+  if (ipgen_set_interface_ip(context->ipcmd_path, ifname, longip, brd_addr) <
+      0) {
     log_trace("ipgen_set_interface_ip fail");
     return -1;
   }
@@ -143,9 +140,8 @@ int ipgen_create_interface(struct ipgenctx *context, char *ifname, char *type,
   return 0;
 }
 
-int ipgen_reset_interface(struct ipgenctx *context, char *ifname)
-{
-  if (ipgen_set_interface_state(context->ipcmd_path,ifname, false) < 0) {
+int ipgen_reset_interface(struct ipgenctx *context, char *ifname) {
+  if (ipgen_set_interface_state(context->ipcmd_path, ifname, false) < 0) {
     log_trace("ipgen_set_interface_state fail");
     return -1;
   }
