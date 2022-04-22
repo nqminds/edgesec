@@ -50,7 +50,7 @@ delim = 32
 
 [ap]
 apBinPath = "@EDGESEC_full_libexec_dir@/hostapd"
-apFilePath = "@EDGESEC_full_SYSCONFDIR@/hostapd.conf"
+apFilePath = "@EDGESEC_full_config_dir@/hostapd.conf"
 apLogPath = "@EDGESEC_full_log_dir@/hostapd.log"
 interface = "wlan1" # name of Wifi USB AP on Raspberry Pi
 device = "radio1"
@@ -68,7 +68,7 @@ rsnPairwise = "CCMP"
 ctrlInterface = "@EDGESEC_full_runstate_dir@/hostapd"
 macaddrAcl = 2
 dynamicVlan = 1
-vlanFile = "@EDGESEC_full_SYSCONFDIR@/hostapd.vlan"
+vlanFile = "@EDGESEC_full_config_dir@/hostapd.vlan"
 loggerStdout = -1
 loggerStdoutLevel = 0
 loggerSyslog = -1
@@ -100,8 +100,8 @@ mdnsFilter = "src net 10.0 and dst net 10.0"
 
 [dhcp]
 dhcpBinPath = "/usr/sbin/dnsmasq"
-dhcpConfigPath = "@EDGESEC_full_SYSCONFDIR@/dnsmasq.conf"
-dhcpScriptPath = "@EDGESEC_full_SYSCONFDIR@/dnsmasq_exec.sh"
+dhcpConfigPath = "@EDGESEC_full_config_dir@/dnsmasq.conf"
+dhcpScriptPath = "@EDGESEC_full_config_dir@/dnsmasq_exec.sh"
 dhcpLeasefilePath = "@EDGESEC_full_local_lib_dir@/db/dnsmasq.leases"
 dhcpRange0 = "0,10.0.0.2,10.0.0.254,255.255.255.0,24h"
 dhcpRange1 = "1,10.0.1.2,10.0.1.254,255.255.255.0,24h"

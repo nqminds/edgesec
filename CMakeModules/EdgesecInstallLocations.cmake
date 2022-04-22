@@ -38,7 +38,7 @@ where ``path_name`` is one of:
   Directory of private EDGESec binaries/executables (``/usr/libexec/edgesec``)
   These are designed for use with EDGESec only, and may conflict with other OS
   binaries (e.g. ``hostapd``)
-``SYSCONFDIR``
+``config_dir``
   Directory of EDGESec config files, (``/etc/edgesec``)
 ``log_dir``
   Directory of EDGESec log files, (``/var/log/edgesec``)
@@ -75,7 +75,7 @@ _create_edgesec_path(private_lib_dir "${CMAKE_INSTALL_LIBDIR}/${_project_lower}"
 # Directory of private EDGESec binaries/executables
 _create_edgesec_path(libexec_dir "${CMAKE_INSTALL_LIBEXECDIR}/${_project_lower}" LIBEXECDIR)
 # Directory of EDGESec config files
-_create_edgesec_path(SYSCONFDIR "${CMAKE_INSTALL_SYSCONFDIR}/${_project_lower}" SYSCONFDIR)
+_create_edgesec_path(config_dir "${CMAKE_INSTALL_SYSCONFDIR}/${_project_lower}" SYSCONFDIR)
 # Directory of EDGESec log files
 _create_edgesec_path(log_dir "${CMAKE_INSTALL_LOCALSTATEDIR}/log/${_project_lower}" LOCALSTATEDIR)
 # Directory of EDGESec persistant files (e.g. databases)
@@ -83,4 +83,4 @@ _create_edgesec_path(local_lib_dir "${CMAKE_INSTALL_LOCALSTATEDIR}/lib/${_projec
 # Directory of EDGESec run-state files (.pid and socket files)
 _create_edgesec_path(runstate_dir "${CMAKE_INSTALL_RUNSTATEDIR}/${_project_lower}" RUNSTATEDIR)
 # Path to edgesec certificate authority file
-_create_edgesec_path(cert_location "${EDGESEC_SYSCONFDIR}/CA/CA.pem" SYSCONFDIR)
+_create_edgesec_path(cert_location "${EDGESEC_config_dir}/CA/CA.pem" SYSCONFDIR)
