@@ -33,5 +33,5 @@ foreach(required_var IN ITEMS CMAKE_INSTALL_PREFIX CMAKE_INSTALL_LIBDIR build_di
 endforeach()
 
 configure_file("config.ini.in" "${build_dir}/config.ini" ESCAPE_QUOTES @ONLY)
-# cannot use EDGESEC_full_config_dir, since that will add DESTDIR TWICE
-file(INSTALL "${build_dir}/config.ini" DESTINATION "${EDGESEC_full_no_destdir_config_dir}")
+# cannot use EDGESEC_full_SYSCONFDIR, since that will add DESTDIR TWICE
+file(INSTALL "${build_dir}/config.ini" DESTINATION "${EDGESEC_full_no_destdir_SYSCONFDIR}")
