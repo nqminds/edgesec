@@ -4,6 +4,9 @@
 # so it can be used both during:
 # - configure step (e.g. cmake ..)
 # - install step (e.g. cmake --install ..)
+#
+# We can't use the default cmake `install()` syntax, since we need to know
+# the absolute paths to put as default vals in the `config.ini` file
 
 cmake_minimum_required(VERSION 3.7.0)
 
@@ -31,16 +34,12 @@ set(EDGESEC_cert_location "${EDGESEC_SYSCONFDIR}/CA/CA.pem") # CACHE FILEPATH "P
 # makes dirs like EDGESEC_full_libexec_dir
 foreach(dir in private_lib_dir libexec_dir SYSCONFDIR log_dir local_lib_dir runstate_dir cert_location)
     # important, make sure `$dir` is exactly one of the special cases in https://cmake.org/cmake/help/latest/module/GNUInstallDirs.html#special-cases
+    #
+    # DESTDIR is ignored.
+    # The install() command will automatically add $DESTDIR if needed,
+    # strings such as `config.ini`/`RPATH` should ignore `$DESTDIR`,
+    # see: https://www.gnu.org/prep/standards/html_node/DESTDIR.html
     GNUInstallDirs_get_absolute_install_dir(
-        EDGESEC_full_no_destdir_${dir} EDGESEC_${dir} ${dir}
+        EDGESEC_full_${dir} EDGESEC_${dir} ${dir}
     )
-    # FULL_PATH isn't actually always absolute due to destdir
-    set(with_destdir "$ENV{DESTDIR}${EDGESEC_full_no_destdir_${dir}}")
-    if (NOT IS_ABSOLUTE "${with_destdir}")
-        # make paths in config.ini absolute, so we can call them from different working dir
-        get_filename_component(with_destdir
-            "${with_destdir}"
-            ABSOLUTE)
-    endif()
-    set(EDGESEC_full_${dir} "${with_destdir}")
 endforeach()
