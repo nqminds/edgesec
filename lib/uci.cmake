@@ -16,7 +16,7 @@ if (USE_UCI_SERVICE AND NOT (BUILD_ONLY_DOCS))
       FetchContent_Declare(
         libubox
         GIT_REPOSITORY https://git.openwrt.org/project/libubox.git
-        GIT_SHALLOW true
+        GIT_TAG f2d6752901f2f2d8612fb43e10061570c9198af1 # master as of 2022-02-10
         GIT_PROGRESS true
       )
       FetchContent_Populate(libubox)
@@ -48,7 +48,7 @@ if (USE_UCI_SERVICE AND NOT (BUILD_ONLY_DOCS))
       FetchContent_Declare(
         libuci
         GIT_REPOSITORY https://git.openwrt.org/project/uci.git
-        GIT_SHALLOW true
+        GIT_TAG f84f49f00fb70364f58b4cce72f1796a7190d370 # master as of 2021-10-22
         GIT_PROGRESS true
       )
       FetchContent_Populate(libuci)
