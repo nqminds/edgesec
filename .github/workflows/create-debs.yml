@@ -4,7 +4,6 @@ on:
       - created
       - edited # can remove once CI is confirmed working
   push:
-    branches: [ main ]
   pull_request:
     branches: [ main ]
 
