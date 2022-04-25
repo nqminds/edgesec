@@ -14,8 +14,8 @@ name: Build Debian Packages
 jobs:
   build:
     name: Build Debian Package
-    # building a deb is super slow, so do it on our self-hosted machines
-    runs-on: [self-hosted, linux]
+    # building a deb is super slow, but we're a public repo now, so it's free!!
+    runs-on: [ubuntu-20.04]
     strategy:
       matrix:
         architecture: [arm64, amd64]
