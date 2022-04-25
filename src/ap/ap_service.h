@@ -40,16 +40,20 @@
 #include "../utils/os.h"
 #include "../utils/iface.h"
 
-#define STA_AP_COMMAND                  "STA"                 /* Command name to check if a station is registered */
+#define STA_AP_COMMAND                                                         \
+  "STA" /* Command name to check if a station is registered */
 
-#define GENERIC_AP_COMMAND_OK_REPLY     "OK"                  /* The command response on succes */
-#define GENERIC_AP_COMMAND_FAIL_REPLY   "FAIL"                /* The command response on failure */
+#define GENERIC_AP_COMMAND_OK_REPLY "OK" /* The command response on succes */
+#define GENERIC_AP_COMMAND_FAIL_REPLY                                          \
+  "FAIL" /* The command response on failure */
 
-#define PING_AP_COMMAND                 "PING"                /* Command name to ping the hostapd daemon */
-#define PING_AP_COMMAND_REPLY           "PONG"                /* Reply to the ping command */
+#define PING_AP_COMMAND "PING" /* Command name to ping the hostapd daemon */
+#define PING_AP_COMMAND_REPLY "PONG" /* Reply to the ping command */
 
-#define DENYACL_ADD_COMMAND             "DENY_ACL ADD_MAC"    /* Command name to add a station to the deny ACL */
-#define DENYACL_DEL_COMMAND             "DENY_ACL DEL_MAC"    /* Command name to remove a station from the deny ACL */
+#define DENYACL_ADD_COMMAND                                                    \
+  "DENY_ACL ADD_MAC" /* Command name to add a station to the deny ACL */
+#define DENYACL_DEL_COMMAND                                                    \
+  "DENY_ACL DEL_MAC" /* Command name to remove a station from the deny ACL */
 
 /**
  * @brief Runs the AP service

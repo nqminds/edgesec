@@ -32,13 +32,13 @@
 #include "../utils/os.h"
 #include "../utils/log.h"
 
-#define PCAP_SNAPSHOT_LENGTH  65535
-#define PCAP_BUFFER_SIZE      64*1024
+#define PCAP_SNAPSHOT_LENGTH 65535
+#define PCAP_BUFFER_SIZE 64 * 1024
 
-static const UT_icd pcap_list_icd = {sizeof(struct pcap_context *), NULL, NULL, NULL};
+static const UT_icd pcap_list_icd = {sizeof(struct pcap_context *), NULL, NULL,
+                                     NULL};
 
-bool find_device(char *ifname, bpf_u_int32 *net, bpf_u_int32 *mask)
-{
+bool find_device(char *ifname, bpf_u_int32 *net, bpf_u_int32 *mask) {
   pcap_if_t *temp = NULL, *ifs = NULL;
   char err[PCAP_ERRBUF_SIZE];
 
@@ -47,18 +47,18 @@ bool find_device(char *ifname, bpf_u_int32 *net, bpf_u_int32 *mask)
     return false;
   }
 
-  if(pcap_findalldevs(&ifs, err) == -1) {
+  if (pcap_findalldevs(&ifs, err) == -1) {
     log_trace("pcap_findalldevs fail with error %s", err);
     return false;
   }
 
-  for(temp = ifs; temp; temp = temp->next) {
+  for (temp = ifs; temp; temp = temp->next) {
     log_trace("Checking interface %s (%s)", temp->name, temp->description);
     if (strcmp(temp->name, ifname) == 0) {
-	    if (pcap_lookupnet(ifname, net, mask, err) == -1) {
-		    log_trace("Can't get netmask for device %s\n", ifname);
+      if (pcap_lookupnet(ifname, net, mask, err) == -1) {
+        log_trace("Can't get netmask for device %s\n", ifname);
         return false;
-	    }
+      }
 
       pcap_freealldevs(ifs);
       return true;
@@ -69,25 +69,23 @@ bool find_device(char *ifname, bpf_u_int32 *net, bpf_u_int32 *mask)
   return false;
 }
 
-void receive_pcap_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
-{
+void receive_pcap_packet(u_char *args, const struct pcap_pkthdr *header,
+                         const u_char *packet) {
 
-  struct pcap_context *ctx = (struct pcap_context *) args;
-  char *ltype = (char *) pcap_datalink_val_to_name(pcap_datalink(ctx->pd));
+  struct pcap_context *ctx = (struct pcap_context *)args;
+  char *ltype = (char *)pcap_datalink_val_to_name(pcap_datalink(ctx->pd));
 
   if (ctx->pcap_fn != NULL) {
-    ctx->pcap_fn(ctx->fn_ctx, (void *)ctx, ltype, (struct pcap_pkthdr *) header, (uint8_t *) packet);
+    ctx->pcap_fn(ctx->fn_ctx, (void *)ctx, ltype, (struct pcap_pkthdr *)header,
+                 (uint8_t *)packet);
   }
 }
 
-int capture_pcap_packet(struct pcap_context *ctx)
-{
-  return pcap_dispatch(ctx->pd, -1, receive_pcap_packet, (u_char *) ctx);
+int capture_pcap_packet(struct pcap_context *ctx) {
+  return pcap_dispatch(ctx->pd, -1, receive_pcap_packet, (u_char *)ctx);
 }
 
-
-void close_pcap(struct pcap_context *ctx)
-{
+void close_pcap(struct pcap_context *ctx) {
   if (ctx != NULL) {
     if (ctx->pd != NULL) {
       pcap_close(ctx->pd);
@@ -96,25 +94,22 @@ void close_pcap(struct pcap_context *ctx)
   }
 }
 
-int capture_pcap_start(struct pcap_context *ctx)
-{
+int capture_pcap_start(struct pcap_context *ctx) {
   if (ctx != NULL)
-    return pcap_loop(ctx->pd, -1, receive_pcap_packet, (u_char *) ctx);
+    return pcap_loop(ctx->pd, -1, receive_pcap_packet, (u_char *)ctx);
   else {
     log_trace("ctx is NULL");
     return -1;
   }
 }
 
-void capture_pcap_stop(struct pcap_context *ctx)
-{
+void capture_pcap_stop(struct pcap_context *ctx) {
   if (ctx != NULL) {
     pcap_breakloop(ctx->pd);
   }
 }
 
-int get_pcap_datalink(struct pcap_context *ctx)
-{
+int get_pcap_datalink(struct pcap_context *ctx) {
   if (ctx != NULL) {
     return pcap_datalink(ctx->pd);
   } else {
@@ -123,10 +118,9 @@ int get_pcap_datalink(struct pcap_context *ctx)
   }
 }
 
-int run_pcap(char *interface, bool immediate, bool promiscuous,
-             int timeout, char *filter, bool nonblock, capture_callback_fn pcap_fn,
-             void *fn_ctx, struct pcap_context** pctx)
-{
+int run_pcap(char *interface, bool immediate, bool promiscuous, int timeout,
+             char *filter, bool nonblock, capture_callback_fn pcap_fn,
+             void *fn_ctx, struct pcap_context **pctx) {
   int ret;
   char err[PCAP_ERRBUF_SIZE];
   bpf_u_int32 mask, net;
@@ -139,9 +133,10 @@ int run_pcap(char *interface, bool immediate, bool promiscuous,
     return -1;
   }
 
-  bit32_2_ip((uint32_t) net, ip_str);
-  bit32_2_ip((uint32_t) mask, mask_str);
-  log_debug("Found device=%s IP=" IPSTR " netmask=" IPSTR, interface, IP2STR(ip_str), IP2STR(mask_str));
+  bit32_2_ip((uint32_t)net, ip_str);
+  bit32_2_ip((uint32_t)mask, mask_str);
+  log_debug("Found device=%s IP=" IPSTR " netmask=" IPSTR, interface,
+            IP2STR(ip_str), IP2STR(mask_str));
 
   ctx = os_zalloc(sizeof(struct pcap_context));
   *pctx = ctx;
@@ -189,14 +184,15 @@ int run_pcap(char *interface, bool immediate, bool promiscuous,
   /* Compile and apply the filter */
   if (filter != NULL) {
     if (strlen(filter)) {
-	    if (pcap_compile(ctx->pd, &fp, filter, 0, mask) == -1) {
-	      log_trace("Couldn't parse filter %s: %s\n", filter, pcap_geterr(ctx->pd));
+      if (pcap_compile(ctx->pd, &fp, filter, 0, mask) == -1) {
+        log_trace("Couldn't parse filter %s: %s\n", filter,
+                  pcap_geterr(ctx->pd));
         goto fail;
       }
 
       log_debug("Setting filter to=%s", filter);
       if (pcap_setfilter(ctx->pd, &fp) == -1) {
-	      log_trace("Couldn't set filter %s: %s\n", filter, pcap_geterr(ctx->pd));
+        log_trace("Couldn't set filter %s: %s\n", filter, pcap_geterr(ctx->pd));
         pcap_freecode(&fp);
         goto fail;
       }
@@ -231,35 +227,33 @@ fail:
   return -1;
 }
 
-int dump_file_pcap(struct pcap_context *ctx, char *file_path, struct pcap_pkthdr *header, uint8_t *packet)
-{
+int dump_file_pcap(struct pcap_context *ctx, char *file_path,
+                   struct pcap_pkthdr *header, uint8_t *packet) {
   pcap_dumper_t *dumper;
   if ((dumper = pcap_dump_open(ctx->pd, file_path)) == NULL) {
     log_trace("pcap_dump_open fail");
     return -1;
   }
-  pcap_dump((u_char*)dumper, header, packet);
+  pcap_dump((u_char *)dumper, header, packet);
   pcap_dump_close(dumper);
   return 0;
 }
 
-void free_pcap_list(UT_array *ctx_list)
-{
+void free_pcap_list(UT_array *ctx_list) {
   struct pcap_context **p = NULL;
 
   if (ctx_list == NULL) {
     return;
   }
 
-  while((p = (struct pcap_context**) utarray_next(ctx_list, p)) != NULL) {
+  while ((p = (struct pcap_context **)utarray_next(ctx_list, p)) != NULL) {
     close_pcap(*p);
   }
 
   utarray_free(ctx_list);
 }
 
-UT_array * create_pcap_list(void)
-{
+UT_array *create_pcap_list(void) {
   UT_array *ctx_list = NULL;
   utarray_new(ctx_list, &pcap_list_icd);
 

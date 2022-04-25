@@ -1025,7 +1025,7 @@ static char * eap_sim_db_get_next(struct eap_sim_db_data *data, char prefix)
 	end = id + sizeof(buf) * 2 + 2;
 	*pos++ = prefix;
 	wpa_snprintf_hex(pos, end - pos, buf, sizeof(buf));
-	
+
 	return id;
 }
 

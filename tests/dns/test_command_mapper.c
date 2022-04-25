@@ -18,9 +18,8 @@
 #include "utils/os.h"
 #include "dns/command_mapper.h"
 
-static void test_put_command_mapper(void **state)
-{
-  (void) state;
+static void test_put_command_mapper(void **state) {
+  (void)state;
 
   hmap_command_conn *hmap = NULL;
   char *command = "test";
@@ -30,9 +29,8 @@ static void test_put_command_mapper(void **state)
   free_command_mapper(&hmap);
 }
 
-static void test_check_command_mapper(void **state)
-{
-  (void) state;
+static void test_check_command_mapper(void **state) {
+  (void)state;
 
   hmap_command_conn *hmap = NULL;
   char *command1 = "test1";
@@ -42,20 +40,18 @@ static void test_check_command_mapper(void **state)
   assert_int_equal(check_command_mapper(&hmap, command1), 1);
   assert_int_equal(check_command_mapper(&hmap, command2), 0);
 
-  free_command_mapper(&hmap);  
+  free_command_mapper(&hmap);
 }
 
-int main(int argc, char *argv[])
-{  
-  (void) argc; /* unused */
-  (void) argv; /* unused */
+int main(int argc, char *argv[]) {
+  (void)argc; /* unused */
+  (void)argv; /* unused */
 
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
-    cmocka_unit_test(test_put_command_mapper),
-    cmocka_unit_test(test_check_command_mapper)
-  };
+      cmocka_unit_test(test_put_command_mapper),
+      cmocka_unit_test(test_check_command_mapper)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

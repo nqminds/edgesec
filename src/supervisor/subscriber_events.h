@@ -42,9 +42,9 @@ enum SUBSCRIBER_EVENT {
   SUBSCRIBER_EVENT_AP,
 };
 
-#define EVENT_ALERT_TEXT            "ALERT"
-#define EVENT_IP_TEXT               "IP"
-#define EVENT_AP_TEXT               "AP"
+#define EVENT_ALERT_TEXT "ALERT"
+#define EVENT_IP_TEXT "IP"
+#define EVENT_AP_TEXT "AP"
 
 /**
  * @brief Add a subscriber to the subscriber events array
@@ -53,7 +53,8 @@ enum SUBSCRIBER_EVENT {
  * @param addr The subscriber address
  * @return 0 on success, -1 on failure
  */
-int add_events_subscriber(struct supervisor_context *context, struct client_address *addr);
+int add_events_subscriber(struct supervisor_context *context,
+                          struct client_address *addr);
 
 /**
  * @brief Send an event to the subscribers array

@@ -34,23 +34,30 @@
 #include "../utils/squeue.h"
 
 #define ALERT_TABLE_NAME "alert"
-#define ALERT_CREATE_TABLE "CREATE TABLE " ALERT_TABLE_NAME " (hostname TEXT NOT NULL, analyser TEXT, ifname TEXT, src_mac_addr TEXT, dst_mac_addr TEXT, " \
-                                 "timestamp INTEGER NOT NULL, risk INTEGER NOT NULL, info TEXT, PRIMARY KEY (hostname, timestamp));"
-#define ALERT_INSERT_INTO "INSERT INTO " ALERT_TABLE_NAME " VALUES(@hostname, @analyser, @ifname, @src_mac_addr, @dst_mac_addr, @timestamp, @risk, @info);"
+#define ALERT_CREATE_TABLE                                                     \
+  "CREATE TABLE " ALERT_TABLE_NAME                                             \
+  " (hostname TEXT NOT NULL, analyser TEXT, ifname TEXT, src_mac_addr TEXT, "  \
+  "dst_mac_addr TEXT, "                                                        \
+  "timestamp INTEGER NOT NULL, risk INTEGER NOT NULL, info TEXT, PRIMARY KEY " \
+  "(hostname, timestamp));"
+#define ALERT_INSERT_INTO                                                      \
+  "INSERT INTO " ALERT_TABLE_NAME                                              \
+  " VALUES(@hostname, @analyser, @ifname, @src_mac_addr, @dst_mac_addr, "      \
+  "@timestamp, @risk, @info);"
 
 /**
  * @brief The alert row definition
  *
  */
 struct alert_row {
-  char *hostname;               /**< The machine hostname */
-  char *analyser;               /**< The analyser type */
-  char *ifname;                 /**< The monitoring interface */
-  char *src_mac_addr;           /**< The source mac address */
-  char *dst_mac_addr;           /**< The destination mac address */
-  uint64_t timestamp;           /**< The timestamp value */
-  uint64_t risk;                /**< The risk value */
-  char *info;                   /**< The info string */
+  char *hostname;     /**< The machine hostname */
+  char *analyser;     /**< The analyser type */
+  char *ifname;       /**< The monitoring interface */
+  char *src_mac_addr; /**< The source mac address */
+  char *dst_mac_addr; /**< The destination mac address */
+  uint64_t timestamp; /**< The timestamp value */
+  uint64_t risk;      /**< The risk value */
+  char *info;         /**< The info string */
 };
 
 /**
@@ -60,7 +67,7 @@ struct alert_row {
  * @param sql The returned sqlite db structure pointer
  * @return 0 on success, -1 on failure
  */
-int open_sqlite_alert_db(char *db_path, sqlite3** sql);
+int open_sqlite_alert_db(char *db_path, sqlite3 **sql);
 
 /**
  * @brief Closes the sqlite db

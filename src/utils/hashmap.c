@@ -33,77 +33,71 @@
 #include "hashmap.h"
 #include "uthash.h"
 
-hmap_str_keychar *hmap_str_keychar_new(void)
-{
-	return NULL;
+hmap_str_keychar *hmap_str_keychar_new(void) { return NULL; }
+
+char *hmap_str_keychar_get(hmap_str_keychar **hmap, char *keyptr) {
+  hmap_str_keychar *s;
+
+  if (keyptr == NULL) {
+    log_trace("keyptr is NULL");
+    return NULL;
+  }
+
+  HASH_FIND_STR(*hmap, keyptr, s);
+
+  if (s != NULL)
+    return s->value;
+
+  return NULL;
 }
 
-char *hmap_str_keychar_get(hmap_str_keychar **hmap, char *keyptr)
-{
-	hmap_str_keychar *s;
+bool hmap_str_keychar_put(hmap_str_keychar **hmap, char *keyptr, char *value) {
+  hmap_str_keychar *s;
 
-	if(keyptr == NULL) {
-		log_trace("keyptr is NULL");
-		return NULL;
-	}
+  if (keyptr == NULL) {
+    log_trace("keyptr is NULL");
+    return false;
+  }
 
-	HASH_FIND_STR(*hmap, keyptr, s);
+  if (value == NULL) {
+    log_trace("value is NULL");
+    return false;
+  }
 
-	if (s != NULL)
-		return s->value;
+  if (os_strnlen_s(keyptr, HASH_KEY_CHAR_SIZE) > HASH_KEY_CHAR_SIZE - 1) {
+    log_trace("strlen(keyptr) is greater than key char size");
+    return false;
+  }
 
-	return NULL;
+  HASH_FIND_STR(*hmap, keyptr, s); /* id already in the hash? */
+
+  if (s == NULL) {
+    s = (hmap_str_keychar *)os_malloc(sizeof(hmap_str_keychar));
+    if (s == NULL) {
+      log_errno("os_malloc");
+      return false;
+    }
+
+    // Copy the key
+    strcpy(s->key, keyptr);
+    s->value = os_strdup(value);
+
+    HASH_ADD_STR(*hmap, key, s);
+  } else {
+    // Copy the value
+    os_free(s->value);
+    s->value = os_strdup(value);
+  }
+
+  return true;
 }
 
-bool hmap_str_keychar_put(hmap_str_keychar **hmap, char *keyptr, char *value)
-{
-	hmap_str_keychar *s;
-
-	if (keyptr == NULL) {
-	  log_trace("keyptr is NULL");
-	  return false;
-	}
-
-	if (value == NULL) {
-	  log_trace("value is NULL");
-	  return false;
-	}
-
-	if (os_strnlen_s(keyptr, HASH_KEY_CHAR_SIZE) > HASH_KEY_CHAR_SIZE - 1) {
-	  log_trace("strlen(keyptr) is greater than key char size");
-	  return false;
-	}
-
-	HASH_FIND_STR(*hmap, keyptr, s); /* id already in the hash? */
-
-  	if (s == NULL) {
-  	  s = (hmap_str_keychar *) os_malloc(sizeof(hmap_str_keychar));
-	  if (s == NULL) {
-		log_errno("os_malloc");
-		return false;
-	  }
-
-	  // Copy the key
-	  strcpy(s->key, keyptr);
-	  s->value = os_strdup(value);
-
-	  HASH_ADD_STR(*hmap, key, s);
-  	} else {
-	  // Copy the value
-	  os_free(s->value);
-      s->value = os_strdup(value);
-	}
-
-	return true;
-}
-
-void hmap_str_keychar_free(hmap_str_keychar **hmap)
-{
+void hmap_str_keychar_free(hmap_str_keychar **hmap) {
   hmap_str_keychar *current, *tmp;
 
   HASH_ITER(hh, *hmap, current, tmp) {
-  	HASH_DEL(*hmap, current);  							/* delete it (users advances to next) */
-	os_free(current->value);								/* free the value content */
-  	os_free(current);            						/* free it */
+    HASH_DEL(*hmap, current); /* delete it (users advances to next) */
+    os_free(current->value);  /* free the value content */
+    os_free(current);         /* free it */
   }
 }

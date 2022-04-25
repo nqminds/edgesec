@@ -50,14 +50,14 @@ enum DHCP_IP_TYPE {
  * @return int 0 on success, -1 on failure
  */
 int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
-  char *ip_addr, enum DHCP_IP_TYPE ip_type);
+               char *ip_addr, enum DHCP_IP_TYPE ip_type);
 
 /**
  * @brief SUPERVISOR_PING command
  *
  * @return char* the ping reply string, NULL on failure
  */
-char* ping_cmd(void);
+char *ping_cmd(void);
 
 /**
  * @brief SUBSCRIBE_EVENTS command
@@ -66,6 +66,7 @@ char* ping_cmd(void);
  * @param addr The subscriber address
  * @return 0 on success, -1 on failure
  */
-int subscribe_events_cmd(struct supervisor_context *context, struct client_address *addr);
+int subscribe_events_cmd(struct supervisor_context *context,
+                         struct client_address *addr);
 
 #endif

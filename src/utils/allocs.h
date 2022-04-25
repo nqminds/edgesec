@@ -47,7 +47,7 @@ extern "C" {
  * @param size Number of bytes to allocate
  * @return void* Pointer to allocated and zeroed memory or %NULL on failure
  */
-void * os_zalloc(size_t size);
+void *os_zalloc(size_t size);
 
 /**
  * @brief Allocate and zero memory for an array
@@ -62,11 +62,10 @@ void * os_zalloc(size_t size);
  * @param size Number of bytes in each member
  * @return void* Pointer to allocated and zeroed memory or %NULL on failure
  */
-static inline void * os_calloc(size_t nmemb, size_t size)
-{
-	if (size && nmemb > (~(size_t) 0) / size)
-		return NULL;
-	return os_zalloc(nmemb * size);
+static inline void *os_calloc(size_t nmemb, size_t size) {
+  if (size && nmemb > (~(size_t)0) / size)
+    return NULL;
+  return os_zalloc(nmemb * size);
 }
 
 // void *os_malloc(size_t size);
@@ -88,11 +87,10 @@ static inline void * os_calloc(size_t nmemb, size_t size)
 #define os_free(p) free((p))
 #endif
 
-static inline void * os_realloc_array(void *ptr, size_t nmemb, size_t size)
-{
-	if (size && nmemb > (~(size_t) 0) / size)
-		return NULL;
-	return os_realloc(ptr, nmemb * size);
+static inline void *os_realloc_array(void *ptr, size_t nmemb, size_t size) {
+  if (size && nmemb > (~(size_t)0) / size)
+    return NULL;
+  return os_realloc(ptr, nmemb * size);
 }
 
 /**
@@ -105,7 +103,7 @@ static inline void * os_realloc_array(void *ptr, size_t nmemb, size_t size)
  * @param len Length of source buffer
  * @return void* %NULL if allocation failed, copy of src buffer otherwise
  */
-void * os_memdup(const void *src, size_t len);
+void *os_memdup(const void *src, size_t len);
 
 #ifndef os_memcpy
 #define os_memcpy(d, s, n) memcpy((d), (s), (n))
@@ -126,7 +124,7 @@ void * os_memdup(const void *src, size_t len);
  * @param s The input string
  * @return char* The dublicate string pointer, NULL on error
  */
-char * os_strdup(const char *s);
+char *os_strdup(const char *s);
 
 #ifdef __cplusplus
 }

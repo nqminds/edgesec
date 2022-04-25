@@ -51,21 +51,21 @@
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 
-#define CAPTURE_DB_NAME   "capture" SQLITE_EXTENSION
+#define CAPTURE_DB_NAME "capture" SQLITE_EXTENSION
 
-static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL, NULL};
+static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL,
+                                   NULL};
 
-void construct_pcap_file_name(char *file_name)
-{
+void construct_pcap_file_name(char *file_name) {
   generate_radom_uuid(file_name);
   strcat(file_name, PCAP_EXTENSION);
 }
 
-void add_packet_queue(struct capture_context *context, UT_array *tp_array, struct packet_queue *queue)
-{
+void add_packet_queue(struct capture_context *context, UT_array *tp_array,
+                      struct packet_queue *queue) {
   struct tuple_packet *p = NULL;
 
-  while((p = (struct tuple_packet *) utarray_next(tp_array, p)) != NULL) {
+  while ((p = (struct tuple_packet *)utarray_next(tp_array, p)) != NULL) {
     if (context->db_write) {
       if (push_packet_queue(queue, *p) == NULL) {
         log_trace("push_packet_queue fail");
@@ -76,11 +76,10 @@ void add_packet_queue(struct capture_context *context, UT_array *tp_array, struc
   }
 }
 
-void pcap_callback(const void *ctx, const void *pcap_ctx,
-                   char *ltype, struct pcap_pkthdr *header, uint8_t *packet)
-{
+void pcap_callback(const void *ctx, const void *pcap_ctx, char *ltype,
+                   struct pcap_pkthdr *header, uint8_t *packet) {
   struct capture_context *context = (struct capture_context *)ctx;
-  struct pcap_context *pc = (struct pcap_context *) pcap_ctx;
+  struct pcap_context *pc = (struct pcap_context *)pcap_ctx;
   char cap_id[MAX_RANDOM_UUID_LEN];
   UT_array *tp_array = NULL;
 
@@ -88,8 +87,8 @@ void pcap_callback(const void *ctx, const void *pcap_ctx,
 
   generate_radom_uuid(cap_id);
 
-  if (extract_packets(ltype, header, packet, pc->ifname,
-                      context->hostname, cap_id, tp_array) > 0) {
+  if (extract_packets(ltype, header, packet, pc->ifname, context->hostname,
+                      cap_id, tp_array) > 0) {
     add_packet_queue(context, tp_array, context->pqueue);
   }
 
@@ -104,11 +103,10 @@ void pcap_callback(const void *ctx, const void *pcap_ctx,
   }
 }
 
-void eloop_read_fd_handler(int sock, void *eloop_ctx, void *sock_ctx)
-{
-  (void) sock;
-  (void) sock_ctx;
-  struct pcap_context *pc = (struct pcap_context *) eloop_ctx;
+void eloop_read_fd_handler(int sock, void *eloop_ctx, void *sock_ctx) {
+  (void)sock;
+  (void)sock_ctx;
+  struct pcap_context *pc = (struct pcap_context *)eloop_ctx;
 
   if (capture_pcap_packet(pc) < 0) {
     log_trace("capture_pcap_packet fail");
@@ -116,8 +114,8 @@ void eloop_read_fd_handler(int sock, void *eloop_ctx, void *sock_ctx)
 }
 
 int save_pcap_file_data(struct pcap_pkthdr *header, uint8_t *packet,
-                        struct capture_context *context, struct pcap_context *pc)
-{
+                        struct capture_context *context,
+                        struct pcap_context *pc) {
   char *path = NULL;
   char file_name[MAX_PCAP_FILE_NAME_LENGTH];
   uint64_t timestamp = 0;
@@ -139,7 +137,8 @@ int save_pcap_file_data(struct pcap_pkthdr *header, uint8_t *packet,
   os_free(path);
 
   if (save_sqlite_pcap_entry(context->pcap_db, file_name, timestamp,
-        header->caplen, header->len, pc->ifname, context->filter) < 0) {
+                             header->caplen, header->len, pc->ifname,
+                             context->filter) < 0) {
     log_trace("save_sqlite_pcap_entry fail");
     return -1;
   }
@@ -147,8 +146,7 @@ int save_pcap_file_data(struct pcap_pkthdr *header, uint8_t *packet,
   return 0;
 }
 
-void send_domain_data(struct capture_context *context, char *data)
-{
+void send_domain_data(struct capture_context *context, char *data) {
   char *buf;
   size_t send_len = 0;
 
@@ -173,14 +171,14 @@ void send_domain_data(struct capture_context *context, char *data)
     strcpy(buf, data);
   }
 
-  write_domain_data_s(context->domain_client, buf, send_len, context->domain_server_path);
+  write_domain_data_s(context->domain_client, buf, send_len,
+                      context->domain_server_path);
   os_free(buf);
 }
 
-void eloop_tout_handler(void *eloop_ctx, void *user_ctx)
-{
-  struct pcap_context *pc = (struct pcap_context *) eloop_ctx;
-  struct capture_context *context = (struct capture_context *) user_ctx;
+void eloop_tout_handler(void *eloop_ctx, void *user_ctx) {
+  struct pcap_context *pc = (struct pcap_context *)eloop_ctx;
+  struct capture_context *context = (struct capture_context *)user_ctx;
   struct packet_queue *el_packet;
   struct pcap_queue *el_pcap;
   // struct string_queue* squeue = NULL;
@@ -193,7 +191,7 @@ void eloop_tout_handler(void *eloop_ctx, void *user_ctx)
   // }
 
   // Process all packets in the queue
-  while(is_packet_queue_empty(context->pqueue) < 1) {
+  while (is_packet_queue_empty(context->pqueue) < 1) {
     if ((el_packet = pop_packet_queue(context->pqueue)) != NULL) {
       if (context->db_write) {
         save_packet_statement(context->header_db, &(el_packet->tp));
@@ -221,9 +219,10 @@ void eloop_tout_handler(void *eloop_ctx, void *user_ctx)
   // free_string_queue(squeue);
 
   if (context->file_write) {
-    while(is_pcap_queue_empty(context->cqueue) < 1) {
+    while (is_pcap_queue_empty(context->cqueue) < 1) {
       if ((el_pcap = pop_pcap_queue(context->cqueue)) != NULL) {
-        if (save_pcap_file_data(&(el_pcap->header), el_pcap->packet, context, pc) < 0) {
+        if (save_pcap_file_data(&(el_pcap->header), el_pcap->packet, context,
+                                pc) < 0) {
           log_trace("save_pcap_file_data fail");
         }
         free_pcap_queue_el(el_pcap);
@@ -231,13 +230,13 @@ void eloop_tout_handler(void *eloop_ctx, void *user_ctx)
     }
   }
 
-  if (eloop_register_timeout(0, context->process_interval, eloop_tout_handler, (void *) eloop_ctx, (void *) user_ctx) == -1) {
+  if (eloop_register_timeout(0, context->process_interval, eloop_tout_handler,
+                             (void *)eloop_ctx, (void *)user_ctx) == -1) {
     log_debug("eloop_register_timeout fail");
   }
 }
 
-void trace_callback(char *sqlite_statement, void *ctx)
-{
+void trace_callback(char *sqlite_statement, void *ctx) {
   struct string_queue *squeue = (struct string_queue *)ctx;
 
   if (push_string_queue(squeue, sqlite_statement) < 0) {
@@ -245,8 +244,7 @@ void trace_callback(char *sqlite_statement, void *ctx)
   }
 }
 
-int start_default_analyser(struct capture_conf *config)
-{
+int start_default_analyser(struct capture_conf *config) {
   int ret = -1;
   struct capture_context context;
   struct pcap_context *pc = NULL;
@@ -256,7 +254,8 @@ int start_default_analyser(struct capture_conf *config)
 
   os_memset(&context, 0, sizeof(context));
 
-  if ((pcap_subfolder_path = construct_path(config->db_path, PCAP_SUBFOLDER_NAME)) == NULL) {
+  if ((pcap_subfolder_path =
+           construct_path(config->db_path, PCAP_SUBFOLDER_NAME)) == NULL) {
     log_trace("construct_path fail");
     return -1;
   }
@@ -286,10 +285,13 @@ int start_default_analyser(struct capture_conf *config)
   context.sync_send_size = config->sync_send_size;
   context.domain_delim = config->domain_delim;
 
-  os_strlcpy(context.domain_command, config->domain_command, MAX_SUPERVISOR_CMD_SIZE);
-  os_strlcpy(context.domain_server_path, config->domain_server_path, MAX_OS_PATH_LEN);
+  os_strlcpy(context.domain_command, config->domain_command,
+             MAX_SUPERVISOR_CMD_SIZE);
+  os_strlcpy(context.domain_server_path, config->domain_server_path,
+             MAX_OS_PATH_LEN);
 
-  if ((header_db_path = construct_path(context.db_path, CAPTURE_DB_NAME)) == NULL) {
+  if ((header_db_path = construct_path(context.db_path, CAPTURE_DB_NAME)) ==
+      NULL) {
     log_debug("construct_path fail");
     return -1;
   }
@@ -314,8 +316,8 @@ int start_default_analyser(struct capture_conf *config)
   log_info("Immediate mode=%d", context.immediate);
   log_info("Buffer timeout=%d", context.buffer_timeout);
   log_info("Process interval=%d (milliseconds)", context.process_interval);
-  log_info("Sync store size=%ld",   context.sync_store_size);
-  log_info("Sync send size=%ld",   context.sync_send_size);
+  log_info("Sync store size=%ld", context.sync_store_size);
+  log_info("Sync send size=%ld", context.sync_send_size);
   log_info("File write=%d", context.file_write);
   log_info("DB write=%d", context.db_write);
   log_info("DB name=%s", context.db_name);
@@ -360,7 +362,7 @@ int start_default_analyser(struct capture_conf *config)
   }
 
   if (context.file_write) {
-    if (open_sqlite_pcap_db(pcap_db_path, (sqlite3**)&context.pcap_db) < 0) {
+    if (open_sqlite_pcap_db(pcap_db_path, (sqlite3 **)&context.pcap_db) < 0) {
       log_debug("open_sqlite_pcap_db fail");
       free_packet_queue(context.pqueue);
       free_pcap_queue(context.cqueue);
@@ -373,20 +375,21 @@ int start_default_analyser(struct capture_conf *config)
   }
 
   if (eloop_init()) {
-		log_debug("Failed to initialize event loop");
+    log_debug("Failed to initialize event loop");
     goto fail;
-	}
+  }
 
   log_info("Registering pcap for ifname=%s", config->capture_interface);
   if (run_pcap(config->capture_interface, context.immediate,
-               context.promiscuous, (int)context.buffer_timeout,
-               context.filter, true, pcap_callback, (void *)&context, &pc) < 0) {
+               context.promiscuous, (int)context.buffer_timeout, context.filter,
+               true, pcap_callback, (void *)&context, &pc) < 0) {
     log_debug("run_pcap fail");
     goto fail;
   }
 
   if (pc != NULL) {
-    if (eloop_register_read_sock(pc->pcap_fd, eloop_read_fd_handler, (void*) pc, (void *) NULL) ==  -1) {
+    if (eloop_register_read_sock(pc->pcap_fd, eloop_read_fd_handler, (void *)pc,
+                                 (void *)NULL) == -1) {
       log_debug("eloop_register_read_sock fail");
       goto fail;
     }
@@ -395,16 +398,16 @@ int start_default_analyser(struct capture_conf *config)
     goto fail;
   }
 
-  if (eloop_register_timeout(0, context.process_interval, eloop_tout_handler, (void *) pc, (void *)&context) == -1) {
+  if (eloop_register_timeout(0, context.process_interval, eloop_tout_handler,
+                             (void *)pc, (void *)&context) == -1) {
     log_debug("eloop_register_timeout fail");
     goto fail;
   }
 
-
   eloop_run();
   log_info("Capture ended.");
 
-	/* And close the session */
+  /* And close the session */
   close_pcap(pc);
   eloop_destroy();
   free_packet_queue(context.pqueue);

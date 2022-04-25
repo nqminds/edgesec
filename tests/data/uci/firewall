@@ -129,4 +129,3 @@ config rule 'turris_wan_6in4_rule'
 
 config rule 'turris_wan_6to4_rule'
 	option enabled '0'
-

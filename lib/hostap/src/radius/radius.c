@@ -1575,7 +1575,7 @@ char * radius_msg_get_tunnel_password(struct radius_msg *msg, int *keylen,
 	/* find n-th valid Tunnel-Password attribute */
 	for (i = 0; i < msg->attr_used; i++) {
 		attr = radius_get_attr_hdr(msg, i);
-		
+
 		if (attr == NULL ||
 		    attr->type != RADIUS_ATTR_TUNNEL_PASSWORD) {
 			continue;

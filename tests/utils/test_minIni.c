@@ -17,8 +17,7 @@
 
 static const char *tmp_file = "/tmp/test_iniXXXXXX";
 
-static int setup(void **state)
-{
+static int setup(void **state) {
   char *filename = malloc(strlen(tmp_file) + 1);
   strcpy(filename, tmp_file);
 
@@ -29,7 +28,7 @@ static int setup(void **state)
     return -1;
   }
 
-  FILE* fp = fdopen(fd, "a+");
+  FILE *fp = fdopen(fd, "a+");
 
   if (fp == NULL) {
     perror("fopen error");
@@ -42,7 +41,8 @@ static int setup(void **state)
   fprintf(fp, "organization = Acme Widgets Inc.\n");
   fprintf(fp, "\n");
   fprintf(fp, "[database]\n");
-  fprintf(fp, "# use IP address in case network name resolution is not working\n");
+  fprintf(fp,
+          "# use IP address in case network name resolution is not working\n");
   fprintf(fp, "server=192.0.2.62\n");
   fprintf(fp, "port = 143\n");
   fprintf(fp, "file=\"payroll.dat\"\n");
@@ -68,9 +68,8 @@ static int teardown(void **state) {
   return 0;
 }
 
-static void test_ini_one(void **state)
-{
-  (void) state; /* unused */
+static void test_ini_one(void **state) {
+  (void)state; /* unused */
 
   char *value = malloc(INI_BUFFERSIZE);
   ini_gets("owner", "name", "", value, INI_BUFFERSIZE, *state);
@@ -104,11 +103,9 @@ static void test_ini_one(void **state)
   assert_float_equal(fvalue, 0.123456f, 0.000001f);
 }
 
-int main(int argc, char *argv[])
-{  
+int main(int argc, char *argv[]) {
   const struct CMUnitTest tests[] = {
-    cmocka_unit_test_setup_teardown(test_ini_one, setup, teardown)
-  };
+      cmocka_unit_test_setup_teardown(test_ini_one, setup, teardown)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

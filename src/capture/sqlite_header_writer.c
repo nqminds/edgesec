@@ -20,7 +20,8 @@
 /**
  * @file sqlite_header_writer.c
  * @author Alexandru Mereacre
- * @brief File containing the implementation of the sqlite header writer utilities.
+ * @brief File containing the implementation of the sqlite header writer
+ * utilities.
  */
 
 #include <stdio.h>
@@ -37,14 +38,14 @@
 #include "../utils/log.h"
 #include "../utils/sqliteu.h"
 
-#define EXTRACT_META_PACKET(term, tp)           \
-            term.hash = tp->mp.hash;            \
-            term.timestamp = tp->mp.timestamp;  \
-            term.caplen = tp->mp.caplen;        \
-            term.length = tp->mp.length;
+#define EXTRACT_META_PACKET(term, tp)                                          \
+  term.hash = tp->mp.hash;                                                     \
+  term.timestamp = tp->mp.timestamp;                                           \
+  term.caplen = tp->mp.caplen;                                                 \
+  term.length = tp->mp.length;
 
-int extract_eth_statement(struct sqlite_header_context *ctx, struct eth_schema *eths)
-{
+int extract_eth_statement(struct sqlite_header_context *ctx,
+                          struct eth_schema *eths) {
   sqlite3_stmt *res = NULL;
   int column_idx, rc;
 
@@ -61,7 +62,7 @@ int extract_eth_statement(struct sqlite_header_context *ctx, struct eth_schema *
       return false;
 
     column_idx = sqlite3_bind_parameter_index(res, "@timestamp");
-    if(sqlite3_bind_int64(res, column_idx, eths->timestamp) != SQLITE_OK)
+    if (sqlite3_bind_int64(res, column_idx, eths->timestamp) != SQLITE_OK)
       return false;
 
     column_idx = sqlite3_bind_parameter_index(res, "@id");
@@ -90,7 +91,8 @@ int extract_eth_statement(struct sqlite_header_context *ctx, struct eth_schema *
     column_idx = sqlite3_bind_parameter_index(res, "@ether_type");
     sqlite3_bind_int64(res, column_idx, eths->ether_type);
 
-    log_trace("sqlite insert eth ether_type=0x%x ether_dhost=%s ether_shost=%s", eths->ether_type, eths->ether_dhost, eths->ether_shost);
+    log_trace("sqlite insert eth ether_type=0x%x ether_dhost=%s ether_shost=%s",
+              eths->ether_type, eths->ether_dhost, eths->ether_shost);
 
     sqlite3_step(res);
     sqlite3_finalize(res);
@@ -102,8 +104,8 @@ int extract_eth_statement(struct sqlite_header_context *ctx, struct eth_schema *
   return 0;
 }
 
-int extract_arp_statement(struct sqlite_header_context *ctx, struct arp_schema *arps)
-{
+int extract_arp_statement(struct sqlite_header_context *ctx,
+                          struct arp_schema *arps) {
   int column_idx, rc;
   sqlite3_stmt *res = NULL;
 
@@ -149,8 +151,10 @@ int extract_arp_statement(struct sqlite_header_context *ctx, struct arp_schema *
     column_idx = sqlite3_bind_parameter_index(res, "@arp_tpa");
     sqlite3_bind_text(res, column_idx, arps->arp_tpa, -1, NULL);
 
-    log_trace("sqlite insert arp ar_hrd=%d arp_sha=%s arp_spa=%s arp_tha=%s arp_tpa=%s",
-      arps->ar_hrd, arps->arp_sha, arps->arp_spa, arps->arp_tha, arps->arp_tpa);
+    log_trace("sqlite insert arp ar_hrd=%d arp_sha=%s arp_spa=%s arp_tha=%s "
+              "arp_tpa=%s",
+              arps->ar_hrd, arps->arp_sha, arps->arp_spa, arps->arp_tha,
+              arps->arp_tpa);
 
     sqlite3_step(res);
     sqlite3_finalize(res);
@@ -162,8 +166,8 @@ int extract_arp_statement(struct sqlite_header_context *ctx, struct arp_schema *
   return 0;
 }
 
-int extract_ip4_statement(struct sqlite_header_context *ctx, struct ip4_schema *ip4s)
-{
+int extract_ip4_statement(struct sqlite_header_context *ctx,
+                          struct ip4_schema *ip4s) {
   int column_idx, rc;
   sqlite3_stmt *res = NULL;
 
@@ -215,7 +219,8 @@ int extract_ip4_statement(struct sqlite_header_context *ctx, struct ip4_schema *
     column_idx = sqlite3_bind_parameter_index(res, "@ip_dst");
     sqlite3_bind_text(res, column_idx, ip4s->ip_dst, -1, NULL);
 
-    log_trace("sqlite insert IP4 ip_p=%d ip_v=%d ip_src=%s ip_dst=%s", ip4s->ip_p, ip4s->ip_v, ip4s->ip_src, ip4s->ip_dst);
+    log_trace("sqlite insert IP4 ip_p=%d ip_v=%d ip_src=%s ip_dst=%s",
+              ip4s->ip_p, ip4s->ip_v, ip4s->ip_src, ip4s->ip_dst);
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {
@@ -226,8 +231,8 @@ int extract_ip4_statement(struct sqlite_header_context *ctx, struct ip4_schema *
   return 0;
 }
 
-int extract_ip6_statement(struct sqlite_header_context *ctx, struct ip6_schema *ip6s)
-{
+int extract_ip6_statement(struct sqlite_header_context *ctx,
+                          struct ip6_schema *ip6s) {
   int column_idx, rc;
   sqlite3_stmt *res = NULL;
 
@@ -268,7 +273,7 @@ int extract_ip6_statement(struct sqlite_header_context *ctx, struct ip6_schema *
     sqlite3_bind_text(res, column_idx, ip6s->ip6_dst, -1, NULL);
 
     log_trace("sqlite insert IP6 ip6_src=%s ip6_dst=%s ip6_un1_nxt=%d",
-      ip6s->ip6_src, ip6s->ip6_dst, ip6s->ip6_un1_nxt);
+              ip6s->ip6_src, ip6s->ip6_dst, ip6s->ip6_un1_nxt);
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {
@@ -279,8 +284,8 @@ int extract_ip6_statement(struct sqlite_header_context *ctx, struct ip6_schema *
   return 0;
 }
 
-int extract_tcp_statement(struct sqlite_header_context *ctx, struct tcp_schema *tcps)
-{
+int extract_tcp_statement(struct sqlite_header_context *ctx,
+                          struct tcp_schema *tcps) {
   int column_idx, rc;
   sqlite3_stmt *res = NULL;
 
@@ -355,8 +360,8 @@ int extract_tcp_statement(struct sqlite_header_context *ctx, struct tcp_schema *
   return 0;
 }
 
-int extract_udp_statement(struct sqlite_header_context *ctx, struct udp_schema *udps)
-{
+int extract_udp_statement(struct sqlite_header_context *ctx,
+                          struct udp_schema *udps) {
   int column_idx, rc;
   sqlite3_stmt *res = NULL;
 
@@ -398,8 +403,8 @@ int extract_udp_statement(struct sqlite_header_context *ctx, struct udp_schema *
   return 0;
 }
 
-int extract_icmp4_statement(struct sqlite_header_context *ctx, struct icmp4_schema *icmp4s)
-{
+int extract_icmp4_statement(struct sqlite_header_context *ctx,
+                            struct icmp4_schema *icmp4s) {
   int column_idx, rc;
   sqlite3_stmt *res = NULL;
 
@@ -430,7 +435,8 @@ int extract_icmp4_statement(struct sqlite_header_context *ctx, struct icmp4_sche
     column_idx = sqlite3_bind_parameter_index(res, "@gateway");
     sqlite3_bind_int64(res, column_idx, icmp4s->gateway);
 
-    log_trace("sqlite insert ICMP4 type=%d code=%d", icmp4s->type, icmp4s->code);
+    log_trace("sqlite insert ICMP4 type=%d code=%d", icmp4s->type,
+              icmp4s->code);
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {
@@ -441,8 +447,8 @@ int extract_icmp4_statement(struct sqlite_header_context *ctx, struct icmp4_sche
   return 0;
 }
 
-int extract_icmp6_statement(struct sqlite_header_context *ctx, struct icmp6_schema *icmp6s)
-{
+int extract_icmp6_statement(struct sqlite_header_context *ctx,
+                            struct icmp6_schema *icmp6s) {
   int column_idx, rc;
   sqlite3_stmt *res = NULL;
 
@@ -473,7 +479,8 @@ int extract_icmp6_statement(struct sqlite_header_context *ctx, struct icmp6_sche
     column_idx = sqlite3_bind_parameter_index(res, "@icmp6_un_data32");
     sqlite3_bind_int64(res, column_idx, icmp6s->icmp6_un_data32);
 
-    log_trace("sqlite insert ICMP6 type=%d code=%d", icmp6s->icmp6_type, icmp6s->icmp6_code);
+    log_trace("sqlite insert ICMP6 type=%d code=%d", icmp6s->icmp6_type,
+              icmp6s->icmp6_code);
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {
@@ -484,8 +491,8 @@ int extract_icmp6_statement(struct sqlite_header_context *ctx, struct icmp6_sche
   return 0;
 }
 
-int extract_dns_statement(struct sqlite_header_context *ctx, struct dns_schema *dnss)
-{
+int extract_dns_statement(struct sqlite_header_context *ctx,
+                          struct dns_schema *dnss) {
   int column_idx, rc;
   sqlite3_stmt *res = NULL;
 
@@ -536,8 +543,8 @@ int extract_dns_statement(struct sqlite_header_context *ctx, struct dns_schema *
   return 0;
 }
 
-int extract_mdsn_statement(struct sqlite_header_context *ctx, struct mdns_schema *mdnss)
-{
+int extract_mdsn_statement(struct sqlite_header_context *ctx,
+                           struct mdns_schema *mdnss) {
   int column_idx, rc;
   sqlite3_stmt *res = NULL;
 
@@ -589,8 +596,8 @@ int extract_mdsn_statement(struct sqlite_header_context *ctx, struct mdns_schema
   return 0;
 }
 
-int extract_dhcp_statement(struct sqlite_header_context *ctx, struct dhcp_schema *dhcps)
-{
+int extract_dhcp_statement(struct sqlite_header_context *ctx,
+                           struct dhcp_schema *dhcps) {
   int column_idx, rc;
   sqlite3_stmt *res = NULL;
 
@@ -643,7 +650,7 @@ int extract_dhcp_statement(struct sqlite_header_context *ctx, struct dhcp_schema
     sqlite3_bind_text(res, column_idx, dhcps->giaddr, -1, NULL);
 
     log_trace("sqlite insert DHCP ciaddr=%s yiaddr=%s siaddr=%s giaddr=%s",
-      dhcps->ciaddr, dhcps->yiaddr, dhcps->siaddr, dhcps->giaddr);
+              dhcps->ciaddr, dhcps->yiaddr, dhcps->siaddr, dhcps->giaddr);
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {
@@ -654,8 +661,8 @@ int extract_dhcp_statement(struct sqlite_header_context *ctx, struct dhcp_schema
   return 0;
 }
 
-int save_packet_statement(struct sqlite_header_context *ctx, struct tuple_packet *tp)
-{
+int save_packet_statement(struct sqlite_header_context *ctx,
+                          struct tuple_packet *tp) {
   if (tp == NULL) {
     log_trace("tp param is NULL");
     return -1;
@@ -696,8 +703,7 @@ int save_packet_statement(struct sqlite_header_context *ctx, struct tuple_packet
   return -1;
 }
 
-void free_sqlite_header_db(struct sqlite_header_context *ctx)
-{
+void free_sqlite_header_db(struct sqlite_header_context *ctx) {
   if (ctx != NULL) {
     if (ctx->db != NULL)
       sqlite3_close(ctx->db);
@@ -705,10 +711,9 @@ void free_sqlite_header_db(struct sqlite_header_context *ctx)
   }
 }
 
-int sqlite_trace_callback(unsigned int uMask, void* ctx, void* stm, void* X)
-{
-  (void) uMask;
-  (void) X;
+int sqlite_trace_callback(unsigned int uMask, void *ctx, void *stm, void *X) {
+  (void)uMask;
+  (void)X;
 
   struct sqlite_header_context *sql_ctx = (struct sqlite_header_context *)ctx;
   sqlite3_stmt *statement = (sqlite3_stmt *)stm;
@@ -723,9 +728,8 @@ int sqlite_trace_callback(unsigned int uMask, void* ctx, void* stm, void* X)
   return 0;
 }
 
-int open_sqlite_header_db(char *db_path, trace_callback_fn fn,
-                               void *trace_ctx, struct sqlite_header_context **ctx)
-{
+int open_sqlite_header_db(char *db_path, trace_callback_fn fn, void *trace_ctx,
+                          struct sqlite_header_context **ctx) {
 
   sqlite3 *db;
   struct sqlite_header_context *context = NULL;
@@ -746,7 +750,8 @@ int open_sqlite_header_db(char *db_path, trace_callback_fn fn,
 
   if (context->trace_fn != NULL) {
     log_trace("Register sqlite trace callback");
-    sqlite3_trace_v2(db, SQLITE_TRACE_STMT, sqlite_trace_callback, (void *)context);
+    sqlite3_trace_v2(db, SQLITE_TRACE_STMT, sqlite_trace_callback,
+                     (void *)context);
   }
 
   log_debug("sqlite autocommit mode=%d", sqlite3_get_autocommit(db));

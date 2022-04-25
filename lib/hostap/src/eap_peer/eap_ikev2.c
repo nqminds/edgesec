@@ -396,7 +396,7 @@ static struct wpabuf * eap_ikev2_process(struct eap_sm *sm, void *priv,
 		ret->ignore = TRUE;
 		return NULL;
 	}
-		
+
 	if (flags & IKEV2_FLAGS_MORE_FRAGMENTS) {
 		return eap_ikev2_process_fragment(data, ret, id, flags,
 						  message_length, pos,

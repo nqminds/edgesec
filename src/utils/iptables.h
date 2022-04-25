@@ -37,9 +37,9 @@
  *
  */
 struct iptables_context {
-  char iptables_path[MAX_OS_PATH_LEN];      /**< The iptables executable path */
-  UT_array *rule_list;                      /**< Current iptables rules */
-  bool  exec_iptables;                      /**< Flag to execute iptables command */
+  char iptables_path[MAX_OS_PATH_LEN]; /**< The iptables executable path */
+  UT_array *rule_list;                 /**< Current iptables rules */
+  bool exec_iptables;                  /**< Flag to execute iptables command */
 };
 
 /**
@@ -48,16 +48,18 @@ struct iptables_context {
  * @param path The iptables binary path
  * @param ifinfo_array Array of interface configuration info structure
  * @param exec_iptables Execute the iptables command
- * @return struct iptables_context*, pointer to newly created iptables context, NULL on failure
+ * @return struct iptables_context*, pointer to newly created iptables context,
+ * NULL on failure
  */
-struct iptables_context* iptables_init(char *path, UT_array *ifinfo_array, bool exec_iptables);
+struct iptables_context *iptables_init(char *path, UT_array *ifinfo_array,
+                                       bool exec_iptables);
 
 /**
  * @brief Free the iptables context
  *
  * @param ctx The iptables context
  */
-void iptables_free(struct iptables_context* ctx);
+void iptables_free(struct iptables_context *ctx);
 
 /**
  * @brief Add a bridge rule to the list of rules
@@ -69,7 +71,8 @@ void iptables_free(struct iptables_context* ctx);
  * @param dif Destination interface name string
  * @return true on sucess, false on error
  */
-bool iptables_add_bridge(struct iptables_context *ctx, char *sip, char *sif, char *dip, char *dif);
+bool iptables_add_bridge(struct iptables_context *ctx, char *sip, char *sif,
+                         char *dip, char *dif);
 
 /**
  * @brief Delete a bridge rule
@@ -81,7 +84,8 @@ bool iptables_add_bridge(struct iptables_context *ctx, char *sip, char *sif, cha
  * @param dif Destination interface name string
  * @return true on sucess, false on error
  */
-bool iptables_delete_bridge(struct iptables_context* ctx, char *sip, char *sif, char *dip, char *dif);
+bool iptables_delete_bridge(struct iptables_context *ctx, char *sip, char *sif,
+                            char *dip, char *dif);
 
 /**
  * @brief Add a NAT rule
@@ -92,7 +96,8 @@ bool iptables_delete_bridge(struct iptables_context* ctx, char *sip, char *sif, 
  * @param nif NAT interface name string
  * @return true on sucess, false on error
  */
-bool iptables_add_nat(struct iptables_context* ctx, char *sip, char *sif, char *nif);
+bool iptables_add_nat(struct iptables_context *ctx, char *sip, char *sif,
+                      char *nif);
 
 /**
  * @brief Delete a NAT rule
@@ -103,6 +108,7 @@ bool iptables_add_nat(struct iptables_context* ctx, char *sip, char *sif, char *
  * @param nif NAT interface name string
  * @return true on sucess, false on error
  */
-bool iptables_delete_nat(struct iptables_context* ctx, char *sip, char *sif, char *nif);
+bool iptables_delete_nat(struct iptables_context *ctx, char *sip, char *sif,
+                         char *nif);
 
 #endif

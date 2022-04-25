@@ -41,7 +41,7 @@
  * @return int 0 on success, -1 on failure
  */
 int set_alert_cmd(struct supervisor_context *context, struct alert_meta *meta,
-                        uint8_t *info, size_t info_size);
+                  uint8_t *info, size_t info_size);
 
 /**
  * @brief SET_FINGERPRINT command
@@ -70,7 +70,8 @@ int set_fingerprint_cmd(struct supervisor_context *context, char *src_mac_addr,
  * @param out The output string
  * @return ssize_t the sizeo fo the output buffer, -1 on failure
  */
-ssize_t query_fingerprint_cmd(struct supervisor_context *context, char *mac_addr, uint64_t timestamp,
-                        char *op, char *protocol, char **out);
+ssize_t query_fingerprint_cmd(struct supervisor_context *context,
+                              char *mac_addr, uint64_t timestamp, char *op,
+                              char *protocol, char **out);
 
 #endif

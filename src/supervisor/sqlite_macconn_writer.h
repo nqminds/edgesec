@@ -38,10 +38,17 @@
 
 #define MACCONN_TABLE_NAME "macconn"
 
-#define MACCONN_CREATE_TABLE "CREATE TABLE " MACCONN_TABLE_NAME " (mac TEXT NOT NULL, id TEXT, status INTEGER, vlanid INTEGER, nat INTEGER, allow INTEGER, label TEXT, PRIMARY KEY (mac));"
-#define MACCONN_INSERT_INTO "INSERT INTO " MACCONN_TABLE_NAME " VALUES(@mac, @id, @status, @vlanid, @nat, @allow, @label);"
+#define MACCONN_CREATE_TABLE                                                   \
+  "CREATE TABLE " MACCONN_TABLE_NAME                                           \
+  " (mac TEXT NOT NULL, id TEXT, status INTEGER, vlanid INTEGER, nat "         \
+  "INTEGER, allow INTEGER, label TEXT, PRIMARY KEY (mac));"
+#define MACCONN_INSERT_INTO                                                    \
+  "INSERT INTO " MACCONN_TABLE_NAME                                            \
+  " VALUES(@mac, @id, @status, @vlanid, @nat, @allow, @label);"
 #define MACCONN_DELETE_FROM "DELETE FROM " MACCONN_TABLE_NAME " WHERE mac=@mac;"
-#define MACCONN_SELECT_FROM "SELECT mac, id, status, vlanid, nat, allow, label FROM  " MACCONN_TABLE_NAME ";"
+#define MACCONN_SELECT_FROM                                                    \
+  "SELECT mac, id, status, vlanid, nat, allow, label FROM "                    \
+  " " MACCONN_TABLE_NAME ";"
 
 /**
  * @brief Opens the sqlite macconn db
@@ -50,7 +57,7 @@
  * @param sql The returned sqlite db structure pointer
  * @return 0 on success, -1 on failure
  */
-int open_sqlite_macconn_db(char *db_path, sqlite3** sql);
+int open_sqlite_macconn_db(char *db_path, sqlite3 **sql);
 
 /**
  * @brief Closes the sqlite db

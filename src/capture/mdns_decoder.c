@@ -20,7 +20,8 @@
 /**
  * @file mdns_decoder.c
  * @author Alexandru Mereacre
- * @brief File containing the implementation of the mdns packet decoder utilities.
+ * @brief File containing the implementation of the mdns packet decoder
+ * utilities.
  */
 
 #include <netinet/in.h>
@@ -46,12 +47,11 @@
 #include "packet_decoder.h"
 #include "mdns_decoder.h"
 
-#define COMPRESSION_FLAG      0xC0
+#define COMPRESSION_FLAG 0xC0
 #define COMPRESSION_FLAG_BIT7 0x80
 #define COMPRESSION_FLAG_BIT6 0x40
 
-int copy_mdns_query_name(uint8_t *start, char **out)
-{
+int copy_mdns_query_name(uint8_t *start, char **out) {
   char *qname = NULL;
 
   *out = NULL;
@@ -74,18 +74,17 @@ int copy_mdns_query_name(uint8_t *start, char **out)
   return 0;
 }
 
-uint16_t get_mdns_query_offset(uint8_t low, uint8_t high)
-{
+uint16_t get_mdns_query_offset(uint8_t low, uint8_t high) {
   uint16_t offset = low;
   offset <<= 8;
   return offset | high;
 }
 
-int decode_mdns_query_name(uint8_t *payload, size_t len, size_t *first, char **out)
-{
+int decode_mdns_query_name(uint8_t *payload, size_t len, size_t *first,
+                           char **out) {
   size_t i = *first, off;
   char *qname = NULL;
-  struct string_queue* squeue = NULL;
+  struct string_queue *squeue = NULL;
 
   *out = NULL;
 
@@ -99,8 +98,10 @@ int decode_mdns_query_name(uint8_t *payload, size_t len, size_t *first, char **o
       break;
     }
 
-    if ((payload[i] & COMPRESSION_FLAG_BIT7) && (payload[i] & COMPRESSION_FLAG_BIT6)) {
-      off = (size_t) get_mdns_query_offset(payload[i] & (~COMPRESSION_FLAG), payload[i + 1]);
+    if ((payload[i] & COMPRESSION_FLAG_BIT7) &&
+        (payload[i] & COMPRESSION_FLAG_BIT6)) {
+      off = (size_t)get_mdns_query_offset(payload[i] & (~COMPRESSION_FLAG),
+                                          payload[i + 1]);
 
       if (decode_mdns_query_name(payload, len, &off, &qname) < 0) {
         log_trace("decode_mdns_query_ptr fail");
@@ -145,8 +146,8 @@ int decode_mdns_query_name(uint8_t *payload, size_t len, size_t *first, char **o
   return 0;
 }
 
-int decode_mdns_queries(uint8_t *payload, size_t len, size_t *first, uint16_t nqueries, UT_array *queries)
-{
+int decode_mdns_queries(uint8_t *payload, size_t len, size_t *first,
+                        uint16_t nqueries, UT_array *queries) {
   int idx;
   size_t i = *first;
   char *qname = NULL;
@@ -159,8 +160,8 @@ int decode_mdns_queries(uint8_t *payload, size_t len, size_t *first, uint16_t nq
       return -1;
     }
 
-    i ++;
-    meta = (struct mdns_query_meta *) &payload[i];
+    i++;
+    meta = (struct mdns_query_meta *)&payload[i];
     i += sizeof(struct mdns_query_meta);
 
     if (qname != NULL) {
@@ -175,8 +176,8 @@ int decode_mdns_queries(uint8_t *payload, size_t len, size_t *first, uint16_t nq
   return 0;
 }
 
-int decode_mdns_answers(uint8_t *payload, size_t len, size_t *first, uint16_t nanswers, UT_array *answers)
-{
+int decode_mdns_answers(uint8_t *payload, size_t len, size_t *first,
+                        uint16_t nanswers, UT_array *answers) {
   int idx;
   size_t i = *first;
   char *rrname = NULL;
@@ -189,8 +190,8 @@ int decode_mdns_answers(uint8_t *payload, size_t len, size_t *first, uint16_t na
       return -1;
     }
 
-    i ++;
-    meta = (struct mdns_answer_meta *) &payload[i];
+    i++;
+    meta = (struct mdns_answer_meta *)&payload[i];
     i += sizeof(struct mdns_answer_meta);
 
     if (rrname != NULL) {
@@ -213,9 +214,8 @@ int decode_mdns_answers(uint8_t *payload, size_t len, size_t *first, uint16_t na
   return 0;
 }
 
-int decode_mdns_header(uint8_t *packet, struct mdns_header *out)
-{
-  struct mdns_header *mdnsh = (struct mdns_header *) packet;
+int decode_mdns_header(uint8_t *packet, struct mdns_header *out) {
+  struct mdns_header *mdnsh = (struct mdns_header *)packet;
 
   out->tid = ntohs(mdnsh->tid);
   out->flags = ntohs(mdnsh->flags);
@@ -227,8 +227,7 @@ int decode_mdns_header(uint8_t *packet, struct mdns_header *out)
   return 0;
 }
 
-bool decode_mdns_packet(struct capture_packet *cpac)
-{
+bool decode_mdns_packet(struct capture_packet *cpac) {
   struct mdns_header mdnsh;
   // size_t payload_len;
   // int pos = 0;
@@ -236,11 +235,13 @@ bool decode_mdns_packet(struct capture_packet *cpac)
   // size_t first;
 
   if ((void *)cpac->udph != NULL) {
-    cpac->mdnsh = (struct mdns_header *) ((void *)cpac->udph + sizeof(struct udphdr));
+    cpac->mdnsh =
+        (struct mdns_header *)((void *)cpac->udph + sizeof(struct udphdr));
   } else
     return false;
 
-  cpac->mdnsh_hash = md_hash((const char*) cpac->mdnsh, sizeof(struct mdns_header));
+  cpac->mdnsh_hash =
+      md_hash((const char *)cpac->mdnsh, sizeof(struct mdns_header));
 
   cpac->mdnss.hash = cpac->mdnsh_hash;
   cpac->mdnss.timestamp = cpac->timestamp;
@@ -263,7 +264,8 @@ bool decode_mdns_packet(struct capture_packet *cpac)
   //   payload_len = ((void*) cpac->ethh + cpac->length) - (void*)cpac->mdnsh;
   //   first = sizeof(struct mdns_header);
   //   if (cpac->mdnss.nqueries) {
-  //     if (decode_mdns_queries((uint8_t *)cpac->mdnsh, payload_len, &first, cpac->mdnss.nqueries, &qname) < 0) {
+  //     if (decode_mdns_queries((uint8_t *)cpac->mdnsh, payload_len, &first,
+  //     cpac->mdnss.nqueries, &qname) < 0) {
   //       log_trace("decode_mdns_questions fail");
   //       return false;
   //     }
@@ -272,9 +274,11 @@ bool decode_mdns_packet(struct capture_packet *cpac)
   //   }
   // }
 
-  log_trace("mDNS id=%d flags=0x%x nqueries=%d nanswers=%d nauth=%d nother=%d qname=%s",
-    cpac->mdnss.tid, cpac->mdnss.flags, cpac->mdnss.nqueries, cpac->mdnss.nanswers,
-    cpac->mdnss.nauth, cpac->mdnss.nother, cpac->mdnss.qname);
+  log_trace("mDNS id=%d flags=0x%x nqueries=%d nanswers=%d nauth=%d nother=%d "
+            "qname=%s",
+            cpac->mdnss.tid, cpac->mdnss.flags, cpac->mdnss.nqueries,
+            cpac->mdnss.nanswers, cpac->mdnss.nauth, cpac->mdnss.nother,
+            cpac->mdnss.qname);
 
   return true;
 }

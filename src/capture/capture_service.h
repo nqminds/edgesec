@@ -28,7 +28,6 @@
 
 #include "capture_config.h"
 
-
 /**
  * @brief Executes the capture service
  *

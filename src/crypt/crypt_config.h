@@ -38,10 +38,13 @@
  *
  */
 struct crypt_context {
-  struct hsm_context *hcontext;                       /**< The HSM context. */
-  sqlite3 *crypt_db;                                  /**< The crypt sqlite db structure. */
-  char key_id[MAX_KEY_ID_SIZE];                       /**< The crypt secrets key id. */
-  uint8_t crypto_key[AES_KEY_SIZE + AES_BLOCK_SIZE];  /**< The crypt master key array (Need to be store securely or retrived from the secure memory). */
+  struct hsm_context *hcontext; /**< The HSM context. */
+  sqlite3 *crypt_db;            /**< The crypt sqlite db structure. */
+  char key_id[MAX_KEY_ID_SIZE]; /**< The crypt secrets key id. */
+  uint8_t crypto_key[AES_KEY_SIZE +
+                     AES_BLOCK_SIZE]; /**< The crypt master key array (Need to
+                                         be store securely or retrived from the
+                                         secure memory). */
 };
 
 #endif

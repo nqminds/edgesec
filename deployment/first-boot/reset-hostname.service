@@ -11,4 +11,3 @@ ExecStart=/usr/bin/env bash /usr/local/EDGESec/deploy/reset-hostname.bash
 
 [Install]
 WantedBy=network.target
-

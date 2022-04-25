@@ -13,6 +13,3 @@ WORKDIR /opt/musl-cross-make-master
 COPY ./config.mak ./
 RUN make
 RUN make install
-
-
-

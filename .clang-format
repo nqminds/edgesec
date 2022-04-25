@@ -1,0 +1,14 @@
+---
+Language:      Cpp
+BasedOnStyle:  LLVM
+# indent case in switch statement
+IndentCaseLabels: true
+# ---- TODO: Make another PR where we do sort includes ---- #
+SortIncludes: false
+IncludeCategories:
+  - Regex: '^<std'
+    SortPriority: 1
+  - Regex: '^<cmocka.h>'
+    # <cmocha.h> relies on <std...h> being included first
+    SortPriority: 2
+...

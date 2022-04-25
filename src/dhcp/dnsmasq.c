@@ -20,7 +20,8 @@
 /**
  * @file dnsmasq.c
  * @author Alexandru Mereacre
- * @brief File containing the implementation of dnsmasq service configuration utilities.
+ * @brief File containing the implementation of dnsmasq service configuration
+ * utilities.
  */
 
 #include <stdio.h>
@@ -34,7 +35,6 @@
 #include <libgen.h>
 #include <fcntl.h>
 
-
 #include "dhcp_config.h"
 
 #include "../utils/log.h"
@@ -45,44 +45,43 @@
 
 #ifdef WITH_UCI_SERVICE
 #include "../utils/uci_wrt.h"
-#define DNSMASQ_SERVICE_RESTART       "restart"
+#define DNSMASQ_SERVICE_RESTART "restart"
 #endif
 
-#define PROCESS_RESTART_TIME  5 // In seconds
-#define MAX_DHCP_CHECK_COUNT  100 // number of tries
+#define PROCESS_RESTART_TIME 5   // In seconds
+#define MAX_DHCP_CHECK_COUNT 100 // number of tries
 
 #define DNSMASQ_BIND_INTERFACE_OPTION "--bind-interfaces"
-#define DNSMASQ_BIND_DYNAMIC_OPTION   "--bind-dynamic"
-#define DNSMASQ_NO_DAEMON_OPTION      "--no-daemon"
-#define DNSMASQ_LOG_QUERIES_OPTION    "--log-queries"
-#define DNSMASQ_CONF_FILE_OPTION      "--conf-file="
+#define DNSMASQ_BIND_DYNAMIC_OPTION "--bind-dynamic"
+#define DNSMASQ_NO_DAEMON_OPTION "--no-daemon"
+#define DNSMASQ_LOG_QUERIES_OPTION "--log-queries"
+#define DNSMASQ_CONF_FILE_OPTION "--conf-file="
 
-#define DNSMASQ_SCRIPT_STR \
-  "#!/bin/sh\n" \
-  "sockpath=\"%s\"\n" \
-  "str=\"SET_IP $1 $2 $3\"\n" \
-  "\n" \
-  "nccheck=`nc -help 2>&1 >/dev/null | grep 'OpenBSD netcat'`\n" \
-  "if [ -z \"$nccheck\" ]\n" \
-  "then\n" \
-  "\techo \"Using socat\"\n" \
-  "\tcommand=\"socat - UNIX-CLIENT:$sockpath\"\n" \
-  "else\n" \
-  "\techo \"Using netcat\"\n" \
-  "\tcommand=\"nc -uU $sockpath -w2 -W1\"\n" \
-  "fi\n" \
-  "\n" \
-  "echo \"Sending $str ...\"\n" \
+#define DNSMASQ_SCRIPT_STR                                                     \
+  "#!/bin/sh\n"                                                                \
+  "sockpath=\"%s\"\n"                                                          \
+  "str=\"SET_IP $1 $2 $3\"\n"                                                  \
+  "\n"                                                                         \
+  "nccheck=`nc -help 2>&1 >/dev/null | grep 'OpenBSD netcat'`\n"               \
+  "if [ -z \"$nccheck\" ]\n"                                                   \
+  "then\n"                                                                     \
+  "\techo \"Using socat\"\n"                                                   \
+  "\tcommand=\"socat - UNIX-CLIENT:$sockpath\"\n"                              \
+  "else\n"                                                                     \
+  "\techo \"Using netcat\"\n"                                                  \
+  "\tcommand=\"nc -uU $sockpath -w2 -W1\"\n"                                   \
+  "fi\n"                                                                       \
+  "\n"                                                                         \
+  "echo \"Sending $str ...\"\n"                                                \
   "echo $str | $command\n"
 
 static char dnsmasq_proc_name[MAX_OS_PATH_LEN];
 static bool dns_process_started = false;
 
 #ifdef WITH_UCI_SERVICE
-struct string_queue* make_interface_list(struct dhcp_conf *dconf)
-{
+struct string_queue *make_interface_list(struct dhcp_conf *dconf) {
   config_dhcpinfo_t *el = NULL;
-  struct string_queue* squeue = init_string_queue(-1);
+  struct string_queue *squeue = init_string_queue(-1);
   char buf[IFNAMSIZ];
 
   if (squeue == NULL) {
@@ -90,7 +89,8 @@ struct string_queue* make_interface_list(struct dhcp_conf *dconf)
     return NULL;
   }
 
-  while((el = (config_dhcpinfo_t *) utarray_next(dconf->config_dhcpinfo_array, el)) != NULL) {
+  while ((el = (config_dhcpinfo_t *)utarray_next(dconf->config_dhcpinfo_array,
+                                                 el)) != NULL) {
     snprintf(buf, IFNAMSIZ, "%s%d", dconf->bridge_prefix, el->vlanid);
     if (push_string_queue(squeue, buf) < 0) {
       log_trace("push_string_queue fail");
@@ -102,8 +102,7 @@ struct string_queue* make_interface_list(struct dhcp_conf *dconf)
   return squeue;
 }
 
-int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array)
-{
+int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array) {
   struct string_queue *squeue;
   config_dhcpinfo_t *el = NULL;
   struct uctx *context = uwrt_init_context(NULL);
@@ -121,19 +120,20 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array)
   }
 
   if (uwrt_gen_dnsmasq_instance(context, squeue, dns_server_array,
-                                dconf->dhcp_leasefile_path, dconf->dhcp_script_path) < 0)
-  {
+                                dconf->dhcp_leasefile_path,
+                                dconf->dhcp_script_path) < 0) {
     log_trace("uwrt_gen_dnsmasq_instance fail");
     uwrt_free_context(context);
     free_string_queue(squeue);
     return -1;
   }
 
-  while((el = (config_dhcpinfo_t *) utarray_next(dconf->config_dhcpinfo_array, el)) != NULL) {
+  while ((el = (config_dhcpinfo_t *)utarray_next(dconf->config_dhcpinfo_array,
+                                                 el)) != NULL) {
 
-    if (uwrt_add_dhcp_pool(context, dconf->bridge_prefix, el->vlanid, el->ip_addr_low, el->ip_addr_upp,
-                       el->subnet_mask, el->lease_time) < 0)
-    {
+    if (uwrt_add_dhcp_pool(context, dconf->bridge_prefix, el->vlanid,
+                           el->ip_addr_low, el->ip_addr_upp, el->subnet_mask,
+                           el->lease_time) < 0) {
       log_trace("uwrt_add_dhcp_pool fail");
       uwrt_free_context(context);
       free_string_queue(squeue);
@@ -153,8 +153,7 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array)
   return 0;
 }
 #else
-int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array)
-{
+int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array) {
   char **p = NULL;
   config_dhcpinfo_t *el = NULL;
 
@@ -176,17 +175,22 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array)
   log_trace("Writing into %s", dconf->dhcp_conf_path);
 
   fprintf(fp, "no-resolv\n");
-  while((p = (char**)utarray_next(dns_server_array, p)) != NULL) {
+  while ((p = (char **)utarray_next(dns_server_array, p)) != NULL) {
     fprintf(fp, "server=%s\n", *p);
   }
 
   fprintf(fp, "dhcp-leasefile=%s\n", dconf->dhcp_leasefile_path);
   fprintf(fp, "dhcp-script=%s\n", dconf->dhcp_script_path);
-  while((el = (config_dhcpinfo_t *) utarray_next(dconf->config_dhcpinfo_array, el)) != NULL) {
+  while ((el = (config_dhcpinfo_t *)utarray_next(dconf->config_dhcpinfo_array,
+                                                 el)) != NULL) {
     if (el->vlanid)
-      fprintf(fp, "dhcp-range=%s.%d,%s,%s,%s,%s\n", dconf->wifi_interface, el->vlanid, el->ip_addr_low, el->ip_addr_upp, el->subnet_mask, el->lease_time);
+      fprintf(fp, "dhcp-range=%s.%d,%s,%s,%s,%s\n", dconf->wifi_interface,
+              el->vlanid, el->ip_addr_low, el->ip_addr_upp, el->subnet_mask,
+              el->lease_time);
     else
-      fprintf(fp, "dhcp-range=%s,%s,%s,%s,%s\n", dconf->wifi_interface, el->ip_addr_low, el->ip_addr_upp, el->subnet_mask, el->lease_time);
+      fprintf(fp, "dhcp-range=%s,%s,%s,%s,%s\n", dconf->wifi_interface,
+              el->ip_addr_low, el->ip_addr_upp, el->subnet_mask,
+              el->lease_time);
   }
 
   fclose(fp);
@@ -194,8 +198,7 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array)
 }
 #endif
 
-int generate_dnsmasq_script(char *dhcp_script_path, char *domain_server_path)
-{
+int generate_dnsmasq_script(char *dhcp_script_path, char *domain_server_path) {
   // Delete the vlan config file if present
   int stat = unlink(dhcp_script_path);
 
@@ -233,26 +236,29 @@ int generate_dnsmasq_script(char *dhcp_script_path, char *domain_server_path)
 }
 
 #ifdef WITH_UCI_SERVICE
-char* get_dnsmasq_args(char *dnsmasq_bin_path, char *dnsmasq_conf_path, char *argv[])
-{
-  (void) dnsmasq_conf_path;
+char *get_dnsmasq_args(char *dnsmasq_bin_path, char *dnsmasq_conf_path,
+                       char *argv[]) {
+  (void)dnsmasq_conf_path;
   argv[0] = dnsmasq_bin_path;
   argv[1] = DNSMASQ_SERVICE_RESTART;
   return NULL;
 }
 #else
-char* get_dnsmasq_args(char *dnsmasq_bin_path, char *dnsmasq_conf_path, char *argv[])
-{
-  // sudo dnsmasq --bind-dynamic --no-daemon --log-queries --conf-file=/tmp/dnsmasq.conf
-  // argv = {"dnsmasq", "--bind-interfaces", "--no-daemon", "--log-queries", "--conf-file=/tmp/dnsmasq.conf", NULL};
-  // argv = {"dnsmasq", "--bind-interfaces", "--no-daemon", "--conf-file=/tmp/dnsmasq.conf", NULL};
+char *get_dnsmasq_args(char *dnsmasq_bin_path, char *dnsmasq_conf_path,
+                       char *argv[]) {
+  // sudo dnsmasq --bind-dynamic --no-daemon --log-queries
+  // --conf-file=/tmp/dnsmasq.conf argv = {"dnsmasq", "--bind-interfaces",
+  // "--no-daemon", "--log-queries", "--conf-file=/tmp/dnsmasq.conf", NULL};
+  // argv = {"dnsmasq", "--bind-interfaces", "--no-daemon",
+  // "--conf-file=/tmp/dnsmasq.conf", NULL};
 
   if (os_strnlen_s(dnsmasq_conf_path, MAX_OS_PATH_LEN) >= MAX_OS_PATH_LEN) {
     log_trace("dnsmasq_conf_path exceeds/is MAX length");
     return NULL;
   }
 
-  char *conf_arg = os_malloc(sizeof(char)*(MAX_OS_PATH_LEN + strlen(DNSMASQ_CONF_FILE_OPTION) + 1));
+  char *conf_arg = os_malloc(
+      sizeof(char) * (MAX_OS_PATH_LEN + strlen(DNSMASQ_CONF_FILE_OPTION) + 1));
 
   if (conf_arg == NULL) {
     log_errno("os_malloc");
@@ -272,16 +278,15 @@ char* get_dnsmasq_args(char *dnsmasq_bin_path, char *dnsmasq_conf_path, char *ar
 }
 #endif
 
-int check_dhcp_running(char *name, int wait_time)
-{
+int check_dhcp_running(char *name, int wait_time) {
   int running = 0;
   int count = 0;
-  while(!running && count < MAX_DHCP_CHECK_COUNT) {
+  while (!running && count < MAX_DHCP_CHECK_COUNT) {
     if ((running = is_proc_running(name)) < 0) {
       log_trace("is_proc_running fail");
       return -1;
     }
-    count ++;
+    count++;
     sleep(wait_time);
   }
 
@@ -289,8 +294,7 @@ int check_dhcp_running(char *name, int wait_time)
 }
 
 #ifdef WITH_UCI_SERVICE
-char* run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path)
-{
+char *run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path) {
   pid_t child_pid = 0;
   int ret = 0;
   char *process_argv[3] = {NULL, NULL, NULL};
@@ -316,8 +320,7 @@ char* run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path)
   return dnsmasq_proc_name;
 }
 #else
-char* run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path)
-{
+char *run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path) {
   pid_t child_pid = 0;
   int ret;
   char *process_argv[5] = {NULL, NULL, NULL, NULL, NULL};
@@ -330,14 +333,15 @@ char* run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path)
     return NULL;
   }
 
-  char *conf_arg = get_dnsmasq_args(dhcp_bin_path, dhcp_conf_path, process_argv);
+  char *conf_arg =
+      get_dnsmasq_args(dhcp_bin_path, dhcp_conf_path, process_argv);
 
   if (conf_arg == NULL) {
     log_trace("get_dnsmasq_args fail");
     return NULL;
   }
 
-  while((ret = run_process(process_argv, &child_pid)) < 0) {
+  while ((ret = run_process(process_argv, &child_pid)) < 0) {
     log_trace("Killing dhcp process");
     // Kill any running hostapd process
     if (!kill_process(dnsmasq_proc_name)) {
@@ -369,8 +373,7 @@ char* run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path)
 }
 #endif
 
-bool kill_dhcp_process(void)
-{
+bool kill_dhcp_process(void) {
   if (dns_process_started) {
     dns_process_started = false;
     return kill_process(dnsmasq_proc_name);
@@ -380,21 +383,20 @@ bool kill_dhcp_process(void)
 }
 
 #ifdef WITH_UCI_SERVICE
-int signal_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path)
-{
-  (void) dhcp_bin_path;
-  (void) dhcp_conf_path;
+int signal_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path) {
+  (void)dhcp_bin_path;
+  (void)dhcp_conf_path;
   return 0;
 }
 #else
-int signal_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path)
-{
+int signal_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path) {
   char *process_argv[5] = {NULL, NULL, NULL, NULL, NULL};
   char *conf_arg;
 
   os_strlcpy(dnsmasq_proc_name, basename(dhcp_bin_path), MAX_OS_PATH_LEN);
 
-  if ((conf_arg = get_dnsmasq_args(dhcp_bin_path, dhcp_conf_path, process_argv)) == NULL) {
+  if ((conf_arg = get_dnsmasq_args(dhcp_bin_path, dhcp_conf_path,
+                                   process_argv)) == NULL) {
     log_trace("get_dnsmasq_args fail");
     return -1;
   }
@@ -418,8 +420,7 @@ int signal_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path)
 }
 #endif
 
-int clear_dhcp_lease_entry(char *mac_addr, char *dhcp_leasefile_path)
-{
+int clear_dhcp_lease_entry(char *mac_addr, char *dhcp_leasefile_path) {
   char *out = NULL, *end = NULL;
   char *start = NULL, *finish = NULL;
 
@@ -451,20 +452,20 @@ int clear_dhcp_lease_entry(char *mac_addr, char *dhcp_leasefile_path)
   finish = start + 1;
   end = out + strlen(out);
 
-  while(start > out) {
+  while (start > out) {
     if (*(start - 1) == '\n') {
       break;
     }
-    start --;
+    start--;
   }
 
   *start = '\0';
-  while(finish < end) {
+  while (finish < end) {
     if (*finish == '\n') {
-      finish ++;
+      finish++;
       break;
     }
-    finish ++;
+    finish++;
   }
 
   if ((fp = fopen(dhcp_leasefile_path, "w+")) == NULL) {
@@ -473,7 +474,7 @@ int clear_dhcp_lease_entry(char *mac_addr, char *dhcp_leasefile_path)
     return -1;
   }
 
-  fprintf(fp,"%s%s", out, finish);
+  fprintf(fp, "%s%s", out, finish);
   os_free(out);
   fclose(fp);
   return 0;

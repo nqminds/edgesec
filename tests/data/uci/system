@@ -48,4 +48,3 @@ config led 'led_pci3'
 	option trigger 'netdev'
 	option mode 'link tx rx'
 	option dev 'wlan3'
-

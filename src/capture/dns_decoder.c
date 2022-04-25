@@ -20,7 +20,8 @@
 /**
  * @file dns_decoder.c
  * @author Alexandru Mereacre
- * @brief File containing the implementation of the dns packet decoder utilities.
+ * @brief File containing the implementation of the dns packet decoder
+ * utilities.
  */
 
 #include <netinet/in.h>
@@ -43,11 +44,10 @@
 #include "capture_config.h"
 #include "packet_decoder.h"
 
-void decode_dns_questions(uint8_t *payload, struct capture_packet *cpac)
-{
+void decode_dns_questions(uint8_t *payload, struct capture_packet *cpac) {
   uint16_t idx, i = 0, j = 0;
-  for (idx = 0; idx < /*cpac->dnss.nqueries*/1; idx++) {
-    while ((((void *)&payload[i] - (void*)cpac->ethh)) < cpac->length) {
+  for (idx = 0; idx < /*cpac->dnss.nqueries*/ 1; idx++) {
+    while ((((void *)&payload[i] - (void *)cpac->ethh)) < cpac->length) {
       if (payload[i] == '\0' || j + payload[i] >= MAX_QUESTION_LEN - 1)
         break;
       os_memcpy(&cpac->dnss.qname[j], &payload[i + 1], payload[i]);
@@ -60,22 +60,24 @@ void decode_dns_questions(uint8_t *payload, struct capture_packet *cpac)
   }
 }
 
-bool decode_dns_packet(struct capture_packet *cpac)
-{
+bool decode_dns_packet(struct capture_packet *cpac) {
   void *payload;
   int payload_offset = 0;
   int pos = 0;
 
   if ((void *)cpac->tcph != NULL && (void *)cpac->udph == NULL) {
-    cpac->dnsh = (struct dns_header *) ((void *)cpac->tcph + sizeof(struct tcphdr));
+    cpac->dnsh =
+        (struct dns_header *)((void *)cpac->tcph + sizeof(struct tcphdr));
     payload_offset = 2;
   } else if ((void *)cpac->tcph == NULL && (void *)cpac->udph != NULL) {
-    cpac->dnsh = (struct dns_header *) ((void *)cpac->udph + sizeof(struct udphdr));
+    cpac->dnsh =
+        (struct dns_header *)((void *)cpac->udph + sizeof(struct udphdr));
     payload_offset = 0;
   } else
     return false;
 
-  cpac->dnsh_hash = md_hash((const char*) cpac->dnsh, sizeof(struct dns_header));
+  cpac->dnsh_hash =
+      md_hash((const char *)cpac->dnsh, sizeof(struct dns_header));
 
   cpac->dnss.hash = cpac->dnsh_hash;
   cpac->dnss.timestamp = cpac->timestamp;
@@ -89,17 +91,20 @@ bool decode_dns_packet(struct capture_packet *cpac)
   cpac->dnss.nauth = ntohs(cpac->dnsh->nauth);
   cpac->dnss.nother = ntohs(cpac->dnsh->nother);
 
-  pos = (int)((void*)cpac->dnsh - (void*)cpac->ethh);
+  pos = (int)((void *)cpac->dnsh - (void *)cpac->ethh);
   // We consider only the UDP encapsulation
-  if (pos + payload_offset + sizeof(struct dns_header) <= cpac->length && !payload_offset) {
-    payload = (void*)cpac->dnsh + sizeof(struct dns_header);
+  if (pos + payload_offset + sizeof(struct dns_header) <= cpac->length &&
+      !payload_offset) {
+    payload = (void *)cpac->dnsh + sizeof(struct dns_header);
     if (cpac->dnss.nqueries)
-        decode_dns_questions((uint8_t *)payload, cpac);
+      decode_dns_questions((uint8_t *)payload, cpac);
   }
 
-  // log_trace("DNS id=%d flags=0x%x nqueries=%d nanswers=%d nauth=%d nother=%d qname=%s",
-  //   cpac->dnss.tid, cpac->dnss.flags, cpac->dnss.nqueries, cpac->dnss.nanswers,
-  //   cpac->dnss.nauth, cpac->dnss.nother, cpac->dnss.qname);
+  // log_trace("DNS id=%d flags=0x%x nqueries=%d nanswers=%d nauth=%d nother=%d
+  // qname=%s",
+  //   cpac->dnss.tid, cpac->dnss.flags, cpac->dnss.nqueries,
+  //   cpac->dnss.nanswers, cpac->dnss.nauth, cpac->dnss.nother,
+  //   cpac->dnss.qname);
 
   return true;
 }

@@ -15,10 +15,11 @@
 #include "utils/log.h"
 #include "capture/capture_service.h"
 
-char *out_opt_str = "./ -i wlan0 -f port 80 -m -t 100 -n 1000 -y ndpi -e -u -w -q ./test -x SET_FINGERPRINT -z 32 -p ./db -r -1,-1 -b 100 ";
+char *out_opt_str =
+    "./ -i wlan0 -f port 80 -m -t 100 -n 1000 -y ndpi -e -u -w -q ./test -x "
+    "SET_FINGERPRINT -z 32 -p ./db -r -1,-1 -b 100 ";
 
-void capture_config(struct capture_conf *config)
-{
+void capture_config(struct capture_conf *config) {
   os_memset(config, 0, sizeof(struct capture_conf));
 
   strcpy(config->capture_bin_path, "./");
@@ -37,12 +38,11 @@ void capture_config(struct capture_conf *config)
   strcpy(config->filter, "port 80");
   config->sync_store_size = -1;
   config->sync_send_size = -1;
-  config->capture_store_size = 100; 
+  config->capture_store_size = 100;
 }
 
-static void test_capture_opt2config(void **state)
-{
-  (void) state; /* unused */
+static void test_capture_opt2config(void **state) {
+  (void)state; /* unused */
 
   struct capture_conf in, out;
   capture_config(&out);
@@ -72,9 +72,8 @@ static void test_capture_opt2config(void **state)
   assert_int_equal(capture_opt2config('r', "1,a", &in), -1);
 }
 
-static void test_capture_config2opt(void **state)
-{
-  (void) state; /* unused */
+static void test_capture_config2opt(void **state) {
+  (void)state; /* unused */
 
   struct capture_conf config;
   capture_config(&config);
@@ -88,16 +87,13 @@ static void test_capture_config2opt(void **state)
   os_free(out);
 }
 
-int main(int argc, char *argv[])
-{  
-  (void) argc;
-  (void) argv;
+int main(int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
   log_set_quiet(false);
 
-  const struct CMUnitTest tests[] = {
-    cmocka_unit_test(test_capture_opt2config),
-    cmocka_unit_test(test_capture_config2opt)
-  };
+  const struct CMUnitTest tests[] = {cmocka_unit_test(test_capture_opt2config),
+                                     cmocka_unit_test(test_capture_config2opt)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

@@ -37,7 +37,7 @@
 #include "../utils/os.h"
 #include "../utils/utarray.h"
 
-const char* const capture_description_string = R"--(
+const char *const capture_description_string = R"--(
   NquiringMinds EDGESEC capture server.
 
   Monitors and captures EDGESEC network traffic for each connected
@@ -54,16 +54,14 @@ const char* const capture_description_string = R"--(
       saved. Then it will cleanup the PCAP data.
 )--";
 
-long get_opt_num(char *num)
-{
+long get_opt_num(char *num) {
   if (!is_number(num))
     return -1;
 
   return strtol(num, NULL, 10);
 }
 
-int process_sync_params(char *param_str, struct capture_conf *config)
-{
+int process_sync_params(char *param_str, struct capture_conf *config) {
   char **p = NULL;
   UT_array *param_arr;
   utarray_new(param_arr, &ut_str_icd);
@@ -79,7 +77,7 @@ int process_sync_params(char *param_str, struct capture_conf *config)
   }
 
   errno = 0;
-  p = (char**) utarray_next(param_arr, p);
+  p = (char **)utarray_next(param_arr, p);
   if (*p != NULL) {
     if (os_strnlen_s(*p, 9) && is_number(*p)) {
       config->sync_store_size = strtol(*p, NULL, 10);
@@ -97,7 +95,7 @@ int process_sync_params(char *param_str, struct capture_conf *config)
   }
 
   errno = 0;
-  p = (char**) utarray_next(param_arr, p);
+  p = (char **)utarray_next(param_arr, p);
   if (*p != NULL) {
     if (os_strnlen_s(*p, 9) && is_number(*p)) {
       config->sync_send_size = strtol(*p, NULL, 10);
@@ -118,8 +116,7 @@ int process_sync_params(char *param_str, struct capture_conf *config)
   return 0;
 }
 
-int capture_opt2config(char key, char *value, struct capture_conf *config)
-{
+int capture_opt2config(char key, char *value, struct capture_conf *config) {
   long conversion;
   switch (key) {
     case 'i':
@@ -137,7 +134,7 @@ int capture_opt2config(char key, char *value, struct capture_conf *config)
         return -1;
       }
 
-      config->buffer_timeout = (uint32_t) conversion;
+      config->buffer_timeout = (uint32_t)conversion;
       break;
     case 'n':
       conversion = get_opt_num(value);
@@ -145,7 +142,7 @@ int capture_opt2config(char key, char *value, struct capture_conf *config)
         return -1;
       }
 
-      config->process_interval = (uint32_t) conversion;
+      config->process_interval = (uint32_t)conversion;
       break;
     case 'y':
       os_strlcpy(config->analyser, value, MAX_ANALYSER_NAME_SIZE);
@@ -192,19 +189,19 @@ int capture_opt2config(char key, char *value, struct capture_conf *config)
         return -1;
       }
 
-      config->capture_store_size = (uint32_t) conversion;
+      config->capture_store_size = (uint32_t)conversion;
       break;
 
-    default: return 1;
+    default:
+      return 1;
   }
 
   return 0;
 }
 
-char** capture_config2opt(struct capture_conf *config)
-{
+char **capture_config2opt(struct capture_conf *config) {
   char buf[255];
-  char **opt_str = (char **)os_malloc((2 * CAPTURE_MAX_OPT) * sizeof(char*));
+  char **opt_str = (char **)os_malloc((2 * CAPTURE_MAX_OPT) * sizeof(char *));
   int idx = 0;
 
   if (config == NULL) {
@@ -212,170 +209,170 @@ char** capture_config2opt(struct capture_conf *config)
     return false;
   }
 
-  //capture_bin_path
+  // capture_bin_path
   if (os_strnlen_s(config->capture_bin_path, MAX_OS_PATH_LEN)) {
     opt_str[idx] = os_malloc(MAX_OS_PATH_LEN);
     os_strlcpy(opt_str[idx], config->capture_bin_path, MAX_OS_PATH_LEN);
-    idx ++;
+    idx++;
   }
 
   // capture_interface, -i
   if (os_strnlen_s(config->capture_interface, MAX_CAPIF_LIST_SIZE)) {
     opt_str[idx] = os_zalloc(3);
     strcpy(opt_str[idx], "-i");
-    idx ++;
+    idx++;
 
     opt_str[idx] = os_malloc(MAX_CAPIF_LIST_SIZE);
     os_strlcpy(opt_str[idx], config->capture_interface, IFNAMSIZ);
-    idx ++;
+    idx++;
   }
 
   // filter, -f
   if (os_strnlen_s(config->filter, MAX_FILTER_SIZE)) {
     opt_str[idx] = os_zalloc(3);
     strcpy(opt_str[idx], "-f");
-    idx ++;
+    idx++;
 
     opt_str[idx] = os_malloc(MAX_FILTER_SIZE);
     os_strlcpy(opt_str[idx], config->filter, MAX_FILTER_SIZE);
-    idx ++;
+    idx++;
   }
 
   // promiscuouse, -m
   if (config->promiscuous) {
     opt_str[idx] = os_zalloc(3);
     strcpy(opt_str[idx], "-m");
-    idx ++;
+    idx++;
   }
 
   // buffer_timeout, -t
   sprintf(buf, "%u", config->buffer_timeout);
   opt_str[idx] = os_zalloc(3);
   strcpy(opt_str[idx], "-t");
-  idx ++;
+  idx++;
 
   opt_str[idx] = os_zalloc(strlen(buf) + 1);
   strcpy(opt_str[idx], buf);
-  idx ++;
+  idx++;
 
   // process_interval, -n
   sprintf(buf, "%u", config->process_interval);
   opt_str[idx] = os_zalloc(3);
   strcpy(opt_str[idx], "-n");
-  idx ++;
+  idx++;
 
   opt_str[idx] = os_zalloc(strlen(buf) + 1);
   strcpy(opt_str[idx], buf);
-  idx ++;
+  idx++;
 
   // analyser, -y
   if (os_strnlen_s(config->analyser, MAX_ANALYSER_NAME_SIZE)) {
     opt_str[idx] = os_zalloc(3);
     strcpy(opt_str[idx], "-y");
-    idx ++;
+    idx++;
 
     opt_str[idx] = os_malloc(MAX_ANALYSER_NAME_SIZE);
     os_strlcpy(opt_str[idx], config->analyser, MAX_ANALYSER_NAME_SIZE);
-    idx ++;
+    idx++;
   }
 
-  //immediate, -e
+  // immediate, -e
   if (config->immediate) {
     opt_str[idx] = os_zalloc(3);
     strcpy(opt_str[idx], "-e");
-    idx ++;
+    idx++;
   }
-  //file_write, -u
+  // file_write, -u
   if (config->file_write) {
     opt_str[idx] = os_zalloc(3);
     strcpy(opt_str[idx], "-u");
-    idx ++;
+    idx++;
   }
 
-  //db_write, -w
+  // db_write, -w
   if (config->db_write) {
     opt_str[idx] = os_zalloc(3);
     strcpy(opt_str[idx], "-w");
-    idx ++;
+    idx++;
   }
 
-  //domain_server_path, -q
+  // domain_server_path, -q
   if (os_strnlen_s(config->domain_server_path, MAX_OS_PATH_LEN)) {
     opt_str[idx] = os_zalloc(3);
     strcpy(opt_str[idx], "-q");
-    idx ++;
+    idx++;
 
     opt_str[idx] = os_malloc(MAX_OS_PATH_LEN);
     os_strlcpy(opt_str[idx], config->domain_server_path, MAX_OS_PATH_LEN);
-    idx ++;
+    idx++;
   }
 
-  //domain_command, -x
+  // domain_command, -x
   if (os_strnlen_s(config->domain_command, MAX_SUPERVISOR_CMD_SIZE)) {
     opt_str[idx] = os_zalloc(3);
     strcpy(opt_str[idx], "-x");
-    idx ++;
+    idx++;
 
     opt_str[idx] = os_malloc(MAX_SUPERVISOR_CMD_SIZE);
     os_strlcpy(opt_str[idx], config->domain_command, MAX_SUPERVISOR_CMD_SIZE);
-    idx ++;
+    idx++;
   }
 
-  //domain_delim, -z
+  // domain_delim, -z
   if (config->domain_delim) {
     sprintf(buf, "%d", config->domain_delim);
     opt_str[idx] = os_zalloc(3);
     strcpy(opt_str[idx], "-z");
-    idx ++;
+    idx++;
 
     opt_str[idx] = os_zalloc(strlen(buf) + 1);
     strcpy(opt_str[idx], buf);
-    idx ++;
+    idx++;
   }
 
-  //db_path, -p
+  // db_path, -p
   if (os_strnlen_s(config->db_path, MAX_OS_PATH_LEN)) {
     opt_str[idx] = os_zalloc(3);
     strcpy(opt_str[idx], "-p");
-    idx ++;
+    idx++;
 
     opt_str[idx] = os_malloc(MAX_OS_PATH_LEN);
     os_strlcpy(opt_str[idx], config->db_path, MAX_OS_PATH_LEN);
-    idx ++;
+    idx++;
   }
 
-  //sync params, -r
-  sprintf(buf, "%lld,%lld", (int64_t)config->sync_store_size, (int64_t)config->sync_send_size);
+  // sync params, -r
+  sprintf(buf, "%lld,%lld", (int64_t)config->sync_store_size,
+          (int64_t)config->sync_send_size);
   opt_str[idx] = os_zalloc(3);
   strcpy(opt_str[idx], "-r");
-  idx ++;
+  idx++;
 
   opt_str[idx] = os_zalloc(strlen(buf) + 1);
   strcpy(opt_str[idx], buf);
-  idx ++;
+  idx++;
 
-  //capture_store_size, -b
+  // capture_store_size, -b
   sprintf(buf, "%u", config->capture_store_size);
   opt_str[idx] = os_zalloc(3);
   strcpy(opt_str[idx], "-b");
-  idx ++;
+  idx++;
 
   opt_str[idx] = os_zalloc(strlen(buf) + 1);
   strcpy(opt_str[idx], buf);
-  idx ++;
+  idx++;
 
   opt_str[idx] = NULL;
 
   return opt_str;
 }
 
-void capture_freeopt(char **opt_str)
-{
+void capture_freeopt(char **opt_str) {
   int idx = 0;
   if (opt_str != NULL) {
-    while(opt_str[idx] != NULL) {
+    while (opt_str[idx] != NULL) {
       os_free(opt_str[idx]);
-      idx ++;
+      idx++;
     }
     os_free(opt_str);
   }

@@ -41,7 +41,6 @@
 #include <netinet/udp.h>
 #include <arpa/inet.h>
 
-
 #include <pcap.h>
 
 #include "../utils/log.h"
@@ -56,39 +55,37 @@
 #include "mdns_decoder.h"
 #include "capture_config.h"
 
-#define LINKTYPE_LINUX_SLL  "LINUX_SLL"
-#define LINKTYPE_ETHERNET   "EN10MB"
+#define LINKTYPE_LINUX_SLL "LINUX_SLL"
+#define LINKTYPE_ETHERNET "EN10MB"
 
 /* Linux compat */
 #ifndef IPV6_VERSION
-#define IPV6_VERSION		    0x60
-#define IPV6_VERSION_MASK	  0xf0
+#define IPV6_VERSION 0x60
+#define IPV6_VERSION_MASK 0xf0
 #endif /* IPV6_VERSION */
 
-#define DNS_PORT            53
-#define MDNS_PORT           5353
-#define DHCP_CLIENT_PORT    68
-#define DHCP_SERVER_PORT    67
+#define DNS_PORT 53
+#define MDNS_PORT 5353
+#define DHCP_CLIENT_PORT 68
+#define DHCP_SERVER_PORT 67
 
-#define MAX_PACKET_TYPES    10
+#define MAX_PACKET_TYPES 10
 
-bool decode_dhcp_packet(struct capture_packet *cpac)
-{
+bool decode_dhcp_packet(struct capture_packet *cpac) {
   // log_trace("DHCP");
-  (void) cpac;
+  (void)cpac;
   return false;
 }
 
-bool decode_udp_packet(struct capture_packet *cpac)
-{
+bool decode_udp_packet(struct capture_packet *cpac) {
   if ((void *)cpac->ip4h != NULL && (void *)cpac->ip6h == NULL)
-    cpac->udph = (struct udphdr *) ((void *)cpac->ip4h + sizeof(struct ip));
+    cpac->udph = (struct udphdr *)((void *)cpac->ip4h + sizeof(struct ip));
   else if ((void *)cpac->ip4h == NULL && (void *)cpac->ip6h != NULL)
-    cpac->udph = (struct udphdr *) ((void *)cpac->ip6h + sizeof(struct ip6_hdr));
+    cpac->udph = (struct udphdr *)((void *)cpac->ip6h + sizeof(struct ip6_hdr));
   else
     return false;
 
-  cpac->udph_hash = md_hash((const char*) cpac->udph, sizeof(struct udphdr));
+  cpac->udph_hash = md_hash((const char *)cpac->udph, sizeof(struct udphdr));
 
   cpac->udps.hash = cpac->udph_hash;
   cpac->udps.timestamp = cpac->timestamp;
@@ -105,16 +102,15 @@ bool decode_udp_packet(struct capture_packet *cpac)
   return true;
 }
 
-bool decode_tcp_packet(struct capture_packet *cpac)
-{
+bool decode_tcp_packet(struct capture_packet *cpac) {
   if ((void *)cpac->ip4h != NULL && (void *)cpac->ip6h == NULL)
-    cpac->tcph = (struct tcphdr *) ((void *)cpac->ip4h + sizeof(struct ip));
+    cpac->tcph = (struct tcphdr *)((void *)cpac->ip4h + sizeof(struct ip));
   else if ((void *)cpac->ip4h == NULL && (void *)cpac->ip6h != NULL)
-    cpac->tcph = (struct tcphdr *) ((void *)cpac->ip6h + sizeof(struct ip6_hdr));
+    cpac->tcph = (struct tcphdr *)((void *)cpac->ip6h + sizeof(struct ip6_hdr));
   else
     return false;
 
-  cpac->tcph_hash = md_hash((const char*) cpac->tcph, sizeof(struct tcphdr));
+  cpac->tcph_hash = md_hash((const char *)cpac->tcph, sizeof(struct tcphdr));
 
   cpac->tcps.hash = cpac->tcph_hash;
   cpac->tcps.timestamp = cpac->timestamp;
@@ -141,10 +137,10 @@ bool decode_tcp_packet(struct capture_packet *cpac)
   return true;
 }
 
-bool decode_icmp4_packet(struct capture_packet *cpac)
-{
-  cpac->icmp4h = (struct icmphdr *) ((void *)cpac->ip4h + sizeof(struct ip));
-  cpac->icmp4h_hash = md_hash((const char*) cpac->icmp4h, sizeof(struct icmphdr));
+bool decode_icmp4_packet(struct capture_packet *cpac) {
+  cpac->icmp4h = (struct icmphdr *)((void *)cpac->ip4h + sizeof(struct ip));
+  cpac->icmp4h_hash =
+      md_hash((const char *)cpac->icmp4h, sizeof(struct icmphdr));
 
   cpac->icmp4s.hash = cpac->icmp4h_hash;
   cpac->icmp4s.timestamp = cpac->timestamp;
@@ -161,11 +157,11 @@ bool decode_icmp4_packet(struct capture_packet *cpac)
   return true;
 }
 
-
-bool decode_icmp6_packet(struct capture_packet *cpac)
-{
-  cpac->icmp6h = (struct icmp6_hdr *) ((void *)cpac->ip6h + sizeof(struct ip6_hdr));
-  cpac->icmp6h_hash = md_hash((const char*) cpac->icmp6h, sizeof(struct icmp6_hdr));
+bool decode_icmp6_packet(struct capture_packet *cpac) {
+  cpac->icmp6h =
+      (struct icmp6_hdr *)((void *)cpac->ip6h + sizeof(struct ip6_hdr));
+  cpac->icmp6h_hash =
+      md_hash((const char *)cpac->icmp6h, sizeof(struct icmp6_hdr));
 
   cpac->icmp6s.hash = cpac->icmp6h_hash;
   cpac->icmp6s.timestamp = cpac->timestamp;
@@ -175,22 +171,23 @@ bool decode_icmp6_packet(struct capture_packet *cpac)
   cpac->icmp6s.icmp6_type = cpac->icmp6h->icmp6_type;
   cpac->icmp6s.icmp6_code = cpac->icmp6h->icmp6_code;
   cpac->icmp6s.icmp6_cksum = ntohs(cpac->icmp6h->icmp6_cksum);
-  cpac->icmp6s.icmp6_un_data32 = ntohl(cpac->icmp6h->icmp6_dataun.icmp6_un_data32[0]);
+  cpac->icmp6s.icmp6_un_data32 =
+      ntohl(cpac->icmp6h->icmp6_dataun.icmp6_un_data32[0]);
 
-  // log_trace("ICMP6 type=%d code=%d", cpac->icmp6s.icmp6_type, cpac->icmp6s.icmp6_code);
+  // log_trace("ICMP6 type=%d code=%d", cpac->icmp6s.icmp6_type,
+  // cpac->icmp6s.icmp6_code);
 
   return true;
 }
 
-bool decode_ip4_packet(struct capture_packet *cpac)
-{
+bool decode_ip4_packet(struct capture_packet *cpac) {
   // Return false if the header is not of the right length
   if (cpac->length - sizeof(struct ether_header) < sizeof(struct ip)) {
     return false;
   }
 
-  cpac->ip4h = (struct ip *) ((void *)cpac->ethh + sizeof(struct ether_header));
-  cpac->ip4h_hash = md_hash((const char*) cpac->ip4h, sizeof(struct ip));
+  cpac->ip4h = (struct ip *)((void *)cpac->ethh + sizeof(struct ether_header));
+  cpac->ip4h_hash = md_hash((const char *)cpac->ip4h, sizeof(struct ip));
 
   cpac->ip4s.hash = cpac->ip4h_hash;
   cpac->ip4s.timestamp = cpac->timestamp;
@@ -209,28 +206,29 @@ bool decode_ip4_packet(struct capture_packet *cpac)
   inaddr4_2_ip(&((cpac->ip4h)->ip_src), cpac->ip4s.ip_src);
   inaddr4_2_ip(&((cpac->ip4h)->ip_dst), cpac->ip4s.ip_dst);
 
-  // log_trace("IP4 ip_src=%s ip_dst=%s ip_p=%d ip_v=%d", cpac->ip4s.ip_src, cpac->ip4s.ip_dst, cpac->ip4s.ip_p, cpac->ip4s.ip_v);
+  // log_trace("IP4 ip_src=%s ip_dst=%s ip_p=%d ip_v=%d", cpac->ip4s.ip_src,
+  // cpac->ip4s.ip_dst, cpac->ip4s.ip_p, cpac->ip4s.ip_v);
 
   // Process futher packets only if IP is version 4
   return (cpac->ip4s.ip_v == 4);
 }
 
-bool decode_ip6_packet(struct capture_packet *cpac)
-{
+bool decode_ip6_packet(struct capture_packet *cpac) {
   // Return false if the header is not of the right length
   if (cpac->length - sizeof(struct ether_header) < sizeof(struct ip6_hdr)) {
     return false;
   }
 
-  cpac->ip6h = (struct ip6_hdr *) ((void *)cpac->ethh + sizeof(struct ether_header));
+  cpac->ip6h =
+      (struct ip6_hdr *)((void *)cpac->ethh + sizeof(struct ether_header));
 
   // Wrong IP6 version
-	if (((cpac->ip6h)->ip6_vfc & IPV6_VERSION_MASK) != IPV6_VERSION) {
+  if (((cpac->ip6h)->ip6_vfc & IPV6_VERSION_MASK) != IPV6_VERSION) {
     cpac->ip6h = NULL;
-		return false;
-	}
+    return false;
+  }
 
-  cpac->ip6h_hash = md_hash((const char*) cpac->ip6h, sizeof(struct ip6_hdr));
+  cpac->ip6h_hash = md_hash((const char *)cpac->ip6h, sizeof(struct ip6_hdr));
 
   cpac->ip6s.hash = cpac->ip6h_hash;
   cpac->ip6s.timestamp = cpac->timestamp;
@@ -245,14 +243,15 @@ bool decode_ip6_packet(struct capture_packet *cpac)
   inaddr6_2_ip(&(cpac->ip6h->ip6_src), cpac->ip6s.ip6_src);
   inaddr6_2_ip(&(cpac->ip6h->ip6_dst), cpac->ip6s.ip6_dst);
 
-  // log_trace("IP6 ip6_src=%s ip6_dst=%s", cpac->ip6s.ip6_src, cpac->ip6s.ip6_dst);
+  // log_trace("IP6 ip6_src=%s ip6_dst=%s", cpac->ip6s.ip6_src,
+  // cpac->ip6s.ip6_dst);
   return true;
 }
 
-bool decode_arp_packet(struct capture_packet *cpac)
-{
-  cpac->arph = (struct	ether_arp*) ((void *)cpac->ethh + sizeof(struct ether_header));
-  cpac->arph_hash = md_hash((const char*) cpac->arph, sizeof(struct	ether_arp));
+bool decode_arp_packet(struct capture_packet *cpac) {
+  cpac->arph =
+      (struct ether_arp *)((void *)cpac->ethh + sizeof(struct ether_header));
+  cpac->arph_hash = md_hash((const char *)cpac->arph, sizeof(struct ether_arp));
 
   cpac->arps.hash = cpac->arph_hash;
   cpac->arps.timestamp = cpac->timestamp;
@@ -264,21 +263,28 @@ bool decode_arp_packet(struct capture_packet *cpac)
   cpac->arps.ar_pln = cpac->arph->arp_pln;
   cpac->arps.ar_op = ntohs(cpac->arph->arp_op);
 
-  snprintf(cpac->arps.arp_sha, MACSTR_LEN, MACSTR, MAC2STR(cpac->arph->arp_sha));
-  snprintf(cpac->arps.arp_spa, OS_INET_ADDRSTRLEN, IPSTR, IP2STR(cpac->arph->arp_spa));
-  snprintf(cpac->arps.arp_tha, MACSTR_LEN, MACSTR, MAC2STR(cpac->arph->arp_tha));
-  snprintf(cpac->arps.arp_tpa, OS_INET_ADDRSTRLEN, IPSTR, IP2STR(cpac->arph->arp_tpa));
+  snprintf(cpac->arps.arp_sha, MACSTR_LEN, MACSTR,
+           MAC2STR(cpac->arph->arp_sha));
+  snprintf(cpac->arps.arp_spa, OS_INET_ADDRSTRLEN, IPSTR,
+           IP2STR(cpac->arph->arp_spa));
+  snprintf(cpac->arps.arp_tha, MACSTR_LEN, MACSTR,
+           MAC2STR(cpac->arph->arp_tha));
+  snprintf(cpac->arps.arp_tpa, OS_INET_ADDRSTRLEN, IPSTR,
+           IP2STR(cpac->arph->arp_tpa));
 
-  // log_trace("ARP arp_sha=" MACSTR " arp_spa=" IPSTR " arp_tha=" MACSTR, MAC2STR((cpac->arph)->arp_sha), IP2STR((cpac->arph)->arp_spa), MAC2STR((cpac->arph)->arp_tha));
+  // log_trace("ARP arp_sha=" MACSTR " arp_spa=" IPSTR " arp_tha=" MACSTR,
+  // MAC2STR((cpac->arph)->arp_sha), IP2STR((cpac->arph)->arp_spa),
+  // MAC2STR((cpac->arph)->arp_tha));
 
   return true;
 }
 
-bool decode_eth_packet(const struct pcap_pkthdr *header, const uint8_t *packet, struct capture_packet *cpac)
-{
+bool decode_eth_packet(const struct pcap_pkthdr *header, const uint8_t *packet,
+                       struct capture_packet *cpac) {
   if (header->caplen >= sizeof(struct ether_header)) {
-    cpac->ethh = (struct ether_header*) packet;
-    cpac->ethh_hash = md_hash((const char*) cpac->ethh, sizeof(struct ether_header));
+    cpac->ethh = (struct ether_header *)packet;
+    cpac->ethh_hash =
+        md_hash((const char *)cpac->ethh, sizeof(struct ether_header));
 
     // Init eth packet schema
     cpac->eths.hash = cpac->ethh_hash;
@@ -289,11 +295,15 @@ bool decode_eth_packet(const struct pcap_pkthdr *header, const uint8_t *packet, 
     cpac->eths.caplen = cpac->caplen;
     cpac->eths.length = cpac->length;
 
-    snprintf(cpac->eths.ether_dhost, MACSTR_LEN, MACSTR, MAC2STR(cpac->ethh->ether_dhost));
-    snprintf(cpac->eths.ether_shost, MACSTR_LEN, MACSTR, MAC2STR(cpac->ethh->ether_shost));
+    snprintf(cpac->eths.ether_dhost, MACSTR_LEN, MACSTR,
+             MAC2STR(cpac->ethh->ether_dhost));
+    snprintf(cpac->eths.ether_shost, MACSTR_LEN, MACSTR,
+             MAC2STR(cpac->ethh->ether_shost));
     cpac->eths.ether_type = ntohs(cpac->ethh->ether_type);
 
-    // log_trace("Ethernet type=0x%x ether_dhost=%s ether_shost=%s ethh=0x%x", cpac->eths.ether_type, cpac->eths.ether_dhost, cpac->eths.ether_shost, cpac->ethh_hash);
+    // log_trace("Ethernet type=0x%x ether_dhost=%s ether_shost=%s ethh=0x%x",
+    // cpac->eths.ether_type, cpac->eths.ether_dhost, cpac->eths.ether_shost,
+    // cpac->ethh_hash);
 
     return true;
   }
@@ -301,52 +311,70 @@ bool decode_eth_packet(const struct pcap_pkthdr *header, const uint8_t *packet, 
   return false;
 }
 
-int decode_packet(const struct pcap_pkthdr *header, const uint8_t *packet, struct capture_packet *cpac)
-{
+int decode_packet(const struct pcap_pkthdr *header, const uint8_t *packet,
+                  struct capture_packet *cpac) {
   int count = 0;
 
   if (decode_eth_packet(header, packet, cpac)) {
     count = 1;
     if (cpac->eths.ether_type == ETHERTYPE_IP) {
       if (decode_ip4_packet(cpac)) {
-        count ++;
+        count++;
         if ((cpac->ip4h)->ip_p == IPPROTO_TCP) {
-          if (decode_tcp_packet(cpac)) count ++;
+          if (decode_tcp_packet(cpac))
+            count++;
         } else if ((cpac->ip4h)->ip_p == IPPROTO_UDP) {
-          if(decode_udp_packet(cpac)) count ++;
+          if (decode_udp_packet(cpac))
+            count++;
         } else if ((cpac->ip4h)->ip_p == IPPROTO_ICMP) {
-          if(decode_icmp4_packet(cpac)) count ++;
+          if (decode_icmp4_packet(cpac))
+            count++;
         }
       }
     } else if (cpac->eths.ether_type == ETHERTYPE_IPV6) {
       if (decode_ip6_packet(cpac)) {
-        count ++;
+        count++;
         if ((cpac->ip6h)->ip6_nxt == IPPROTO_TCP) {
-          if(decode_tcp_packet(cpac)) count ++;
+          if (decode_tcp_packet(cpac))
+            count++;
         } else if ((cpac->ip6h)->ip6_nxt == IPPROTO_UDP) {
-          if(decode_udp_packet(cpac)) count ++;
+          if (decode_udp_packet(cpac))
+            count++;
         } else if ((cpac->ip6h)->ip6_nxt == IPPROTO_ICMPV6) {
-          if(decode_icmp6_packet(cpac)) count ++;
+          if (decode_icmp6_packet(cpac))
+            count++;
         }
       }
     } else if (cpac->eths.ether_type == ETHERTYPE_ARP) {
-      if(decode_arp_packet(cpac)) count ++;
+      if (decode_arp_packet(cpac))
+        count++;
     }
 
     if ((void *)cpac->tcph != NULL) {
-      if (ntohs((cpac->tcph)->th_sport) == DNS_PORT || ntohs((cpac->tcph)->th_dport) == DNS_PORT) {
-        if(decode_dns_packet(cpac)) count ++;
-      } else if (ntohs((cpac->tcph)->th_sport) == MDNS_PORT || ntohs((cpac->tcph)->th_dport) == MDNS_PORT) {
-        if(decode_mdns_packet(cpac)) count ++;
+      if (ntohs((cpac->tcph)->th_sport) == DNS_PORT ||
+          ntohs((cpac->tcph)->th_dport) == DNS_PORT) {
+        if (decode_dns_packet(cpac))
+          count++;
+      } else if (ntohs((cpac->tcph)->th_sport) == MDNS_PORT ||
+                 ntohs((cpac->tcph)->th_dport) == MDNS_PORT) {
+        if (decode_mdns_packet(cpac))
+          count++;
       }
     } else if ((void *)cpac->udph != NULL) {
-      if (ntohs((cpac->udph)->uh_sport) == DNS_PORT || ntohs((cpac->udph)->uh_dport) == DNS_PORT) {
-        if(decode_dns_packet(cpac)) count ++;
-      } else if (ntohs((cpac->udph)->uh_sport) == MDNS_PORT || ntohs((cpac->udph)->uh_dport) == MDNS_PORT) {
-        if(decode_mdns_packet(cpac)) count ++;
-      } else if ((ntohs((cpac->udph)->uh_sport) == DHCP_CLIENT_PORT && ntohs((cpac->udph)->uh_dport) == DHCP_SERVER_PORT) ||
-                (ntohs((cpac->udph)->uh_sport) == DHCP_SERVER_PORT && ntohs((cpac->udph)->uh_dport) == DHCP_CLIENT_PORT)) {
-        if(decode_dhcp_packet(cpac)) count ++;
+      if (ntohs((cpac->udph)->uh_sport) == DNS_PORT ||
+          ntohs((cpac->udph)->uh_dport) == DNS_PORT) {
+        if (decode_dns_packet(cpac))
+          count++;
+      } else if (ntohs((cpac->udph)->uh_sport) == MDNS_PORT ||
+                 ntohs((cpac->udph)->uh_dport) == MDNS_PORT) {
+        if (decode_mdns_packet(cpac))
+          count++;
+      } else if ((ntohs((cpac->udph)->uh_sport) == DHCP_CLIENT_PORT &&
+                  ntohs((cpac->udph)->uh_dport) == DHCP_SERVER_PORT) ||
+                 (ntohs((cpac->udph)->uh_sport) == DHCP_SERVER_PORT &&
+                  ntohs((cpac->udph)->uh_dport) == DHCP_CLIENT_PORT)) {
+        if (decode_dhcp_packet(cpac))
+          count++;
       }
     }
   }
@@ -354,10 +382,10 @@ int decode_packet(const struct pcap_pkthdr *header, const uint8_t *packet, struc
   return count;
 }
 
-int extract_packets(char *ltype, const struct pcap_pkthdr *header, const uint8_t *packet,
-                    char *interface, char *hostname, char *id, UT_array *tp_array)
-{
-  (void) ltype;
+int extract_packets(char *ltype, const struct pcap_pkthdr *header,
+                    const uint8_t *packet, char *interface, char *hostname,
+                    char *id, UT_array *tp_array) {
+  (void)ltype;
 
   struct capture_packet cpac;
   struct tuple_packet tp;

@@ -4,6 +4,7 @@ title: Configuration File
 ---
 
 Below is an example of the configuration file that is passed as a parameter to `edgesec` tool:
+
 ```
 [system]
 binPath = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"
@@ -34,7 +35,7 @@ pidFilePath = "/var/run/edgesec.pid"
 [capture]
 captureBinPath = "./src/capsrv"
 captureInterface = "enp2s0"
-filter = "" 
+filter = ""
 promiscuous = false
 bufferTimeout = 10
 processInterval = 10
@@ -134,325 +135,429 @@ if10 = "10,10.0.10.1,10.0.10.255,255.255.255.0"
 ```
 
 The configuration file is based on the `ini` file type format. Each parameter in the file is set using a key and a value pair. The `edgesec` configuration file is composed of the following groups:
-* *[system]*
-* *[capture]*
-* *[supervisor]*
-* *[hostapd]*
-* *[radius]*
-* *[nat]*
-* *[dns]*
-* *[dhcp]*
-* *[connections]*
-* *[interfaces]*
+
+- _[system]_
+- _[capture]_
+- _[supervisor]_
+- _[hostapd]_
+- _[radius]_
+- _[nat]_
+- _[dns]_
+- _[dhcp]_
+- _[connections]_
+- _[interfaces]_
 
 ## [system] group
+
 The system group contains all the parameters that are reponsible to configure the `edgesec` system tool paths, the hashes of the system binaries and tool flags.
 
 ### binPath (string)
+
 A list of systems binary paths separated with ":" used by the `edgesec` tool to configure interfaces, etc.
 
 ### hashIpCommand (string)
+
 A list of hashes for each system binary used by the tool. [WIP]
 
 ### createInterfaces (boolean)
+
 `edgesec` will create subnetnetwork interfaces if the flag is set to `true`. If set to `false` one will have to use a similar service to `dhcpcd` to preconfigure the network interfaces.
 
 ### ignoreErrorOnIfCreate (boolean)
+
 If set to `true`, `edgesec` will ignore the "network interface already exists" error. This flag is to be used if the network interfaces are already preconfigured.
 
 ### allowAllConnections (boolean)
+
 If set to `true`, `edgesec` will allow all WiFi connection requests regarding of the MAC value.
 
 ### allowAllNat (boolean)
+
 If set to `true`, `edgesec` will allow all NAT connection requests regarding of the MAC value.
 
 ### apDetect (boolean)
+
 If set to `true`, `edgesec` will try to detect the WiFi network interfaces that supports VLAN capability. The detected network interface will be used by `hostapd` service to create an AP.
 
 ### generateSsid (boolean)
+
 If set to `true`, `edgesec` will generate the SSID WiFi name based on hostname. If `false` the SSID name will be `ssid` param from `ap` section.
 
 ### allocateVlans (boolean)
+
 If set to `true`, `edgesec` will randomly assign a VLAN ID to a newly connected device.
 
 ### defaultOpenVlanId (integer)
+
 The default VLAN ID positive integer number assigned to new devices if `allowAllConnections` flag is set to `true`.
 
 ### quarantineVlanId (integer)
+
 The VLAN ID assigned to devices that are quarantined.
 
 ### riskScore (integer)
+
 The risk score threshold for a device to be quarantined.
 
 ### killRunningProcess (boolean)
+
 If set to true the current running `edgesec` will terminate exisiting running `edgesec` processes.
 
 ### execAp (boolean)
+
 If set to `true`, `edgesec` will execute the `hostapd` service using `excve` system command. If set to `false` the `hostapd` service has to be run before executing `edgesec`.
 
 ### execRadius (boolean)
+
 If set to `true`, `edgesec` will execute the `radius` service.
 
 ### execDhcp (boolean)
+
 If set to `true`, `edgesec` will execute the `dhcp` service.
 
 ### execCapture (boolean)
+
 If set to `true`, `edgesec` will execute the `capture` service.
 
 ### execMdnsForward (boolean)
+
 If set to `true`, `edgesec` will execute the `mdnsf` service.
 
 ### execIptables (boolean)
+
 If set to `true`, `edgesec` will execute the `iptables` command.
 
 ### setIpForward (boolean)
+
 If set to true `edgesec` will set the ip forward os system param.
 
 ### dbPath (string)
+
 The path to the `db` folder.
 
 ### cryptDbPath (string)
+
 The path to the `crypt` sqlite db.
 
 ### cryptKeyId (string)
+
 The master key ID for the `crypt` sqlite db.
 
 ### pidFilePath (string)
+
 The path to the edgesec PID file.
 
 ## [capture] group
+
 The capture group contains all the parameters that are reponsible to configure the `capture` app service.
 
 ### captureBinPath (string)
+
 The path to the `capsrv` service.
 
 ### captureInterface (string)
+
 The name of the capture interface. If set to "any" the service will traffic from all interfaces.
 
 ### filter (string)
+
 The pcap lib capture filter.
 
 ### promiscuous (boolean)
+
 If set to `true` the capture interface is set to promiscuous mode. The default value is `false`.
 
 ### bufferTimeout (number)
+
 The timeout in milliseconds to read a packet. The default value is 10.
 
 ### processInterval (number)
+
 The interval in milliseconds to process a packet from the queue. The default value is 10.
 
 ### immediate (boolean)
+
 If set to `true` the capture interface is set to immediate mode. The default value is `false`.
 
 ### analyser (string)
+
 The analyser name for the capture service. Currently supported `default` and `ndpi` analysers.
 
 ### fileWrite (boolean)
+
 Write the packet data to file(s).
 
 ### dbWrite (boolean)
+
 If set to true the capture service will store the packet into an sqlite db
 
 ### dbSync (boolean)
+
 If set to true the sqlite packets db will be synced
 
 ### dbSyncAddress (string)
+
 The web address for sqlite syncing
 
 ### dbSyncPort (number)
+
 The port of the web address for sqlite syncing
 
 ### syncCaPath (string)
+
 The path to the certificate authority file used for gRPC syncing
 
 ### command (string)
+
 The UNIX domain command used by the capture service
 
 ### syncStoreSize (integer)
-Number of capture strings to store in memory before 
+
+Number of capture strings to store in memory before
 
 ### syncSendSize (integer)
+
 Number of string to send (sync) from the memory buffer
 
 ### captureStoreSize (integer)
-Number of pcap Kb to store before cleaning. Used by capture `cleaner` service 
+
+Number of pcap Kb to store before cleaning. Used by capture `cleaner` service
 
 ## [supervisor] group
+
 The supervisor group defines the parameters to run the supervisor service.
 
 ### domainServerPath (string)
+
 The absolute path to the UNIX domain socket used by the supervisor service.
 
 ### delim (integer)
+
 The decimal ASCII number used to delimit command parameters.
 
 ## [ap] group
+
 The ap groups defines all the paremeters to run `ap` service. Most of the parameters are inherited from the `hostapd` config file.
 
 ### apBinPath (string)
+
 Absolute path to the `hostapd` binary.
 
 ### apFilePath (string)
+
 Absolute path to the `hostapd` configuration file.
 
 ### apLogPath (string)
+
 Absolute path to the `hostapd` log file. If empty no log file is generated
 
 ### interface (string)
+
 Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
 
 ### vlanTaggedInterface (string)
+
 Interface name for vlan tagging
 
 ### ssid (string)
+
 Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
 
 ### wpaPassphrase (string)
+
 Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
 
 ### bridge (string)
+
 Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
 
 ### driver (string)
+
 Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
 
 ### hwMode (string)
+
 Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
 
 ### channel (integer)
+
 Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
 
 ### wmmEnabled (integer)
+
 Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
 
 ### authAlgs (integer)
+
 Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
 
 ### wpa (integer)
+
 Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
 
 ### wpaKeyMgmt (string)
+
 Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
 
 ### rsnPairwise (string)
+
 Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
 
 ### ctrlInterface (string)
+
 Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
 
 ### macaddrAcl (integer)
+
 Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
 
 ### dynamicVlan (integer)
+
 Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
 
 ### vlanBridge (string)
+
 Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
 
 ### vlanFile (string)
+
 Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
 
 ### loggerStdout (integer)
+
 Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
 
 ### loggerStdoutLevel (integer)
+
 Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
 
 ### loggerSyslog (integer)
+
 Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
 
 ### loggerSyslogLevel (integer)
+
 Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
 
 ### ignoreBroadcastSsid (integer)
+
 Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
 
 ### wpaPskRadius (integer)
+
 Inherited from [hostapd.conf](https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf)
 
 ## [radius] group
+
 The radius group defines the port, IP and network mask for creating the RADIUS server.
 
 ### port (integer)
+
 The port value for the RADIUS server.
 
 ### clientIP (string)
+
 The connecting client IP with format `x.y.z.q`. Current config uses `localhost` (127.0.0.1).
 
 ### clientMask (integer)
+
 The client IP network mask encoding bit-length of the prefix.
 
 ### serverIP (string)
+
 The RADIUS server IP. Current config uses `localhost` (127.0.0.1).
 
 ### serverMask (integer)
+
 The server IP network mask encoding bit-length of the prefix.
 
 ### secret (string)
+
 The RADIUS server password used by the clients.
 
 ## [nat] group
+
 The nat group defines the parameter for NAT interface.
 
 ### natInterface (string)
+
 The NAT interface name.
 
 ## [dns] group
+
 The dns groups defines the parameters for the DNS server configuration.
 
 ### servers (string)
+
 A comma delimited string of dns server IP addresses with the format `x.y.z.q,a.b.c.d,...`.
 
 ### mdnsBinPath (string)
+
 The path to the `mdnsf` service.
 
 ### mdnsReflectIp4 (boolean)
+
 If set to `true` the mdns service will reflect IP4 mdns packets.
 
 ### mdnsReflectIp6 (boolean)
+
 If set to `true` the mdns service will reflect IP6 mdns packets.
 
 ### mdnsFilter (string)
+
 The `mdns` service filter string used by pcap library to track internal IP connections. The filter is based on the `interface` IP addresses.
 
 ## [dhcp] group
+
 The dhpc groups defines the parameters for the DHCP server configuration.
 
 ### dhcpBinPath (string)
+
 The path to the DHCP server
 
 ### dhcpConfigPath (string)
+
 The path to the DHCP server configuration file
 
 ### dhcpScriptPath (string)
+
 The path to the DHCP server aditional executable script
 
 ### dhcpLeasefilePath (string)
+
 The path to the DHCP lease file
 
 ### dhcpRangei (string)
+
 The DHCP configuration indexed by `i≥0`. It has the followig format:
 
 ```
 vlanid,ip_low,ip_up,mask,time
 ```
+
 ,where
- - `vlanid` - the VLAN ID
- - `ip_low` - the lower bound for IP subnet
- - `up_low` - the upper bound for IP subnet
- - `mask` - the subnet mask
- - `time` - the lease time (dnsmasq format)
+
+- `vlanid` - the VLAN ID
+- `ip_low` - the lower bound for IP subnet
+- `up_low` - the upper bound for IP subnet
+- `mask` - the subnet mask
+- `time` - the lease time (dnsmasq format)
 
 ## [interfaces] groups
+
 The interfaces group defines the parameters for WiFi subnet interfaces.
 
 ### ifi (string)
+
 The `if` indexed by `i≥0` defines the network interfaces for a particular subnet. It has the following format:
+
 ```
 vlanid,ip0,ipn,mask
 ```
+
 where
- - `vlanid` - is the VLAN ID,
- - `ip0` - the subnet starting IP address with format `x.y.z.q`,
- - `ipn` - the subnet ending IP address with format `x.y.z.q` and
- - `mask` - the subnet mask IP address with format `x.y.z.q`.
+
+- `vlanid` - is the VLAN ID,
+- `ip0` - the subnet starting IP address with format `x.y.z.q`,
+- `ipn` - the subnet ending IP address with format `x.y.z.q` and
+- `mask` - the subnet mask IP address with format `x.y.z.q`.

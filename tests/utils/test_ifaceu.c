@@ -16,9 +16,8 @@
 #include "utils/log.h"
 #include "utils/ifaceu.h"
 
-static void test_iface_exists(void **state)
-{
-  (void) state; /* unused */
+static void test_iface_exists(void **state) {
+  (void)state; /* unused */
 
   /* Testing iface_exists for lo */
   bool ret = iface_exists("lo");
@@ -37,17 +36,13 @@ static void test_iface_exists(void **state)
   assert_false(ret);
 }
 
-
-int main(int argc, char *argv[])
-{  
-  (void) argc;
-  (void) argv;
+int main(int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
 
   log_set_quiet(false);
 
-  const struct CMUnitTest tests[] = {
-    cmocka_unit_test(test_iface_exists)
-  };
+  const struct CMUnitTest tests[] = {cmocka_unit_test(test_iface_exists)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

@@ -11,4 +11,3 @@ config config 'wizard'
 	list passed 'finished'
 	list passed 'time'
 	list passed 'updater'
-

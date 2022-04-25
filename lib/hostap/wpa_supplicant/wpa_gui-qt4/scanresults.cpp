@@ -115,10 +115,10 @@ void ScanResults::scanRequest()
 {
 	char reply[10];
 	size_t reply_len = sizeof(reply);
-    
+
 	if (wpagui == NULL)
 		return;
-    
+
 	wpagui->ctrlRequest("SCAN", reply, &reply_len);
 }
 

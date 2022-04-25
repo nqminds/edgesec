@@ -18,9 +18,8 @@
 #include "utils/utarray.h"
 #include "utils/iw.h"
 
-static void test_check_systems_commands(void **state)
-{
-  (void) state; /* unused */
+static void test_check_systems_commands(void **state) {
+  (void)state; /* unused */
 
   UT_array *arr;
   utarray_new(arr, &ut_str_icd);
@@ -80,13 +79,11 @@ static void test_check_systems_commands(void **state)
   utarray_free(arr);
 }
 
-int main(int argc, char *argv[])
-{  
+int main(int argc, char *argv[]) {
   log_set_quiet(true);
 
   const struct CMUnitTest tests[] = {
-    cmocka_unit_test(test_check_systems_commands)
-  };
+      cmocka_unit_test(test_check_systems_commands)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

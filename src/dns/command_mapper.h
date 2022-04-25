@@ -39,10 +39,10 @@
  * @brief Command mapper connection structure
  *
  */
-typedef struct hashmap_command_conn {           /**< hashmap key */
-    uint32_t key;
-    int value;                                  /**< Command info TBD */
-    UT_hash_handle hh;         		            /**< hashmap handle */
+typedef struct hashmap_command_conn { /**< hashmap key */
+  uint32_t key;
+  int value;         /**< Command info TBD */
+  UT_hash_handle hh; /**< hashmap handle */
 } hmap_command_conn;
 
 /**

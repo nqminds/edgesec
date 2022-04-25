@@ -41,7 +41,7 @@
  * @param length The message length
  * @return uint32_t The hash value
  */
-uint32_t md_hash(const char* msg, size_t length);
+uint32_t md_hash(const char *msg, size_t length);
 
 /**
  * @brief Computes the sha256 for an array

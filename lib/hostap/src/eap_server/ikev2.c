@@ -415,7 +415,7 @@ static int ikev2_process_ker(struct ikev2_initiator_data *data,
 
 	wpa_hexdump_buf(MSG_DEBUG, "IKEV2: KEr Diffie-Hellman Public Value",
 			data->r_dh_public);
-	
+
 	return 0;
 }
 

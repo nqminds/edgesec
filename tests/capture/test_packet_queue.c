@@ -15,11 +15,10 @@
 #include "utils/log.h"
 #include "capture/packet_queue.h"
 
-static void test_push_packet_queue(void **state)
-{
-  (void) state; /* unused */
+static void test_push_packet_queue(void **state) {
+  (void)state; /* unused */
   struct tuple_packet tp;
-  struct packet_queue* queue = init_packet_queue();
+  struct packet_queue *queue = init_packet_queue();
 
   assert_non_null(push_packet_queue(queue, tp));
   assert_int_equal(get_packet_queue_length(queue), 1);
@@ -31,12 +30,11 @@ static void test_push_packet_queue(void **state)
   assert_int_equal(get_packet_queue_length(queue), 0);
 }
 
-static void test_pop_packet_queue(void **state)
-{
-  (void) state; /* unused */
+static void test_pop_packet_queue(void **state) {
+  (void)state; /* unused */
 
   struct tuple_packet tp1, tp2;
-  struct packet_queue* queue = init_packet_queue();
+  struct packet_queue *queue = init_packet_queue();
 
   tp1.type = PACKET_ETHERNET;
   tp1.packet = os_malloc(100);
@@ -46,7 +44,7 @@ static void test_pop_packet_queue(void **state)
 
   assert_non_null(push_packet_queue(queue, tp1));
   assert_non_null(push_packet_queue(queue, tp2));
-  struct packet_queue* pq = pop_packet_queue(queue);
+  struct packet_queue *pq = pop_packet_queue(queue);
   assert_non_null(pq);
   assert_int_equal(pq->tp.type, PACKET_ETHERNET);
   free_packet_tuple(&pq->tp);
@@ -68,14 +66,11 @@ static void test_pop_packet_queue(void **state)
   assert_null(pop_packet_queue(queue));
 }
 
-int main(int argc, char *argv[])
-{  
+int main(int argc, char *argv[]) {
   log_set_quiet(false);
 
-  const struct CMUnitTest tests[] = {
-    cmocka_unit_test(test_push_packet_queue),
-    cmocka_unit_test(test_pop_packet_queue)
-  };
+  const struct CMUnitTest tests[] = {cmocka_unit_test(test_push_packet_queue),
+                                     cmocka_unit_test(test_pop_packet_queue)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

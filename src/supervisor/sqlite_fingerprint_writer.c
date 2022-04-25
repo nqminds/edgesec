@@ -20,7 +20,8 @@
 /**
  * @file sqlite_fingerprint_writer.c
  * @author Alexandru Mereacre
- * @brief File containing the implementation of the sqlite fingerprint writer utilities.
+ * @brief File containing the implementation of the sqlite fingerprint writer
+ * utilities.
  */
 
 #include <stdio.h>
@@ -36,15 +37,13 @@
 #include "../utils/log.h"
 #include "../utils/sqliteu.h"
 
-void free_sqlite_fingerprint_db(sqlite3 *db)
-{
+void free_sqlite_fingerprint_db(sqlite3 *db) {
   if (db != NULL) {
     sqlite3_close(db);
   }
 }
 
-int open_sqlite_fingerprint_db(char *db_path, sqlite3** sql)
-{
+int open_sqlite_fingerprint_db(char *db_path, sqlite3 **sql) {
   sqlite3 *db = NULL;
   int rc;
 
@@ -74,8 +73,7 @@ int open_sqlite_fingerprint_db(char *db_path, sqlite3** sql)
   return 0;
 }
 
-int save_sqlite_fingerprint_row(sqlite3 *db, struct fingerprint_row *row)
-{
+int save_sqlite_fingerprint_row(sqlite3 *db, struct fingerprint_row *row) {
   sqlite3_stmt *res = NULL;
   int column_idx;
 
@@ -84,7 +82,8 @@ int save_sqlite_fingerprint_row(sqlite3 *db, struct fingerprint_row *row)
     return -1;
   }
 
-  if (sqlite3_prepare_v2(db, FINGERPRINT_INSERT_INTO, -1, &res, 0) != SQLITE_OK) {
+  if (sqlite3_prepare_v2(db, FINGERPRINT_INSERT_INTO, -1, &res, 0) !=
+      SQLITE_OK) {
     log_trace("Failed to prepare statement: %s", sqlite3_errmsg(db));
     return -1;
   }
@@ -97,14 +96,16 @@ int save_sqlite_fingerprint_row(sqlite3 *db, struct fingerprint_row *row)
   }
 
   column_idx = sqlite3_bind_parameter_index(res, "@protocol");
-  if (sqlite3_bind_text(res, column_idx, row->protocol, -1, NULL) != SQLITE_OK) {
+  if (sqlite3_bind_text(res, column_idx, row->protocol, -1, NULL) !=
+      SQLITE_OK) {
     log_trace("sqlite3_bind_text fail");
     sqlite3_finalize(res);
     return -1;
   }
 
   column_idx = sqlite3_bind_parameter_index(res, "@fingerprint");
-  if (sqlite3_bind_text(res, column_idx, row->fingerprint, -1, NULL) != SQLITE_OK) {
+  if (sqlite3_bind_text(res, column_idx, row->fingerprint, -1, NULL) !=
+      SQLITE_OK) {
     log_trace("sqlite3_bind_text fail");
     sqlite3_finalize(res);
     return -1;
@@ -130,34 +131,36 @@ int save_sqlite_fingerprint_row(sqlite3 *db, struct fingerprint_row *row)
   return 0;
 }
 
-void free_sqlite_fingerprint_row(struct fingerprint_row *row)
-{
+void free_sqlite_fingerprint_row(struct fingerprint_row *row) {
   if (row != NULL) {
-    if (row->mac != NULL) os_free(row->mac);
-    if (row->fingerprint != NULL) os_free(row->fingerprint);
-    if (row->protocol != NULL) os_free(row->protocol);
-    if (row->query != NULL) os_free(row->query);
+    if (row->mac != NULL)
+      os_free(row->mac);
+    if (row->fingerprint != NULL)
+      os_free(row->fingerprint);
+    if (row->protocol != NULL)
+      os_free(row->protocol);
+    if (row->query != NULL)
+      os_free(row->query);
   }
 }
 
-void free_sqlite_fingerprint_rows(UT_array *rows)
-{
+void free_sqlite_fingerprint_rows(UT_array *rows) {
   struct fingerprint_row *row = NULL;
-  while((row = (struct fingerprint_row *) utarray_next(rows, row)) != NULL) {
+  while ((row = (struct fingerprint_row *)utarray_next(rows, row)) != NULL) {
     free_sqlite_fingerprint_row(row);
   }
 
   utarray_free(rows);
 }
 
-int get_sqlite_fingerprint_rows(sqlite3 *db, char *mac, uint64_t timestamp, char *op,
-                                   char *protocol, UT_array *rows)
-{
+int get_sqlite_fingerprint_rows(sqlite3 *db, char *mac, uint64_t timestamp,
+                                char *op, char *protocol, UT_array *rows) {
   sqlite3_stmt *res = NULL;
   struct fingerprint_row row;
   int column_idx;
   int rc;
-  char *sql_statement = (protocol == NULL) ? FINGERPRINT_SELECT_FROM_NO_PROTO : FINGERPRINT_SELECT_FROM_PROTO;
+  char *sql_statement = (protocol == NULL) ? FINGERPRINT_SELECT_FROM_NO_PROTO
+                                           : FINGERPRINT_SELECT_FROM_PROTO;
   char *statement;
   char *proto;
   char *value;
@@ -195,7 +198,8 @@ int get_sqlite_fingerprint_rows(sqlite3 *db, char *mac, uint64_t timestamp, char
   if (sqlite3_prepare_v2(db, statement, -1, &res, 0) != SQLITE_OK) {
     log_trace("Failed to prepare statement: %s", sqlite3_errmsg(db));
     os_free(statement);
-    if (proto != NULL) os_free(proto);
+    if (proto != NULL)
+      os_free(proto);
     return -1;
   }
 
@@ -205,7 +209,8 @@ int get_sqlite_fingerprint_rows(sqlite3 *db, char *mac, uint64_t timestamp, char
   if (sqlite3_bind_text(res, column_idx, mac, -1, NULL) != SQLITE_OK) {
     log_trace("sqlite3_bind_text fail");
     os_free(statement);
-    if (proto != NULL) os_free(proto);
+    if (proto != NULL)
+      os_free(proto);
     sqlite3_finalize(res);
     return -1;
   }
@@ -214,7 +219,8 @@ int get_sqlite_fingerprint_rows(sqlite3 *db, char *mac, uint64_t timestamp, char
   if (sqlite3_bind_int64(res, column_idx, timestamp) != SQLITE_OK) {
     log_trace("sqlite3_bind_text fail");
     os_free(statement);
-    if (proto != NULL) os_free(proto);
+    if (proto != NULL)
+      os_free(proto);
     sqlite3_finalize(res);
     return -1;
   }
@@ -224,48 +230,52 @@ int get_sqlite_fingerprint_rows(sqlite3 *db, char *mac, uint64_t timestamp, char
     if (sqlite3_bind_text(res, column_idx, proto, -1, NULL) != SQLITE_OK) {
       log_trace("sqlite3_bind_text fail");
       os_free(statement);
-      if (proto != NULL) os_free(proto);
+      if (proto != NULL)
+        os_free(proto);
       sqlite3_finalize(res);
       return -1;
     }
   }
 
-  while((rc = sqlite3_step(res)) == SQLITE_ROW) {
+  while ((rc = sqlite3_step(res)) == SQLITE_ROW) {
     os_memset(&row, 0, sizeof(row));
 
-    value = (char*) sqlite3_column_text(res, 0);
+    value = (char *)sqlite3_column_text(res, 0);
     if (value != NULL) {
       row.mac = os_strdup(value);
       if (row.mac == NULL) {
         log_errno("os_strdup");
         os_free(statement);
-        if (proto != NULL) os_free(proto);
+        if (proto != NULL)
+          os_free(proto);
         sqlite3_finalize(res);
         return -1;
       }
     }
 
-    value = (char*) sqlite3_column_text(res, 1);
+    value = (char *)sqlite3_column_text(res, 1);
     if (value != NULL) {
       row.protocol = os_strdup(value);
       if (row.protocol == NULL) {
         log_errno("os_strdup");
         free_sqlite_fingerprint_row(&row);
         os_free(statement);
-        if (proto != NULL) os_free(proto);
+        if (proto != NULL)
+          os_free(proto);
         sqlite3_finalize(res);
         return -1;
       }
     }
 
-    value = (char*) sqlite3_column_text(res, 2);
+    value = (char *)sqlite3_column_text(res, 2);
     if (value != NULL) {
       row.fingerprint = os_strdup(value);
       if (row.fingerprint == NULL) {
         log_errno("os_strdup");
         free_sqlite_fingerprint_row(&row);
         os_free(statement);
-        if (proto != NULL) os_free(proto);
+        if (proto != NULL)
+          os_free(proto);
         sqlite3_finalize(res);
         return -1;
       }
@@ -273,14 +283,15 @@ int get_sqlite_fingerprint_rows(sqlite3 *db, char *mac, uint64_t timestamp, char
 
     row.timestamp = sqlite3_column_int64(res, 3);
 
-    value = (char*) sqlite3_column_text(res, 4);
+    value = (char *)sqlite3_column_text(res, 4);
     if (value != NULL) {
       row.query = os_strdup(value);
       if (row.query == NULL) {
         log_errno("os_strdup");
         free_sqlite_fingerprint_row(&row);
         os_free(statement);
-        if (proto != NULL) os_free(proto);
+        if (proto != NULL)
+          os_free(proto);
         sqlite3_finalize(res);
         return -1;
       }
@@ -289,9 +300,9 @@ int get_sqlite_fingerprint_rows(sqlite3 *db, char *mac, uint64_t timestamp, char
     utarray_push_back(rows, &row);
   }
 
-
   os_free(statement);
-  if (proto != NULL) os_free(proto);
+  if (proto != NULL)
+    os_free(proto);
   sqlite3_finalize(res);
 
   return 0;

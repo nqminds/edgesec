@@ -11,4 +11,3 @@ config notifications 'notifications'
 config reboot 'reboot'
 	option delay '3'
 	option time '03:30'
-

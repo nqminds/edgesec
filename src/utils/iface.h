@@ -61,7 +61,7 @@ struct iface_context {
  * @param params The parameters for interface context
  * @return struct iface_context* The interface context
  */
-struct iface_context* iface_init_context(void* params);
+struct iface_context *iface_init_context(void *params);
 
 /**
  * @brief Initialises the interface context
@@ -76,7 +76,7 @@ void iface_free_context(struct iface_context *xontext);
  * @param if_buf Interface working buffer
  * @return char* WiFi interface name
  */
-char* iface_get_vlan(char *if_buf);
+char *iface_get_vlan(char *if_buf);
 
 /**
  * @brief Get the array of @c struct netif_info_t for each available interface

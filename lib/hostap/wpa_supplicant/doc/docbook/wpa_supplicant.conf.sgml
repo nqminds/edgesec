@@ -70,7 +70,7 @@ network={
 	private_key="/etc/cert/user.prv"
 	private_key_passwd="password"
 }
-</programlisting></blockquote>   
+</programlisting></blockquote>
       </listitem>
 
       <listitem>

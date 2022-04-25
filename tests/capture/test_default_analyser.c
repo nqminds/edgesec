@@ -22,42 +22,36 @@
 #include "capture/pcap_queue.h"
 #include "capture/packet_queue.h"
 
-static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL, NULL};
+static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL,
+                                   NULL};
 
-int __wrap_open_sqlite_header_db(char *db_path, trace_callback_fn fn, void *trace_ctx, sqlite3 **sql)
-{
-  (void) db_path;
-  (void) fn;
-  (void) trace_ctx;
-  (void) sql;
-
-  return 0;
-}
-
-int __wrap_open_sqlite_pcap_db(char *db_path, sqlite3** sql)
-{
-  (void) db_path;
-  (void) sql;
+int __wrap_open_sqlite_header_db(char *db_path, trace_callback_fn fn,
+                                 void *trace_ctx, sqlite3 **sql) {
+  (void)db_path;
+  (void)fn;
+  (void)trace_ctx;
+  (void)sql;
 
   return 0;
 }
 
-void __wrap_free_sqlite_header_db(sqlite3 *db)
-{
-  (void) db;
+int __wrap_open_sqlite_pcap_db(char *db_path, sqlite3 **sql) {
+  (void)db_path;
+  (void)sql;
+
+  return 0;
 }
 
-void __wrap_free_sqlite_pcap_db(sqlite3 *db)
-{
-  (void) db;
-}
+void __wrap_free_sqlite_header_db(sqlite3 *db) { (void)db; }
+
+void __wrap_free_sqlite_pcap_db(sqlite3 *db) { (void)db; }
 
 int __wrap_run_pcap(char *interface, bool immediate, bool promiscuous,
-             int timeout, char *filter, bool nonblock, capture_callback_fn pcap_fn,
-             void *fn_ctx, struct pcap_context** pctx)
-{
-  (void) fn_ctx;
-  (void) pcap_fn;
+                    int timeout, char *filter, bool nonblock,
+                    capture_callback_fn pcap_fn, void *fn_ctx,
+                    struct pcap_context **pctx) {
+  (void)fn_ctx;
+  (void)pcap_fn;
 
   assert_string_equal(interface, "wlan0");
   assert_true(immediate);
@@ -69,66 +63,53 @@ int __wrap_run_pcap(char *interface, bool immediate, bool promiscuous,
   return 0;
 }
 
-void __wrap_close_pcap(struct pcap_context *ctx)
-{
+void __wrap_close_pcap(struct pcap_context *ctx) {
   if (ctx != NULL)
     os_free(ctx);
 }
 
-int __wrap_eloop_init(void)
-{
-  return 0;
-}
+int __wrap_eloop_init(void) { return 0; }
 
 int __wrap_eloop_register_read_sock(int sock, eloop_sock_handler handler,
-			     void *eloop_data, void *user_data)
-{
-  (void) sock;
-  (void) handler;
-  (void) eloop_data;
-  (void) user_data;
-  
+                                    void *eloop_data, void *user_data) {
+  (void)sock;
+  (void)handler;
+  (void)eloop_data;
+  (void)user_data;
+
   return 0;
 }
 
 int __wrap_eloop_register_timeout(unsigned long secs, unsigned long usecs,
-			   eloop_timeout_handler handler,
-			   void *eloop_data, void *user_data)
-{
-  (void) secs;
-  (void) usecs;
-  (void) handler;
-  (void) eloop_data;
-  (void) user_data;
+                                  eloop_timeout_handler handler,
+                                  void *eloop_data, void *user_data) {
+  (void)secs;
+  (void)usecs;
+  (void)handler;
+  (void)eloop_data;
+  (void)user_data;
 
   return 0;
 }
 
-void __wrap_eloop_run(void)
-{
+void __wrap_eloop_run(void) {}
 
-}
+void __wrap_eloop_destroy(void) {}
 
-void __wrap_eloop_destroy(void)
-{
-
-}
-
-uint32_t __wrap_run_register_db(char *address, char *name)
-{
-  (void) address;
-  (void) name;
+uint32_t __wrap_run_register_db(char *address, char *name) {
+  (void)address;
+  (void)name;
   return 1;
 }
 
-int __wrap_extract_packets(const struct pcap_pkthdr *header, const uint8_t *packet,
-                    char *interface, char *hostname, char *id, UT_array **tp_array)
-{
-  (void) header;
-  (void) packet;
-  (void) id;
-  (void) hostname;
-  (void) interface;
+int __wrap_extract_packets(const struct pcap_pkthdr *header,
+                           const uint8_t *packet, char *interface,
+                           char *hostname, char *id, UT_array **tp_array) {
+  (void)header;
+  (void)packet;
+  (void)id;
+  (void)hostname;
+  (void)interface;
 
   struct tuple_packet tp;
   utarray_new(*tp_array, &tp_list_icd);
@@ -141,23 +122,23 @@ int __wrap_extract_packets(const struct pcap_pkthdr *header, const uint8_t *pack
   return 1;
 }
 
-struct packet_queue* __wrap_push_packet_queue(struct packet_queue* queue, struct tuple_packet tp)
-{
+struct packet_queue *__wrap_push_packet_queue(struct packet_queue *queue,
+                                              struct tuple_packet tp) {
   assert_int_equal(tp.type, PACKET_ETHERNET);
   return queue;
 }
 
-struct pcap_queue* __wrap_push_pcap_queue(struct pcap_queue* queue, struct pcap_pkthdr *header, uint8_t *packet)
-{
-  (void) packet;
+struct pcap_queue *__wrap_push_pcap_queue(struct pcap_queue *queue,
+                                          struct pcap_pkthdr *header,
+                                          uint8_t *packet) {
+  (void)packet;
   assert_int_equal(header->caplen, 100);
   assert_int_equal(header->len, 100);
 
   return queue;
 }
 
-void capture_config(struct capture_conf *config)
-{
+void capture_config(struct capture_conf *config) {
   os_memset(config, 0, sizeof(struct capture_conf));
 
   strcpy(config->capture_bin_path, "./");
@@ -176,9 +157,8 @@ void capture_config(struct capture_conf *config)
   strcpy(config->filter, "port 80");
 }
 
-static void test_start_default_analyser(void **state)
-{
-  (void) state; /* unused */
+static void test_start_default_analyser(void **state) {
+  (void)state; /* unused */
 
   struct capture_conf config;
   capture_config(&config);
@@ -187,9 +167,8 @@ static void test_start_default_analyser(void **state)
   assert_int_equal(ret, 0);
 }
 
-static void test_pcap_callback(void **state)
-{
-  (void) state; /* unused */
+static void test_pcap_callback(void **state) {
+  (void)state; /* unused */
 
   struct capture_context context;
   struct pcap_context pc;
@@ -208,17 +187,15 @@ static void test_pcap_callback(void **state)
   free_pcap_queue(context.cqueue);
 }
 
-int main(int argc, char *argv[])
-{  
-  (void) argc;
-  (void) argv;
+int main(int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
 
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
-    cmocka_unit_test(test_start_default_analyser),
-    cmocka_unit_test(test_pcap_callback)
-  };
+      cmocka_unit_test(test_start_default_analyser),
+      cmocka_unit_test(test_pcap_callback)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

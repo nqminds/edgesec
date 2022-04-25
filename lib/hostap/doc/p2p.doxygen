@@ -429,8 +429,8 @@ dev_capab=0x1 group_capab=0x0
 <2>P2P-GO-NEG-REQUEST 02:40:61:c2:f3:b7
 > p2p_connect 02:40:61:c2:f3:b7 pbc
 OK
-<2>P2P-GO-NEG-SUCCESS 
-<2>P2P-GROUP-FORMATION-SUCCESS 
+<2>P2P-GO-NEG-SUCCESS
+<2>P2P-GROUP-FORMATION-SUCCESS
 <2>P2P-GROUP-STARTED sta0-p2p-0 client DIRECT-vM
 > interface
 Available interfaces:
@@ -454,8 +454,8 @@ pri_dev_type=1-0050F204-1 name='Wireless Client' config_methods=0x18c
 dev_capab=0x1 group_capab=0x0
 > p2p_connect 02:f0:bc:44:87:62 pbc
 OK
-<2>P2P-GO-NEG-SUCCESS 
-<2>P2P-GROUP-FORMATION-SUCCESS 
+<2>P2P-GO-NEG-SUCCESS
+<2>P2P-GROUP-FORMATION-SUCCESS
 <2>P2P-GROUP-STARTED sta1-p2p-0 GO DIRECT-vM
 > interface
 Available interfaces:

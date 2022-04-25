@@ -20,7 +20,8 @@
 /**
  * @file sqlite_macconn_writer.c
  * @author Alexandru Mereacre
- * @brief File containing the implementation of the sqlite macconn writer utilities.
+ * @brief File containing the implementation of the sqlite macconn writer
+ * utilities.
  */
 
 #include <stdio.h>
@@ -37,15 +38,13 @@
 #include "../utils/sqliteu.h"
 #include "../utils/utarray.h"
 
-void free_sqlite_macconn_db(sqlite3 *db)
-{
+void free_sqlite_macconn_db(sqlite3 *db) {
   if (db != NULL) {
     sqlite3_close(db);
   }
 }
 
-int open_sqlite_macconn_db(char *db_path, sqlite3** sql)
-{
+int open_sqlite_macconn_db(char *db_path, sqlite3 **sql) {
   sqlite3 *db = NULL;
   int rc;
 
@@ -75,8 +74,7 @@ int open_sqlite_macconn_db(char *db_path, sqlite3** sql)
   return 0;
 }
 
-int save_sqlite_macconn_entry(sqlite3 *db, struct mac_conn *conn)
-{
+int save_sqlite_macconn_entry(sqlite3 *db, struct mac_conn *conn) {
   sqlite3_stmt *res = NULL;
   int column_idx;
   char mac_buf[MACSTR_LEN];
@@ -116,7 +114,8 @@ int save_sqlite_macconn_entry(sqlite3 *db, struct mac_conn *conn)
   }
 
   column_idx = sqlite3_bind_parameter_index(res, "@id");
-  if (sqlite3_bind_text(res, column_idx, conn->info.id, -1, NULL) != SQLITE_OK) {
+  if (sqlite3_bind_text(res, column_idx, conn->info.id, -1, NULL) !=
+      SQLITE_OK) {
     log_trace("sqlite3_bind_text fail");
     sqlite3_finalize(res);
     return -1;
@@ -144,14 +143,16 @@ int save_sqlite_macconn_entry(sqlite3 *db, struct mac_conn *conn)
   }
 
   column_idx = sqlite3_bind_parameter_index(res, "@allow");
-  if (sqlite3_bind_int(res, column_idx, conn->info.allow_connection) != SQLITE_OK) {
+  if (sqlite3_bind_int(res, column_idx, conn->info.allow_connection) !=
+      SQLITE_OK) {
     log_trace("sqlite3_bind_text fail");
     sqlite3_finalize(res);
     return -1;
   }
 
   column_idx = sqlite3_bind_parameter_index(res, "@label");
-  if (sqlite3_bind_text(res, column_idx, conn->info.label, -1, NULL) != SQLITE_OK) {
+  if (sqlite3_bind_text(res, column_idx, conn->info.label, -1, NULL) !=
+      SQLITE_OK) {
     log_trace("sqlite3_bind_text fail");
     sqlite3_finalize(res);
     return -1;
@@ -163,8 +164,7 @@ int save_sqlite_macconn_entry(sqlite3 *db, struct mac_conn *conn)
   return 0;
 }
 
-int get_sqlite_macconn_entries(sqlite3 *db, UT_array *entries)
-{
+int get_sqlite_macconn_entries(sqlite3 *db, UT_array *entries) {
   sqlite3_stmt *res;
   int rc;
   struct mac_conn el;
@@ -181,8 +181,7 @@ int get_sqlite_macconn_entries(sqlite3 *db, UT_array *entries)
     return -1;
   }
 
-
-  while((rc = sqlite3_step(res)) == SQLITE_ROW) {
+  while ((rc = sqlite3_step(res)) == SQLITE_ROW) {
     os_memset(&el.info, 0, sizeof(el.info));
 
     // mac
@@ -195,24 +194,24 @@ int get_sqlite_macconn_entries(sqlite3 *db, UT_array *entries)
     os_memcpy(el.mac_addr, mac_addr, ETH_ALEN);
 
     // id
-    if ((value = (char*) sqlite3_column_text(res, 1)) != NULL) {
+    if ((value = (char *)sqlite3_column_text(res, 1)) != NULL) {
       os_strlcpy(el.info.id, value, MAX_RANDOM_UUID_LEN);
     }
 
-    //status
+    // status
     el.info.status = sqlite3_column_int(res, 2);
 
-    //vlanid
+    // vlanid
     el.info.vlanid = sqlite3_column_int(res, 3);
 
-    //nat
+    // nat
     el.info.nat = sqlite3_column_int(res, 4);
 
-    //allow
+    // allow
     el.info.allow_connection = sqlite3_column_int(res, 5);
 
-    //label
-    if ((value = (char*) sqlite3_column_text(res, 6)) != NULL) {
+    // label
+    if ((value = (char *)sqlite3_column_text(res, 6)) != NULL) {
       os_strlcpy(el.info.label, value, MAX_DEVICE_LABEL_SIZE);
     }
 

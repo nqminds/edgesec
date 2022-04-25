@@ -7,4 +7,3 @@ config login
 	option password '$p$root'
 	list read '*'
 	list write '*'
-

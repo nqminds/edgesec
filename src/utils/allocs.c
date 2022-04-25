@@ -34,35 +34,32 @@
 
 #include "allocs.h"
 
-void * os_zalloc(size_t size)
-{
-	void *n = os_malloc(size);
-	if (n != NULL)
-		os_memset(n, 0, size);
-	return n;
+void *os_zalloc(size_t size) {
+  void *n = os_malloc(size);
+  if (n != NULL)
+    os_memset(n, 0, size);
+  return n;
 }
 
-void * os_memdup(const void *src, size_t len)
-{
-	void *r = os_malloc(len);
+void *os_memdup(const void *src, size_t len) {
+  void *r = os_malloc(len);
 
-	if (r && src)
-		os_memcpy(r, src, len);
-	return r;
+  if (r && src)
+    os_memcpy(r, src, len);
+  return r;
 }
 
-char * os_strdup(const char *s)
-{
+char *os_strdup(const char *s) {
   char *dest = NULL;
   size_t len = strlen(s) + 1;
 
   if (s != NULL) {
-  	dest = (char *) os_malloc(len);
-	if (dest == NULL) {
+    dest = (char *)os_malloc(len);
+    if (dest == NULL) {
       return NULL;
-	}
+    }
 
-	strcpy(dest, s);
+    strcpy(dest, s);
   }
 
   return dest;

@@ -53,7 +53,8 @@ struct mdns_answer_entry {
  * @param answers The queries array
  * @return 0 Success, -1 on failure
  */
-int decode_mdns_queries(uint8_t *payload, size_t len, size_t *first, uint16_t nqueries, UT_array *queries);
+int decode_mdns_queries(uint8_t *payload, size_t len, size_t *first,
+                        uint16_t nqueries, UT_array *queries);
 
 /**
  * @brief Decodes the mdns answers
@@ -65,7 +66,8 @@ int decode_mdns_queries(uint8_t *payload, size_t len, size_t *first, uint16_t nq
  * @param answers The answers array
  * @return 0 Success, -1 on failure
  */
-int decode_mdns_answers(uint8_t *payload, size_t len, size_t *first, uint16_t nanswers, UT_array *answers);
+int decode_mdns_answers(uint8_t *payload, size_t len, size_t *first,
+                        uint16_t nanswers, UT_array *answers);
 
 /**
  * @brief Decodes the mdns header

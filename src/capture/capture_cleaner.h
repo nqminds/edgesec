@@ -20,7 +20,8 @@
 /**
  * @file capture_cleaner.h
  * @author Alexandru Mereacre
- * @brief File containing the definition of the capture cleaner service structures.
+ * @brief File containing the definition of the capture cleaner service
+ * structures.
  *
  * Defines the start function for the capturte cleaner service, which
  * removes the capture files from the database folder when it

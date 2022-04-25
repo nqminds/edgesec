@@ -186,5 +186,3 @@ int android_nl_socket_set_nonblocking(struct nl_handle *handle)
 {
 	return fcntl(nl_socket_get_fd(handle), F_SETFL, O_NONBLOCK);
 }
-
-

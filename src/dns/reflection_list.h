@@ -34,11 +34,11 @@
 #include "../utils/list.h"
 
 struct reflection_list {
-    int recv_fd;
-    int send_fd;
-    unsigned int ifindex;
-    char ifname[IFNAMSIZ];
-    struct dl_list list;          /**< List definition */
+  int recv_fd;
+  int send_fd;
+  unsigned int ifindex;
+  char ifname[IFNAMSIZ];
+  struct dl_list list; /**< List definition */
 };
 
 /**
@@ -46,7 +46,7 @@ struct reflection_list {
  *
  * @return struct reflection_list * The reflection list or %NULL on failure
  */
-struct reflection_list * init_reflection_list(void);
+struct reflection_list *init_reflection_list(void);
 
 /**
  * @brief Pushes an interface element to the reflection list
@@ -54,9 +54,12 @@ struct reflection_list * init_reflection_list(void);
  * @param rif The reflection list
  * @param ifindex The interface index
  * @param ifname The interface name
- * @return struct reflection_list* Returned the interface list element, NULL on failure
+ * @return struct reflection_list* Returned the interface list element, NULL on
+ * failure
  */
-struct reflection_list* push_reflection_list(struct reflection_list *rif, unsigned int ifindex, const char *ifname);
+struct reflection_list *push_reflection_list(struct reflection_list *rif,
+                                             unsigned int ifindex,
+                                             const char *ifname);
 
 /**
  * @brief Frees the reflection list
@@ -65,4 +68,4 @@ struct reflection_list* push_reflection_list(struct reflection_list *rif, unsign
  */
 void free_reflection_list(struct reflection_list *rif);
 
-#endif //REFLECTION_ZONE_H
+#endif // REFLECTION_ZONE_H

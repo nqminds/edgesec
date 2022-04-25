@@ -34,18 +34,19 @@
 #include "../utils/utarray.h"
 
 typedef void (*capture_callback_fn)(const void *ctx, const void *pcap_ctx,
-                                    char *ltype, struct pcap_pkthdr *header, uint8_t *packet);
+                                    char *ltype, struct pcap_pkthdr *header,
+                                    uint8_t *packet);
 
 /**
  * @brief Pcap context structure definition
  *
  */
 struct pcap_context {
-  int pcap_fd;                  /**< The pcap selectable fd */
-  pcap_t *pd;                   /**< The pcap structure */
-  char ifname[IFNAMSIZ];        /**< The pcap interface */
-  capture_callback_fn pcap_fn;  /**< The pcap capture callback */
-  void *fn_ctx;              /**< The context for callback function */
+  int pcap_fd;                 /**< The pcap selectable fd */
+  pcap_t *pd;                  /**< The pcap structure */
+  char ifname[IFNAMSIZ];       /**< The pcap interface */
+  capture_callback_fn pcap_fn; /**< The pcap capture callback */
+  void *fn_ctx;                /**< The context for callback function */
 };
 
 /**
@@ -85,9 +86,9 @@ int get_pcap_datalink(struct pcap_context *ctx);
  * @param pctx The returned pcap context
  * @return 0 on success, -1 on failure
  */
-int run_pcap(char *interface, bool immediate, bool promiscuous,
-             int timeout, char *filter, bool nonblock, capture_callback_fn pcap_fn,
-             void *fn_ctx, struct pcap_context** pctx);
+int run_pcap(char *interface, bool immediate, bool promiscuous, int timeout,
+             char *filter, bool nonblock, capture_callback_fn pcap_fn,
+             void *fn_ctx, struct pcap_context **pctx);
 
 /**
  * @brief Captures a pcap packet
@@ -106,7 +107,8 @@ int capture_pcap_packet(struct pcap_context *ctx);
  * @param packet The packet data
  * @return int 0 on success, -1 on failure
  */
-int dump_file_pcap(struct pcap_context *ctx, char *file_path, struct pcap_pkthdr *header, uint8_t *packet);
+int dump_file_pcap(struct pcap_context *ctx, char *file_path,
+                   struct pcap_pkthdr *header, uint8_t *packet);
 
 /**
  * @brief Closes the pcap service
@@ -127,5 +129,5 @@ void free_pcap_list(UT_array *ctx_list);
  *
  * @return UT_array* The pcap list, NULL on failure
  */
-UT_array * create_pcap_list(void);
+UT_array *create_pcap_list(void);
 #endif

@@ -20,7 +20,8 @@
 /**
  * @file dhcp_service.h
  * @author Alexandru Mereacre
- * @brief File containing the definition of dhcp service configuration utilities.
+ * @brief File containing the definition of dhcp service configuration
+ * utilities.
  */
 #ifndef DHCP_SERVICE_H
 #define DHCP_SERVICE_H
@@ -41,7 +42,7 @@
  * @return int 0 on success, -1 on error
  */
 int run_dhcp(struct dhcp_conf *dconf, UT_array *dns_server_array,
-  char *domain_server_path, bool exec_dhcp);
+             char *domain_server_path, bool exec_dhcp);
 
 /**
  * @brief Closes (terminates) dhcp process

@@ -40,15 +40,13 @@
 
 #define DOMAIN_REPLY_TIMEOUT 10
 
-void init_domain_addr(struct sockaddr_un *unaddr, char *addr)
-{
+void init_domain_addr(struct sockaddr_un *unaddr, char *addr) {
   os_memset(unaddr, 0, sizeof(struct sockaddr_un));
   unaddr->sun_family = AF_UNIX;
   os_strlcpy(unaddr->sun_path, addr, sizeof(unaddr->sun_path));
 }
 
-char* generate_socket_name(void)
-{
+char *generate_socket_name(void) {
   unsigned char crypto_rand[4];
   char *buf = NULL;
   if (os_get_random(crypto_rand, 4) == -1) {
@@ -56,12 +54,12 @@ char* generate_socket_name(void)
     return NULL;
   }
   buf = os_zalloc(sizeof(crypto_rand) * 2 + STRLEN(SOCK_EXTENSION) + 1);
-  sprintf(buf, "%x%x%x%x"SOCK_EXTENSION, crypto_rand[0], crypto_rand[1], crypto_rand[2], crypto_rand[3]);
+  sprintf(buf, "%x%x%x%x" SOCK_EXTENSION, crypto_rand[0], crypto_rand[1],
+          crypto_rand[2], crypto_rand[3]);
   return buf;
 }
 
-int create_domain_client(char *addr)
-{
+int create_domain_client(char *addr) {
   struct sockaddr_un claddr;
   int sock;
   char *client_addr = NULL;
@@ -90,9 +88,7 @@ int create_domain_client(char *addr)
     addrlen = sizeof(struct sockaddr_un);
   }
 
-
-
-  if (bind(sock, (struct sockaddr *) &claddr, addrlen) == -1) {
+  if (bind(sock, (struct sockaddr *)&claddr, addrlen) == -1) {
     log_errno("bind");
     return -1;
   }
@@ -100,12 +96,11 @@ int create_domain_client(char *addr)
   return sock;
 }
 
-int create_domain_server(char *server_path)
-{
+int create_domain_server(char *server_path) {
   struct sockaddr_un svaddr;
   int sfd;
 
-  sfd = socket(AF_UNIX, SOCK_DGRAM, 0);       /* Create server socket */
+  sfd = socket(AF_UNIX, SOCK_DGRAM, 0); /* Create server socket */
   if (sfd == -1) {
     log_errno("socket");
     return -1;
@@ -128,7 +123,7 @@ int create_domain_server(char *server_path)
 
   init_domain_addr(&svaddr, server_path);
 
-  if (bind(sfd, (struct sockaddr *) &svaddr, sizeof(struct sockaddr_un)) == -1) {
+  if (bind(sfd, (struct sockaddr *)&svaddr, sizeof(struct sockaddr_un)) == -1) {
     log_errno("bind");
     return -1;
   }
@@ -137,8 +132,7 @@ int create_domain_server(char *server_path)
 }
 
 ssize_t read_domain_data(int sock, char *data, size_t data_len,
-                         struct client_address *addr, int flags)
-{
+                         struct client_address *addr, int flags) {
   if (data == NULL) {
     log_trace("data param is NULL");
     return -1;
@@ -151,7 +145,9 @@ ssize_t read_domain_data(int sock, char *data, size_t data_len,
 
   addr->len = sizeof(struct sockaddr_un);
 
-  ssize_t num_bytes = recvfrom(sock, data, data_len, flags, (struct sockaddr *) &addr->addr, (socklen_t *) &addr->len);
+  ssize_t num_bytes =
+      recvfrom(sock, data, data_len, flags, (struct sockaddr *)&addr->addr,
+               (socklen_t *)&addr->len);
   if (num_bytes == -1) {
     log_errno("recvfrom");
     return -1;
@@ -160,8 +156,8 @@ ssize_t read_domain_data(int sock, char *data, size_t data_len,
   return num_bytes;
 }
 
-ssize_t read_domain_data_s(int sock, char *data, size_t data_len, char *addr, int flags)
-{
+ssize_t read_domain_data_s(int sock, char *data, size_t data_len, char *addr,
+                           int flags) {
   struct client_address claddr;
   ssize_t num_bytes;
 
@@ -177,8 +173,7 @@ ssize_t read_domain_data_s(int sock, char *data, size_t data_len, char *addr, in
   return num_bytes;
 }
 
-ssize_t write_domain_data_s(int sock, char *data, size_t data_len, char *addr)
-{
+ssize_t write_domain_data_s(int sock, char *data, size_t data_len, char *addr) {
   struct client_address claddr;
 
   if (addr == NULL) {
@@ -192,8 +187,8 @@ ssize_t write_domain_data_s(int sock, char *data, size_t data_len, char *addr)
   return write_domain_data(sock, data, data_len, &claddr);
 }
 
-ssize_t write_domain_data(int sock, char *data, size_t data_len, struct client_address *addr)
-{
+ssize_t write_domain_data(int sock, char *data, size_t data_len,
+                          struct client_address *addr) {
   ssize_t num_bytes;
 
   if (data == NULL) {
@@ -208,7 +203,8 @@ ssize_t write_domain_data(int sock, char *data, size_t data_len, struct client_a
 
   errno = 0;
   log_trace("Sending to socket on %.*s", addr->len, addr->addr.sun_path);
-  if ((num_bytes = sendto(sock, data, data_len, 0, (struct sockaddr *) &addr->addr, addr->len)) < 0) {
+  if ((num_bytes = sendto(sock, data, data_len, 0,
+                          (struct sockaddr *)&addr->addr, addr->len)) < 0) {
     log_errno("sendto");
     return -1;
   }
@@ -216,8 +212,7 @@ ssize_t write_domain_data(int sock, char *data, size_t data_len, struct client_a
   return num_bytes;
 }
 
-int close_domain(int sfd)
-{
+int close_domain(int sfd) {
   if (sfd) {
     return close(sfd);
   }
@@ -225,8 +220,8 @@ int close_domain(int sfd)
   return 0;
 }
 
-int writeread_domain_data_str(char *socket_path, char *write_str, char **reply)
-{
+int writeread_domain_data_str(char *socket_path, char *write_str,
+                              char **reply) {
   int sfd;
   uint32_t bytes_available;
   ssize_t send_count, rec_count;
@@ -248,7 +243,8 @@ int writeread_domain_data_str(char *socket_path, char *write_str, char **reply)
   os_memcpy(&readfds, &masterfds, sizeof(fd_set));
 
   log_trace("Sending to socket_path=%s", socket_path);
-  send_count = write_domain_data_s(sfd, write_str, strlen(write_str), socket_path);
+  send_count =
+      write_domain_data_s(sfd, write_str, strlen(write_str), socket_path);
   if (send_count < 0) {
     log_errno("sendto");
     close(sfd);
@@ -270,7 +266,7 @@ int writeread_domain_data_str(char *socket_path, char *write_str, char **reply)
     return -1;
   }
 
-  if(FD_ISSET(sfd, &readfds)) {
+  if (FD_ISSET(sfd, &readfds)) {
     if (ioctl(sfd, FIONREAD, &bytes_available) == -1) {
       log_errno("ioctl");
       close(sfd);
@@ -285,7 +281,8 @@ int writeread_domain_data_str(char *socket_path, char *write_str, char **reply)
       return -1;
     }
 
-    rec_count = read_domain_data_s(sfd, rec_data, bytes_available, socket_path, MSG_DONTWAIT);
+    rec_count = read_domain_data_s(sfd, rec_data, bytes_available, socket_path,
+                                   MSG_DONTWAIT);
 
     if (rec_count < 0) {
       log_trace("read_domain_data_s fail");

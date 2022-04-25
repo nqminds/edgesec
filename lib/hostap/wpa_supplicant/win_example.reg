@@ -39,4 +39,3 @@ REGEDIT4
 "config"="test"
 "ctrl_interface"=""
 "skip_on_error"=dword:00000000
-

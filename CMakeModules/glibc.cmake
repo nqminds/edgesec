@@ -1,6 +1,6 @@
 # - Check glibc version
 # CHECK_GLIBC_VERSION()
-# 
+#
 # Once done this will define
 #
 #   GLIBC_VERSION - glibc version
@@ -22,6 +22,6 @@ MACRO (CHECK_GLIBC_VERSION)
         MESSAGE ("glibc version ${GLIBC_VERSION} found")
         IF (GLIBC_VERSION STREQUAL "2.2.1")
         MESSAGE (FATAL_ERROR "Unssuported version of glibc")
-        ENDIF ()    
+        ENDIF ()
     ENDIF ()
 ENDMACRO (CHECK_GLIBC_VERSION)

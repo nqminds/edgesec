@@ -32,21 +32,19 @@
 
 #include "log.h"
 
-unsigned int iface_nametoindex (const char *ifname)
-{
-    return if_nametoindex(ifname);
+unsigned int iface_nametoindex(const char *ifname) {
+  return if_nametoindex(ifname);
 }
 
-bool iface_exists(const char *ifname)
-{
-	if (ifname == NULL) {
-		log_trace("ifname param is NULL");
-		return false;
-	}
+bool iface_exists(const char *ifname) {
+  if (ifname == NULL) {
+    log_trace("ifname param is NULL");
+    return false;
+  }
 
-	if (!iface_nametoindex(ifname)) {
-		return false;
-	}
+  if (!iface_nametoindex(ifname)) {
+    return false;
+  }
 
-	return true;
+  return true;
 }

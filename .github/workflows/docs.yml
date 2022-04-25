@@ -1,5 +1,5 @@
 # Workflow that always runs
-name: Main CI
+name: GitHub Pages
 
 # This action should run on every commit
 on: [push, pull_request]

@@ -90,7 +90,7 @@ After logging in, you can do the following:
   ```
 - Follow instructions in `first-boot`.
 - Follow instruction in https://nqminds.github.io/edgesec-packages/ to install edgesec:
-  
+
   ```bash
   # make a key store dir if it doesn't exist
   sudo mkdir -p /usr/local/share/keyrings
@@ -101,7 +101,7 @@ After logging in, you can do the following:
   sudo apt update && sudo apt install edgesec
   ```
 - Setup unattended updates.
-  
+
   It should already be installed, you just need to edit and add the following line
   in `/etc/apt/apt.conf.d/50unattended-upgrades` under `Unattended-Upgrade::Allowed-Origins`.
 

@@ -44,11 +44,11 @@ enum MDNS_REQUEST_TYPE {
  *
  */
 struct mdns_list_info {
-  enum MDNS_REQUEST_TYPE request;       /**< MDNS request type */
-  uint32_t ttl;                         /**< MDNS ttl */
-  uint16_t rrtype;                      /**< MDNS rrtype */
-  uint16_t qtype;                       /**< MDNS qtype */
-  char *name;                           /**< MDNS query/answer name */
+  enum MDNS_REQUEST_TYPE request; /**< MDNS request type */
+  uint32_t ttl;                   /**< MDNS ttl */
+  uint16_t rrtype;                /**< MDNS rrtype */
+  uint16_t qtype;                 /**< MDNS qtype */
+  char *name;                     /**< MDNS query/answer name */
 };
 
 /**
@@ -56,8 +56,8 @@ struct mdns_list_info {
  *
  */
 struct mdns_list {
-  struct mdns_list_info info;   /**< MDNS info structure */
-  struct dl_list list;          /**< List definition */
+  struct mdns_list_info info; /**< MDNS info structure */
+  struct dl_list list;        /**< List definition */
 };
 
 /**
@@ -65,7 +65,7 @@ struct mdns_list {
  *
  * @return struct mdns_list* Returned initialised empty mdns list
  */
-struct mdns_list* init_mdns_list(void);
+struct mdns_list *init_mdns_list(void);
 
 /**
  * @brief Pushes an mdns info entry in the mdns list
@@ -74,21 +74,21 @@ struct mdns_list* init_mdns_list(void);
  * @param info The mdns info structure
  * @return 0 on success, -1 on failure
  */
-int push_mdns_list(struct mdns_list* mlist, struct mdns_list_info *info);
+int push_mdns_list(struct mdns_list *mlist, struct mdns_list_info *info);
 
 /**
  * @brief Delete a mdns list entry
  *
  * @param el The mdns list entry
  */
-void free_mdns_list_el(struct mdns_list* el);
+void free_mdns_list_el(struct mdns_list *el);
 
 /**
  * @brief Frees the mdns list
  *
  * @param mlist The pointer to the mdns list
  */
-void free_mdns_list(struct mdns_list* mlist);
+void free_mdns_list(struct mdns_list *mlist);
 
 /**
  * @brief Checks if MDNS list has an element with a given request type
@@ -97,6 +97,7 @@ void free_mdns_list(struct mdns_list* mlist);
  * @param request The request type
  * @return 1 request present, 0 otherwise and -1 on failure
  */
-int check_mdns_list_req(struct mdns_list* mlist, enum MDNS_REQUEST_TYPE request);
+int check_mdns_list_req(struct mdns_list *mlist,
+                        enum MDNS_REQUEST_TYPE request);
 
 #endif

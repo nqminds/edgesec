@@ -43,8 +43,8 @@ struct nlctx {
 };
 
 struct nl80211_state {
-	struct nl_sock *nl_sock;
-	int nl80211_id;
+  struct nl_sock *nl_sock;
+  int nl80211_id;
 };
 
 /**
@@ -52,17 +52,17 @@ struct nl80211_state {
  *
  */
 typedef struct {
-	char ifname[IFNAMSIZ];				/**< Interface string name */
-	uint32_t ifindex;					/**< Interface index */
-	uint64_t wdev;						/**< Physical interface wdev param */
-	uint8_t addr[ETH_ALEN];				/**< Interface byte MAC address */
-	uint32_t wiphy;						/**< Physical interface ID */
+  char ifname[IFNAMSIZ];  /**< Interface string name */
+  uint32_t ifindex;       /**< Interface index */
+  uint64_t wdev;          /**< Physical interface wdev param */
+  uint8_t addr[ETH_ALEN]; /**< Interface byte MAC address */
+  uint32_t wiphy;         /**< Physical interface ID */
 } netiw_info_t;
 
 struct iplink_req {
-	struct nlmsghdr		n;
-	struct ifinfomsg	i;
-	char				buf[1024];
+  struct nlmsghdr n;
+  struct ifinfomsg i;
+  char buf[1024];
 };
 
 /**
@@ -70,7 +70,7 @@ struct iplink_req {
  *
  * @return struct nlctx* The nl context
  */
-struct nlctx* nl_init_context(void);
+struct nlctx *nl_init_context(void);
 
 /**
  * @brief Frees the nl context
@@ -86,7 +86,6 @@ void nl_free_context(struct nlctx *context);
  * @return UT_array* The returned array of @c struct netif_info_t
  */
 UT_array *nl_get_interfaces(int if_id);
-
 
 /**
  * @brief Creates a new interface object
@@ -116,7 +115,6 @@ bool nl_set_interface_ip(char *ip_addr, char *brd_addr, char *if_name);
  */
 bool nl_set_interface_state(char *if_name, bool state);
 
-
 /**
  * @brief Creates and interface and assigns an IP
  *
@@ -129,7 +127,7 @@ bool nl_set_interface_state(char *if_name, bool state);
  * @return int 0 on success, -1 on failure
  */
 int nl_create_interface(struct nlctx *context, char *ifname, char *type,
-						char *ip_addr, char *brd_addr, char *subnet_mask);
+                        char *ip_addr, char *brd_addr, char *subnet_mask);
 
 /**
  * @brief Resets the interface
@@ -168,6 +166,6 @@ int nl_is_iw_vlan(const char *ifname);
  * @param buf Interface working buffer
  * @return char* WiFi interface name
  */
-char* nl_get_valid_iw(char *buf);
+char *nl_get_valid_iw(char *buf);
 
 #endif

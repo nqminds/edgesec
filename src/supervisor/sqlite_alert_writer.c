@@ -20,7 +20,8 @@
 /**
  * @file sqlite_alert_writer.c
  * @author Alexandru Mereacre
- * @brief File containing the implementation of the sqlite alert writer utilities.
+ * @brief File containing the implementation of the sqlite alert writer
+ * utilities.
  */
 
 #include <stdio.h>
@@ -36,15 +37,13 @@
 #include "../utils/log.h"
 #include "../utils/sqliteu.h"
 
-void free_sqlite_alert_db(sqlite3 *db)
-{
+void free_sqlite_alert_db(sqlite3 *db) {
   if (db != NULL) {
     sqlite3_close(db);
   }
 }
 
-int open_sqlite_alert_db(char *db_path, sqlite3** sql)
-{
+int open_sqlite_alert_db(char *db_path, sqlite3 **sql) {
   sqlite3 *db = NULL;
   int rc;
 
@@ -74,8 +73,7 @@ int open_sqlite_alert_db(char *db_path, sqlite3** sql)
   return 0;
 }
 
-int save_sqlite_alert_row(sqlite3 *db, struct alert_row *row)
-{
+int save_sqlite_alert_row(sqlite3 *db, struct alert_row *row) {
   sqlite3_stmt *res = NULL;
   int column_idx;
 
@@ -90,14 +88,16 @@ int save_sqlite_alert_row(sqlite3 *db, struct alert_row *row)
   }
 
   column_idx = sqlite3_bind_parameter_index(res, "@hostname");
-  if (sqlite3_bind_text(res, column_idx, row->hostname, -1, NULL) != SQLITE_OK) {
+  if (sqlite3_bind_text(res, column_idx, row->hostname, -1, NULL) !=
+      SQLITE_OK) {
     log_trace("sqlite3_bind_text fail");
     sqlite3_finalize(res);
     return -1;
   }
 
   column_idx = sqlite3_bind_parameter_index(res, "@analyser");
-  if (sqlite3_bind_text(res, column_idx, row->analyser, -1, NULL) != SQLITE_OK) {
+  if (sqlite3_bind_text(res, column_idx, row->analyser, -1, NULL) !=
+      SQLITE_OK) {
     log_trace("sqlite3_bind_text fail");
     sqlite3_finalize(res);
     return -1;
@@ -111,14 +111,16 @@ int save_sqlite_alert_row(sqlite3 *db, struct alert_row *row)
   }
 
   column_idx = sqlite3_bind_parameter_index(res, "@src_mac_addr");
-  if (sqlite3_bind_text(res, column_idx, row->src_mac_addr, -1, NULL) != SQLITE_OK) {
+  if (sqlite3_bind_text(res, column_idx, row->src_mac_addr, -1, NULL) !=
+      SQLITE_OK) {
     log_trace("sqlite3_bind_text fail");
     sqlite3_finalize(res);
     return -1;
   }
 
   column_idx = sqlite3_bind_parameter_index(res, "@dst_mac_addr");
-  if (sqlite3_bind_text(res, column_idx, row->dst_mac_addr, -1, NULL) != SQLITE_OK) {
+  if (sqlite3_bind_text(res, column_idx, row->dst_mac_addr, -1, NULL) !=
+      SQLITE_OK) {
     log_trace("sqlite3_bind_text fail");
     sqlite3_finalize(res);
     return -1;
@@ -151,14 +153,19 @@ int save_sqlite_alert_row(sqlite3 *db, struct alert_row *row)
   return 0;
 }
 
-void free_sqlite_alert_row(struct alert_row *row)
-{
+void free_sqlite_alert_row(struct alert_row *row) {
   if (row != NULL) {
-    if (row->hostname != NULL) os_free(row->hostname);
-    if (row->analyser != NULL) os_free(row->analyser);
-    if (row->ifname != NULL) os_free(row->ifname);
-    if (row->src_mac_addr != NULL) os_free(row->src_mac_addr);
-    if (row->dst_mac_addr != NULL) os_free(row->dst_mac_addr);
-    if (row->info != NULL) os_free(row->info);
+    if (row->hostname != NULL)
+      os_free(row->hostname);
+    if (row->analyser != NULL)
+      os_free(row->analyser);
+    if (row->ifname != NULL)
+      os_free(row->ifname);
+    if (row->src_mac_addr != NULL)
+      os_free(row->src_mac_addr);
+    if (row->dst_mac_addr != NULL)
+      os_free(row->dst_mac_addr);
+    if (row->info != NULL)
+      os_free(row->info);
   }
 }
