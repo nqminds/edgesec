@@ -1,3 +1,9 @@
+edgesec (0.9.9-alpha6) UNRELEASED; urgency=low
+
+  * Fixed missing `edgesec-common` `/etc/edgesec/config.ini` file
+
+ -- Alois Klink <alois@nquiringminds.com>  Fri, 22 Apr 2022 11:18:50 +0100
+
 edgesec (0.9.9-alpha5) UNRELEASED; urgency=low
 
   * Add `edgesec-mdnsf` package that creates the `mdnsf` executable.

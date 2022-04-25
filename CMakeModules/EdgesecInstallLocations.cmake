@@ -1,9 +1,54 @@
-# Defines locations to install EDGESEC files
-#
-# It's in a seperate file
-# so it can be used both during:
-# - configure step (e.g. cmake ..)
-# - install step (e.g. cmake --install ..)
+#[=======================================================================[.rst:
+EdgesecInstallLocations
+-----------------------
+
+Defines locations to install EDGESEC files
+
+This is a seperate file from the rest of the CMake config files,
+so it can be used both during:
+- configure step (e.g. cmake ..)
+- install step (e.g. cmake --install ..)
+
+We can't use the default cmake `install()` syntax, since we need to know
+the absolute paths to put as default vals in the `config.ini` file
+
+
+Result Variables
+^^^^^^^^^^^^^^^^
+
+Including this module defines the following values:
+
+``EDGESEC_<path_name>``
+  Relative path to install/configure the given type of files.
+
+``EDGESEC_<path_name>``
+
+  Absolute path to install/configure the given type of files.
+  This should be used when embedding the location in a ``config.ini`` file.
+
+where ``path_name`` is one of:
+
+``bin_dir``
+  Directory to install EDGESec user binaries, (``/usr/bin``)
+``private_lib_dir``
+  Directory to install EDGESec private shared library files (``/usr/lib/edgesec``)
+  These are designed for use with EDGESec only, and may conflict with other OS
+  shared library files.
+``libexec_dir``
+  Directory of private EDGESec binaries/executables (``/usr/libexec/edgesec``)
+  These are designed for use with EDGESec only, and may conflict with other OS
+  binaries (e.g. ``hostapd``)
+``config_dir``
+  Directory of EDGESec config files, (``/etc/edgesec``)
+``log_dir``
+  Directory of EDGESec log files, (``/var/log/edgesec``)
+``local_lib_dir``
+  Directory of EDGESec persistant files (e.g. databases), (``/var/lib/edgesec``)
+``runstate_dir``
+  Directory of EDGESec run-state files (.pid and socket files), (``/var/run/edgesec``)
+``cert_location``
+  Path to edgesec certificate authority file, (``/etc/edgesec/CA/CA.pem``)
+#]=======================================================================]
 
 cmake_minimum_required(VERSION 3.7.0)
 
@@ -15,31 +60,27 @@ endforeach()
 
 include(GNUInstallDirs)
 
-set(EDGESEC_bin_dir "${CMAKE_INSTALL_BINDIR}")
-set(EDGESEC_private_lib_dir "${CMAKE_INSTALL_LIBDIR}/${_project_lower}") # CACHE PATH "Directory of private EDGESec shared libs")
-set(EDGESEC_libexec_dir "${CMAKE_INSTALL_LIBEXECDIR}/${_project_lower}") # CACHE PATH "Directory of private EDGESec bins")
-set(EDGESEC_config_dir "${CMAKE_INSTALL_SYSCONFDIR}/${_project_lower}") # CACHE PATH "Directory of EDGESec config files")
-set(EDGESEC_log_dir "${CMAKE_INSTALL_LOCALSTATEDIR}/log/${_project_lower}") # CACHE PATH "Directory of EDGESec log files")
-set(EDGESEC_local_lib_dir "${CMAKE_INSTALL_LOCALSTATEDIR}/lib/${_project_lower}") # CACHE PATH "Directory of EDGESec persistant files (e.g. databases)")
-set(EDGESEC_runstate_dir "${CMAKE_INSTALL_RUNSTATEDIR}/${_project_lower}") # CACHE PATH "Directory of EDGESec run-state files (.pid and socket files)")
-set(EDGESEC_cert_location "${EDGESEC_config_dir}/CA/CA.pem") # CACHE FILEPATH "Path to edgesec certificate authority file")
+# creates the vars:
+# - EDGESEC_${PATH_NAME}: relative path
+# - EDGESEC_full_${PATH_NAME}: absolute path
+macro(_create_edgesec_path PATH_NAME PATH TYPE)
+    set(EDGESEC_${PATH_NAME} ${PATH})
+    set(dir ${TYPE}) # not needed in CMake 3.20+
+    GNUInstallDirs_get_absolute_install_dir(EDGESEC_full_${PATH_NAME} EDGESEC_${PATH_NAME} ${TYPE})
+endmacro()
 
-# Only needed for EDGESEC_full_bin_dir since CMAKE_FULL_INSTALL_BINDIR does not include DESTDIR
-# This is to add the actual path into config.ini
-
-# absolute paths! Required by config.ini
-# makes dirs like EDGESEC_full_libexec_dir
-foreach(dir in private_lib_dir libexec_dir config_dir log_dir local_lib_dir runstate_dir cert_location)
-    GNUInstallDirs_get_absolute_install_dir(
-        EDGESEC_full_no_destdir_${dir} EDGESEC_${dir} ${dir}
-    )
-    # FULL_PATH isn't actually always absolute due to destdir
-    set(with_destdir "$ENV{DESTDIR}${EDGESEC_full_no_destdir_${dir}}")
-    if (NOT IS_ABSOLUTE "${with_destdir}")
-        # make paths in config.ini absolute, so we can call them from different working dir
-        get_filename_component(with_destdir
-            "${with_destdir}"
-            ABSOLUTE)
-    endif()
-    set(EDGESEC_full_${dir} "${with_destdir}")
-endforeach()
+_create_edgesec_path(bin_dir "${CMAKE_INSTALL_BINDIR}" BIN)
+# Directory for private EDGESec shared libs (*.so files)
+_create_edgesec_path(private_lib_dir "${CMAKE_INSTALL_LIBDIR}/${_project_lower}" LIB)
+# Directory of private EDGESec binaries/executables
+_create_edgesec_path(libexec_dir "${CMAKE_INSTALL_LIBEXECDIR}/${_project_lower}" LIBEXECDIR)
+# Directory of EDGESec config files
+_create_edgesec_path(config_dir "${CMAKE_INSTALL_SYSCONFDIR}/${_project_lower}" SYSCONFDIR)
+# Directory of EDGESec log files
+_create_edgesec_path(log_dir "${CMAKE_INSTALL_LOCALSTATEDIR}/log/${_project_lower}" LOCALSTATEDIR)
+# Directory of EDGESec persistant files (e.g. databases)
+_create_edgesec_path(local_lib_dir "${CMAKE_INSTALL_LOCALSTATEDIR}/lib/${_project_lower}" LOCALSTATEDIR)
+# Directory of EDGESec run-state files (.pid and socket files)
+_create_edgesec_path(runstate_dir "${CMAKE_INSTALL_RUNSTATEDIR}/${_project_lower}" RUNSTATEDIR)
+# Path to edgesec certificate authority file
+_create_edgesec_path(cert_location "${EDGESEC_config_dir}/CA/CA.pem" SYSCONFDIR)

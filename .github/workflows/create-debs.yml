@@ -4,7 +4,6 @@ on:
       - created
       - edited # can remove once CI is confirmed working
   push:
-    branches: [ main ]
   pull_request:
     branches: [ main ]
 
@@ -14,8 +13,8 @@ name: Build Debian Packages
 jobs:
   build:
     name: Build Debian Package
-    # building a deb is super slow, so do it on our self-hosted machines
-    runs-on: [self-hosted, linux]
+    # building a deb is super slow, but we're a public repo now, so it's free!!
+    runs-on: [ubuntu-20.04]
     strategy:
       matrix:
         architecture: [arm64, amd64]
@@ -51,33 +50,36 @@ jobs:
           sudo pbuilder create --debootstrapopts --variant=buildd --distribution ${{ matrix.distribution }} --mirror "" --othermirror "$OTHER_MIRROR"
       - name: Build .deb
         run: |
-          pdebuild --debbuildopts "-us -uc" -- --override-config --distribution ${{ matrix.distribution }} --mirror "" --othermirror "$OTHER_MIRROR" --host-arch ${{ matrix.architecture }}
+          mkdir -p '${{ runner.temp }}/pbuilder/result'
+          pdebuild --buildresult '${{ runner.temp }}/pbuilder/result' --debbuildopts "-us -uc" -- --override-config --distribution ${{ matrix.distribution }} --mirror "" --othermirror "$OTHER_MIRROR" --host-arch ${{ matrix.architecture }}
       - name: Load output .deb name
         id: load-deb-name
         run: |
-          DEB_PATH="$(ls -rt /var/cache/pbuilder/result/edgesec*.deb | head -1)"
+          DEB_PATH="$(ls -rt '${{ runner.temp }}/pbuilder/result'/edgesec*.deb | head -1)"
           echo " ::set-output name=deb-path::${DEB_PATH}"
           echo " ::set-output name=deb-name::$(basename "${DEB_PATH}")"
       - name: Archive built debs
         uses: actions/upload-artifact@v2
         with:
           name: edgesec-built-debs
-          # only store .debs for one day to save space
+          # EDGESec is a public repo, so storage is free
           # we can always rerun action to regenerate them
-          retention-days: 1
+          retention-days: 7
           path: |
-            /var/cache/pbuilder/result/*.deb
+            ${{ runner.temp }}/pbuilder/result/*.deb
       - name: Upload debs as Release Assets
         # only run action if this is being run from a GitHub Release
         if: ${{ github.event_name == 'release' }}
         uses: actions/github-script@v5
+        env:
+          PBUILDER_RESULT_DIR: '${{ runner.temp }}/pbuilder/result'
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
             const fs = require('fs').promises;
-            const {basename} = require("path");
+            const {basename, join} = require("path");
 
-            const globber = await glob.create("/var/cache/pbuilder/result/*.deb");
+            const globber = await glob.create(join(process.env.PBUILDER_RESULT_DIR, "*.deb"));
             const files = await globber.glob();
 
             for (const filePath of files) {
