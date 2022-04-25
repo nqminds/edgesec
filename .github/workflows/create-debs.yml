@@ -4,18 +4,17 @@ on:
       - created
       - edited # can remove once CI is confirmed working
   push:
-    branches: [ main ]
   pull_request:
     branches: [ main ]
-  
+
 
 name: Build Debian Packages
 
 jobs:
   build:
     name: Build Debian Package
-    # building a deb is super slow, so do it on our self-hosted machines
-    runs-on: [self-hosted, linux]
+    # building a deb is super slow, but we're a public repo now, so it's free!!
+    runs-on: [ubuntu-20.04]
     strategy:
       matrix:
         architecture: [arm64, amd64]
@@ -62,9 +61,9 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: edgesec-built-debs
-          # only store .debs for one day to save space
+          # EDGESec is a public repo, so storage is free
           # we can always rerun action to regenerate them
-          retention-days: 1
+          retention-days: 7
           path: |
             /var/cache/pbuilder/result/*.deb
       - name: Upload debs as Release Assets
@@ -76,10 +75,10 @@ jobs:
           script: |
             const fs = require('fs').promises;
             const {basename} = require("path");
-            
+
             const globber = await glob.create("/var/cache/pbuilder/result/*.deb");
             const files = await globber.glob();
-            
+
             for (const filePath of files) {
               console.log(`Uploading ${filePath}`);
               const filePromise = fs.readFile(filePath);
