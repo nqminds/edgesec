@@ -1,0 +1,4 @@
+# Ignore the build/ directory, as otherwise compression takes forever (it can be 600 MB+)
+tar-ignore = "build"
+# Docusaurus directory might be 1 GiB+ with large node_modules
+tar-ignore = "docs/docusaurus"
