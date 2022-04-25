@@ -1,5 +1,6 @@
 # EDGESec
-[![C/C++ CI](https://github.com/nqminds/EDGESec/workflows/C/C++%20CI/badge.svg?branch=main)](https://github.com/nqminds/EDGESec/actions?query=workflow%3A%22Github+Pages%22)
+[![GitHub Pages](https://github.com/nqminds/EDGESec/actions/workflows/docs.yml/badge.svg)](https://github.com/nqminds/EDGESec/actions/workflows/docs.yml)
+[![Build Debian Packages](https://github.com/nqminds/EDGESec/actions/workflows/create-debs.yml/badge.svg)](https://github.com/nqminds/EDGESec/actions/workflows/create-debs.yml)
 
 ## EDGESec toolset documentation
 
