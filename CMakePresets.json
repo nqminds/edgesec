@@ -36,6 +36,18 @@
         "USE_UCI_SERVICE": false,
         "BUILD_HOSTAPD": true
       }
+    },
+    {
+      "name": "openwrt",
+      "inherits": "default",
+      "displayName": "OpenWRT mvebu/cortexa9",
+      "description": "OpenWRT mvebu/cortexa9 (uses uci)",
+      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/openwrt-mvebu-cortexa9.cmake",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
     }
   ],
   "buildPresets": [
@@ -46,6 +58,10 @@
     {
       "name": "linux",
       "configurePreset": "linux"
+    },
+    {
+      "name": "openwrt",
+      "configurePreset": "openwrt"
     }
   ],
   "testPresets": [

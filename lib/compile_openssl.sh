@@ -14,6 +14,11 @@ echo "OPENSSL lib cross-compile config prefix: ${CONFIG_PREFIX}"
 
 cd "${LIBOPENSSL_SOURCE_DIR}"
 
+if [ -z "${CONFIG_PREFIX}"]; then
+    # tells openssl to use these cross_compile compilers
+    export CROSS_COMPILE="${CONFIG_PREFIX}"
+fi
+
 # CONFIG_HOST is UNQUOTED, so that OpenSSL picks default if it's not set
 # Set --libdir=lib, since otherwise sometimes OpenSSL installs in /lib64
 # ./Configure ${CONFIG_HOST} --cross-compile-prefix=${CONFIG_PREFIX} --prefix=${LIBOPENSSL_INSTALL_DIR} --libdir=lib --openssldir=${LIBOPENSSL_INSTALL_DIR} -lpthread no-dtls no-dtls1 no-psk no-srp no-ec2m no-weak-ssl-ciphers no-dso no-engine no-threads no-unit-test
