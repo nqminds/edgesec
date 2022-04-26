@@ -26,6 +26,9 @@ include(glibc)
 
 if (NOT CROSS_COMPILE_EDGESEC)
   CHECK_GLIBC_VERSION()
+  IF (GLIBC_VERSION STREQUAL "2.2.1")
+    MESSAGE(FATAL_ERROR "Unsupported version of glibc: ${GLIBC_VERSION}")
+  ENDIF ()
 endif ()
 
 string(TOLOWER ${CMAKE_HOST_SYSTEM_PROCESSOR} _sys)
