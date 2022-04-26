@@ -15,6 +15,10 @@
         "CMAKE_BUILD_TYPE": {
           "type": "STRING",
           "value": "Debug"
+        },
+        "LIB_MAKEFLAGS": {
+          "type": "STRING",
+          "value": "-j$(shell nproc)"
         }
       }
     },
@@ -30,11 +34,7 @@
         "BUILD_NL_LIB": true,
         "USE_NETLINK_SERVICE": true,
         "USE_UCI_SERVICE": false,
-        "BUILD_HOSTAPD": true,
-        "LIB_MAKEFLAGS": {
-          "type": "STRING",
-          "value": "-j$(shell nproc)"
-        }
+        "BUILD_HOSTAPD": true
       }
     }
   ],
