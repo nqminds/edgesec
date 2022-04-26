@@ -39,6 +39,16 @@ sudo apt install -y "${build_dependencies[@]}" "${runtime_dependencies[@]}"
 
 Compiling EDGESec is done with CMake.
 
+If you have CMake v3.22+, you can use the following `cmake-presets` to compile EDGESec:
+
+```bash
+cmake --preset linux # configure EDGESec for Linux
+cmake --build --preset linux -j4 # build EDGESec for Linux using 4 threads
+ctest --preset linux # test EDGESec for Linux
+```
+
+For older versions of CMake, or for manual configuration, please see the next headings for more details.
+
 ### Configure
 
 Configure `cmake` in the `build/` directory by running the following:
