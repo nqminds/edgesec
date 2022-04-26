@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.11.0)
-# 3.11 required for FetchContent
+# required by FindMNL.cmake
+cmake_minimum_required(VERSION 3.13.0)
 
 option(CROSS_COMPILE_EDGESEC "Cross compile the EDGESec" ON)
 

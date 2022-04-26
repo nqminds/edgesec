@@ -1,0 +1,61 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 13,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "default",
+      "displayName": "Default Config",
+      "description": "Default build",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": {
+          "type": "STRING",
+          "value": "Debug"
+        }
+      }
+    },
+    {
+      "name": "linux",
+      "inherits": "default",
+      "displayName": "Linux",
+      "description": "Default build for Linux (uses netlink)",
+      "cacheVariables": {
+        "CROSS_COMPILE_EDGESEC": false,
+        "BUILD_MNL_LIB": true,
+        "BUILD_NETLINK_LIB": true,
+        "BUILD_NL_LIB": true,
+        "USE_NETLINK_SERVICE": true,
+        "USE_UCI_SERVICE": false,
+        "BUILD_HOSTAPD": true,
+        "LIB_MAKEFLAGS": {
+          "type": "STRING",
+          "value": "-j$(shell nproc)"
+        }
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default"
+    },
+    {
+      "name": "linux",
+      "configurePreset": "linux"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default"
+    },
+    {
+      "name": "linux",
+      "configurePreset": "linux"
+    }
+  ]
+}
