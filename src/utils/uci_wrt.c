@@ -828,6 +828,48 @@ int uwrt_gen_hostapd_instance(struct uctx *context,
     return -1;
   }
 
+  sprintf(property, "wireless.edgesec=wifi-iface");
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "wireless.edgesec.device=%s", params->device);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "wireless.edgesec.mode=ap");
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "wireless.edgesec.ssid=%s", params->ssid);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "wireless.edgesec.isolate=0");
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "wireless.edgesec.encryption=psk2");
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "wireless.edgesec.key=%s", params->wpa_passphrase);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
   sprintf(property, "wireless.%s=wifi-device", params->device);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
@@ -964,36 +1006,6 @@ int uwrt_gen_hostapd_instance(struct uctx *context,
           params->device, params->vlan_bridge);
   if (uwrt_add_list(context->uctx, property) < 0) {
     log_trace("uwrt_add_list fail for %s", property);
-    return -1;
-  }
-
-  sprintf(property, "wireless.edgesec=wifi-iface");
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
-
-  sprintf(property, "wireless.edgesec.device=%s", params->device);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
-
-  sprintf(property, "wireless.edgesec.mode=ap");
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
-
-  sprintf(property, "wireless.edgesec.ssid=%s", params->ssid);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
-
-  sprintf(property, "wireless.edgesec.isolate=0");
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
