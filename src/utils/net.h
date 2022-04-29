@@ -65,7 +65,7 @@ int ip_2_nbo(char *ip, char *subnetMask, in_addr_t *addr);
 int ip4_2_buf(char *ip, uint8_t *buf);
 
 /**
- * @brief Convert a 32 bit number IP to an IP string (string needs to be freed)
+ * @brief Convert a 32 bit number IP to an IP string
  *
  * @param addr The IP in 32 bit format
  * @param ip The input buffer to store the IP
@@ -74,8 +74,7 @@ int ip4_2_buf(char *ip, uint8_t *buf);
 const char *bit32_2_ip(uint32_t addr, char *ip);
 
 /**
- * @brief Convert the in_addr encoded IP4 address to an IP string (string needs
- * to be freed)
+ * @brief Convert the in_addr encoded IP4 address to an IP string
  *
  * @param addr The in_addr encoded IP
  * @param ip The input buffer to store the IP
@@ -84,8 +83,7 @@ const char *bit32_2_ip(uint32_t addr, char *ip);
 const char *inaddr4_2_ip(struct in_addr *addr, char *ip);
 
 /**
- * @brief Convert the in6_addr encoded IP6 address to an IP string (string needs
- * to be freed)
+ * @brief Convert the in6_addr encoded IP6 address to an IP string
  *
  * @param addr The in6_addr encoded IP
  * @param ip The input buffer to store the IP
