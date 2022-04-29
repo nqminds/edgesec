@@ -98,7 +98,6 @@ bool decode_dhcp_packet(struct capture_packet *cpac) {
   bit32_2_ip(cpac->dhcph->siaddr, cpac->dhcps.siaddr);
   bit32_2_ip(cpac->dhcph->giaddr, cpac->dhcps.giaddr);
 
-  log_trace("DHCP");
   return false;
 }
 

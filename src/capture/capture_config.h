@@ -382,6 +382,7 @@ struct dhcp_schema {
                                       (offered by the DHCP server) */
   char siaddr[OS_INET_ADDRSTRLEN]; /**< Packet IP address of DHCP server */
   char giaddr[OS_INET_ADDRSTRLEN]; /**< Packet IP address of DHCP relay */
+  char chaddr[MACSTR_LEN];          /**< Packet client ether MAC addr */
 };
 
 /**
