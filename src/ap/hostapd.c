@@ -112,6 +112,7 @@ int generate_hostapd_conf(struct apconf *hconf, struct radius_conf *rconf) {
   params.wpa_psk_radius = hconf->wpa_psk_radius;
   params.vlan_bridge = hconf->vlan_bridge;
   params.ssid = hconf->ssid;
+  params.wpa_passphrase = hconf->wpa_passphrase;
 
   if (uwrt_gen_hostapd_instance(context, &params) < 0) {
     log_trace("uwrt_gen_hostapd_instance fail");

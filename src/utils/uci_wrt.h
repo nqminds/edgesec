@@ -54,6 +54,7 @@ struct hostapd_params {
   int wpa_psk_radius;
   char *vlan_bridge;
   char *ssid;
+  char *wpa_passphrase;
 };
 
 /**
