@@ -30,6 +30,7 @@
         "BUILD_NL_LIB": true,
         "USE_NETLINK_SERVICE": true,
         "USE_UCI_SERVICE": false,
+        "USE_GENERIC_IP_SERVICE": false,
         "BUILD_HOSTAPD": true,
         "LIB_MAKEFLAGS": {
           "type": "STRING",
