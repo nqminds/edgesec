@@ -39,7 +39,7 @@
       }
     },
     {
-      "name": "openwrt",
+      "name": "openwrt/default",
       "inherits": "default",
       "description": "Compile for arm-linux-musleabihf",
       "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/arm-linux.cmake"
@@ -67,8 +67,8 @@
       "configurePreset": "linux"
     },
     {
-      "name": "openwrt",
-      "configurePreset": "openwrt"
+      "name": "openwrt/default",
+      "configurePreset": "openwrt/default"
     },
     {
       "name": "openwrt/mvebu/cortexa9",
