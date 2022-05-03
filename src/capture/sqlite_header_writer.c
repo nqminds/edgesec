@@ -649,8 +649,11 @@ int extract_dhcp_statement(struct sqlite_header_context *ctx,
     column_idx = sqlite3_bind_parameter_index(res, "@giaddr");
     sqlite3_bind_text(res, column_idx, dhcps->giaddr, -1, NULL);
 
-    log_trace("sqlite insert DHCP ciaddr=%s yiaddr=%s siaddr=%s giaddr=%s",
-              dhcps->ciaddr, dhcps->yiaddr, dhcps->siaddr, dhcps->giaddr);
+    column_idx = sqlite3_bind_parameter_index(res, "@chaddr");
+    sqlite3_bind_text(res, column_idx, dhcps->chaddr, -1, NULL);
+
+    log_trace("sqlite insert DHCP ciaddr=%s yiaddr=%s siaddr=%s giaddr=%s chaddr=%s",
+              dhcps->ciaddr, dhcps->yiaddr, dhcps->siaddr, dhcps->giaddr, dhcps->chaddr);
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {

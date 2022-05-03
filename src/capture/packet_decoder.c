@@ -72,8 +72,32 @@
 #define MAX_PACKET_TYPES 10
 
 bool decode_dhcp_packet(struct capture_packet *cpac) {
-  // log_trace("DHCP");
-  (void)cpac;
+  if ((void *)cpac->udph != NULL) {
+    cpac->dhcph =
+        (struct dhcp_header *)((void *)cpac->udph + sizeof(struct udphdr));
+  } else
+    return false;
+
+  cpac->dhcph_hash = md_hash((const char *)cpac->dhcph, sizeof(struct dhcp_header)); 
+
+  cpac->dhcps.hash = cpac->dhcph_hash;
+  cpac->dhcps.timestamp = cpac->timestamp;
+  cpac->dhcps.ethh_hash = cpac->ethh_hash;
+  strcpy(cpac->dhcps.id, cpac->id);
+
+  cpac->dhcps.op = cpac->dhcph->op;
+  cpac->dhcps.htype = cpac->dhcph->htype;
+  cpac->dhcps.hlen = cpac->dhcph->hlen;
+  cpac->dhcps.hops = cpac->dhcph->hops;
+  cpac->dhcps.xid = ntohl(cpac->dhcph->xid);
+  cpac->dhcps.secs = ntohs(cpac->dhcph->secs);
+  cpac->dhcps.flags = ntohs(cpac->dhcph->flags);
+
+  bit32_2_ip(cpac->dhcph->ciaddr, cpac->dhcps.ciaddr);
+  bit32_2_ip(cpac->dhcph->yiaddr, cpac->dhcps.yiaddr);
+  bit32_2_ip(cpac->dhcph->siaddr, cpac->dhcps.siaddr);
+  bit32_2_ip(cpac->dhcph->giaddr, cpac->dhcps.giaddr);
+
   return false;
 }
 

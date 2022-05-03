@@ -382,6 +382,7 @@ struct dhcp_schema {
                                       (offered by the DHCP server) */
   char siaddr[OS_INET_ADDRSTRLEN]; /**< Packet IP address of DHCP server */
   char giaddr[OS_INET_ADDRSTRLEN]; /**< Packet IP address of DHCP relay */
+  char chaddr[MACSTR_LEN];          /**< Packet client ether MAC addr */
 };
 
 /**
@@ -451,13 +452,13 @@ struct dhcp_header {
   uint32_t xid;   /**< random transaction id number - chosen by this machine */
   uint16_t secs;  /**< seconds used in timing */
   uint16_t flags; /**< flags */
-  struct in_addr
-      ciaddr; /**< IP address of this machine (if we already have one) */
-  struct in_addr
-      yiaddr; /**< IP address of this machine (offered by the DHCP server) */
-  struct in_addr siaddr; /**< IP address of DHCP server */
-  struct in_addr giaddr; /**< IP address of DHCP relay */
-};
+  uint32_t ciaddr; /**< IP address of this machine (if we already have one) */
+  uint32_t yiaddr; /**< IP address of this machine (offered by the DHCP server) */
+  uint32_t siaddr; /**< IP address of DHCP server */
+  uint32_t giaddr; /**< IP address of DHCP relay */
+  uint8_t     chaddr[16]; /**< Client Hardware Address */
+  uint8_t     legacy[192];  /**< 192 octets of 0s. BOOTP legacy */
+} __attribute__((packed));
 
 /**
  * @brief Capture structure definition

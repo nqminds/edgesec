@@ -115,8 +115,8 @@
   "ethh_hash INTEGER NOT NULL, id TEXT NOT NULL, "                             \
   "op INTEGER, htype INTEGER, hlen INTEGER, hops INTEGER, xid INTEGER, secs "  \
   "INTEGER, flags INTEGER, "                                                   \
-  "ciaddr TEXT, yiaddr TEXT, siaddr TEXT, giaddr TEXT, PRIMARY KEY (hash, "    \
-  "timestamp, ethh_hash, id));"
+  "ciaddr TEXT, yiaddr TEXT, siaddr TEXT, giaddr TEXT, chaddr TEXT, "          \
+  "PRIMARY KEY (hash, timestamp, ethh_hash, id));"
 
 #define ETH_INSERT_INTO                                                        \
   "INSERT INTO eth VALUES(@hash, @timestamp, @id, @caplen, @length, @ifname, " \
@@ -155,7 +155,7 @@
 #define DHCP_INSERT_INTO                                                       \
   "INSERT INTO dhcp VALUES(@hash, @timestamp, @ethh_hash, @id, "               \
   "@op, @htype, @hlen, @hops, @xid, @secs, @flags, "                           \
-  "@ciaddr, @yiaddr, @siaddr, @giaddr);"
+  "@ciaddr, @yiaddr, @siaddr, @giaddr, @chaddr);"
 
 typedef void (*trace_callback_fn)(char *sqlite_statement, void *trace_ctx);
 
