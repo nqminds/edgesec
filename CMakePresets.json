@@ -46,7 +46,7 @@
     },
     {
       "name": "openwrt/mvebu/cortexa9",
-      "inherits": "openwrt",
+      "inherits": "openwrt/default",
       "displayName": "OpenWRT mvebu/cortexa9",
       "description": "OpenWRT mvebu/cortexa9 (uses uci)",
       "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/openwrt-mvebu-cortexa9.cmake",
