@@ -201,30 +201,30 @@ int main(int argc, char *argv[]) {
   if (optind <= 1)
     show_app_help(argv[0]);
 
-  if (daemon && become_daemon(0) == -1) {
-    fprintf(stderr, "become_daemon fail");
-    return EXIT_FAILURE;
-  }
-
-  // Set the log level
-  log_set_level(level);
-
-  if (log_filename != NULL) {
-    if (log_open_file(log_filename) < 0) {
-      fprintf(stderr, "log_open_file fail");
-      return EXIT_FAILURE;
-    }
-  }
-
   if (!load_app_config(config_filename, &config)) {
     fprintf(stderr, "load_app_config fail\n");
     return EXIT_FAILURE;
   }
 
-  // Kill all edgesec processes if running
+  /* Kill all edgesec processes if running */
   if (config.kill_running_proc) {
     if (!kill_process(get_app_name(argv[0]))) {
       fprintf(stderr, "kill_process fail.\n");
+      return EXIT_FAILURE;
+    }
+  }
+
+  if (daemon && become_daemon(0) == -1) {
+    fprintf(stderr, "become_daemon fail");
+    return EXIT_FAILURE;
+  }
+
+  /* Set the log level */
+  log_set_level(level);
+
+  if (log_filename != NULL) {
+    if (log_open_file(log_filename) < 0) {
+      fprintf(stderr, "log_open_file fail");
       return EXIT_FAILURE;
     }
   }
