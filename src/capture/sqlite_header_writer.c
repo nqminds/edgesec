@@ -57,10 +57,6 @@ int extract_eth_statement(struct sqlite_header_context *ctx,
   rc = sqlite3_prepare_v2(ctx->db, ETH_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
-    column_idx = sqlite3_bind_parameter_index(res, "@hash");
-    if (sqlite3_bind_int64(res, column_idx, eths->hash) != SQLITE_OK)
-      return false;
-
     column_idx = sqlite3_bind_parameter_index(res, "@timestamp");
     if (sqlite3_bind_int64(res, column_idx, eths->timestamp) != SQLITE_OK)
       return false;
@@ -112,15 +108,6 @@ int extract_arp_statement(struct sqlite_header_context *ctx,
   rc = sqlite3_prepare_v2(ctx->db, ARP_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
-    column_idx = sqlite3_bind_parameter_index(res, "@hash");
-    sqlite3_bind_int64(res, column_idx, arps->hash);
-
-    column_idx = sqlite3_bind_parameter_index(res, "@timestamp");
-    sqlite3_bind_int64(res, column_idx, arps->timestamp);
-
-    column_idx = sqlite3_bind_parameter_index(res, "@ethh_hash");
-    sqlite3_bind_int64(res, column_idx, arps->ethh_hash);
-
     column_idx = sqlite3_bind_parameter_index(res, "@id");
     sqlite3_bind_text(res, column_idx, arps->id, -1, NULL);
 
@@ -174,15 +161,6 @@ int extract_ip4_statement(struct sqlite_header_context *ctx,
   rc = sqlite3_prepare_v2(ctx->db, IP4_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
-    column_idx = sqlite3_bind_parameter_index(res, "@hash");
-    sqlite3_bind_int64(res, column_idx, ip4s->hash);
-
-    column_idx = sqlite3_bind_parameter_index(res, "@timestamp");
-    sqlite3_bind_int64(res, column_idx, ip4s->timestamp);
-
-    column_idx = sqlite3_bind_parameter_index(res, "@ethh_hash");
-    sqlite3_bind_int64(res, column_idx, ip4s->ethh_hash);
-
     column_idx = sqlite3_bind_parameter_index(res, "@id");
     sqlite3_bind_text(res, column_idx, ip4s->id, -1, NULL);
 
@@ -239,15 +217,6 @@ int extract_ip6_statement(struct sqlite_header_context *ctx,
   rc = sqlite3_prepare_v2(ctx->db, IP6_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
-    column_idx = sqlite3_bind_parameter_index(res, "@hash");
-    sqlite3_bind_int64(res, column_idx, ip6s->hash);
-
-    column_idx = sqlite3_bind_parameter_index(res, "@timestamp");
-    sqlite3_bind_int64(res, column_idx, ip6s->timestamp);
-
-    column_idx = sqlite3_bind_parameter_index(res, "@ethh_hash");
-    sqlite3_bind_int64(res, column_idx, ip6s->ethh_hash);
-
     column_idx = sqlite3_bind_parameter_index(res, "@id");
     sqlite3_bind_text(res, column_idx, ip6s->id, -1, NULL);
 
@@ -292,15 +261,6 @@ int extract_tcp_statement(struct sqlite_header_context *ctx,
   rc = sqlite3_prepare_v2(ctx->db, TCP_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
-    column_idx = sqlite3_bind_parameter_index(res, "@hash");
-    sqlite3_bind_int64(res, column_idx, tcps->hash);
-
-    column_idx = sqlite3_bind_parameter_index(res, "@timestamp");
-    sqlite3_bind_int64(res, column_idx, tcps->timestamp);
-
-    column_idx = sqlite3_bind_parameter_index(res, "@ethh_hash");
-    sqlite3_bind_int64(res, column_idx, tcps->ethh_hash);
-
     column_idx = sqlite3_bind_parameter_index(res, "@id");
     sqlite3_bind_text(res, column_idx, tcps->id, -1, NULL);
 
@@ -368,15 +328,6 @@ int extract_udp_statement(struct sqlite_header_context *ctx,
   rc = sqlite3_prepare_v2(ctx->db, UDP_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
-    column_idx = sqlite3_bind_parameter_index(res, "@hash");
-    sqlite3_bind_int64(res, column_idx, udps->hash);
-
-    column_idx = sqlite3_bind_parameter_index(res, "@timestamp");
-    sqlite3_bind_int64(res, column_idx, udps->timestamp);
-
-    column_idx = sqlite3_bind_parameter_index(res, "@ethh_hash");
-    sqlite3_bind_int64(res, column_idx, udps->ethh_hash);
-
     column_idx = sqlite3_bind_parameter_index(res, "@id");
     sqlite3_bind_text(res, column_idx, udps->id, -1, NULL);
 
@@ -411,15 +362,6 @@ int extract_icmp4_statement(struct sqlite_header_context *ctx,
   rc = sqlite3_prepare_v2(ctx->db, ICMP4_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
-    column_idx = sqlite3_bind_parameter_index(res, "@hash");
-    sqlite3_bind_int64(res, column_idx, icmp4s->hash);
-
-    column_idx = sqlite3_bind_parameter_index(res, "@timestamp");
-    sqlite3_bind_int64(res, column_idx, icmp4s->timestamp);
-
-    column_idx = sqlite3_bind_parameter_index(res, "@ethh_hash");
-    sqlite3_bind_int64(res, column_idx, icmp4s->ethh_hash);
-
     column_idx = sqlite3_bind_parameter_index(res, "@id");
     sqlite3_bind_text(res, column_idx, icmp4s->id, -1, NULL);
 
@@ -455,15 +397,6 @@ int extract_icmp6_statement(struct sqlite_header_context *ctx,
   rc = sqlite3_prepare_v2(ctx->db, ICMP6_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
-    column_idx = sqlite3_bind_parameter_index(res, "@hash");
-    sqlite3_bind_int64(res, column_idx, icmp6s->hash);
-
-    column_idx = sqlite3_bind_parameter_index(res, "@timestamp");
-    sqlite3_bind_int64(res, column_idx, icmp6s->timestamp);
-
-    column_idx = sqlite3_bind_parameter_index(res, "@ethh_hash");
-    sqlite3_bind_int64(res, column_idx, icmp6s->ethh_hash);
-
     column_idx = sqlite3_bind_parameter_index(res, "@id");
     sqlite3_bind_text(res, column_idx, icmp6s->id, -1, NULL);
 
@@ -499,15 +432,6 @@ int extract_dns_statement(struct sqlite_header_context *ctx,
   rc = sqlite3_prepare_v2(ctx->db, DNS_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
-    column_idx = sqlite3_bind_parameter_index(res, "@hash");
-    sqlite3_bind_int64(res, column_idx, dnss->hash);
-
-    column_idx = sqlite3_bind_parameter_index(res, "@timestamp");
-    sqlite3_bind_int64(res, column_idx, dnss->timestamp);
-
-    column_idx = sqlite3_bind_parameter_index(res, "@ethh_hash");
-    sqlite3_bind_int64(res, column_idx, dnss->ethh_hash);
-
     column_idx = sqlite3_bind_parameter_index(res, "@id");
     sqlite3_bind_text(res, column_idx, dnss->id, -1, NULL);
 
@@ -551,15 +475,6 @@ int extract_mdsn_statement(struct sqlite_header_context *ctx,
   rc = sqlite3_prepare_v2(ctx->db, MDNS_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
-    column_idx = sqlite3_bind_parameter_index(res, "@hash");
-    sqlite3_bind_int64(res, column_idx, mdnss->hash);
-
-    column_idx = sqlite3_bind_parameter_index(res, "@timestamp");
-    sqlite3_bind_int64(res, column_idx, mdnss->timestamp);
-
-    column_idx = sqlite3_bind_parameter_index(res, "@ethh_hash");
-    sqlite3_bind_int64(res, column_idx, mdnss->ethh_hash);
-
     column_idx = sqlite3_bind_parameter_index(res, "@id");
     sqlite3_bind_text(res, column_idx, mdnss->id, -1, NULL);
 
@@ -604,15 +519,6 @@ int extract_dhcp_statement(struct sqlite_header_context *ctx,
   rc = sqlite3_prepare_v2(ctx->db, DHCP_INSERT_INTO, -1, &res, 0);
 
   if (rc == SQLITE_OK) {
-    column_idx = sqlite3_bind_parameter_index(res, "@hash");
-    sqlite3_bind_int64(res, column_idx, dhcps->hash);
-
-    column_idx = sqlite3_bind_parameter_index(res, "@timestamp");
-    sqlite3_bind_int64(res, column_idx, dhcps->timestamp);
-
-    column_idx = sqlite3_bind_parameter_index(res, "@ethh_hash");
-    sqlite3_bind_int64(res, column_idx, dhcps->ethh_hash);
-
     column_idx = sqlite3_bind_parameter_index(res, "@id");
     sqlite3_bind_text(res, column_idx, dhcps->id, -1, NULL);
 
@@ -652,8 +558,10 @@ int extract_dhcp_statement(struct sqlite_header_context *ctx,
     column_idx = sqlite3_bind_parameter_index(res, "@chaddr");
     sqlite3_bind_text(res, column_idx, dhcps->chaddr, -1, NULL);
 
-    log_trace("sqlite insert DHCP ciaddr=%s yiaddr=%s siaddr=%s giaddr=%s chaddr=%s",
-              dhcps->ciaddr, dhcps->yiaddr, dhcps->siaddr, dhcps->giaddr, dhcps->chaddr);
+    log_trace(
+        "sqlite insert DHCP ciaddr=%s yiaddr=%s siaddr=%s giaddr=%s chaddr=%s",
+        dhcps->ciaddr, dhcps->yiaddr, dhcps->siaddr, dhcps->giaddr,
+        dhcps->chaddr);
     sqlite3_step(res);
     sqlite3_finalize(res);
   } else {

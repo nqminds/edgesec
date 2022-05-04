@@ -76,12 +76,6 @@ bool decode_dns_packet(struct capture_packet *cpac) {
   } else
     return false;
 
-  cpac->dnsh_hash =
-      md_hash((const char *)cpac->dnsh, sizeof(struct dns_header));
-
-  cpac->dnss.hash = cpac->dnsh_hash;
-  cpac->dnss.timestamp = cpac->timestamp;
-  cpac->dnss.ethh_hash = cpac->ethh_hash;
   strcpy(cpac->dnss.id, cpac->id);
 
   cpac->dnss.tid = ntohs(cpac->dnsh->tid);

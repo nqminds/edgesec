@@ -177,7 +177,6 @@ struct tuple_packet {
  *
  */
 struct eth_schema {
-  uint32_t hash;                   /**< Packet hash */
   uint64_t timestamp;              /**< Packet timestamp */
   char id[MAX_RANDOM_UUID_LEN];    /**< Packet id */
   uint32_t caplen;                 /**< Packet caplen */
@@ -194,9 +193,6 @@ struct eth_schema {
  *
  */
 struct arp_schema {
-  uint32_t hash;                    /**< Packet hash */
-  uint64_t timestamp;               /**< Packet timestamp */
-  uint32_t ethh_hash;               /**< Packet ethernet hash */
   char id[MAX_RANDOM_UUID_LEN];     /**< Packet id */
   uint16_t ar_hrd;                  /**< Packet Format of hardware address.  */
   uint16_t ar_pro;                  /**< Packet Format of protocol address.  */
@@ -214,9 +210,6 @@ struct arp_schema {
  *
  */
 struct ip4_schema {
-  uint32_t hash;                   /**< Packet hash */
-  uint64_t timestamp;              /**< Packet timestamp */
-  uint32_t ethh_hash;              /**< Packet ethernet hash */
   char id[MAX_RANDOM_UUID_LEN];    /**< Packet id */
   char ip_src[OS_INET_ADDRSTRLEN]; /**< Packet source address */
   char ip_dst[OS_INET_ADDRSTRLEN]; /**< Packet dest address */
@@ -237,9 +230,6 @@ struct ip4_schema {
  *
  */
 struct ip6_schema {
-  uint32_t hash;                /**< Packet hash */
-  uint64_t timestamp;           /**< Packet timestamp */
-  uint32_t ethh_hash;           /**< Packet ethernet hash */
   char id[MAX_RANDOM_UUID_LEN]; /**< Packet id */
   uint32_t
       ip6_un1_flow; /**< Packet 4 bits version, 8 bits TC, 20 bits flow-ID */
@@ -256,9 +246,6 @@ struct ip6_schema {
  *
  */
 struct tcp_schema {
-  uint32_t hash;                /**< Packet hash */
-  uint64_t timestamp;           /**< Packet timestamp */
-  uint32_t ethh_hash;           /**< Packet ethernet hash */
   char id[MAX_RANDOM_UUID_LEN]; /**< Packet id */
   uint16_t source;              /**< Packet source port */
   uint16_t dest;                /**< Packet destination port */
@@ -282,9 +269,6 @@ struct tcp_schema {
  *
  */
 struct udp_schema {
-  uint32_t hash;                /**< Packet hash */
-  uint64_t timestamp;           /**< Packet timestamp */
-  uint32_t ethh_hash;           /**< Packet ethernet hash */
   char id[MAX_RANDOM_UUID_LEN]; /**< Packet id */
   uint16_t source;              /**< Packet source port */
   uint16_t dest;                /**< Packet destination port */
@@ -297,9 +281,6 @@ struct udp_schema {
  *
  */
 struct icmp4_schema {
-  uint32_t hash;                /**< Packet hash */
-  uint64_t timestamp;           /**< Packet timestamp */
-  uint32_t ethh_hash;           /**< Packet ethernet hash */
   char id[MAX_RANDOM_UUID_LEN]; /**< Packet id */
   uint8_t type;                 /**< Packet message type */
   uint8_t code;                 /**< Packet type sub-code */
@@ -312,9 +293,6 @@ struct icmp4_schema {
  *
  */
 struct icmp6_schema {
-  uint32_t hash;                /**< Packet hash */
-  uint64_t timestamp;           /**< Packet timestamp */
-  uint32_t ethh_hash;           /**< Packet ethernet hash */
   char id[MAX_RANDOM_UUID_LEN]; /**< Packet id */
   uint8_t icmp6_type;           /**< Packet type field */
   uint8_t icmp6_code;           /**< Packet code field */
@@ -327,9 +305,6 @@ struct icmp6_schema {
  *
  */
 struct dns_schema {
-  uint32_t hash;                /**< Packet hash */
-  uint64_t timestamp;           /**< Packet timestamp */
-  uint32_t ethh_hash;           /**< Packet ethernet hash */
   char id[MAX_RANDOM_UUID_LEN]; /**< Packet id */
   uint16_t tid;                 /**< Packet Transaction ID */
   uint16_t flags;               /**< Packet Flags */
@@ -345,9 +320,6 @@ struct dns_schema {
  *
  */
 struct mdns_schema {
-  uint32_t hash;                /**< Packet hash */
-  uint64_t timestamp;           /**< Packet timestamp */
-  uint32_t ethh_hash;           /**< Packet ethernet hash */
   char id[MAX_RANDOM_UUID_LEN]; /**< Packet id */
   uint16_t tid;                 /**< Packet Transaction ID */
   uint16_t flags;               /**< Packet Flags */
@@ -363,9 +335,6 @@ struct mdns_schema {
  *
  */
 struct dhcp_schema {
-  uint32_t hash;                /**< Packet hash */
-  uint64_t timestamp;           /**< Packet timestamp */
-  uint32_t ethh_hash;           /**< Packet ethernet hash */
   char id[MAX_RANDOM_UUID_LEN]; /**< Packet id */
   uint8_t op;                   /**< Packet packet type */
   uint8_t htype; /**< Packet type of hardware address for this machine
@@ -382,7 +351,7 @@ struct dhcp_schema {
                                       (offered by the DHCP server) */
   char siaddr[OS_INET_ADDRSTRLEN]; /**< Packet IP address of DHCP server */
   char giaddr[OS_INET_ADDRSTRLEN]; /**< Packet IP address of DHCP relay */
-  char chaddr[MACSTR_LEN];          /**< Packet client ether MAC addr */
+  char chaddr[MACSTR_LEN];         /**< Packet client ether MAC addr */
 };
 
 /**
@@ -447,17 +416,18 @@ struct dhcp_header {
   uint8_t op; /**< packet type */
   uint8_t
       htype; /**< type of hardware address for this machine (Ethernet, etc) */
-  uint8_t hlen;   /**< length of hardware address (of this machine) */
-  uint8_t hops;   /**< hops */
-  uint32_t xid;   /**< random transaction id number - chosen by this machine */
-  uint16_t secs;  /**< seconds used in timing */
-  uint16_t flags; /**< flags */
+  uint8_t hlen;    /**< length of hardware address (of this machine) */
+  uint8_t hops;    /**< hops */
+  uint32_t xid;    /**< random transaction id number - chosen by this machine */
+  uint16_t secs;   /**< seconds used in timing */
+  uint16_t flags;  /**< flags */
   uint32_t ciaddr; /**< IP address of this machine (if we already have one) */
-  uint32_t yiaddr; /**< IP address of this machine (offered by the DHCP server) */
-  uint32_t siaddr; /**< IP address of DHCP server */
-  uint32_t giaddr; /**< IP address of DHCP relay */
-  uint8_t     chaddr[16]; /**< Client Hardware Address */
-  uint8_t     legacy[192];  /**< 192 octets of 0s. BOOTP legacy */
+  uint32_t
+      yiaddr; /**< IP address of this machine (offered by the DHCP server) */
+  uint32_t siaddr;     /**< IP address of DHCP server */
+  uint32_t giaddr;     /**< IP address of DHCP relay */
+  uint8_t chaddr[16];  /**< Client Hardware Address */
+  uint8_t legacy[192]; /**< 192 octets of 0s. BOOTP legacy */
 } __attribute__((packed));
 
 /**
@@ -493,17 +463,6 @@ struct capture_packet {
   char ifname[IFNAMSIZ];
   char hostname[OS_HOST_NAME_MAX];
   char id[MAX_RANDOM_UUID_LEN];
-  uint32_t ethh_hash;
-  uint32_t arph_hash;
-  uint32_t ip4h_hash;
-  uint32_t ip6h_hash;
-  uint32_t tcph_hash;
-  uint32_t udph_hash;
-  uint32_t icmp4h_hash;
-  uint32_t icmp6h_hash;
-  uint32_t dnsh_hash;
-  uint32_t mdnsh_hash;
-  uint32_t dhcph_hash;
 };
 
 struct alert_meta {
