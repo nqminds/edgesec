@@ -42,6 +42,79 @@ struct proc_signal_arg {
   int sig;
 };
 
+int become_daemon(int flags) {
+  int maxfd, fd;
+
+  /* Become background process */
+  switch (fork()) {
+    case -1:
+      return -1;
+    case 0:
+      break; /* Child falls through... */
+    default:
+      _exit(EXIT_SUCCESS); /* while parent terminates */
+  }
+
+  /* Become leader of new session */
+  if (setsid() == -1) {
+    return -1;
+  }
+
+  /* Ensure we are not session leader */
+  switch (fork()) {
+    case -1:
+      return -1;
+    case 0:
+      break;
+    default:
+      _exit(EXIT_SUCCESS);
+  }
+
+  /* Clear file mode creation mask */
+  if (!(flags & BD_NO_UMASK0)) {
+    umask(0);
+  }
+
+  /* Change to root directory */
+  if (!(flags & BD_NO_CHDIR)) {
+    chdir("/");
+  }
+
+  /* Close all open files */
+  if (!(flags & BD_NO_CLOSE_FILES)) {
+    maxfd = sysconf(_SC_OPEN_MAX);
+
+    /* Limit is indeterminate... */
+    if (maxfd == -1) {
+      maxfd = BD_MAX_CLOSE; /* so take a guess */
+    }
+
+    for (fd = 0; fd < maxfd; fd++) {
+      close(fd);
+    }
+  }
+
+  if (!(flags & BD_NO_REOPEN_STD_FDS)) {
+    /* Reopen standard fd's to /dev/null */
+    close(STDIN_FILENO);
+
+    /* 'fd' should be 0 */
+    if (open("/dev/null", O_RDWR) != STDIN_FILENO) {
+      return -1;
+    }
+
+    if (dup2(STDIN_FILENO, STDOUT_FILENO) != STDOUT_FILENO) {
+      return -1;
+    }
+
+    if (dup2(STDIN_FILENO, STDERR_FILENO) != STDERR_FILENO) {
+      return -1;
+    }
+  }
+
+  return 0;
+}
+
 bool is_number(const char *ptr) {
   int offset = 0;
   if (ptr == NULL)

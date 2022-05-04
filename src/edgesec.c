@@ -50,9 +50,9 @@
 #include "engine.h"
 #include "config.h"
 
-#define OPT_STRING ":c:s:f:dvh"
+#define OPT_STRING ":c:s:f:mdvh"
 #define USAGE_STRING                                                           \
-  "\t%s [-c filename] [-s secret] [-f filename] [-d] [-h] [-v]\n"
+  "\t%s [-c filename] [-s secret] [-f filename] [-m] [-d] [-h] [-v]\n"
 const char description_string[] = R"==(
   NquiringMinds EDGESec Network Security Router.
 
@@ -109,6 +109,7 @@ void show_app_help(char *app_name) {
   fprintf(stdout, "\t-c filename\t Path to the config file name\n");
   fprintf(stdout, "\t-s secret\t Master key\n");
   fprintf(stdout, "\t-f filename\t Log file name\n");
+  fprintf(stdout, "\t-m\t\t Run as daemon\n");
   fprintf(stdout,
           "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n");
   fprintf(stdout, "\t-h\t\t Show help\n");
@@ -134,7 +135,7 @@ void log_cmdline_error(const char *format, ...) {
 }
 
 void process_app_options(int argc, char *argv[], uint8_t *verbosity,
-                         char **config_filename, char *secret,
+                         bool *daemon, char **config_filename, char *secret,
                          char **log_filename) {
   int opt;
 
@@ -156,6 +157,9 @@ void process_app_options(int argc, char *argv[], uint8_t *verbosity,
       case 'f':
         *log_filename = os_strdup(optarg);
         break;
+      case 'm':
+        *daemon = true;
+        break;
       case 'd':
         (*verbosity)++;
         break;
@@ -174,6 +178,7 @@ void process_app_options(int argc, char *argv[], uint8_t *verbosity,
 char *get_app_name(char *app_path) { return basename(app_path); }
 
 int main(int argc, char *argv[]) {
+  bool daemon = false;
   uint8_t verbosity = 0;
   uint8_t level = 0;
   char *config_filename = NULL, *log_filename = NULL;
@@ -182,7 +187,7 @@ int main(int argc, char *argv[]) {
   // Init the app config struct
   memset(&config, 0, sizeof(struct app_config));
 
-  process_app_options(argc, argv, &verbosity, &config_filename,
+  process_app_options(argc, argv, &verbosity, &daemon, &config_filename,
                       config.crypt_secret, &log_filename);
 
   if (verbosity > MAX_LOG_LEVELS) {
@@ -193,11 +198,16 @@ int main(int argc, char *argv[]) {
     level = MAX_LOG_LEVELS - verbosity;
   }
 
-  // Set the log level
-  log_set_level(level);
-
   if (optind <= 1)
     show_app_help(argv[0]);
+
+  if (daemon && become_daemon(0) == -1) {
+    fprintf(stderr, "become_daemon fail");
+    return EXIT_FAILURE;
+  }
+
+  // Set the log level
+  log_set_level(level);
 
   if (log_filename != NULL) {
     if (log_open_file(log_filename) < 0) {
