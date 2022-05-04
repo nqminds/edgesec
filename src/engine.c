@@ -221,33 +221,6 @@ bool create_subnet_interfaces(struct iface_context *context,
   return true;
 }
 
-bool get_nat_if_ip(char *nat_interface, char *ip_buf) {
-  UT_array *interfaces = NULL;
-  interfaces = iface_get(nat_interface);
-
-  if (interfaces == NULL) {
-    log_errno("Interface %s not found", nat_interface);
-    goto err;
-  }
-
-  netif_info_t *el = (netif_info_t *)utarray_back(interfaces);
-  if (el == NULL) {
-    log_errno("Interface list empty");
-    goto err;
-  }
-
-  os_strlcpy(ip_buf, el->ip_addr, OS_INET_ADDRSTRLEN);
-
-  utarray_free(interfaces);
-  return true;
-
-err:
-  if (interfaces != NULL) {
-    utarray_free(interfaces);
-  }
-  return false;
-}
-
 bool construct_ap_ctrlif(char *ctrl_interface, char *interface,
                          char *ap_ctrl_if_path) {
   char *ctrl_if_path = construct_path(ctrl_interface, interface);
@@ -484,19 +457,6 @@ bool run_engine(struct app_config *app_config) {
     log_debug("construct_ap_ctrlif fail");
     goto run_engine_fail;
   }
-
-  if (os_strnlen_s(context.nat_interface, IFNAMSIZ)) {
-    log_info("Checking nat interface %s", context.nat_interface);
-    if (!get_nat_if_ip(context.nat_interface, context.nat_ip)) {
-      log_debug("get_nat_if_ip fail");
-      goto run_engine_fail;
-    }
-    log_info("Found nat interface %s", context.nat_interface);
-    if (validate_ipv4_string(context.nat_ip))
-      log_info("Found nat IP %s", context.nat_ip);
-
-  } else
-    log_info("Not using any nat interface");
 
   if (app_config->create_interfaces) {
     log_info("Creating subnet interfaces...");
