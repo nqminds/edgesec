@@ -41,8 +41,18 @@
     {
       "name": "openwrt/default",
       "inherits": "default",
+      "displayName": "OpenWRT ARM32",
       "description": "Compile for arm-linux-musleabihf",
-      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/arm-linux.cmake"
+      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/arm-linux.cmake",
+      "cacheVariables": {
+        "BUILD_MNL_LIB": false,
+        "BUILD_NETLINK_LIB": false,
+        "BUILD_NL_LIB": false,
+        "USE_NETLINK_SERVICE": false,
+        "USE_UCI_SERVICE": true,
+        "USE_GENERIC_IP_SERVICE": false,
+        "BUILD_HOSTAPD": false
+      }
     },
     {
       "name": "openwrt/mvebu/cortexa9",

@@ -14,7 +14,7 @@ echo "OPENSSL lib cross-compile config prefix: ${CONFIG_PREFIX}"
 
 cd "${LIBOPENSSL_SOURCE_DIR}"
 
-if [ -z "${CONFIG_PREFIX}"]; then
+if [ -z "${CONFIG_PREFIX}" ]; then
     # tells openssl to use these cross_compile compilers
     export CROSS_COMPILE="${CONFIG_PREFIX}"
 fi
