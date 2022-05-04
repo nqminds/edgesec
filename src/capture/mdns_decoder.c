@@ -240,12 +240,6 @@ bool decode_mdns_packet(struct capture_packet *cpac) {
   } else
     return false;
 
-  cpac->mdnsh_hash =
-      md_hash((const char *)cpac->mdnsh, sizeof(struct mdns_header));
-
-  cpac->mdnss.hash = cpac->mdnsh_hash;
-  cpac->mdnss.timestamp = cpac->timestamp;
-  cpac->mdnss.ethh_hash = cpac->ethh_hash;
   strcpy(cpac->mdnss.id, cpac->id);
 
   if (decode_mdns_header((uint8_t *)cpac->mdnsh, &mdnsh) < 0) {

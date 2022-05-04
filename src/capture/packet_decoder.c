@@ -78,11 +78,6 @@ bool decode_dhcp_packet(struct capture_packet *cpac) {
   } else
     return false;
 
-  cpac->dhcph_hash = md_hash((const char *)cpac->dhcph, sizeof(struct dhcp_header)); 
-
-  cpac->dhcps.hash = cpac->dhcph_hash;
-  cpac->dhcps.timestamp = cpac->timestamp;
-  cpac->dhcps.ethh_hash = cpac->ethh_hash;
   strcpy(cpac->dhcps.id, cpac->id);
 
   cpac->dhcps.op = cpac->dhcph->op;
@@ -109,11 +104,6 @@ bool decode_udp_packet(struct capture_packet *cpac) {
   else
     return false;
 
-  cpac->udph_hash = md_hash((const char *)cpac->udph, sizeof(struct udphdr));
-
-  cpac->udps.hash = cpac->udph_hash;
-  cpac->udps.timestamp = cpac->timestamp;
-  cpac->udps.ethh_hash = cpac->ethh_hash;
   strcpy(cpac->udps.id, cpac->id);
 
   cpac->udps.source = ntohs(cpac->udph->source);
@@ -134,11 +124,6 @@ bool decode_tcp_packet(struct capture_packet *cpac) {
   else
     return false;
 
-  cpac->tcph_hash = md_hash((const char *)cpac->tcph, sizeof(struct tcphdr));
-
-  cpac->tcps.hash = cpac->tcph_hash;
-  cpac->tcps.timestamp = cpac->timestamp;
-  cpac->tcps.ethh_hash = cpac->ethh_hash;
   strcpy(cpac->tcps.id, cpac->id);
 
   cpac->tcps.source = ntohs(cpac->tcph->source);
@@ -163,12 +148,7 @@ bool decode_tcp_packet(struct capture_packet *cpac) {
 
 bool decode_icmp4_packet(struct capture_packet *cpac) {
   cpac->icmp4h = (struct icmphdr *)((void *)cpac->ip4h + sizeof(struct ip));
-  cpac->icmp4h_hash =
-      md_hash((const char *)cpac->icmp4h, sizeof(struct icmphdr));
 
-  cpac->icmp4s.hash = cpac->icmp4h_hash;
-  cpac->icmp4s.timestamp = cpac->timestamp;
-  cpac->icmp4s.ethh_hash = cpac->ethh_hash;
   strcpy(cpac->icmp4s.id, cpac->id);
 
   cpac->icmp4s.type = cpac->icmp4h->type;
@@ -184,12 +164,7 @@ bool decode_icmp4_packet(struct capture_packet *cpac) {
 bool decode_icmp6_packet(struct capture_packet *cpac) {
   cpac->icmp6h =
       (struct icmp6_hdr *)((void *)cpac->ip6h + sizeof(struct ip6_hdr));
-  cpac->icmp6h_hash =
-      md_hash((const char *)cpac->icmp6h, sizeof(struct icmp6_hdr));
 
-  cpac->icmp6s.hash = cpac->icmp6h_hash;
-  cpac->icmp6s.timestamp = cpac->timestamp;
-  cpac->icmp6s.ethh_hash = cpac->ethh_hash;
   strcpy(cpac->icmp6s.id, cpac->id);
 
   cpac->icmp6s.icmp6_type = cpac->icmp6h->icmp6_type;
@@ -211,11 +186,7 @@ bool decode_ip4_packet(struct capture_packet *cpac) {
   }
 
   cpac->ip4h = (struct ip *)((void *)cpac->ethh + sizeof(struct ether_header));
-  cpac->ip4h_hash = md_hash((const char *)cpac->ip4h, sizeof(struct ip));
 
-  cpac->ip4s.hash = cpac->ip4h_hash;
-  cpac->ip4s.timestamp = cpac->timestamp;
-  cpac->ip4s.ethh_hash = cpac->ethh_hash;
   strcpy(cpac->ip4s.id, cpac->id);
 
   cpac->ip4s.ip_hl = cpac->ip4h->ip_hl;
@@ -252,11 +223,6 @@ bool decode_ip6_packet(struct capture_packet *cpac) {
     return false;
   }
 
-  cpac->ip6h_hash = md_hash((const char *)cpac->ip6h, sizeof(struct ip6_hdr));
-
-  cpac->ip6s.hash = cpac->ip6h_hash;
-  cpac->ip6s.timestamp = cpac->timestamp;
-  cpac->ip6s.ethh_hash = cpac->ethh_hash;
   strcpy(cpac->ip6s.id, cpac->id);
 
   cpac->ip6s.ip6_un1_flow = ntohl(cpac->ip6h->ip6_flow);
@@ -275,12 +241,9 @@ bool decode_ip6_packet(struct capture_packet *cpac) {
 bool decode_arp_packet(struct capture_packet *cpac) {
   cpac->arph =
       (struct ether_arp *)((void *)cpac->ethh + sizeof(struct ether_header));
-  cpac->arph_hash = md_hash((const char *)cpac->arph, sizeof(struct ether_arp));
 
-  cpac->arps.hash = cpac->arph_hash;
-  cpac->arps.timestamp = cpac->timestamp;
-  cpac->arps.ethh_hash = cpac->ethh_hash;
   strcpy(cpac->arps.id, cpac->id);
+
   cpac->arps.ar_hrd = ntohs(cpac->arph->arp_hrd);
   cpac->arps.ar_pro = ntohs(cpac->arph->arp_pro);
   cpac->arps.ar_hln = cpac->arph->arp_hln;
@@ -307,11 +270,8 @@ bool decode_eth_packet(const struct pcap_pkthdr *header, const uint8_t *packet,
                        struct capture_packet *cpac) {
   if (header->caplen >= sizeof(struct ether_header)) {
     cpac->ethh = (struct ether_header *)packet;
-    cpac->ethh_hash =
-        md_hash((const char *)cpac->ethh, sizeof(struct ether_header));
 
     // Init eth packet schema
-    cpac->eths.hash = cpac->ethh_hash;
     cpac->eths.timestamp = cpac->timestamp;
     strcpy(cpac->eths.id, cpac->id);
     strcpy(cpac->eths.ifname, cpac->ifname);
