@@ -15,6 +15,10 @@
         "CMAKE_BUILD_TYPE": {
           "type": "STRING",
           "value": "Debug"
+        },
+        "LIB_MAKEFLAGS": {
+          "type": "STRING",
+          "value": "-j$(shell nproc)"
         }
       }
     },
@@ -31,11 +35,25 @@
         "USE_NETLINK_SERVICE": true,
         "USE_UCI_SERVICE": false,
         "USE_GENERIC_IP_SERVICE": false,
-        "BUILD_HOSTAPD": true,
-        "LIB_MAKEFLAGS": {
-          "type": "STRING",
-          "value": "-j$(shell nproc)"
-        }
+        "BUILD_HOSTAPD": true
+      }
+    },
+    {
+      "name": "openwrt/default",
+      "inherits": "default",
+      "description": "Compile for arm-linux-musleabihf",
+      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/arm-linux.cmake"
+    },
+    {
+      "name": "openwrt/mvebu/cortexa9",
+      "inherits": "openwrt/default",
+      "displayName": "OpenWRT mvebu/cortexa9",
+      "description": "OpenWRT mvebu/cortexa9 (uses uci)",
+      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/openwrt-mvebu-cortexa9.cmake",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
       }
     }
   ],
@@ -47,6 +65,14 @@
     {
       "name": "linux",
       "configurePreset": "linux"
+    },
+    {
+      "name": "openwrt/default",
+      "configurePreset": "openwrt/default"
+    },
+    {
+      "name": "openwrt/mvebu/cortexa9",
+      "configurePreset": "openwrt/mvebu/cortexa9"
     }
   ],
   "testPresets": [

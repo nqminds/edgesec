@@ -19,6 +19,7 @@ if (BUILD_OPENSSL_LIB AND NOT (BUILD_ONLY_DOCS))
       if (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
         set(openssl_config "linux-aarch64")
       elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_SYSTEM_PROCESSOR STREQUAL "arm")
+        # todo: do something like linux-armv4 with -mcpu=cortex-a9+vfpv3-d16
         set(openssl_config "linux-generic32")
         set(openssl_prefix "${CROSS_COMPILE_PREFIX}")
       else ()

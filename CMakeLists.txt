@@ -1,17 +1,4 @@
-# required by FindMNL.cmake
-cmake_minimum_required(VERSION 3.13.0)
-
-option(CROSS_COMPILE_EDGESEC "Cross compile the EDGESec" ON)
-
-if (CROSS_COMPILE_EDGESEC)
-  set(CMAKE_SYSTEM_NAME Linux)
-  set(CMAKE_SYSTEM_PROCESSOR arm)
-  set(CROSS_COMPILE_PREFIX /usr/local/bin/arm-linux-musleabihf-)
-#  set(CROSS_COMPILE_PREFIX /usr/local/bin/aarch64-linux-musl-)
-  set(CMAKE_C_COMPILER "${CROSS_COMPILE_PREFIX}gcc")
-  set(CMAKE_CXX_COMPILER "${CROSS_COMPILE_PREFIX}g++")
-  set(CMAKE_STRIP "${CROSS_COMPILE_PREFIX}strip")
-endif ()
+cmake_minimum_required(VERSION 3.13.0) # required by FindMNL.cmake
 
 project(EDGESEC C CXX)
 
@@ -138,6 +125,10 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 # hostapd and libnetlink relies on GNU specific features, like strncasecmp
 set(CMAKE_C_EXTENSIONS ON)
+
+# sqlhook is a shared library that links to static libs, so -fPIC is needed
+# todo: enable only for sqlhook dependencies
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # The edgesec version number.
 set(EDGESEC_VERSION_MAJOR 0)
