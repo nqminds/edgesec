@@ -49,6 +49,10 @@
 bool save_mac_mapper(struct supervisor_context *context, struct mac_conn conn) {
   struct crypt_pair pair;
 
+  if (!strlen(conn.info.id)) {
+    generate_radom_uuid(conn.info.id);
+  }
+
   if (!put_mac_mapper(&context->mac_mapper, conn)) {
     log_trace("put_mac_mapper fail");
     return false;

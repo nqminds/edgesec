@@ -36,15 +36,17 @@
 #include "../utils/os.h"
 #include "../utils/squeue.h"
 
-#define MACCONN_TABLE_NAME "macconn"
+#define MACCONN_TABLE_NAME "instance"
 
 #define MACCONN_CREATE_TABLE                                                   \
   "CREATE TABLE " MACCONN_TABLE_NAME                                           \
-  " (mac TEXT NOT NULL, id TEXT, status INTEGER, vlanid INTEGER, nat "         \
-  "INTEGER, allow INTEGER, label TEXT, PRIMARY KEY (mac));"
+  " (id TEXT NOT NULL, mac TEXT NOT NULL, status INTEGER, vlanid INTEGER, "    \
+  "primaryip TEXT, secondaryip TEXT, nat INTEGER, allow INTEGER, label TEXT, " \
+  "timestamp INTEGER, PRIMARY KEY (id, mac));"
 #define MACCONN_INSERT_INTO                                                    \
   "INSERT INTO " MACCONN_TABLE_NAME                                            \
-  " VALUES(@mac, @id, @status, @vlanid, @nat, @allow, @label);"
+  " VALUES(@id, @mac, @status, @vlanid, @primaryip, @secondaryip, "            \
+  "@nat, @allow, @label, @timestamp);"
 #define MACCONN_DELETE_FROM "DELETE FROM " MACCONN_TABLE_NAME " WHERE mac=@mac;"
 #define MACCONN_SELECT_FROM                                                    \
   "SELECT mac, id, status, vlanid, nat, allow, label FROM "                    \

@@ -106,16 +106,16 @@ int save_sqlite_macconn_entry(sqlite3 *db, struct mac_conn *conn) {
     return -1;
   }
 
-  column_idx = sqlite3_bind_parameter_index(res, "@mac");
-  if (sqlite3_bind_text(res, column_idx, mac_buf, -1, NULL) != SQLITE_OK) {
+  column_idx = sqlite3_bind_parameter_index(res, "@id");
+  if (sqlite3_bind_text(res, column_idx, conn->info.id, -1, NULL) !=
+      SQLITE_OK) {
     log_trace("sqlite3_bind_text fail");
     sqlite3_finalize(res);
     return -1;
   }
 
-  column_idx = sqlite3_bind_parameter_index(res, "@id");
-  if (sqlite3_bind_text(res, column_idx, conn->info.id, -1, NULL) !=
-      SQLITE_OK) {
+  column_idx = sqlite3_bind_parameter_index(res, "@mac");
+  if (sqlite3_bind_text(res, column_idx, mac_buf, -1, NULL) != SQLITE_OK) {
     log_trace("sqlite3_bind_text fail");
     sqlite3_finalize(res);
     return -1;
@@ -130,6 +130,22 @@ int save_sqlite_macconn_entry(sqlite3 *db, struct mac_conn *conn) {
 
   column_idx = sqlite3_bind_parameter_index(res, "@vlanid");
   if (sqlite3_bind_int(res, column_idx, conn->info.vlanid) != SQLITE_OK) {
+    log_trace("sqlite3_bind_text fail");
+    sqlite3_finalize(res);
+    return -1;
+  }
+
+  column_idx = sqlite3_bind_parameter_index(res, "@primaryip");
+  if (sqlite3_bind_text(res, column_idx, conn->info.ip_addr, -1, NULL) !=
+      SQLITE_OK) {
+    log_trace("sqlite3_bind_text fail");
+    sqlite3_finalize(res);
+    return -1;
+  }
+
+  column_idx = sqlite3_bind_parameter_index(res, "@secondaryip");
+  if (sqlite3_bind_text(res, column_idx, conn->info.ip_sec_addr, -1, NULL) !=
+      SQLITE_OK) {
     log_trace("sqlite3_bind_text fail");
     sqlite3_finalize(res);
     return -1;
@@ -152,6 +168,14 @@ int save_sqlite_macconn_entry(sqlite3 *db, struct mac_conn *conn) {
 
   column_idx = sqlite3_bind_parameter_index(res, "@label");
   if (sqlite3_bind_text(res, column_idx, conn->info.label, -1, NULL) !=
+      SQLITE_OK) {
+    log_trace("sqlite3_bind_text fail");
+    sqlite3_finalize(res);
+    return -1;
+  }
+
+  column_idx = sqlite3_bind_parameter_index(res, "@timestamp");
+  if (sqlite3_bind_int64(res, column_idx, conn->info.join_timestamp) !=
       SQLITE_OK) {
     log_trace("sqlite3_bind_text fail");
     sqlite3_finalize(res);

@@ -36,15 +36,8 @@ static void test_save_sqlite_macconn_entry(void **state) {
   (void)state; /* unused */
 
   sqlite3 *db;
-  struct mac_conn conn = {{0x04, 0xf0, 0x21, 0x5a, 0xf4, 0xc4},
-                          0,
-                          0,
-                          1,
-                          0,
-                          {},
-                          0,
-                          {},
-                          {'b', 'r', '0', '\0'}};
+  struct mac_conn conn = {{0x04, 0xf0, 0x21, 0x5a, 0xf4, 0xc4}, {}};
+  os_memset(&conn.info, 0, sizeof(conn.info));
 
   assert_int_equal(open_sqlite_macconn_db(":memory:", &db), 0);
   assert_int_equal(save_sqlite_macconn_entry(db, &conn), 0);
@@ -89,6 +82,9 @@ static void test_get_sqlite_macconn_entries(void **state) {
 }
 
 int main(int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
+
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {

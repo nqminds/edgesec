@@ -59,7 +59,7 @@
 #include "engine.h"
 #include "config.h"
 
-#define MACCONN_DB_NAME "macconn" SQLITE_EXTENSION
+#define MACCONN_DB_NAME "connection" SQLITE_EXTENSION
 
 static const UT_icd mac_conn_icd = {sizeof(struct mac_conn), NULL, NULL, NULL};
 static const UT_icd config_ifinfo_icd = {sizeof(config_ifinfo_t), NULL, NULL,

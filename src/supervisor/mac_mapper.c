@@ -139,7 +139,7 @@ void init_default_mac_info(struct mac_conn_info *info, int default_open_vlanid,
   os_memset(info->ip_sec_addr, 0, IP_LEN);
   os_memset(info->ifname, 0, IFNAMSIZ);
   os_memset(info->label, 0, MAX_DEVICE_LABEL_SIZE);
-  generate_radom_uuid(info->id);
+  os_memset(info->id, 0, MAX_RANDOM_UUID_LEN);
 }
 
 int get_ip_mapper(hmap_mac_conn **hmap, char *ip, uint8_t *mac_addr) {
