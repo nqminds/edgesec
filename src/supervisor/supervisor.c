@@ -289,8 +289,9 @@ void ap_service_callback(struct supervisor_context *context, uint8_t mac_addr[],
     info.status = status;
     os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
     conn.info = info;
-    if (!put_mac_mapper(&context->mac_mapper, conn)) {
-      log_trace("put_mac_mapper fail");
+
+    if (!save_mac_mapper(context, conn)) {
+      log_trace("save_mac_mapper fail");
     }
   }
 
