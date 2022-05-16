@@ -1,27 +1,22 @@
 #!/bin/sh /etc/rc.common
 
-USE_PROCD=1
-
 # Start after the network and dnsmasq
 START=99
 
 PROG=/srv/edgesec
 CONFIG_FILE=/srv/config.ini
 KEY=12345
-LOG_FILE=/tmp/edgesec.log
+LOG_FILE=/srv/edgesec.log
 
-reload_service() {
-    procd_send_signal edgesec * SIGHUP
+reload() {
+    kill -SIGHUP `cat /var/run/edgesec.pid`
 }
 
-start_service() {
-    procd_open_instance
-    procd_set_param command $PROG -c $CONFIG_FILE -s $KEY -f $LOG_FILE -m -dddddddd
-    procd_set_param respawn
-    procd_close_instance
+start() {
+    $PROG -c $CONFIG_FILE -s $KEY -f $LOG_FILE -m -dddddddd
 }
 
-stop_service() {
+stop() {
     killall -q capsrv
     killall -q mdnsf
     kill -9 `cat /var/run/edgesec.pid`
