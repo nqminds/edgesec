@@ -60,6 +60,10 @@ option(USE_SQLITE3_LIB "Use sqlite3 library" ON)
 option(USE_UUID_LIB "Use uuid library" ON)
 option(USE_ZYMKEY4_HSM "Use the Zymkey4 HSM" OFF)
 
+if (USE_CRYPTO_SERVICE)
+  add_compile_definitions(TEST_CRYPTO_SERVICE_KEY="12345")
+endif ()
+
 if (USE_NETLINK_SERVICE AND USE_UCI_SERVICE AND USE_GENERIC_IP_SERVICE)
   message(FATAL_ERROR "Only USE_NETLINK_SERVICE or USE_UCI_SERVICE allowed.")
 endif ()

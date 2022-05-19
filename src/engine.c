@@ -143,7 +143,8 @@ bool init_mac_mapper_ifnames(UT_array *connections,
   return true;
 }
 
-int get_wpa_passphrase(struct crypt_context *crypt_ctx,
+#ifdef WITH_CRYPTO_SERVICE
+int get_crypt_wpa_passphrase(struct crypt_context *crypt_ctx,
                        struct mac_conn_info *info) {
   struct crypt_pair *pair = get_crypt_pair(crypt_ctx, info->id);
 
@@ -152,7 +153,7 @@ int get_wpa_passphrase(struct crypt_context *crypt_ctx,
       info->pass_len = pair->value_size;
       os_memcpy(info->pass, pair->value, info->pass_len);
     } else {
-      log_trace("Unknown passphrase format for id=%s", info->id);
+      log_error("Passphrase format for id=%s longer then %d", info->id, AP_SECRET_LEN);
       free_crypt_pair(pair);
       return -1;
     }
@@ -161,11 +162,11 @@ int get_wpa_passphrase(struct crypt_context *crypt_ctx,
 
   return 0;
 }
+#endif
 
 bool create_mac_mapper(struct supervisor_context *ctx) {
   struct mac_conn *p = NULL;
   UT_array *mac_conn_arr;
-  struct crypt_pair *pair;
 
   // Create the connections list
   utarray_new(mac_conn_arr, &mac_conn_icd);
@@ -189,20 +190,18 @@ bool create_mac_mapper(struct supervisor_context *ctx) {
           " with id=%s vlanid=%d ifname=%s nat=%d allow=%d label=%s status=%d",
           MAC2STR(p->mac_addr), p->info.id, p->info.vlanid, p->info.ifname,
           p->info.nat, p->info.allow_connection, p->info.label, p->info.status);
-      pair = get_crypt_pair(ctx->crypt_ctx, p->info.id);
-      if (pair != NULL) {
-        if (pair->value_size <= AP_SECRET_LEN) {
-          p->info.pass_len = pair->value_size;
-          os_memcpy(p->info.pass, pair->value, p->info.pass_len);
-        } else
-          log_trace("Unknown passphrase format for id=%s", p->info.id);
 
-        free_crypt_pair(pair);
+#ifdef WITH_CRYPTO_SERVICE
+      if (get_crypt_wpa_passphrase(ctx->crypt_ctx, &(p->info)) < 0) {
+        log_error("get_wpa_passphrase fail");
+        utarray_free(mac_conn_arr);
+        return false; 
       }
+#endif
 
       if (!put_mac_mapper(&ctx->mac_mapper, *p)) {
         log_trace("put_mac_mapper fail");
-        free_mac_mapper(&ctx->mac_mapper);
+        utarray_free(mac_conn_arr);
         return false;
       }
     }
@@ -295,7 +294,9 @@ int init_context(struct app_config *app_config,
   ctx->subscribers_array = NULL;
   ctx->ap_sock = -1;
   ctx->radius_srv = NULL;
+#ifdef WITH_CRYPTO_SERVICE
   ctx->crypt_ctx = NULL;
+#endif
   ctx->iface_ctx = NULL;
   ctx->ticket = NULL;
   ctx->fw_ctx = NULL;
@@ -441,6 +442,7 @@ bool run_engine(struct app_config *app_config) {
     goto run_engine_fail;
   }
 
+#ifdef WITH_CRYPTO_SERVICE
   log_info("Loading crypt service...");
   if ((context.crypt_ctx = load_crypt_service(
            app_config->crypt_db_path, app_config->crypt_key_id,
@@ -449,6 +451,7 @@ bool run_engine(struct app_config *app_config) {
     log_debug("load_crypt_service fail");
     goto run_engine_fail;
   }
+#endif
 
   if (app_config->set_ip_forward) {
     log_debug("Setting the ip forward os system flag...");
@@ -548,7 +551,9 @@ bool run_engine(struct app_config *app_config) {
   free_vlan_mapper(&context.vlan_mapper);
   free_bridge_list(context.bridge_list);
   free_sqlite_macconn_db(context.macconn_db);
+#ifdef WITH_CRYPTO_SERVICE
   free_crypt_service(context.crypt_ctx);
+#endif
   iface_free_context(context.iface_ctx);
   utarray_free(context.config_ifinfo_array);
 
@@ -567,7 +572,9 @@ run_engine_fail:
   free_vlan_mapper(&context.vlan_mapper);
   free_bridge_list(context.bridge_list);
   free_sqlite_macconn_db(context.macconn_db);
+#ifdef WITH_CRYPTO_SERVICE
   free_crypt_service(context.crypt_ctx);
+#endif
   iface_free_context(context.iface_ctx);
   utarray_free(context.config_ifinfo_array);
 

@@ -36,7 +36,9 @@
 #include "mac_mapper.h"
 #include "network_commands.h"
 #include "monitor_commands.h"
+#ifdef WITH_CRYPTO_SERVICE
 #include "crypt_commands.h"
+#endif
 #include "system_commands.h"
 
 #include "utils/allocs.h"
@@ -762,6 +764,7 @@ ssize_t process_clear_psk_cmd(int sock, struct client_address *client_addr,
   return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
+#ifdef WITH_CRYPTO_SERVICE
 ssize_t process_put_crypt_cmd(int sock, struct client_address *client_addr,
                               struct supervisor_context *context,
                               UT_array *cmd_arr) {
@@ -1130,6 +1133,7 @@ ssize_t process_sign_blob_cmd(int sock, struct client_address *client_addr,
 
   return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
+#endif
 
 process_cmd_fn get_command_function(char *cmd) {
   if (!strcmp(cmd, CMD_PING)) {
@@ -1170,7 +1174,9 @@ process_cmd_fn get_command_function(char *cmd) {
     return process_register_ticket_cmd;
   } else if (!strcmp(cmd, CMD_CLEAR_PSK)) {
     return process_clear_psk_cmd;
-  } else if (!strcmp(cmd, CMD_PUT_CRYPT)) {
+  }
+#ifdef WITH_CRYPTO_SERVICE
+  else if (!strcmp(cmd, CMD_PUT_CRYPT)) {
     return process_put_crypt_cmd;
   } else if (!strcmp(cmd, CMD_GET_CRYPT)) {
     return process_get_crypt_cmd;
@@ -1188,7 +1194,9 @@ process_cmd_fn get_command_function(char *cmd) {
     return process_decrypt_blob_cmd;
   } else if (!strcmp(cmd, CMD_SIGN_BLOB)) {
     return process_sign_blob_cmd;
-  } else {
+  }
+#endif
+  else {
     log_debug("unknown command");
   }
 

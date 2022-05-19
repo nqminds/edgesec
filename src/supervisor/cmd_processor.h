@@ -60,6 +60,7 @@
 #define CMD_SET_FINGERPRINT "SET_FINGERPRINT"
 #define CMD_QUERY_FINGERPRINT "QUERY_FINGERPRINT"
 
+#ifdef WITH_CRYPTO_SERVICE
 // CRYPT commands
 #define CMD_PUT_CRYPT "PUT_CRYPT"
 #define CMD_GET_CRYPT "GET_CRYPT"
@@ -70,6 +71,7 @@
 #define CMD_ENCRYPT_BLOB "ENCRYPT_BLOB"
 #define CMD_DECRYPT_BLOB "DECRYPT_BLOB"
 #define CMD_SIGN_BLOB "SIGN_BLOB"
+#endif
 
 #define OK_REPLY "OK"
 #define FAIL_REPLY "FAIL"
@@ -329,6 +331,7 @@ ssize_t process_clear_psk_cmd(int sock, struct client_address *client_addr,
                               struct supervisor_context *context,
                               UT_array *cmd_arr);
 
+#ifdef WITH_CRYPTO_SERVICE
 /**
  * @brief Processes the PUT_CRYPT command
  *
@@ -445,6 +448,7 @@ ssize_t process_decrypt_blob_cmd(int sock, struct client_address *client_addr,
 ssize_t process_sign_blob_cmd(int sock, struct client_address *client_addr,
                               struct supervisor_context *context,
                               UT_array *cmd_arr);
+#endif
 
 /**
  * @brief Get the command function pointer
