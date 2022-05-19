@@ -53,7 +53,11 @@
 #include "ap/ap_service.h"
 #include "dhcp/dhcp_service.h"
 #include "dns/mdns_service.h"
+
+#ifdef WITH_CRYPTO_SERVICE
 #include "crypt/crypt_service.h"
+#endif
+
 #include "firewall/firewall_service.h"
 
 #include "engine.h"
