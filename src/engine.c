@@ -143,6 +143,25 @@ bool init_mac_mapper_ifnames(UT_array *connections,
   return true;
 }
 
+int get_wpa_passphrase(struct crypt_context *crypt_ctx,
+                       struct mac_conn_info *info) {
+  struct crypt_pair *pair = get_crypt_pair(crypt_ctx, info->id);
+
+  if (pair != NULL) {
+    if (pair->value_size <= AP_SECRET_LEN) {
+      info->pass_len = pair->value_size;
+      os_memcpy(info->pass, pair->value, info->pass_len);
+    } else {
+      log_trace("Unknown passphrase format for id=%s", info->id);
+      free_crypt_pair(pair);
+      return -1;
+    }
+    free_crypt_pair(pair);
+  }
+
+  return 0;
+}
+
 bool create_mac_mapper(struct supervisor_context *ctx) {
   struct mac_conn *p = NULL;
   UT_array *mac_conn_arr;

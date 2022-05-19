@@ -247,6 +247,12 @@ int get_sqlite_macconn_entries(sqlite3 *db, UT_array *entries) {
       os_strlcpy(el.info.label, value, MAX_DEVICE_LABEL_SIZE);
     }
 
+    // pass
+    if ((value = (char *)sqlite3_column_text(res, 7)) != NULL) {
+      os_strlcpy(el.info.pass, value, AP_SECRET_LEN);
+      el.info.pass_len = os_strnlen_s(value, AP_SECRET_LEN);
+    }
+
     utarray_push_back(entries, &el);
   }
 
