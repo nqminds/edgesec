@@ -183,7 +183,7 @@ int save_sqlite_macconn_entry(sqlite3 *db, struct mac_conn *conn) {
   }
 
   column_idx = sqlite3_bind_parameter_index(res, "@pass");
-  if (sqlite3_bind_text(res, column_idx, (char *) conn->info.pass, -1, NULL) !=
+  if (sqlite3_bind_text(res, column_idx, (char *)conn->info.pass, -1, NULL) !=
       SQLITE_OK) {
     log_trace("sqlite3_bind_text fail");
     sqlite3_finalize(res);

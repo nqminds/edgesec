@@ -80,11 +80,11 @@ struct app_config {
   char crypt_secret[MAX_USER_SECRET];  /**< Specifies the crypt user master
                                           secret */
 #endif
-  char domain_delim;                   /**< Control server command delimiter. */
-  bool allow_all_connections;          /**< Flag to allow all connections. */
-  bool allow_all_nat;     /**< Flag to allow all nat connections. */
-  bool kill_running_proc; /**< Flag to terminate running app processes. */
-  bool set_ip_forward;    /**< Flag to set the ip forward os system param. */
+  char domain_delim;          /**< Control server command delimiter. */
+  bool allow_all_connections; /**< Flag to allow all connections. */
+  bool allow_all_nat;         /**< Flag to allow all nat connections. */
+  bool kill_running_proc;     /**< Flag to terminate running app processes. */
+  bool set_ip_forward; /**< Flag to set the ip forward os system param. */
   char pid_file_path[MAX_OS_PATH_LEN];   /**< Path to the pid file. */
   char config_ini_path[MAX_OS_PATH_LEN]; /**< Path to the config.ini file. */
   struct radius_conf rconfig;            /**< Radius service configuration. */
