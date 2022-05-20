@@ -1,3 +1,0 @@
-[submodule "deployment/ssh/nqm-ssh-tunnel"]
-	path = deployment/ssh/nqm-ssh-tunnel
-	url = ../../nqminds/nqm-ssh-tunnel.git
