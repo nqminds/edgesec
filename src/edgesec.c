@@ -51,8 +51,7 @@
 #include "config.h"
 
 #define OPT_STRING ":c:f:mdvh"
-#define USAGE_STRING                                                           \
-  "\t%s [-c filename] [-f filename] [-m] [-d] [-h] [-v]\n"
+#define USAGE_STRING "\t%s [-c filename] [-f filename] [-m] [-d] [-h] [-v]\n"
 const char description_string[] = R"==(
   NquiringMinds EDGESec Network Security Router.
 
@@ -183,11 +182,14 @@ int main(int argc, char *argv[]) {
   // Init the app config struct
   memset(&config, 0, sizeof(struct app_config));
 
-  process_app_options(argc, argv, &verbosity, &daemon,
-                      &config_filename, &log_filename);
+  process_app_options(argc, argv, &verbosity, &daemon, &config_filename,
+                      &log_filename);
 
 #ifdef WITH_CRYPTO_SERVICE
-  sprintf(config.crypt_secret, "%s", TEST_CRYPTO_SERVICE_KEY);
+  char *env_key_value;
+  if ((env_key_value = getenv("CRYPT_KEY")) != NULL) {
+    os_strlcpy(config.crypt_secret, env_key_value, MAX_USER_SECRET);
+  }
 #endif
 
   if (verbosity > MAX_LOG_LEVELS) {
