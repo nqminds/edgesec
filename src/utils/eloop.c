@@ -29,80 +29,40 @@
 #include <sys/epoll.h>
 #include <unistd.h>
 
-// #include "common.h"
-// #include "trace.h"
 #include "log.h"
 #include "allocs.h"
 #include "os.h"
 #include "list.h"
 #include "eloop.h"
 
-struct eloop_sock {
-  int sock;
-  void *eloop_data;
-  void *user_data;
-  eloop_sock_handler handler;
-};
+struct eloop_data *eloop_init(void) {
+  struct eloop_data *eloop = NULL;
 
-struct eloop_timeout {
-  struct dl_list list;
-  struct os_reltime time;
-  void *eloop_data;
-  void *user_data;
-  eloop_timeout_handler handler;
-};
+  if ((eloop = os_zalloc(sizeof(struct eloop_data))) == NULL) {
+    log_errno("os_zalloc");
+    return NULL;
+  }
 
-struct eloop_signal {
-  int sig;
-  void *user_data;
-  eloop_signal_handler handler;
-  int signaled;
-};
-
-struct eloop_sock_table {
-  int count;
-  struct eloop_sock *table;
-  eloop_event_type type;
-  int changed;
-};
-
-struct eloop_data {
-  int max_sock;
-  int count; /* sum of all table counts */
-  int max_fd;
-  struct eloop_sock *fd_table;
-  int epollfd;
-  int epoll_max_event_num;
-  struct epoll_event *epoll_events;
-  struct eloop_sock_table readers;
-  struct eloop_sock_table writers;
-  struct eloop_sock_table exceptions;
-  struct dl_list timeout;
-  int signal_count;
-  struct eloop_signal *signals;
-  int signaled;
-  int pending_terminate;
-  int terminate;
-};
-
-static struct eloop_data eloop = {.epollfd = -1};
-
-int eloop_init(void) {
-  os_memset(&eloop, 0, sizeof(eloop));
-  dl_list_init(&eloop.timeout);
-  eloop.epollfd = epoll_create1(0);
-  if (eloop.epollfd < 0) {
+  dl_list_init(&(eloop->timeout));
+  eloop->epollfd = epoll_create1(0);
+  if (eloop->epollfd < 0) {
     log_errno("epoll_create1 failed");
     return -1;
   }
-  eloop.readers.type = EVENT_TYPE_READ;
-  eloop.writers.type = EVENT_TYPE_WRITE;
-  eloop.exceptions.type = EVENT_TYPE_EXCEPTION;
+  eloop->readers.type = EVENT_TYPE_READ;
+  eloop->writers.type = EVENT_TYPE_WRITE;
+  eloop->exceptions.type = EVENT_TYPE_EXCEPTION;
   return 0;
 }
 
-static int eloop_sock_queue(int sock, eloop_event_type type) {
+static int eloop_sock_queue(struct eloop_data *eloop, int sock,
+                            eloop_event_type type) {
   struct epoll_event ev;
+
+  if (eloop == NULL) {
+    log_error("eloop param is NULL");
+    return -1;
+  }
 
   os_memset(&ev, 0, sizeof(ev));
   switch (type) {
@@ -122,7 +82,7 @@ static int eloop_sock_queue(int sock, eloop_event_type type) {
       break;
   }
   ev.data.fd = sock;
-  if (epoll_ctl(eloop.epollfd, EPOLL_CTL_ADD, sock, &ev) < 0) {
+  if (epoll_ctl(eloop->epollfd, EPOLL_CTL_ADD, sock, &ev) < 0) {
     log_errno("epoll_ctl(ADD) for fd=%d failed", sock);
     return -1;
   }

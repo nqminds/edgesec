@@ -25,6 +25,7 @@
 
 #include "allocs.h"
 #include "os.h"
+#include "list.h"
 
 /**
  * ELOOP_ALL_CTX - eloop_cancel_timeout() magic number to match all timeouts
@@ -74,17 +75,61 @@ typedef void (*eloop_timeout_handler)(void *eloop_ctx, void *user_ctx);
  */
 typedef void (*eloop_signal_handler)(int sig, void *signal_ctx);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+struct eloop_sock {
+  int sock;
+  void *eloop_data;
+  void *user_data;
+  eloop_sock_handler handler;
+};
+
+struct eloop_timeout {
+  struct dl_list list;
+  struct os_reltime time;
+  void *eloop_data;
+  void *user_data;
+  eloop_timeout_handler handler;
+};
+
+struct eloop_signal {
+  int sig;
+  void *user_data;
+  eloop_signal_handler handler;
+  int signaled;
+};
+
+struct eloop_sock_table {
+  int count;
+  struct eloop_sock *table;
+  eloop_event_type type;
+  int changed;
+};
+
+struct eloop_data {
+  int max_sock;
+  int count; /* sum of all table counts */
+  int max_fd;
+  struct eloop_sock *fd_table;
+  int epollfd;
+  int epoll_max_event_num;
+  struct epoll_event *epoll_events;
+  struct eloop_sock_table readers;
+  struct eloop_sock_table writers;
+  struct eloop_sock_table exceptions;
+  struct dl_list timeout;
+  int signal_count;
+  struct eloop_signal *signals;
+  int signaled;
+  int pending_terminate;
+  int terminate;
+};
 
 /**
  * eloop_init() - Initialize global event loop data
- * Returns: 0 on success, -1 on failure
+ * Returns: struct eloop_data on success, NULL on failure
  *
  * This function must be called before any other eloop_* function.
  */
-int eloop_init(void);
+struct eloop_data *eloop_init(void);
 
 /**
  * eloop_register_read_sock - Register handler for read events
@@ -375,9 +420,5 @@ int eloop_terminated(void);
  * Do a blocking wait for a single read socket.
  */
 void eloop_wait_for_read_sock(int sock);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* ELOOP_H */
