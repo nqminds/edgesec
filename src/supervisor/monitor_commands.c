@@ -34,7 +34,6 @@
 
 #include "../ap/ap_config.h"
 #include "../ap/ap_service.h"
-#include "../crypt/crypt_service.h"
 #include "../capture/capture_service.h"
 #include "../capture/capture_config.h"
 #include "../dns/mdns_mapper.h"

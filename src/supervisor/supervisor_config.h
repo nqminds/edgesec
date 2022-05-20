@@ -35,7 +35,9 @@
 #include "../utils/iface_mapper.h"
 #include "../utils/iface.h"
 #include "../capture/capture_config.h"
+#ifdef WITH_CRYPTO_SERVICE
 #include "../crypt/crypt_config.h"
+#endif
 #include "../firewall/firewall_service.h"
 
 #include "mac_mapper.h"
@@ -96,7 +98,9 @@ struct supervisor_context {
   sqlite3 *macconn_db;    /**< The macconn db structure. */
   struct radius_server_data *radius_srv; /**< The radius server context. */
   struct fwctx *fw_ctx;                  /**< The firewall context. */
+#ifdef WITH_CRYPTO_SERVICE
   struct crypt_context *crypt_ctx;       /**< The crypt context. */
+#endif
   struct iface_context *iface_ctx;       /**< The interface context. */
   struct auth_ticket *ticket;            /**< The authentication ticket. */
   int ap_sock;                           /**< The AP notifier socket. */

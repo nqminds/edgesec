@@ -730,6 +730,7 @@ bool load_system_config(const char *filename, struct app_config *config) {
   os_strlcpy(config->db_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
+#ifdef WITH_CRYPTO_SERVICE
   // Load the crypt db path param
   value = os_zalloc(INI_BUFFERSIZE);
   ret = ini_gets("system", "cryptDbPath", "", value, INI_BUFFERSIZE, filename);
@@ -751,6 +752,7 @@ bool load_system_config(const char *filename, struct app_config *config) {
     return false;
   }
   os_free(value);
+#endif
 
   // Load pidFilePath
   value = os_malloc(INI_BUFFERSIZE);

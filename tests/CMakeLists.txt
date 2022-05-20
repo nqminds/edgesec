@@ -5,14 +5,17 @@ include_directories (
 if (LIBPCAP_LIB)
   add_subdirectory(capture)
 endif ()
-add_subdirectory(crypt)
+
+if (USE_CRYPTO_SERVICE)
+  add_subdirectory(crypt)
+endif ()
+
 add_subdirectory(utils)
 add_subdirectory(supervisor)
 add_subdirectory(radius)
 add_subdirectory(ap)
 add_subdirectory(dhcp)
 add_subdirectory(dns)
-# add_subdirectory(subnet)
 
 add_executable(test_engine test_engine.c)
 target_include_directories(test_engine PUBLIC ${LIBSQLITE_INCLUDE_DIR})

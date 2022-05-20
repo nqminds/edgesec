@@ -35,7 +35,6 @@
 
 #include "../ap/ap_config.h"
 #include "../ap/ap_service.h"
-#include "../crypt/crypt_service.h"
 #include "../capture/capture_service.h"
 #include "../utils/allocs.h"
 #include "../utils/os.h"

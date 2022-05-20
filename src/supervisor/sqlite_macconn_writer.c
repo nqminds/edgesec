@@ -182,6 +182,14 @@ int save_sqlite_macconn_entry(sqlite3 *db, struct mac_conn *conn) {
     return -1;
   }
 
+  column_idx = sqlite3_bind_parameter_index(res, "@pass");
+  if (sqlite3_bind_text(res, column_idx, (char *) conn->info.pass, -1, NULL) !=
+      SQLITE_OK) {
+    log_trace("sqlite3_bind_text fail");
+    sqlite3_finalize(res);
+    return -1;
+  }
+
   sqlite3_step(res);
   sqlite3_finalize(res);
 
@@ -237,6 +245,12 @@ int get_sqlite_macconn_entries(sqlite3 *db, UT_array *entries) {
     // label
     if ((value = (char *)sqlite3_column_text(res, 6)) != NULL) {
       os_strlcpy(el.info.label, value, MAX_DEVICE_LABEL_SIZE);
+    }
+
+    // pass
+    if ((value = (char *)sqlite3_column_text(res, 7)) != NULL) {
+      os_strlcpy((char *)el.info.pass, value, AP_SECRET_LEN);
+      el.info.pass_len = os_strnlen_s(value, AP_SECRET_LEN);
     }
 
     utarray_push_back(entries, &el);

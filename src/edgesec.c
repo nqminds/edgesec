@@ -50,9 +50,8 @@
 #include "engine.h"
 #include "config.h"
 
-#define OPT_STRING ":c:s:f:mdvh"
-#define USAGE_STRING                                                           \
-  "\t%s [-c filename] [-s secret] [-f filename] [-m] [-d] [-h] [-v]\n"
+#define OPT_STRING ":c:f:mdvh"
+#define USAGE_STRING "\t%s [-c filename] [-f filename] [-m] [-d] [-h] [-v]\n"
 const char description_string[] = R"==(
   NquiringMinds EDGESec Network Security Router.
 
@@ -107,7 +106,6 @@ void show_app_help(char *app_name) {
   fprintf(stdout, "%s", description_string);
   fprintf(stdout, "\nOptions:\n");
   fprintf(stdout, "\t-c filename\t Path to the config file name\n");
-  fprintf(stdout, "\t-s secret\t Master key\n");
   fprintf(stdout, "\t-f filename\t Log file name\n");
   fprintf(stdout, "\t-m\t\t Run as daemon\n");
   fprintf(stdout,
@@ -135,7 +133,7 @@ void log_cmdline_error(const char *format, ...) {
 }
 
 void process_app_options(int argc, char *argv[], uint8_t *verbosity,
-                         bool *daemon, char **config_filename, char *secret,
+                         bool *daemon, char **config_filename,
                          char **log_filename) {
   int opt;
 
@@ -150,9 +148,6 @@ void process_app_options(int argc, char *argv[], uint8_t *verbosity,
         break;
       case 'c':
         *config_filename = os_strdup(optarg);
-        break;
-      case 's':
-        os_strlcpy(secret, optarg, MAX_USER_SECRET);
         break;
       case 'f':
         *log_filename = os_strdup(optarg);
@@ -188,7 +183,14 @@ int main(int argc, char *argv[]) {
   memset(&config, 0, sizeof(struct app_config));
 
   process_app_options(argc, argv, &verbosity, &daemon, &config_filename,
-                      config.crypt_secret, &log_filename);
+                      &log_filename);
+
+#ifdef WITH_CRYPTO_SERVICE
+  char *env_key_value;
+  if ((env_key_value = getenv("CRYPT_KEY")) != NULL) {
+    os_strlcpy(config.crypt_secret, env_key_value, MAX_USER_SECRET);
+  }
+#endif
 
   if (verbosity > MAX_LOG_LEVELS) {
     level = 0;

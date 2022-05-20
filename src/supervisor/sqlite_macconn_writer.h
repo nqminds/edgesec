@@ -42,14 +42,14 @@
   "CREATE TABLE " MACCONN_TABLE_NAME                                           \
   " (id TEXT NOT NULL, mac TEXT NOT NULL, status INTEGER, vlanid INTEGER, "    \
   "primaryip TEXT, secondaryip TEXT, nat INTEGER, allow INTEGER, label TEXT, " \
-  "timestamp INTEGER, PRIMARY KEY (id, mac));"
+  "timestamp INTEGER, pass TEXT, PRIMARY KEY (id, mac));"
 #define MACCONN_INSERT_INTO                                                    \
   "INSERT INTO " MACCONN_TABLE_NAME                                            \
   " VALUES(@id, @mac, @status, @vlanid, @primaryip, @secondaryip, "            \
-  "@nat, @allow, @label, @timestamp);"
+  "@nat, @allow, @label, @timestamp, @pass);"
 #define MACCONN_DELETE_FROM "DELETE FROM " MACCONN_TABLE_NAME " WHERE mac=@mac;"
 #define MACCONN_SELECT_FROM                                                    \
-  "SELECT mac, id, status, vlanid, nat, allow, label FROM "                    \
+  "SELECT mac, id, status, vlanid, nat, allow, label, pass FROM "              \
   " " MACCONN_TABLE_NAME ";"
 
 /**

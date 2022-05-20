@@ -189,6 +189,7 @@ int __wrap_clear_psk_cmd(struct supervisor_context *context,
   return 0;
 }
 
+#ifdef WITH_CRYPTO_SERVICE
 int __wrap_put_crypt_cmd(struct supervisor_context *context, char *key,
                          char *value) {
   (void)context;
@@ -281,6 +282,7 @@ char *__wrap_sign_blob_cmd(struct supervisor_context *context, char *keyid,
 
   return os_strdup(OK_REPLY);
 }
+#endif
 
 int __wrap_get_mac_mapper(hmap_mac_conn **hmap, uint8_t mac_addr[ETH_ALEN],
                           struct mac_conn_info *info) {
@@ -1002,6 +1004,7 @@ static void test_process_clear_psk_cmd(void **state) {
   utarray_free(cmd_arr);
 }
 
+#ifdef WITH_CRYPTO_SERVICE
 static void test_process_put_crypt_cmd(void **state) {
   (void)state; /* unused */
 
@@ -1310,6 +1313,7 @@ static void test_process_sign_blob(void **state) {
                    strlen(FAIL_REPLY));
   utarray_free(cmd_arr);
 }
+#endif
 
 int main(int argc, char *argv[]) {
   (void)argc;
@@ -1317,31 +1321,34 @@ int main(int argc, char *argv[]) {
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
-      cmocka_unit_test(test_process_domain_buffer),
-      cmocka_unit_test(test_process_subscribe_events_cmd),
-      cmocka_unit_test(test_process_accept_mac_cmd),
-      cmocka_unit_test(test_process_deny_mac_cmd),
-      cmocka_unit_test(test_process_add_nat_cmd),
-      cmocka_unit_test(test_process_remove_nat_cmd),
-      cmocka_unit_test(test_process_assign_psk_cmd),
-      cmocka_unit_test(test_process_get_map_cmd),
-      cmocka_unit_test(test_process_get_all_cmd),
-      cmocka_unit_test(test_process_set_ip_cmd),
-      cmocka_unit_test(test_process_add_bridge_cmd),
-      cmocka_unit_test(test_process_remove_bridge_cmd),
-      cmocka_unit_test(test_process_clear_bridges_cmd),
-      cmocka_unit_test(test_process_set_fingerprint_cmd),
-      cmocka_unit_test(test_process_query_fingerprint_cmd),
-      cmocka_unit_test(test_process_register_ticket_cmd),
-      cmocka_unit_test(test_process_clear_psk_cmd),
-      cmocka_unit_test(test_process_put_crypt_cmd),
-      cmocka_unit_test(test_process_get_crypt_cmd),
-      cmocka_unit_test(test_process_gen_randkey_cmd),
-      cmocka_unit_test(test_process_gen_privkey_cmd),
-      cmocka_unit_test(test_process_gen_pubkey_cmd),
-      cmocka_unit_test(test_process_gen_cert_cmd),
-      cmocka_unit_test(test_process_encrypt_blob),
-      cmocka_unit_test(test_process_decrypt_blob),
-      cmocka_unit_test(test_process_sign_blob)};
+    cmocka_unit_test(test_process_domain_buffer),
+    cmocka_unit_test(test_process_subscribe_events_cmd),
+    cmocka_unit_test(test_process_accept_mac_cmd),
+    cmocka_unit_test(test_process_deny_mac_cmd),
+    cmocka_unit_test(test_process_add_nat_cmd),
+    cmocka_unit_test(test_process_remove_nat_cmd),
+    cmocka_unit_test(test_process_assign_psk_cmd),
+    cmocka_unit_test(test_process_get_map_cmd),
+    cmocka_unit_test(test_process_get_all_cmd),
+    cmocka_unit_test(test_process_set_ip_cmd),
+    cmocka_unit_test(test_process_add_bridge_cmd),
+    cmocka_unit_test(test_process_remove_bridge_cmd),
+    cmocka_unit_test(test_process_clear_bridges_cmd),
+    cmocka_unit_test(test_process_set_fingerprint_cmd),
+    cmocka_unit_test(test_process_query_fingerprint_cmd),
+    cmocka_unit_test(test_process_register_ticket_cmd),
+    cmocka_unit_test(test_process_clear_psk_cmd),
+#ifdef WITH_CRYPTO_SERVICE
+    cmocka_unit_test(test_process_put_crypt_cmd),
+    cmocka_unit_test(test_process_get_crypt_cmd),
+    cmocka_unit_test(test_process_gen_randkey_cmd),
+    cmocka_unit_test(test_process_gen_privkey_cmd),
+    cmocka_unit_test(test_process_gen_pubkey_cmd),
+    cmocka_unit_test(test_process_gen_cert_cmd),
+    cmocka_unit_test(test_process_encrypt_blob),
+    cmocka_unit_test(test_process_decrypt_blob),
+    cmocka_unit_test(test_process_sign_blob)
+#endif
+  };
   return cmocka_run_group_tests(tests, NULL, NULL);
 }
