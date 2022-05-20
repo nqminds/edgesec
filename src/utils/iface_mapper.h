@@ -147,6 +147,15 @@ void free_if_mapper(hmap_if_conn **hmap);
 int get_vlan_mapper(hmap_vlan_conn **hmap, int vlanid, struct vlan_conn *conn);
 
 /**
+ * @brief Makes a copy of the VLAn mapper structure
+ *
+ * @param hmap The VLAN ID to vlan connection mapper object
+ * @param copy The copied VLAN mapper
+ * @return int 1 if found, 0 not found, -1 on error
+ */
+int copy_vlan_mapper(hmap_vlan_conn **hmap, hmap_vlan_conn **copy);
+
+/**
  * @brief Inserts a vlan connection structure and VLAN ID value into the
  * interface connection mapper
  *

@@ -133,6 +133,19 @@ int get_vlan_mapper(hmap_vlan_conn **hmap, int vlanid, struct vlan_conn *conn) {
   return 0;
 }
 
+int copy_vlan_mapper(hmap_vlan_conn **hmap, hmap_vlan_conn **copy) {
+  hmap_vlan_conn *current, *tmp;
+
+  HASH_ITER(hh, *hmap, current, tmp) {
+    if (!put_vlan_mapper(copy, &current->value)) {
+      log_error("put_vlan_mapper fail");
+      return -1;
+    }
+  }
+
+  return 0;
+}
+
 bool put_vlan_mapper(hmap_vlan_conn **hmap, struct vlan_conn *conn) {
   hmap_vlan_conn *s;
 

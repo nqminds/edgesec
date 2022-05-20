@@ -45,6 +45,7 @@
 #include "../utils/domain.h"
 #include "../utils/squeue.h"
 #include "../utils/hashmap.h"
+#include "../utils/iface_mapper.h"
 #include "../capture/mdns_decoder.h"
 #include "../capture/pcap_service.h"
 #include "../capture/packet_queue.h"
@@ -730,5 +731,63 @@ int run_mdns(struct mdns_context *context) {
 
   close_mdns(context);
   eloop_destroy();
+  return 0;
+}
+
+void free_mdns_context(struct mdns_context *context) {
+  if (context != NULL) {
+    close_mdns(context);
+    free_vlan_mapper(&(context->vlan_mapper));
+    os_free(context);
+  }
+}
+
+int init_mdns_context(struct mdns_conf *mdns_config, char *domain_server_path,
+                      char domain_delim, hmap_vlan_conn *vlan_mapper,
+                      struct mdns_context **context) {
+  if ((*context = os_zalloc(sizeof(struct mdns_context))) == NULL) {
+    log_errno("os_malloc fail");
+    return -1;
+  }
+
+  (*context)->vlan_mapper = NULL;
+  os_memcpy(&(*context)->config, mdns_config, sizeof(struct mdns_conf));
+  (*context)->pctx_list = NULL;
+  os_strlcpy((*context)->domain_server_path, domain_server_path,
+             MAX_OS_PATH_LEN);
+  (*context)->domain_delim = domain_delim;
+  (*context)->command_mapper = NULL;
+  (*context)->sfd = 0;
+
+  if (copy_vlan_mapper(&vlan_mapper, &((*context)->vlan_mapper)) < 0) {
+    log_error("copy_vlan_mapper fail");
+    free_mdns_context(*context);
+    return -1;
+  }
+
+  os_strlcpy((*context)->filter, mdns_config->filter, MAX_FILTER_SIZE);
+
+  generate_radom_uuid((*context)->cap_id);
+
+  if (get_hostname((*context)->hostname) < 0) {
+    log_error("get_hostname fail");
+    free_mdns_context(*context);
+    return -1;
+  }
+
+  return 0;
+}
+
+int run_mdns_thread(struct mdns_conf *mdns_config, char *domain_server_path,
+                    char domain_delim, hmap_vlan_conn *vlan_mapper) {
+  struct mdns_context *context = NULL;
+
+  if (init_mdns_context(mdns_config, domain_server_path, domain_delim,
+                        vlan_mapper, &context) < 0) {
+    log_error("init_mdns_context fail");
+    return -1;
+  }
+
+  // TO DO: Add the thread creation
   return 0;
 }

@@ -37,6 +37,7 @@
 #include <sys/socket.h>
 #include <linux/if.h>
 #include <libgen.h>
+#include <pthread.h>
 
 #include "version.h"
 #include "utils/log.h"
@@ -70,6 +71,16 @@ const char description_string[] = R"==(
 )==";
 
 static __thread char version_buf[10];
+
+pthread_mutex_t log_lock;
+
+void log_lock_fun(bool lock) {
+  if (lock) {
+    pthread_mutex_lock(&log_lock);
+  } else {
+    pthread_mutex_unlock(&log_lock);
+  }
+}
 
 void eloop_sighup_handler(int sig, void *ctx) {
   (void)sig;
@@ -208,6 +219,13 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
 
+  if (pthread_mutex_init(&log_lock, NULL) != 0) {
+    fprintf(stderr, "mutex init has failed\n");
+    return EXIT_FAILURE;
+  }
+
+  log_set_lock(log_lock_fun);
+
   /* Set the log level */
   log_set_level(level);
 
@@ -261,5 +279,6 @@ int main(int argc, char *argv[]) {
   if (log_filename != NULL)
     os_free(log_filename);
 
+  pthread_mutex_destroy(&log_lock);
   return EXIT_SUCCESS;
 }

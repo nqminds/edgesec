@@ -64,6 +64,17 @@ struct mdns_context {
 int run_mdns(struct mdns_context *context);
 
 /**
+ * @brief Runs the mDNS forwarder service thread
+ *
+ * @param mdns_config The mDNS config structure
+ * @param domain_server_path The domain server path
+ * @param domain_delim The domain delimiter character
+ * @param vlan_mapper The VLAN mapper object
+ * @return int 0 on success, -1 on failure
+ */
+int run_mdns_thread(struct mdns_conf *mdns_config, char *domain_server_path,
+                    char domain_delim, hmap_vlan_conn *vlan_mapper);
+/**
  * @brief Closes mDNS service
  *
  * @param context The mDNS context structure

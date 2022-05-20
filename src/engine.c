@@ -528,11 +528,18 @@ bool run_engine(struct app_config *app_config) {
 
   if (app_config->exec_mdns_forward) {
     log_info("Running the mdns forwarder service...");
-    if (run_mdns_forwarder(app_config->mdns_config.mdns_bin_path,
-                           app_config->config_ini_path) < 0) {
-      log_trace("run_mdns_forwarder fail");
+    if (run_mdns_thread(&(app_config->mdns_config),
+                        app_config->domain_server_path,
+                        app_config->domain_delim, context.vlan_mapper) < 0) {
+      log_error("run_mdns_thread fail");
       goto run_engine_fail;
     }
+
+    // if (run_mdns_forwarder(app_config->mdns_config.mdns_bin_path,
+    //                        app_config->config_ini_path) < 0) {
+    //   log_trace("run_mdns_forwarder fail");
+    //   goto run_engine_fail;
+    // }
   }
 
   log_info("++++++++++++++++++");
