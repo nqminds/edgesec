@@ -99,11 +99,11 @@ struct supervisor_context {
   struct radius_server_data *radius_srv; /**< The radius server context. */
   struct fwctx *fw_ctx;                  /**< The firewall context. */
 #ifdef WITH_CRYPTO_SERVICE
-  struct crypt_context *crypt_ctx;       /**< The crypt context. */
+  struct crypt_context *crypt_ctx; /**< The crypt context. */
 #endif
-  struct iface_context *iface_ctx;       /**< The interface context. */
-  struct auth_ticket *ticket;            /**< The authentication ticket. */
-  int ap_sock;                           /**< The AP notifier socket. */
+  struct iface_context *iface_ctx; /**< The interface context. */
+  struct auth_ticket *ticket;      /**< The authentication ticket. */
+  int ap_sock;                     /**< The AP notifier socket. */
 };
 
 #endif

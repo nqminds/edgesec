@@ -145,7 +145,7 @@ bool init_mac_mapper_ifnames(UT_array *connections,
 
 #ifdef WITH_CRYPTO_SERVICE
 int get_crypt_wpa_passphrase(struct crypt_context *crypt_ctx,
-                       struct mac_conn_info *info) {
+                             struct mac_conn_info *info) {
   struct crypt_pair *pair = get_crypt_pair(crypt_ctx, info->id);
 
   if (pair != NULL) {
@@ -153,7 +153,8 @@ int get_crypt_wpa_passphrase(struct crypt_context *crypt_ctx,
       info->pass_len = pair->value_size;
       os_memcpy(info->pass, pair->value, info->pass_len);
     } else {
-      log_error("Passphrase format for id=%s longer then %d", info->id, AP_SECRET_LEN);
+      log_error("Passphrase format for id=%s longer then %d", info->id,
+                AP_SECRET_LEN);
       free_crypt_pair(pair);
       return -1;
     }
@@ -195,7 +196,7 @@ bool create_mac_mapper(struct supervisor_context *ctx) {
       if (get_crypt_wpa_passphrase(ctx->crypt_ctx, &(p->info)) < 0) {
         log_error("get_wpa_passphrase fail");
         utarray_free(mac_conn_arr);
-        return false; 
+        return false;
       }
 #endif
 
