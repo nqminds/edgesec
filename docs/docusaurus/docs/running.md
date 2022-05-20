@@ -23,7 +23,7 @@ The configuration file `config.ini` has been setup to work by default only when:
 ##### Running edgesec tool with debug info and master password `12345` (verbose)
 
 ```bash
-sudo ./src/edgesec -c config.ini -s 12345 -ddddddddd
+sudo CRYPT_KEY=12345 ./src/edgesec -c config.ini -ddddddddd
 ```
 
 ##### Running capsrv tool with syncing of `br10` interface to `localhost:8512` with grpc CA located in `/cert/CA/CA.pem` and data stored in `./db` folder (verbose)
