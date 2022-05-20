@@ -21,6 +21,9 @@ Make sure you have installed the following:
 Setup:
 
 ```bash
+# clone nqm-ssh-tunnel (private NQMinds Git repo)
+(cd ../ssh && git clone https://github.com/nqminds/nqm-ssh-tunnel)
+
 # required for machinectl
 sudo apt install systemd-container -y
 # create ~/edgesec-deploy-key.pem yourself!
