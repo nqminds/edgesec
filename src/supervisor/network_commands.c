@@ -80,6 +80,11 @@ bool save_mac_mapper(struct supervisor_context *context, struct mac_conn conn) {
     log_error("save_to_crypt failure");
     return false;
   }
+
+  // Reset the plain password array so that it is not stored
+  // in plain form in the sqlite db
+  conn.info.pass_len = 0;
+  os_memset(conn.info.pass, 0, AP_SECRET_LEN);
 #endif
 
   if (save_sqlite_macconn_entry(context->macconn_db, &conn) < 0) {
