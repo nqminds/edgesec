@@ -27,8 +27,3 @@ set(SRC_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set(UAPI_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include/uapi")
 
 add_subdirectory(lib)
-
-install(TARGETS
-    libnetlink utils ll_map rt_names color json_print json_writer
-    LIBRARY PUBLIC_HEADER
-)
