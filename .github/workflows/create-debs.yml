@@ -7,11 +7,63 @@ on:
   pull_request:
     branches: [ main ]
 
-
-name: Build Debian Packages
+name: Build
 
 jobs:
   build:
+    name: Compile Locally
+    strategy:
+      matrix:
+        cmake-preset: [linux, openwrt/mvebu/cortexa9]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install Dependencies
+        shell: bash # we're using bash arrays here
+        run: |
+          build_dependencies=(
+            cmake # build-tool
+            git # required to download dependencies
+            ca-certificates # required for git+https downloads
+            doxygen texinfo graphviz # documentation
+            build-essential # C and C++ compilers
+            libnl-genl-3-dev libnl-route-3-dev # netlink dependencies
+            autopoint gettext # required by libuuid
+            autoconf # required by compile_sqlite.sh
+            libtool-bin # required by autoconf somewhere
+            pkg-config # seems to be required by nDPI
+            libjson-c-dev # mystery requirement
+            flex bison # required by pcap
+            libssl-dev # required by hostapd only. We compile OpenSSL 3 for EDGESec
+            libcmocka-dev # cmocka, can be removed if -DBUILD_CMOCKA_LIB=ON
+            libmnl-dev # libmnl, can be removed if -DBUILD_LIBMNL_LIB=ON
+          )
+          sudo apt install -y "${build_dependencies[@]}"
+      - name: Configure
+        run: |
+          cmake -B build/ --preset "${{ matrix.cmake-preset }}"
+      - name: Build
+        run: |
+          cmake --build build/ --jobs="$(nproc)" --preset "${{ matrix.cmake-preset }}"
+      - name: Test
+        run: |
+          if ctest --list-presets | grep -s "${{ matrix.cmake-preset }}"; then
+            ctest --test-dir build/ --preset "${{ matrix.cmake-preset }}"
+          fi
+      - name: Install to ${{ runner.temp }}/edgesec-${{ matrix.cmake-preset }}/
+        run: |
+          cmake --install build/ "${{ runner.temp }}/edgesec-${{ matrix.cmake-preset }}"
+      - name: Archive Install Output
+        uses: actions/upload-artifact@v2
+        with:
+          name: edgesec-built-lib-"${{ matrix.cmake-preset }}"
+          # EDGESec is a public repo, so storage is free
+          # we can always rerun action to regenerate them
+          retention-days: 7
+          path: |
+            ${{ runner.temp }}/edgesec-${{ matrix.cmake-preset }}/
+  build-deb:
     name: Build Debian Package
     # building a deb is super slow, but we're a public repo now, so it's free!!
     runs-on: [ubuntu-20.04]
