@@ -1,30 +1,38 @@
 # Compile libsqlite
 include(CheckLibraryExists)
+include(ExternalProject)
 
 if (BUILD_SQLITE_LIB AND NOT (BUILD_ONLY_DOCS))
   set(LIBSQLITE_INSTALL_ROOT "${CMAKE_CURRENT_BINARY_DIR}/lib")
   set(LIBSQLITE_INSTALL_DIR "${LIBSQLITE_INSTALL_ROOT}/sqlite")
-  set(LIBSQLITE_INCLUDE_DIR "${LIBSQLITE_INSTALL_DIR}/include")
   set(LIBSQLITE_LIB_DIR "${LIBSQLITE_INSTALL_DIR}/lib")
 
-  find_library(LIBSQLITE_LIB NAMES libsqlite3.a sqlite3 PATHS "${LIBSQLITE_LIB_DIR}" NO_DEFAULT_PATH)
+  find_library(LIBSQLITE_LIB NAMES libsqlite3.a sqlite3 PATHS NO_DEFAULT_PATH)
   if (LIBSQLITE_LIB)
     message("Found libsqlite library: ${LIBSQLITE_LIB}")
   ELSE ()
-    FetchContent_Declare(
+    message("Compiling own libsqlite library")
+    ExternalProject_Add(
       libsqlite
       URL https://www.sqlite.org/2021/sqlite-autoconf-3360000.tar.gz
       URL_HASH SHA256=bd90c3eb96bee996206b83be7065c9ce19aef38c3f4fb53073ada0d0b69bbce3
+      INSTALL_DIR "${LIBSQLITE_INSTALL_DIR}"
+      CONFIGURE_COMMAND autoreconf -f -i <SOURCE_DIR>
+      COMMAND
+        <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> "--host=${target_autoconf_triple}"
+        # use position independent code, even for static lib, in case we want to make shared lib later
+        --with-pic=on
+      # cmake defaults to using `make` for the build command, when we have a custom configure_command
+      # BUILD_COMMAND
     )
-    FetchContent_Populate(libsqlite)
+    ExternalProject_Get_Property(libsqlite INSTALL_DIR)
 
-    execute_process(COMMAND
-      bash ${CMAKE_SOURCE_DIR}/lib/compile_sqlite.sh
-      ${libsqlite_SOURCE_DIR}
-      ${LIBSQLITE_INSTALL_ROOT}
-      ${target_autoconf_triple}
-    )
-    find_library(LIBSQLITE_LIB NAMES libsqlite3.a sqlite3 PATHS "${LIBSQLITE_LIB_DIR}" NO_DEFAULT_PATH)
+    set(LIBSQLITE_INSTALL_DIR "${INSTALL_DIR}")
+    if(BUILD_SHARED_LIBS)
+      set(LIBSQLITE_LIB "${LIBSQLITE_INSTALL_DIR}/lib/libsqlite3.so")
+    else()
+      set(LIBSQLITE_LIB "${LIBSQLITE_INSTALL_DIR}/lib/libsqlite3.a")
+    endif()
   endif ()
 
   # static sqlite needs -lpthread -ldl -lm
@@ -39,11 +47,19 @@ if (BUILD_SQLITE_LIB AND NOT (BUILD_ONLY_DOCS))
       list(APPEND sqlite_link_libs "m")
     endif(HAVE_LIB_M)
 
+    # folder might not yet exist if using ExternalProject_Add
+    set(LIBSQLITE_INCLUDE_DIR "${LIBSQLITE_INSTALL_DIR}/include")
+    file(MAKE_DIRECTORY "${LIBSQLITE_INCLUDE_DIR}")
 
     set_target_properties(SQLite::sqlite PROPERTIES
         IMPORTED_LOCATION "${LIBSQLITE_LIB}"
         INTERFACE_LINK_LIBRARIES "${sqlite_link_libs}"
         INTERFACE_INCLUDE_DIRECTORIES "${LIBSQLITE_INCLUDE_DIR}"
     )
+
+    if(TARGET libsqlite)
+      # tell cmake that we can only use SQLite::sqlite after we compile it
+      add_dependencies(SQLite::sqlite libsqlite)
+    endif()
   endif(NOT TARGET SQLite::sqlite)
 endif ()
