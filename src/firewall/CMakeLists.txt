@@ -3,7 +3,6 @@ include_directories (
 )
 
 add_library(firewall_service firewall_service.c)
-target_include_directories(firewall_service PUBLIC ${LIBSQLITE_INCLUDE_DIR})
 if (USE_UCI_SERVICE)
   target_link_libraries(firewall_service PRIVATE uci_wrt log iface os hashmap)
 else()
