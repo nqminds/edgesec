@@ -244,8 +244,9 @@ int register_ap_event(struct supervisor_context *context,
     return -1;
   }
 
-  if (eloop_register_read_sock(context->ap_sock, ap_sock_handler,
-                               ap_callback_fn, (void *)context) == -1) {
+  if (eloop_register_read_sock(context->eloop, context->ap_sock,
+                               ap_sock_handler, ap_callback_fn,
+                               (void *)context) == -1) {
     log_trace("eloop_register_read_sock fail");
     return -1;
   }

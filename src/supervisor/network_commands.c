@@ -499,8 +499,9 @@ uint8_t *register_ticket_cmd(struct supervisor_context *context,
     return NULL;
   }
 
-  if (eloop_register_timeout(TICKET_TIMEOUT, 0, eloop_ticket_timeout_handler,
-                             NULL, (void *)context) < 0) {
+  if (eloop_register_timeout(context->eloop, TICKET_TIMEOUT, 0,
+                             eloop_ticket_timeout_handler, NULL,
+                             (void *)context) < 0) {
     log_trace("eloop_register_timeout fail");
     os_free(context->ticket);
     return NULL;

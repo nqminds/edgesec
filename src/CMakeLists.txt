@@ -1,13 +1,13 @@
 add_subdirectory(utils)
 add_subdirectory(supervisor)
-add_subdirectory(radius)
+#add_subdirectory(radius)
 add_subdirectory(ap)
 add_subdirectory(dhcp)
 add_subdirectory(firewall)
 if (USE_CRYPTO_SERVICE)
   add_subdirectory(crypt)
 endif ()
-add_subdirectory(dns)
+#add_subdirectory(dns)
 add_subdirectory(capture)
 
 

@@ -405,8 +405,9 @@ int run_supervisor(char *server_path, struct supervisor_context *context) {
     return -1;
   }
 
-  if (eloop_register_read_sock(context->domain_sock, eloop_read_sock_handler,
-                               NULL, (void *)context) == -1) {
+  if (eloop_register_read_sock(context->eloop, context->domain_sock,
+                               eloop_read_sock_handler, NULL,
+                               (void *)context) == -1) {
     log_trace("eloop_register_read_sock fail");
     close_supervisor(context);
     return -1;

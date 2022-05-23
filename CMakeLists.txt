@@ -39,8 +39,8 @@ set(
 )
 
 option(BUILD_ONLY_DOCS "Build only docs" OFF)
-option(BUILD_MDNS_SERVICE "Build mDNS service" ON)
-option(BUILD_CAPTURE_SERVICE "Build Capture service" ON)
+option(BUILD_MDNS_SERVICE "Build mDNS service" OFF)
+option(BUILD_CAPTURE_SERVICE "Build Capture service" OFF)
 option(BUILD_HOSTAPD "Build hostapd" OFF)
 option(BUILD_SQLITE_LIB "Build sqlite3 library" ON)
 option(BUILD_OPENSSL_LIB "Build OpenSSL" ON)

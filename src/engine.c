@@ -258,7 +258,7 @@ bool construct_ap_ctrlif(char *ctrl_interface, char *interface,
   return true;
 }
 
-int init_context(struct app_config *app_config,
+int init_context(struct eloop_data *eloop, struct app_config *app_config,
                  struct supervisor_context *ctx) {
   char *db_path = NULL;
   char *commands[] = {"ip", "iw", "iptables", "sysctl", NULL};
@@ -292,6 +292,7 @@ int init_context(struct app_config *app_config,
     return -1;
   }
 
+  ctx->eloop = eloop;
   ctx->subscribers_array = NULL;
   ctx->ap_sock = -1;
   ctx->radius_srv = NULL;
@@ -417,7 +418,7 @@ int run_mdns_forwarder(char *mdns_bin_path, char *config_ini_path) {
   return ret;
 }
 
-bool run_engine(struct app_config *app_config) {
+bool run_engine(struct eloop_data *eloop, struct app_config *app_config) {
   struct supervisor_context context;
 
   if (create_dir(app_config->db_path, S_IRWXU | S_IRWXG) < 0) {
@@ -425,7 +426,7 @@ bool run_engine(struct app_config *app_config) {
     return false;
   }
 
-  if (init_context(app_config, &context) < 0) {
+  if (init_context(eloop, app_config, &context) < 0) {
     log_debug("init_context fail");
     goto run_engine_fail;
   }
@@ -539,13 +540,12 @@ bool run_engine(struct app_config *app_config) {
   log_info("++++++++++++++++++");
   log_info("Running event loop");
   log_info("++++++++++++++++++");
-  eloop_run();
+  eloop_run(eloop);
 
   close_supervisor(&context);
   close_ap(&context);
   close_dhcp();
   close_radius(context.radius_srv);
-  eloop_destroy();
   hmap_str_keychar_free(&context.hmap_bin_paths);
   fw_free_context(context.fw_ctx);
   free_mac_mapper(&context.mac_mapper);
@@ -566,7 +566,6 @@ run_engine_fail:
   close_ap(&context);
   close_dhcp();
   close_radius(context.radius_srv);
-  eloop_destroy();
   hmap_str_keychar_free(&context.hmap_bin_paths);
   fw_free_context(context.fw_ctx);
   free_mac_mapper(&context.mac_mapper);

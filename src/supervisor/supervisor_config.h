@@ -34,6 +34,7 @@
 #include "../dns/dns_config.h"
 #include "../utils/iface_mapper.h"
 #include "../utils/iface.h"
+#include "../utils/eloop.h"
 #include "../capture/capture_config.h"
 #ifdef WITH_CRYPTO_SERVICE
 #include "../crypt/crypt_config.h"
@@ -104,6 +105,7 @@ struct supervisor_context {
   struct iface_context *iface_ctx; /**< The interface context. */
   struct auth_ticket *ticket;      /**< The authentication ticket. */
   int ap_sock;                     /**< The AP notifier socket. */
+  struct eloop_data *eloop;        /**< The main eloop context. */
 };
 
 #endif
