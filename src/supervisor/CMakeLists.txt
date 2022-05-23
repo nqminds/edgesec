@@ -10,16 +10,16 @@ target_link_libraries(mac_mapper PRIVATE bridge_list net log os)
 
 add_library(subscriber_events subscriber_events.c)
 target_include_directories(subscriber_events PUBLIC $<TARGET_PROPERTY:iface,INCLUDE_DIRECTORIES>)
-target_link_libraries(subscriber_events PRIVATE log os domain SQLite::sqlite)
+target_link_libraries(subscriber_events PRIVATE log os domain SQLite::SQLite3)
 
 add_library(sqlite_fingerprint_writer sqlite_fingerprint_writer.c)
-target_link_libraries(sqlite_fingerprint_writer PRIVATE sqliteu squeue log os SQLite::sqlite)
+target_link_libraries(sqlite_fingerprint_writer PRIVATE sqliteu squeue log os SQLite::SQLite3)
 
 add_library(sqlite_alert_writer sqlite_alert_writer.c)
-target_link_libraries(sqlite_alert_writer PRIVATE sqliteu squeue log os SQLite::sqlite)
+target_link_libraries(sqlite_alert_writer PRIVATE sqliteu squeue log os SQLite::SQLite3)
 
 add_library(sqlite_macconn_writer sqlite_macconn_writer.c)
-target_link_libraries(sqlite_macconn_writer PRIVATE sqliteu squeue log os SQLite::sqlite)
+target_link_libraries(sqlite_macconn_writer PRIVATE sqliteu squeue log os SQLite::SQLite3)
 
 add_library(network_commands network_commands.c)
 if (USE_CRYPTO_SERVICE)
@@ -48,7 +48,7 @@ endif ()
 
 add_library(supervisor_config INTERFACE)
 set_target_properties(supervisor_config PROPERTIES PUBLIC_HEADER "supervisor_config.h")
-target_link_libraries(supervisor_config INTERFACE SQLite::sqlite)
+target_link_libraries(supervisor_config INTERFACE SQLite::SQLite3)
 
 add_library(supervisor supervisor.c)
 target_include_directories(supervisor PUBLIC $<TARGET_PROPERTY:iface,INCLUDE_DIRECTORIES>)

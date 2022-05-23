@@ -66,7 +66,7 @@ add_library(squeue squeue.c)
 target_link_libraries(squeue PRIVATE log os)
 
 add_library(sqliteu sqliteu.c)
-target_link_libraries(sqliteu PUBLIC SQLite::sqlite PRIVATE log os)
+target_link_libraries(sqliteu PUBLIC SQLite::SQLite3 PRIVATE log os)
 
 add_library(domain domain.c)
 target_link_libraries(domain PRIVATE log os)

@@ -3,7 +3,7 @@ include_directories (
 )
 
 add_executable(test_sqlite_crypt_writer test_sqlite_crypt_writer.c)
-target_link_libraries(test_sqlite_crypt_writer PRIVATE sqlite_crypt_writer sqliteu os log SQLite::sqlite cmocka::cmocka)
+target_link_libraries(test_sqlite_crypt_writer PRIVATE sqlite_crypt_writer sqliteu os log SQLite::SQLite3 cmocka::cmocka)
 set_target_properties(test_sqlite_crypt_writer
   PROPERTIES
   LINK_FLAGS  "-Wl,--wrap=sqlite3_open"
