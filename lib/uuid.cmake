@@ -13,11 +13,16 @@ if (BUILD_UUID_LIB AND NOT (BUILD_ONLY_DOCS))
     URL https://github.com/karelzak/util-linux/archive/refs/tags/v2.37.2.tar.gz
     URL_HASH SHA3_256=d45c2b0ef0cca67ef9cbac1099503564d559fa1c52c0335dfd119546624b6bd0
     CONFIGURE_COMMAND <SOURCE_DIR>/autogen.sh
-    COMMAND <SOURCE_DIR>/configure
+    COMMAND
+      ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" <SOURCE_DIR>/configure
       --with-pic=yes # -fPIC required since we want to link our static lib to sqlhook shared lib
-      --prefix=<INSTALL_DIR> --host=${target_autoconf_triple}
+      --prefix=<INSTALL_DIR>
+      "--host=${target_autoconf_triple}"
       --disable-all-programs --enable-libuuid
     INSTALL_DIR "${LIBUUID_INSTALL_DIR}"
+    # need to manually specify PATH, so that make knows where to find GCC
+    BUILD_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" $(MAKE)
+    INSTALL_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" $(MAKE) install
   )
   ExternalProject_Get_Property(util_linux INSTALL_DIR)
 
