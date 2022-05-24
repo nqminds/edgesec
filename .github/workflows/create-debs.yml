@@ -54,7 +54,7 @@ jobs:
           fi
       - name: Install to ${{ runner.temp }}/edgesec-${{ matrix.cmake-preset }}/
         run: |
-          cmake --install build/ "${{ runner.temp }}/edgesec-${{ matrix.cmake-preset }}"
+          cmake --install build/ --prefix "${{ runner.temp }}/edgesec-${{ matrix.cmake-preset }}"
       - name: Archive Install Output
         uses: actions/upload-artifact@v2
         with:
