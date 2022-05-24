@@ -55,10 +55,17 @@ jobs:
       - name: Install to ${{ runner.temp }}/edgesec-${{ matrix.cmake-preset }}/
         run: |
           cmake --install build/ --prefix "${{ runner.temp }}/edgesec-${{ matrix.cmake-preset }}"
+      - name: Escape invalid chars in artifact name
+        id: escape_preset
+        run: |
+          preset='${{ matrix.cmake-preset }}'
+          # replace `/` with `-`
+          escaped_preset="${preset////-}"
+          echo "::set-output name=ESCAPED_CMAKE_PRESET::${escaped_preset}"
       - name: Archive Install Output
         uses: actions/upload-artifact@v2
         with:
-          name: edgesec-build-${{ matrix.cmake-preset }}
+          name: edgesec-build-${{ steps.escape_preset.outputs.ESCAPED_CMAKE_PRESET }}
           # EDGESec is a public repo, so storage is free
           # we can always rerun action to regenerate them
           retention-days: 7
