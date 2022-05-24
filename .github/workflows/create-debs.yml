@@ -58,7 +58,7 @@ jobs:
       - name: Archive Install Output
         uses: actions/upload-artifact@v2
         with:
-          name: edgesec-built-lib-"${{ matrix.cmake-preset }}"
+          name: edgesec-build-${{ matrix.cmake-preset }}
           # EDGESec is a public repo, so storage is free
           # we can always rerun action to regenerate them
           retention-days: 7
