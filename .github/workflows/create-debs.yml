@@ -45,7 +45,8 @@ jobs:
           cmake -B build/ --preset "${{ matrix.cmake-preset }}"
       - name: Build
         run: |
-          cmake --build build/ --jobs="$(nproc)" --preset "${{ matrix.cmake-preset }}"
+          # can't use --preset "${{ matrix.cmake-preset }}" since we want to specify a custom build dir
+          cmake --build build/ --jobs="$(nproc)"
       - name: Test
         run: |
           if ctest --list-presets | grep -s "${{ matrix.cmake-preset }}"; then
