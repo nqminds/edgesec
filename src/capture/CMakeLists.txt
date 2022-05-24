@@ -5,7 +5,7 @@ include_directories (
 add_library(capture_config capture_config.c)
 target_link_libraries(capture_config PRIVATE log os)
 
-if (BUILD_CAPTURE_SERVICE)
+if (USE_CAPTURE_SERVICE)
   add_library(mdns_decoder mdns_decoder.c)
 
   # we include packet_decoder.h, so need to include its dependencies

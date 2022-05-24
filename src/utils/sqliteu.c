@@ -34,7 +34,7 @@ int execute_sqlite_query(sqlite3 *db, char *statement) {
   int rc = sqlite3_exec(db, statement, 0, 0, &err);
 
   if (rc != SQLITE_OK) {
-    log_trace("Failed to execute statement %s", err);
+    log_error("Failed to execute statement %s", err);
     sqlite3_free(err);
 
     return -1;
@@ -51,7 +51,7 @@ int check_table_exists(sqlite3 *db, char *table_name) {
   if (rc == SQLITE_OK)
     sqlite3_bind_text(res, 1, table_name, -1, NULL);
   else {
-    log_trace("Failed to execute statement: %s", sqlite3_errmsg(db));
+    log_error("Failed to execute statement: %s", sqlite3_errmsg(db));
     return -1;
   }
 
@@ -59,7 +59,7 @@ int check_table_exists(sqlite3 *db, char *table_name) {
   rc = sqlite3_step(res);
 
   if (rc == SQLITE_ROW) {
-    log_trace("Found table %s", sqlite3_column_text(res, 0));
+    log_debug("Found table %s", sqlite3_column_text(res, 0));
     sqlite3_finalize(res);
     return 1;
   }

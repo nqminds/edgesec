@@ -85,7 +85,7 @@ struct string_queue *make_interface_list(struct dhcp_conf *dconf) {
   char buf[IFNAMSIZ];
 
   if (squeue == NULL) {
-    log_trace("init_string_queue fail");
+    log_error("init_string_queue fail");
     return NULL;
   }
 
@@ -93,7 +93,7 @@ struct string_queue *make_interface_list(struct dhcp_conf *dconf) {
                                                  el)) != NULL) {
     snprintf(buf, IFNAMSIZ, "%s%d", dconf->bridge_prefix, el->vlanid);
     if (push_string_queue(squeue, buf) < 0) {
-      log_trace("push_string_queue fail");
+      log_error("push_string_queue fail");
       free_string_queue(squeue);
       return NULL;
     }
@@ -108,13 +108,13 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array) {
   struct uctx *context = uwrt_init_context(NULL);
 
   if (context == NULL) {
-    log_trace("uwrt_init_context fail");
+    log_error("uwrt_init_context fail");
     return -1;
   }
 
   log_trace("Writing dhcp config using uci");
   if ((squeue = make_interface_list(dconf)) == NULL) {
-    log_trace("make_interface_list fail");
+    log_error("make_interface_list fail");
     uwrt_free_context(context);
     return -1;
   }
@@ -122,7 +122,7 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array) {
   if (uwrt_gen_dnsmasq_instance(context, squeue, dns_server_array,
                                 dconf->dhcp_leasefile_path,
                                 dconf->dhcp_script_path) < 0) {
-    log_trace("uwrt_gen_dnsmasq_instance fail");
+    log_error("uwrt_gen_dnsmasq_instance fail");
     uwrt_free_context(context);
     free_string_queue(squeue);
     return -1;
@@ -134,7 +134,7 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array) {
     if (uwrt_add_dhcp_pool(context, dconf->bridge_prefix, el->vlanid,
                            el->ip_addr_low, el->ip_addr_upp, el->subnet_mask,
                            el->lease_time) < 0) {
-      log_trace("uwrt_add_dhcp_pool fail");
+      log_error("uwrt_add_dhcp_pool fail");
       uwrt_free_context(context);
       free_string_queue(squeue);
       return -1;
@@ -142,7 +142,7 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array) {
   }
 
   if (uwrt_commit_section(context, "dhcp") < 0) {
-    log_trace("uwrt_commit_section fail");
+    log_error("uwrt_commit_section fail");
     uwrt_free_context(context);
     free_string_queue(squeue);
     return -1;
@@ -172,7 +172,7 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array) {
     return -1;
   }
 
-  log_trace("Writing into %s", dconf->dhcp_conf_path);
+  log_debug("Writing into %s", dconf->dhcp_conf_path);
 
   fprintf(fp, "no-resolv\n");
   while ((p = (char **)utarray_next(dns_server_array, p)) != NULL) {
@@ -214,7 +214,7 @@ int generate_dnsmasq_script(char *dhcp_script_path, char *domain_server_path) {
     return -1;
   }
 
-  log_trace("Writing into %s", dhcp_script_path);
+  log_debug("Writing into %s", dhcp_script_path);
 
   fprintf(fp, DNSMASQ_SCRIPT_STR, domain_server_path);
 
@@ -253,7 +253,7 @@ char *get_dnsmasq_args(char *dnsmasq_bin_path, char *dnsmasq_conf_path,
   // "--conf-file=/tmp/dnsmasq.conf", NULL};
 
   if (os_strnlen_s(dnsmasq_conf_path, MAX_OS_PATH_LEN) >= MAX_OS_PATH_LEN) {
-    log_trace("dnsmasq_conf_path exceeds/is MAX length");
+    log_error("dnsmasq_conf_path exceeds/is MAX length");
     return NULL;
   }
 
@@ -283,7 +283,7 @@ int check_dhcp_running(char *name, int wait_time) {
   int count = 0;
   while (!running && count < MAX_DHCP_CHECK_COUNT) {
     if ((running = is_proc_running(name)) < 0) {
-      log_trace("is_proc_running fail");
+      log_error("is_proc_running fail");
       return -1;
     }
     count++;
@@ -304,13 +304,13 @@ char *run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path) {
   get_dnsmasq_args(dhcp_bin_path, dhcp_conf_path, process_argv);
 
   if ((ret = run_process(process_argv, &child_pid)) > 0) {
-    log_trace("dnsmasq process exited with status=%d", ret);
+    log_error("dnsmasq process exited with status=%d", ret);
     return NULL;
   }
 
   log_trace("Checking dnsmasq proc running...");
   if (check_dhcp_running(basename(process_argv[0]), 1) <= 0) {
-    log_trace("check_dhcp_running or process not running");
+    log_error("check_dhcp_running or process not running");
     return NULL;
   }
 
@@ -329,7 +329,7 @@ char *run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path) {
 
   // Kill any running hostapd process
   if (!kill_process(dnsmasq_proc_name)) {
-    log_trace("kill_process fail");
+    log_error("kill_process fail");
     return NULL;
   }
 
@@ -337,7 +337,7 @@ char *run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path) {
       get_dnsmasq_args(dhcp_bin_path, dhcp_conf_path, process_argv);
 
   if (conf_arg == NULL) {
-    log_trace("get_dnsmasq_args fail");
+    log_error("get_dnsmasq_args fail");
     return NULL;
   }
 
@@ -345,7 +345,7 @@ char *run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path) {
     log_trace("Killing dhcp process");
     // Kill any running hostapd process
     if (!kill_process(dnsmasq_proc_name)) {
-      log_trace("kill_process fail");
+      log_error("kill_process fail");
       os_free(conf_arg);
       return NULL;
     }
@@ -354,14 +354,14 @@ char *run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path) {
   }
 
   if (ret > 0) {
-    log_trace("dnsmasq process exited with status=%d", ret);
+    log_error("dnsmasq process exited with status=%d", ret);
     os_free(conf_arg);
     return NULL;
   }
 
-  log_trace("Checking dnsmasq proc running...");
+  log_debug("Checking dnsmasq proc running...");
   if (check_dhcp_running(basename(process_argv[0]), 1) <= 0) {
-    log_trace("check_dhcp_running or process not running");
+    log_error("check_dhcp_running or process not running");
     return NULL;
   }
 
@@ -397,13 +397,13 @@ int signal_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path) {
 
   if ((conf_arg = get_dnsmasq_args(dhcp_bin_path, dhcp_conf_path,
                                    process_argv)) == NULL) {
-    log_trace("get_dnsmasq_args fail");
+    log_error("get_dnsmasq_args fail");
     return -1;
   }
 
-  log_trace("Checking dnsmasq proc running...");
+  log_debug("Checking dnsmasq proc running...");
   if (check_dhcp_running(basename(process_argv[0]), 1) <= 0) {
-    log_trace("check_dhcp_running or process not running");
+    log_error("check_dhcp_running or process not running");
     os_free(conf_arg);
     return -1;
   }
@@ -412,7 +412,7 @@ int signal_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path) {
 
   // Signal any running hostapd process to reload the config
   if (!signal_process(dnsmasq_proc_name, SIGHUP)) {
-    log_trace("signal_process fail");
+    log_error("signal_process fail");
     return -1;
   }
 
@@ -427,24 +427,24 @@ int clear_dhcp_lease_entry(char *mac_addr, char *dhcp_leasefile_path) {
   FILE *fp;
 
   if (mac_addr == NULL) {
-    log_trace("mac_addr paramn is NULL");
+    log_error("mac_addr paramn is NULL");
     return -1;
   }
 
   if (dhcp_leasefile_path == NULL) {
-    log_trace("dhcp_leasefile_path paramn is NULL");
+    log_error("dhcp_leasefile_path paramn is NULL");
     return -1;
   }
 
   log_trace("Removing %s from %s", mac_addr, dhcp_leasefile_path);
 
   if (read_file_string(dhcp_leasefile_path, &out) < 0) {
-    log_trace("read_file_string fail");
+    log_error("read_file_string fail");
     return -1;
   }
 
   if ((start = strstr(out, mac_addr)) == NULL || !strlen(mac_addr)) {
-    log_trace("lease entry not found");
+    log_error("lease entry not found");
     os_free(out);
     return 0;
   }

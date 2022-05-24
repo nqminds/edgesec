@@ -34,7 +34,7 @@ endif ()
 
 add_library(monitor_commands monitor_commands.c)
 target_include_directories(monitor_commands PRIVATE ${LIBSQLITE_INCLUDE_DIR})
-target_link_libraries(monitor_commands PRIVATE mdns_mapper subscriber_events sqlite_alert_writer ap_service sqlite_macconn_writer mac_mapper eloop firewall_service base64 log os)
+target_link_libraries(monitor_commands PRIVATE subscriber_events sqlite_alert_writer ap_service sqlite_macconn_writer mac_mapper eloop firewall_service base64 log os)
 
 if (USE_CRYPTO_SERVICE)
   add_library(crypt_commands crypt_commands.c)

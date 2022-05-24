@@ -90,15 +90,17 @@ struct supervisor_context {
   struct firewall_conf firewall_config; /**< Firewall service configuration. */
   struct capture_conf capture_config;   /**< Capture service configuration. */
   struct apconf hconfig;                /**< AP service configuration. */
-  struct radius_conf rconfig;           /**< Radius service configuration. */
   struct dhcp_conf dconfig;             /**< DHCP service configuration. */
   struct dns_conf nconfig;              /**< DNS service configuration. */
   struct mdns_conf mconfig;             /**< DNS service configuration. */
+  struct radius_conf rconfig;           /**< Radius service configuration. */
   sqlite3 *fingeprint_db; /**< The fingerprint sqlite db structure. */
   sqlite3 *alert_db;      /**< The alert sqlite db structure. */
   sqlite3 *macconn_db;    /**< The macconn db structure. */
+#ifdef WITH_RADIUS_SERVICE
   struct radius_server_data *radius_srv; /**< The radius server context. */
-  struct fwctx *fw_ctx;                  /**< The firewall context. */
+#endif
+  struct fwctx *fw_ctx; /**< The firewall context. */
 #ifdef WITH_CRYPTO_SERVICE
   struct crypt_context *crypt_ctx; /**< The crypt context. */
 #endif

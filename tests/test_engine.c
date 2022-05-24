@@ -34,7 +34,11 @@ static void test_init_context(void **state) {
   }
   utarray_new(app_config.config_ifinfo_array, &ut_str_icd);
 
-  int context_error = init_context(&app_config, &context);
+  struct eloop_data *eloop = NULL;
+  eloop = eloop_init();
+  assert_non_null(eloop);
+
+  int context_error = init_context(eloop, &app_config, &context);
   // TODO: currently init_context test fails
   assert_int_not_equal(context_error, 0);
 
@@ -44,6 +48,7 @@ static void test_init_context(void **state) {
   utarray_free(app_config.config_ifinfo_array);
   free_bridge_list(context.bridge_list);
   free_sqlite_macconn_db(context.macconn_db);
+  eloop_free(eloop);
 }
 
 /**
@@ -65,7 +70,11 @@ static void test_init_context_failure(void **state) {
     utarray_push_back(app_config.bin_path_array, &(paths[idx]));
   }
 
-  int context_error = init_context(&app_config, &context);
+  struct eloop_data *eloop = NULL;
+  eloop = eloop_init();
+  assert_non_null(eloop);
+
+  int context_error = init_context(eloop, &app_config, &context);
   // should log an error about invalid config_ifinfo_array
   assert_int_equal(context_error, -1);
 
@@ -74,6 +83,7 @@ static void test_init_context_failure(void **state) {
   }
   free_bridge_list(context.bridge_list);
   free_sqlite_macconn_db(context.macconn_db);
+  eloop_free(eloop);
 }
 
 int main(int argc, char *argv[]) {

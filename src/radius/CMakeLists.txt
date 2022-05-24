@@ -2,6 +2,8 @@ include_directories (
   "${EDGESEC_SOURCE_DIR}/src"
 )
 
+add_compile_definitions(WITH_RADIUS_SERVICE)
+
 add_library(md5_internal md5_internal.c)
 target_link_libraries(md5_internal log os)
 

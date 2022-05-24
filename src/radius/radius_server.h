@@ -26,8 +26,7 @@
 #include <stdbool.h>
 
 #include "../utils/os.h"
-
-#define RADIUS_SECRET_LEN 255
+#include "radius_config.h"
 
 /**
  * struct radius_server_counters - RADIUS server statistics counters
@@ -132,19 +131,6 @@ struct radius_server_data {
    * These counters are the sum over all clients.
    */
   struct radius_server_counters counters;
-};
-
-/**
- * @brief Radius configuration structure
- *
- */
-struct radius_conf {
-  int radius_port;                       /**< Radius port */
-  char radius_client_ip[IP_LEN];         /**< Radius client IP string */
-  int radius_client_mask;                /**< Radius client IP mask string */
-  char radius_server_ip[IP_LEN];         /**< Radius server IP string */
-  int radius_server_mask;                /**< Radius server IP mask string */
-  char radius_secret[RADIUS_SECRET_LEN]; /**< Radius secret string */
 };
 
 struct radius_server_data *radius_server_init(int auth_port,

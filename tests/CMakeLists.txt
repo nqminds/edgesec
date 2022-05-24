@@ -2,7 +2,7 @@ include_directories (
   "${EDGESEC_SOURCE_DIR}/src"
 )
 
-if (LIBPCAP_LIB)
+if (USE_CAPTURE_SERVICE)
   add_subdirectory(capture)
 endif ()
 
@@ -12,10 +12,14 @@ endif ()
 
 add_subdirectory(utils)
 add_subdirectory(supervisor)
-add_subdirectory(radius)
+if (USE_RADIUS_SERVICE)
+  add_subdirectory(radius)
+endif ()
 add_subdirectory(ap)
 add_subdirectory(dhcp)
-add_subdirectory(dns)
+if (USE_MDNS_SERVICE)
+  add_subdirectory(dns)
+endif ()
 
 add_executable(test_engine test_engine.c)
 target_include_directories(test_engine PUBLIC ${LIBSQLITE_INCLUDE_DIR})

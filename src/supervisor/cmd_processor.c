@@ -1197,7 +1197,7 @@ process_cmd_fn get_command_function(char *cmd) {
   }
 #endif
   else {
-    log_debug("unknown command");
+    log_trace("unknown command");
   }
 
   return NULL;

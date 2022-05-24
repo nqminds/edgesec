@@ -833,19 +833,19 @@ bool signal_process(char *proc_name, int sig) {
   struct proc_signal_arg sarg = {.proc_name = proc_name, .sig = sig};
 
   if (proc_name == NULL) {
-    log_trace("proc_name is NULL");
+    log_error("proc_name is NULL");
     return false;
   }
 
   if (!os_strnlen_s(proc_name, MAX_OS_PATH_LEN)) {
-    log_trace("proc_name is empty");
+    log_error("proc_name is empty");
     return false;
   }
 
   // Signal a process process if running
-  log_trace("Signalling process %s with signal=%d", proc_name, sig);
+  log_debug("Signalling process %s with signal=%d", proc_name, sig);
   if (list_dir("/proc", signal_dir_fn, &sarg) == -1) {
-    log_trace("list_dir fail");
+    log_error("list_dir fail");
     return false;
   }
 
