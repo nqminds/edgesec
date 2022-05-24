@@ -9,7 +9,6 @@ add_library(mdns_list mdns_list.c)
 target_link_libraries(mdns_list PRIVATE os)
 
 add_library(mdns_mapper mdns_mapper.c)
-target_include_directories(mdns_mapper PRIVATE ${LIBPCAP_INCLUDE_PATH})
 target_link_libraries(mdns_mapper PRIVATE mdns_list os)
 
 add_library(mcast mcast.c)
