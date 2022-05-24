@@ -52,6 +52,7 @@ struct eloop_data *eloop_init(void) {
   eloop->readers.type = EVENT_TYPE_READ;
   eloop->writers.type = EVENT_TYPE_WRITE;
   eloop->exceptions.type = EVENT_TYPE_EXCEPTION;
+
   return eloop;
 }
 

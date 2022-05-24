@@ -368,56 +368,54 @@ void close_supervisor(struct supervisor_context *context) {
 }
 
 void test_fn(struct supervisor_context *context) {
-  log_trace("ELOOP %p %p", context, context->eloop);
+  log_trace("ELOOP %p", context->eloop);
 }
 
 int run_supervisor(char *server_path, struct supervisor_context *context) {
   char *db_path = NULL;
 
-  log_trace("ELOOP %p %p", context, context->eloop);
+  allocate_vlan(context);
+  db_path = construct_path(context->db_path, FINGERPRINT_DB_NAME);
+  if (db_path == NULL) {
+    log_debug("construct_path fail");
+    return -1;
+  }
 
-  // allocate_vlan(context);
-  // db_path = construct_path(context->db_path, FINGERPRINT_DB_NAME);
-  // if (db_path == NULL) {
-  //   log_debug("construct_path fail");
-  //   return -1;
-  // }
+  if (open_sqlite_fingerprint_db(db_path, &context->fingeprint_db) < 0) {
+    log_trace("open_sqlite_fingerprint_db fail");
+    os_free(db_path);
+    return -1;
+  }
 
-  // if (open_sqlite_fingerprint_db(db_path, &context->fingeprint_db) < 0) {
-  //   log_trace("open_sqlite_fingerprint_db fail");
-  //   os_free(db_path);
-  //   return -1;
-  // }
+  os_free(db_path);
+  db_path = construct_path(context->db_path, ALERT_DB_NAME);
+  if (db_path == NULL) {
+    log_debug("construct_path fail");
+    return -1;
+  }
 
-  // os_free(db_path);
-  // db_path = construct_path(context->db_path, ALERT_DB_NAME);
-  // if (db_path == NULL) {
-  //   log_debug("construct_path fail");
-  //   return -1;
-  // }
+  if (open_sqlite_alert_db(db_path, &context->alert_db) < 0) {
+    log_trace("open_sqlite_alert_db fail");
+    os_free(db_path);
+    return -1;
+  }
+  os_free(db_path);
 
-  // if (open_sqlite_alert_db(db_path, &context->alert_db) < 0) {
-  //   log_trace("open_sqlite_alert_db fail");
-  //   os_free(db_path);
-  //   return -1;
-  // }
-  // os_free(db_path);
+  utarray_new(context->subscribers_array, &client_address_icd);
 
-  // utarray_new(context->subscribers_array, &client_address_icd);
+  if ((context->domain_sock = create_domain_server(server_path)) == -1) {
+    log_trace("create_domain_server fail");
+    close_supervisor(context);
+    return -1;
+  }
 
-  // if ((context->domain_sock = create_domain_server(server_path)) == -1) {
-  //   log_trace("create_domain_server fail");
-  //   close_supervisor(context);
-  //   return -1;
-  // }
-
-  // if (eloop_register_read_sock(context->eloop, context->domain_sock,
-  //                              eloop_read_sock_handler, NULL,
-  //                              (void *)context) == -1) {
-  //   log_trace("eloop_register_read_sock fail");
-  //   close_supervisor(context);
-  //   return -1;
-  // }
+  if (eloop_register_read_sock(context->eloop, context->domain_sock,
+                               eloop_read_sock_handler, NULL,
+                               (void *)context) == -1) {
+    log_trace("eloop_register_read_sock fail");
+    close_supervisor(context);
+    return -1;
+  }
 
   return 0;
 }

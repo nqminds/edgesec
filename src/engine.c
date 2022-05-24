@@ -429,21 +429,23 @@ int run_mdns_forwarder(char *mdns_bin_path, char *config_ini_path) {
 }
 
 bool run_engine(struct app_config *app_config) {
-  struct supervisor_context context;
+  struct supervisor_context *context;
+
+  context = os_zalloc(sizeof(struct supervisor_context));
 
   // if (create_dir(app_config->db_path, S_IRWXU | S_IRWXG) < 0) {
   //   log_error("create_dir fail");
   //   return false;
   // }
 
-  if (init_context(app_config, &context) < 0) {
+  if (init_context(app_config, context) < 0) {
     log_error("init_context fail");
     goto run_engine_fail;
   }
 
-  log_info("AP name: %s", context.hconfig.ssid);
-  log_info("AP interface: %s", context.hconfig.interface);
-  log_info("DB path: %s", context.db_path);
+  log_info("AP name: %s", context->hconfig.ssid);
+  log_info("AP interface: %s", context->hconfig.interface);
+  log_info("DB path: %s", context->db_path);
 
   //   if ((context.fw_ctx = fw_init_context(
   //            context.if_mapper, context.vlan_mapper, context.hmap_bin_paths,
@@ -508,12 +510,12 @@ bool run_engine(struct app_config *app_config) {
   // }
 
   log_info("Creating supervisor on %s", app_config->domain_server_path);
-  log_trace("ELOOP %p %p", &context, context.eloop);
-  test_fn(&context);
-  if (run_supervisor(app_config->domain_server_path, &context) < 0) {
-    log_error("run_supervisor fail");
-    goto run_engine_fail;
-  }
+  log_trace("ELOOP %p %p", context, context->eloop);
+  test_fn(context);
+  // if (run_supervisor(app_config->domain_server_path, &context) < 0) {
+  //   log_error("run_supervisor fail");
+  //   goto run_engine_fail;
+  // }
 
   // log_info("Running the ap service...");
   // if (run_ap(&context, app_config->exec_ap, app_config->generate_ssid,
@@ -561,50 +563,52 @@ bool run_engine(struct app_config *app_config) {
   log_info("++++++++++++++++++");
   log_info("Running event loop");
   log_info("++++++++++++++++++");
-  eloop_run(context.eloop);
 
-  close_supervisor(&context);
-  close_ap(&context);
+  eloop_run(context->eloop);
+
+  close_supervisor(context);
+  close_ap(context);
   close_dhcp();
 #ifdef WITH_RADIUS_SERVICE
-  close_radius(context.radius_srv);
+  close_radius(context->radius_srv);
 #endif
-  hmap_str_keychar_free(&context.hmap_bin_paths);
-  fw_free_context(context.fw_ctx);
-  free_mac_mapper(&context.mac_mapper);
-  free_if_mapper(&context.if_mapper);
-  free_vlan_mapper(&context.vlan_mapper);
-  free_bridge_list(context.bridge_list);
-  free_sqlite_macconn_db(context.macconn_db);
+  hmap_str_keychar_free(&context->hmap_bin_paths);
+  fw_free_context(context->fw_ctx);
+  free_mac_mapper(&context->mac_mapper);
+  free_if_mapper(&context->if_mapper);
+  free_vlan_mapper(&context->vlan_mapper);
+  free_bridge_list(context->bridge_list);
+  free_sqlite_macconn_db(context->macconn_db);
 #ifdef WITH_CRYPTO_SERVICE
-  free_crypt_service(context.crypt_ctx);
+  free_crypt_service(context->crypt_ctx);
 #endif
-  iface_free_context(context.iface_ctx);
-  utarray_free(context.config_ifinfo_array);
-  eloop_free(context.eloop);
+  iface_free_context(context->iface_ctx);
+  utarray_free(context->config_ifinfo_array);
+  eloop_free(context->eloop);
+  os_free(context);
 
   return true;
 
 run_engine_fail:
-  close_supervisor(&context);
-  close_ap(&context);
+  close_supervisor(context);
+  close_ap(context);
   close_dhcp();
 #ifdef WITH_RADIUS_SERVICE
-  close_radius(context.radius_srv);
+  close_radius(context->radius_srv);
 #endif
-  hmap_str_keychar_free(&context.hmap_bin_paths);
-  fw_free_context(context.fw_ctx);
-  free_mac_mapper(&context.mac_mapper);
-  free_if_mapper(&context.if_mapper);
-  free_vlan_mapper(&context.vlan_mapper);
-  free_bridge_list(context.bridge_list);
-  free_sqlite_macconn_db(context.macconn_db);
+  hmap_str_keychar_free(&context->hmap_bin_paths);
+  fw_free_context(context->fw_ctx);
+  free_mac_mapper(&context->mac_mapper);
+  free_if_mapper(&context->if_mapper);
+  free_vlan_mapper(&context->vlan_mapper);
+  free_bridge_list(context->bridge_list);
+  free_sqlite_macconn_db(context->macconn_db);
 #ifdef WITH_CRYPTO_SERVICE
-  free_crypt_service(context.crypt_ctx);
+  free_crypt_service(context->crypt_ctx);
 #endif
-  iface_free_context(context.iface_ctx);
-  utarray_free(context.config_ifinfo_array);
-  eloop_free(context.eloop);
-
+  iface_free_context(context->iface_ctx);
+  utarray_free(context->config_ifinfo_array);
+  eloop_free(context->eloop);
+  os_free(context);
   return false;
 }
