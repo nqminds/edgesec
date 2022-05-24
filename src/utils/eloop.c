@@ -217,6 +217,10 @@ static void eloop_sock_table_destroy(struct eloop_sock_table *table) {
 int eloop_register_read_sock(struct eloop_data *eloop, int sock,
                              eloop_sock_handler handler, void *eloop_data,
                              void *user_data) {
+  if (eloop == NULL) {
+    log_error("eloop param is NULL");
+    return -1;
+  }
   return eloop_register_sock(eloop, sock, EVENT_TYPE_READ, handler, eloop_data,
                              user_data);
 }

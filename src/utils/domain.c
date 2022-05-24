@@ -50,7 +50,7 @@ char *generate_socket_name(void) {
   unsigned char crypto_rand[4];
   char *buf = NULL;
   if (os_get_random(crypto_rand, 4) == -1) {
-    log_trace("os_get_random fail");
+    log_error("os_get_random fail");
     return NULL;
   }
   buf = os_zalloc(sizeof(crypto_rand) * 2 + STRLEN(SOCK_EXTENSION) + 1);
@@ -76,7 +76,7 @@ int create_domain_client(char *addr) {
 
   if (addr == NULL) {
     if ((client_addr = generate_socket_name()) == NULL) {
-      log_trace("generate_socket_name fail");
+      log_error("generate_socket_name fail");
       return -1;
     }
 
@@ -112,7 +112,7 @@ int create_domain_server(char *server_path) {
      page 1168 at http://www.man7.org/tlpi/errata/.
   */
   if (strlen(server_path) > sizeof(svaddr.sun_path) - 1) {
-    log_trace("Server socket path too long: %s", server_path);
+    log_error("Server socket path too long: %s", server_path);
     return -1;
   }
 
@@ -134,12 +134,12 @@ int create_domain_server(char *server_path) {
 ssize_t read_domain_data(int sock, char *data, size_t data_len,
                          struct client_address *addr, int flags) {
   if (data == NULL) {
-    log_trace("data param is NULL");
+    log_error("data param is NULL");
     return -1;
   }
 
   if (addr == NULL) {
-    log_trace("addr param is NULL");
+    log_error("addr param is NULL");
     return -1;
   }
 
@@ -162,7 +162,7 @@ ssize_t read_domain_data_s(int sock, char *data, size_t data_len, char *addr,
   ssize_t num_bytes;
 
   if (addr == NULL) {
-    log_trace("addr is NULL");
+    log_error("addr is NULL");
     return -1;
   }
 
@@ -177,7 +177,7 @@ ssize_t write_domain_data_s(int sock, char *data, size_t data_len, char *addr) {
   struct client_address claddr;
 
   if (addr == NULL) {
-    log_trace("addr param is NULL");
+    log_error("addr param is NULL");
     return -1;
   }
 
@@ -192,12 +192,12 @@ ssize_t write_domain_data(int sock, char *data, size_t data_len,
   ssize_t num_bytes;
 
   if (data == NULL) {
-    log_trace("data param is NULL");
+    log_error("data param is NULL");
     return -1;
   }
 
   if (addr == NULL) {
-    log_trace("addr param is NULL");
+    log_error("addr param is NULL");
     return -1;
   }
 
@@ -234,7 +234,7 @@ int writeread_domain_data_str(char *socket_path, char *write_str,
   *reply = NULL;
 
   if ((sfd = create_domain_client(NULL)) == -1) {
-    log_debug("create_domain_client fail");
+    log_error("create_domain_client fail");
     return -1;
   }
 
@@ -257,7 +257,7 @@ int writeread_domain_data_str(char *socket_path, char *write_str,
     return -1;
   }
 
-  log_debug("Sent %d bytes to %s", send_count, socket_path);
+  log_trace("Sent %d bytes to %s", send_count, socket_path);
 
   errno = 0;
   if (select(sfd + 1, &readfds, NULL, NULL, &timeout) < 0) {
@@ -285,14 +285,14 @@ int writeread_domain_data_str(char *socket_path, char *write_str,
                                    MSG_DONTWAIT);
 
     if (rec_count < 0) {
-      log_trace("read_domain_data_s fail");
+      log_error("read_domain_data_s fail");
       close(sfd);
       os_free(rec_data);
       return -1;
     }
 
     if ((trimmed = rtrim(rec_data, NULL)) == NULL) {
-      log_trace("rtrim fail");
+      log_error("rtrim fail");
       close(sfd);
       os_free(rec_data);
       return -1;
@@ -300,7 +300,7 @@ int writeread_domain_data_str(char *socket_path, char *write_str,
 
     *reply = os_strdup(trimmed);
   } else {
-    log_debug("Socket timeout");
+    log_error("Socket timeout");
     close(sfd);
     return -1;
   }

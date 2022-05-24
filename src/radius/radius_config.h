@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (C) 2020 by NQMCyber Ltd                                       *
+ * Copyright (C) 2022 by NQMCyber Ltd                                       *
  *                                                                          *
  * This file is part of EDGESec.                                            *
  *                                                                          *
@@ -18,37 +18,29 @@
  ****************************************************************************/
 
 /**
- * @file engine.h
+ * @file radius_config.h
  * @author Alexandru Mereacre
- * @brief File containing the definition of the app configuration structure.
+ * @brief File containing the definition of the radius config.
  */
-#ifndef ENGINE_H
-#define ENGINE_H
 
-// #include <net/if.h>
-#include <inttypes.h>
-#include <stdbool.h>
+#ifndef RADIUS_CONFIG_H
+#define RADIUS_CONFIG_H
 
-#include "config.h"
-#include "supervisor/supervisor_config.h"
+#include "../utils/os.h"
+
+#define RADIUS_SECRET_LEN 255
 
 /**
- * @brief Initialises the app context structure
+ * @brief Radius configuration structure
  *
- * @param app_config The app config structure
- * @param ctx The app context structure
- * @return 0 on success, -1 otherwise
  */
-int init_context(struct app_config *app_config, struct supervisor_context *ctx);
-
-/**
- * @brief Executes the edgesec WiFi networking engine. Creates subnets and
- * starts the supervisor, radius servers and hostapd service.
- *
- * @param app_config The app configuration structures, setting WiFi network
- * config params.
- * @return @c true if succes, @c false if a service fails to start.
- */
-bool run_engine(struct app_config *app_config);
+struct radius_conf {
+  int radius_port;                       /**< Radius port */
+  char radius_client_ip[IP_LEN];         /**< Radius client IP string */
+  int radius_client_mask;                /**< Radius client IP mask string */
+  char radius_server_ip[IP_LEN];         /**< Radius server IP string */
+  int radius_server_mask;                /**< Radius server IP mask string */
+  char radius_secret[RADIUS_SECRET_LEN]; /**< Radius secret string */
+};
 
 #endif

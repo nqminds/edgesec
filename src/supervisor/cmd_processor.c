@@ -68,7 +68,7 @@ bool process_domain_buffer(char *domain_buffer, size_t domain_buffer_len,
 
   // remove the end new line character
   if (split_string_array(rtrim(cmd_line, NULL), sep, cmd_arr) < 0) {
-    log_trace("split_string_array fail");
+    log_error("split_string_array fail");
     os_free(cmd_line);
     return false;
   }
@@ -99,7 +99,7 @@ ssize_t process_subscribe_events_cmd(int sock,
   (void)cmd_arr; /* unused */
 
   if (subscribe_events_cmd(context, client_addr) < 0) {
-    log_trace("subscribe_events_cmd fail");
+    log_error("subscribe_events_cmd fail");
     return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
   }
 
@@ -124,7 +124,7 @@ ssize_t process_accept_mac_cmd(int sock, struct client_address *client_addr,
         vlanid = (int)strtoul(*ptr, NULL, 10);
         if (errno != ERANGE && is_number(*ptr)) {
           if (accept_mac_cmd(context, addr, vlanid) < 0) {
-            log_trace("accept_mac_cmd fail");
+            log_error("accept_mac_cmd fail");
             return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                      client_addr);
           }
@@ -149,7 +149,7 @@ ssize_t process_deny_mac_cmd(int sock, struct client_address *client_addr,
   if (ptr != NULL && *ptr != NULL) {
     if (hwaddr_aton2(*ptr, addr) != -1) {
       if (deny_mac_cmd(context, addr) < 0) {
-        log_trace("deny_mac_cmd fail");
+        log_error("deny_mac_cmd fail");
         return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                  client_addr);
       }
@@ -172,7 +172,7 @@ ssize_t process_add_nat_cmd(int sock, struct client_address *client_addr,
   if (ptr != NULL && *ptr != NULL) {
     if (hwaddr_aton2(*ptr, addr) != -1) {
       if (add_nat_cmd(context, addr) < 0) {
-        log_trace("add_nat_cmd fail");
+        log_error("add_nat_cmd fail");
         return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                  client_addr);
       }
@@ -195,7 +195,7 @@ ssize_t process_remove_nat_cmd(int sock, struct client_address *client_addr,
   if (ptr != NULL && *ptr != NULL) {
     if (hwaddr_aton2(*ptr, addr) != -1) {
       if (remove_nat_cmd(context, addr) < 0) {
-        log_trace("remove_nat_cmd fail");
+        log_error("remove_nat_cmd fail");
         return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                  client_addr);
       }
@@ -224,7 +224,7 @@ ssize_t process_assign_psk_cmd(int sock, struct client_address *client_addr,
         pass_len = strlen(*ptr);
         if (pass_len <= AP_SECRET_LEN && pass_len) {
           if (assign_psk_cmd(context, addr, *ptr, pass_len) < 0) {
-            log_trace("assign_psk_cmd fail");
+            log_error("assign_psk_cmd fail");
             return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                      client_addr);
           }
@@ -361,7 +361,7 @@ ssize_t process_set_ip_cmd(int sock, struct client_address *client_addr,
       if (ptr != NULL && *ptr != NULL) {
         if (validate_ipv4_string(*ptr)) {
           if (set_ip_cmd(context, addr, *ptr, ip_type) < 0) {
-            log_trace("set_ip_cmd fail");
+            log_error("set_ip_cmd fail");
             return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                      client_addr);
           }
@@ -369,7 +369,7 @@ ssize_t process_set_ip_cmd(int sock, struct client_address *client_addr,
           return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY),
                                    client_addr);
         } else {
-          log_trace("IP string, wrong format");
+          log_error("IP string, wrong format");
           return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                    client_addr);
         }
@@ -396,7 +396,7 @@ ssize_t process_add_bridge_cmd(int sock, struct client_address *client_addr,
       if (ptr != NULL && *ptr != NULL) {
         if (hwaddr_aton2(*ptr, right_addr) != -1) {
           if (add_bridge_mac_cmd(context, left_addr, right_addr) < 0) {
-            log_trace("add_bridge_cmd fail");
+            log_error("add_bridge_cmd fail");
             return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                      client_addr);
           }
@@ -414,7 +414,7 @@ ssize_t process_add_bridge_cmd(int sock, struct client_address *client_addr,
           os_strlcpy(right_ip, *ptr, IP_LONG_LEN);
 
           if (add_bridge_ip_cmd(context, left_ip, right_ip) < 0) {
-            log_trace("add_bridge_cmd fail");
+            log_error("add_bridge_cmd fail");
             return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                      client_addr);
           }
@@ -444,7 +444,7 @@ ssize_t process_remove_bridge_cmd(int sock, struct client_address *client_addr,
       if (ptr != NULL && *ptr != NULL) {
         if (hwaddr_aton2(*ptr, right_addr) != -1) {
           if (remove_bridge_cmd(context, left_addr, right_addr) < 0) {
-            log_trace("remove_bridge_cmd fail");
+            log_error("remove_bridge_cmd fail");
             return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                      client_addr);
           }
@@ -469,7 +469,7 @@ ssize_t process_clear_bridges_cmd(int sock, struct client_address *client_addr,
   if (ptr != NULL && *ptr != NULL) {
     if (hwaddr_aton2(*ptr, left_addr) != -1) {
       if (clear_bridges_cmd(context, left_addr) < 0) {
-        log_trace("remove_bridge_cmd fail");
+        log_error("remove_bridge_cmd fail");
         return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                  client_addr);
       }
@@ -593,7 +593,7 @@ ssize_t process_set_alert_cmd(int sock, struct client_address *client_addr,
   if (ptr != NULL && *ptr != NULL) {
     if ((meta = (uint8_t *)base64_url_decode(
              (unsigned char *)*ptr, strlen(*ptr), &meta_size)) == NULL) {
-      log_trace("base64_url_decode fail\n");
+      log_error("base64_url_decode fail\n");
       return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                client_addr);
     }
@@ -611,7 +611,7 @@ ssize_t process_set_alert_cmd(int sock, struct client_address *client_addr,
       if (strlen(rtrim(*ptr, NULL))) {
         if ((info = (uint8_t *)base64_url_decode(
                  (unsigned char *)*ptr, strlen(*ptr), &info_size)) == NULL) {
-          log_trace("base64_url_decode fail\n");
+          log_error("base64_url_decode fail\n");
           os_free(meta);
           return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                    client_addr);
@@ -621,7 +621,7 @@ ssize_t process_set_alert_cmd(int sock, struct client_address *client_addr,
 
     if (set_alert_cmd(context, (struct alert_meta *)meta, info, info_size) <
         0) {
-      log_trace("set_alert_cmd fail");
+      log_error("set_alert_cmd fail");
       os_free(meta);
       if (info != NULL) {
         os_free(info);

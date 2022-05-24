@@ -189,7 +189,6 @@ int main(int argc, char *argv[]) {
   uint8_t level = 0;
   char *config_filename = NULL, *log_filename = NULL;
   struct app_config config;
-  struct eloop_data *eloop = NULL;
 
   // Init the app config struct
   memset(&config, 0, sizeof(struct app_config));
@@ -255,11 +254,6 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
 
-  if ((eloop = eloop_init()) == NULL) {
-    fprintf(stderr, "Failed to initialize event loop");
-    return EXIT_FAILURE;
-  }
-
   // if (eloop_register_signal_reconfig(eloop_sighup_handler,
   //                                    (void *)log_filename) < 0) {
   //   fprintf(stderr, "Failed to register signal");
@@ -268,13 +262,12 @@ int main(int argc, char *argv[]) {
 
   os_init_random_seed();
 
-  if (!run_engine(eloop, &config)) {
+  if (!run_engine(&config)) {
     fprintf(stderr, "Failed to start edgesec engine.\n");
   } else
     fprintf(stderr, "Edgesec engine stopped.\n");
 
   free_app_config(&config);
-  eloop_free(eloop);
 
   if (config_filename != NULL)
     os_free(config_filename);

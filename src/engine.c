@@ -260,41 +260,45 @@ bool construct_ap_ctrlif(char *ctrl_interface, char *interface,
   return true;
 }
 
-int init_context(struct eloop_data *eloop, struct app_config *app_config,
+int init_context(struct app_config *app_config,
                  struct supervisor_context *ctx) {
   char *db_path = NULL;
   char *commands[] = {"ip", "iw", "iptables", "sysctl", NULL};
 
   os_memset(ctx, 0, sizeof(struct supervisor_context));
 
-  log_debug("Checking system commands...");
-  if ((ctx->hmap_bin_paths = check_systems_commands(
-           commands, app_config->bin_path_array, NULL)) == NULL) {
-    log_error("check_systems_commands fail (no bin paths found)");
+  if ((ctx->eloop = eloop_init()) == NULL) {
+    log_error("Failed to initialize event loop");
     return -1;
   }
 
-  char *ipcmd_path = hmap_str_keychar_get(&ctx->hmap_bin_paths, "ip");
-  if (ipcmd_path == NULL) {
-    log_error("Couldn't find ip command");
-    return -1;
-  }
+  // log_debug("Checking system commands...");
+  // if ((ctx->hmap_bin_paths = check_systems_commands(
+  //          commands, app_config->bin_path_array, NULL)) == NULL) {
+  //   log_error("check_systems_commands fail (no bin paths found)");
+  //   return -1;
+  // }
 
-  if (app_config->config_ifinfo_array == NULL) {
-    log_error("Invalid empty config_ifinfo_array");
-    return -1;
-  }
-  utarray_new(ctx->config_ifinfo_array, &config_ifinfo_icd);
-  copy_ifinfo(app_config->config_ifinfo_array, ctx->config_ifinfo_array);
+  // char *ipcmd_path = hmap_str_keychar_get(&ctx->hmap_bin_paths, "ip");
+  // if (ipcmd_path == NULL) {
+  //   log_error("Couldn't find ip command");
+  //   return -1;
+  // }
 
-  if (init_ifbridge_names(ctx->config_ifinfo_array,
-                          app_config->interface_prefix,
-                          app_config->bridge_prefix) < 0) {
-    log_error("init_ifbridge_names fail");
-    return -1;
-  }
+  // if (app_config->config_ifinfo_array == NULL) {
+  //   log_error("Invalid empty config_ifinfo_array");
+  //   return -1;
+  // }
+  // utarray_new(ctx->config_ifinfo_array, &config_ifinfo_icd);
+  // copy_ifinfo(app_config->config_ifinfo_array, ctx->config_ifinfo_array);
 
-  ctx->eloop = eloop;
+  // if (init_ifbridge_names(ctx->config_ifinfo_array,
+  //                         app_config->interface_prefix,
+  //                         app_config->bridge_prefix) < 0) {
+  //   log_error("init_ifbridge_names fail");
+  //   return -1;
+  // }
+
   ctx->subscribers_array = NULL;
   ctx->ap_sock = -1;
 #ifdef WITH_RADIUS_SERVICE
@@ -338,57 +342,59 @@ int init_context(struct eloop_data *eloop, struct app_config *app_config,
   strcpy(ctx->dconfig.wifi_interface, app_config->hconfig.interface);
   strcpy(ctx->hconfig.vlan_bridge, app_config->interface_prefix);
 
-  if (ctx->default_open_vlanid == ctx->quarantine_vlanid) {
-    log_error("default and quarantine vlans have the same id");
-    return -1;
-  }
+  // if (ctx->default_open_vlanid == ctx->quarantine_vlanid) {
+  //   log_error("default and quarantine vlans have the same id");
+  //   return -1;
+  // }
 
-  db_path = construct_path(ctx->db_path, MACCONN_DB_NAME);
-  if (db_path == NULL) {
-    log_error("construct_path fail");
-    return -1;
-  }
+  // db_path = construct_path(ctx->db_path, MACCONN_DB_NAME);
+  // if (db_path == NULL) {
+  //   log_error("construct_path fail");
+  //   return -1;
+  // }
 
-  log_debug("Opening the macconn db...");
-  if (open_sqlite_macconn_db(db_path, &ctx->macconn_db) < 0) {
-    os_free(db_path);
-    log_error("open_sqlite_macconn_db fail");
-    return -1;
-  }
+  // log_debug("Opening the macconn db...");
+  // if (open_sqlite_macconn_db(db_path, &ctx->macconn_db) < 0) {
+  //   os_free(db_path);
+  //   log_error("open_sqlite_macconn_db fail");
+  //   return -1;
+  // }
 
-  os_free(db_path);
+  // os_free(db_path);
 
-  log_debug("Creating subnet to interface mapper...");
-  if ((ctx->iface_ctx = iface_init_context((char *)ipcmd_path)) == NULL) {
-    log_debug("iface_init_context fail");
-    return -1;
-  }
+  // log_debug("Creating subnet to interface mapper...");
+  // if ((ctx->iface_ctx = iface_init_context((char *)ipcmd_path)) == NULL) {
+  //   log_debug("iface_init_context fail");
+  //   return -1;
+  // }
 
-  if (!create_if_mapper(ctx->config_ifinfo_array, &ctx->if_mapper)) {
-    log_error("create_if_mapper fail");
-    return -1;
-  }
+  // if (!create_if_mapper(ctx->config_ifinfo_array, &ctx->if_mapper)) {
+  //   log_error("create_if_mapper fail");
+  //   return -1;
+  // }
 
-  log_debug("Creating VLAN ID to interface mapper...");
-  if (!create_vlan_mapper(ctx->config_ifinfo_array, &ctx->vlan_mapper)) {
-    log_error("create_if_mapper fail");
-    return -1;
-  }
+  // log_debug("Creating VLAN ID to interface mapper...");
+  // if (!create_vlan_mapper(ctx->config_ifinfo_array, &ctx->vlan_mapper)) {
+  //   log_error("create_if_mapper fail");
+  //   return -1;
+  // }
 
-  // Init the list of bridges
-  ctx->bridge_list = init_bridge_list();
+  // // Init the list of bridges
+  // ctx->bridge_list = init_bridge_list();
 
-  if (get_vlan_mapper(&ctx->vlan_mapper, ctx->default_open_vlanid, NULL) <= 0) {
-    log_error("default vlan id=%d doesn't exist", ctx->default_open_vlanid);
-    return -1;
-  }
+  // if (get_vlan_mapper(&ctx->vlan_mapper, ctx->default_open_vlanid, NULL) <=
+  // 0) {
+  //   log_error("default vlan id=%d doesn't exist", ctx->default_open_vlanid);
+  //   return -1;
+  // }
 
-  if (ctx->quarantine_vlanid >= 0) {
-    if (get_vlan_mapper(&ctx->vlan_mapper, ctx->quarantine_vlanid, NULL) <= 0) {
-      log_error("quarantine vlan id=%d doesn't exist", ctx->quarantine_vlanid);
-      return -1;
-    }
-  }
+  // if (ctx->quarantine_vlanid >= 0) {
+  //   if (get_vlan_mapper(&ctx->vlan_mapper, ctx->quarantine_vlanid, NULL) <=
+  //   0) {
+  //     log_error("quarantine vlan id=%d doesn't exist",
+  //     ctx->quarantine_vlanid); return -1;
+  //   }
+  // }
 
   return 0;
 }
@@ -422,15 +428,15 @@ int run_mdns_forwarder(char *mdns_bin_path, char *config_ini_path) {
   return ret;
 }
 
-bool run_engine(struct eloop_data *eloop, struct app_config *app_config) {
+bool run_engine(struct app_config *app_config) {
   struct supervisor_context context;
 
-  if (create_dir(app_config->db_path, S_IRWXU | S_IRWXG) < 0) {
-    log_error("create_dir fail");
-    return false;
-  }
+  // if (create_dir(app_config->db_path, S_IRWXU | S_IRWXG) < 0) {
+  //   log_error("create_dir fail");
+  //   return false;
+  // }
 
-  if (init_context(eloop, app_config, &context) < 0) {
+  if (init_context(app_config, &context) < 0) {
     log_error("init_context fail");
     goto run_engine_fail;
   }
@@ -439,116 +445,123 @@ bool run_engine(struct eloop_data *eloop, struct app_config *app_config) {
   log_info("AP interface: %s", context.hconfig.interface);
   log_info("DB path: %s", context.db_path);
 
-  if ((context.fw_ctx = fw_init_context(
-           context.if_mapper, context.vlan_mapper, context.hmap_bin_paths,
-           context.config_ifinfo_array, context.nat_bridge,
-           context.nat_interface, app_config->exec_firewall,
-           app_config->firewall_config.firewall_bin_path)) == NULL) {
-    log_error("fw_init_context fail");
-    goto run_engine_fail;
-  }
+  //   if ((context.fw_ctx = fw_init_context(
+  //            context.if_mapper, context.vlan_mapper, context.hmap_bin_paths,
+  //            context.config_ifinfo_array, context.nat_bridge,
+  //            context.nat_interface, app_config->exec_firewall,
+  //            app_config->firewall_config.firewall_bin_path)) == NULL) {
+  //     log_error("fw_init_context fail");
+  //     goto run_engine_fail;
+  //   }
 
-#ifdef WITH_CRYPTO_SERVICE
-  log_info("Loading crypt service...");
-  if ((context.crypt_ctx = load_crypt_service(
-           app_config->crypt_db_path, app_config->crypt_key_id,
-           (uint8_t *)app_config->crypt_secret,
-           os_strnlen_s(app_config->crypt_secret, MAX_USER_SECRET))) == NULL) {
-    log_error("load_crypt_service fail");
-    goto run_engine_fail;
-  }
-#endif
+  // #ifdef WITH_CRYPTO_SERVICE
+  //   log_info("Loading crypt service...");
+  //   if ((context.crypt_ctx = load_crypt_service(
+  //            app_config->crypt_db_path, app_config->crypt_key_id,
+  //            (uint8_t *)app_config->crypt_secret,
+  //            os_strnlen_s(app_config->crypt_secret, MAX_USER_SECRET))) ==
+  //            NULL) {
+  //     log_error("load_crypt_service fail");
+  //     goto run_engine_fail;
+  //   }
+  // #endif
 
-  if (app_config->set_ip_forward) {
-    log_info("Setting the ip forward os system flag...");
-    if (fw_set_ip_forward() < 0) {
-      log_error("set_ip_forward fail");
-      goto run_engine_fail;
-    }
-  }
+  //   if (app_config->set_ip_forward) {
+  //     log_info("Setting the ip forward os system flag...");
+  //     if (fw_set_ip_forward() < 0) {
+  //       log_error("set_ip_forward fail");
+  //       goto run_engine_fail;
+  //     }
+  //   }
 
-  log_info("Adding default mac mappers...");
-  if (!create_mac_mapper(&context)) {
-    log_error("create_mac_mapper fail");
-    return false;
-  }
+  //   log_info("Adding default mac mappers...");
+  //   if (!create_mac_mapper(&context)) {
+  //     log_error("create_mac_mapper fail");
+  //     return false;
+  //   }
 
-  if (app_config->ap_detect) {
-    log_info("Looking for VLAN capable wifi interface...");
-    if (iface_get_vlan(context.hconfig.interface) == NULL) {
-      log_error("iface_get_vlan fail");
-      goto run_engine_fail;
-    }
-  }
+  //   if (app_config->ap_detect) {
+  //     log_info("Looking for VLAN capable wifi interface...");
+  //     if (iface_get_vlan(context.hconfig.interface) == NULL) {
+  //       log_error("iface_get_vlan fail");
+  //       goto run_engine_fail;
+  //     }
+  //   }
 
-  log_info("Using wifi interface %s", context.hconfig.interface);
+  //   log_info("Using wifi interface %s", context.hconfig.interface);
 
-  if (!construct_ap_ctrlif(context.hconfig.ctrl_interface,
-                           context.hconfig.interface,
-                           context.hconfig.ctrl_interface_path)) {
-    log_error("construct_ap_ctrlif fail");
-    goto run_engine_fail;
-  }
+  //   if (!construct_ap_ctrlif(context.hconfig.ctrl_interface,
+  //                            context.hconfig.interface,
+  //                            context.hconfig.ctrl_interface_path)) {
+  //     log_error("construct_ap_ctrlif fail");
+  //     goto run_engine_fail;
+  //   }
 
-  if (app_config->create_interfaces) {
-    log_info("Creating subnet interfaces...");
-    if (!create_subnet_interfaces(context.iface_ctx,
-                                  context.config_ifinfo_array,
-                                  app_config->ignore_if_error)) {
-      log_error("create_subnet_interfaces fail");
-      goto run_engine_fail;
-    }
-  }
+  // if (app_config->create_interfaces) {
+  //   log_info("Creating subnet interfaces...");
+  //   if (!create_subnet_interfaces(context.iface_ctx,
+  //                                 context.config_ifinfo_array,
+  //                                 app_config->ignore_if_error)) {
+  //     log_error("create_subnet_interfaces fail");
+  //     goto run_engine_fail;
+  //   }
+  // }
 
   log_info("Creating supervisor on %s", app_config->domain_server_path);
+  log_trace("ELOOP %p %p", &context, context.eloop);
+  test_fn(&context);
   if (run_supervisor(app_config->domain_server_path, &context) < 0) {
     log_error("run_supervisor fail");
     goto run_engine_fail;
   }
 
-  log_info("Running the ap service...");
-  if (run_ap(&context, app_config->exec_ap, app_config->generate_ssid,
-             ap_service_callback) < 0) {
-    log_error("run_ap fail");
-    goto run_engine_fail;
-  }
+  // log_info("Running the ap service...");
+  // if (run_ap(&context, app_config->exec_ap, app_config->generate_ssid,
+  //            ap_service_callback) < 0) {
+  //   log_error("run_ap fail");
+  //   goto run_engine_fail;
+  // }
 
-#ifdef WITH_RADIUS_SERVICE
-  if (app_config->exec_radius) {
-    log_info("Creating the radius server on port %d with client ip %s",
-             context.rconfig.radius_port, context.rconfig.radius_client_ip);
+  // #ifdef WITH_RADIUS_SERVICE
+  //   if (app_config->exec_radius) {
+  //     log_info("Creating the radius server on port %d with client ip %s",
+  //              context.rconfig.radius_port,
+  //              context.rconfig.radius_client_ip);
 
-    if ((context.radius_srv = run_radius(
-             &context.rconfig, (void *)get_mac_conn_cmd, &context)) == NULL) {
-      log_error("run_radius fail");
-      goto run_engine_fail;
-    }
-  }
-#endif
+  //     if ((context.radius_srv = run_radius(context.eloop, &context.rconfig,
+  //                                          (void *)get_mac_conn_cmd,
+  //                                          &context)) == NULL) {
+  //       log_error("run_radius fail");
+  //       goto run_engine_fail;
+  //     }
+  //   }
+  // #endif
 
-  log_info("Running the dhcp service...");
-  if (run_dhcp(&context.dconfig, context.nconfig.server_array,
-               app_config->domain_server_path, app_config->exec_dhcp) == -1) {
-    log_error("run_dhcp fail");
-    goto run_engine_fail;
-  }
+  //   log_info("Running the dhcp service...");
+  //   if (run_dhcp(&context.dconfig, context.nconfig.server_array,
+  //                app_config->domain_server_path, app_config->exec_dhcp) ==
+  //                -1) {
+  //     log_error("run_dhcp fail");
+  //     goto run_engine_fail;
+  //   }
 
-#ifdef WITH_MDNS_SERVICE
-  if (app_config->exec_mdns_forward) {
-    log_info("Running the mdns forwarder service thread...");
-    if (run_mdns_thread(&(app_config->mdns_config),
-                        app_config->domain_server_path,
-                        app_config->domain_delim, context.vlan_mapper) < 0) {
-      log_error("run_mdns_thread fail");
-      goto run_engine_fail;
-    }
-  }
-#endif
+  // #ifdef WITH_MDNS_SERVICE
+  //   if (app_config->exec_mdns_forward) {
+  //     log_info("Running the mdns forwarder service thread...");
+  //     if (run_mdns_thread(&(app_config->mdns_config),
+  //                         app_config->domain_server_path,
+  //                         app_config->domain_delim, context.vlan_mapper) < 0)
+  //                         {
+  //       log_error("run_mdns_thread fail");
+  //       goto run_engine_fail;
+  //     }
+  //   }
+  // #endif
 
   log_info("++++++++++++++++++");
   log_info("Running event loop");
   log_info("++++++++++++++++++");
-  eloop_run(eloop);
+  eloop_run(context.eloop);
 
   close_supervisor(&context);
   close_ap(&context);
@@ -568,6 +581,7 @@ bool run_engine(struct eloop_data *eloop, struct app_config *app_config) {
 #endif
   iface_free_context(context.iface_ctx);
   utarray_free(context.config_ifinfo_array);
+  eloop_free(context.eloop);
 
   return true;
 
@@ -590,6 +604,7 @@ run_engine_fail:
 #endif
   iface_free_context(context.iface_ctx);
   utarray_free(context.config_ifinfo_array);
+  eloop_free(context.eloop);
 
   return false;
 }

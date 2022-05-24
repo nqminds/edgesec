@@ -41,6 +41,8 @@
 static uint8_t addr[6] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05};
 static uint8_t saved_addr[6];
 
+static struct eloop_data *eloop = NULL;
+
 struct radius_ctx {
   struct radius_client_data *radius;
   struct hostapd_radius_servers conf;
@@ -73,7 +75,7 @@ static RadiusRxResult receive_auth(struct radius_msg *msg,
             radius_msg_get_hdr(msg)->code);
 
   /* We're done for this example, so request eloop to terminate. */
-  eloop_terminate();
+  eloop_terminate(eloop);
 
   return RADIUS_RX_PROCESSED;
 }
@@ -153,15 +155,15 @@ static void test_radius_server_init(void **state) {
 
   inet_aton(conf.radius_client_ip, &ctx.own_ip_addr);
 
-  bool ret = (eloop_init() == 0);
-  assert_true(ret);
+  eloop = eloop_init();
+  assert_non_null(eloop);
 
   srv = os_zalloc(sizeof(*srv));
   assert_non_null(srv);
 
   srv->addr.af = AF_INET;
   srv->port = 12345;
-  ret = (hostapd_parse_ip_addr(conf.radius_client_ip, &srv->addr) >= 0);
+  int ret = (hostapd_parse_ip_addr(conf.radius_client_ip, &srv->addr) >= 0);
   assert_true(ret);
 
   srv->shared_secret = (uint8_t *)strdup(conf.radius_secret);
@@ -171,20 +173,18 @@ static void test_radius_server_init(void **state) {
   ctx.conf.num_auth_servers = 1;
   ctx.conf.msg_dumps = 1;
 
-  ctx.radius = radius_client_init(&ctx, &ctx.conf);
+  ctx.radius = radius_client_init(eloop, &ctx, &ctx.conf);
   assert_non_null(ctx.radius);
 
-  if (radius_client_register(ctx.radius, RADIUS_AUTH, receive_auth, &ctx) < 0) {
-    log_trace("Failed to register RADIUS authentication handler");
-    exit(1);
-  }
+  ret = radius_client_register(ctx.radius, RADIUS_AUTH, receive_auth, &ctx);
+  assert_int_equal(ret, 0);
 
-  radius_srv = radius_server_init(srv->port, client);
+  radius_srv = radius_server_init(eloop, srv->port, client);
   assert_non_null(radius_srv);
 
-  eloop_register_timeout(0, 0, start_test, &ctx, NULL);
+  eloop_register_timeout(eloop, 0, 0, start_test, &ctx, NULL);
 
-  eloop_run();
+  eloop_run(eloop);
 
   int cmp = memcmp(&saved_addr[0], &addr[0], 6);
   assert_int_equal(cmp, 0);
@@ -194,7 +194,7 @@ static void test_radius_server_init(void **state) {
   os_free(srv->shared_secret);
   os_free(srv);
 
-  eloop_destroy();
+  eloop_free(eloop);
 }
 
 int main(int argc, char *argv[]) {

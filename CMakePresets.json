@@ -35,6 +35,7 @@
         "USE_NETLINK_SERVICE": true,
         "USE_UCI_SERVICE": false,
         "USE_GENERIC_IP_SERVICE": false,
+        "USE_RADIUS_SERVICE": true,
         "BUILD_HOSTAPD": true
       }
     },
@@ -51,6 +52,7 @@
         "USE_NETLINK_SERVICE": false,
         "USE_UCI_SERVICE": true,
         "USE_GENERIC_IP_SERVICE": false,
+        "USE_RADIUS_SERVICE": true,
         "BUILD_HOSTAPD": false
       }
     },

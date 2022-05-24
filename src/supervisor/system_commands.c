@@ -61,13 +61,13 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
                         context->allow_all_nat);
 
   if (get_ifname_from_ip(context->config_ifinfo_array, ip_addr, ifname) < 0) {
-    log_trace("get_ifname_from_ip fail");
+    log_error("get_ifname_from_ip fail");
     return -1;
   }
 
   ret = get_mac_mapper(&context->mac_mapper, mac_addr, &info);
   if (ret < 0) {
-    log_trace("get_mac_mapper fail");
+    log_error("get_mac_mapper fail");
     return -1;
   }
 
@@ -112,13 +112,13 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
   log_trace("SET_IP type=%d mac=" MACSTR " ip=%s if=%s", ip_type,
             MAC2STR(mac_addr), ip_addr, ifname);
   if (!save_mac_mapper(context, conn)) {
-    log_trace("save_mac_mapper fail");
+    log_error("save_mac_mapper fail");
     return -1;
   }
 
   if (send_events_subscriber(context, SUBSCRIBER_EVENT_IP, MACSTR " %s %d",
                              MAC2STR(mac_addr), ip_addr, add) < 0) {
-    log_trace("send_events_subscriber fail");
+    log_error("send_events_subscriber fail");
     return -1;
   }
 
@@ -126,13 +126,13 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
   if (add && info.nat) {
     log_trace("Adding NAT rule");
     if (add_nat_ip(context, ip_addr) < 0) {
-      log_trace("add_nat_ip fail");
+      log_error("add_nat_ip fail");
       return -1;
     }
   } else if (!add && info.nat) {
     log_trace("Deleting NAT rule");
     if (remove_nat_ip(context, ip_addr) < 0) {
-      log_trace("remove_nat_ip fail");
+      log_error("remove_nat_ip fail");
       return -1;
     }
   }
@@ -140,7 +140,7 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
   // Change the bridge iptables rules
   // Get the list of all dst MACs to update the iptables
   if (get_src_mac_list(context->bridge_list, mac_addr, &mac_list_arr) < 0) {
-    log_trace("get_src_mac_list fail");
+    log_error("get_src_mac_list fail");
     return -1;
   }
 
@@ -148,23 +148,23 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
     if (get_mac_mapper(&context->mac_mapper, p, &right_info) == 1) {
       if (add) {
         if (add_bridge_ip(context, ip_addr, right_info.ip_addr) < 0) {
-          log_trace("add_bridge_ip fail");
+          log_error("add_bridge_ip fail");
           utarray_free(mac_list_arr);
           return -1;
         }
         if (add_bridge_ip(context, ip_addr, right_info.ip_sec_addr) < 0) {
-          log_trace("add_bridge_ip fail");
+          log_error("add_bridge_ip fail");
           utarray_free(mac_list_arr);
           return -1;
         }
       } else {
         if (delete_bridge_ip(context, ip_addr, right_info.ip_addr) < 0) {
-          log_trace("delete_bridge_ip fail");
+          log_error("delete_bridge_ip fail");
           utarray_free(mac_list_arr);
           return -1;
         }
         if (delete_bridge_ip(context, ip_addr, right_info.ip_sec_addr) < 0) {
-          log_trace("delete_bridge_ip fail");
+          log_error("delete_bridge_ip fail");
           utarray_free(mac_list_arr);
           return -1;
         }
@@ -180,6 +180,6 @@ char *ping_cmd(void) { return os_strdup(PING_REPLY); }
 
 int subscribe_events_cmd(struct supervisor_context *context,
                          struct client_address *addr) {
-  log_trace("SUBSCRIBE_EVENTS with size=%d", addr->len);
+  log_debug("SUBSCRIBE_EVENTS with size=%d", addr->len);
   return add_events_subscriber(context, addr);
 }

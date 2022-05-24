@@ -26,6 +26,7 @@
 #include <stdbool.h>
 
 #include "../utils/os.h"
+#include "../utils/eloop.h"
 #include "radius_config.h"
 
 /**
@@ -131,9 +132,15 @@ struct radius_server_data {
    * These counters are the sum over all clients.
    */
   struct radius_server_counters counters;
+
+  /**
+   * eloop - The eloop context
+   */
+  struct eloop_data *eloop;
 };
 
-struct radius_server_data *radius_server_init(int auth_port,
+struct radius_server_data *radius_server_init(struct eloop_data *eloop,
+                                              int auth_port,
                                               struct radius_client *clients);
 void radius_server_deinit(struct radius_server_data *data);
 int radius_server_get_mib(struct radius_server_data *data, char *buf,

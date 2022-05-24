@@ -2,8 +2,6 @@ include_directories (
   "${EDGESEC_SOURCE_DIR}/src"
 )
 
-add_compile_definitions(WITH_MDNS_SERVICE)
-
 add_library(command_mapper command_mapper.c)
 target_link_libraries(command_mapper PRIVATE os hash)
 
