@@ -1,3 +1,11 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: EDGESec
+Upstream-Contact: https://github.com/nqminds/EDGESec
+Source: https://github.com/nqminds/EDGESec
+# Only due to inclusion of lib/netlink code
+License: GPL-2+
+Copyright: 2020-2022, NquiringMinds Ltd.
+
 Files: *
 Copyright: 2020-2021, NquiringMinds Ltd.
 License: LGPL-3+
