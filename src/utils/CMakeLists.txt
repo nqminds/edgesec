@@ -13,7 +13,7 @@ target_link_libraries(base64 PRIVATE os log)
 
 add_library(os os.c)
 target_compile_options(os PRIVATE -fPIC)
-target_link_libraries(os PRIVATE allocs log util_linux::uuid)
+target_link_libraries(os PRIVATE allocs log LibUUID::LibUUID)
 
 add_library(ifaceu ifaceu.c)
 target_link_libraries(ifaceu PRIVATE log)

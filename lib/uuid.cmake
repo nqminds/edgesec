@@ -1,4 +1,10 @@
 # Compile libuuid-1.0.3
+if (BUILD_ONLY_DOCS)
+  # pass
+elseif (NOT BUILD_UUID_LIB)
+  # finds LibUUID::LibUUID
+  find_package(LibUUID MODULE REQUIRED)
+endif()
 if (BUILD_UUID_LIB AND NOT (BUILD_ONLY_DOCS))
 
   set(LIBUUID_INSTALL_ROOT "${CMAKE_CURRENT_BINARY_DIR}/lib")
@@ -29,11 +35,11 @@ if (BUILD_UUID_LIB AND NOT (BUILD_ONLY_DOCS))
   set(LIBUUID_LIB_DIR "${INSTALL_DIR}/lib")
   set(LIBUUID_INCLUDE_DIR "${INSTALL_DIR}/include")
 
-  add_library(util_linux::uuid STATIC IMPORTED)
+  add_library(LibUUID::LibUUID STATIC IMPORTED)
   file(MAKE_DIRECTORY "${LIBUUID_INCLUDE_DIR}")
-  set_target_properties(util_linux::uuid PROPERTIES
+  set_target_properties(LibUUID::LibUUID PROPERTIES
     IMPORTED_LOCATION "${LIBUUID_LIB_DIR}/libuuid.a"
     INTERFACE_INCLUDE_DIRECTORIES "${LIBUUID_INCLUDE_DIR}"
   )
-  add_dependencies(util_linux::uuid util_linux)
+  add_dependencies(LibUUID::LibUUID util_linux)
 endif ()
