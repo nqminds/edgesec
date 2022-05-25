@@ -166,6 +166,11 @@ struct radius_msg_list {
  */
 struct radius_client_data {
   /**
+   * eloop - th eloop context
+   */
+  struct eloop_data *eloop;
+
+  /**
    * ctx - Context pointer for hostapd_logger() callbacks
    */
   void *ctx;
@@ -249,11 +254,6 @@ struct radius_client_data {
    * interim_error_cb_ctx - interim_error_cb() context data
    */
   void *interim_error_cb_ctx;
-
-  /**
-   * eloop - th eloop context
-   */
-  struct eloop_data *eloop;
 };
 
 static int radius_change_server(struct radius_client_data *radius,

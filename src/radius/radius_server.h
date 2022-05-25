@@ -102,6 +102,11 @@ struct radius_client {
  */
 struct radius_server_data {
   /**
+   * eloop - The eloop context
+   */
+  struct eloop_data *eloop;
+
+  /**
    * auth_sock - Socket for RADIUS authentication messages
    */
   int auth_sock;
@@ -132,11 +137,6 @@ struct radius_server_data {
    * These counters are the sum over all clients.
    */
   struct radius_server_counters counters;
-
-  /**
-   * eloop - The eloop context
-   */
-  struct eloop_data *eloop;
 };
 
 struct radius_server_data *radius_server_init(struct eloop_data *eloop,

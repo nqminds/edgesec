@@ -60,6 +60,8 @@ struct auth_ticket {
  *
  */
 struct supervisor_context {
+  struct eloop_data *eloop;         /**< The main eloop context. */
+  struct fwctx *fw_ctx;             /**< The firewall context. */
   hmap_mac_conn *mac_mapper;        /**< MAC mapper connection structure */
   hmap_if_conn *if_mapper;          /**< WiFi subnet to interface mapper */
   hmap_vlan_conn *vlan_mapper;      /**< WiFi VLAN to interface mapper */
@@ -100,14 +102,12 @@ struct supervisor_context {
 #ifdef WITH_RADIUS_SERVICE
   struct radius_server_data *radius_srv; /**< The radius server context. */
 #endif
-  struct fwctx *fw_ctx; /**< The firewall context. */
 #ifdef WITH_CRYPTO_SERVICE
   struct crypt_context *crypt_ctx; /**< The crypt context. */
 #endif
   struct iface_context *iface_ctx; /**< The interface context. */
   struct auth_ticket *ticket;      /**< The authentication ticket. */
   int ap_sock;                     /**< The AP notifier socket. */
-  struct eloop_data *eloop;        /**< The main eloop context. */
 };
 
 #endif

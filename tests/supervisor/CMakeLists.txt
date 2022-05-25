@@ -21,9 +21,9 @@ set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=clear_psk_cmd -Wl,--wrap=get_ma
 set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=clear_bridges_cmd -Wl,--wrap=subscribe_events_cmd -Wl,--wrap=register_ticket_cmd")
 
 if (USE_CRYPTO_SERVICE)
-set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=gen_randkey_cmd -Wl,--wrap=gen_privkey_cmd -Wl,--wrap=gen_pubkey_cmd")
-set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=gen_cert_cmd -Wl,--wrap=put_crypt_cmd -Wl,--wrap=get_crypt_cmd")
-set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=encrypt_blob_cmd -Wl,--wrap=decrypt_blob_cmd -Wl,--wrap=sign_blob_cmd")
+  set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=gen_randkey_cmd -Wl,--wrap=gen_privkey_cmd -Wl,--wrap=gen_pubkey_cmd")
+  set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=gen_cert_cmd -Wl,--wrap=put_crypt_cmd -Wl,--wrap=get_crypt_cmd")
+  set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=encrypt_blob_cmd -Wl,--wrap=decrypt_blob_cmd -Wl,--wrap=sign_blob_cmd")
 endif ()
 
 set_target_properties(test_cmd_processor PROPERTIES LINK_FLAGS ${TEST_CMD_PROPS})

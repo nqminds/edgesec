@@ -724,6 +724,13 @@ bool load_system_config(const char *filename, struct app_config *config) {
   config->kill_running_proc =
       ini_getbool("system", "killRunningProcess", 0, filename);
 
+  // Load connection db param
+  value = os_zalloc(INI_BUFFERSIZE);
+  ret = ini_gets("system", "connectionDbPath", "", value, INI_BUFFERSIZE,
+                 filename);
+  os_strlcpy(config->connection_db_path, value, MAX_OS_PATH_LEN);
+  os_free(value);
+
   // Load db param
   value = os_zalloc(INI_BUFFERSIZE);
   ret = ini_gets("system", "dbPath", "./", value, INI_BUFFERSIZE, filename);

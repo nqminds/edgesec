@@ -11,10 +11,13 @@ endif ()
 add_library(base64 base64.c)
 target_link_libraries(base64 PRIVATE os log)
 
+add_library(hashmap hashmap.c)
+target_link_libraries(hashmap PRIVATE log os)
+
 add_library(os os.c)
 target_compile_options(os PRIVATE -fPIC)
 target_include_directories(os PRIVATE ${LIBUUID_INCLUDE_DIR})
-target_link_libraries(os PRIVATE allocs log ${LIBUUID_LIB})
+target_link_libraries(os PRIVATE hashmap allocs log ${LIBUUID_LIB})
 
 add_library(ifaceu ifaceu.c)
 target_link_libraries(ifaceu PRIVATE log)
@@ -50,9 +53,6 @@ elseif (USE_GENERIC_IP_SERVICE)
 else ()
   target_link_libraries(iface PRIVATE ifaceu net log os)
 endif ()
-
-add_library(hashmap hashmap.c)
-target_link_libraries(hashmap PRIVATE log os)
 
 add_library(minIni minIni.c)
 

@@ -30,6 +30,7 @@
 #include <fcntl.h>
 #include <uuid/uuid.h>
 
+#include "hashmap.h"
 #include "utarray.h"
 #include "allocs.h"
 #include "os.h"
@@ -1348,6 +1349,41 @@ int read_file_string(char *path, char **out) {
   os_free(data);
   return 0;
 }
+
+int get_commands_paths(char *commands[], UT_array *bin_path_arr,
+                       hmap_str_keychar **hmap_bin_paths) {
+  if (bin_path_arr == NULL) {
+    log_error("bin_path_arr param NULL");
+    return -1;
+  }
+
+  if (commands == NULL) {
+    log_error("commands param NULL");
+    return -1;
+  }
+
+  *hmap_bin_paths = NULL;
+
+  for (uint8_t idx = 0; commands[idx] != NULL; idx++) {
+    log_debug("Getting %s command...", commands[idx]);
+    char *path = get_secure_path(bin_path_arr, commands[idx], false);
+    if (path == NULL) {
+      log_trace("%s command not found", commands[idx]);
+    } else {
+      log_debug("%s command found at %s", commands[idx], path);
+      if (!hmap_str_keychar_put(hmap_bin_paths, commands[idx], path)) {
+        log_error("hmap_str_keychar_put error");
+        os_free(path);
+        hmap_str_keychar_free(hmap_bin_paths);
+        return -1;
+      }
+      os_free(path);
+    }
+  }
+
+  return 0;
+}
+
 // void *os_malloc(size_t size)
 // {
 //   void *ptr = malloc(size);

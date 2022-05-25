@@ -100,6 +100,11 @@ static int eloop_sock_table_add_sock(struct eloop_data *eloop,
   struct eloop_sock *tmp;
   int new_max_sock;
 
+  if (eloop == NULL) {
+    log_error("eloop param is NULL");
+    return -1;
+  }
+
   if (sock > eloop->max_sock)
     new_max_sock = sock;
   else
@@ -161,6 +166,11 @@ static void eloop_sock_table_remove_sock(struct eloop_data *eloop,
                                          int sock) {
   int i;
 
+  if (eloop == NULL) {
+    log_error("eloop param is NULL");
+    return;
+  }
+
   if (table == NULL || table->table == NULL || table->count == 0)
     return;
 
@@ -191,6 +201,11 @@ static void eloop_sock_table_dispatch(struct eloop_data *eloop,
   struct eloop_sock *table;
   int i;
 
+  if (eloop == NULL) {
+    log_error("eloop param is NULL");
+    return;
+  }
+
   for (i = 0; i < nfds; i++) {
     table = &eloop->fd_table[events[i].data.fd];
     if (table->handler == NULL)
@@ -203,7 +218,7 @@ static void eloop_sock_table_dispatch(struct eloop_data *eloop,
 }
 
 static void eloop_sock_table_destroy(struct eloop_sock_table *table) {
-  if (table) {
+  if (table != NULL) {
     int i;
     for (i = 0; i < table->count && table->table; i++) {
       log_trace("ELOOP: remaining socket: sock=%d eloop_data=%p user_data=%p "
@@ -222,6 +237,7 @@ int eloop_register_read_sock(struct eloop_data *eloop, int sock,
     log_error("eloop param is NULL");
     return -1;
   }
+
   return eloop_register_sock(eloop, sock, EVENT_TYPE_READ, handler, eloop_data,
                              user_data);
 }
@@ -232,6 +248,10 @@ void eloop_unregister_read_sock(struct eloop_data *eloop, int sock) {
 
 static struct eloop_sock_table *eloop_get_sock_table(struct eloop_data *eloop,
                                                      eloop_event_type type) {
+  if (eloop == NULL) {
+    return NULL;
+  }
+
   switch (type) {
     case EVENT_TYPE_READ:
       return &eloop->readers;
@@ -248,6 +268,11 @@ int eloop_register_sock(struct eloop_data *eloop, int sock,
                         eloop_event_type type, eloop_sock_handler handler,
                         void *eloop_data, void *user_data) {
   struct eloop_sock_table *table;
+
+  if (eloop == NULL) {
+    log_error("eloop param is NULL");
+    return -1;
+  }
 
   assert(sock >= 0);
   table = eloop_get_sock_table(eloop, type);
@@ -268,6 +293,11 @@ int eloop_register_timeout(struct eloop_data *eloop, unsigned long secs,
                            void *eloop_data, void *user_data) {
   struct eloop_timeout *timeout, *tmp;
   os_time_t now_sec, now_usec;
+
+  if (eloop == NULL) {
+    log_error("eloop param is NULL");
+    return -1;
+  }
 
   timeout = os_zalloc(sizeof(*timeout));
   if (timeout == NULL)
@@ -317,6 +347,11 @@ int eloop_register_timeout(struct eloop_data *eloop, unsigned long secs,
 }
 
 static void eloop_remove_timeout(struct eloop_timeout *timeout) {
+  if (timeout == NULL) {
+    log_error("timeout is NULL");
+    return;
+  }
+
   dl_list_del(&timeout->list);
   os_free(timeout);
 }
@@ -326,6 +361,11 @@ int eloop_cancel_timeout(struct eloop_data *eloop,
                          void *user_data) {
   struct eloop_timeout *timeout, *prev;
   int removed = 0;
+
+  if (eloop == NULL) {
+    log_error("eloop param is NULL");
+    return -1;
+  }
 
   dl_list_for_each_safe(timeout, prev, &eloop->timeout, struct eloop_timeout,
                         list) {
@@ -346,6 +386,11 @@ int eloop_cancel_timeout_one(struct eloop_data *eloop,
   struct eloop_timeout *timeout, *prev;
   int removed = 0;
   struct os_reltime now;
+
+  if (eloop == NULL) {
+    log_error("eloop param is NULL");
+    return -1;
+  }
 
   os_get_reltime(&now);
   remaining->sec = remaining->usec = 0;
@@ -369,6 +414,11 @@ int eloop_is_timeout_registered(struct eloop_data *eloop,
                                 void *user_data) {
   struct eloop_timeout *tmp;
 
+  if (eloop == NULL) {
+    log_error("eloop param is NULL");
+    return -1;
+  }
+
   dl_list_for_each(tmp, &eloop->timeout, struct eloop_timeout, list) {
     if (tmp->handler == handler && tmp->eloop_data == eloop_data &&
         tmp->user_data == user_data)
@@ -384,6 +434,11 @@ int eloop_deplete_timeout(struct eloop_data *eloop, unsigned long req_secs,
                           void *user_data) {
   struct os_reltime now, requested, remaining;
   struct eloop_timeout *tmp;
+
+  if (eloop == NULL) {
+    log_error("eloop param is NULL");
+    return -1;
+  }
 
   dl_list_for_each(tmp, &eloop->timeout, struct eloop_timeout, list) {
     if (tmp->handler == handler && tmp->eloop_data == eloop_data &&
@@ -411,6 +466,11 @@ int eloop_replenish_timeout(struct eloop_data *eloop, unsigned long req_secs,
                             void *user_data) {
   struct os_reltime now, requested, remaining;
   struct eloop_timeout *tmp;
+
+  if (eloop == NULL) {
+    log_error("eloop param is NULL");
+    return -1;
+  }
 
   dl_list_for_each(tmp, &eloop->timeout, struct eloop_timeout, list) {
     if (tmp->handler == handler && tmp->eloop_data == eloop_data &&
@@ -524,6 +584,11 @@ void eloop_run(struct eloop_data *eloop) {
   int res;
   struct os_reltime tv, now;
 
+  if (eloop == NULL) {
+    log_error("eloop param is NULL");
+    return;
+  }
+
   while (!eloop->terminate &&
          (!dl_list_empty(&eloop->timeout) || eloop->readers.count > 0 ||
           eloop->writers.count > 0 || eloop->exceptions.count > 0)) {
@@ -605,7 +670,14 @@ out:
   return;
 }
 
-void eloop_terminate(struct eloop_data *eloop) { eloop->terminate = 1; }
+void eloop_terminate(struct eloop_data *eloop) {
+  if (eloop == NULL) {
+    log_error("eloop param is NULL");
+    return;
+  }
+
+  eloop->terminate = 1;
+}
 
 /**
  * eloop_destroy - Free any resources allocated for the event loop
@@ -616,6 +688,11 @@ void eloop_terminate(struct eloop_data *eloop) { eloop->terminate = 1; }
 void eloop_destroy(struct eloop_data *eloop) {
   struct eloop_timeout *timeout, *prev;
   struct os_reltime now;
+
+  if (eloop == NULL) {
+    log_error("eloop param is NULL");
+    return;
+  }
 
   if (eloop->epollfd == -1) {
     log_trace("eloop.epollfd is not initialized");
@@ -652,11 +729,17 @@ void eloop_free(struct eloop_data *eloop) {
   if (eloop == NULL) {
     return;
   }
+
   eloop_destroy(eloop);
   os_free(eloop);
 }
 
 int eloop_terminated(struct eloop_data *eloop) {
+  if (eloop == NULL) {
+    log_error("eloop param is NULL");
+    return -1;
+  }
+
   return eloop->terminate /*|| eloop->pending_terminate*/;
 }
 

@@ -66,6 +66,11 @@ int send_events(struct supervisor_context *context, char *name,
   struct client_address *p = NULL;
   char *send_buf = NULL;
   char args_buf[MAX_SEND_EVENTS_BUF_SIZE];
+
+  if (context->subscribers_array == NULL) {
+    return 0;
+  }
+
   vsnprintf(args_buf, MAX_SEND_EVENTS_BUF_SIZE, format, args);
 
   if ((send_buf = os_zalloc(strlen(name) + strlen(args_buf) + 2)) == NULL) {

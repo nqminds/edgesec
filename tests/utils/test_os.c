@@ -20,6 +20,8 @@
 #include "utils/utarray.h"
 
 static void command_out_fn(void *ctx, void *buf, size_t count) {
+  (void)ctx;
+
   if (strncmp("Linux\n", buf, count) != 0) {
     fail();
   }
@@ -464,6 +466,8 @@ bool dir_fn(char *dirpath, void *args) {
 }
 
 static void test_list_dir(void **state) {
+  (void)state;
+
   int is_uname = 0;
   int ret = list_dir("/bin", dir_fn, &is_uname);
   assert_int_equal(ret, 0);
@@ -493,6 +497,10 @@ static int test_make_dirs_to_path_setup(void **state) {
 // recursively delete folder using ftw
 static int rm_file(const char *pathname, const struct stat *sbuf, int type,
                    struct FTW *ftwb) {
+  (void)sbuf;
+  (void)type;
+  (void)ftwb;
+
   if (remove(pathname) < 0) {
     perror("ERROR: remove");
     return -1;
@@ -552,6 +560,9 @@ static void test_make_dirs_to_path(void **state) {
 }
 
 int main(int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
+
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {

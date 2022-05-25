@@ -33,8 +33,6 @@
 #include "hashmap.h"
 #include "uthash.h"
 
-hmap_str_keychar *hmap_str_keychar_new(void) { return NULL; }
-
 char *hmap_str_keychar_get(hmap_str_keychar **hmap, char *keyptr) {
   hmap_str_keychar *s;
 

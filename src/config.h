@@ -72,6 +72,8 @@ struct app_config {
   UT_array *config_ifinfo_array; /**< Interface list mapping bridge interface
                                     name and IP address range. */
   char domain_server_path[MAX_OS_PATH_LEN]; /**< Path to the control server. */
+  char connection_db_path[MAX_OS_PATH_LEN]; /**< Specifies the path to the
+                                               connection sqlite3 dbs */
   char db_path[MAX_OS_PATH_LEN]; /**< Specifies the path to the sqlite3 dbs */
 #ifdef WITH_CRYPTO_SERVICE
   char crypt_db_path[MAX_OS_PATH_LEN]; /**< Specifies the crypt db path to the

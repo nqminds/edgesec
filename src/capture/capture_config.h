@@ -391,7 +391,7 @@ struct mdns_query_meta {
                              unicast-response is desired */
   uint16_t qclass : 15;   /**< Class code, 1 a.k.a. "IN" for the Internet and IP
                              networks */
-} __attribute__((packed));
+} STRUCT_PACKED;
 
 /**
  * @brief mDNS response meta definition
@@ -406,7 +406,7 @@ struct mdns_answer_meta {
   uint32_t ttl; /**< Time interval (in seconds) that the RR should be cached */
   uint16_t rdlength; /**< Integer representing the length (in octets) of the
                         RDATA field */
-} __attribute__((packed));
+} STRUCT_PACKED;
 
 /**
  * @brief DHCP header definition (truncated)
@@ -428,7 +428,7 @@ struct dhcp_header {
   uint32_t giaddr;     /**< IP address of DHCP relay */
   uint8_t chaddr[16];  /**< Client Hardware Address */
   uint8_t legacy[192]; /**< 192 octets of 0s. BOOTP legacy */
-} __attribute__((packed));
+} STRUCT_PACKED;
 
 /**
  * @brief Capture structure definition

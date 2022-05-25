@@ -367,10 +367,6 @@ void close_supervisor(struct supervisor_context *context) {
   }
 }
 
-void test_fn(struct supervisor_context *context) {
-  log_trace("ELOOP %p", context->eloop);
-}
-
 int run_supervisor(char *server_path, struct supervisor_context *context) {
   char *db_path = NULL;
 

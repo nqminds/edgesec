@@ -57,7 +57,6 @@ void ap_service_callback(struct supervisor_context *context, uint8_t mac_addr[],
  */
 int run_supervisor(char *server_path, struct supervisor_context *context);
 
-void test_fn(struct supervisor_context *context);
 /**
  * @brief Closes the supervisor service
  *

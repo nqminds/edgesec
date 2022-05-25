@@ -82,7 +82,7 @@ void log_lock_fun(bool lock) {
   }
 }
 
-void eloop_sighup_handler(int sig, void *ctx) {
+void sighup_handler(int sig, void *ctx) {
   (void)sig;
 
   char *log_filename = (char *)ctx;
@@ -254,16 +254,11 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
 
-  // if (eloop_register_signal_reconfig(eloop_sighup_handler,
-  //                                    (void *)log_filename) < 0) {
-  //   fprintf(stderr, "Failed to register signal");
-  //   return EXIT_FAILURE;
-  // }
-
   os_init_random_seed();
 
-  if (!run_engine(&config)) {
+  if (run_engine(&config) < 0) {
     fprintf(stderr, "Failed to start edgesec engine.\n");
+    return EXIT_FAILURE;
   } else
     fprintf(stderr, "Edgesec engine stopped.\n");
 

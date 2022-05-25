@@ -36,6 +36,7 @@
 #include <stdbool.h>
 #include <stdarg.h>
 
+#include "hashmap.h"
 #include "utarray.h"
 #include "log.h"
 
@@ -625,6 +626,16 @@ ssize_t read_file(char *path, uint8_t **out);
  */
 int read_file_string(char *path, char **out);
 
+/**
+ * @brief Returns the absolute path of system binaries
+ *
+ * @param commands Array of system binaries name strings
+ * @param bin_path_arr Array of system binaries default fodler paths
+ * @param hmap_bin_paths Map of systems binaries to paths
+ * @return int 0 on success, -1 on failure
+ */
+int get_commands_paths(char *commands[], UT_array *bin_path_arr,
+                       hmap_str_keychar **hmap_bin_paths);
 #ifdef __cplusplus
 }
 #endif

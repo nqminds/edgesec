@@ -47,8 +47,8 @@ int init_context(struct app_config *app_config, struct supervisor_context *ctx);
  *
  * @param app_config The app configuration structures, setting WiFi network
  * config params.
- * @return @c true if succes, @c false if a service fails to start.
+ * @return @c 0 if succes, @c -1 if a service fails to start.
  */
-bool run_engine(struct app_config *app_config);
+int run_engine(struct app_config *app_config);
 
 #endif
