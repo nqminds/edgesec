@@ -28,7 +28,7 @@
 #include <string.h>
 
 #include "packet_queue.h"
-#include "../packet_decoder.h"
+#include "packet_decoder.h"
 #include "../../utils/allocs.h"
 #include "../../utils/os.h"
 #include "../../utils/log.h"

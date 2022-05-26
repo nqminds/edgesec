@@ -31,7 +31,7 @@
 #include "../utils/os.h"
 #include "../utils/utarray.h"
 #include "../utils/uthash.h"
-#include "../capture/mdns_decoder.h"
+#include "../capture/header_middleware/mdns_decoder.h"
 
 /**
  * @brief MDNS connection structure

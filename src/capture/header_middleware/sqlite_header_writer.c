@@ -31,7 +31,7 @@
 #include <sqlite3.h>
 
 #include "sqlite_header_writer.h"
-#include "../packet_decoder.h"
+#include "packet_decoder.h"
 
 #include "../../utils/allocs.h"
 #include "../../utils/os.h"

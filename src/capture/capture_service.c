@@ -37,12 +37,12 @@
 
 #include "capture_config.h"
 #include "capture_service.h"
-#include "packet_decoder.h"
-#include "middleware/packet_queue.h"
-#include "middleware/pcap_queue.h"
+#include "header_middleware/packet_decoder.h"
+#include "header_middleware/packet_queue.h"
+#include "pcap_middleware/pcap_queue.h"
 #include "pcap_service.h"
-#include "middleware/sqlite_header_writer.h"
-#include "middleware/sqlite_pcap_writer.h"
+#include "header_middleware/sqlite_header_writer.h"
+#include "pcap_middleware/sqlite_pcap_writer.h"
 
 #include "../utils/domain.h"
 #include "../utils/squeue.h"
@@ -105,6 +105,7 @@ void pcap_callback(const void *ctx, const void *pcap_ctx, char *ltype,
 void eloop_read_fd_handler(int sock, void *eloop_ctx, void *sock_ctx) {
   (void)sock;
   (void)sock_ctx;
+
   struct pcap_context *pc = (struct pcap_context *)eloop_ctx;
 
   if (capture_pcap_packet(pc) < 0) {
@@ -214,14 +215,6 @@ int get_pcap_folder_path(char *capture_db_path, char *pcap_path) {
   os_free(full_path);
 
   return 0;
-}
-
-void trace_callback(char *sqlite_statement, void *ctx) {
-  struct string_queue *squeue = (struct string_queue *)ctx;
-
-  if (push_string_queue(squeue, sqlite_statement) < 0) {
-    log_trace("push_string_queue fail");
-  }
 }
 
 int run_capture(struct capture_conf *config) {

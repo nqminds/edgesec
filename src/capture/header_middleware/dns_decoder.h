@@ -18,35 +18,22 @@
  ****************************************************************************/
 
 /**
- * @file packet_decoder.h
+ * @file dns_decoder.h
  * @author Alexandru Mereacre
- * @brief File containing the definition of the packet decoder utilities.
+ * @brief File containing the definition of the dns packet decoder utilities.
  */
 
-#ifndef PACKET_DECODER_H
-#define PACKET_DECODER_H
+#ifndef DNS_DECODER_H
+#define DNS_DECODER_H
 
-#include <pcap.h>
-
-#include "../utils/utarray.h"
-#include "../utils/allocs.h"
-#include "../utils/os.h"
-
-#include "capture_config.h"
+#include "../capture_config.h"
+#include "packet_decoder.h"
 
 /**
- * @brief Extract packets from pcap packet data
+ * @brief Decode dns packet
  *
- * @param ltype The link type
- * @param header The packet header as per pcap
- * @param packet The packet data
- * @param interface The packet interface
- * @param id The packet id
- * @param tp_array The array of returned packet tuples
- * @return int Total count of packet tuples
+ * @param cpac The captyure packet structure
+ * @return true Success, false otherwise
  */
-int extract_packets(char *ltype, const struct pcap_pkthdr *header,
-                    const uint8_t *packet, char *interface, char *id,
-                    UT_array *tp_array);
-
+bool decode_dns_packet(struct capture_packet *cpac);
 #endif

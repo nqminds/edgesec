@@ -30,7 +30,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../packet_decoder.h"
+#include "packet_decoder.h"
 #include "../../utils/list.h"
 
 /**

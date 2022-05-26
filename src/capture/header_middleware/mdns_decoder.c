@@ -36,14 +36,14 @@
 #include <netinet/udp.h>
 #include <arpa/inet.h>
 
-#include "../utils/utarray.h"
-#include "../utils/allocs.h"
-#include "../utils/os.h"
-#include "../utils/iface.h"
-#include "../utils/hash.h"
-#include "../utils/squeue.h"
+#include "../../utils/utarray.h"
+#include "../../utils/allocs.h"
+#include "../../utils/os.h"
+#include "../../utils/iface.h"
+#include "../../utils/hash.h"
+#include "../../utils/squeue.h"
 
-#include "capture_config.h"
+#include "../capture_config.h"
 #include "packet_decoder.h"
 #include "mdns_decoder.h"
 

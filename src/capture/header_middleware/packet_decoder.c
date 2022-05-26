@@ -43,17 +43,17 @@
 
 #include <pcap.h>
 
-#include "../utils/log.h"
-#include "../utils/allocs.h"
-#include "../utils/os.h"
-#include "../utils/net.h"
-#include "../utils/hash.h"
-#include "../utils/utarray.h"
+#include "../../utils/log.h"
+#include "../../utils/allocs.h"
+#include "../../utils/os.h"
+#include "../../utils/net.h"
+#include "../../utils/hash.h"
+#include "../../utils/utarray.h"
 
 #include "packet_decoder.h"
 #include "dns_decoder.h"
 #include "mdns_decoder.h"
-#include "capture_config.h"
+#include "../capture_config.h"
 
 #define LINKTYPE_LINUX_SLL "LINUX_SLL"
 #define LINKTYPE_ETHERNET "EN10MB"

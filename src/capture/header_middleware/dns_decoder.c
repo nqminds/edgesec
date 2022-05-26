@@ -36,12 +36,12 @@
 #include <netinet/udp.h>
 #include <arpa/inet.h>
 
-#include "../utils/utarray.h"
-#include "../utils/allocs.h"
-#include "../utils/os.h"
-#include "../utils/hash.h"
+#include "../../utils/utarray.h"
+#include "../../utils/allocs.h"
+#include "../../utils/os.h"
+#include "../../utils/hash.h"
 
-#include "capture_config.h"
+#include "../capture_config.h"
 #include "packet_decoder.h"
 
 void decode_dns_questions(uint8_t *payload, struct capture_packet *cpac) {
