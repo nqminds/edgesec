@@ -335,7 +335,7 @@ ssize_t process_set_ip_cmd(int sock, struct client_address *client_addr,
   ptr = (char **)utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
     os_strlcpy(dhcp_type, *ptr, 4);
-    log_trace("Received DHCP request with type=%s", dhcp_type);
+    log_debug("Received DHCP request with type=%s", dhcp_type);
     if (strcmp(dhcp_type, "add") == 0) {
       ip_type = DHCP_IP_NEW;
     } else if (strcmp(dhcp_type, "old") == 0) {

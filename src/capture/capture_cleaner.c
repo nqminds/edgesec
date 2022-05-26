@@ -47,6 +47,7 @@ static const UT_icd pcap_file_meta_icd = {sizeof(struct pcap_file_meta), NULL,
                                           NULL, NULL};
 
 struct cleaner_context {
+  struct eloop_data *eloop;
   sqlite3 *pcap_db;
   char pcap_path[MAX_OS_PATH_LEN];
   uint64_t store_size;
@@ -106,6 +107,7 @@ int clean_capture(struct cleaner_context *context) {
 
 void eloop_cleaner_handler(void *eloop_ctx, void *user_ctx) {
   (void)eloop_ctx;
+
   int res = 0;
   uint64_t lt, ht, sum = 0;
   uint64_t caplen = 0;
@@ -147,8 +149,9 @@ void eloop_cleaner_handler(void *eloop_ctx, void *user_ctx) {
     context->next_timestamp = 0;
   }
 
-  if (eloop_register_timeout(CLEANER_CHECK_INTERVAL, 0, eloop_cleaner_handler,
-                             (void *)NULL, (void *)user_ctx) == -1) {
+  if (eloop_register_timeout(context->eloop, CLEANER_CHECK_INTERVAL, 0,
+                             eloop_cleaner_handler, (void *)NULL,
+                             (void *)user_ctx) == -1) {
     log_debug("eloop_register_timeout fail");
   }
 }
@@ -199,24 +202,25 @@ int start_capture_cleaner(struct capture_conf *config) {
   }
   os_free(pcap_db_path);
 
-  if (eloop_init()) {
-    log_trace("eloop_init fail");
+  if ((context.eloop = eloop_init()) == NULL) {
+    log_error("eloop_init fail");
     free_sqlite_pcap_db(context.pcap_db);
     return -1;
   }
 
-  if (eloop_register_timeout(CLEANER_CHECK_INTERVAL, 0, eloop_cleaner_handler,
-                             (void *)NULL, (void *)&context) == -1) {
+  if (eloop_register_timeout(context.eloop, CLEANER_CHECK_INTERVAL, 0,
+                             eloop_cleaner_handler, (void *)NULL,
+                             (void *)&context) == -1) {
     log_debug("eloop_register_timeout fail");
     free_sqlite_pcap_db(context.pcap_db);
-    eloop_destroy();
+    eloop_free(context.eloop);
     return -1;
   }
 
-  eloop_run();
+  eloop_run(context.eloop);
   log_info("Cleaning ended.");
 
   free_sqlite_pcap_db(context.pcap_db);
-  eloop_destroy();
+  eloop_free(context.eloop);
   return 0;
 }

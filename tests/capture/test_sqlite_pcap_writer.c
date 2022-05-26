@@ -36,6 +36,9 @@ static void test_save_sqlite_pcap_entry(void **state) {
   free_sqlite_pcap_db(db);
 }
 int main(int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
+
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {

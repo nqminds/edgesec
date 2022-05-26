@@ -230,8 +230,9 @@ void eloop_tout_handler(void *eloop_ctx, void *user_ctx) {
     }
   }
 
-  if (eloop_register_timeout(0, context->process_interval, eloop_tout_handler,
-                             (void *)eloop_ctx, (void *)user_ctx) == -1) {
+  if (eloop_register_timeout(context->eloop, 0, context->process_interval,
+                             eloop_tout_handler, (void *)eloop_ctx,
+                             (void *)user_ctx) == -1) {
     log_debug("eloop_register_timeout fail");
   }
 }
@@ -374,8 +375,8 @@ int start_default_analyser(struct capture_conf *config) {
     }
   }
 
-  if (eloop_init()) {
-    log_debug("Failed to initialize event loop");
+  if ((context.eloop = eloop_init()) == NULL) {
+    log_error("eloop_init fail");
     goto fail;
   }
 
@@ -388,7 +389,8 @@ int start_default_analyser(struct capture_conf *config) {
   }
 
   if (pc != NULL) {
-    if (eloop_register_read_sock(pc->pcap_fd, eloop_read_fd_handler, (void *)pc,
+    if (eloop_register_read_sock(context.eloop, pc->pcap_fd,
+                                 eloop_read_fd_handler, (void *)pc,
                                  (void *)NULL) == -1) {
       log_debug("eloop_register_read_sock fail");
       goto fail;
@@ -398,18 +400,18 @@ int start_default_analyser(struct capture_conf *config) {
     goto fail;
   }
 
-  if (eloop_register_timeout(0, context.process_interval, eloop_tout_handler,
-                             (void *)pc, (void *)&context) == -1) {
+  if (eloop_register_timeout(context.eloop, 0, context.process_interval,
+                             eloop_tout_handler, (void *)pc,
+                             (void *)&context) == -1) {
     log_debug("eloop_register_timeout fail");
     goto fail;
   }
 
-  eloop_run();
+  eloop_run(context.eloop);
   log_info("Capture ended.");
 
   /* And close the session */
   close_pcap(pc);
-  eloop_destroy();
   free_packet_queue(context.pqueue);
   free_pcap_queue(context.cqueue);
   free_sqlite_header_db(context.header_db);
@@ -417,11 +419,11 @@ int start_default_analyser(struct capture_conf *config) {
   os_free(header_db_path);
   os_free(pcap_db_path);
   close(context.domain_client);
+  eloop_free(context.eloop);
   return 0;
 
 fail:
   close_pcap(pc);
-  eloop_destroy();
   free_packet_queue(context.pqueue);
   free_pcap_queue(context.cqueue);
   free_sqlite_header_db(context.header_db);
@@ -429,5 +431,6 @@ fail:
   os_free(header_db_path);
   os_free(pcap_db_path);
   close(context.domain_client);
+  eloop_free(context.eloop);
   return -1;
 }

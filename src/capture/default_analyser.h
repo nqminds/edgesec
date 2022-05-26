@@ -29,12 +29,14 @@
 #include <sqlite3.h>
 #include <pcap.h>
 
+#include "../utils/eloop.h"
 #include "capture_config.h"
 
 #define MAX_DB_NAME_LENGTH MAX_RANDOM_UUID_LEN + STRLEN(SQLITE_EXTENSION)
 #define MAX_PCAP_FILE_NAME_LENGTH MAX_RANDOM_UUID_LEN + STRLEN(PCAP_EXTENSION)
 
 struct capture_context {
+  struct eloop_data *eloop;
   uint32_t process_interval;
   struct packet_queue *pqueue;
   struct pcap_queue *cqueue;
