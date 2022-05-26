@@ -75,10 +75,10 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
     case DHCP_IP_NEW:
     case DHCP_IP_OLD:
       if (strcmp(info.ip_addr, ip_addr) == 0) {
-        log_trace("IP %s already assigned as primary", ip_addr);
+        log_debug("IP %s already assigned as primary", ip_addr);
         return 0;
       } else if (strcmp(info.ip_sec_addr, ip_addr) == 0) {
-        log_trace("IP %s already assigned as secondary", ip_addr);
+        log_debug("IP %s already assigned as secondary", ip_addr);
         return 0;
       }
 
@@ -87,7 +87,7 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
       } else if (strlen(info.ip_addr) && !strlen(info.ip_sec_addr)) {
         os_strlcpy(info.ip_sec_addr, ip_addr, IP_LEN);
       } else {
-        log_trace("IPs already present");
+        log_debug("IPs already present");
         return -1;
       }
       break;
@@ -109,7 +109,7 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
   os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
   os_memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
 
-  log_trace("SET_IP type=%d mac=" MACSTR " ip=%s if=%s", ip_type,
+  log_debug("SET_IP type=%d mac=" MACSTR " ip=%s if=%s", ip_type,
             MAC2STR(mac_addr), ip_addr, ifname);
   if (!save_mac_mapper(context, conn)) {
     log_error("save_mac_mapper fail");
@@ -130,7 +130,7 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
       return -1;
     }
   } else if (!add && info.nat) {
-    log_trace("Deleting NAT rule");
+    log_debug("Deleting NAT rule");
     if (remove_nat_ip(context, ip_addr) < 0) {
       log_error("remove_nat_ip fail");
       return -1;

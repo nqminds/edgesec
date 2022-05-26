@@ -264,6 +264,9 @@ static void test_concat_string_queue(void **state) {
 }
 
 int main(int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
+
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {

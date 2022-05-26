@@ -59,7 +59,7 @@ int check_table_exists(sqlite3 *db, char *table_name) {
   rc = sqlite3_step(res);
 
   if (rc == SQLITE_ROW) {
-    log_debug("Found table %s", sqlite3_column_text(res, 0));
+    log_trace("Found table %s", sqlite3_column_text(res, 0));
     sqlite3_finalize(res);
     return 1;
   }

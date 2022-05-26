@@ -59,6 +59,9 @@ static void test_hashmap_str_keychar(void **state) {
 }
 
 int main(int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
+
   log_set_quiet(true);
 
   const struct CMUnitTest tests[] = {

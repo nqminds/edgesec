@@ -43,6 +43,9 @@ static void test_utarray(void **state) {
 }
 
 int main(int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
+
   const struct CMUnitTest tests[] = {cmocka_unit_test(test_utarray)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);

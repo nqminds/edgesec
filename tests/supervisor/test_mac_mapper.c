@@ -130,6 +130,9 @@ static void test_get_mac_list(void **state) {
 }
 
 int main(int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
+
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {cmocka_unit_test(test_put_mac_mapper),

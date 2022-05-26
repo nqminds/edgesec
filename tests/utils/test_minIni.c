@@ -104,6 +104,9 @@ static void test_ini_one(void **state) {
 }
 
 int main(int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
+
   const struct CMUnitTest tests[] = {
       cmocka_unit_test_setup_teardown(test_ini_one, setup, teardown)};
 

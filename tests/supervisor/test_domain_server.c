@@ -88,11 +88,9 @@ static void test_read_domain_data_s(void **state) {
 
   struct client_address addr;
   struct sockaddr_un svaddr;
-  struct sockaddr_un claddr;
   char *send_buf = "domain";
   char read_buf[100];
   char client_addr[100];
-  int addr_len;
 
   char *server_file_path = tempnam(NULL, TMP_PFX);
   char *client_file_path = tempnam(NULL, TMP_PFX);
@@ -202,6 +200,9 @@ static void test_write_domain_data(void **state) {
 }
 
 int main(int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
+
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
