@@ -37,36 +37,24 @@
 #include "../utils/log.h"
 #include "../utils/sqliteu.h"
 
-void free_sqlite_pcap_db(sqlite3 *db) {
-  if (db != NULL) {
-    sqlite3_close(db);
-  }
-}
-
-int open_sqlite_pcap_db(char *db_path, sqlite3 **sql) {
-  sqlite3 *db = NULL;
+int init_sqlite_pcap_db(sqlite3 *db) {
   int rc;
 
-  if ((rc = sqlite3_open(db_path, &db)) != SQLITE_OK) {
-    log_debug("Cannot open database: %s %s", sqlite3_errmsg(db), db_path);
-    sqlite3_close(db);
+  if (db == NULL) {
+    log_error("db param is NULL");
     return -1;
   }
-
-  *sql = db;
 
   rc = check_table_exists(db, PCAP_TABLE_NAME);
 
   if (rc == 0) {
     log_debug("pcap table doesn't exist creating...");
     if (execute_sqlite_query(db, PCAP_CREATE_TABLE) < 0) {
-      log_debug("execute_sqlite_query fail");
-      free_sqlite_pcap_db(db);
+      log_error("execute_sqlite_query fail");
       return -1;
     }
   } else if (rc < 0) {
-    log_debug("check_table_exists fail");
-    free_sqlite_pcap_db(db);
+    log_error("check_table_exists fail");
     return -1;
   }
 

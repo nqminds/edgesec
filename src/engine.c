@@ -31,6 +31,7 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <libgen.h>
+#include <pthread.h>
 
 #include "utils/log.h"
 #include "utils/utarray.h"
@@ -42,6 +43,8 @@
 #include "utils/iface_mapper.h"
 #include "utils/ifaceu.h"
 #include "utils/iface.h"
+
+#include "capture/capture_service.h"
 
 #include "supervisor/supervisor.h"
 #include "supervisor/network_commands.h"
@@ -281,7 +284,6 @@ int init_context(struct app_config *app_config,
 
   os_memcpy(ctx->nat_bridge, app_config->nat_bridge, IFNAMSIZ);
   os_memcpy(ctx->nat_interface, app_config->nat_interface, IFNAMSIZ);
-  os_memcpy(ctx->db_path, app_config->db_path, MAX_OS_PATH_LEN);
 
   os_memcpy(&ctx->capture_config, &app_config->capture_config,
             sizeof(struct capture_conf));
@@ -379,11 +381,6 @@ int run_engine(struct app_config *app_config) {
     return -1;
   }
 
-  if (create_dir(app_config->db_path, S_IRWXU | S_IRWXG) < 0) {
-    log_error("create_dir fail");
-    return -1;
-  }
-
   if (init_context(app_config, context) < 0) {
     log_error("init_context fail");
     goto run_engine_fail;
@@ -391,7 +388,6 @@ int run_engine(struct app_config *app_config) {
 
   log_info("AP name: %s", context->hconfig.ssid);
   log_info("AP interface: %s", context->hconfig.interface);
-  log_info("DB path: %s", context->db_path);
 
   if ((context->fw_ctx = fw_init_context(
            context->if_mapper, context->vlan_mapper, context->hmap_bin_paths,
@@ -500,11 +496,16 @@ int run_engine(struct app_config *app_config) {
   }
 #endif
 
+  // pthread_t id;
+  // run_capture_thread(&context->capture_config, &id);
+
   log_info("++++++++++++++++++");
   log_info("Running event loop");
   log_info("++++++++++++++++++");
 
   eloop_run(context->eloop);
+
+  // pthread_join(id, NULL);
 
   close_supervisor(context);
   close_ap(context);

@@ -575,15 +575,9 @@ char load_delim(const char *filename) {
 bool load_capture_config(const char *filename, struct capture_conf *config) {
   char *value = os_zalloc(INI_BUFFERSIZE);
 
-  // Load db param
-  ini_gets("system", "dbPath", "./", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->db_path, value, MAX_OS_PATH_LEN);
-  os_free(value);
-
-  // Load capture bin path
-  value = os_zalloc(INI_BUFFERSIZE);
-  ini_gets("capture", "captureBinPath", "", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->capture_bin_path, value, MAX_OS_PATH_LEN);
+  // Load captureDbParam param
+  ini_gets("capture", "captureDbPath", "./", value, INI_BUFFERSIZE, filename);
+  os_strlcpy(config->capture_db_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
   // Load capture interface name
@@ -703,12 +697,6 @@ bool load_system_config(const char *filename, struct app_config *config) {
   ret = ini_gets("system", "connectionDbPath", "", value, INI_BUFFERSIZE,
                  filename);
   os_strlcpy(config->connection_db_path, value, MAX_OS_PATH_LEN);
-  os_free(value);
-
-  // Load db param
-  value = os_zalloc(INI_BUFFERSIZE);
-  ret = ini_gets("system", "dbPath", "./", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->db_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
 #ifdef WITH_CRYPTO_SERVICE

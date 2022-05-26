@@ -15,7 +15,7 @@
 #include "utils/utarray.h"
 #include "utils/log.h"
 #include "utils/eloop.h"
-#include "capture/default_analyser.h"
+#include "capture/capture_service.h"
 #include "capture/sqlite_header_writer.h"
 #include "capture/sqlite_pcap_writer.h"
 #include "capture/pcap_service.h"
@@ -25,26 +25,17 @@
 static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL,
                                    NULL};
 
-int __wrap_open_sqlite_header_db(char *db_path, trace_callback_fn fn,
-                                 void *trace_ctx, sqlite3 **sql) {
-  (void)db_path;
-  (void)fn;
-  (void)trace_ctx;
-  (void)sql;
+int __wrap_init_sqlite_header_db(sqlite3 *db) {
+  (void)db;
 
   return 0;
 }
 
-int __wrap_open_sqlite_pcap_db(char *db_path, sqlite3 **sql) {
-  (void)db_path;
-  (void)sql;
+int __wrap_init_sqlite_pcap_db(sqlite3 *db) {
+  (void)db;
 
   return 0;
 }
-
-void __wrap_free_sqlite_header_db(sqlite3 *db) { (void)db; }
-
-void __wrap_free_sqlite_pcap_db(sqlite3 *db) { (void)db; }
 
 int __wrap_run_pcap(char *interface, bool immediate, bool promiscuous,
                     int timeout, char *filter, bool nonblock,
@@ -147,7 +138,6 @@ struct pcap_queue *__wrap_push_pcap_queue(struct pcap_queue *queue,
 void capture_config(struct capture_conf *config) {
   os_memset(config, 0, sizeof(struct capture_conf));
 
-  strcpy(config->capture_bin_path, "./");
   strcpy(config->capture_interface, "wlan0");
   config->promiscuous = true;
   config->immediate = true;
@@ -155,11 +145,10 @@ void capture_config(struct capture_conf *config) {
   config->process_interval = 1000;
   config->file_write = true;
   config->db_write = true;
-  strcpy(config->db_path, "/tmp");
   strcpy(config->filter, "port 80");
 }
 
-static void test_start_default_analyser(void **state) {
+static void test_run_capture(void **state) {
   (void)state; /* unused */
 
   struct capture_conf config;
@@ -170,7 +159,7 @@ static void test_start_default_analyser(void **state) {
   assert_non_null(eloop);
 
   will_return_always(__wrap_eloop_init, eloop);
-  int ret = start_default_analyser(&config);
+  int ret = run_capture(&config);
 
   assert_int_equal(ret, 0);
   os_free(eloop);
@@ -202,9 +191,8 @@ int main(int argc, char *argv[]) {
 
   log_set_quiet(false);
 
-  const struct CMUnitTest tests[] = {
-      cmocka_unit_test(test_start_default_analyser),
-      cmocka_unit_test(test_pcap_callback)};
+  const struct CMUnitTest tests[] = {cmocka_unit_test(test_run_capture),
+                                     cmocka_unit_test(test_pcap_callback)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

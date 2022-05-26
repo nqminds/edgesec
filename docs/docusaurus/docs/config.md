@@ -27,27 +27,20 @@ execCapture = true
 execMdnsForward = true
 execIptables = true
 setIpForward = true
-dbPath = "./db"
 cryptDbPath = "./crypt.sqlite"
 cryptKeyId = "master"
 pidFilePath = "/var/run/edgesec.pid"
 
 [capture]
-captureBinPath = "./src/capsrv"
+captureDbPath = "./capture.sqlite"
 captureInterface = "enp2s0"
 filter = ""
 promiscuous = false
 bufferTimeout = 10
 processInterval = 10
 immediate = false
-analyser = "default"
 fileWrite = true
 dbWrite = true
-dbSync = false
-dbSyncAddress = "localhost"
-dbSyncPort = 8512
-syncCaPath = "./cert/CA/CA.pem"
-command = "SET_ALERT"
 syncStoreSize = 1000
 syncSendSize = 20
 captureStoreSize = 1000000
@@ -231,10 +224,6 @@ If set to `true`, `edgesec` will execute the `iptables` command.
 
 If set to true `edgesec` will set the ip forward os system param.
 
-### dbPath (string)
-
-The path to the `db` folder.
-
 ### cryptDbPath (string)
 
 The path to the `crypt` sqlite db.
@@ -250,10 +239,6 @@ The path to the edgesec PID file.
 ## [capture] group
 
 The capture group contains all the parameters that are reponsible to configure the `capture` app service.
-
-### captureBinPath (string)
-
-The path to the `capsrv` service.
 
 ### captureInterface (string)
 
@@ -278,10 +263,6 @@ The interval in milliseconds to process a packet from the queue. The default val
 ### immediate (boolean)
 
 If set to `true` the capture interface is set to immediate mode. The default value is `false`.
-
-### analyser (string)
-
-The analyser name for the capture service. Currently supported `default` and `ndpi` analysers.
 
 ### fileWrite (boolean)
 

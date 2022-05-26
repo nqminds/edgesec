@@ -33,19 +33,11 @@ if (USE_MDNS_SERVICE)
   target_compile_definitions(engine PUBLIC WITH_MDNS_SERVICE)
   target_link_libraries(engine PRIVATE mdns_service)
 endif ()
-target_link_libraries(engine PRIVATE net log iface_mapper os sqlite_macconn_writer firewall_service eloop supervisor network_commands mac_mapper ap_service firewall_service dhcp_service)
+target_link_libraries(engine PRIVATE capture_service net log iface_mapper os sqlite_macconn_writer firewall_service eloop supervisor network_commands mac_mapper ap_service firewall_service dhcp_service)
 
 add_library(config config.c)
 target_include_directories(config PUBLIC $<TARGET_PROPERTY:iface,INCLUDE_DIRECTORIES> ${LIBSQLITE_INCLUDE_DIR})
 target_link_libraries(config PRIVATE minIni os log)
-
-if (USE_MDNS_SERVICE AND USE_CAPTURE_SERVICE)
-  add_executable(mdnsf mdnsf.c)
-  target_include_directories(mdnsf PRIVATE ${LIBPCAP_INCLUDE_PATH} ${PROJECT_BINARY_DIR} ${LIBSQLITE_INCLUDE_DIR})
-  target_link_libraries(mdnsf PRIVATE mdns_service config minIni squeue iface_mapper log os)
-  # link time optimization
-  set_target_properties(mdnsf PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
-endif ()
 
 add_executable(edgesec edgesec.c)
 if (USE_CRYPTO_SERVICE)

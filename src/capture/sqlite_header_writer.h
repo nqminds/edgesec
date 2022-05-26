@@ -40,7 +40,7 @@
 
 #define ETH_CREATE_TABLE                                                       \
   "CREATE TABLE eth (timestamp INTEGER NOT NULL, id TEXT NOT NULL, "           \
-  "caplen INTEGER, length INTEGER, ifname TEXT, hostname TEXT, "               \
+  "caplen INTEGER, length INTEGER, ifname TEXT, "                              \
   "ether_dhost TEXT, ether_shost TEXT, ether_type INTEGER, PRIMARY KEY "       \
   "(timestamp, id));"
 
@@ -108,7 +108,7 @@
 
 #define ETH_INSERT_INTO                                                        \
   "INSERT INTO eth VALUES(@timestamp, @id, @caplen, @length, @ifname, "        \
-  "@hostname, @ether_dhost, @ether_shost, @ether_type);"
+  "@ether_dhost, @ether_shost, @ether_type);"
 #define ARP_INSERT_INTO                                                        \
   "INSERT INTO arp VALUES(@id, "                                               \
   "@ar_hrd, @ar_pro, @ar_hln, @ar_pln, @ar_op, @arp_sha, @arp_spa, "           \
@@ -143,48 +143,21 @@
   "@op, @htype, @hlen, @hops, @xid, @secs, @flags, "                           \
   "@ciaddr, @yiaddr, @siaddr, @giaddr, @chaddr);"
 
-typedef void (*trace_callback_fn)(char *sqlite_statement, void *trace_ctx);
-
-struct sqlite_header_context {
-  sqlite3 *db;
-  trace_callback_fn trace_fn;
-  uint8_t *trace_ctx;
-};
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /**
  * @brief Save packets to sqlite db
  *
- * @param ctx The sqlite db context
+ * @param db The sqlite3 db
  * @param tp The packet tuple structure
  * @return int 0 on success, -1 o failure
  */
-int save_packet_statement(struct sqlite_header_context *ctx,
-                          struct tuple_packet *tp);
+int save_packet_statement(sqlite3 *db, struct tuple_packet *tp);
 
 /**
- * @brief Opens the sqlite3 header database
+ * @brief Initialises the sqlite3 header db tables
  *
- * @param db_path The path to sqlite3 db
- * @param trace_fn The callback to the trace callback function
- * @param trace_ctx The context for trace callback
- * @param ctx The returned sqlite db context
+ * @param db The sqlite3 db
  * @return 0 on success, -1 on failure
  */
-int open_sqlite_header_db(char *db_path, trace_callback_fn fn, void *trace_ctx,
-                          struct sqlite_header_context **ctx);
-
-/**
- * @brief Closes the sqlite db
- *
- * @param ctx The sqlite db context
- */
-void free_sqlite_header_db(struct sqlite_header_context *ctx);
-#ifdef __cplusplus
-}
-#endif
+int init_sqlite_header_db(sqlite3 *db);
 
 #endif

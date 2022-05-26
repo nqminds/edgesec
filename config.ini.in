@@ -24,20 +24,18 @@ execMdnsForward = true
 execFirewall = true
 setIpForward = true
 connectionDbPath = "@EDGESEC_full_local_lib_dir@/connection.sqlite"
-dbPath = "@EDGESEC_full_local_lib_dir@/db"
 cryptDbPath = "@EDGESEC_full_local_lib_dir@/crypt.sqlite"
 cryptKeyId = "master"
 pidFilePath = "@EDGESEC_full_runstate_dir@/edgesec.pid"
 
 [capture]
-captureBinPath = "@EDGESEC_full_bin_dir@/capsrv"
+captureDbPath = "@EDGESEC_full_local_lib_dir@/capture.sqlite"
 captureInterface = ""
 filter = ""
 promiscuous = false
 bufferTimeout = 10
 processInterval = 10
 immediate = false
-analyser = "default"
 fileWrite = false
 dbWrite = true
 syncStoreSize = 1000

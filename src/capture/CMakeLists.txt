@@ -43,19 +43,11 @@ if (USE_CAPTURE_SERVICE)
   target_include_directories(sqlite_pcap_writer PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
   target_link_libraries(sqlite_pcap_writer PRIVATE sqliteu log os SQLite::sqlite)
 
-  add_library(default_analyser default_analyser.c)
-
-  target_include_directories(default_analyser PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
-
   add_library(capture_cleaner capture_cleaner.c)
-
   target_include_directories(capture_cleaner PRIVATE ${LIBSQLITE_INCLUDE_DIR})
-  target_link_libraries(capture_cleaner PRIVATE sqlite_pcap_writer eloop log os SQLite::sqlite)
-
-  target_link_libraries(default_analyser PRIVATE dns_decoder pcap_service sqlite_header_writer sqlite_pcap_writer pcap_queue packet_queue packet_decoder squeue eloop iface log os hashmap domain)
+  target_link_libraries(capture_cleaner PRIVATE eloop log os)
 
   add_library(capture_service capture_service.c)
   target_include_directories(capture_service PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
-
-  target_link_libraries(capture_service PRIVATE capture_cleaner default_analyser log)
+  target_link_libraries(capture_service PRIVATE capture_cleaner dns_decoder pcap_service sqlite_header_writer sqlite_pcap_writer pcap_queue packet_queue packet_decoder squeue eloop iface log os hashmap)
 endif()

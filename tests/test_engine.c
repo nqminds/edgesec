@@ -147,7 +147,6 @@ static void test_init_context(void **state) {
   UT_array *config_ifinfo_arr = NULL;
   utarray_new(config_ifinfo_arr, &config_ifinfo_icd);
   struct app_config app_config = {0,
-                                  .db_path = "./",
                                   .quarantine_vlanid = 10,
                                   .default_open_vlanid = 0,
                                   .connection_db_path = ":memory:",
@@ -217,7 +216,6 @@ static void test_run_engine(void **state) {
   utarray_new(config_ifinfo_arr, &config_ifinfo_icd);
 
   struct app_config app_config = {0,
-                                  .db_path = "./",
                                   .quarantine_vlanid = 10,
                                   .default_open_vlanid = 0,
                                   .connection_db_path = ":memory:",

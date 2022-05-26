@@ -20,9 +20,11 @@ static void test_open_sqlite_pcap_db(void **state) {
   (void)state; /* unused */
   sqlite3 *db;
 
-  assert_int_equal(open_sqlite_pcap_db(":memory:", &db), 0);
+  int ret = sqlite3_open(":memory:", &db);
+  assert_int_equal(ret, SQLITE_OK);
+  assert_int_equal(init_sqlite_pcap_db(db), 0);
 
-  free_sqlite_pcap_db(db);
+  sqlite3_close(db);
 }
 
 static void test_save_sqlite_pcap_entry(void **state) {
@@ -30,10 +32,13 @@ static void test_save_sqlite_pcap_entry(void **state) {
 
   sqlite3 *db;
 
-  assert_int_equal(open_sqlite_pcap_db(":memory:", &db), 0);
+  int ret = sqlite3_open(":memory:", &db);
+  assert_int_equal(ret, SQLITE_OK);
+
+  assert_int_equal(init_sqlite_pcap_db(db), 0);
   assert_int_equal(
       save_sqlite_pcap_entry(db, "test", 12345, 10, 10, "wlan0", "port 80"), 0);
-  free_sqlite_pcap_db(db);
+  sqlite3_close(db);
 }
 int main(int argc, char *argv[]) {
   (void)argc;

@@ -79,7 +79,6 @@ struct supervisor_context {
                             */
   int quarantine_vlanid; /**< @c quarantine_vlanid from @c struct app_config */
   int risk_score;        /**< @c risk_score from @c struct app_config */
-  char db_path[MAX_OS_PATH_LEN]; /**< @c db_path from @c struct app_config */
   UT_array *config_ifinfo_array; /**< @c config_ifinfo_array from @c struct
                                     app_config */
   UT_array *subscribers_array;   /**< The array of events subscribers */

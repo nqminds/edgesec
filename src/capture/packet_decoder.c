@@ -275,7 +275,6 @@ bool decode_eth_packet(const struct pcap_pkthdr *header, const uint8_t *packet,
     cpac->eths.timestamp = cpac->timestamp;
     strcpy(cpac->eths.id, cpac->id);
     strcpy(cpac->eths.ifname, cpac->ifname);
-    strcpy(cpac->eths.hostname, cpac->hostname);
     cpac->eths.caplen = cpac->caplen;
     cpac->eths.length = cpac->length;
 
@@ -367,8 +366,8 @@ int decode_packet(const struct pcap_pkthdr *header, const uint8_t *packet,
 }
 
 int extract_packets(char *ltype, const struct pcap_pkthdr *header,
-                    const uint8_t *packet, char *interface, char *hostname,
-                    char *id, UT_array *tp_array) {
+                    const uint8_t *packet, char *interface, char *id,
+                    UT_array *tp_array) {
   (void)ltype;
 
   struct capture_packet cpac;
@@ -383,7 +382,6 @@ int extract_packets(char *ltype, const struct pcap_pkthdr *header,
   cpac.length = header->len;
 
   os_strlcpy(cpac.ifname, interface, IFNAMSIZ);
-  os_strlcpy(cpac.hostname, hostname, OS_HOST_NAME_MAX);
   os_strlcpy(cpac.id, id, MAX_RANDOM_UUID_LEN);
 
   if ((count = decode_packet(header, packet, &cpac)) > 0) {

@@ -61,20 +61,12 @@ struct pcap_file_meta {
 };
 
 /**
- * @brief Opens the sqlite pcap db
+ * @brief Initialisez the sqlite pcap db tables
  *
- * @param db_path The sqlite db path
- * @param sql The returned sqlite db structure pointer
+ * @param db The sqlite3 db
  * @return 0 on success, -1 on failure
  */
-int open_sqlite_pcap_db(char *db_path, sqlite3 **sql);
-
-/**
- * @brief Closes the sqlite db
- *
- * @param ctx The sqlite db structure pointer
- */
-void free_sqlite_pcap_db(sqlite3 *db);
+int init_sqlite_pcap_db(sqlite3 *db);
 
 /**
  * @brief Save a pcap entry into the sqlite db

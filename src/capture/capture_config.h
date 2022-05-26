@@ -55,8 +55,6 @@
   "./pcap" /* Subfodler name to store raw pcap data                            \
             */
 
-#define MAX_ANALYSER_NAME_SIZE                                                 \
-  64 /* Maximum length of the packet analyser name */
 #define MAX_FILTER_SIZE                                                        \
   4094 /* Maximum length of the filter string for libpcap */
 
@@ -71,39 +69,6 @@
 // #define META_HASH_SIZE              SHA256_HASH_LEN * 2 + 1
 #define MAX_PROTOCOL_NAME_LEN                                                  \
   64 /* Maximum length of the captured network protocol name */
-#define MAX_FINGERPRINT_LEN 1024
-#define MAX_QUERY_LEN MAX_OS_PATH_LEN
-
-#define CAPTURE_MAX_OPT 26
-
-#define CAPTURE_OPT_STRING ":c:i:q:f:t:n:p:y:x:z:r:b:dvhmewu" // gjlkoas
-#define CAPTURE_USAGE_STRING                                                   \
-  "\t%s [-c config] [-d] [-h] [-v] [(-y engine [-w] [-u]) | (-b size)] [-i "   \
-  "interface] [-q domain]"                                                     \
-  "[-f filter] [-m] [-t timeout] [-n interval] "                               \
-  "[-e] [-r params]\n"
-extern const char *const capture_description_string;
-
-#define CAPTURE_OPT_DEFS                                                       \
-  "\t-c config\t Path to the config file name\n"                               \
-  "\t-q domain\t The UNIX domain path\n"                                       \
-  "\t-x command\t The UNIX domain command\n"                                   \
-  "\t-z delimiter\t The UNIX domain command delimiter\n"                       \
-  "\t-i interface\t The capture interface name\n"                              \
-  "\t-f filter\t The capture filter expression\n"                              \
-  "\t-t timeout\t The buffer timeout (milliseconds)\n"                         \
-  "\t-n interval\t The process interval (milliseconds)\n"                      \
-  "\t-y analyser\t Analyser\n"                                                 \
-  "\t-p path\t\t The db path\n"                                                \
-  "\t-m\t\t Promiscuous mode\n"                                                \
-  "\t-e\t\t Immediate mode\n"                                                  \
-  "\t-u\t\t Write to file\n"                                                   \
-  "\t-w\t\t Write to db\n"                                                     \
-  "\t-r\t\t Sync store size and send size (val1,val2)\n"                       \
-  "\t-b size\t\t Maximum capture store size before cleanup (in KiB)\n"         \
-  "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n"               \
-  "\t-h\t\t Show help\n"                                                       \
-  "\t-v\t\t Show app version\n\n"
 
 #define MAX_SCHEMA_STR_LENGTH 100
 
@@ -130,7 +95,6 @@ typedef enum packet_types {
  *
  */
 struct capture_conf {
-  char capture_bin_path[MAX_OS_PATH_LEN]; /**< The capture binary path string */
   char capture_interface[MAX_CAPIF_LIST_SIZE]; /**< The capture interface
                                                   name(s) (if multiple delimited
                                                   by space) */
@@ -152,7 +116,8 @@ struct capture_conf {
                     */
   bool db_write;   /**< Specifies wether the packets should be saved in a sqlite
                       db. */
-  char db_path[MAX_OS_PATH_LEN]; /**< Specifies the path to the sqlite3 dbs */
+  char capture_db_path[MAX_OS_PATH_LEN]; /**< Specifies the path to the sqlite3
+                                            dbs */
   char filter[MAX_FILTER_SIZE]; /**< Specifies the filter expression or pcap lib
                                  */
   ssize_t sync_store_size;      /**< Specifies the sync store size */
@@ -170,15 +135,14 @@ struct tuple_packet {
  *
  */
 struct eth_schema {
-  uint64_t timestamp;              /**< Packet timestamp */
-  char id[MAX_RANDOM_UUID_LEN];    /**< Packet id */
-  uint32_t caplen;                 /**< Packet caplen */
-  uint32_t length;                 /**< Packet length */
-  char ifname[IFNAMSIZ];           /**< Packet interface name */
-  char hostname[OS_HOST_NAME_MAX]; /**< Packet hostname name */
-  char ether_dhost[MACSTR_LEN];    /**< Packet destination eth addr */
-  char ether_shost[MACSTR_LEN];    /**< Packet source ether addr */
-  uint16_t ether_type;             /**< Packet packet type ID field */
+  uint64_t timestamp;           /**< Packet timestamp */
+  char id[MAX_RANDOM_UUID_LEN]; /**< Packet id */
+  uint32_t caplen;              /**< Packet caplen */
+  uint32_t length;              /**< Packet length */
+  char ifname[IFNAMSIZ];        /**< Packet interface name */
+  char ether_dhost[MACSTR_LEN]; /**< Packet destination eth addr */
+  char ether_shost[MACSTR_LEN]; /**< Packet source ether addr */
+  uint16_t ether_type;          /**< Packet packet type ID field */
 };
 
 /**
@@ -454,7 +418,6 @@ struct capture_packet {
   uint32_t caplen;
   uint32_t length;
   char ifname[IFNAMSIZ];
-  char hostname[OS_HOST_NAME_MAX];
   char id[MAX_RANDOM_UUID_LEN];
 };
 #endif
