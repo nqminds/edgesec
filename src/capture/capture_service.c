@@ -38,10 +38,8 @@
 // net 10.0" -ddddddddd
 
 int run_capture(struct capture_conf *config) {
-  if (strcmp(config->analyser, PACKET_ANALYSER_DEFAULT) == 0) {
-    log_info("Running default_analyser_engine");
-    return start_default_analyser(config);
-  }
+  log_info("Running default_analyser_engine");
+  return start_default_analyser(config);
 
   return start_capture_cleaner(config);
 }

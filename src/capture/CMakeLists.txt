@@ -2,9 +2,6 @@ include_directories (
   "${EDGESEC_SOURCE_DIR}/src"
 )
 
-add_library(capture_config capture_config.c)
-target_link_libraries(capture_config PRIVATE log os)
-
 if (USE_CAPTURE_SERVICE)
   add_library(mdns_decoder mdns_decoder.c)
 

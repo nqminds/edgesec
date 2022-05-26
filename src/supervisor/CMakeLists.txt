@@ -44,4 +44,4 @@ endif ()
 
 add_library(supervisor supervisor.c)
 target_include_directories(supervisor PRIVATE ${LIBSQLITE_INCLUDE_DIR} PUBLIC $<TARGET_PROPERTY:iface,INCLUDE_DIRECTORIES>)
-target_link_libraries(supervisor PRIVATE capture_config network_commands cmd_processor domain log firewall_service)
+target_link_libraries(supervisor PRIVATE network_commands cmd_processor domain log firewall_service)

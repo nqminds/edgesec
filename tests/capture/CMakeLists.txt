@@ -18,9 +18,6 @@ add_executable(test_pcap_queue test_pcap_queue.c)
 target_include_directories(test_pcap_queue PRIVATE ${LIBPCAP_INCLUDE_PATH})
 target_link_libraries(test_pcap_queue PRIVATE pcap_queue os log cmocka::cmocka)
 
-add_executable(test_capture_config test_capture_config.c)
-target_link_libraries(test_capture_config PRIVATE capture_config os log cmocka::cmocka)
-
 add_executable(test_sqlite_pcap_writer test_sqlite_pcap_writer.c)
 target_include_directories(test_sqlite_pcap_writer PRIVATE ${LIBSQLITE_INCLUDE_DIR})
 target_link_libraries(test_sqlite_pcap_writer PRIVATE sqlite_pcap_writer sqliteu os log cmocka::cmocka)
@@ -52,11 +49,6 @@ set_tests_properties(test_packet_queue
 
 add_test(NAME test_pcap_queue COMMAND test_pcap_queue)
 set_tests_properties(test_pcap_queue
-  PROPERTIES
-  WILL_FAIL FALSE)
-
-add_test(NAME test_capture_config COMMAND test_capture_config)
-set_tests_properties(test_capture_config
   PROPERTIES
   WILL_FAIL FALSE)
 

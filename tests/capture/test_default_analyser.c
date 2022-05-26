@@ -148,15 +148,11 @@ void capture_config(struct capture_conf *config) {
   os_memset(config, 0, sizeof(struct capture_conf));
 
   strcpy(config->capture_bin_path, "./");
-  strcpy(config->domain_server_path, "./test");
-  strcpy(config->domain_command, "SET_FINGERPRINT");
-  config->domain_delim = 0x20;
   strcpy(config->capture_interface, "wlan0");
   config->promiscuous = true;
   config->immediate = true;
   config->buffer_timeout = 100;
   config->process_interval = 1000;
-  strcpy(config->analyser, "ndpi");
   config->file_write = true;
   config->db_write = true;
   strcpy(config->db_path, "/tmp");

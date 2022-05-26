@@ -131,11 +131,6 @@ typedef enum packet_types {
  */
 struct capture_conf {
   char capture_bin_path[MAX_OS_PATH_LEN]; /**< The capture binary path string */
-  char domain_server_path[MAX_OS_PATH_LEN]; /**< Specifies the path to the UNIX
-                                               domain socket server */
-  char domain_command[MAX_SUPERVISOR_CMD_SIZE]; /**< Specifies the UNIX domain
-                                                   command */
-  char domain_delim; /**< Specifies the UNIX domain command delimiter */
   char capture_interface[MAX_CAPIF_LIST_SIZE]; /**< The capture interface
                                                   name(s) (if multiple delimited
                                                   by space) */
@@ -153,8 +148,6 @@ struct capture_conf {
                                 for an explanation of the packet buffer timeout.) */
   uint32_t process_interval; /**< Specifies the packet process interval, in
                                 milliseconds. */
-  char analyser[MAX_ANALYSER_NAME_SIZE]; /**< Specifies the packet analyser
-                                            engine. */
   bool file_write; /**< Specifies wether the packets should be saved to file(s).
                     */
   bool db_write;   /**< Specifies wether the packets should be saved in a sqlite
@@ -464,30 +457,4 @@ struct capture_packet {
   char hostname[OS_HOST_NAME_MAX];
   char id[MAX_RANDOM_UUID_LEN];
 };
-
-/**
- * @brief Translate a capture process option to a config structure value
- *
- * @param key Capture process option key
- * @param opt Capture process option value
- * @param config The config structure
- * @return int 0 on success, -1 on error and 1 for an unknown option key
- */
-int capture_opt2config(char key, char *value, struct capture_conf *config);
-
-/**
- * @brief Transforms a config structure to opt string array
- *
- * @param config The config structure
- * @return char** the opt string array, NULL on failure
- */
-
-char **capture_config2opt(struct capture_conf *config);
-/**
- * @brief Free opt string array
- *
- * @param opt_str Opt string array
- */
-void capture_freeopt(char **opt_str);
-
 #endif

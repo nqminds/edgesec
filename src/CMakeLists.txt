@@ -47,14 +47,6 @@ if (USE_MDNS_SERVICE AND USE_CAPTURE_SERVICE)
   set_target_properties(mdnsf PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif ()
 
-if (USE_CAPTURE_SERVICE)
-  add_executable(capsrv capsrv.c)
-  target_include_directories(capsrv PRIVATE ${LIBPCAP_INCLUDE_PATH} ${PROJECT_BINARY_DIR} ${LIBSQLITE_INCLUDE_DIR})
-  target_link_libraries(capsrv capture_service capture_config config minIni os hashmap PCAP::pcap)
-  # link time optimization
-  set_target_properties(capsrv PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
-endif ()
-
 add_executable(edgesec edgesec.c)
 if (USE_CRYPTO_SERVICE)
   target_include_directories(edgesec PRIVATE ${PROJECT_BINARY_DIR} ${LIBOPENSSL_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})

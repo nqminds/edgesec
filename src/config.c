@@ -580,35 +580,16 @@ bool load_capture_config(const char *filename, struct capture_conf *config) {
   os_strlcpy(config->db_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
-  // Load domainServerPath
-  value = os_zalloc(INI_BUFFERSIZE);
-  ini_gets("supervisor", "domainServerPath", "", value, INI_BUFFERSIZE,
-           filename);
-  os_strlcpy(config->domain_server_path, value, MAX_OS_PATH_LEN);
-  os_free(value);
-
-  // Load the domain command delimiter
-  if ((config->domain_delim = load_delim(filename)) == 0) {
-    log_debug("delim parsing error");
-    return false;
-  }
-
   // Load capture bin path
   value = os_zalloc(INI_BUFFERSIZE);
   ini_gets("capture", "captureBinPath", "", value, INI_BUFFERSIZE, filename);
   os_strlcpy(config->capture_bin_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
-  // Load dhpc config file path
+  // Load capture interface name
   value = os_zalloc(INI_BUFFERSIZE);
   ini_gets("capture", "captureInterface", "", value, INI_BUFFERSIZE, filename);
   os_strlcpy(config->capture_interface, value, IFNAMSIZ);
-  os_free(value);
-
-  // Load the domain command value
-  value = os_zalloc(INI_BUFFERSIZE);
-  ini_gets("capture", "command", "", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->domain_command, value, MAX_SUPERVISOR_CMD_SIZE);
   os_free(value);
 
   // Load filter param
@@ -631,13 +612,6 @@ bool load_capture_config(const char *filename, struct capture_conf *config) {
   // Load processInterval param
   config->process_interval =
       (uint16_t)ini_getl("capture", "processInterval", 10, filename);
-
-  // Load analyser param
-  value = os_zalloc(INI_BUFFERSIZE);
-  ini_gets("capture", "analyser", PACKET_ANALYSER_DEFAULT, value,
-           INI_BUFFERSIZE, filename);
-  os_strlcpy(config->analyser, value, MAX_ANALYSER_NAME_SIZE);
-  os_free(value);
 
   // Load fileWrite param
   config->file_write = (int)ini_getbool("capture", "fileWrite", 0, filename);

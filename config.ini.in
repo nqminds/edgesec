@@ -40,7 +40,6 @@ immediate = false
 analyser = "default"
 fileWrite = false
 dbWrite = true
-command = "SET_ALERT"
 syncStoreSize = 1000
 syncSendSize = 20
 captureStoreSize = 1000000

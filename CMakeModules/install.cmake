@@ -4,13 +4,6 @@ install(
   RUNTIME
 )
 
-if (USE_CAPTURE_SERVICE AND BUILD_PCAP_LIB)
-  install(
-    TARGETS capsrv
-    RUNTIME
-  )
-endif ()
-
 if (USE_MDNS_SERVICE AND BUILD_PCAP_LIB)
   install(
     TARGETS mdnsf
