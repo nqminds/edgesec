@@ -18,23 +18,23 @@
  ****************************************************************************/
 
 /**
- * @file pcap_queue.c
+ * @file packet_queue.c
  * @author Alexandru Mereacre
- * @brief File containing the implementation of the pcap queue utilities.
+ * @brief File containing the implementation of the packet queue utilities.
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <pcap.h>
 
-#include "pcap_queue.h"
-#include "../utils/allocs.h"
-#include "../utils/os.h"
-#include "../utils/log.h"
+#include "packet_queue.h"
+#include "../packet_decoder.h"
+#include "../../utils/allocs.h"
+#include "../../utils/os.h"
+#include "../../utils/log.h"
 
-struct pcap_queue *init_pcap_queue(void) {
-  struct pcap_queue *queue;
+struct packet_queue *init_packet_queue(void) {
+  struct packet_queue *queue;
   queue = os_zalloc(sizeof(*queue));
 
   if (queue == NULL) {
@@ -47,74 +47,61 @@ struct pcap_queue *init_pcap_queue(void) {
   return queue;
 }
 
-struct pcap_queue *push_pcap_queue(struct pcap_queue *queue,
-                                   struct pcap_pkthdr *header,
-                                   uint8_t *packet) {
-  struct pcap_queue *el;
+struct packet_queue *push_packet_queue(struct packet_queue *queue,
+                                       struct tuple_packet tp) {
+  struct packet_queue *el;
 
   if (queue == NULL) {
     log_debug("queue param is NULL");
     return NULL;
   }
 
-  if (header == NULL) {
-    log_debug("header param is NULL");
-    return NULL;
-  }
-
-  if (packet == NULL) {
-    log_debug("packet param is NULL");
-    return NULL;
-  }
-
-  if ((el = init_pcap_queue()) == NULL) {
+  if ((el = init_packet_queue()) == NULL) {
     log_debug("init_packet_queue fail");
     return NULL;
   }
 
-  os_memcpy(&el->header, header, sizeof(struct pcap_pkthdr));
-  el->packet = os_malloc(header->caplen);
-  if (el->packet == NULL) {
-    log_errno("os_malloc");
-    return NULL;
-  }
-
-  os_memcpy(el->packet, packet, header->caplen);
-
+  el->tp = tp;
   dl_list_add_tail(&queue->list, &el->list);
 
   return el;
 }
 
-struct pcap_queue *pop_pcap_queue(struct pcap_queue *queue) {
+struct packet_queue *pop_packet_queue(struct packet_queue *queue) {
   if (queue == NULL)
     return NULL;
 
-  return dl_list_first(&queue->list, struct pcap_queue, list);
+  return dl_list_first(&queue->list, struct packet_queue, list);
 }
 
-void free_pcap_queue_el(struct pcap_queue *el) {
+void free_packet_tuple(struct tuple_packet *tp) {
+  if (tp != NULL) {
+    if (tp->packet != NULL)
+      os_free(tp->packet);
+  }
+}
+
+void free_packet_queue_el(struct packet_queue *el) {
   if (el != NULL) {
     dl_list_del(&el->list);
-    os_free(el->packet);
     os_free(el);
   }
 }
 
-void free_pcap_queue(struct pcap_queue *queue) {
-  struct pcap_queue *el;
+void free_packet_queue(struct packet_queue *queue) {
+  struct packet_queue *el;
 
-  while ((el = pop_pcap_queue(queue)) != NULL)
-    free_pcap_queue_el(el);
+  while ((el = pop_packet_queue(queue)) != NULL)
+    free_packet_queue_el(el);
 
-  free_pcap_queue_el(queue);
+  free_packet_queue_el(queue);
 }
 
-ssize_t get_pcap_queue_length(struct pcap_queue *queue) {
+ssize_t get_packet_queue_length(struct packet_queue *queue) {
   return (queue != NULL) ? dl_list_len(&queue->list) : 0;
 }
 
-int is_pcap_queue_empty(struct pcap_queue *queue) {
+int is_packet_queue_empty(struct packet_queue *queue) {
   if (queue == NULL) {
     log_trace("queue param is NULL");
     return -1;

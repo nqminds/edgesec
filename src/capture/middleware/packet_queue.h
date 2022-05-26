@@ -30,8 +30,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "packet_decoder.h"
-#include "../utils/list.h"
+#include "../packet_decoder.h"
+#include "../../utils/list.h"
 
 /**
  * @brief Packet queueu structure definition

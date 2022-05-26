@@ -16,11 +16,11 @@
 #include "utils/log.h"
 #include "utils/eloop.h"
 #include "capture/capture_service.h"
-#include "capture/sqlite_header_writer.h"
-#include "capture/sqlite_pcap_writer.h"
+#include "capture/middleware/sqlite_header_writer.h"
+#include "capture/middleware/sqlite_pcap_writer.h"
 #include "capture/pcap_service.h"
-#include "capture/pcap_queue.h"
-#include "capture/packet_queue.h"
+#include "capture/middleware/pcap_queue.h"
+#include "capture/middleware/packet_queue.h"
 
 static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL,
                                    NULL};

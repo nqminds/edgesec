@@ -33,11 +33,11 @@
 #include <libgen.h>
 
 #include "sqlite_pcap_writer.h"
-#include "capture_service.h"
-#include "capture_config.h"
+#include "../capture_service.h"
+#include "../capture_config.h"
 
-#include "../utils/eloop.h"
-#include "../utils/utarray.h"
+#include "../../utils/eloop.h"
+#include "../../utils/utarray.h"
 
 #define CLEANER_CHECK_INTERVAL                                                 \
   5 /* Frequency in sec to run the cleaner function*/

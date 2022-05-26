@@ -29,9 +29,9 @@
 #include <stdint.h>
 #include <sqlite3.h>
 
-#include "../utils/allocs.h"
-#include "../utils/os.h"
-#include "../utils/squeue.h"
+#include "../../utils/allocs.h"
+#include "../../utils/os.h"
+#include "../../utils/squeue.h"
 
 #define PCAP_TABLE_NAME "pcap"
 #define PCAP_CREATE_TABLE                                                      \

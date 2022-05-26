@@ -32,10 +32,10 @@
 
 #include "sqlite_pcap_writer.h"
 
-#include "../utils/allocs.h"
-#include "../utils/os.h"
-#include "../utils/log.h"
-#include "../utils/sqliteu.h"
+#include "../../utils/allocs.h"
+#include "../../utils/os.h"
+#include "../../utils/log.h"
+#include "../../utils/sqliteu.h"
 
 int init_sqlite_pcap_db(sqlite3 *db) {
   int rc;

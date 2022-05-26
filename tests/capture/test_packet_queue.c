@@ -13,7 +13,7 @@
 #include <cmocka.h>
 
 #include "utils/log.h"
-#include "capture/packet_queue.h"
+#include "capture/middleware/packet_queue.h"
 
 static void test_push_packet_queue(void **state) {
   (void)state; /* unused */

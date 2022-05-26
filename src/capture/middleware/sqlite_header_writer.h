@@ -31,10 +31,10 @@
 
 // #include "packet_decoder.h"
 
-#include "../utils/allocs.h"
-#include "../utils/os.h"
+#include "../../utils/allocs.h"
+#include "../../utils/os.h"
 
-#include "capture_config.h"
+#include "../capture_config.h"
 
 #define MAX_DB_NAME 100
 

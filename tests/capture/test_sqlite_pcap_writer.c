@@ -14,7 +14,7 @@
 
 #include "utils/log.h"
 #include "utils/sqliteu.h"
-#include "capture/sqlite_pcap_writer.h"
+#include "capture/middleware/sqlite_pcap_writer.h"
 
 static void test_open_sqlite_pcap_db(void **state) {
   (void)state; /* unused */
