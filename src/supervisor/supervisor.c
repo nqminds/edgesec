@@ -31,8 +31,6 @@
 #include <libgen.h>
 #include <time.h>
 
-#include "sqlite_fingerprint_writer.h"
-#include "sqlite_alert_writer.h"
 #include "subscriber_events.h"
 
 #include "utils/log.h"
@@ -44,9 +42,6 @@
 
 #include "cmd_processor.h"
 #include "network_commands.h"
-
-#define FINGERPRINT_DB_NAME "fingerprint" SQLITE_EXTENSION
-#define ALERT_DB_NAME "alert" SQLITE_EXTENSION
 
 static const UT_icd client_address_icd = {sizeof(struct client_address), NULL,
                                           NULL, NULL};
@@ -360,42 +355,13 @@ void close_supervisor(struct supervisor_context *context) {
     }
   }
 
-  free_sqlite_fingerprint_db(context->fingeprint_db);
-  free_sqlite_alert_db(context->alert_db);
   if (context->subscribers_array != NULL) {
     utarray_free(context->subscribers_array);
   }
 }
 
 int run_supervisor(char *server_path, struct supervisor_context *context) {
-  char *db_path = NULL;
-
   allocate_vlan(context);
-  db_path = construct_path(context->db_path, FINGERPRINT_DB_NAME);
-  if (db_path == NULL) {
-    log_debug("construct_path fail");
-    return -1;
-  }
-
-  if (open_sqlite_fingerprint_db(db_path, &context->fingeprint_db) < 0) {
-    log_trace("open_sqlite_fingerprint_db fail");
-    os_free(db_path);
-    return -1;
-  }
-
-  os_free(db_path);
-  db_path = construct_path(context->db_path, ALERT_DB_NAME);
-  if (db_path == NULL) {
-    log_debug("construct_path fail");
-    return -1;
-  }
-
-  if (open_sqlite_alert_db(db_path, &context->alert_db) < 0) {
-    log_trace("open_sqlite_alert_db fail");
-    os_free(db_path);
-    return -1;
-  }
-  os_free(db_path);
 
   utarray_new(context->subscribers_array, &client_address_icd);
 

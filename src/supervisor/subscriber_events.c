@@ -98,9 +98,6 @@ int send_events_subscriber(struct supervisor_context *context,
   va_list args;
   va_start(args, format);
   switch (type) {
-    case SUBSCRIBER_EVENT_ALERT:
-      return send_events(context, EVENT_ALERT_TEXT, format, args);
-      break;
     case SUBSCRIBER_EVENT_IP:
       return send_events(context, EVENT_IP_TEXT, format, args);
       break;

@@ -45,8 +45,6 @@
 
 #include "supervisor/supervisor.h"
 #include "supervisor/network_commands.h"
-#include "supervisor/sqlite_fingerprint_writer.h"
-#include "supervisor/sqlite_alert_writer.h"
 #include "supervisor/sqlite_macconn_writer.h"
 #ifdef WITH_RADIUS_SERVICE
 #include "radius/radius_service.h"
@@ -267,8 +265,6 @@ int init_context(struct app_config *app_config,
   ctx->iface_ctx = NULL;
   ctx->ticket = NULL;
   ctx->fw_ctx = NULL;
-  ctx->fingeprint_db = NULL;
-  ctx->alert_db = NULL;
   ctx->domain_sock = -1;
   ctx->exec_capture = app_config->exec_capture;
   ctx->domain_delim = app_config->domain_delim;

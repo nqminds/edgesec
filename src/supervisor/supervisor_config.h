@@ -93,9 +93,7 @@ struct supervisor_context {
   struct dns_conf nconfig;              /**< DNS service configuration. */
   struct mdns_conf mconfig;             /**< DNS service configuration. */
   struct radius_conf rconfig;           /**< Radius service configuration. */
-  sqlite3 *fingeprint_db; /**< The fingerprint sqlite db structure. */
-  sqlite3 *alert_db;      /**< The alert sqlite db structure. */
-  sqlite3 *macconn_db;    /**< The macconn db structure. */
+  sqlite3 *macconn_db;                  /**< The macconn db structure. */
   struct radius_server_data *radius_srv; /**< The radius server context. */
   struct crypt_context *crypt_ctx;       /**< The crypt context. */
   struct iface_context *iface_ctx;       /**< The interface context. */

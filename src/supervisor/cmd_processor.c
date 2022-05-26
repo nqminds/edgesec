@@ -35,7 +35,6 @@
 #include "cmd_processor.h"
 #include "mac_mapper.h"
 #include "network_commands.h"
-#include "monitor_commands.h"
 #ifdef WITH_CRYPTO_SERVICE
 #include "crypt_commands.h"
 #endif
@@ -517,188 +516,6 @@ ssize_t process_get_bridges_cmd(int sock, struct client_address *client_addr,
   return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
-ssize_t process_set_fingerprint_cmd(int sock,
-                                    struct client_address *client_addr,
-                                    struct supervisor_context *context,
-                                    UT_array *cmd_arr) {
-  char **ptr = (char **)utarray_next(cmd_arr, NULL);
-  uint8_t addr[ETH_ALEN];
-  char src_mac_addr[MACSTR_LEN];
-  char dst_mac_addr[MACSTR_LEN];
-  char protocol[MAX_PROTOCOL_NAME_LEN];
-  char fingerprint[MAX_FINGERPRINT_LEN];
-  uint64_t timestamp;
-  char *query = NULL;
-
-  if (os_get_timestamp(&timestamp) < 0) {
-    return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
-  }
-
-  // MAC address source
-  ptr = (char **)utarray_next(cmd_arr, ptr);
-  if (ptr != NULL && *ptr != NULL) {
-    os_strlcpy(src_mac_addr, *ptr, MACSTR_LEN);
-
-    if (hwaddr_aton2(src_mac_addr, addr) == -1) {
-      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
-                               client_addr);
-    }
-
-    // MAC address destination
-    ptr = (char **)utarray_next(cmd_arr, ptr);
-    if (ptr != NULL && *ptr != NULL) {
-      os_strlcpy(dst_mac_addr, *ptr, MACSTR_LEN);
-
-      if (hwaddr_aton2(dst_mac_addr, addr) == -1) {
-        return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
-                                 client_addr);
-      }
-
-      ptr = (char **)utarray_next(cmd_arr, ptr);
-      // Protocol
-      if (ptr != NULL && *ptr != NULL) {
-        os_strlcpy(protocol, *ptr, MAX_PROTOCOL_NAME_LEN);
-        ptr = (char **)utarray_next(cmd_arr, ptr);
-        // Fingerprint
-        if (ptr != NULL && *ptr != NULL) {
-          os_strlcpy(fingerprint, *ptr, MAX_FINGERPRINT_LEN);
-          ptr = (char **)utarray_next(cmd_arr, ptr);
-          // Query
-          if (ptr != NULL && *ptr != NULL) {
-            query = *ptr;
-            if ((set_fingerprint_cmd(context, src_mac_addr, dst_mac_addr,
-                                     protocol, fingerprint, timestamp,
-                                     query) >= 0)) {
-              return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY),
-                                       client_addr);
-            }
-          }
-        }
-      }
-    }
-  }
-
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
-}
-
-ssize_t process_set_alert_cmd(int sock, struct client_address *client_addr,
-                              struct supervisor_context *context,
-                              UT_array *cmd_arr) {
-  char **ptr = (char **)utarray_next(cmd_arr, NULL);
-  uint8_t *meta, *info = NULL;
-  size_t meta_size, info_size;
-
-  // alert meta
-  ptr = (char **)utarray_next(cmd_arr, ptr);
-  if (ptr != NULL && *ptr != NULL) {
-    if ((meta = (uint8_t *)base64_url_decode(
-             (unsigned char *)*ptr, strlen(*ptr), &meta_size)) == NULL) {
-      log_error("base64_url_decode fail\n");
-      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
-                               client_addr);
-    }
-
-    if (meta_size != sizeof(struct alert_meta)) {
-      log_trace("meta size not equal to alert_meta");
-      os_free(meta);
-      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
-                               client_addr);
-    }
-
-    // info
-    ptr = (char **)utarray_next(cmd_arr, ptr);
-    if (ptr != NULL && *ptr != NULL) {
-      if (strlen(rtrim(*ptr, NULL))) {
-        if ((info = (uint8_t *)base64_url_decode(
-                 (unsigned char *)*ptr, strlen(*ptr), &info_size)) == NULL) {
-          log_error("base64_url_decode fail\n");
-          os_free(meta);
-          return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
-                                   client_addr);
-        }
-      }
-    }
-
-    if (set_alert_cmd(context, (struct alert_meta *)meta, info, info_size) <
-        0) {
-      log_error("set_alert_cmd fail");
-      os_free(meta);
-      if (info != NULL) {
-        os_free(info);
-      }
-      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
-                               client_addr);
-    }
-
-    os_free(meta);
-    if (info != NULL) {
-      os_free(info);
-    }
-
-    return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
-  }
-
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
-}
-
-ssize_t process_query_fingerprint_cmd(int sock,
-                                      struct client_address *client_addr,
-                                      struct supervisor_context *context,
-                                      UT_array *cmd_arr) {
-  char **ptr = (char **)utarray_next(cmd_arr, NULL);
-  uint8_t addr[ETH_ALEN];
-  char mac_addr[MACSTR_LEN];
-  char op[MAX_QUERY_OP_LEN];
-  char protocol[MAX_PROTOCOL_NAME_LEN];
-  uint64_t timestamp;
-  char *out;
-  ssize_t out_len, ret;
-
-  // MAC address source
-  ptr = (char **)utarray_next(cmd_arr, ptr);
-  if (ptr != NULL && *ptr != NULL) {
-    os_strlcpy(mac_addr, *ptr, MACSTR_LEN);
-
-    if (hwaddr_aton2(mac_addr, addr) == -1) {
-      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
-                               client_addr);
-    }
-
-    ptr = (char **)utarray_next(cmd_arr, ptr);
-    // Timestamp
-    if (ptr != NULL && *ptr != NULL) {
-      errno = 0;
-      timestamp = (uint64_t)strtoull(*ptr, NULL, 10);
-      if (errno != ERANGE && is_number(*ptr)) {
-        ptr = (char **)utarray_next(cmd_arr, ptr);
-        // Query operator
-        if (ptr != NULL && *ptr != NULL) {
-          if (os_strnlen_s(*ptr, MAX_QUERY_OP_LEN) < MAX_QUERY_OP_LEN) {
-            os_strlcpy(op, *ptr, MAX_QUERY_OP_LEN);
-            ptr = (char **)utarray_next(cmd_arr, ptr);
-            // Protocol
-            if (ptr != NULL && *ptr != NULL) {
-              if (os_strnlen_s(*ptr, MAX_PROTOCOL_NAME_LEN) <
-                  MAX_PROTOCOL_NAME_LEN) {
-                os_strlcpy(protocol, *ptr, MAX_PROTOCOL_NAME_LEN);
-                if ((out_len =
-                         query_fingerprint_cmd(context, mac_addr, timestamp, op,
-                                               protocol, &out)) > 0) {
-                  ret = write_domain_data(sock, out, out_len, client_addr);
-
-                  os_free(out);
-                  return ret;
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
-}
-
 ssize_t process_register_ticket_cmd(int sock,
                                     struct client_address *client_addr,
                                     struct supervisor_context *context,
@@ -1164,12 +981,6 @@ process_cmd_fn get_command_function(char *cmd) {
     return process_clear_bridges_cmd;
   } else if (!strcmp(cmd, CMD_GET_BRIDGES)) {
     return process_get_bridges_cmd;
-  } else if (!strcmp(cmd, CMD_SET_FINGERPRINT)) {
-    return process_set_fingerprint_cmd;
-  } else if (!strcmp(cmd, CMD_SET_ALERT)) {
-    return process_set_alert_cmd;
-  } else if (!strcmp(cmd, CMD_QUERY_FINGERPRINT)) {
-    return process_query_fingerprint_cmd;
   } else if (!strcmp(cmd, CMD_REGISTER_TICKET)) {
     return process_register_ticket_cmd;
   } else if (!strcmp(cmd, CMD_CLEAR_PSK)) {

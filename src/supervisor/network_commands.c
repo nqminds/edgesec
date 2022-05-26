@@ -26,7 +26,6 @@
 
 #include "mac_mapper.h"
 #include "supervisor.h"
-#include "sqlite_fingerprint_writer.h"
 #include "sqlite_macconn_writer.h"
 #include "network_commands.h"
 

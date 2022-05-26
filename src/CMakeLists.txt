@@ -33,7 +33,7 @@ if (USE_MDNS_SERVICE)
   target_compile_definitions(engine PUBLIC WITH_MDNS_SERVICE)
   target_link_libraries(engine PRIVATE mdns_service)
 endif ()
-target_link_libraries(engine PRIVATE net log iface_mapper os sqlite_macconn_writer sqlite_fingerprint_writer firewall_service eloop supervisor network_commands mac_mapper ap_service firewall_service dhcp_service)
+target_link_libraries(engine PRIVATE net log iface_mapper os sqlite_macconn_writer firewall_service eloop supervisor network_commands mac_mapper ap_service firewall_service dhcp_service)
 
 add_library(config config.c)
 target_include_directories(config PUBLIC $<TARGET_PROPERTY:iface,INCLUDE_DIRECTORIES> ${LIBSQLITE_INCLUDE_DIR})

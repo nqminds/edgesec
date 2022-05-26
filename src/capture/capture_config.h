@@ -465,16 +465,6 @@ struct capture_packet {
   char id[MAX_RANDOM_UUID_LEN];
 };
 
-struct alert_meta {
-  uint64_t timestamp;                    /**< Alert timestamp */
-  char analyser[MAX_ANALYSER_NAME_SIZE]; /**< Alert analyser type */
-  char hostname[OS_HOST_NAME_MAX];       /**< Alert hostname */
-  char ifname[IFNAMSIZ];                 /**< Alert monitoring interface */
-  uint8_t src_mac_addr[ETH_ALEN];        /**< Source MAC address */
-  uint8_t dst_mac_addr[ETH_ALEN];        /**< Destination MAC address */
-  uint8_t risk;                          /**< Alert risk value */
-};
-
 /**
  * @brief Translate a capture process option to a config structure value
  *
