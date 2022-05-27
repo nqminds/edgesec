@@ -11,5 +11,5 @@ else ()
 endif()
 
 add_library(ap_service ap_service.c)
-target_include_directories(ap_service PRIVATE ${LIBSQLITE_INCLUDE_DIR} PUBLIC $<TARGET_PROPERTY:iface,INCLUDE_DIRECTORIES>)
-target_link_libraries(ap_service PRIVATE domain hostapd log os eloop)
+target_include_directories(ap_service PUBLIC $<TARGET_PROPERTY:iface,INCLUDE_DIRECTORIES>)
+target_link_libraries(ap_service PUBLIC supervisor_config PRIVATE domain hostapd log os eloop)

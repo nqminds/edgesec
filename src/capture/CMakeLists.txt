@@ -33,26 +33,22 @@ if (BUILD_CAPTURE_SERVICE)
 
   add_library(sqlite_header_writer sqlite_header_writer.c)
 
-  target_include_directories(sqlite_header_writer PRIVATE ${LIBSQLITE_INCLUDE_DIR})
-  target_link_libraries(sqlite_header_writer PRIVATE sqliteu squeue log os iface SQLite::sqlite packet_decoder)
+  target_link_libraries(sqlite_header_writer PRIVATE sqliteu squeue log os iface SQLite::SQLite3 packet_decoder)
 
   add_library(sqlite_pcap_writer sqlite_pcap_writer.c)
 
-  target_include_directories(sqlite_pcap_writer PRIVATE ${LIBSQLITE_INCLUDE_DIR})
-  target_link_libraries(sqlite_pcap_writer PRIVATE sqliteu log os SQLite::sqlite)
+  target_link_libraries(sqlite_pcap_writer PRIVATE sqliteu log os SQLite::SQLite3)
 
   add_library(default_analyser default_analyser.c)
-  target_include_directories(default_analyser PRIVATE ${LIBSQLITE_INCLUDE_DIR})
+  target_link_libraries(default_analyser PUBLIC supervisor_config)
 
   add_library(capture_cleaner capture_cleaner.c)
 
-  target_include_directories(capture_cleaner PRIVATE ${LIBSQLITE_INCLUDE_DIR})
-  target_link_libraries(capture_cleaner PRIVATE sqlite_pcap_writer eloop log os SQLite::sqlite)
+  target_link_libraries(capture_cleaner PRIVATE sqlite_pcap_writer eloop log os SQLite::SQLite3)
 
   target_link_libraries(default_analyser PUBLIC PCAP::pcap PRIVATE dns_decoder pcap_service sqlite_header_writer sqlite_pcap_writer pcap_queue packet_queue packet_decoder squeue eloop iface log os hashmap domain)
 
   add_library(capture_service capture_service.c)
-  target_include_directories(capture_service PRIVATE ${LIBSQLITE_INCLUDE_DIR})
 
   target_link_libraries(capture_service PRIVATE capture_cleaner default_analyser log)
 endif()

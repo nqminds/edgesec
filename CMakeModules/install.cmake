@@ -53,8 +53,13 @@ if (BUILD_UUID_LIB AND LIBUUID_LIB)
     install(DIRECTORY "${LIBUUID_LIB_DIR}/" DESTINATION ${EDGESEC_private_lib_dir} PATTERN "*.la" EXCLUDE)
 endif ()
 
-if (BUILD_SQLITE_LIB AND LIBSQLITE_LIB)
-  install(DIRECTORY "${LIBSQLITE_LIB_DIR}/" DESTINATION ${EDGESEC_private_lib_dir} PATTERN "*.la" EXCLUDE)
+if (BUILD_SQLITE_LIB AND TARGET SQLite::SQLite3 AND LIBSQLITE_LIB_DIR)
+  get_target_property(SQLite3_type SQLite::SQLite3 TYPE)
+  if(SQLite3_type STREQUAL STATIC_LIBRARY)
+    # don't bother installing static libs
+  else()
+    install(DIRECTORY "${LIBSQLITE_LIB_DIR}/" DESTINATION ${EDGESEC_private_lib_dir} PATTERN "*.la" EXCLUDE)
+  endif()
 endif ()
 
 if(BUILD_PCAP_LIB AND LIBPCAP_LIB)

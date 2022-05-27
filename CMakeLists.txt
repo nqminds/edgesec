@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13.0) # required by FindMNL.cmake
+cmake_minimum_required(VERSION 3.14.0) # required by lib/sqlite.cmake
 
 project(EDGESEC C CXX)
 
