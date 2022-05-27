@@ -22,11 +22,13 @@ else()
     INSTALL_DIR "${LIBSQLITE_INSTALL_DIR}"
     CONFIGURE_COMMAND autoreconf -f -i <SOURCE_DIR>
     COMMAND
-      <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> "--host=${target_autoconf_triple}"
+      ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}"
+      <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> "--host=${CMAKE_LIBRARY_ARCHITECTURE}"
       # use position independent code, even for static lib, in case we want to make shared lib later
       --with-pic=on
-    # cmake defaults to using `make` for the build command, when we have a custom configure_command
-    # BUILD_COMMAND
+    # need to manually specify PATH, so that make knows where to find cross-compiling GCC
+    BUILD_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" $(MAKE)
+    INSTALL_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" $(MAKE) install
   )
   ExternalProject_Get_Property(libsqlite INSTALL_DIR)
 
