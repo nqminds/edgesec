@@ -48,7 +48,7 @@ endif ()
 
 add_library(supervisor_config INTERFACE)
 set_target_properties(supervisor_config PROPERTIES PUBLIC_HEADER "supervisor_config.h")
-target_link_libraries(supervisor_config INTERFACE SQLite::sqlite)
+target_link_libraries(supervisor_config INTERFACE SQLite::sqlite iface)
 
 add_library(supervisor supervisor.c)
 target_include_directories(supervisor PUBLIC $<TARGET_PROPERTY:iface,INCLUDE_DIRECTORIES>)
