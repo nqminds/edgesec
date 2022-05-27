@@ -1,39 +1,29 @@
 # Compile libubox
 if (USE_UCI_SERVICE AND NOT (BUILD_ONLY_DOCS))
     add_compile_definitions(WITH_UCI_SERVICE)
+
     set(LIBUBOX_INSTALL_ROOT ${CMAKE_CURRENT_BINARY_DIR}/lib)
     set(LIBUBOX_INSTALL_DIR ${LIBUBOX_INSTALL_ROOT}/ubox)
     set(LIBUBOX_INCLUDE_PATH ${LIBUBOX_INSTALL_DIR}/include)
     set(LIBUBOX_LIB_DIR "${LIBUBOX_INSTALL_DIR}/lib")
 
-    find_library(LIBUBOX_LIB NAMES libubox.so ubox PATHS "${LIBUBOX_LIB_DIR}" NO_DEFAULT_PATH)
-    find_library(LIBUBOX_STATIC_LIB NAMES libubox.a ubox PATHS "${LIBUBOX_LIB_DIR}" NO_DEFAULT_PATH)
-
-    if (LIBUBOX_LIB AND LIBUBOX_STATIC_LIB)
-      message("Found shared libubox library: ${LIBUBOX_LIB}")
-      message("Found static libubox library: ${LIBUBOX_STATIC_LIB}")
-    else ()
-      FetchContent_Declare(
-        libubox
-        GIT_REPOSITORY https://git.openwrt.org/project/libubox.git
-        GIT_TAG f2d6752901f2f2d8612fb43e10061570c9198af1 # master as of 2022-02-10
-        GIT_PROGRESS true
-      )
-      FetchContent_Populate(libubox)
-
-      execute_process(COMMAND
-        bash
-        ${CMAKE_SOURCE_DIR}/lib/compile_ubox.sh
-        ${libubox_SOURCE_DIR}
-        ${LIBUBOX_INSTALL_DIR}
-        ${CMAKE_SYSTEM_NAME}
-        ${CMAKE_SYSTEM_PROCESSOR}
-        ${CMAKE_C_COMPILER}
-      )
-
-      find_library(LIBUBOX_LIB NAMES libubox.so ubox PATHS "${LIBUBOX_LIB_DIR}" NO_DEFAULT_PATH)
-      find_library(LIBUBOX_STATIC_LIB NAMES libubox.a ubox PATHS "${LIBUBOX_LIB_DIR}" NO_DEFAULT_PATH)
-    endif ()
+    ExternalProject_Add(
+      libubox
+      GIT_REPOSITORY https://git.openwrt.org/project/libubox.git
+      GIT_TAG f2d6752901f2f2d8612fb43e10061570c9198af1 # master as of 2022-02-10
+      GIT_PROGRESS true
+      INSTALL_DIR "${LIBUBOX_INSTALL_DIR}"
+      CMAKE_ARGS
+        -DBUILD_LUA=OFF
+        -DBUILD_EXAMPLES=OFF
+        -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+        # need to pass cross-compile toolchain manually
+        -DCMAKE_SYSTEM_NAME=${CMAKE_SYSTEM_NAME}
+        -DCMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}
+        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+    )
+    set(LIBUBOX_LIB "${LIBUBOX_LIB_DIR}/libubox.so")
+    set(LIBUBOX_STATIC_LIB "${LIBUBOX_LIB_DIR}/libubox.a")
 
     set(LIBUCI_INSTALL_ROOT ${CMAKE_CURRENT_BINARY_DIR}/lib)
     set(LIBUCI_INSTALL_DIR ${LIBUCI_INSTALL_ROOT}/uci)
@@ -60,6 +50,8 @@ if (USE_UCI_SERVICE AND NOT (BUILD_ONLY_DOCS))
         -DCMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}
         -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
     )
+    # LibUBOX must be installed for LibUCI to configure properly
+    ExternalProject_Add_StepDependencies(libuci configure libubox)
 
     add_library(OpenWRT::LIBUCI SHARED IMPORTED)
     file(MAKE_DIRECTORY "${LIBUCI_INCLUDE_PATH}")
