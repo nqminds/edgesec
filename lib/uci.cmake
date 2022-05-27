@@ -1,7 +1,11 @@
 # Compile libubox
 if (USE_UCI_SERVICE AND NOT (BUILD_ONLY_DOCS))
-    add_compile_definitions(WITH_UCI_SERVICE)
+  add_compile_definitions(WITH_UCI_SERVICE)
 
+  if (NOT BUILD_UCI_LIB)
+    find_package(UCI MODULE REQUIRED)
+    message("Found libuci library: ${UCI_LIBRARIES}")
+  else()
     set(LIBUBOX_INSTALL_ROOT ${CMAKE_CURRENT_BINARY_DIR}/lib)
     set(LIBUBOX_INSTALL_DIR ${LIBUBOX_INSTALL_ROOT}/ubox)
     set(LIBUBOX_INCLUDE_PATH ${LIBUBOX_INSTALL_DIR}/include)
@@ -53,13 +57,14 @@ if (USE_UCI_SERVICE AND NOT (BUILD_ONLY_DOCS))
     # LibUBOX must be installed for LibUCI to configure properly
     ExternalProject_Add_StepDependencies(libuci configure libubox)
 
-    add_library(OpenWRT::LIBUCI SHARED IMPORTED)
+    add_library(OpenWRT::UCI SHARED IMPORTED)
     file(MAKE_DIRECTORY "${LIBUCI_INCLUDE_PATH}")
-    set_target_properties(OpenWRT::LIBUCI PROPERTIES
+    set_target_properties(OpenWRT::UCI PROPERTIES
       IMPORTED_LOCATION "${LIBUCI_LIB_DIR}/libuci.so"
       INTERFACE_INCLUDE_DIRECTORIES "${LIBUCI_INCLUDE_PATH}"
     )
-    # tell cmake that we can only use OpenWRT::LIBUCI after we compile it
-    add_dependencies(OpenWRT::LIBUCI libuci)
-    target_link_libraries(OpenWRT::LIBUCI INTERFACE "${LIBUBOX_LIB}")
+    # tell cmake that we can only use OpenWRT::UCI after we compile it
+    add_dependencies(OpenWRT::UCI libuci)
+    target_link_libraries(OpenWRT::UCI INTERFACE "${LIBUBOX_LIB}")
+  endif()
 endif ()

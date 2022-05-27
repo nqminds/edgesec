@@ -4,7 +4,7 @@ include_directories (
 
 add_library(hostapd hostapd.c)
 if (USE_UCI_SERVICE)
-  target_link_libraries(hostapd PRIVATE log os iface OpenWRT::LIBUCI)
+  target_link_libraries(hostapd PRIVATE log os iface OpenWRT::UCI)
 else ()
   target_link_libraries(hostapd PRIVATE log os iface)
 endif()
