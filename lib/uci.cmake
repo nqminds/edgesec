@@ -40,32 +40,34 @@ if (USE_UCI_SERVICE AND NOT (BUILD_ONLY_DOCS))
     set(LIBUCI_INCLUDE_PATH ${LIBUCI_INSTALL_DIR}/include)
     set(LIBUCI_LIB_DIR "${LIBUCI_INSTALL_DIR}/lib")
 
-    find_library(LIBUCI_STATIC_LIB NAMES libuci.a PATHS "${LIBUCI_LIB_DIR}" NO_DEFAULT_PATH)
+    ExternalProject_Add(
+      libuci
+      GIT_REPOSITORY https://git.openwrt.org/project/uci.git
+      GIT_TAG f84f49f00fb70364f58b4cce72f1796a7190d370 # master as of 2021-10-22
+      GIT_PROGRESS true
+      INSTALL_DIR "${LIBUCI_INSTALL_DIR}"
+      CMAKE_ARGS
+        -DBUILD_LUA=OFF
+        # https://git.openwrt.org/?p=project/uci.git;a=blob;f=CMakeLists.txt;h=50e7f51fe5fafa9052c125d54443a8b31599efb6;hb=HEAD#l81-85
+        # libuci does not install the static lib when running `make install`
+        # -DBUILD_STATIC=ON
+        -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+        -Dubox_include_dir=${LIBUBOX_INCLUDE_PATH}
+        -Dubox=${LIBUBOX_LIB}
+        -Dubox-static=${LIBUBOX_STATIC_LIB}
+        # need to pass cross-compile toolchain manually
+        -DCMAKE_SYSTEM_NAME=${CMAKE_SYSTEM_NAME}
+        -DCMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}
+        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+    )
 
-    if (LIBUCI_STATIC_LIB)
-      message("Found libuci library: ${LIBUCI_STATIC_LIB}")
-    else ()
-      FetchContent_Declare(
-        libuci
-        GIT_REPOSITORY https://git.openwrt.org/project/uci.git
-        GIT_TAG f84f49f00fb70364f58b4cce72f1796a7190d370 # master as of 2021-10-22
-        GIT_PROGRESS true
-      )
-      FetchContent_Populate(libuci)
-
-      execute_process(COMMAND
-        bash
-        ${CMAKE_SOURCE_DIR}/lib/compile_uci.sh
-        ${libuci_SOURCE_DIR}
-        ${LIBUCI_INSTALL_DIR}
-        ${LIBUBOX_INCLUDE_PATH}
-        ${LIBUBOX_LIB}
-        ${LIBUBOX_STATIC_LIB}
-        ${CMAKE_SYSTEM_NAME}
-        ${CMAKE_SYSTEM_PROCESSOR}
-        ${CMAKE_C_COMPILER}
-      )
-
-    find_library(LIBUCI_STATIC_LIB NAMES libuci.a uci PATHS "${LIBUCI_LIB_DIR}" NO_DEFAULT_PATH)
-    endif ()
+    add_library(OpenWRT::LIBUCI SHARED IMPORTED)
+    file(MAKE_DIRECTORY "${LIBUCI_INCLUDE_PATH}")
+    set_target_properties(OpenWRT::LIBUCI PROPERTIES
+      IMPORTED_LOCATION "${LIBUCI_LIB_DIR}/libuci.so"
+      INTERFACE_INCLUDE_DIRECTORIES "${LIBUCI_INCLUDE_PATH}"
+    )
+    # tell cmake that we can only use OpenWRT::LIBUCI after we compile it
+    add_dependencies(OpenWRT::LIBUCI libuci)
+    target_link_libraries(OpenWRT::LIBUCI INTERFACE "${LIBUBOX_LIB}")
 endif ()

@@ -4,8 +4,7 @@ include_directories (
 
 add_library(dnsmasq dnsmasq.c)
 if (USE_UCI_SERVICE)
-    target_include_directories(dnsmasq PRIVATE ${LIBUCI_INCLUDE_PATH})
-    target_link_libraries(dnsmasq PRIVATE log os squeue ${LIBUCI_STATIC_LIB})
+    target_link_libraries(dnsmasq PRIVATE log os squeue OpenWRT::LIBUCI)
 else ()
   target_link_libraries(dnsmasq PRIVATE log os)
 endif ()
