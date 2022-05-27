@@ -50,5 +50,9 @@ set_target_properties(supervisor_config PROPERTIES PUBLIC_HEADER "supervisor_con
 target_link_libraries(supervisor_config INTERFACE SQLite::sqlite iface)
 
 add_library(supervisor supervisor.c)
-target_include_directories(supervisor PUBLIC $<TARGET_PROPERTY:iface,INCLUDE_DIRECTORIES>)
-target_link_libraries(supervisor PRIVATE capture_config network_commands sqlite_alert_writer sqlite_fingerprint_writer cmd_processor domain log firewall_service)
+target_link_libraries(supervisor
+  PUBLIC supervisor_config
+  PRIVATE
+    capture_config network_commands sqlite_alert_writer sqlite_fingerprint_writer
+    cmd_processor domain log firewall_service
+)

@@ -26,7 +26,7 @@ add_library(iptables iptables.c)
 target_link_libraries(iptables PRIVATE net os log)
 
 add_library(iface_mapper iface_mapper.c)
-target_link_libraries(iface_mapper PRIVATE net log os)
+target_link_libraries(iface_mapper PUBLIC os PRIVATE net log os)
 
 add_library(iface iface.c)
 target_link_libraries(iface PUBLIC os PRIVATE ifaceu net log)

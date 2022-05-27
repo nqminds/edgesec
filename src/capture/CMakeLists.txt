@@ -7,10 +7,7 @@ target_link_libraries(capture_config PRIVATE log os)
 
 if (BUILD_CAPTURE_SERVICE)
   add_library(mdns_decoder mdns_decoder.c)
-
-  # we include packet_decoder.h, so need to include its dependencies
-  target_include_directories(mdns_decoder PUBLIC $<TARGET_PROPERTY:packet_decoder,INCLUDE_DIRECTORIES> $<TARGET_PROPERTY:iface,INCLUDE_DIRECTORIES>)
-  target_link_libraries(mdns_decoder PRIVATE squeue log os hash PUBLIC packet_decoder)
+  target_link_libraries(mdns_decoder PRIVATE squeue log os hash iface PUBLIC packet_decoder)
 
   add_library(dns_decoder dns_decoder.c)
   target_include_directories(dns_decoder PRIVATE ${LIBPCAP_INCLUDE_PATH})
