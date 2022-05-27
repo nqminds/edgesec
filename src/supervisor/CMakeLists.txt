@@ -9,8 +9,7 @@ add_library(mac_mapper mac_mapper.c)
 target_link_libraries(mac_mapper PRIVATE bridge_list net log os)
 
 add_library(subscriber_events subscriber_events.c)
-target_include_directories(subscriber_events PUBLIC $<TARGET_PROPERTY:iface,INCLUDE_DIRECTORIES>)
-target_link_libraries(subscriber_events PRIVATE log os domain SQLite::sqlite)
+target_link_libraries(subscriber_events PUBLIC supervisor_config PRIVATE log os domain SQLite::sqlite)
 
 add_library(sqlite_fingerprint_writer sqlite_fingerprint_writer.c)
 target_link_libraries(sqlite_fingerprint_writer PRIVATE sqliteu squeue log os SQLite::sqlite)
