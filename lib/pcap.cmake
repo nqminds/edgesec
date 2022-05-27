@@ -1,6 +1,10 @@
-if (BUILD_PCAP_LIB AND NOT (BUILD_ONLY_DOCS))
-  add_compile_definitions(WITH_PCAP_SERVICE)
+add_compile_definitions(WITH_PCAP_SERVICE)
 
+if(BUILD_ONLY_DOCS)
+elseif(NOT BUILD_PCAP_LIB)
+  find_package(PCAP MODULE REQUIRED)
+  message("Found PCAP library: ${PCAP_LIBRARIES}")
+else()
   FetchContent_Declare(
     libpcap
     URL https://github.com/the-tcpdump-group/libpcap/archive/refs/tags/libpcap-1.10.1.tar.gz
