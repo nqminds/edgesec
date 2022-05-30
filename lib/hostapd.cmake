@@ -8,6 +8,14 @@ if (BUILD_HOSTAPD AND NOT (BUILD_ONLY_DOCS))
   set(HOSTAPD_SOURCE_DIR "${CMAKE_SOURCE_DIR}/lib/hostap")
   set(HOSTAPD_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 
+  if (CMAKE_CROSSCOMPILING)
+    message(
+      FATAL_ERROR
+      "hostapd.cmake currently does not support cross-compiling. "
+      "Please disable BUILD_HOSTAPD in your cmake config to skip compiling hostapd."
+    )
+  endif()
+
   ExternalProject_Add(
     hostapd_externalproject
     URL "${HOSTAPD_SOURCE_DIR}"
