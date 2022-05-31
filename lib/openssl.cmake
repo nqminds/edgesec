@@ -7,13 +7,25 @@ if (USE_CRYPTO_SERVICE)
     # pass
   elseif(BUILD_OPENSSL_LIB)
     if (CMAKE_CROSSCOMPILING)
-      if (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
-        set(openssl_config "linux-aarch64")
-      elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_SYSTEM_PROCESSOR STREQUAL "arm")
-        # todo: do something like linux-armv4 with -mcpu=cortex-a9+vfpv3-d16
-        set(openssl_config "linux-generic32")
-      else ()
-        message(FATAL_ERROR "Could not figure out config for cross compiling openssl")
+      if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+          set(openssl_config "linux-aarch64")
+        elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "arm")
+          # arm is such a massive spectrum of variants that it's not worth
+          # trying to guess which one we're on.
+          # just use generic 32-bit linux
+          set(openssl_config "linux-generic32")
+        elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+          set(openssl_config "linux-x86_64")
+        endif()
+      endif()
+
+      if(NOT DEFINED openssl_config)
+        message(FATAL_ERROR
+          "Could not figure out config for cross compiling openssl. "
+          "Please set openssl_config manually, by following the instructions in: "
+          "https://github.com/openssl/openssl/blob/openssl-3.0.0/INSTALL.md#manual-configuration"
+        )
       endif ()
 
       list(APPEND OpenSSL_Configure_Args
