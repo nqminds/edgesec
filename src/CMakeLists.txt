@@ -45,11 +45,7 @@ if (BUILD_CAPTURE_SERVICE)
 endif ()
 
 add_executable(edgesec edgesec.c)
-if (USE_CRYPTO_SERVICE)
-  target_include_directories(edgesec PRIVATE ${PROJECT_BINARY_DIR} ${LIBOPENSSL_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
-else ()
-  target_include_directories(edgesec PRIVATE ${PROJECT_BINARY_DIR} ${LIBSQLITE_INCLUDE_DIR})
-endif ()
+target_include_directories(edgesec PRIVATE ${PROJECT_BINARY_DIR} ${LIBSQLITE_INCLUDE_DIR})
 target_link_libraries(edgesec PRIVATE eloop config engine minIni os hashmap)
 # link time optimization
 set_target_properties(edgesec PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)

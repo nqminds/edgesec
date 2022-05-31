@@ -1,3 +1,6 @@
+cmake_minimum_required(VERSION 3.11.0) # required by FetchContent
+include(FetchContent)
+
 if (USE_CRYPTO_SERVICE)
   add_compile_definitions(WITH_CRYPTO_SERVICE)
 endif ()
@@ -7,9 +10,12 @@ if (USE_CRYPTO_SERVICE AND BUILD_OPENSSL_LIB AND NOT (BUILD_ONLY_DOCS))
   set(LIBOPENSSL_INSTALL_DIR "${LIBOPENSSL_INSTALL_ROOT}/openssl")
   set(LIBOPENSSL_INCLUDE_PATH ${LIBOPENSSL_INSTALL_DIR}/include)
   set(LIBOPENSSL_LIB_PATH ${LIBOPENSSL_INSTALL_DIR}/lib)
-  find_library(LIBCRYPTO_LIB NAMES libcrypto.a PATHS "${LIBOPENSSL_LIB_PATH}" NO_DEFAULT_PATH)
-  if (LIBCRYPTO_LIB)
-    message("Found libcrypto library: ${LIBCRYPTO_LIB}")
+
+  set(OPENSSL_ROOT_DIR "${LIBOPENSSL_INSTALL_DIR}") # hint for OpenSSL
+  find_package(OpenSSL 3 MODULE COMPONENTS Crypto)
+
+  if (TARGET OpenSSL::Crypto)
+    message("Found OPENSSL_CRYPTO_LIBRARY: ${OPENSSL_CRYPTO_LIBRARY}")
   ELSE ()
     FetchContent_Declare(
       openssl_src
@@ -31,11 +37,11 @@ if (USE_CRYPTO_SERVICE AND BUILD_OPENSSL_LIB AND NOT (BUILD_ONLY_DOCS))
     endif (CMAKE_CROSSCOMPILING)
 
     execute_process(COMMAND bash ${CMAKE_SOURCE_DIR}/lib/compile_openssl.sh ${openssl_src_SOURCE_DIR} ${LIBOPENSSL_INSTALL_DIR} ${openssl_config} ${openssl_prefix})
-    find_library(LIBCRYPTO_LIB NAMES libcrypto.a PATHS "${LIBOPENSSL_LIB_PATH}" NO_DEFAULT_PATH)
+
+    find_package(OpenSSL 3 MODULE REQUIRED COMPONENTS Crypto)
+    message("Found OPENSSL_CRYPTO_LIBRARY: ${OPENSSL_CRYPTO_LIBRARY}")
   endif ()
 elseif(NOT (BUILD_OPENSSL_LIB) AND NOT (BUILD_ONLY_DOCS) AND USE_CRYPTO_SERVICE)
-  find_library(LIBCRYPTO_LIB NAMES libcrypto.a)
-  if (LIBCRYPTO_LIB)
-    message("Found libcrypto library: ${LIBCRYPTO_LIB}")
-  endif ()
+  find_package(OpenSSL 3 MODULE REQUIRED COMPONENTS Crypto)
+  message("Found OPENSSL_CRYPTO_LIBRARY: ${OPENSSL_CRYPTO_LIBRARY}")
 endif ()
