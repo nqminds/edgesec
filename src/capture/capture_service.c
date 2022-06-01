@@ -41,8 +41,8 @@
 #include "header_middleware/packet_queue.h"
 #include "pcap_middleware/pcap_queue.h"
 #include "pcap_service.h"
-#include "header_middleware/sqlite_header_writer.h"
-#include "pcap_middleware/sqlite_pcap_writer.h"
+#include "header_middleware/header_middleware.h"
+#include "pcap_middleware/pcap_middleware.h"
 
 #include "../utils/domain.h"
 #include "../utils/squeue.h"

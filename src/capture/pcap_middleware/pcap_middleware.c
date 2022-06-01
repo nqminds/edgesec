@@ -18,9 +18,9 @@
  ****************************************************************************/
 
 /**
- * @file sqlite_pcap_writer.c
+ * @file pcap_middleware.c
  * @author Alexandru Mereacre
- * @brief File containing the implementation of the sqlite pcap writer
+ * @brief File containing the implementation of the pcap middleware
  * utilities.
  */
 
@@ -30,7 +30,7 @@
 #include <stdint.h>
 #include <sqlite3.h>
 
-#include "sqlite_pcap_writer.h"
+#include "pcap_middleware.h"
 
 #include "../../utils/allocs.h"
 #include "../../utils/os.h"

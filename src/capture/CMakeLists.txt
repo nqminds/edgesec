@@ -13,5 +13,5 @@ if (USE_CAPTURE_SERVICE)
 
   add_library(capture_service capture_service.c)
   target_include_directories(capture_service PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
-  target_link_libraries(capture_service PRIVATE capture_cleaner dns_decoder pcap_service sqlite_header_writer sqlite_pcap_writer pcap_queue packet_queue packet_decoder squeue eloop iface log os hashmap)
+  target_link_libraries(capture_service PRIVATE capture_cleaner dns_decoder pcap_service header_middleware pcap_middleware pcap_queue packet_queue packet_decoder squeue eloop iface log os hashmap)
 endif()

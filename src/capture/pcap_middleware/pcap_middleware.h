@@ -18,13 +18,13 @@
  ****************************************************************************/
 
 /**
- * @file sqlite_pcap_writer.h
+ * @file pcap_middleware.h
  * @author Alexandru Mereacre
- * @brief File containing the definition of the sqlite pcap writer utilities.
+ * @brief File containing the definition of the pcap middleware utilities.
  */
 
-#ifndef SQLITE_PCAP_WRITER_H
-#define SQLITE_PCAP_WRITER_H
+#ifndef PCAP_MIDDLEWARE_H
+#define PCAP_MIDDLEWARE_H
 
 #include <stdint.h>
 #include <sqlite3.h>

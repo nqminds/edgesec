@@ -18,9 +18,9 @@
  ****************************************************************************/
 
 /**
- * @file sqlite_header_writer.c
+ * @file header_middleware.c
  * @author Alexandru Mereacre
- * @brief File containing the implementation of the sqlite header writer
+ * @brief File containing the implementation of the header middleware
  * utilities.
  */
 
@@ -30,7 +30,7 @@
 #include <stdint.h>
 #include <sqlite3.h>
 
-#include "sqlite_header_writer.h"
+#include "header_middleware.h"
 #include "packet_decoder.h"
 
 #include "../../utils/allocs.h"
@@ -83,9 +83,8 @@ int extract_eth_statement(sqlite3 *db, struct eth_schema *eths) {
     column_idx = sqlite3_bind_parameter_index(res, "@ether_type");
     sqlite3_bind_int64(res, column_idx, eths->ether_type);
 
-    // log_trace("sqlite insert eth ether_type=0x%x ether_dhost=%s
-    // ether_shost=%s",
-    //           eths->ether_type, eths->ether_dhost, eths->ether_shost);
+    log_trace("sqlite insert eth ether_type=0x%x ether_dhost=%s ether_shost=%s",
+              eths->ether_type, eths->ether_dhost, eths->ether_shost);
 
     sqlite3_step(res);
     sqlite3_finalize(res);

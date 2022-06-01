@@ -18,14 +18,14 @@ add_executable(test_pcap_queue test_pcap_queue.c)
 target_include_directories(test_pcap_queue PRIVATE ${LIBPCAP_INCLUDE_PATH})
 target_link_libraries(test_pcap_queue PRIVATE pcap_queue os log cmocka::cmocka)
 
-add_executable(test_sqlite_pcap_writer test_sqlite_pcap_writer.c)
-target_include_directories(test_sqlite_pcap_writer PRIVATE ${LIBSQLITE_INCLUDE_DIR})
-target_link_libraries(test_sqlite_pcap_writer PRIVATE sqlite_pcap_writer sqliteu os log cmocka::cmocka)
+add_executable(test_pcap_middleware test_pcap_middleware.c)
+target_include_directories(test_pcap_middleware PRIVATE ${LIBSQLITE_INCLUDE_DIR})
+target_link_libraries(test_pcap_middleware PRIVATE pcap_middleware sqliteu os log cmocka::cmocka)
 
-add_executable(test_sqlite_header_writer test_sqlite_header_writer.c)
-target_include_directories(test_sqlite_header_writer PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
-target_link_libraries(test_sqlite_header_writer PRIVATE sqlite_header_writer sqliteu os log cmocka::cmocka)
-set_target_properties(test_sqlite_header_writer
+add_executable(test_header_middleware test_header_middleware.c)
+target_include_directories(test_header_middleware PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
+target_link_libraries(test_header_middleware PRIVATE header_middleware sqliteu os log cmocka::cmocka)
+set_target_properties(test_header_middleware
   PROPERTIES
   LINK_FLAGS  "-Wl,--wrap=sqlite3_open"
 )
@@ -34,13 +34,6 @@ add_test(NAME test_default_analyser COMMAND test_default_analyser)
 set_tests_properties(test_default_analyser
   PROPERTIES
   WILL_FAIL FALSE)
-
-#if (BUILD_NDPI_LIB)
-#  add_test(NAME test_ndpi_analyser COMMAND test_ndpi_analyser)
-#  set_tests_properties(test_ndpi_analyser
-#    PROPERTIES
-#    WILL_FAIL FALSE)
-#endif ()
 
 add_test(NAME test_packet_queue COMMAND test_packet_queue)
 set_tests_properties(test_packet_queue
@@ -52,12 +45,12 @@ set_tests_properties(test_pcap_queue
   PROPERTIES
   WILL_FAIL FALSE)
 
-add_test(NAME test_sqlite_pcap_writer COMMAND test_sqlite_pcap_writer)
-set_tests_properties(test_sqlite_pcap_writer
+add_test(NAME test_pcap_middleware COMMAND test_pcap_middleware)
+set_tests_properties(test_pcap_middleware
   PROPERTIES
   WILL_FAIL FALSE)
 
-add_test(NAME test_sqlite_header_writer COMMAND test_sqlite_header_writer)
-set_tests_properties(test_sqlite_header_writer
+add_test(NAME test_header_middleware COMMAND test_header_middleware)
+set_tests_properties(test_header_middleware
   PROPERTIES
   WILL_FAIL FALSE)

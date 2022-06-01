@@ -14,7 +14,7 @@
 
 #include "utils/log.h"
 #include "utils/sqliteu.h"
-#include "capture/header_middleware/sqlite_header_writer.h"
+#include "capture/header_middleware/header_middleware.h"
 
 extern int __real_sqlite3_open(const char *filename, sqlite3 **ppDb);
 

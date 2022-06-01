@@ -18,18 +18,16 @@
  ****************************************************************************/
 
 /**
- * @file sqlite_header_writer.h
+ * @file header_middleware.h
  * @author Alexandru Mereacre
- * @brief File containing the definition of the sqlite header writer utilities.
+ * @brief File containing the definition of the header middleware utilities.
  */
 
-#ifndef SQLITE_HEADER_WRITER_H
-#define SQLITE_HEADER_WRITER_H
+#ifndef HEADER_MIDDLEWARE_H
+#define HEADER_MIDDLEWARE_H
 
 #include <stdint.h>
 #include <sqlite3.h>
-
-// #include "packet_decoder.h"
 
 #include "../../utils/allocs.h"
 #include "../../utils/os.h"

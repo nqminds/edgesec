@@ -50,7 +50,7 @@ int run_dhcp(struct dhcp_conf *dconf, UT_array *dns_server_array,
                ? -1
                : 0;
   else
-    return signal_dhcp_process(dconf->dhcp_bin_path, dconf->dhcp_conf_path);
+    return signal_dhcp_process(dconf->dhcp_bin_path);
 }
 
 bool close_dhcp(void) { return kill_dhcp_process(); }

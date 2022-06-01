@@ -389,28 +389,10 @@ int signal_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path) {
   return 0;
 }
 #else
-int signal_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path) {
-  char *process_argv[5] = {NULL, NULL, NULL, NULL, NULL};
-  char *conf_arg;
-
+int signal_dhcp_process(char *dhcp_bin_path) {
   os_strlcpy(dnsmasq_proc_name, basename(dhcp_bin_path), MAX_OS_PATH_LEN);
 
-  if ((conf_arg = get_dnsmasq_args(dhcp_bin_path, dhcp_conf_path,
-                                   process_argv)) == NULL) {
-    log_error("get_dnsmasq_args fail");
-    return -1;
-  }
-
-  log_debug("Checking dnsmasq proc running...");
-  if (check_dhcp_running(basename(process_argv[0]), 1) <= 0) {
-    log_error("check_dhcp_running or process not running");
-    os_free(conf_arg);
-    return -1;
-  }
-
-  os_free(conf_arg);
-
-  // Signal any running hostapd process to reload the config
+  // Signal any running dnsmasq process to reload the config
   if (!signal_process(dnsmasq_proc_name, SIGHUP)) {
     log_error("signal_process fail");
     return -1;
