@@ -37,9 +37,6 @@ bufferTimeout = 10
 processInterval = 10
 immediate = false
 fileWrite = false
-dbWrite = true
-syncStoreSize = 1000
-syncSendSize = 20
 captureStoreSize = 1000000
 
 [supervisor]

@@ -610,17 +610,6 @@ bool load_capture_config(const char *filename, struct capture_conf *config) {
   // Load fileWrite param
   config->file_write = (int)ini_getbool("capture", "fileWrite", 0, filename);
 
-  // Load dbWrite param
-  config->db_write = (int)ini_getbool("capture", "dbWrite", 0, filename);
-
-  // Load syncStoreSize param
-  config->sync_store_size =
-      (ssize_t)ini_getl("capture", "syncStoreSize", -1, filename);
-
-  // Load syncSendSize param
-  config->sync_send_size =
-      (ssize_t)ini_getl("capture", "syncSendSize", -1, filename);
-
   return true;
 }
 

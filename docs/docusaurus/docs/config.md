@@ -40,9 +40,6 @@ bufferTimeout = 10
 processInterval = 10
 immediate = false
 fileWrite = true
-dbWrite = true
-syncStoreSize = 1000
-syncSendSize = 20
 captureStoreSize = 1000000
 
 [supervisor]
@@ -268,10 +265,6 @@ If set to `true` the capture interface is set to immediate mode. The default val
 
 Write the packet data to file(s).
 
-### dbWrite (boolean)
-
-If set to true the capture service will store the packet into an sqlite db
-
 ### dbSync (boolean)
 
 If set to true the sqlite packets db will be synced
@@ -291,14 +284,6 @@ The path to the certificate authority file used for gRPC syncing
 ### command (string)
 
 The UNIX domain command used by the capture service
-
-### syncStoreSize (integer)
-
-Number of capture strings to store in memory before
-
-### syncSendSize (integer)
-
-Number of string to send (sync) from the memory buffer
 
 ### captureStoreSize (integer)
 

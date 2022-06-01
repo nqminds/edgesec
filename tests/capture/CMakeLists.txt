@@ -11,7 +11,7 @@ set_target_properties(test_capture_service
 )
 
 add_executable(test_packet_queue test_packet_queue.c)
-target_include_directories(test_packet_queue PRIVATE ${LIBPCAP_INCLUDE_PATH})
+target_include_directories(test_packet_queue PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
 target_link_libraries(test_packet_queue PRIVATE packet_queue os log cmocka::cmocka)
 
 add_executable(test_pcap_queue test_pcap_queue.c)

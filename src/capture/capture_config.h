@@ -44,6 +44,7 @@
 #include <netinet/udp.h>
 #include <arpa/inet.h>
 
+#include <sqlite3.h>
 #include <stdbool.h>
 
 #include "../utils/allocs.h"
@@ -114,14 +115,10 @@ struct capture_conf {
                                 milliseconds. */
   bool file_write; /**< Specifies wether the packets should be saved to file(s).
                     */
-  bool db_write;   /**< Specifies wether the packets should be saved in a sqlite
-                      db. */
   char capture_db_path[MAX_OS_PATH_LEN]; /**< Specifies the path to the sqlite3
                                             dbs */
   char filter[MAX_FILTER_SIZE]; /**< Specifies the filter expression or pcap lib
                                  */
-  ssize_t sync_store_size;      /**< Specifies the sync store size */
-  ssize_t sync_send_size;       /**< Specifies the sync send size */
   uint32_t capture_store_size;  /**< Specifies the capture store size in KiB */
 };
 
@@ -420,4 +417,12 @@ struct capture_packet {
   char ifname[IFNAMSIZ];
   char id[MAX_RANDOM_UUID_LEN];
 };
+
+struct middleware_context {
+  sqlite3 *db;
+  struct eloop_data *eloop;
+  struct pcap_context *pc;
+  void *mdata;
+};
+
 #endif

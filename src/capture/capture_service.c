@@ -38,7 +38,6 @@
 #include "capture_config.h"
 #include "capture_service.h"
 #include "header_middleware/packet_decoder.h"
-#include "header_middleware/packet_queue.h"
 #include "pcap_middleware/pcap_queue.h"
 #include "pcap_service.h"
 #include "header_middleware/header_middleware.h"
@@ -52,46 +51,22 @@
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 
-static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL,
-                                   NULL};
-
 void construct_pcap_file_name(char *file_name) {
   generate_radom_uuid(file_name);
   strcat(file_name, PCAP_EXTENSION);
 }
 
-void add_packet_queue(struct capture_context *context, UT_array *tp_array,
-                      struct packet_queue *queue) {
-  struct tuple_packet *p = NULL;
-
-  while ((p = (struct tuple_packet *)utarray_next(tp_array, p)) != NULL) {
-    if (context->db_write) {
-      if (push_packet_queue(queue, *p) == NULL) {
-        log_trace("push_packet_queue fail");
-        // Free the packet if cannot be added to the queue
-        free_packet_tuple(p);
-      }
-    }
-  }
-}
-
 void pcap_callback(const void *ctx, const void *pcap_ctx, char *ltype,
                    struct pcap_pkthdr *header, uint8_t *packet) {
+
+  (void)pcap_ctx;
+
   struct capture_context *context = (struct capture_context *)ctx;
-  struct pcap_context *pc = (struct pcap_context *)pcap_ctx;
-  char cap_id[MAX_RANDOM_UUID_LEN];
-  UT_array *tp_array = NULL;
 
-  utarray_new(tp_array, &tp_list_icd);
-
-  generate_radom_uuid(cap_id);
-
-  if (extract_packets(ltype, header, packet, pc->ifname, cap_id, tp_array) >
-      0) {
-    add_packet_queue(context, tp_array, context->pqueue);
+  if (process_header_middleware(context->mctx, ltype, header, packet,
+                                context->interface) < 0) {
+    log_error("process_header_middleware fail");
   }
-
-  utarray_free(tp_array);
 
   if (context->file_write) {
     if (push_pcap_queue(context->cqueue, header, packet) == NULL) {
@@ -148,20 +123,7 @@ int save_pcap_file_data(struct pcap_pkthdr *header, uint8_t *packet,
 void eloop_tout_handler(void *eloop_ctx, void *user_ctx) {
   struct pcap_context *pc = (struct pcap_context *)eloop_ctx;
   struct capture_context *context = (struct capture_context *)user_ctx;
-  struct packet_queue *el_packet;
   struct pcap_queue *el_pcap;
-
-  // Process all packets in the queue
-  while (is_packet_queue_empty(context->pqueue) < 1) {
-    if ((el_packet = pop_packet_queue(context->pqueue)) != NULL) {
-      if (context->db_write) {
-        save_packet_statement(context->db, &(el_packet->tp));
-      }
-
-      free_packet_tuple(&el_packet->tp);
-      free_packet_queue_el(el_packet);
-    }
-  }
 
   if (context->file_write) {
     while (is_pcap_queue_empty(context->cqueue) < 1) {
@@ -234,15 +196,14 @@ int run_capture(struct capture_conf *config) {
     return -1;
   }
 
+  os_strlcpy(context.interface, config->capture_interface, IFNAMSIZ);
+
   context.filter = config->filter;
   context.process_interval = config->process_interval * 1000;
   context.buffer_timeout = config->buffer_timeout;
   context.promiscuous = config->promiscuous;
   context.immediate = config->immediate;
   context.file_write = config->file_write;
-  context.db_write = config->db_write;
-  context.sync_store_size = config->sync_store_size;
-  context.sync_send_size = config->sync_send_size;
 
   log_info("Capture db path=%s", config->capture_db_path);
   log_info("Capturing pcap_path=%s", context.pcap_path);
@@ -252,10 +213,7 @@ int run_capture(struct capture_conf *config) {
   log_info("Immediate mode=%d", context.immediate);
   log_info("Buffer timeout=%d", context.buffer_timeout);
   log_info("Process interval=%d (milliseconds)", context.process_interval);
-  log_info("Sync store size=%ld", context.sync_store_size);
-  log_info("Sync send size=%ld", context.sync_send_size);
   log_info("File write=%d", context.file_write);
-  log_info("DB write=%d", context.db_write);
 
   ret = sqlite3_open(config->capture_db_path, &context.db);
 
@@ -265,39 +223,17 @@ int run_capture(struct capture_conf *config) {
     return -1;
   }
 
-  context.pqueue = init_packet_queue();
-
-  if (context.pqueue == NULL) {
-    log_error("init_packet_queue fail");
-    sqlite3_close(context.db);
-    return -1;
-  }
-
   context.cqueue = init_pcap_queue();
 
   if (context.cqueue == NULL) {
     log_error("init_pcap_queue fail");
-    free_packet_queue(context.pqueue);
     sqlite3_close(context.db);
     return -1;
-  }
-
-  if (context.db_write) {
-    ret = init_sqlite_header_db(context.db);
-
-    if (ret < 0) {
-      log_error("open_sqlite_header_db fail");
-      free_packet_queue(context.pqueue);
-      free_pcap_queue(context.cqueue);
-      sqlite3_close(context.db);
-      return -1;
-    }
   }
 
   if (context.file_write) {
     if (init_sqlite_pcap_db(context.db) < 0) {
       log_error("init_sqlite_pcap_db fail");
-      free_packet_queue(context.pqueue);
       free_pcap_queue(context.cqueue);
       sqlite3_close(context.db);
       return -1;
@@ -329,27 +265,33 @@ int run_capture(struct capture_conf *config) {
     goto fail;
   }
 
-  if (eloop_register_timeout(context.eloop, 0, context.process_interval,
-                             eloop_tout_handler, (void *)pc,
-                             (void *)&context) == -1) {
-    log_error("eloop_register_timeout fail");
+  if ((context.mctx = init_header_middleware(context.db, context.eloop, pc)) ==
+      NULL) {
+    log_error("init_header_middleware fail");
     goto fail;
   }
+
+  // if (eloop_register_timeout(context.eloop, 0, context.process_interval,
+  //                            eloop_tout_handler, (void *)pc,
+  //                            (void *)&context) == -1) {
+  //   log_error("eloop_register_timeout fail");
+  //   goto fail;
+  // }
 
   eloop_run(context.eloop);
   log_info("Capture ended.");
 
   /* And close the session */
+  free_header_middleware(context.mctx);
   close_pcap(pc);
-  free_packet_queue(context.pqueue);
   free_pcap_queue(context.cqueue);
   eloop_free(context.eloop);
   sqlite3_close(context.db);
   return 0;
 
 fail:
+  free_header_middleware(context.mctx);
   close_pcap(pc);
-  free_packet_queue(context.pqueue);
   free_pcap_queue(context.cqueue);
   eloop_free(context.eloop);
   sqlite3_close(context.db);

@@ -11,14 +11,18 @@ target_include_directories(mdns_decoder PUBLIC $<TARGET_PROPERTY:packet_decoder,
 target_link_libraries(mdns_decoder PRIVATE squeue log os hash PUBLIC packet_decoder)
 
 add_library(dns_decoder dns_decoder.c)
-target_include_directories(dns_decoder PRIVATE ${LIBPCAP_INCLUDE_PATH})
+target_include_directories(dns_decoder PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
 target_link_libraries(dns_decoder PRIVATE log os hash)
 
 # packet_decoder.h has an #include <pcap.h>, so need to make it PUBLIC include
 add_library(packet_decoder packet_decoder.c)
-target_include_directories(packet_decoder PUBLIC ${LIBPCAP_INCLUDE_PATH})
+target_include_directories(packet_decoder PUBLIC ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
 target_link_libraries(packet_decoder PUBLIC PCAP::pcap PRIVATE mdns_decoder dns_decoder hash net log os hashmap)
+
+add_library(sqlite_header sqlite_header.c)
+target_include_directories(sqlite_header PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
+target_link_libraries(sqlite_header PRIVATE sqliteu log os iface SQLite::sqlite)
 
 add_library(header_middleware header_middleware.c)
 target_include_directories(header_middleware PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
-target_link_libraries(header_middleware PRIVATE sqliteu squeue log os iface SQLite::sqlite)
+target_link_libraries(header_middleware PRIVATE packet_queue sqlite_header eloop log os iface SQLite::sqlite)

@@ -95,9 +95,9 @@ void close_pcap(struct pcap_context *ctx) {
 }
 
 int capture_pcap_start(struct pcap_context *ctx) {
-  if (ctx != NULL)
+  if (ctx != NULL) {
     return pcap_loop(ctx->pd, -1, receive_pcap_packet, (u_char *)ctx);
-  else {
+  } else {
     log_trace("ctx is NULL");
     return -1;
   }

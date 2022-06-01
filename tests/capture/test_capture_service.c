@@ -144,7 +144,6 @@ void capture_config(struct capture_conf *config) {
   config->buffer_timeout = 100;
   config->process_interval = 1000;
   config->file_write = true;
-  config->db_write = true;
   strcpy(config->filter, "port 80");
 }
 
@@ -165,34 +164,13 @@ static void test_run_capture(void **state) {
   os_free(eloop);
 }
 
-static void test_pcap_callback(void **state) {
-  (void)state; /* unused */
-
-  struct capture_context context;
-  struct pcap_context pc;
-  struct pcap_pkthdr header;
-  header.caplen = 100;
-  header.len = 100;
-
-  context.db_write = true;
-  context.file_write = true;
-  context.pqueue = init_packet_queue();
-  context.cqueue = init_pcap_queue();
-
-  pcap_callback((const void *)&context, (const void *)&pc, NULL, &header, NULL);
-
-  free_packet_queue(context.pqueue);
-  free_pcap_queue(context.cqueue);
-}
-
 int main(int argc, char *argv[]) {
   (void)argc;
   (void)argv;
 
   log_set_quiet(false);
 
-  const struct CMUnitTest tests[] = {cmocka_unit_test(test_run_capture),
-                                     cmocka_unit_test(test_pcap_callback)};
+  const struct CMUnitTest tests[] = {cmocka_unit_test(test_run_capture)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

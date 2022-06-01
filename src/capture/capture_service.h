@@ -36,18 +36,16 @@
 #define MAX_PCAP_FILE_NAME_LENGTH MAX_RANDOM_UUID_LEN + STRLEN(PCAP_EXTENSION)
 
 struct capture_context {
+  struct middleware_context *mctx;
   struct eloop_data *eloop;
   uint32_t process_interval;
-  struct packet_queue *pqueue;
   struct pcap_queue *cqueue;
   sqlite3 *db;
+  char interface[IFNAMSIZ];
   bool file_write;
-  bool db_write;
   char *capture_db_path;
   char pcap_path[MAX_OS_PATH_LEN];
   char *filter;
-  ssize_t sync_store_size;
-  ssize_t sync_send_size;
   bool promiscuous;
   bool immediate;
   uint32_t buffer_timeout;

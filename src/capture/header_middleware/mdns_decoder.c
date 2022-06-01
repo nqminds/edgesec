@@ -268,11 +268,12 @@ bool decode_mdns_packet(struct capture_packet *cpac) {
   //   }
   // }
 
-  log_trace("mDNS id=%d flags=0x%x nqueries=%d nanswers=%d nauth=%d nother=%d "
-            "qname=%s",
-            cpac->mdnss.tid, cpac->mdnss.flags, cpac->mdnss.nqueries,
-            cpac->mdnss.nanswers, cpac->mdnss.nauth, cpac->mdnss.nother,
-            cpac->mdnss.qname);
+  // log_trace("mDNS id=%d flags=0x%x nqueries=%d nanswers=%d nauth=%d nother=%d
+  // "
+  //           "qname=%s",
+  //           cpac->mdnss.tid, cpac->mdnss.flags, cpac->mdnss.nqueries,
+  //           cpac->mdnss.nanswers, cpac->mdnss.nauth, cpac->mdnss.nother,
+  //           cpac->mdnss.qname);
 
   return true;
 }
