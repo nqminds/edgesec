@@ -18,9 +18,9 @@ add_executable(test_pcap_queue test_pcap_queue.c)
 target_include_directories(test_pcap_queue PRIVATE ${LIBPCAP_INCLUDE_PATH})
 target_link_libraries(test_pcap_queue PRIVATE pcap_queue os log cmocka::cmocka)
 
-add_executable(test_pcap_middleware test_pcap_middleware.c)
-target_include_directories(test_pcap_middleware PRIVATE ${LIBSQLITE_INCLUDE_DIR})
-target_link_libraries(test_pcap_middleware PRIVATE pcap_middleware sqliteu os log cmocka::cmocka)
+add_executable(test_sqlite_pcap test_sqlite_pcap.c)
+target_include_directories(test_sqlite_pcap PRIVATE ${LIBSQLITE_INCLUDE_DIR})
+target_link_libraries(test_sqlite_pcap PRIVATE sqlite_pcap sqliteu os log cmocka::cmocka)
 
 add_executable(test_header_middleware test_header_middleware.c)
 target_include_directories(test_header_middleware PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
@@ -45,8 +45,8 @@ set_tests_properties(test_pcap_queue
   PROPERTIES
   WILL_FAIL FALSE)
 
-add_test(NAME test_pcap_middleware COMMAND test_pcap_middleware)
-set_tests_properties(test_pcap_middleware
+add_test(NAME test_sqlite_pcap COMMAND test_sqlite_pcap)
+set_tests_properties(test_sqlite_pcap
   PROPERTIES
   WILL_FAIL FALSE)
 

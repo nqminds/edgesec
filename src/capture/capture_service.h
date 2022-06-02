@@ -32,25 +32,6 @@
 #include "../utils/eloop.h"
 #include "capture_config.h"
 
-#define MAX_DB_NAME_LENGTH MAX_RANDOM_UUID_LEN + STRLEN(SQLITE_EXTENSION)
-#define MAX_PCAP_FILE_NAME_LENGTH MAX_RANDOM_UUID_LEN + STRLEN(PCAP_EXTENSION)
-
-struct capture_context {
-  struct middleware_context *mctx;
-  struct eloop_data *eloop;
-  uint32_t process_interval;
-  struct pcap_queue *cqueue;
-  sqlite3 *db;
-  char interface[IFNAMSIZ];
-  bool file_write;
-  char *capture_db_path;
-  char pcap_path[MAX_OS_PATH_LEN];
-  char *filter;
-  bool promiscuous;
-  bool immediate;
-  uint32_t buffer_timeout;
-};
-
 /**
  * @brief Callback for pcap packet module
  *
@@ -75,18 +56,21 @@ int get_pcap_folder_path(char *capture_db_path, char *pcap_path);
 /**
  * @brief Runs the capture service
  *
+ * @param ifname The interface to capture
  * @param config The capture config structure
  * @return int 0 on success, -1 on failure
  */
-int run_capture(struct capture_conf *config);
+int run_capture(char *ifname, struct capture_conf *config);
 
 /**
  * @brief Runs the capture service thread
  *
+ * @param ifname The capture interface name
  * @param config The capture service config structure
  * @param id The returned thread id
  * @return int 0 on success, -1 on error
  */
-int run_capture_thread(struct capture_conf *config, pthread_t *id);
+int run_capture_thread(char *ifname, struct capture_conf *config,
+                       pthread_t *id);
 
 #endif

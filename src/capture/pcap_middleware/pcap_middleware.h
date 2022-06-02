@@ -27,106 +27,47 @@
 #define PCAP_MIDDLEWARE_H
 
 #include <stdint.h>
-#include <sqlite3.h>
+#include <pcap.h>
 
 #include "../../utils/allocs.h"
 #include "../../utils/os.h"
 #include "../../utils/squeue.h"
 
-#define PCAP_TABLE_NAME "pcap"
-#define PCAP_CREATE_TABLE                                                      \
-  "CREATE TABLE " PCAP_TABLE_NAME                                              \
-  " (timestamp INTEGER NOT NULL, name TEXT, interface TEXT, filter TEXT, "     \
-  "caplen INTEGER, length INTEGER, "                                           \
-  "PRIMARY KEY (timestamp));"
-#define PCAP_INSERT_INTO                                                       \
-  "INSERT INTO " PCAP_TABLE_NAME                                               \
-  " VALUES(@timestamp, @name, @interface, @filter, @caplen, @length);"
-#define PCAP_SELECT_FIRST_ENTRY                                                \
-  "SELECT timestamp,caplen FROM " PCAP_TABLE_NAME                              \
-  " ORDER BY timestamp ASC LIMIT 1;"
-#define PCAP_SUM_GROUP                                                         \
-  "SELECT timestamp,caplen FROM " PCAP_TABLE_NAME                              \
-  " WHERE timestamp > @lt ORDER BY timestamp ASC LIMIT @lim;"
-#define PCAP_SELECT_GROUP                                                      \
-  "SELECT timestamp,name FROM " PCAP_TABLE_NAME                                \
-  " WHERE timestamp >= @lt ORDER BY timestamp ASC LIMIT @lim;"
-#define PCAP_DELETE_GROUP                                                      \
-  "DELETE FROM " PCAP_TABLE_NAME " WHERE timestamp >= @lt AND timestamp <= "   \
-  "@ht;"
-
-struct pcap_file_meta {
-  uint64_t timestamp;
-  char *name;
-};
+#include "../capture_config.h"
 
 /**
- * @brief Initialisez the sqlite pcap db tables
+ * @brief Initialises the pcap middleware
  *
  * @param db The sqlite3 db
- * @return 0 on success, -1 on failure
+ * @param db_path The sqlite3 db path
+ * @param eloop The eloop structure
+ * @param pc The pcap context
+ * @return struct middleware_context* the middleware context on success, NULL on
+ * failure
  */
-int init_sqlite_pcap_db(sqlite3 *db);
+struct middleware_context *init_pcap_middleware(sqlite3 *db, char *db_path,
+                                                struct eloop_data *eloop,
+                                                struct pcap_context *pc);
 
 /**
- * @brief Save a pcap entry into the sqlite db
+ * @brief Pcap processor
  *
- * @param db The sqlite db structure pointer
- * @param name The pcap file name
- * @param timestamp The timestamp value
- * @param caplen The capture len
- * @param length The offwire packet len
- * @param interface The interface string
- * @param filter The filter string
+ * @param context The middleware context
+ * @param ltype The packet type
+ * @param header The pcap packet header
+ * @param packet The pcap packet
+ * @param ifname The capture interface
  * @return int 0 on success, -1 on failure
  */
-int save_sqlite_pcap_entry(sqlite3 *db, char *name, uint64_t timestamp,
-                           uint32_t caplen, uint32_t length, char *interface,
-                           char *filter);
+int process_pcap_middleware(struct middleware_context *context, char *ltype,
+                            struct pcap_pkthdr *header, uint8_t *packet,
+                            char *ifname);
 
 /**
- * @brief Returns the first pcap entry timestamp
+ * @brief Frees the pcap context
  *
- * @param db The sqlite db structure pointer
- * @param timestamp The returned timestamp value
- * @param caplen The returned caplen value
- * @return int 0 on success, 1 for no data and -1 on failure
+ * @param context The pcap context
  */
-int get_first_pcap_entry(sqlite3 *db, uint64_t *timestamp, uint64_t *caplen);
-
-/**
- * @brief Returns the pcap meta array
- *
- * @param db The sqlite db structure pointer
- * @param lt The lower timestamp
- * @param lim The limit number of rows
- * @param pcap_meta_arr The pcap meta array
- * @return int 0 on success, 1 for no data and -1 on failure
- */
-int get_pcap_meta_array(sqlite3 *db, uint64_t lt, uint32_t lim,
-                        UT_array *pcap_meta_arr);
-
-/**
- * @brief Removes a set of entries
- *
- * @param db The sqlite db structure pointer
- * @param lt The lower timestamp
- * @param ht The higher timestamp
- * @return int 0 on success, 1 for no data and -1 on failure
- */
-int delete_pcap_entries(sqlite3 *db, uint64_t lt, uint64_t ht);
-
-/**
- * @brief Calculates the sum of the group of a pcap
- *
- * @param db The sqlite db structure pointer
- * @param lt The lower bound timestamp
- * @param lim The limit number of rows
- * @param ht The returned upper timestamp
- * @param sum The returned sum
- * @return int 0 on success, 1 for no data and -1 on failure
- */
-int sum_pcap_group(sqlite3 *db, uint64_t lt, uint32_t lim, uint64_t *ht,
-                   uint64_t *sum);
+void free_pcap_middleware(struct middleware_context *context);
 
 #endif

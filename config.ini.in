@@ -30,13 +30,10 @@ pidFilePath = "@EDGESEC_full_runstate_dir@/edgesec.pid"
 
 [capture]
 captureDbPath = "@EDGESEC_full_local_lib_dir@/capture.sqlite"
-captureInterface = ""
 filter = ""
 promiscuous = false
 bufferTimeout = 10
-processInterval = 10
 immediate = false
-fileWrite = false
 captureStoreSize = 1000000
 
 [supervisor]

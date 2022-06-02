@@ -58,7 +58,7 @@ void configure_mac_info(struct mac_conn_info *info, bool allow_connection,
   }
 }
 
-int run_analyser(struct capture_conf *config, pid_t *child_pid) {
+int run_analyser(char *ifname, struct capture_conf *config, pid_t *child_pid) {
   int ret = -1;
   // char **process_argv = capture_config2opt(config);
   // char *proc_name;
@@ -96,9 +96,7 @@ int schedule_analyser(struct supervisor_context *context, int vlanid) {
     os_memcpy(&config, &context->capture_config, sizeof(config));
 
     log_trace("Starting analyser on if=%s", vlan_conn.ifname);
-    os_memcpy(config.capture_interface, vlan_conn.ifname, IFNAMSIZ);
-
-    if (run_analyser(&config, &child_pid) != 0) {
+    if (run_analyser(vlan_conn.ifname, &config, &child_pid) != 0) {
       log_trace("run_analyser fail");
       return -1;
     }

@@ -41,12 +41,13 @@
  * @brief Initialises the header middleware
  *
  * @param db The sqlite3 db
+ * @param db_path The sqlite3 db path
  * @param eloop The eloop structure
  * @param pc The pcap context
  * @return struct middleware_context* the middleware context on success, NULL on
  * failure
  */
-struct middleware_context *init_header_middleware(sqlite3 *db,
+struct middleware_context *init_header_middleware(sqlite3 *db, char *db_path,
                                                   struct eloop_data *eloop,
                                                   struct pcap_context *pc);
 

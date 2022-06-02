@@ -580,12 +580,6 @@ bool load_capture_config(const char *filename, struct capture_conf *config) {
   os_strlcpy(config->capture_db_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
-  // Load capture interface name
-  value = os_zalloc(INI_BUFFERSIZE);
-  ini_gets("capture", "captureInterface", "", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->capture_interface, value, IFNAMSIZ);
-  os_free(value);
-
   // Load filter param
   value = os_zalloc(INI_BUFFERSIZE);
   ini_gets("capture", "filter", "", value, INI_BUFFERSIZE, filename);
@@ -602,13 +596,6 @@ bool load_capture_config(const char *filename, struct capture_conf *config) {
   // Load bufferTimeout param
   config->buffer_timeout =
       (uint16_t)ini_getl("capture", "bufferTimeout", 10, filename);
-
-  // Load processInterval param
-  config->process_interval =
-      (uint16_t)ini_getl("capture", "processInterval", 10, filename);
-
-  // Load fileWrite param
-  config->file_write = (int)ini_getbool("capture", "fileWrite", 0, filename);
 
   return true;
 }

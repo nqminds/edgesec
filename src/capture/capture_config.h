@@ -50,28 +50,8 @@
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 
-#define PCAP_DB_NAME                                                           \
-  "pcap-meta" SQLITE_EXTENSION /* sqlite db name for raw pcap data */
-#define PCAP_SUBFOLDER_NAME                                                    \
-  "./pcap" /* Subfodler name to store raw pcap data                            \
-            */
-
 #define MAX_FILTER_SIZE                                                        \
   4094 /* Maximum length of the filter string for libpcap */
-
-#define PACKET_ANALYSER_DEFAULT "default"
-#define PACKET_ANALYSER_NDPI "ndpi"
-
-#define DEFAULT_CAPTURE_TIMEOUT                                                \
-  10 /* Default capture timeout for in milliseconds */
-#define DEFAULT_CAPTURE_INTERVAL                                               \
-  10 /* Default capture interval for in milliseconds */
-
-// #define META_HASH_SIZE              SHA256_HASH_LEN * 2 + 1
-#define MAX_PROTOCOL_NAME_LEN                                                  \
-  64 /* Maximum length of the captured network protocol name */
-
-#define MAX_SCHEMA_STR_LENGTH 100
 
 #define MAX_QUESTION_LEN 255
 
@@ -96,9 +76,6 @@ typedef enum packet_types {
  *
  */
 struct capture_conf {
-  char capture_interface[MAX_CAPIF_LIST_SIZE]; /**< The capture interface
-                                                  name(s) (if multiple delimited
-                                                  by space) */
   bool promiscuous; /**< Specifies whether the interface is to be put into
                        promiscuous mode. If promiscuous param is non-zero,
                        promiscuous mode will be set, otherwise it will not be
@@ -108,13 +85,9 @@ struct capture_conf {
                        non-zero, immediate mode will be set, otherwise it will not
                        be set. */
   uint32_t
-      buffer_timeout;        /**< Specifies the packet buffer timeout, as a
-                                non-negative value, in milliseconds. (See pcap(3PCAP)
-                                for an explanation of the packet buffer timeout.) */
-  uint32_t process_interval; /**< Specifies the packet process interval, in
-                                milliseconds. */
-  bool file_write; /**< Specifies wether the packets should be saved to file(s).
-                    */
+      buffer_timeout; /**< Specifies the packet buffer timeout, as a
+                         non-negative value, in milliseconds. (See pcap(3PCAP)
+                         for an explanation of the packet buffer timeout.) */
   char capture_db_path[MAX_OS_PATH_LEN]; /**< Specifies the path to the sqlite3
                                             dbs */
   char filter[MAX_FILTER_SIZE]; /**< Specifies the filter expression or pcap lib

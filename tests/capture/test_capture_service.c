@@ -138,18 +138,16 @@ struct pcap_queue *__wrap_push_pcap_queue(struct pcap_queue *queue,
 void capture_config(struct capture_conf *config) {
   os_memset(config, 0, sizeof(struct capture_conf));
 
-  strcpy(config->capture_interface, "wlan0");
   config->promiscuous = true;
   config->immediate = true;
   config->buffer_timeout = 100;
-  config->process_interval = 1000;
-  config->file_write = true;
   strcpy(config->filter, "port 80");
 }
 
 static void test_run_capture(void **state) {
   (void)state; /* unused */
 
+  char *ifname = "wlan0";
   struct capture_conf config;
 
   capture_config(&config);
@@ -158,7 +156,7 @@ static void test_run_capture(void **state) {
   assert_non_null(eloop);
 
   will_return_always(__wrap_eloop_init, eloop);
-  int ret = run_capture(&config);
+  int ret = run_capture(ifname, &config);
 
   assert_int_equal(ret, 0);
   os_free(eloop);

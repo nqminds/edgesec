@@ -33,13 +33,10 @@ pidFilePath = "/var/run/edgesec.pid"
 
 [capture]
 captureDbPath = "./capture.sqlite"
-captureInterface = "enp2s0"
 filter = ""
 promiscuous = false
 bufferTimeout = 10
-processInterval = 10
 immediate = false
-fileWrite = true
 captureStoreSize = 1000000
 
 [supervisor]
@@ -237,10 +234,6 @@ The path to the edgesec PID file.
 
 The capture group contains all the parameters that are reponsible to configure the `capture` app service.
 
-### captureInterface (string)
-
-The name of the capture interface. If set to "any" the service will traffic from all interfaces.
-
 ### filter (string)
 
 The pcap lib capture filter.
@@ -253,17 +246,9 @@ If set to `true` the capture interface is set to promiscuous mode. The default v
 
 The timeout in milliseconds to read a packet. The default value is 10.
 
-### processInterval (number)
-
-The interval in milliseconds to process a packet from the queue. The default value is 10.
-
 ### immediate (boolean)
 
 If set to `true` the capture interface is set to immediate mode. The default value is `false`.
-
-### fileWrite (boolean)
-
-Write the packet data to file(s).
 
 ### dbSync (boolean)
 

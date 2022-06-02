@@ -98,9 +98,11 @@ void free_header_middleware(struct middleware_context *context) {
   }
 }
 
-struct middleware_context *init_header_middleware(sqlite3 *db,
+struct middleware_context *init_header_middleware(sqlite3 *db, char *db_path,
                                                   struct eloop_data *eloop,
                                                   struct pcap_context *pc) {
+  (void)db_path;
+
   struct middleware_context *context = NULL;
 
   if (db == NULL) {
@@ -148,10 +150,22 @@ struct middleware_context *init_header_middleware(sqlite3 *db,
 int process_header_middleware(struct middleware_context *context, char *ltype,
                               struct pcap_pkthdr *header, uint8_t *packet,
                               char *ifname) {
-  struct packet_queue *queue = (struct packet_queue *)context->mdata;
+  struct packet_queue *queue;
   int npackets;
   char cap_id[MAX_RANDOM_UUID_LEN];
   UT_array *tp_array = NULL;
+
+  if (context == NULL) {
+    log_error("context params is NULL");
+    return -1;
+  }
+
+  if (context->mdata == NULL) {
+    log_error("mdata params is NULL");
+    return -1;
+  }
+
+  queue = (struct packet_queue *)context->mdata;
 
   utarray_new(tp_array, &tp_list_icd);
 

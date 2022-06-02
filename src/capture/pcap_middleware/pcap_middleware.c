@@ -28,246 +28,244 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <libgen.h>
 #include <sqlite3.h>
 
 #include "pcap_middleware.h"
+#include "pcap_queue.h"
+#include "sqlite_pcap.h"
 
 #include "../../utils/allocs.h"
 #include "../../utils/os.h"
 #include "../../utils/log.h"
-#include "../../utils/sqliteu.h"
+#include "../../utils/eloop.h"
 
-int init_sqlite_pcap_db(sqlite3 *db) {
-  int rc;
+#include "../pcap_service.h"
+
+#define PCAP_SUBFOLDER_NAME                                                    \
+  "./pcap" /* Subfodler name to store raw pcap data                            \
+            */
+
+#define PCAP_PROCESS_INTERVAL 10 * 1000 // In microseconds
+
+#define MAX_PCAP_FILE_NAME_LENGTH MAX_RANDOM_UUID_LEN + STRLEN(PCAP_EXTENSION)
+
+struct pcap_middleware_context {
+  char pcap_path[MAX_OS_PATH_LEN];
+  struct pcap_queue *queue;
+};
+
+int get_pcap_folder_path(char *capture_db_path, char *pcap_path) {
+  char *db_path = NULL;
+  char *parent_path = NULL;
+  char *full_path = NULL;
+
+  if (pcap_path == NULL) {
+    log_error("pcap_path param is empty");
+    return -1;
+  }
+
+  if (!os_strnlen_s(capture_db_path, MAX_OS_PATH_LEN)) {
+    log_error("capture_db_path is empty");
+    return -1;
+  }
+
+  if ((db_path = os_strdup(capture_db_path)) == NULL) {
+    log_error("os_strdup");
+    return -1;
+  }
+
+  parent_path = dirname(db_path);
+
+  if ((full_path = construct_path(parent_path, PCAP_SUBFOLDER_NAME)) == NULL) {
+    log_trace("construct_path fail");
+    os_free(db_path);
+    return -1;
+  }
+
+  strcpy(pcap_path, full_path);
+  os_free(db_path);
+  os_free(full_path);
+
+  return 0;
+}
+
+void construct_pcap_file_name(char *file_name) {
+  generate_radom_uuid(file_name);
+  strcat(file_name, PCAP_EXTENSION);
+}
+
+int save_pcap_file_data(struct middleware_context *context,
+                        struct pcap_pkthdr *header, uint8_t *packet) {
+  char *path = NULL;
+  char file_name[MAX_PCAP_FILE_NAME_LENGTH];
+  uint64_t timestamp = 0;
+
+  struct pcap_middleware_context *pcap_context =
+      (struct pcap_middleware_context *)context->mdata;
+
+  os_to_timestamp(header->ts, &timestamp);
+  construct_pcap_file_name(file_name);
+
+  if ((path = construct_path(pcap_context->pcap_path, file_name)) == NULL) {
+    log_error("construct_path fail");
+    return -1;
+  }
+
+  if (dump_file_pcap(context->pc, path, header, packet) < 0) {
+    log_error("dump_file_pcap fail");
+    os_free(path);
+    return -1;
+  }
+
+  os_free(path);
+
+  if (save_sqlite_pcap_entry(context->db, file_name, timestamp, header->caplen,
+                             header->len) < 0) {
+    log_error("save_sqlite_pcap_entry fail");
+    return -1;
+  }
+
+  return 0;
+}
+
+void eloop_tout_pcap_handler(void *eloop_ctx, void *user_ctx) {
+  (void)eloop_ctx;
+
+  struct middleware_context *context = (struct middleware_context *)user_ctx;
+  struct pcap_middleware_context *pcap_context =
+      (struct pcap_middleware_context *)context->mdata;
+  struct pcap_queue *el;
+
+  while (is_pcap_queue_empty(pcap_context->queue) < 1) {
+    if ((el = pop_pcap_queue(pcap_context->queue)) != NULL) {
+      if (save_pcap_file_data(context, &(el->header), el->packet) < 0) {
+        log_error("save_pcap_file_data fail");
+      }
+      free_pcap_queue_el(el);
+    }
+  }
+
+  if (eloop_register_timeout(context->eloop, 0, PCAP_PROCESS_INTERVAL,
+                             eloop_tout_pcap_handler, NULL,
+                             (void *)user_ctx) == -1) {
+    log_error("eloop_register_timeout fail");
+  }
+}
+
+void free_pcap_middleware(struct middleware_context *context) {
+  struct pcap_middleware_context *pcap_context;
+
+  if (context != NULL) {
+    if (context->mdata != NULL) {
+      pcap_context = (struct pcap_middleware_context *)context->mdata;
+      free_pcap_queue(pcap_context->queue);
+      os_free(pcap_context);
+      context->mdata = NULL;
+    }
+    os_free(context);
+  }
+}
+
+struct middleware_context *init_pcap_middleware(sqlite3 *db, char *db_path,
+                                                struct eloop_data *eloop,
+                                                struct pcap_context *pc) {
+  struct middleware_context *context = NULL;
+  struct pcap_middleware_context *pcap_context = NULL;
 
   if (db == NULL) {
     log_error("db param is NULL");
-    return -1;
+    return NULL;
   }
 
-  rc = check_table_exists(db, PCAP_TABLE_NAME);
-
-  if (rc == 0) {
-    log_debug("pcap table doesn't exist creating...");
-    if (execute_sqlite_query(db, PCAP_CREATE_TABLE) < 0) {
-      log_error("execute_sqlite_query fail");
-      return -1;
-    }
-  } else if (rc < 0) {
-    log_error("check_table_exists fail");
-    return -1;
+  if (db_path == NULL) {
+    log_error("db_path param is NULL");
+    return NULL;
   }
 
-  return 0;
+  if (eloop == NULL) {
+    log_error("eloop param is NULL");
+    return NULL;
+  }
+
+  if ((context = os_zalloc(sizeof(struct middleware_context))) == NULL) {
+    log_errno("zalloc");
+    return NULL;
+  }
+
+  if ((pcap_context = os_zalloc(sizeof(struct pcap_middleware_context))) ==
+      NULL) {
+    log_errno("zalloc");
+    free_pcap_middleware(context);
+    return NULL;
+  }
+
+  context->db = db;
+  context->eloop = eloop;
+  context->pc = pc;
+  context->mdata = (void *)pcap_context;
+
+  if (get_pcap_folder_path(db_path, pcap_context->pcap_path) < 0) {
+    log_error("get_pcap_folder_path fail");
+    free_pcap_middleware(context);
+    return NULL;
+  }
+
+  if (create_dir(pcap_context->pcap_path, S_IRWXU | S_IRWXG) < 0) {
+    log_error("create_dir fail");
+    free_pcap_middleware(context);
+    return NULL;
+  }
+
+  if ((pcap_context->queue = init_pcap_queue()) == NULL) {
+    log_error("init_pcap_queue fail");
+    free_pcap_middleware(context);
+    return NULL;
+  }
+
+  if (init_sqlite_pcap_db(db) < 0) {
+    log_error("init_sqlite_pcap_db fail");
+    free_pcap_middleware(context);
+    return NULL;
+  }
+
+  if (eloop_register_timeout(eloop, 0, PCAP_PROCESS_INTERVAL,
+                             eloop_tout_pcap_handler, NULL,
+                             (void *)context) == -1) {
+    log_error("eloop_register_timeout fail");
+    free_pcap_middleware(context);
+    return NULL;
+  }
+
+  return context;
 }
 
-int save_sqlite_pcap_entry(sqlite3 *db, char *name, uint64_t timestamp,
-                           uint32_t caplen, uint32_t length, char *interface,
-                           char *filter) {
-  sqlite3_stmt *res = NULL;
-  int column_idx;
+int process_pcap_middleware(struct middleware_context *context, char *ltype,
+                            struct pcap_pkthdr *header, uint8_t *packet,
+                            char *ifname) {
+  (void)ltype;
+  (void)ifname;
 
-  if (sqlite3_prepare_v2(db, PCAP_INSERT_INTO, -1, &res, 0) != SQLITE_OK) {
-    log_trace("Failed to prepare statement: %s", sqlite3_errmsg(db));
+  struct pcap_middleware_context *pcap_context;
+
+  if (context == NULL) {
+    log_error("context params is NULL");
     return -1;
   }
 
-  column_idx = sqlite3_bind_parameter_index(res, "@timestamp");
-  if (sqlite3_bind_int64(res, column_idx, timestamp) != SQLITE_OK) {
-    log_trace("sqlite3_bind_int64 fail");
-    sqlite3_finalize(res);
+  if (context->mdata == NULL) {
+    log_error("mdata params is NULL");
     return -1;
   }
 
-  column_idx = sqlite3_bind_parameter_index(res, "@caplen");
-  if (sqlite3_bind_int64(res, column_idx, caplen) != SQLITE_OK) {
-    log_trace("sqlite3_bind_int64 fail");
-    sqlite3_finalize(res);
+  pcap_context = (struct pcap_middleware_context *)context->mdata;
+
+  if (push_pcap_queue(pcap_context->queue, header, packet) == NULL) {
+    log_error("push_pcap_queue fail");
     return -1;
-  }
-
-  column_idx = sqlite3_bind_parameter_index(res, "@length");
-  if (sqlite3_bind_int64(res, column_idx, length) != SQLITE_OK) {
-    log_trace("sqlite3_bind_int64 fail");
-    sqlite3_finalize(res);
-    return -1;
-  }
-
-  column_idx = sqlite3_bind_parameter_index(res, "@name");
-  if (sqlite3_bind_text(res, column_idx, name, -1, NULL) != SQLITE_OK) {
-    log_trace("sqlite3_bind_text fail");
-    sqlite3_finalize(res);
-    return -1;
-  }
-
-  column_idx = sqlite3_bind_parameter_index(res, "@interface");
-  if (sqlite3_bind_text(res, column_idx, interface, -1, NULL) != SQLITE_OK) {
-    log_trace("sqlite3_bind_text fail");
-    sqlite3_finalize(res);
-    return -1;
-  }
-
-  column_idx = sqlite3_bind_parameter_index(res, "@filter");
-  if (sqlite3_bind_text(res, column_idx, filter, -1, NULL) != SQLITE_OK) {
-    log_trace("sqlite3_bind_text fail");
-    sqlite3_finalize(res);
-    return -1;
-  }
-
-  sqlite3_step(res);
-  sqlite3_finalize(res);
-
-  return 0;
-}
-
-int get_first_pcap_entry(sqlite3 *db, uint64_t *timestamp, uint64_t *caplen) {
-  int rc;
-  sqlite3_stmt *res = NULL;
-
-  if (sqlite3_prepare_v2(db, PCAP_SELECT_FIRST_ENTRY, -1, &res, 0) !=
-      SQLITE_OK) {
-    log_trace("Failed to prepare statement: %s", sqlite3_errmsg(db));
-    return -1;
-  }
-
-  *timestamp = 0;
-  *caplen = 0;
-
-  rc = sqlite3_step(res);
-
-  if (rc == SQLITE_ROW) {
-    *timestamp = sqlite3_column_int64(res, 0);
-    *caplen = sqlite3_column_int64(res, 1);
-  } else if (rc == SQLITE_OK || rc == SQLITE_DONE) {
-    log_trace("No rows");
-    sqlite3_finalize(res);
-    return 1;
   } else {
-    log_trace("sqlite3_step fail");
-    sqlite3_finalize(res);
-    return -1;
+    log_trace("Pushed packet size=%d", header->caplen);
   }
 
-  sqlite3_finalize(res);
-  return 0;
-}
-
-int sum_pcap_group(sqlite3 *db, uint64_t lt, uint32_t lim, uint64_t *ht,
-                   uint64_t *sum) {
-  int rc;
-  sqlite3_stmt *res = NULL;
-  int column_idx;
-
-  *sum = 0;
-
-  if (sqlite3_prepare_v2(db, PCAP_SUM_GROUP, -1, &res, 0) != SQLITE_OK) {
-    log_trace("Failed to prepare statement: %s", sqlite3_errmsg(db));
-    return -1;
-  }
-
-  column_idx = sqlite3_bind_parameter_index(res, "@lt");
-  if (sqlite3_bind_int64(res, column_idx, lt) != SQLITE_OK) {
-    log_trace("sqlite3_bind_int64 fail");
-    sqlite3_finalize(res);
-    return -1;
-  }
-
-  column_idx = sqlite3_bind_parameter_index(res, "@lim");
-  if (sqlite3_bind_int64(res, column_idx, lim) != SQLITE_OK) {
-    log_trace("sqlite3_bind_int64 fail");
-    sqlite3_finalize(res);
-    return -1;
-  }
-
-  while ((rc = sqlite3_step(res)) == SQLITE_ROW) {
-    *ht = sqlite3_column_int64(res, 0);
-    *sum = *sum + sqlite3_column_int64(res, 1);
-  }
-
-  if (rc != SQLITE_OK && rc != SQLITE_DONE) {
-    log_trace("sqlite3_step fail");
-    sqlite3_finalize(res);
-    return -1;
-  }
-
-  sqlite3_finalize(res);
-  return 0;
-}
-
-int get_pcap_meta_array(sqlite3 *db, uint64_t lt, uint32_t lim,
-                        UT_array *pcap_meta_arr) {
-  int rc;
-  struct pcap_file_meta p;
-  sqlite3_stmt *res = NULL;
-  int column_idx;
-
-  if (sqlite3_prepare_v2(db, PCAP_SELECT_GROUP, -1, &res, 0) != SQLITE_OK) {
-    log_trace("Failed to prepare statement: %s", sqlite3_errmsg(db));
-    return -1;
-  }
-
-  column_idx = sqlite3_bind_parameter_index(res, "@lt");
-  if (sqlite3_bind_int64(res, column_idx, lt) != SQLITE_OK) {
-    log_trace("sqlite3_bind_int64 fail");
-    sqlite3_finalize(res);
-    return -1;
-  }
-
-  column_idx = sqlite3_bind_parameter_index(res, "@lim");
-  if (sqlite3_bind_int64(res, column_idx, lim) != SQLITE_OK) {
-    log_trace("sqlite3_bind_int64 fail");
-    sqlite3_finalize(res);
-    return -1;
-  }
-
-  while ((rc = sqlite3_step(res)) == SQLITE_ROW) {
-    os_memset(&p, 0, sizeof(struct pcap_file_meta));
-    p.timestamp = sqlite3_column_int64(res, 0);
-    p.name = os_strdup((char *)sqlite3_column_text(res, 1));
-    utarray_push_back(pcap_meta_arr, &p);
-  }
-
-  if (rc != SQLITE_OK && rc != SQLITE_DONE) {
-    log_trace("sqlite3_step fail");
-    sqlite3_finalize(res);
-    return -1;
-  }
-
-  sqlite3_finalize(res);
-  return 0;
-}
-
-int delete_pcap_entries(sqlite3 *db, uint64_t lt, uint64_t ht) {
-  int rc;
-  sqlite3_stmt *res = NULL;
-  int column_idx;
-
-  if (sqlite3_prepare_v2(db, PCAP_DELETE_GROUP, -1, &res, 0) != SQLITE_OK) {
-    log_trace("Failed to prepare statement: %s", sqlite3_errmsg(db));
-    return -1;
-  }
-
-  column_idx = sqlite3_bind_parameter_index(res, "@lt");
-  if (sqlite3_bind_int64(res, column_idx, lt) != SQLITE_OK) {
-    log_trace("sqlite3_bind_int64 fail");
-    sqlite3_finalize(res);
-    return -1;
-  }
-
-  column_idx = sqlite3_bind_parameter_index(res, "@ht");
-  if (sqlite3_bind_int64(res, column_idx, ht) != SQLITE_OK) {
-    log_trace("sqlite3_bind_int64 fail");
-    sqlite3_finalize(res);
-    return -1;
-  }
-
-  rc = sqlite3_step(res);
-
-  if (rc != SQLITE_OK && rc != SQLITE_DONE) {
-    sqlite3_finalize(res);
-    return -1;
-  }
-
-  sqlite3_finalize(res);
   return 0;
 }

@@ -32,7 +32,7 @@
 #include <sqlite3.h>
 #include <libgen.h>
 
-#include "../pcap_middleware/pcap_middleware.h"
+#include "../pcap_middleware/sqlite_pcap.h"
 #include "../capture_service.h"
 #include "../capture_config.h"
 

@@ -14,7 +14,7 @@
 
 #include "utils/log.h"
 #include "utils/sqliteu.h"
-#include "capture/pcap_middleware/pcap_middleware.h"
+#include "capture/pcap_middleware/sqlite_pcap.h"
 
 static void test_open_sqlite_pcap_db(void **state) {
   (void)state; /* unused */
@@ -36,8 +36,7 @@ static void test_save_sqlite_pcap_entry(void **state) {
   assert_int_equal(ret, SQLITE_OK);
 
   assert_int_equal(init_sqlite_pcap_db(db), 0);
-  assert_int_equal(
-      save_sqlite_pcap_entry(db, "test", 12345, 10, 10, "wlan0", "port 80"), 0);
+  assert_int_equal(save_sqlite_pcap_entry(db, "test", 12345, 10, 10), 0);
   sqlite3_close(db);
 }
 int main(int argc, char *argv[]) {
