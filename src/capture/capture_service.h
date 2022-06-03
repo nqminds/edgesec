@@ -34,30 +34,6 @@
 #include "pcap_service.h"
 #include "capture_config.h"
 
-typedef struct middleware_context *(*init_middleware)(sqlite3 *db,
-                                                      char *db_path,
-                                                      struct eloop_data *eloop,
-                                                      struct pcap_context *pc);
-
-typedef int (*process_middleware)(struct middleware_context *context,
-                                  char *ltype, struct pcap_pkthdr *header,
-                                  uint8_t *packet, char *ifname);
-
-typedef void (*free_middleware)(struct middleware_context *context);
-
-struct middleware_handlers {
-  init_middleware init;
-  process_middleware process;
-  free_middleware freem;
-};
-
-struct middleware_context {
-  sqlite3 *db;
-  struct eloop_data *eloop;
-  struct pcap_context *pc;
-  void *mdata;
-};
-
 /**
  * @brief Callback for pcap packet module
  *

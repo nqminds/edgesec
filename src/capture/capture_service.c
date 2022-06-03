@@ -37,11 +37,7 @@
 
 #include "capture_config.h"
 #include "capture_service.h"
-#include "header_middleware/packet_decoder.h"
-#include "pcap_middleware/pcap_queue.h"
 #include "pcap_service.h"
-#include "header_middleware/header_middleware.h"
-#include "pcap_middleware/pcap_middleware.h"
 
 #include "../utils/domain.h"
 #include "../utils/squeue.h"
@@ -51,14 +47,15 @@
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 
+#include "middlewares.h"
+
 struct capture_thread_context {
   struct capture_conf config;
   char ifname[IFNAMSIZ];
 };
 
 struct capture_middleware_context {
-  struct middleware_context *hctx;
-  struct middleware_context *pctx;
+  UT_array *handlers;
   char interface[IFNAMSIZ];
 };
 
@@ -70,15 +67,8 @@ void pcap_callback(const void *ctx, const void *pcap_ctx, char *ltype,
   struct capture_middleware_context *context =
       (struct capture_middleware_context *)ctx;
 
-  if (process_header_middleware(context->hctx, ltype, header, packet,
-                                context->interface) < 0) {
-    log_error("process_header_middleware fail");
-  }
-
-  if (process_pcap_middleware(context->pctx, ltype, header, packet,
-                              context->interface) < 0) {
-    log_error("process_pcap_middleware fail");
-  }
+  process_middlewares(context->handlers, ltype, header, packet,
+                      context->interface);
 }
 
 void eloop_read_fd_handler(int sock, void *eloop_ctx, void *sock_ctx) {
@@ -120,7 +110,7 @@ int run_capture(char *ifname, struct capture_conf *config) {
 
   if ((eloop = eloop_init()) == NULL) {
     log_error("eloop_init fail");
-    goto fail;
+    goto capture_fail;
   }
 
   log_info("Registering pcap for ifname=%s", context.interface);
@@ -128,46 +118,40 @@ int run_capture(char *ifname, struct capture_conf *config) {
                (int)config->buffer_timeout, config->filter, true, pcap_callback,
                (void *)&context, &pc) < 0) {
     log_error("run_pcap fail");
-    goto fail;
+    goto capture_fail;
   }
 
   if (pc != NULL) {
     if (eloop_register_read_sock(eloop, pc->pcap_fd, eloop_read_fd_handler,
                                  (void *)pc, (void *)NULL) == -1) {
       log_error("eloop_register_read_sock fail");
-      goto fail;
+      goto capture_fail;
     }
   } else {
     log_debug("Empty pcap context");
-    goto fail;
+    goto capture_fail;
   }
 
-  if ((context.hctx = init_header_middleware(db, config->capture_db_path, eloop,
-                                             pc)) == NULL) {
-    log_error("init_header_middleware fail");
-    goto fail;
-  }
+  context.handlers = assign_middlewares();
 
-  if ((context.pctx = init_pcap_middleware(db, config->capture_db_path, eloop,
-                                           pc)) == NULL) {
-    log_error("init_header_middleware fail");
-    goto fail;
+  if (init_middlewares(context.handlers, db, config->capture_db_path, eloop,
+                       pc) < 0) {
+    log_error("init_middlewares fail");
+    goto capture_fail;
   }
 
   eloop_run(eloop);
   log_info("Capture ended.");
 
   /* And close the session */
-  free_header_middleware(context.hctx);
-  free_pcap_middleware(context.pctx);
+  free_middlewares(context.handlers);
   close_pcap(pc);
   eloop_free(eloop);
   sqlite3_close(db);
   return 0;
 
-fail:
-  free_header_middleware(context.hctx);
-  free_pcap_middleware(context.pctx);
+capture_fail:
+  free_middlewares(context.handlers);
   close_pcap(pc);
   eloop_free(eloop);
   sqlite3_close(db);

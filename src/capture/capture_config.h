@@ -58,7 +58,6 @@ struct capture_conf {
                                             dbs */
   char filter[MAX_FILTER_SIZE]; /**< Specifies the filter expression or pcap lib
                                  */
-  uint32_t capture_store_size;  /**< Specifies the capture store size in KiB */
 };
 
 #endif

@@ -61,6 +61,11 @@ option(USE_SQLITE3_LIB "Use sqlite3 library" ON)
 option(USE_UUID_LIB "Use uuid library" ON)
 option(USE_ZYMKEY4_HSM "Use the Zymkey4 HSM" OFF)
 
+# Capture middleware options
+option(USE_CLEANER_MIDDLEWARE "Use the cleaner middleware" ON)
+option(USE_HEADER_MIDDLEWARE "Use the header middleware" ON)
+option(USE_PCAP_MIDDLEWARE "Use the pcap middleware" ON)
+
 if (USE_CRYPTO_SERVICE)
   add_compile_definitions(TEST_CRYPTO_SERVICE_KEY="12345")
 endif ()

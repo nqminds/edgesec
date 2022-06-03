@@ -34,12 +34,12 @@
 #include "packet_decoder.h"
 #include "packet_queue.h"
 
+#include "middlewares.h"
+
 #include "../../utils/allocs.h"
 #include "../../utils/os.h"
 #include "../../utils/log.h"
 #include "../../utils/eloop.h"
-
-#include "../capture_service.h"
 
 #define HEADER_PROCESS_INTERVAL 10 * 1000 // In microseconds
 
@@ -106,6 +106,8 @@ struct middleware_context *init_header_middleware(sqlite3 *db, char *db_path,
   (void)db_path;
 
   struct middleware_context *context = NULL;
+
+  log_info("Init header middleware...");
 
   if (db == NULL) {
     log_error("db param is NULL");

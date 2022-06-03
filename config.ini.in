@@ -34,7 +34,6 @@ filter = ""
 promiscuous = false
 bufferTimeout = 10
 immediate = false
-captureStoreSize = 1000000
 
 [supervisor]
 domainServerPath = "@EDGESEC_full_runstate_dir@/edgesec-domain-server"

@@ -35,17 +35,18 @@
 #include "pcap_queue.h"
 #include "sqlite_pcap.h"
 
+#include "middlewares.h"
+
 #include "../../utils/allocs.h"
 #include "../../utils/os.h"
 #include "../../utils/log.h"
 #include "../../utils/eloop.h"
 
 #include "../pcap_service.h"
-#include "../capture_service.h"
 
 #define PCAP_SUBFOLDER_NAME                                                    \
-  "./pcap" /* Subfodler name to store raw pcap data                            \
-            */
+  "./capture" /* Subfodler name to store raw pcap data                         \
+               */
 
 #define PCAP_PROCESS_INTERVAL 10 * 1000 // In microseconds
 
@@ -173,6 +174,8 @@ struct middleware_context *init_pcap_middleware(sqlite3 *db, char *db_path,
                                                 struct pcap_context *pc) {
   struct middleware_context *context = NULL;
   struct pcap_middleware_context *pcap_context = NULL;
+
+  log_info("Init pcap middleware...");
 
   if (db == NULL) {
     log_error("db param is NULL");

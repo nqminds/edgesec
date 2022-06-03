@@ -11,5 +11,5 @@ target_include_directories(sqlite_pcap PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLI
 target_link_libraries(sqlite_pcap PRIVATE sqliteu log os SQLite::sqlite)
 
 add_library(pcap_middleware pcap_middleware.c)
-target_include_directories(pcap_middleware PRIVATE ${LIBSQLITE_INCLUDE_DIR})
+target_include_directories(pcap_middleware PRIVATE ${LIBSQLITE_INCLUDE_DIR} ${PROJECT_BINARY_DIR})
 target_link_libraries(pcap_middleware PRIVATE pcap_service pcap_queue sqlite_pcap log os SQLite::sqlite)

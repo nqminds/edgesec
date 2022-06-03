@@ -1,0 +1,116 @@
+#include <sqlite3.h>
+#include <pcap.h>
+
+#include "@EDGESEC_SOURCE_DIR@/src/utils/eloop.h"
+
+#include "@EDGESEC_SOURCE_DIR@/src/capture/cleaner_middleware/cleaner_middleware.h"
+#include "@EDGESEC_SOURCE_DIR@/src/capture/header_middleware/header_middleware.h"
+#include "@EDGESEC_SOURCE_DIR@/src/capture/pcap_middleware/pcap_middleware.h"
+
+#cmakedefine USE_CLEANER_MIDDLEWARE
+#cmakedefine USE_HEADER_MIDDLEWARE
+#cmakedefine USE_PCAP_MIDDLEWARE
+
+struct middleware_context {
+  sqlite3 *db;
+  struct eloop_data *eloop;
+  struct pcap_context *pc;
+  void *mdata;
+};
+
+typedef struct middleware_context *(*init_middleware)(sqlite3 *db,
+                                                      char *db_path,
+                                                      struct eloop_data *eloop,
+                                                      struct pcap_context *pc);
+
+typedef int (*process_middleware)(struct middleware_context *context,
+                                  char *ltype, struct pcap_pkthdr *header,
+                                  uint8_t *packet, char *ifname);
+
+typedef void (*free_middleware)(struct middleware_context *context);
+
+struct middleware_handlers {
+  init_middleware init;
+  process_middleware process;
+  free_middleware free;
+  struct middleware_context *context;
+};
+
+static const UT_icd middleware_icd = {sizeof(struct middleware_handlers), NULL, NULL, NULL};
+
+static inline UT_array *assign_middlewares(void) {
+  UT_array *handlers = NULL;
+  struct middleware_handlers handler;
+
+  utarray_new(handlers, &middleware_icd);
+
+#ifdef USE_CLEANER_MIDDLEWARE
+  handler.context = NULL;
+  handler.init = init_cleaner_middleware;
+  handler.process = process_cleaner_middleware;
+  handler.free = free_cleaner_middleware;
+  utarray_push_back(handlers, &handler);
+#endif
+
+#ifdef USE_HEADER_MIDDLEWARE
+  handler.context = NULL;
+  handler.init = init_header_middleware;
+  handler.process = process_header_middleware;
+  handler.free = free_header_middleware;
+  utarray_push_back(handlers, &handler);
+#endif
+
+#ifdef USE_PCAP_MIDDLEWARE
+  handler.context = NULL;
+  handler.init = init_pcap_middleware;
+  handler.process = process_pcap_middleware;
+  handler.free = free_pcap_middleware;
+  utarray_push_back(handlers, &handler);
+#endif
+
+  return handlers;
+}
+
+static inline int init_middlewares(UT_array *handlers,
+                                   sqlite3 *db,
+                                   char *db_path,
+                                   struct eloop_data *eloop,
+                                   struct pcap_context *pc) {
+  struct middleware_handlers *handler = NULL;
+
+  while ((handler = (struct middleware_handlers *) utarray_next(handlers, handler))) {
+    if ((handler->context = handler->init(db, db_path, eloop, pc)) == NULL) {
+      log_error("handle init error");
+      return -1;
+    }
+  }
+
+  return 0;
+}
+
+static inline void free_middlewares(UT_array *handlers)
+{
+  struct middleware_handlers *handler = NULL;
+
+  while ((handler = (struct middleware_handlers *) utarray_next(handlers, handler))) {
+    handler->free(handler->context);
+    handler->context = NULL;
+  }
+
+  utarray_free(handlers);
+}
+
+static inline void process_middlewares(UT_array *handlers,
+                                      char *ltype,
+                                      struct pcap_pkthdr *header,
+                                      uint8_t *packet,
+                                      char *ifname)
+{
+  struct middleware_handlers *handler = NULL;
+
+  while ((handler = (struct middleware_handlers *) utarray_next(handlers, handler))) {
+    if (handler->process(handler->context, ltype, header, packet, ifname) < 0) {
+      log_error("handler process fail");
+    }
+  }
+}

@@ -37,7 +37,6 @@ filter = ""
 promiscuous = false
 bufferTimeout = 10
 immediate = false
-captureStoreSize = 1000000
 
 [supervisor]
 domainServerPath = "/tmp/edgesec-domain-server"
@@ -269,10 +268,6 @@ The path to the certificate authority file used for gRPC syncing
 ### command (string)
 
 The UNIX domain command used by the capture service
-
-### captureStoreSize (integer)
-
-Number of pcap Kb to store before cleaning. Used by capture `cleaner` service
 
 ## [supervisor] group
 
