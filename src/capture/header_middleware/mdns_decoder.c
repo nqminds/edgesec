@@ -43,7 +43,6 @@
 #include "../../utils/hash.h"
 #include "../../utils/squeue.h"
 
-#include "../capture_config.h"
 #include "packet_decoder.h"
 #include "mdns_decoder.h"
 

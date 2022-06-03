@@ -26,13 +26,13 @@
 #ifndef HEADER_MIDDLEWARE_H
 #define HEADER_MIDDLEWARE_H
 
+#include <sqlite3.h>
 #include <pcap.h>
 #include <stdint.h>
 
 #include "../../utils/allocs.h"
 #include "../../utils/os.h"
-
-#include "../capture_config.h"
+#include "../../utils/eloop.h"
 
 #include "packet_queue.h"
 #include "../pcap_service.h"

@@ -36,6 +36,7 @@
 #include "../../utils/sqliteu.h"
 
 #include "sqlite_header.h"
+#include "packet_decoder.h"
 
 #define EXTRACT_META_PACKET(term, tp)                                          \
   term.hash = tp->mp.hash;                                                     \

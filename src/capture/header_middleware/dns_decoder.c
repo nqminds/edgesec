@@ -41,7 +41,6 @@
 #include "../../utils/os.h"
 #include "../../utils/hash.h"
 
-#include "../capture_config.h"
 #include "packet_decoder.h"
 
 void decode_dns_questions(uint8_t *payload, struct capture_packet *cpac) {

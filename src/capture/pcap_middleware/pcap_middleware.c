@@ -41,6 +41,7 @@
 #include "../../utils/eloop.h"
 
 #include "../pcap_service.h"
+#include "../capture_service.h"
 
 #define PCAP_SUBFOLDER_NAME                                                    \
   "./pcap" /* Subfodler name to store raw pcap data                            \

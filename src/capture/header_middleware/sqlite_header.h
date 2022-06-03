@@ -35,6 +35,8 @@
 
 #include "../capture_config.h"
 
+#include "packet_decoder.h"
+
 #define MAX_DB_NAME 100
 
 #define ETH_CREATE_TABLE                                                       \

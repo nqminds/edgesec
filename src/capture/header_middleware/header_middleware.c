@@ -39,6 +39,8 @@
 #include "../../utils/log.h"
 #include "../../utils/eloop.h"
 
+#include "../capture_service.h"
+
 #define HEADER_PROCESS_INTERVAL 10 * 1000 // In microseconds
 
 static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL,

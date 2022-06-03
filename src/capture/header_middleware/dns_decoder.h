@@ -26,7 +26,6 @@
 #ifndef DNS_DECODER_H
 #define DNS_DECODER_H
 
-#include "../capture_config.h"
 #include "packet_decoder.h"
 
 /**

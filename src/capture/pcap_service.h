@@ -26,6 +26,7 @@
 #ifndef PCAP_SERVICE_H
 #define PCAP_SERVICE_H
 
+#include <linux/if.h>
 #include <sys/types.h>
 #include <stdbool.h>
 #include <stdint.h>

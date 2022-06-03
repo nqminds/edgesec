@@ -32,8 +32,9 @@
 #include "../../utils/allocs.h"
 #include "../../utils/os.h"
 #include "../../utils/squeue.h"
+#include "../../utils/eloop.h"
 
-#include "../capture_config.h"
+#include "../pcap_service.h"
 
 /**
  * @brief Initialises the pcap middleware

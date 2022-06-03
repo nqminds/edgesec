@@ -26,10 +26,10 @@
 #ifndef MDNS_DECODER_H
 #define MDNS_DECODER_H
 
-#include "../capture_config.h"
-
 #include "../../utils/os.h"
 #include "../../utils/utarray.h"
+
+#include "packet_decoder.h"
 
 struct mdns_query_entry {
   uint16_t qtype;

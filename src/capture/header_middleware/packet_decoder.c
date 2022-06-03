@@ -53,7 +53,6 @@
 #include "packet_decoder.h"
 #include "dns_decoder.h"
 #include "mdns_decoder.h"
-#include "../capture_config.h"
 
 #define LINKTYPE_LINUX_SLL "LINUX_SLL"
 #define LINKTYPE_ETHERNET "EN10MB"
