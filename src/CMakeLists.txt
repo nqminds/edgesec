@@ -35,7 +35,6 @@ endif ()
 target_link_libraries(engine PRIVATE capture_service net log iface_mapper os sqlite_macconn_writer firewall_service eloop supervisor network_commands mac_mapper ap_service firewall_service dhcp_service)
 
 add_library(config config.c)
-target_include_directories(config PUBLIC $<TARGET_PROPERTY:iface,INCLUDE_DIRECTORIES>)
 target_link_libraries(config PUBLIC supervisor_config PRIVATE minIni os log)
 
 add_executable(edgesec edgesec.c)

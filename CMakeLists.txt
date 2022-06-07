@@ -9,6 +9,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/docs")
 include(CTest)
 include(FetchContent)
 include(ExternalProject)
+include(CMakeDependentOption)
 
 
 string(TOLOWER ${CMAKE_HOST_SYSTEM_PROCESSOR} _sys)
@@ -65,6 +66,8 @@ option(USE_ZYMKEY4_HSM "Use the Zymkey4 HSM" OFF)
 option(USE_CLEANER_MIDDLEWARE "Use the cleaner middleware" ON)
 option(USE_HEADER_MIDDLEWARE "Use the header middleware" ON)
 option(USE_PCAP_MIDDLEWARE "Use the pcap middleware" ON)
+
+cmake_dependent_option(BUILD_UCI_LIB "Build OpenWRT UCI library" ON USE_UCI_SERVICE OFF)
 
 if (USE_CRYPTO_SERVICE)
   add_compile_definitions(TEST_CRYPTO_SERVICE_KEY="12345")
