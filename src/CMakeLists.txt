@@ -23,7 +23,6 @@ else ()
 endif ()
 
 add_library(config config.c)
-target_include_directories(config PUBLIC $<TARGET_PROPERTY:iface,INCLUDE_DIRECTORIES>)
 target_link_libraries(config PUBLIC supervisor_config PRIVATE minIni os log)
 
 if (BUILD_MDNS_SERVICE AND BUILD_CAPTURE_SERVICE)
