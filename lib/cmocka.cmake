@@ -34,6 +34,13 @@ if (BUILD_CMOCKA_LIB AND NOT (BUILD_ONLY_DOCS) AND NOT (CMAKE_CROSSCOMPILING))
   set(PICKY_DEVELOPER OFF CACHE BOOL "CMocka: Build with picky developer flags" FORCE)
 
   FetchContent_MakeAvailable(cmocka)
+
+  # avoid install `cmocka` when running `make install`
+  # work around until https://gitlab.kitware.com/cmake/cmake/-/issues/20167 is fixed
+  if(IS_DIRECTORY "${cmocka_SOURCE_DIR}")
+    set_property(DIRECTORY ${cmocka_SOURCE_DIR} PROPERTY EXCLUDE_FROM_ALL YES)
+  endif()
+
   if (NOT TARGET cmocka::cmocka)
     add_library(cmocka::cmocka ALIAS cmocka)
   endif(NOT TARGET cmocka::cmocka)
