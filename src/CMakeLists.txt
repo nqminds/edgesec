@@ -13,7 +13,7 @@ add_subdirectory(capture)
 
 add_library(sqlhook SHARED sqlhook.c)
 target_compile_options(sqlhook PRIVATE -fPIC)
-target_link_libraries(sqlhook PRIVATE domain os SQLite::sqlite)
+target_link_libraries(sqlhook PRIVATE domain os SQLite::SQLite3)
 
 add_library(engine engine.c)
 if (USE_CRYPTO_SERVICE)
@@ -27,15 +27,15 @@ target_link_libraries(config PUBLIC supervisor_config PRIVATE minIni os log)
 
 if (BUILD_MDNS_SERVICE AND BUILD_CAPTURE_SERVICE)
   add_executable(mdnsf mdnsf.c)
-  target_include_directories(mdnsf PRIVATE ${LIBPCAP_INCLUDE_PATH} ${PROJECT_BINARY_DIR})
-  target_link_libraries(mdnsf PRIVATE mdns_service config minIni squeue iface_mapper log os)
+  target_include_directories(mdnsf PRIVATE ${PROJECT_BINARY_DIR})
+  target_link_libraries(mdnsf PRIVATE mdns_service config minIni squeue iface_mapper log os PCAP::pcap)
   # link time optimization
   set_target_properties(mdnsf PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif ()
 
 if (BUILD_CAPTURE_SERVICE)
   add_executable(capsrv capsrv.c)
-  target_include_directories(capsrv PRIVATE ${LIBPCAP_INCLUDE_PATH} ${PROJECT_BINARY_DIR})
+  target_include_directories(capsrv PRIVATE ${PROJECT_BINARY_DIR})
   target_link_libraries(capsrv capture_service capture_config config minIni os hashmap PCAP::pcap)
   # link time optimization
   set_target_properties(capsrv PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
