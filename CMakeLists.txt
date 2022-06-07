@@ -111,6 +111,9 @@ else(CMAKE_CROSSCOMPILING)
   unset(target_autoconf_triple)
 endif(CMAKE_CROSSCOMPILING)
 
+# currenty doesn't work if on, due to cyclical dependencies
+set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Build shared libraries")
+
 # C compiler options
 set(CMAKE_C_STANDARD 11) # we use C11 raw-strings
 set(CMAKE_C_STANDARD_REQUIRED TRUE)
