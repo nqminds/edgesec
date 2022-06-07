@@ -69,6 +69,25 @@
         "lhs": "${hostSystemName}",
         "rhs": "Linux"
       }
+    },
+    {
+      "name": "openwrt/ath79/generic",
+      "inherits": "openwrt/default",
+      "displayName": "OpenWRT ath79/generic",
+      "description": "OpenWRT ath79/generic (uses uci)",
+      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/openwrt-ath79-generic.cmake",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "openwrt-21/ath79/generic",
+      "inherits": "openwrt/ath79/generic",
+      "displayName": "OpenWRT ath79/generic OpenWRT 21",
+      "description": "OpenWRT ath79/generic OpenWRT 21 (uses uci)",
+      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/openwrt-21-ath79-generic.cmake"
     }
   ],
   "buildPresets": [
@@ -87,6 +106,14 @@
     {
       "name": "openwrt/mvebu/cortexa9",
       "configurePreset": "openwrt/mvebu/cortexa9"
+    },
+    {
+      "name": "openwrt/ath79/generic",
+      "configurePreset": "openwrt/ath79/generic"
+    },
+    {
+      "name": "openwrt-21/ath79/generic",
+      "configurePreset": "openwrt-21/ath79/generic"
     }
   ],
   "testPresets": [
