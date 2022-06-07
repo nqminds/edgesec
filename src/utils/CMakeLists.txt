@@ -4,8 +4,7 @@ add_library(allocs allocs.c)
 
 if (USE_CRYPTO_SERVICE)
   add_library(cryptou cryptou.c)
-  target_include_directories(cryptou BEFORE PRIVATE ${LIBOPENSSL_INCLUDE_PATH})
-  target_link_libraries(cryptou PRIVATE base64 os log ${LIBCRYPTO_LIB})
+  target_link_libraries(cryptou PRIVATE base64 os log OpenSSL::Crypto)
 endif ()
 
 add_library(base64 base64.c)
