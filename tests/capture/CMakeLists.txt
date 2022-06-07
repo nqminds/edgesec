@@ -23,7 +23,7 @@ target_include_directories(test_sqlite_pcap PRIVATE ${LIBSQLITE_INCLUDE_DIR})
 target_link_libraries(test_sqlite_pcap PRIVATE sqlite_pcap sqliteu os log cmocka::cmocka)
 
 add_executable(test_header_middleware test_header_middleware.c)
-target_include_directories(test_header_middleware PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
+target_include_directories(test_header_middleware PRIVATE ${LIBPCAP_INCLUDE_PATH} SQLite::SQLite3)
 target_link_libraries(test_header_middleware PRIVATE header_middleware sqliteu os log cmocka::cmocka)
 set_target_properties(test_header_middleware
   PROPERTIES

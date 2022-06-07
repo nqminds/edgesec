@@ -21,8 +21,8 @@ target_link_libraries(packet_decoder PUBLIC PCAP::pcap PRIVATE mdns_decoder dns_
 
 add_library(sqlite_header sqlite_header.c)
 target_include_directories(sqlite_header PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
-target_link_libraries(sqlite_header PRIVATE sqliteu log os iface SQLite::sqlite)
+target_link_libraries(sqlite_header PRIVATE sqliteu log os iface SQLite::SQLite3)
 
 add_library(header_middleware header_middleware.c)
 target_include_directories(header_middleware PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR} ${PROJECT_BINARY_DIR})
-target_link_libraries(header_middleware PRIVATE packet_queue sqlite_header eloop log os iface SQLite::sqlite)
+target_link_libraries(header_middleware PRIVATE packet_queue sqlite_header eloop log os iface SQLite::SQLite3)

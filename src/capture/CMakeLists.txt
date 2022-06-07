@@ -17,7 +17,7 @@ if (USE_CAPTURE_SERVICE)
   target_link_libraries(pcap_service PRIVATE net log os PCAP::pcap)
 
   add_library(capture_service capture_service.c)
-  target_include_directories(capture_service PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR} ${PROJECT_BINARY_DIR})
+  target_include_directories(capture_service PRIVATE SQLite::SQLite3 ${LIBPCAP_INCLUDE_PATH} ${PROJECT_BINARY_DIR})
   target_link_libraries(capture_service PRIVATE dns_decoder pcap_service pcap_queue packet_queue packet_decoder squeue eloop iface log os hashmap)
   if (USE_CLEANER_MIDDLEWARE)
     target_link_libraries(capture_service PRIVATE cleaner_middleware)

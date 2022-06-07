@@ -23,7 +23,7 @@ endif ()
 
 add_executable(test_engine test_engine.c)
 target_include_directories(test_engine PUBLIC ${LIBSQLITE_INCLUDE_DIR})
-target_link_libraries(test_engine PRIVATE engine log os mac_mapper SQLite::sqlite cmocka::cmocka)
+target_link_libraries(test_engine PUBLIC SQLite::SQLite3 PRIVATE engine log os mac_mapper cmocka::cmocka)
 set(TEST_ENGINE_PROPS "-Wl,--wrap=get_vlan_mapper -Wl,--wrap=eloop_run -Wl,--wrap=get_commands_paths -Wl,--wrap=hmap_str_keychar_get")
 set(TEST_ENGINE_PROPS "${TEST_ENGINE_PROPS} -Wl,--wrap=fw_init_context -Wl,--wrap=fw_set_ip_forward")
 if (USE_CRYPTO_SERVICE)

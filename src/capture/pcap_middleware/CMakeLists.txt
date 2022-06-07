@@ -8,8 +8,8 @@ target_link_libraries(pcap_queue PRIVATE log os)
 
 add_library(sqlite_pcap sqlite_pcap.c)
 target_include_directories(sqlite_pcap PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR})
-target_link_libraries(sqlite_pcap PRIVATE sqliteu log os SQLite::sqlite)
+target_link_libraries(sqlite_pcap PRIVATE sqliteu log os SQLite::SQLite3)
 
 add_library(pcap_middleware pcap_middleware.c)
 target_include_directories(pcap_middleware PRIVATE ${LIBSQLITE_INCLUDE_DIR} ${PROJECT_BINARY_DIR})
-target_link_libraries(pcap_middleware PRIVATE pcap_service pcap_queue sqlite_pcap log os SQLite::sqlite)
+target_link_libraries(pcap_middleware PRIVATE pcap_service pcap_queue sqlite_pcap log os SQLite::SQLite3)
