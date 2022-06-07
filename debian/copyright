@@ -6,6 +6,11 @@ Files: lib/hostapd/*
 Copyright: 2002-2014, Jouni Malinen <j@w1.fi>
 License: BSD-3-clause
 
+Files: CMakeModules/FindLibUUID.cmake
+Copyright: 2000-2022 Kitware, Inc. and Contributors
+License: BSD-3-clause
+Source: https://gitlab.kitware.com/cmake/cmake/-/blob/master/Source/Modules/FindLibUUID.cmake
+
 Files: lib/mnl-*/*
 Copyright: 2010-2021, Pablo Neira Ayuso <pablo@netfilter.org>
            2010-2021, other contributing authors
