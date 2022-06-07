@@ -3,5 +3,5 @@ include_directories (
 )
 
 add_library(cleaner_middleware cleaner_middleware.c)
-target_include_directories(cleaner_middleware PRIVATE ${LIBPCAP_INCLUDE_PATH} ${LIBSQLITE_INCLUDE_DIR} ${PROJECT_BINARY_DIR})
-target_link_libraries(cleaner_middleware PRIVATE eloop log os)
+target_include_directories(cleaner_middleware PRIVATE ${PROJECT_BINARY_DIR})
+target_link_libraries(cleaner_middleware PUBLIC PCAP::pcap SQLite::SQLite3 PRIVATE eloop log os)

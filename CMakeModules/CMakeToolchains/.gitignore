@@ -1,0 +1,2 @@
+# ignore toolchains downloaded by FetchContent
+/build
