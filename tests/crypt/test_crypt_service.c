@@ -49,7 +49,7 @@ static void test_load_crypt_service(void **state) {
   uint8_t secret[4] = {'u', 's', 'e', 'r'};
   uint8_t secret1[4] = {'s', 's', 'e', 'r'};
   struct crypt_context *ctx1, *ctx;
-  ctx = load_crypt_service("", "key", secret, 4), *ctx1;
+  ctx = load_crypt_service("", "key", secret, 4);
 
   assert_non_null(ctx);
 

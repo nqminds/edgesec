@@ -35,7 +35,9 @@
         "USE_NETLINK_SERVICE": true,
         "USE_UCI_SERVICE": false,
         "USE_GENERIC_IP_SERVICE": false,
-        "BUILD_HOSTAPD": true
+        "BUILD_HOSTAPD": true,
+        "USE_CRYPTO_SERVICE": true,
+        "BUILD_OPENSSL_LIB": true
       }
     },
     {
