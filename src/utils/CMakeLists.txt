@@ -16,8 +16,7 @@ target_link_libraries(hashmap PRIVATE log os)
 
 add_library(os os.c)
 target_compile_options(os PRIVATE -fPIC)
-target_include_directories(os PRIVATE ${LIBUUID_INCLUDE_DIR})
-target_link_libraries(os PRIVATE hashmap allocs log ${LIBUUID_LIB})
+target_link_libraries(os PRIVATE allocs log hashmap LibUUID::LibUUID)
 
 add_library(ifaceu ifaceu.c)
 target_link_libraries(ifaceu PRIVATE log)

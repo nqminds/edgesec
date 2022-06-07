@@ -103,8 +103,7 @@ endfunction(get_autoconf_os)
 
 get_autoconf_os(${CMAKE_HOST_SYSTEM_NAME} build_autoconf_os)
 string(TOLOWER "${CMAKE_HOST_SYSTEM_PROCESSOR}-${build_autoconf_os}" build_autoconf_triple)
-get_autoconf_os(${CMAKE_SYSTEM_NAME} target_autoconf_os)
-string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}-${target_autoconf_os}" target_autoconf_triple)
+set(target_autoconf_triple "${CMAKE_LIBRARY_ARCHITECTURE}")
 
 if (CMAKE_CROSSCOMPILING)
   message("Cross-compiling, setting cross-compiling autoconf/pkg-config vars")
