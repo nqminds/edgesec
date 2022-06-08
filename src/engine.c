@@ -496,9 +496,6 @@ int run_engine(struct app_config *app_config) {
   }
 #endif
 
-  pthread_t id;
-  run_capture_thread("wlan3", &context->capture_config, &id);
-
   log_info("++++++++++++++++++");
   log_info("Running event loop");
   log_info("++++++++++++++++++");

@@ -551,7 +551,7 @@ bool load_dhcp_conf(const char *filename, struct app_config *config) {
   ret = ini_gets("dhcp", "dhcpLeasefilePath", "", value, INI_BUFFERSIZE,
                  filename);
   if (!ret) {
-    log_debug("dhcp dhcpLeasefilePath was not specified\n");
+    log_error("dhcp dhcpLeasefilePath was not specified\n");
     os_free(value);
     return false;
   }

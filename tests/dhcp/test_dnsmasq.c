@@ -296,7 +296,6 @@ static void test_signal_dhcp_process(void **state) {
   (void)state;
 
   expect_string(__wrap_signal_process, proc_name, "dnsmasq");
-  expect_string(__wrap_is_proc_running, name, "dnsmasq");
   assert_int_equal(signal_dhcp_process("/tmp/sbin/dnsmasq"), 0);
 }
 

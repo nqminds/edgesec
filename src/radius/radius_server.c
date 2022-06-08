@@ -108,7 +108,7 @@ get_password_attribute(const uint8_t *req_authenticator, const uint8_t *secret,
       tag_salt_len + 1 + key_len + 15; // tag + salt + len + key_len + padding
 
   if (os_get_random((uint8_t *)&salt, sizeof(salt)) < 0) {
-    log_trace("os_get_random fail");
+    log_error("os_get_random fail");
     return NULL;
   }
 
@@ -313,7 +313,7 @@ radius_server_get_new_session(struct radius_server_data *data,
 
   if (radius_msg_get_attr_ptr(msg, RADIUS_ATTR_USER_NAME, &user, &user_len,
                               NULL) < 0) {
-    log_trace("Could not get User-Name");
+    log_error("Could not get User-Name");
     return NULL;
   }
   log_trace("User-Name length %ld", user_len);
@@ -321,7 +321,7 @@ radius_server_get_new_session(struct radius_server_data *data,
   log_trace("Matching user entry found");
   sess = radius_server_new_session(data, client);
   if (sess == NULL) {
-    log_trace("Failed to create a new session");
+    log_error("Failed to create a new session");
     return NULL;
   }
 
@@ -375,7 +375,7 @@ static struct radius_msg *radius_server_macacl(struct radius_server_data *data,
   struct mac_conn_info mac_conn;
 
   if (client->conn_fn == NULL) {
-    log_trace("conn_fn is NULL");
+    log_error("conn_fn is NULL");
     return NULL;
   }
 
@@ -384,7 +384,7 @@ static struct radius_msg *radius_server_macacl(struct radius_server_data *data,
   if (mac_conn.vlanid >= 0) {
     attr = get_vlan_attribute(mac_conn.vlanid);
     if (attr == NULL) {
-      log_trace("Couldn't allocate attribute");
+      log_error("Couldn't allocate attribute");
       return NULL;
     }
 
@@ -394,7 +394,7 @@ static struct radius_msg *radius_server_macacl(struct radius_server_data *data,
         (size_t)mac_conn.pass_len);
 
     if (pass_attr == NULL) {
-      log_trace("Couldn't allocate attribute");
+      log_error("Couldn't allocate attribute");
       free_radius_attr(attr);
       return NULL;
     }
@@ -404,24 +404,24 @@ static struct radius_msg *radius_server_macacl(struct radius_server_data *data,
 
     code = RADIUS_CODE_ACCESS_ACCEPT;
   } else {
-    log_trace("RADIUS mac=" MACSTR " not accepted", MAC2STR(sess->mac_addr));
+    log_debug("RADIUS mac=" MACSTR " not accepted", MAC2STR(sess->mac_addr));
     code = RADIUS_CODE_ACCESS_REJECT;
   }
 
   if (radius_msg_get_attr_ptr(request, RADIUS_ATTR_USER_PASSWORD, &pw, &pw_len,
                               NULL) < 0) {
-    log_trace("Could not get User-Password");
+    log_error("Could not get User-Password");
     code = RADIUS_CODE_ACCESS_REJECT;
   }
 
   msg = radius_msg_new(code, hdr->identifier);
   if (msg == NULL) {
-    log_trace("Failed to allocate reply message");
+    log_error("Failed to allocate reply message");
     goto end;
   }
 
   if (radius_msg_copy_attr(msg, request, RADIUS_ATTR_PROXY_STATE) < 0) {
-    log_trace("Failed to copy Proxy-State attribute(s)");
+    log_error("Failed to copy Proxy-State attribute(s)");
     radius_msg_free(msg);
     goto end;
   }
@@ -432,7 +432,7 @@ static struct radius_msg *radius_server_macacl(struct radius_server_data *data,
       if (!radius_msg_add_attr(msg, attr_iter->type,
                                wpabuf_head(attr_iter->val),
                                wpabuf_len(attr_iter->val))) {
-        log_trace("Could not add RADIUS attribute");
+        log_error("Could not add RADIUS attribute");
         radius_msg_free(msg);
         goto end;
       }
@@ -442,7 +442,7 @@ static struct radius_msg *radius_server_macacl(struct radius_server_data *data,
   if (radius_msg_finish_srv(msg, (uint8_t *)client->shared_secret,
                             client->shared_secret_len,
                             hdr->authenticator) < 0) {
-    log_trace("Failed to add Message-Authenticator attribute");
+    log_error("Failed to add Message-Authenticator attribute");
   }
 
   if (attr != NULL)
@@ -475,7 +475,7 @@ static int radius_server_reject(struct radius_server_data *data,
   }
 
   if (radius_msg_copy_attr(msg, request, RADIUS_ATTR_PROXY_STATE) < 0) {
-    log_trace("Failed to copy Proxy-State attribute(s)");
+    log_error("Failed to copy Proxy-State attribute(s)");
     radius_msg_free(msg);
     return -1;
   }
@@ -483,7 +483,7 @@ static int radius_server_reject(struct radius_server_data *data,
   if (radius_msg_finish_srv(msg, (uint8_t *)client->shared_secret,
                             client->shared_secret_len,
                             hdr->authenticator) < 0) {
-    log_trace("Failed to add Message-Authenticator attribute");
+    log_error("Failed to add Message-Authenticator attribute");
   }
 
   radius_msg_dump(msg);
@@ -673,7 +673,7 @@ static void radius_server_receive_auth(int sock, void *eloop_ctx,
 
   msg = radius_msg_parse(buf, len);
   if (msg == NULL) {
-    log_trace("Parsing incoming RADIUS frame failed");
+    log_error("Parsing incoming RADIUS frame failed");
     data->counters.malformed_access_requests++;
     client->counters.malformed_access_requests++;
     goto fail;
@@ -685,7 +685,7 @@ static void radius_server_receive_auth(int sock, void *eloop_ctx,
   radius_msg_dump(msg);
 
   if (radius_msg_get_hdr(msg)->code != RADIUS_CODE_ACCESS_REQUEST) {
-    log_trace("Unexpected RADIUS code %d", radius_msg_get_hdr(msg)->code);
+    log_error("Unexpected RADIUS code %d", radius_msg_get_hdr(msg)->code);
     data->counters.unknown_types++;
     client->counters.unknown_types++;
     goto fail;
@@ -696,7 +696,7 @@ static void radius_server_receive_auth(int sock, void *eloop_ctx,
 
   if (radius_msg_verify_msg_auth(msg, (uint8_t *)client->shared_secret,
                                  client->shared_secret_len, NULL)) {
-    log_trace("Invalid Message-Authenticator from %s", abuf);
+    log_error("Invalid Message-Authenticator from %s", abuf);
     data->counters.bad_authenticators++;
     client->counters.bad_authenticators++;
     goto fail;
@@ -729,7 +729,7 @@ static int radius_server_open_socket(int port) {
 
   s = socket(PF_INET, SOCK_DGRAM, 0);
   if (s < 0) {
-    log_trace("RADIUS: socket");
+    log_errno("socket");
     return -1;
   }
 
@@ -739,7 +739,7 @@ static int radius_server_open_socket(int port) {
   addr.sin_family = AF_INET;
   addr.sin_port = htons(port);
   if (bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-    log_errno("RADIUS: bind");
+    log_errno("bind");
     close(s);
     return -1;
   }
@@ -782,7 +782,7 @@ struct radius_client *init_radius_client(struct radius_conf *conf,
   unsigned int val = 0;
 
   if (inet_aton(conf->radius_client_ip, &addr) == 0) {
-    log_trace("Invalid radius client ip address");
+    log_error("Invalid radius client ip address");
     return NULL;
   }
 
@@ -841,7 +841,7 @@ struct radius_server_data *radius_server_init(struct eloop_data *eloop,
 
   data->clients = clients;
   if (data->clients == NULL) {
-    log_trace("No RADIUS clients configured");
+    log_error("No RADIUS clients configured");
     goto fail;
   }
 

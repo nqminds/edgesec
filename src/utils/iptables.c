@@ -152,7 +152,7 @@ struct iptables_columns process_rule_column(char *column) {
   return row;
 }
 
-bool process_rule_lines(struct iptables_context *ctx, char *rule_str) {
+int process_rule_lines(struct iptables_context *ctx, char *rule_str) {
   char **p = NULL;
   UT_array *line_arr;
   ssize_t line_count;
@@ -163,7 +163,7 @@ bool process_rule_lines(struct iptables_context *ctx, char *rule_str) {
   if (line_count < 0) {
     log_error("split_string_array fail");
     utarray_free(line_arr);
-    return false;
+    return -1;
   } else if (line_count > 2) {
     p = (char **)utarray_next(line_arr, p);
     p = (char **)utarray_next(line_arr, p);
@@ -176,14 +176,14 @@ bool process_rule_lines(struct iptables_context *ctx, char *rule_str) {
         } else {
           log_error("process_rule_column fail");
           utarray_free(line_arr);
-          return true;
+          return -1;
         }
       }
     }
   }
 
   utarray_free(line_arr);
-  return true;
+  return 0;
 }
 
 void list_rule_cb(void *ctx, void *buf, size_t count) {
@@ -201,7 +201,7 @@ void list_rule_cb(void *ctx, void *buf, size_t count) {
 
   utarray_clear(iptables_context->rule_list);
 
-  if (!process_rule_lines(iptables_context, out_str)) {
+  if (process_rule_lines(iptables_context, out_str) < 0) {
     log_error("process_rule_lines fail");
     utarray_clear(iptables_context->rule_list);
   }
@@ -213,23 +213,23 @@ int run_iptables(struct iptables_context *ctx, char *argv[],
   return run_argv_command(ctx->iptables_path, argv, fn, (void *)ctx);
 }
 
-bool flush_iptables(struct iptables_context *ctx) {
+int flush_iptables(struct iptables_context *ctx) {
   char *basic_flush_rules[][11] = BASIC_FLUSH_COMMANDS;
   int rule_count = 0;
 
   while (basic_flush_rules[rule_count][0] != NULL) {
     if (run_iptables(ctx, basic_flush_rules[rule_count], NULL) < 0) {
       log_error("run_iptables fail");
-      return false;
+      return -1;
     }
 
     rule_count++;
   }
 
-  return true;
+  return 0;
 }
 
-bool add_baseif_rules(struct iptables_context *ctx, UT_array *ifinfo_array) {
+int add_baseif_rules(struct iptables_context *ctx, UT_array *ifinfo_array) {
   char *reject_rule[9] = {"-A", "FORWARD", "-t",     "filter", "-i",
                           NULL, "-j",      "REJECT", NULL};
 
@@ -241,11 +241,11 @@ bool add_baseif_rules(struct iptables_context *ctx, UT_array *ifinfo_array) {
     reject_rule[5] = p->ifname;
     if (run_iptables(ctx, reject_rule, NULL) < 0) {
       log_error("run_iptables fail");
-      return false;
+      return -1;
     }
   }
 
-  return true;
+  return 0;
 }
 
 void iptables_free(struct iptables_context *ctx) {
@@ -276,13 +276,13 @@ struct iptables_context *iptables_init(char *path, UT_array *ifinfo_array,
 
   utarray_new(ctx->rule_list, &iptables_icd);
 
-  if (!flush_iptables(ctx)) {
+  if (flush_iptables(ctx) < 0) {
     log_error("flush_iptables fail");
     iptables_free(ctx);
     return NULL;
   }
 
-  if (!add_baseif_rules(ctx, ifinfo_array)) {
+  if (add_baseif_rules(ctx, ifinfo_array) < 0) {
     log_error("add_baseif_rules fail");
     iptables_free(ctx);
     return NULL;
@@ -291,28 +291,28 @@ struct iptables_context *iptables_init(char *path, UT_array *ifinfo_array,
   return ctx;
 }
 
-bool get_filter_rules(struct iptables_context *ctx) {
+int get_filter_rules(struct iptables_context *ctx) {
   char *list_rule[8] = {"-L", "FORWARD", "-t", "filter", "--line-numbers",
                         "-n", "-v",      NULL};
 
   if (run_iptables(ctx, list_rule, list_rule_cb) < 0) {
     log_error("run_iptables fail");
-    return false;
+    return -1;
   }
 
-  return utarray_len(ctx->rule_list) ? true : false;
+  return utarray_len(ctx->rule_list) ? 0 : -1;
 }
 
-bool get_nat_rules(struct iptables_context *ctx) {
+int get_nat_rules(struct iptables_context *ctx) {
   char *list_rule[8] = {"-L", "POSTROUTING", "-t", "nat", "--line-numbers",
                         "-n", "-v",          NULL};
 
   if (run_iptables(ctx, list_rule, list_rule_cb) < 0) {
     log_trace("run_iptables fail");
-    return false;
+    return -1;
   }
 
-  return utarray_len(ctx->rule_list) ? true : false;
+  return utarray_len(ctx->rule_list) ? 0 : -1;
 }
 
 long find_rule(UT_array *rlist, char *sip, char *sif, char *dip, char *dif,
@@ -328,21 +328,21 @@ long find_rule(UT_array *rlist, char *sip, char *sif, char *dip, char *dif,
   return 0;
 }
 
-bool delete_bridge_rule(struct iptables_context *ctx, char *sip, char *sif,
-                        char *dip, char *dif) {
+int delete_bridge_rule(struct iptables_context *ctx, char *sip, char *sif,
+                       char *dip, char *dif) {
   char num_buf[10];
 
   char *bridge_rule[16] = {"-D", "FORWARD", NULL, "-t", "filter", NULL};
 
-  if (!get_filter_rules(ctx) && ctx->exec_iptables) {
+  if (get_filter_rules(ctx) < 0 && ctx->exec_iptables) {
     log_error("iptables rules empty");
-    return false;
+    return -1;
   }
 
   long num = find_rule(ctx->rule_list, sip, sif, dip, dif, "ACCEPT");
   if (!num && ctx->exec_iptables) {
-    log_error("No bridge rule found");
-    return false;
+    log_trace("No bridge rule found");
+    return -1;
   }
 
   sprintf(num_buf, "%ld", num);
@@ -351,20 +351,20 @@ bool delete_bridge_rule(struct iptables_context *ctx, char *sip, char *sif,
 
   if (run_iptables(ctx, bridge_rule, NULL) < 0) {
     log_error("run_iptables fail");
-    return false;
+    return -1;
   }
 
-  return true;
+  return 0;
 }
 
 bool iptables_delete_bridge(struct iptables_context *ctx, char *sip, char *sif,
                             char *dip, char *dif) {
-  if (!delete_bridge_rule(ctx, sip, sif, dip, dif)) {
+  if (delete_bridge_rule(ctx, sip, sif, dip, dif) < 0) {
     log_error("delete_bridge_rule fail");
     return false;
   }
 
-  if (!delete_bridge_rule(ctx, dip, dif, sip, sif)) {
+  if (delete_bridge_rule(ctx, dip, dif, sip, sif) < 0) {
     log_error("delete_bridge_rule fail");
     return false;
   }
@@ -406,7 +406,7 @@ bool add_bridge_rule(struct iptables_context *ctx, char *sip, char *sif,
     return false;
   }
 
-  if (!get_filter_rules(ctx) && ctx->exec_iptables) {
+  if (get_filter_rules(ctx) < 0 && ctx->exec_iptables) {
     log_error("iptables rules empty");
     return false;
   }
@@ -473,7 +473,7 @@ bool iptables_delete_nat(struct iptables_context *ctx, char *sip, char *sif,
     return false;
   }
 
-  if (!get_nat_rules(ctx) && ctx->exec_iptables) {
+  if (get_nat_rules(ctx) < 0 && ctx->exec_iptables) {
     log_error("iptables rules empty");
     return false;
   }

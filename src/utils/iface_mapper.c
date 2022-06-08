@@ -312,7 +312,7 @@ bool create_vlan_mapper(UT_array *config_ifinfo_array, hmap_vlan_conn **hmap) {
                 p->ifname);
       vlan_conn.vlanid = p->vlanid;
       os_memcpy(vlan_conn.ifname, p->ifname, IFNAMSIZ);
-      vlan_conn.analyser_pid = 0;
+      vlan_conn.capture_pid = 0;
       if (!put_vlan_mapper(hmap, &vlan_conn)) {
         log_trace("put_if_mapper fail");
         free_vlan_mapper(hmap);
