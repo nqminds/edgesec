@@ -778,6 +778,20 @@ int init_mdns_context(struct mdns_conf *mdns_config, char *domain_server_path,
   return 0;
 }
 
+void *mdns_thread(void *arg) {
+  struct mdns_context *context = (struct mdns_context *)arg;
+
+  if (arg != NULL) {
+    if (run_mdns(context->ifname, &context->config) < 0) {
+      log_error("start_default_analyser fail");
+    }
+  }
+
+  free_mdns_context(context);
+
+  return NULL;
+}
+
 int run_mdns_thread(struct mdns_conf *mdns_config, char *domain_server_path,
                     char domain_delim, hmap_vlan_conn *vlan_mapper) {
   struct mdns_context *context = NULL;
@@ -788,6 +802,11 @@ int run_mdns_thread(struct mdns_conf *mdns_config, char *domain_server_path,
     return -1;
   }
 
-  // TO DO: Add the thread creation
+  log_info("Running the mdns thread");
+  if (pthread_create(id, NULL, mdns_thread, (void *)context) != 0) {
+    log_errno("pthread_create");
+    return -1;
+  }
+
   return 0;
 }

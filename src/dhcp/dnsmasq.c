@@ -426,7 +426,7 @@ int clear_dhcp_lease_entry(char *mac_addr, char *dhcp_leasefile_path) {
   }
 
   if ((start = strstr(out, mac_addr)) == NULL || !strlen(mac_addr)) {
-    log_error("lease entry not found");
+    log_trace("lease entry not found");
     os_free(out);
     return 0;
   }

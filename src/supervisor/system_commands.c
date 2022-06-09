@@ -123,7 +123,7 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
 
   // Change the NAT iptables rules
   if (add && info.nat) {
-    log_trace("Adding NAT rule");
+    log_debug("Adding NAT rule");
     if (add_nat_ip(context, ip_addr) < 0) {
       log_error("add_nat_ip fail");
       return -1;

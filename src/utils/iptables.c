@@ -342,7 +342,7 @@ int delete_bridge_rule(struct iptables_context *ctx, char *sip, char *sif,
   long num = find_rule(ctx->rule_list, sip, sif, dip, dif, "ACCEPT");
   if (!num && ctx->exec_iptables) {
     log_trace("No bridge rule found");
-    return -1;
+    return 0;
   }
 
   sprintf(num_buf, "%ld", num);
@@ -357,19 +357,19 @@ int delete_bridge_rule(struct iptables_context *ctx, char *sip, char *sif,
   return 0;
 }
 
-bool iptables_delete_bridge(struct iptables_context *ctx, char *sip, char *sif,
-                            char *dip, char *dif) {
+int iptables_delete_bridge(struct iptables_context *ctx, char *sip, char *sif,
+                           char *dip, char *dif) {
   if (delete_bridge_rule(ctx, sip, sif, dip, dif) < 0) {
     log_error("delete_bridge_rule fail");
-    return false;
+    return -1;
   }
 
   if (delete_bridge_rule(ctx, dip, dif, sip, sif) < 0) {
     log_error("delete_bridge_rule fail");
-    return false;
+    return -1;
   }
 
-  return true;
+  return 0;
 }
 
 long find_baseif_rulenum(UT_array *rlist, char *ifname) {
@@ -383,8 +383,8 @@ long find_baseif_rulenum(UT_array *rlist, char *ifname) {
   return 0;
 }
 
-bool add_bridge_rule(struct iptables_context *ctx, char *sip, char *sif,
-                     char *dip, char *dif) {
+int add_bridge_rule(struct iptables_context *ctx, char *sip, char *sif,
+                    char *dip, char *dif) {
   char num_buf[10];
 
   char *bridge_rule[16] = {"-I", "FORWARD", NULL,     "-t", "filter", "--src",
@@ -393,22 +393,22 @@ bool add_bridge_rule(struct iptables_context *ctx, char *sip, char *sif,
 
   if (ctx == NULL) {
     log_error("ctx param is NULL");
-    return false;
+    return -1;
   }
 
   if (!validate_ipv4_string(sip)) {
     log_error("Wrong source IP format %s", sip);
-    return false;
+    return -1;
   }
 
   if (!validate_ipv4_string(dip)) {
     log_error("Wrong destination IP format %s", dip);
-    return false;
+    return -1;
   }
 
   if (get_filter_rules(ctx) < 0 && ctx->exec_iptables) {
     log_error("iptables rules empty");
-    return false;
+    return -1;
   }
 
   long num = find_baseif_rulenum(ctx->rule_list, sif);
@@ -427,62 +427,62 @@ bool add_bridge_rule(struct iptables_context *ctx, char *sip, char *sif,
 
   if (run_iptables(ctx, bridge_rule, NULL) < 0) {
     log_error("run_iptables fail");
-    return false;
+    return -1;
   }
 
-  return true;
+  return 0;
 }
 
-bool iptables_add_bridge(struct iptables_context *ctx, char *sip, char *sif,
-                         char *dip, char *dif) {
+int iptables_add_bridge(struct iptables_context *ctx, char *sip, char *sif,
+                        char *dip, char *dif) {
   if (ctx == NULL) {
     log_error("ctx param is NULL");
-    return false;
+    return -1;
   }
 
   // Delete bridge rules if present
   iptables_delete_bridge(ctx, sip, sif, dip, dif);
 
-  if (!add_bridge_rule(ctx, sip, sif, dip, dif)) {
+  if (add_bridge_rule(ctx, sip, sif, dip, dif) < 0) {
     log_error("add_bridge_rule fail");
-    return false;
+    return -1;
   }
 
-  if (!add_bridge_rule(ctx, dip, dif, sip, sif)) {
+  if (add_bridge_rule(ctx, dip, dif, sip, sif) < 0) {
     log_error("add_bridge_rule fail");
     delete_bridge_rule(ctx, sip, sif, dip, dif);
-    return false;
+    return -1;
   }
 
-  return true;
+  return 0;
 }
 
-bool iptables_delete_nat(struct iptables_context *ctx, char *sip, char *sif,
-                         char *nif) {
+int iptables_delete_nat(struct iptables_context *ctx, char *sip, char *sif,
+                        char *nif) {
   char *nat_rule[6] = {"-D", "POSTROUTING", NULL, "-t", "nat", NULL};
   char num_buf[10];
 
   if (ctx == NULL) {
     log_error("ctx param is NULL");
-    return false;
+    return -1;
   }
 
-  if (!iptables_delete_bridge(ctx, sip, sif, "0.0.0.0/0", nif)) {
+  if (iptables_delete_bridge(ctx, sip, sif, "0.0.0.0/0", nif) < 0) {
     log_error("delete_bridge_rule fail for sip=%s sif=%s dip=0.0.0.0/0 dif=%s",
               sip, sif, nif);
-    return false;
+    return -1;
   }
 
   if (get_nat_rules(ctx) < 0 && ctx->exec_iptables) {
-    log_error("iptables rules empty");
-    return false;
+    log_trace("iptables rules empty");
+    return 0;
   }
 
   long num =
       find_rule(ctx->rule_list, sip, "*", "0.0.0.0/0", nif, "MASQUERADE");
   if (!num && ctx->exec_iptables) {
-    log_error("No bridge rule found");
-    return false;
+    log_trace("No bridge rule found");
+    return 0;
   }
 
   sprintf(num_buf, "%ld", num);
@@ -491,14 +491,14 @@ bool iptables_delete_nat(struct iptables_context *ctx, char *sip, char *sif,
 
   if (run_iptables(ctx, nat_rule, NULL) < 0) {
     log_error("run_iptables fail");
-    return false;
+    return -1;
   }
 
-  return true;
+  return 0;
 }
 
-bool iptables_add_nat(struct iptables_context *ctx, char *sip, char *sif,
-                      char *nif) {
+int iptables_add_nat(struct iptables_context *ctx, char *sip, char *sif,
+                     char *nif) {
   char *nat_rule[14] = {
       "-I",    "POSTROUTING", "1",  "-t", "nat", "--src",      NULL,
       "--dst", "0.0.0.0/0",   "-o", NULL, "-j",  "MASQUERADE", NULL};
@@ -508,16 +508,19 @@ bool iptables_add_nat(struct iptables_context *ctx, char *sip, char *sif,
 
   if (ctx == NULL) {
     log_error("ctx params is NULL");
-    return false;
+    return -1;
   }
 
   // Delete nat rules if present
-  iptables_delete_nat(ctx, sip, sif, nif);
+  if (iptables_delete_nat(ctx, sip, sif, nif) < 0) {
+    log_error("iptables_delete_nat fail");
+    return -1;
+  }
 
-  if (!add_bridge_rule(ctx, sip, sif, "0.0.0.0/0", nif)) {
+  if (add_bridge_rule(ctx, sip, sif, "0.0.0.0/0", nif) < 0) {
     log_error("add_bridge_rule fail for sip=%s sif=%s dip=0.0.0.0/0 dif=%s",
               sip, sif, nif);
-    return false;
+    return -1;
   }
 
   bridge_rule[8] = sip;
@@ -527,7 +530,7 @@ bool iptables_add_nat(struct iptables_context *ctx, char *sip, char *sif,
   if (run_iptables(ctx, bridge_rule, NULL) < 0) {
     log_error("run_iptables fail");
     iptables_delete_bridge(ctx, sip, sif, "0.0.0.0/0", nif);
-    return false;
+    return -1;
   }
 
   nat_rule[6] = sip;
@@ -536,8 +539,8 @@ bool iptables_add_nat(struct iptables_context *ctx, char *sip, char *sif,
   if (run_iptables(ctx, nat_rule, NULL) < 0) {
     log_error("run_iptables fail");
     iptables_delete_bridge(ctx, sip, sif, "0.0.0.0/0", nif);
-    return false;
+    return -1;
   }
 
-  return true;
+  return 0;
 }

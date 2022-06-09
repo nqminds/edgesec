@@ -267,9 +267,9 @@ int process_pcap_middleware(struct middleware_context *context, char *ltype,
   if (push_pcap_queue(pcap_context->queue, header, packet) == NULL) {
     log_error("push_pcap_queue fail");
     return -1;
-  } else {
+  } /*else {
     log_trace("Pushed packet size=%d", header->caplen);
-  }
+  }*/
 
   return 0;
 }

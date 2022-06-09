@@ -49,16 +49,6 @@
 
 #include "middlewares.h"
 
-struct capture_thread_context {
-  struct capture_conf config;
-  char ifname[IFNAMSIZ];
-};
-
-struct capture_middleware_context {
-  UT_array *handlers;
-  char interface[IFNAMSIZ];
-};
-
 void pcap_callback(const void *ctx, const void *pcap_ctx, char *ltype,
                    struct pcap_pkthdr *header, uint8_t *packet) {
 
@@ -68,7 +58,7 @@ void pcap_callback(const void *ctx, const void *pcap_ctx, char *ltype,
       (struct capture_middleware_context *)ctx;
 
   process_middlewares(context->handlers, ltype, header, packet,
-                      context->interface);
+                      context->ifname);
 }
 
 void eloop_read_fd_handler(int sock, void *eloop_ctx, void *sock_ctx) {
@@ -82,25 +72,20 @@ void eloop_read_fd_handler(int sock, void *eloop_ctx, void *sock_ctx) {
   }
 }
 
-int run_capture(char *ifname, struct capture_conf *config) {
+int run_capture(struct capture_middleware_context *context) {
   int ret = -1;
-  struct capture_middleware_context context;
   struct pcap_context *pc = NULL;
   struct eloop_data *eloop = NULL;
   sqlite3 *db;
 
-  os_memset(&context, 0, sizeof(context));
+  log_info("Capture db path=%s", context->config.capture_db_path);
+  log_info("Capturing interface(s)=%s", context->ifname);
+  log_info("Capturing filter=%s", context->config.filter);
+  log_info("Promiscuous mode=%d", context->config.promiscuous);
+  log_info("Immediate mode=%d", context->config.immediate);
+  log_info("Buffer timeout=%d", context->config.buffer_timeout);
 
-  os_strlcpy(context.interface, ifname, IFNAMSIZ);
-
-  log_info("Capture db path=%s", config->capture_db_path);
-  log_info("Capturing interface(s)=%s", context.interface);
-  log_info("Capturing filter=%s", config->filter);
-  log_info("Promiscuous mode=%d", config->promiscuous);
-  log_info("Immediate mode=%d", config->immediate);
-  log_info("Buffer timeout=%d", config->buffer_timeout);
-
-  ret = sqlite3_open(config->capture_db_path, &db);
+  ret = sqlite3_open(context->config.capture_db_path, &db);
 
   if (ret != SQLITE_OK) {
     log_error("Cannot open database: %s", sqlite3_errmsg(db));
@@ -113,10 +98,11 @@ int run_capture(char *ifname, struct capture_conf *config) {
     goto capture_fail;
   }
 
-  log_info("Registering pcap for ifname=%s", context.interface);
-  if (run_pcap(context.interface, config->immediate, config->promiscuous,
-               (int)config->buffer_timeout, config->filter, true, pcap_callback,
-               (void *)&context, &pc) < 0) {
+  log_info("Registering pcap for ifname=%s", context->ifname);
+  if (run_pcap(context->ifname, context->config.immediate,
+               context->config.promiscuous, (int)context->config.buffer_timeout,
+               context->config.filter, true, pcap_callback, (void *)context,
+               &pc) < 0) {
     log_error("run_pcap fail");
     goto capture_fail;
   }
@@ -132,10 +118,10 @@ int run_capture(char *ifname, struct capture_conf *config) {
     goto capture_fail;
   }
 
-  context.handlers = assign_middlewares();
+  context->handlers = assign_middlewares();
 
-  if (init_middlewares(context.handlers, db, config->capture_db_path, eloop,
-                       pc) < 0) {
+  if (init_middlewares(context->handlers, db, context->config.capture_db_path,
+                       eloop, pc) < 0) {
     log_error("init_middlewares fail");
     goto capture_fail;
   }
@@ -144,38 +130,44 @@ int run_capture(char *ifname, struct capture_conf *config) {
   log_info("Capture ended.");
 
   /* And close the session */
-  free_middlewares(context.handlers);
   close_pcap(pc);
   eloop_free(eloop);
   sqlite3_close(db);
   return 0;
 
 capture_fail:
-  free_middlewares(context.handlers);
   close_pcap(pc);
   eloop_free(eloop);
   sqlite3_close(db);
   return -1;
 }
 
-void *capture_thread(void *arg) {
-  struct capture_thread_context *context = (struct capture_thread_context *)arg;
+void free_capture_context(struct capture_middleware_context *context) {
+  if (context != NULL) {
+    free_middlewares(context->handlers);
+    os_free(context);
+  }
+}
 
-  if (arg != NULL) {
-    if (run_capture(context->ifname, &context->config) < 0) {
-      log_error("start_default_analyser fail");
-    }
+void *capture_thread(void *arg) {
+  struct capture_middleware_context *context =
+      (struct capture_middleware_context *)arg;
+
+  if (run_capture(context) < 0) {
+    log_error("run_capture fail");
   }
 
-  os_free(context);
+  free_capture_context(context);
 
   return NULL;
 }
+
 int run_capture_thread(char *ifname, struct capture_conf *config,
                        pthread_t *id) {
-  struct capture_thread_context *context = NULL;
+  struct capture_middleware_context *context = NULL;
 
-  if ((context = os_zalloc(sizeof(struct capture_thread_context))) == NULL) {
+  if ((context = os_zalloc(sizeof(struct capture_middleware_context))) ==
+      NULL) {
     log_errno("os_zalloc");
     return -1;
   }
@@ -186,6 +178,7 @@ int run_capture_thread(char *ifname, struct capture_conf *config,
   log_info("Running the capture thread");
   if (pthread_create(id, NULL, capture_thread, (void *)context) != 0) {
     log_errno("pthread_create");
+    free_capture_context(context);
     return -1;
   }
 

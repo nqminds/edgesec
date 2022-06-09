@@ -25,8 +25,8 @@ set_target_properties(test_header_middleware
   LINK_FLAGS  "-Wl,--wrap=sqlite3_open"
 )
 
-add_test(NAME test_default_analyser COMMAND test_default_analyser)
-set_tests_properties(test_default_analyser
+add_test(NAME test_capture_service COMMAND test_capture_service)
+set_tests_properties(test_capture_service
   PROPERTIES
   WILL_FAIL FALSE)
 

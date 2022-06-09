@@ -83,8 +83,10 @@ int extract_eth_statement(sqlite3 *db, struct eth_schema *eths) {
     column_idx = sqlite3_bind_parameter_index(res, "@ether_type");
     sqlite3_bind_int64(res, column_idx, eths->ether_type);
 
+    /*
     log_trace("sqlite insert eth ether_type=0x%x ether_dhost=%s ether_shost=%s",
               eths->ether_type, eths->ether_dhost, eths->ether_shost);
+    */
 
     sqlite3_step(res);
     sqlite3_finalize(res);

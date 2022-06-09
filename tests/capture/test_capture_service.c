@@ -147,16 +147,16 @@ void capture_config(struct capture_conf *config) {
 static void test_run_capture(void **state) {
   (void)state; /* unused */
 
-  char *ifname = "wlan0";
-  struct capture_conf config;
+  struct capture_middleware_context context;
 
-  capture_config(&config);
+  strcpy(context.ifname, "wlan0");
+  capture_config(&context.config);
 
   struct eloop_data *eloop = os_zalloc(sizeof(struct eloop_data));
   assert_non_null(eloop);
 
   will_return_always(__wrap_eloop_init, eloop);
-  int ret = run_capture(ifname, &config);
+  int ret = run_capture(&context);
 
   assert_int_equal(ret, 0);
   os_free(eloop);

@@ -40,32 +40,34 @@ static const UT_icd middleware_icd = {sizeof(struct middleware_handlers), NULL, 
 
 static inline UT_array *assign_middlewares(void) {
   UT_array *handlers = NULL;
-  struct middleware_handlers handler;
 
   utarray_new(handlers, &middleware_icd);
 
 #ifdef USE_CLEANER_MIDDLEWARE
-  handler.context = NULL;
-  handler.init = init_cleaner_middleware;
-  handler.process = process_cleaner_middleware;
-  handler.free = free_cleaner_middleware;
-  utarray_push_back(handlers, &handler);
+  struct middleware_handlers cleaner_handler;
+  cleaner_handler.context = NULL;
+  cleaner_handler.init = init_cleaner_middleware;
+  cleaner_handler.process = process_cleaner_middleware;
+  cleaner_handler.free = free_cleaner_middleware;
+  utarray_push_back(handlers, &cleaner_handler);
 #endif
 
 #ifdef USE_HEADER_MIDDLEWARE
-  handler.context = NULL;
-  handler.init = init_header_middleware;
-  handler.process = process_header_middleware;
-  handler.free = free_header_middleware;
-  utarray_push_back(handlers, &handler);
+  struct middleware_handlers header_handler;
+  header_handler.context = NULL;
+  header_handler.init = init_header_middleware;
+  header_handler.process = process_header_middleware;
+  header_handler.free = free_header_middleware;
+  utarray_push_back(handlers, &header_handler);
 #endif
 
 #ifdef USE_PCAP_MIDDLEWARE
-  handler.context = NULL;
-  handler.init = init_pcap_middleware;
-  handler.process = process_pcap_middleware;
-  handler.free = free_pcap_middleware;
-  utarray_push_back(handlers, &handler);
+  struct middleware_handlers pcap_handler;
+  pcap_handler.context = NULL;
+  pcap_handler.init = init_pcap_middleware;
+  pcap_handler.process = process_pcap_middleware;
+  pcap_handler.free = free_pcap_middleware;
+  utarray_push_back(handlers, &pcap_handler);
 #endif
 
   return handlers;

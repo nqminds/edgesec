@@ -34,6 +34,12 @@
 #include "pcap_service.h"
 #include "capture_config.h"
 
+struct capture_middleware_context {
+  struct capture_conf config;
+  UT_array *handlers;
+  char ifname[IFNAMSIZ];
+};
+
 /**
  * @brief Callback for pcap packet module
  *
@@ -58,11 +64,10 @@ int get_pcap_folder_path(char *capture_db_path, char *pcap_path);
 /**
  * @brief Runs the capture service
  *
- * @param ifname The interface to capture
- * @param config The capture config structure
+ * @param context The middleware context
  * @return int 0 on success, -1 on failure
  */
-int run_capture(char *ifname, struct capture_conf *config);
+int run_capture(struct capture_middleware_context *context);
 
 /**
  * @brief Runs the capture service thread

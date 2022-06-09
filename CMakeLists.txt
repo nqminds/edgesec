@@ -64,8 +64,8 @@ option(USE_ZYMKEY4_HSM "Use the Zymkey4 HSM" OFF)
 
 # Capture middleware options
 option(USE_CLEANER_MIDDLEWARE "Use the cleaner middleware" OFF)
-option(USE_HEADER_MIDDLEWARE "Use the header middleware" OFF)
-option(USE_PCAP_MIDDLEWARE "Use the pcap middleware" OFF)
+option(USE_HEADER_MIDDLEWARE "Use the header middleware" ON)
+option(USE_PCAP_MIDDLEWARE "Use the pcap middleware" ON)
 
 cmake_dependent_option(BUILD_UCI_LIB "Build OpenWRT UCI library" ON USE_UCI_SERVICE OFF)
 
