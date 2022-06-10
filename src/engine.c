@@ -385,12 +385,6 @@ void close_capture_thread(hmap_vlan_conn **vlan_mapper) {
   }
 }
 
-void close_running_threads(struct supervisor_context *context) {
-  if (context->exec_capture) {
-    close_capture_thread(&context->vlan_mapper);
-  }
-}
-
 int run_engine(struct app_config *app_config) {
   struct supervisor_context *context = NULL;
 
@@ -503,12 +497,12 @@ int run_engine(struct app_config *app_config) {
   }
 
 #ifdef WITH_MDNS_SERVICE
+  pthread_t mdns_pid;
   if (app_config->exec_mdns_forward) {
     log_info("Running the mdns forwarder service thread...");
-    pthread_t mid;
     if (run_mdns_thread(
             &(app_config->mdns_config), app_config->domain_server_path,
-            app_config->domain_delim, context->vlan_mapper, &mid) < 0) {
+            app_config->domain_delim, context->vlan_mapper, &mdns_pid) < 0) {
       log_error("run_mdns_thread fail");
       goto run_engine_fail;
     }
@@ -521,7 +515,17 @@ int run_engine(struct app_config *app_config) {
 
   eloop_run(context->eloop);
 
-  close_running_threads(context);
+  if (context->exec_capture) {
+    close_capture_thread(&context->vlan_mapper);
+  }
+
+#ifdef WITH_MDNS_SERVICE
+  if (app_config->exec_mdns_forward) {
+    if (pthread_join(mdns_pid, NULL) != 0) {
+      log_errno("pthread_join");
+    }
+  }
+#endif
 
   close_supervisor(context);
   close_ap(context);
