@@ -578,9 +578,9 @@ int send_bridge_command(struct mdns_context *context, struct tuple_packet *tp) {
   }
 
   if (!ret && !retd) {
-    log_error("Not found mDNS answer request for src ip=%s or dst ip=%s",
-              sch->ip_src, sch->ip_dst);
-    return -1;
+    log_trace("mDNS request not found for src=%s, dst=%s", sch->ip_src,
+              sch->ip_dst);
+    return 0;
   }
 
   if (create_domain_command(sch->ip_src, sch->ip_dst, context->domain_delim,
