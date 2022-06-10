@@ -497,7 +497,7 @@ int run_engine(struct app_config *app_config) {
   }
 
 #ifdef WITH_MDNS_SERVICE
-  pthread_t mdns_pid;
+  pthread_t mdns_pid = 0;
   if (app_config->exec_mdns_forward) {
     log_info("Running the mdns forwarder service thread...");
     if (run_mdns_thread(
@@ -520,7 +520,7 @@ int run_engine(struct app_config *app_config) {
   }
 
 #ifdef WITH_MDNS_SERVICE
-  if (app_config->exec_mdns_forward) {
+  if (app_config->exec_mdns_forward && mdns_pid) {
     if (pthread_join(mdns_pid, NULL) != 0) {
       log_errno("pthread_join");
     }
