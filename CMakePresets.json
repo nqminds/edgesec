@@ -24,10 +24,8 @@
       "displayName": "Linux",
       "description": "Default build for Linux (uses netlink)",
       "cacheVariables": {
-        "CROSS_COMPILE_EDGESEC": false,
         "BUILD_MNL_LIB": true,
         "BUILD_NETLINK_LIB": true,
-        "BUILD_NL_LIB": true,
         "USE_NETLINK_SERVICE": true,
         "USE_UCI_SERVICE": false,
         "USE_GENERIC_IP_SERVICE": false,
@@ -45,7 +43,6 @@
       "cacheVariables": {
         "BUILD_MNL_LIB": false,
         "BUILD_NETLINK_LIB": false,
-        "BUILD_NL_LIB": false,
         "USE_NETLINK_SERVICE": false,
         "USE_UCI_SERVICE": true,
         "USE_GENERIC_IP_SERVICE": false,
