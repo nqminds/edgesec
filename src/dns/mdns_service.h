@@ -44,11 +44,7 @@ struct mdns_context {
   hmap_command_conn *command_mapper; /**< The command mapper */
   UT_array *pctx_list;               /**< The list of pcap context */
   struct mdns_conf config;           /**< mDNS config. */
-  char *ifname;                 /**< Specifies the interface for pcap lib. */
-  char filter[MAX_FILTER_SIZE]; /**< Specifies the filter expression for pcap
-                                   lib */
-  char cap_id[MAX_RANDOM_UUID_LEN];         /**< Auto generated capture ID */
-  char hostname[OS_HOST_NAME_MAX];          /**< The capture hostname */
+  char cap_id[MAX_RANDOM_UUID_LEN];  /**< Auto generated capture ID */
   char domain_server_path[MAX_OS_PATH_LEN]; /**< Specifies the path to the UNIX
                                                domain socket server */
   char domain_delim; /**< Specifies the UNIX domain command delimiter */
@@ -70,10 +66,12 @@ int run_mdns(struct mdns_context *context);
  * @param domain_server_path The domain server path
  * @param domain_delim The domain delimiter character
  * @param vlan_mapper The VLAN mapper object
+ * @param id The returned thread id
  * @return int 0 on success, -1 on failure
  */
 int run_mdns_thread(struct mdns_conf *mdns_config, char *domain_server_path,
-                    char domain_delim, hmap_vlan_conn *vlan_mapper);
+                    char domain_delim, hmap_vlan_conn *vlan_mapper,
+                    pthread_t *id);
 /**
  * @brief Closes mDNS service
  *

@@ -19,7 +19,7 @@ if (USE_MDNS_SERVICE AND USE_CAPTURE_SERVICE)
   target_link_libraries(test_mdns_service PRIVATE mdns_service pcap_service log cmocka::cmocka)
   set_target_properties(test_mdns_service
     PROPERTIES
-    LINK_FLAGS  "-Wl,--wrap=run_pcap -Wl,--wrap=eloop_register_read_sock -Wl,--wrap=eloop_init -Wl,--wrap=eloop_destroy -Wl,--wrap=eloop_run"
+    LINK_FLAGS  "-Wl,--wrap=run_pcap -Wl,--wrap=eloop_register_read_sock -Wl,--wrap=eloop_init -Wl,--wrap=eloop_run -Wl,--wrap=eloop_free"
   )
 endif ()
 

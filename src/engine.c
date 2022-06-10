@@ -505,9 +505,10 @@ int run_engine(struct app_config *app_config) {
 #ifdef WITH_MDNS_SERVICE
   if (app_config->exec_mdns_forward) {
     log_info("Running the mdns forwarder service thread...");
-    if (run_mdns_thread(&(app_config->mdns_config),
-                        app_config->domain_server_path,
-                        app_config->domain_delim, context->vlan_mapper) < 0) {
+    pthread_t mid;
+    if (run_mdns_thread(
+            &(app_config->mdns_config), app_config->domain_server_path,
+            app_config->domain_delim, context->vlan_mapper, &mid) < 0) {
       log_error("run_mdns_thread fail");
       goto run_engine_fail;
     }
