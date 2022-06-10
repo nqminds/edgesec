@@ -4,18 +4,17 @@ install(
   RUNTIME
 )
 
-if (BUILD_CAPTURE_SERVICE AND BUILD_PCAP_LIB)
+if (BUILD_CAPTURE_SERVICE)
   install(
     TARGETS capsrv
     RUNTIME
   )
-endif ()
-
-if (BUILD_MDNS_SERVICE AND BUILD_PCAP_LIB)
-  install(
-    TARGETS mdnsf
-    RUNTIME
-  )
+  if(BUILD_MDNS_SERVICE)
+    install(
+      TARGETS mdnsf
+      RUNTIME
+    )
+  endif()
 endif ()
 
 # usually /usr/local/lib/edgesec (or /usr/lib/edgesec for .deb)

@@ -1,6 +1,7 @@
 add_compile_definitions(WITH_PCAP_SERVICE)
 
-if(BUILD_ONLY_DOCS)
+if(BUILD_ONLY_DOCS OR NOT BUILD_CAPTURE_SERVICE)
+  # PCAP is only required if BUILD_CAPTURE_SERVICE is set
 elseif(NOT BUILD_PCAP_LIB)
   find_package(PCAP MODULE REQUIRED)
   message("Found PCAP library: ${PCAP_LIBRARIES}")
