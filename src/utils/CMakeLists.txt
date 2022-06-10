@@ -1,5 +1,6 @@
 add_library(log log.c)
-target_compile_options(log PRIVATE -fPIC)
+set_property(TARGET log PROPERTY POSITION_INDEPENDENT_CODE ON)
+
 add_library(allocs allocs.c)
 
 if (USE_CRYPTO_SERVICE)
@@ -11,7 +12,7 @@ add_library(base64 base64.c)
 target_link_libraries(base64 PRIVATE os log)
 
 add_library(os os.c)
-target_compile_options(os PRIVATE -fPIC)
+set_property(TARGET os PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(os PRIVATE allocs log LibUUID::LibUUID)
 
 add_library(ifaceu ifaceu.c)
