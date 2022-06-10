@@ -15,10 +15,6 @@
         "CMAKE_BUILD_TYPE": {
           "type": "STRING",
           "value": "Debug"
-        },
-        "LIB_MAKEFLAGS": {
-          "type": "STRING",
-          "value": "-j$(shell nproc)"
         }
       }
     },

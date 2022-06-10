@@ -67,15 +67,6 @@ endif ()
 
 option(USE_ZYMKEY4_HSM "Use the Zymkey4 HSM" OFF)
 
-# CMake hides $ENV{MAKEFLAGS}, so we need to define it ourselves
-set(LIB_MAKEFLAGS "--jobs=2" CACHE STRING "Flags to pass to make for building libraries (e.g. -j12)")
-if(LIB_MAKEFLAGS OR TRUE)
-  # set makeflags so that OpenSSL can build in parallel
-  # Prefix with LIB_*, so it only applies when we use
-  # MAKEFLAGS="$LIB_MAKEFLAGS" in our compile_*.sh scripts
-  set(ENV{LIB_MAKEFLAGS} "${LIB_MAKEFLAGS}")
-endif()
-
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to 'Debug' as none was specified.")
