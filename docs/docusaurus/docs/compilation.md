@@ -38,18 +38,10 @@ Configure `cmake` in the `build/` directory by running the following:
 
 ```bash
 # or for old versions of cmake, do: mkdir build/ && cd build/ && cmake ..
-cmake -S . -B build -DLIB_MAKEFLAGS="--jobs=$(nproc)"
+cmake -S . -B build
 ```
 
-The configure stage will download and compile most of the EDGESec dependencies,
-so this may take a while.
-
-Setting `-DLIB_MAKEFLAGS="--jobs=$(nproc)"` will mean that while compiling library dependencies,
-`make` commands will run using all CPU cores, greatly speeding this building (set a lower number if you have less RAM).
-
-```bash
-cmake -S . -B build -DLIB_MAKEFLAGS="--jobs=$(nproc)"
-```
+The configure stage will download some of the EDGESec dependencies, so this may take a while.
 
 ### Building
 
@@ -85,7 +77,7 @@ cmake --install build/
 Set `-DCMAKE_INSTALL_PREFIX=<YOUR-LOCATION-HERE>` to build for a different location:
 
 ```bash
-MAKEFLAGS="--jobs=$(nproc)" cmake -B build/ -S . -DCMAKE_INSTALL_PREFIX=/tmp/example-build
+cmake -B build/ -S . -DCMAKE_INSTALL_PREFIX=/tmp/example-build
 cmake --build build/ --target install -j4
 ```
 

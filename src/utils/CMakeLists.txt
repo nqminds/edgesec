@@ -1,5 +1,6 @@
 add_library(log log.c)
-target_compile_options(log PRIVATE -fPIC)
+set_property(TARGET log PROPERTY POSITION_INDEPENDENT_CODE ON)
+
 add_library(allocs allocs.c)
 
 if (USE_CRYPTO_SERVICE)
@@ -14,8 +15,8 @@ add_library(hashmap hashmap.c)
 target_link_libraries(hashmap PRIVATE log os)
 
 add_library(os os.c)
-target_compile_options(os PRIVATE -fPIC)
-target_link_libraries(os PRIVATE allocs log hashmap LibUUID::LibUUID)
+set_property(TARGET os PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_link_libraries(os PRIVATE hashmap allocs log LibUUID::LibUUID)
 
 add_library(ifaceu ifaceu.c)
 target_link_libraries(ifaceu PRIVATE log)
@@ -33,8 +34,7 @@ add_library(iface iface.c)
 target_link_libraries(iface PUBLIC os PRIVATE ifaceu net log)
 if (USE_NETLINK_SERVICE)
   add_library(nl nl.c)
-  target_include_directories(nl PRIVATE ${LIBNETLINK_UAPI_INCLUDE_PATH} ${LIBNL_INCLUDE_DIR})
-  target_link_libraries(nl PRIVATE ifaceu ${LIBNL_LIBRARY} ${LIBNL_GENL_LIBRARY} libnetlink MNL::mnl ll_map utils rt_names log os net)
+  target_link_libraries(nl PRIVATE ifaceu NL::core NL::genl libnetlink MNL::mnl ll_map utils rt_names log os net)
 
   target_link_libraries(iface PUBLIC nl)
 elseif (USE_UCI_SERVICE)

@@ -16,7 +16,6 @@ add_subdirectory(capture)
 
 
 add_library(sqlhook SHARED sqlhook.c)
-target_compile_options(sqlhook PRIVATE -fPIC)
 target_link_libraries(sqlhook PRIVATE domain os SQLite::SQLite3)
 
 add_library(engine engine.c)
