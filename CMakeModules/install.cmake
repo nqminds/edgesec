@@ -4,18 +4,17 @@ install(
   RUNTIME
 )
 
-if (BUILD_CAPTURE_SERVICE AND BUILD_PCAP_LIB)
+if (BUILD_CAPTURE_SERVICE)
   install(
     TARGETS capsrv
     RUNTIME
   )
-endif ()
-
-if (BUILD_MDNS_SERVICE AND BUILD_PCAP_LIB)
-  install(
-    TARGETS mdnsf
-    RUNTIME
-  )
+  if(BUILD_MDNS_SERVICE)
+    install(
+      TARGETS mdnsf
+      RUNTIME
+    )
+  endif()
 endif ()
 
 # usually /usr/local/lib/edgesec (or /usr/lib/edgesec for .deb)
@@ -60,10 +59,6 @@ if (BUILD_SQLITE_LIB AND TARGET SQLite::SQLite3 AND LIBSQLITE_LIB_DIR)
   else()
     install(DIRECTORY "${LIBSQLITE_LIB_DIR}/" DESTINATION ${EDGESEC_private_lib_dir} PATTERN "*.la" EXCLUDE)
   endif()
-endif ()
-
-if(BUILD_PCAP_LIB AND LIBPCAP_LIB)
-  install(DIRECTORY "${LIBPCAP_LIB_DIR}/" DESTINATION ${EDGESEC_private_lib_dir})
 endif ()
 
 if(BUILD_OPENSSL_LIB AND LIBCRYPTO_LIB AND LIBOPENSSL_LIB_PATH)
