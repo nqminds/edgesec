@@ -40,36 +40,32 @@ set(
 )
 
 option(BUILD_ONLY_DOCS "Build only docs" OFF)
-option(BUILD_MDNS_SERVICE "Build mDNS service" ON)
-option(BUILD_CAPTURE_SERVICE "Build Capture service" ON)
-cmake_dependent_option(BUILD_PCAP_LIB "Build pcap library" ON BUILD_CAPTURE_SERVICE OFF)
 option(BUILD_HOSTAPD "Build hostapd" OFF)
 option(BUILD_SQLITE_LIB "Build sqlite3 library" ON)
-option(BUILD_OPENSSL_LIB "Build OpenSSL" ON)
 option(BUILD_CMOCKA_LIB "Build cmocka library" OFF)
-# off by default since we should apt install libmnl-dev
-option(BUILD_MNL_LIB "Build mnl library" OFF)
-option(BUILD_NETLINK_LIB "Build netlink library" OFF)
-option(BUILD_NL_LIB "Build nl library" OFF)
 option(BUILD_UUID_LIB "Build uuid library" ON)
 
+option(BUILD_CAPTURE_SERVICE "Build Capture service" ON)
+cmake_dependent_option(BUILD_PCAP_LIB "Build pcap library" ON BUILD_CAPTURE_SERVICE OFF)
+cmake_dependent_option(BUILD_MDNS_SERVICE "Build mDNS service" ON BUILD_CAPTURE_SERVICE OFF)
+
 option(USE_NETLINK_SERVICE "Use netlink service" OFF)
+cmake_dependent_option(BUILD_MNL_LIB "Build mnl library" ON USE_NETLINK_SERVICE OFF)
+cmake_dependent_option(BUILD_NETLINK_LIB "Build netlink library" ON USE_NETLINK_SERVICE OFF)
 option(USE_UCI_SERVICE "Use OpenWRT uci service" ON)
-option(USE_GENERIC_IP_SERVICE "Use generic ip service" OFF)
-option(USE_CRYPTO_SERVICE "Use the crypto service" OFF)
-option(USE_SQLITE3_LIB "Use sqlite3 library" ON)
-option(USE_UUID_LIB "Use uuid library" ON)
-option(USE_ZYMKEY4_HSM "Use the Zymkey4 HSM" OFF)
-
 cmake_dependent_option(BUILD_UCI_LIB "Build OpenWRT UCI library" ON USE_UCI_SERVICE OFF)
+option(USE_GENERIC_IP_SERVICE "Use generic ip service" OFF)
+if (USE_NETLINK_SERVICE AND USE_UCI_SERVICE AND USE_GENERIC_IP_SERVICE)
+  message(FATAL_ERROR "Only USE_NETLINK_SERVICE or USE_UCI_SERVICE allowed.")
+endif ()
 
+option(USE_CRYPTO_SERVICE "Use the crypto service" OFF)
+cmake_dependent_option( BUILD_OPENSSL_LIB "Build OpenSSL" ON USE_CRYPTO_SERVICE OFF)
 if (USE_CRYPTO_SERVICE)
   add_compile_definitions(TEST_CRYPTO_SERVICE_KEY="12345")
 endif ()
 
-if (USE_NETLINK_SERVICE AND USE_UCI_SERVICE AND USE_GENERIC_IP_SERVICE)
-  message(FATAL_ERROR "Only USE_NETLINK_SERVICE or USE_UCI_SERVICE allowed.")
-endif ()
+option(USE_ZYMKEY4_HSM "Use the Zymkey4 HSM" OFF)
 
 # CMake hides $ENV{MAKEFLAGS}, so we need to define it ourselves
 set(LIB_MAKEFLAGS "--jobs=2" CACHE STRING "Flags to pass to make for building libraries (e.g. -j12)")
