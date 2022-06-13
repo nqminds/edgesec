@@ -37,7 +37,7 @@ bufferTimeout = 10
 immediate = false
 
 [supervisor]
-domainServerPath = "/tmp/edgesec-domain-server"
+supervisorControlPath = "/tmp/edgesec-domain-server"
 delim = 32
 
 [ap]
@@ -262,7 +262,7 @@ The UNIX domain command used by the capture service
 
 The supervisor group defines the parameters to run the supervisor service.
 
-### domainServerPath (string)
+### supervisorControlPath (string)
 
 The absolute path to the UNIX domain socket used by the supervisor service.
 

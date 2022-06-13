@@ -45,8 +45,9 @@ struct mdns_context {
   UT_array *pctx_list;               /**< The list of pcap context */
   struct mdns_conf config;           /**< mDNS config. */
   char cap_id[MAX_RANDOM_UUID_LEN];  /**< Auto generated capture ID */
-  char domain_server_path[MAX_OS_PATH_LEN]; /**< Specifies the path to the UNIX
-                                               domain socket server */
+  char supervisor_control_path[MAX_OS_PATH_LEN]; /**< Specifies the path to the
+                                               UNIX domain supervisor control
+                                               path */
   char domain_delim; /**< Specifies the UNIX domain command delimiter */
   int sfd;           /**< Domain client file descriptor */
 };
@@ -63,15 +64,15 @@ int run_mdns(struct mdns_context *context);
  * @brief Runs the mDNS forwarder service thread
  *
  * @param mdns_config The mDNS config structure
- * @param domain_server_path The domain server path
+ * @param supervisor_control_path The UNIX domain supervisor control path
  * @param domain_delim The domain delimiter character
  * @param vlan_mapper The VLAN mapper object
  * @param id The returned thread id
  * @return int 0 on success, -1 on failure
  */
-int run_mdns_thread(struct mdns_conf *mdns_config, char *domain_server_path,
-                    char domain_delim, hmap_vlan_conn *vlan_mapper,
-                    pthread_t *id);
+int run_mdns_thread(struct mdns_conf *mdns_config,
+                    char *supervisor_control_path, char domain_delim,
+                    hmap_vlan_conn *vlan_mapper, pthread_t *id);
 /**
  * @brief Closes mDNS service
  *

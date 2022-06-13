@@ -603,7 +603,7 @@ int send_bridge_command(struct mdns_context *context, struct tuple_packet *tp) {
     }
 
     if (write_domain_data_s(context->sfd, domain, strlen(domain),
-                            context->domain_server_path) < 0) {
+                            context->supervisor_control_path) < 0) {
       log_error("write_domain_data_s fail");
       os_free(domain);
       return -1;
@@ -738,14 +738,16 @@ void free_mdns_context(struct mdns_context *context) {
   }
 }
 
-int init_mdns_context(struct mdns_conf *mdns_config, char *domain_server_path,
-                      char domain_delim, hmap_vlan_conn *vlan_mapper,
+int init_mdns_context(struct mdns_conf *mdns_config,
+                      char *supervisor_control_path, char domain_delim,
+                      hmap_vlan_conn *vlan_mapper,
                       struct mdns_context *context) {
 
   context->vlan_mapper = NULL;
   os_memcpy(&context->config, mdns_config, sizeof(struct mdns_conf));
   context->pctx_list = NULL;
-  os_strlcpy(context->domain_server_path, domain_server_path, MAX_OS_PATH_LEN);
+  os_strlcpy(context->supervisor_control_path, supervisor_control_path,
+             MAX_OS_PATH_LEN);
   context->domain_delim = domain_delim;
   context->command_mapper = NULL;
   context->sfd = 0;
@@ -772,9 +774,9 @@ void *mdns_thread(void *arg) {
   return NULL;
 }
 
-int run_mdns_thread(struct mdns_conf *mdns_config, char *domain_server_path,
-                    char domain_delim, hmap_vlan_conn *vlan_mapper,
-                    pthread_t *id) {
+int run_mdns_thread(struct mdns_conf *mdns_config,
+                    char *supervisor_control_path, char domain_delim,
+                    hmap_vlan_conn *vlan_mapper, pthread_t *id) {
   struct mdns_context *context = NULL;
 
   if ((context = os_zalloc(sizeof(struct mdns_context))) == NULL) {
@@ -782,7 +784,7 @@ int run_mdns_thread(struct mdns_conf *mdns_config, char *domain_server_path,
     return -1;
   }
 
-  if (init_mdns_context(mdns_config, domain_server_path, domain_delim,
+  if (init_mdns_context(mdns_config, supervisor_control_path, domain_delim,
                         vlan_mapper, context) < 0) {
     log_error("init_mdns_context fail");
     free_mdns_context(context);

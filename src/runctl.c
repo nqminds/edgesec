@@ -461,8 +461,8 @@ int run_ctl(struct app_config *app_config) {
     }
   }
 
-  log_info("Creating supervisor on %s", app_config->domain_server_path);
-  if (run_supervisor(app_config->domain_server_path, context) < 0) {
+  log_info("Creating supervisor on %s", app_config->supervisor_control_path);
+  if (run_supervisor(app_config->supervisor_control_path, context) < 0) {
     log_error("run_supervisor fail");
     goto run_engine_fail;
   }
@@ -490,7 +490,8 @@ int run_ctl(struct app_config *app_config) {
 
   log_info("Running the dhcp service...");
   if (run_dhcp(&context->dconfig, context->nconfig.server_array,
-               app_config->domain_server_path, app_config->exec_dhcp) == -1) {
+               app_config->supervisor_control_path,
+               app_config->exec_dhcp) == -1) {
     log_error("run_dhcp fail");
     goto run_engine_fail;
   }
@@ -500,7 +501,7 @@ int run_ctl(struct app_config *app_config) {
   if (app_config->exec_mdns_forward) {
     log_info("Running the mdns forwarder service thread...");
     if (run_mdns_thread(
-            &(app_config->mdns_config), app_config->domain_server_path,
+            &(app_config->mdns_config), app_config->supervisor_control_path,
             app_config->domain_delim, context->vlan_mapper, &mdns_pid) < 0) {
       log_error("run_mdns_thread fail");
       goto run_engine_fail;

@@ -198,7 +198,8 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array) {
 }
 #endif
 
-int generate_dnsmasq_script(char *dhcp_script_path, char *domain_server_path) {
+int generate_dnsmasq_script(char *dhcp_script_path,
+                            char *supervisor_control_path) {
   // Delete the vlan config file if present
   int stat = unlink(dhcp_script_path);
 
@@ -216,7 +217,7 @@ int generate_dnsmasq_script(char *dhcp_script_path, char *domain_server_path) {
 
   log_debug("Writing into %s", dhcp_script_path);
 
-  fprintf(fp, DNSMASQ_SCRIPT_STR, domain_server_path);
+  fprintf(fp, DNSMASQ_SCRIPT_STR, supervisor_control_path);
 
   int fd = fileno(fp);
 

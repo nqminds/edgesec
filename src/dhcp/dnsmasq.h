@@ -46,10 +46,11 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array);
  * @brief Generates the dnsmasq executable script for DHCP requests.
  *
  * @param dhcp_script_path The dhcp executable script path string.
- * @param domain_server_path The UNIX domains server path.
+ * @param supervisor_control_path The UNIX domains supervisor control path.
  * @return 0 on success, -1 otherwise
  */
-int generate_dnsmasq_script(char *dhcp_script_path, char *domain_server_path);
+int generate_dnsmasq_script(char *dhcp_script_path,
+                            char *supervisor_control_path);
 
 /**
  * @brief Execute the DHCP server
