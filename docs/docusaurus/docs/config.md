@@ -37,7 +37,7 @@ bufferTimeout = 10
 immediate = false
 
 [supervisor]
-supervisorControlPath = "/tmp/edgesec-domain-server"
+supervisorControlPath = "/tmp/edgesec-control-server"
 delim = 32
 
 [ap]
