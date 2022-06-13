@@ -642,9 +642,6 @@ bool load_system_config(const char *filename, struct app_config *config) {
   config->quarantine_vlanid =
       (int)ini_getl("system", "quarantineVlanId", -1, filename);
 
-  // Load the risk score
-  config->risk_score = (int)ini_getl("system", "riskScore", 100, filename);
-
   // Load allow all connection flag
   config->allow_all_connections =
       ini_getbool("system", "allowAllConnections", 0, filename);

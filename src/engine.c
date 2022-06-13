@@ -276,7 +276,6 @@ int init_context(struct app_config *app_config,
   ctx->allow_all_nat = app_config->allow_all_nat;
   ctx->default_open_vlanid = app_config->default_open_vlanid;
   ctx->quarantine_vlanid = app_config->quarantine_vlanid;
-  ctx->risk_score = app_config->risk_score;
   ctx->wpa_passphrase_len =
       os_strnlen_s(app_config->hconfig.wpa_passphrase, AP_SECRET_LEN);
   os_memcpy(ctx->wpa_passphrase, app_config->hconfig.wpa_passphrase,

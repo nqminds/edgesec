@@ -8,7 +8,6 @@ Below is an example of the configuration file that is passed as a parameter to `
 ```
 [system]
 binPath = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"
-hashIpCommand = ""
 createInterfaces = true
 ignoreErrorOnIfCreate = true
 allowAllConnections = true
@@ -18,7 +17,6 @@ generateSsid = true
 allocateVlans = true
 defaultOpenVlanId = 0
 quarantineVlanId = 10
-riskScore = 100
 killRunningProcess = false
 execAp = false
 execRadius = true
@@ -140,10 +138,6 @@ The system group contains all the parameters that are reponsible to configure th
 
 A list of systems binary paths separated with ":" used by the `edgesec` tool to configure interfaces, etc.
 
-### hashIpCommand (string)
-
-A list of hashes for each system binary used by the tool. [WIP]
-
 ### createInterfaces (boolean)
 
 `edgesec` will create subnetnetwork interfaces if the flag is set to `true`. If set to `false` one will have to use a similar service to `dhcpcd` to preconfigure the network interfaces.
@@ -179,10 +173,6 @@ The default VLAN ID positive integer number assigned to new devices if `allowAll
 ### quarantineVlanId (integer)
 
 The VLAN ID assigned to devices that are quarantined.
-
-### riskScore (integer)
-
-The risk score threshold for a device to be quarantined.
 
 ### killRunningProcess (boolean)
 

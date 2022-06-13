@@ -68,7 +68,6 @@ struct app_config {
                               or if MAC is not in the list of connections. */
   int quarantine_vlanid; /**< Sets the vlan index for the quarantine MACs, -1 if
                             there's no quarantine vlan. */
-  int risk_score;        /**< Sets the risk score. */
   UT_array *config_ifinfo_array; /**< Interface list mapping bridge interface
                                     name and IP address range. */
   char domain_server_path[MAX_OS_PATH_LEN]; /**< Path to the control server. */
