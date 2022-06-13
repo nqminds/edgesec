@@ -48,7 +48,7 @@
 #include "utils/iface.h"
 #include "utils/eloop.h"
 #include "dhcp/dhcp_config.h"
-#include "engine.h"
+#include "runctl.h"
 #include "config.h"
 
 #define OPT_STRING ":c:f:mdvh"
@@ -256,7 +256,7 @@ int main(int argc, char *argv[]) {
 
   os_init_random_seed();
 
-  if (run_engine(&config) < 0) {
+  if (run_ctl(&config) < 0) {
     fprintf(stderr, "Failed to start edgesec engine.\n");
     return EXIT_FAILURE;
   } else

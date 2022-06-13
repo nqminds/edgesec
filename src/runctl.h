@@ -18,9 +18,9 @@
  ****************************************************************************/
 
 /**
- * @file engine.h
+ * @file runctl.h
  * @author Alexandru Mereacre
- * @brief File containing the definition of the app configuration structure.
+ * @brief File containing the definition of the service runners.
  */
 #ifndef ENGINE_H
 #define ENGINE_H
@@ -49,6 +49,6 @@ int init_context(struct app_config *app_config, struct supervisor_context *ctx);
  * config params.
  * @return @c 0 if succes, @c -1 if a service fails to start.
  */
-int run_engine(struct app_config *app_config);
+int run_ctl(struct app_config *app_config);
 
 #endif

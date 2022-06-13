@@ -18,7 +18,7 @@
 #include "utils/utarray.h"
 
 #include "supervisor/supervisor_config.h"
-#include "engine.h"
+#include "runctl.h"
 
 static const UT_icd config_ifinfo_icd = {sizeof(config_ifinfo_t), NULL, NULL,
                                          NULL};
@@ -241,7 +241,7 @@ static void test_run_engine(void **state) {
   will_return_always(__wrap_load_crypt_service, crypt_ctx);
 #endif
 
-  int ret = run_engine(&app_config);
+  int ret = run_ctl(&app_config);
   assert_int_equal(ret, 0);
   utarray_free(config_ifinfo_arr);
 }

@@ -18,9 +18,9 @@
  ****************************************************************************/
 
 /**
- * @file engine.c
+ * @file runctl.c
  * @author Alexandru Mereacre
- * @brief File containing the implementation of the app configuration structure.
+ * @brief File containing the definition of the service runners.
  */
 
 #include <stdio.h>
@@ -62,7 +62,7 @@
 
 #include "firewall/firewall_service.h"
 
-#include "engine.h"
+#include "runctl.h"
 #include "config.h"
 
 #define MACCONN_DB_NAME "connection" SQLITE_EXTENSION
@@ -384,7 +384,7 @@ void close_capture_thread(hmap_vlan_conn **vlan_mapper) {
   }
 }
 
-int run_engine(struct app_config *app_config) {
+int run_ctl(struct app_config *app_config) {
   struct supervisor_context *context = NULL;
 
   if ((context = os_zalloc(sizeof(struct supervisor_context))) == NULL) {

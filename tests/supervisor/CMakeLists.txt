@@ -9,7 +9,7 @@ add_executable(test_domain_server test_domain_server.c)
 target_link_libraries(test_domain_server PRIVATE domain os log cmocka::cmocka)
 
 add_executable(test_cmd_processor test_cmd_processor.c)
-target_link_libraries(test_cmd_processor PRIVATE cmd_processor iptables log engine cmocka::cmocka)
+target_link_libraries(test_cmd_processor PRIVATE cmd_processor iptables log cmocka::cmocka)
 
 set(TEST_CMD_PROPS "-Wl,--wrap=write_domain_data -Wl,--wrap=accept_mac_cmd -Wl,--wrap=deny_mac_cmd")
 set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=write_domain_data -Wl,--wrap=accept_mac_cmd -Wl,--wrap=deny_mac_cmd")
