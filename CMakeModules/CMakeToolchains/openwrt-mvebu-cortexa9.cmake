@@ -6,9 +6,13 @@ set(CMAKE_SYSTEM_PROCESSOR          arm)
 # Without that flag CMake is not able to pass test compilation check
 set(CMAKE_TRY_COMPILE_TARGET_TYPE   STATIC_LIBRARY)
 
+set(
+    openwrt_toolchain_location ""
+    CACHE PATH "Path to OpenWRT SDK. If this is empty, CMake will automatically download it."
+)
 # equivalent to $(TOPDIR) in OpenWRT Makefiles
 # downloaded from https://downloads.openwrt.org/releases/19.07.10/targets/mvebu/cortexa9/
-if(NOT DEFINED openwrt_toolchain_location)
+if(openwrt_toolchain_location STREQUAL "" OR NOT IS_DIRECTORY "${openwrt_toolchain_location}")
     include(FetchContent)
     # this is an awful way of doing this, is there not a better way, e.g. using a toolchain from "apt install?"
     FetchContent_Declare(
@@ -20,9 +24,12 @@ if(NOT DEFINED openwrt_toolchain_location)
     FetchContent_Populate(openwrt_sdk_mvebu_cortexa9)
     set(
         openwrt_toolchain_location "${openwrt_sdk_mvebu_cortexa9_SOURCE_DIR}"
-        CACHE PATH "Path to OpenWRT SDK"
+        CACHE PATH "Path to OpenWRT SDK. If this is empty, CMake will automatically download it." FORCE
     )
-endif(NOT DEFINED openwrt_toolchain_location)
+    # make sure we skip downloading the toolchain again for sub-CMake processes, e.g. like the ones run by
+    # check_include_file()
+    list(APPEND CMAKE_REQUIRED_DEFINITIONS "-Dopenwrt_toolchain_location=${openwrt_sdk_mvebu_cortexa9_SOURCE_DIR}")
+endif()
 
 # Replace this if you download a newer version of the OpenWRT SDK
 set(gnu_target_name arm-openwrt-linux-muslgnueabi)
