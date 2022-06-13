@@ -43,7 +43,7 @@ int sort_subscribers_arrray(const void *a, const void *b) {
   if (a_el->len != b_el->len)
     return (a_el->len < b_el->len) ? -1 : (a_el->len > b_el->len);
   else
-    return os_memcmp(&a_el->addr, &b_el->addr, a_el->len);
+    return os_memcmp(&a_el->addr_un, &b_el->addr_un, a_el->len);
 }
 
 int add_events_subscriber(struct supervisor_context *context,

@@ -222,14 +222,14 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx) {
     return;
   }
 
-  if (sockaddr2str((struct sockaddr_storage *)&peer_addr.addr, peer_addr_str,
+  if (sockaddr2str((struct sockaddr_storage *)&peer_addr.addr_un, peer_addr_str,
                    &port) < 0) {
     log_error("sockaddr2str fail");
     os_free(buf);
     return;
   }
 
-  if (peer_addr.addr.sun_family == AF_INET) {
+  if (peer_addr.addr_un.sun_family == AF_INET) {
     if (ip4_2_buf(peer_addr_str, qip) < 0) {
       log_error("Wrong IP4 mDNS address");
       os_free(buf);
@@ -280,7 +280,7 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx) {
 
   while ((qel = (struct mdns_query_entry *)utarray_next(queries, qel)) !=
          NULL) {
-    if (peer_addr.addr.sun_family == AF_INET) {
+    if (peer_addr.addr_un.sun_family == AF_INET) {
       if (put_mdns_query_mapper(&context->imap, qip, qel) < 0) {
         log_error("put_mdns_query_mapper fail");
       }
@@ -300,7 +300,7 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx) {
   utarray_free(queries);
   utarray_free(answers);
 
-  if (peer_addr.addr.sun_family == AF_INET6) {
+  if (peer_addr.addr_un.sun_family == AF_INET6) {
     if (context->config.reflect_ip6) {
       if (forward_reflector_if6(buf, num_bytes, rif) < 0) {
         log_error("forward_reflector_if6 fail");
@@ -308,7 +308,7 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx) {
         return;
       }
     }
-  } else if (peer_addr.addr.sun_family == AF_INET) {
+  } else if (peer_addr.addr_un.sun_family == AF_INET) {
     if (context->config.reflect_ip4) {
       if (forward_reflector_if4(buf, num_bytes, rif) < 0) {
         log_error("forward_reflector_if4 fail");

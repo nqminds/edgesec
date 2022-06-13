@@ -28,6 +28,7 @@
 
 #include <sys/un.h>
 #include <sys/types.h>
+#include <netinet/in.h>
 
 #define DOMAIN_SOCKET_NAME_SIZE 14
 
@@ -40,7 +41,8 @@ extern "C" {
  *
  */
 struct client_address {
-  struct sockaddr_un addr;
+  struct sockaddr_un addr_un;
+  struct sockaddr_in addr_in;
   int len;
 };
 

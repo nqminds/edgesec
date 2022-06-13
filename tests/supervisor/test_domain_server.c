@@ -130,8 +130,8 @@ static void test_read_domain_data_s(void **state) {
   assert_int_equal(ret, buf_len);
   assert_string_equal(send_buf, read_buf);
 
-  ret = sendto(server_sock, send_buf, buf_len, 0, (struct sockaddr *)&addr.addr,
-               addr.len);
+  ret = sendto(server_sock, send_buf, buf_len, 0,
+               (struct sockaddr *)&addr.addr_un, addr.len);
   assert_int_equal(ret, buf_len);
 
   os_memset(&addr, 0, sizeof(struct client_address));
@@ -183,7 +183,7 @@ static void test_write_domain_data(void **state) {
   client_sock = create_domain_client(NULL);
   assert_int_not_equal(client_sock, -1);
 
-  os_memcpy(&addr.addr, &svaddr, sizeof(struct sockaddr_un));
+  os_memcpy(&addr.addr_un, &svaddr, sizeof(struct sockaddr_un));
   addr.len = len;
   ret = write_domain_data(client_sock, send_buf, buf_len, &addr);
   assert_int_equal(ret, buf_len);

@@ -146,7 +146,7 @@ ssize_t read_domain_data(int sock, char *data, size_t data_len,
   addr->len = sizeof(struct sockaddr_un);
 
   ssize_t num_bytes =
-      recvfrom(sock, data, data_len, flags, (struct sockaddr *)&addr->addr,
+      recvfrom(sock, data, data_len, flags, (struct sockaddr *)&addr->addr_un,
                (socklen_t *)&addr->len);
   if (num_bytes == -1) {
     log_errno("recvfrom");
@@ -168,7 +168,7 @@ ssize_t read_domain_data_s(int sock, char *data, size_t data_len, char *addr,
 
   num_bytes = read_domain_data(sock, data, data_len, &claddr, flags);
 
-  strcpy(addr, claddr.addr.sun_path);
+  strcpy(addr, claddr.addr_un.sun_path);
 
   return num_bytes;
 }
@@ -181,7 +181,7 @@ ssize_t write_domain_data_s(int sock, char *data, size_t data_len, char *addr) {
     return -1;
   }
 
-  init_domain_addr(&claddr.addr, addr);
+  init_domain_addr(&claddr.addr_un, addr);
   claddr.len = sizeof(struct sockaddr_un);
 
   return write_domain_data(sock, data, data_len, &claddr);
@@ -202,9 +202,9 @@ ssize_t write_domain_data(int sock, char *data, size_t data_len,
   }
 
   errno = 0;
-  log_trace("Sending to socket on %.*s", addr->len, addr->addr.sun_path);
+  log_trace("Sending to socket on %.*s", addr->len, addr->addr_un.sun_path);
   if ((num_bytes = sendto(sock, data, data_len, 0,
-                          (struct sockaddr *)&addr->addr, addr->len)) < 0) {
+                          (struct sockaddr *)&addr->addr_un, addr->len)) < 0) {
     log_errno("sendto");
     return -1;
   }
