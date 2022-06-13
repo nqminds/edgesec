@@ -64,3 +64,7 @@ target_link_libraries(sqliteu PUBLIC SQLite::SQLite3 PRIVATE log os)
 
 add_library(domain domain.c)
 target_link_libraries(domain PRIVATE log os)
+
+add_library(utarray INTERFACE) # header only lib
+add_library(uthash INTERFACE) # header only lib
+target_link_libraries(utarray INTERFACE allocs)

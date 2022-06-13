@@ -12,6 +12,9 @@ if (USE_CAPTURE_SERVICE)
     "${PROJECT_BINARY_DIR}/middlewares.h"
   )
 
+  add_library(capture_config INTERFACE) # header only library
+  target_link_libraries(capture_config INTERFACE os)
+
   add_library(pcap_service pcap_service.c)
   target_link_libraries(pcap_service PRIVATE net log os PCAP::pcap)
 

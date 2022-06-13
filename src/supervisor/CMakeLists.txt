@@ -15,11 +15,13 @@ add_library(sqlite_macconn_writer sqlite_macconn_writer.c)
 target_link_libraries(sqlite_macconn_writer PRIVATE sqliteu squeue log os SQLite::SQLite3)
 
 add_library(network_commands network_commands.c)
+target_link_libraries(network_commands
+  PUBLIC supervisor_config
+  PRIVATE capture_service dhcp_service ap_service sqlite_macconn_writer mac_mapper eloop firewall_service base64 net log os
+)
 if (USE_CRYPTO_SERVICE)
-  target_link_libraries(network_commands PRIVATE dhcp_service ap_service crypt_service sqlite_macconn_writer mac_mapper eloop firewall_service base64 net log os)
-else ()
-  target_link_libraries(network_commands PRIVATE dhcp_service ap_service sqlite_macconn_writer mac_mapper eloop firewall_service base64 net log os)
-endif ()
+  target_link_libraries(network_commands PRIVATE crypt_service)
+endif()
 
 if (USE_CRYPTO_SERVICE)
   add_library(crypt_commands crypt_commands.c)
@@ -27,7 +29,14 @@ if (USE_CRYPTO_SERVICE)
 endif ()
 
 add_library(system_commands system_commands.c)
-target_link_libraries(system_commands PRIVATE subscriber_events ap_service sqlite_macconn_writer mac_mapper eloop firewall_service iface_mapper base64 log os)
+target_link_libraries(system_commands
+  PUBLIC domain supervisor_config
+  PRIVATE
+    mac_mapper supervisor sqlite_macconn_writer network_commands subscriber_events
+    ap_config ap_service #../ap/*
+    capture_service #../capture/*
+    allocs os log base64 eloop domain utarray iface_mapper #../utils/*
+)
 
 add_library(cmd_processor cmd_processor.c)
 target_include_directories(cmd_processor PUBLIC ${LIBSQLITE_INCLUDE_DIR})

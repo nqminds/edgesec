@@ -54,7 +54,6 @@
 #include "../supervisor/cmd_processor.h"
 
 #include "mdns_service.h"
-#include "reflection_list.h"
 #include "mcast.h"
 
 #define MDNS_PORT 5353
