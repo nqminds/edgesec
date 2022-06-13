@@ -70,6 +70,8 @@ struct app_config {
                             there's no quarantine vlan. */
   UT_array *config_ifinfo_array; /**< Interface list mapping bridge interface
                                     name and IP address range. */
+  unsigned int supervisor_control_port; /**< The port number for the supervisor
+                                           control server */
   char supervisor_control_path[MAX_OS_PATH_LEN]; /**< Path to the control
                                                     server. */
   char connection_db_path[MAX_OS_PATH_LEN];      /**< Specifies the path to the

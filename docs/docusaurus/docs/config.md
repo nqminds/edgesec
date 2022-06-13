@@ -37,6 +37,7 @@ bufferTimeout = 10
 immediate = false
 
 [supervisor]
+supervisorControlPort = 32001
 supervisorControlPath = "/tmp/edgesec-control-server"
 delim = 32
 
@@ -261,6 +262,10 @@ The UNIX domain command used by the capture service
 ## [supervisor] group
 
 The supervisor group defines the parameters to run the supervisor service.
+
+### supervisorControlPort (number)
+
+The supervisor server control port number.
 
 ### supervisorControlPath (string)
 
