@@ -25,17 +25,3 @@ The configuration file `config.ini` has been setup to work by default only when:
 ```bash
 sudo CRYPT_KEY=12345 ./src/edgesec -c config.ini -ddddddddd
 ```
-
-##### Running capsrv tool with syncing of `br10` interface to `localhost:8512` with grpc CA located in `/cert/CA/CA.pem` and data stored in `./db` folder (verbose)
-
-```bash
-sudo ./src/capsrv -i br10 -t 10 -n 10 -y default -w -s -p ./db -a localhost -o 8512 -k ./cert/CA/CA.pem -r 1000000,100 -dddddddddd
-```
-
-##### Running capsrv in cleaning mode only (verbose)
-
-Scans `./db/pcap-meta.sqlite` until pcap capture has reached `-b 20971520` KiB (aka 20 GiB).
-
-```bash
-./src/capsrv -p ./db -b 20971520 -dddddddd
-```

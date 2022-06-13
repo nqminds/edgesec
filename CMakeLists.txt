@@ -139,16 +139,6 @@ set(EDGESEC_VERSION_MAJOR 0)
 set(EDGESEC_VERSION_MINOR 9)
 set(EDGESEC_VERSION_PATCH 9)
 
-# The capture version number.
-set(CAPTURE_VERSION_MAJOR 0)
-set(CAPTURE_VERSION_MINOR 9)
-set(CAPTURE_VERSION_PATCH 9)
-
-# The mdnsf version number.
-set(MDNSF_VERSION_MAJOR 0)
-set(MDNSF_VERSION_MINOR 9)
-set(MDNSF_VERSION_PATCH 9)
-
 # Include the libraries
 include(hostapd)
 include(cmocka)
