@@ -341,6 +341,9 @@ ssize_t process_set_ip_cmd(int sock, struct client_address *client_addr,
       ip_type = DHCP_IP_OLD;
     } else if (strcmp(dhcp_type, "del") == 0) {
       ip_type = DHCP_IP_DEL;
+    } else if (strcmp(dhcp_type, "arp") == 0) {
+      ip_type = DHCP_IP_ARP;
+      return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
     } else {
       log_trace("Wrong type");
       return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),

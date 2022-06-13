@@ -38,6 +38,7 @@ enum DHCP_IP_TYPE {
   DHCP_IP_NEW,
   DHCP_IP_OLD,
   DHCP_IP_DEL,
+  DHCP_IP_ARP,
 };
 
 /**
