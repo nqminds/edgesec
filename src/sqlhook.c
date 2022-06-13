@@ -11,7 +11,7 @@
 
 #include "utils/os.h"
 #include "utils/utarray.h"
-#include "utils/domain.h"
+#include "utils/sockctl.h"
 
 SQLITE_EXTENSION_INIT1
 

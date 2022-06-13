@@ -32,7 +32,7 @@
 
 #include "supervisor_config.h"
 
-#include "../utils/domain.h"
+#include "../utils/sockctl.h"
 #include "../utils/utarray.h"
 
 enum SUBSCRIBER_EVENT {

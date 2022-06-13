@@ -18,13 +18,13 @@
  ****************************************************************************/
 
 /**
- * @file domain.h
+ * @file sockctl.h
  * @author Alexandru Mereacre
- * @brief File containing the definition of the domain utilities.
+ * @brief File containing the definition of the socket control utilities.
  */
 
-#ifndef DOMAIN_H
-#define DOMAIN_H
+#ifndef SOCKCTL_H
+#define SOCKCTL_H
 
 #include <sys/un.h>
 #include <sys/types.h>

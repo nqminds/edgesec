@@ -39,7 +39,7 @@
 #include "capture_service.h"
 #include "pcap_service.h"
 
-#include "../utils/domain.h"
+#include "../utils/sockctl.h"
 #include "../utils/squeue.h"
 #include "../utils/log.h"
 #include "../utils/eloop.h"

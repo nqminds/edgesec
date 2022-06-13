@@ -18,9 +18,9 @@
  ****************************************************************************/
 
 /**
- * @file domain.c
+ * @file sockctl.c
  * @author Alexandru Mereacre
- * @brief File containing the implementation of the domain utils.
+ * @brief File containing the implementation of the socket control utils.
  */
 
 #include <stdio.h>
@@ -30,7 +30,7 @@
 #include <errno.h>
 #include <sys/ioctl.h>
 
-#include "domain.h"
+#include "sockctl.h"
 
 #include "allocs.h"
 #include "os.h"

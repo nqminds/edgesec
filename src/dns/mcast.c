@@ -41,7 +41,7 @@
 
 #include "../utils/log.h"
 #include "../utils/eloop.h"
-#include "../utils/domain.h"
+#include "../utils/sockctl.h"
 
 #include "mcast.h"
 

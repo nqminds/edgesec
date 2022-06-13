@@ -38,7 +38,7 @@
 #include "../utils/os.h"
 #include "../utils/eloop.h"
 #include "../utils/utarray.h"
-#include "../utils/domain.h"
+#include "../utils/sockctl.h"
 
 #include "../capture/capture_service.h"
 

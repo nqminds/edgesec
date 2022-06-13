@@ -31,7 +31,7 @@
 #include <stdbool.h>
 
 #include "../utils/utarray.h"
-#include "../utils/domain.h"
+#include "../utils/sockctl.h"
 
 #include "supervisor_config.h"
 

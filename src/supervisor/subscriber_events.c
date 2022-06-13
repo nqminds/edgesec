@@ -30,7 +30,7 @@
 #include "supervisor_config.h"
 #include "subscriber_events.h"
 
-#include "../utils/domain.h"
+#include "../utils/sockctl.h"
 #include "../utils/utarray.h"
 #include "../utils/log.h"
 

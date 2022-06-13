@@ -13,4 +13,4 @@ else ()
 endif()
 
 add_library(ap_service ap_service.c)
-target_link_libraries(ap_service PUBLIC supervisor_config PRIVATE domain hostapd log os eloop)
+target_link_libraries(ap_service PUBLIC supervisor_config PRIVATE sockctl hostapd log os eloop)

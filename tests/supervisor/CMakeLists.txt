@@ -5,8 +5,8 @@ include_directories(
 add_executable(test_bridge_list test_bridge_list.c)
 target_link_libraries(test_bridge_list PRIVATE bridge_list log cmocka::cmocka)
 
-add_executable(test_domain_server test_domain_server.c)
-target_link_libraries(test_domain_server PRIVATE domain os log cmocka::cmocka)
+add_executable(test_sockctl_server test_sockctl_server.c)
+target_link_libraries(test_sockctl_server PRIVATE sockctl os log cmocka::cmocka)
 
 add_executable(test_cmd_processor test_cmd_processor.c)
 target_link_libraries(test_cmd_processor PRIVATE cmd_processor iptables log cmocka::cmocka)
@@ -42,8 +42,8 @@ set_tests_properties(test_bridge_list
   PROPERTIES
   WILL_FAIL FALSE)
 
-add_test(NAME test_domain_server COMMAND test_domain_server)
-set_tests_properties(test_domain_server
+add_test(NAME test_sockctl_server COMMAND test_sockctl_server)
+set_tests_properties(test_sockctl_server
   PROPERTIES
   WILL_FAIL FALSE)
 

@@ -16,7 +16,7 @@ add_subdirectory(capture)
 
 
 add_library(sqlhook SHARED sqlhook.c)
-target_link_libraries(sqlhook PRIVATE domain os SQLite::SQLite3)
+target_link_libraries(sqlhook PRIVATE sockctl os SQLite::SQLite3)
 
 add_library(runctl runctl.c)
 target_include_directories(runctl PRIVATE SQLite::SQLite3)

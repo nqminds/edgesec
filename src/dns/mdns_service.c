@@ -43,7 +43,7 @@
 #include "../utils/net.h"
 #include "../utils/log.h"
 #include "../utils/eloop.h"
-#include "../utils/domain.h"
+#include "../utils/sockctl.h"
 #include "../utils/squeue.h"
 #include "../utils/hashmap.h"
 #include "../utils/iface_mapper.h"

@@ -720,7 +720,7 @@ bool load_supervisor_config(const char *filename, struct app_config *config) {
   ret = ini_gets("supervisor", "supervisorControlPath", "", value,
                  INI_BUFFERSIZE, filename);
   if (!ret) {
-    log_debug("Domain server path was not specified\n");
+    log_debug("Supervisor control server path was not specified\n");
     os_free(value);
     return false;
   }
