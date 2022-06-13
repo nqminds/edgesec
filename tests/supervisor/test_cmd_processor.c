@@ -21,8 +21,6 @@
 #include "utils/iptables.h"
 #include "runctl.h"
 
-#define CMD_DELIMITER 0x20
-
 ssize_t __wrap_write_domain_data(int sock, char *data, size_t data_len,
                                  struct sockaddr_un *addr, int addr_len) {
   (void)sock;

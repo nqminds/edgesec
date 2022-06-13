@@ -73,6 +73,8 @@
 #define CMD_SIGN_BLOB "SIGN_BLOB"
 #endif
 
+#define CMD_DELIMITER 0x20
+
 #define OK_REPLY "OK"
 #define FAIL_REPLY "FAIL"
 

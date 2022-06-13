@@ -39,7 +39,6 @@ immediate = false
 [supervisor]
 supervisorControlPort = 32001
 supervisorControlPath = "/tmp/edgesec-control-server"
-delim = 32
 
 [ap]
 apBinPath = "./hostapd"
@@ -270,10 +269,6 @@ The supervisor server control port number.
 ### supervisorControlPath (string)
 
 The absolute path to the UNIX domain socket used by the supervisor service.
-
-### delim (integer)
-
-The decimal ASCII number used to delimit command parameters.
 
 ## [ap] group
 

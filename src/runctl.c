@@ -270,7 +270,6 @@ int init_context(struct app_config *app_config,
   ctx->fw_ctx = NULL;
   ctx->domain_sock = -1;
   ctx->exec_capture = app_config->exec_capture;
-  ctx->domain_delim = app_config->domain_delim;
   ctx->allocate_vlans = app_config->allocate_vlans;
   ctx->allow_all_connections = app_config->allow_all_connections;
   ctx->allow_all_nat = app_config->allow_all_nat;
@@ -500,9 +499,9 @@ int run_ctl(struct app_config *app_config) {
   pthread_t mdns_pid = 0;
   if (app_config->exec_mdns_forward) {
     log_info("Running the mdns forwarder service thread...");
-    if (run_mdns_thread(
-            &(app_config->mdns_config), app_config->supervisor_control_path,
-            app_config->domain_delim, context->vlan_mapper, &mdns_pid) < 0) {
+    if (run_mdns_thread(&(app_config->mdns_config),
+                        app_config->supervisor_control_path,
+                        context->vlan_mapper, &mdns_pid) < 0) {
       log_error("run_mdns_thread fail");
       goto run_engine_fail;
     }

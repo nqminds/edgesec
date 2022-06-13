@@ -83,7 +83,6 @@ struct app_config {
   char crypt_secret[MAX_USER_SECRET];  /**< Specifies the crypt user master
                                           secret */
 #endif
-  char domain_delim;          /**< Control server command delimiter. */
   bool allow_all_connections; /**< Flag to allow all connections. */
   bool allow_all_nat;         /**< Flag to allow all nat connections. */
   bool kill_running_proc;     /**< Flag to terminate running app processes. */

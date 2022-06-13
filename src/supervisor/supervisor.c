@@ -308,8 +308,7 @@ void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx) {
 
   log_trace("Supervisor received %ld bytes from socket length=%d",
             (long)num_bytes, claddr.len);
-  if (process_domain_buffer(buf, num_bytes, cmd_arr, context->domain_delim) ==
-      false) {
+  if (process_domain_buffer(buf, num_bytes, cmd_arr, CMD_DELIMITER) == false) {
     log_error("process_domain_buffer fail");
     goto end;
   }

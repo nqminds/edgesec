@@ -556,10 +556,6 @@ bool load_dhcp_conf(const char *filename, struct app_config *config) {
   return true;
 }
 
-char load_delim(const char *filename) {
-  return (char)ini_getl("supervisor", "delim", 32, filename);
-}
-
 bool load_capture_config(const char *filename, struct capture_conf *config) {
   char *value = os_zalloc(INI_BUFFERSIZE);
 
@@ -730,12 +726,6 @@ bool load_supervisor_config(const char *filename, struct app_config *config) {
   }
   os_strlcpy(config->supervisor_control_path, value, MAX_OS_PATH_LEN);
   os_free(value);
-
-  // Load delim
-  if ((config->domain_delim = load_delim(filename)) == 0) {
-    log_debug("delim parsing error");
-    return false;
-  }
 
   return true;
 }

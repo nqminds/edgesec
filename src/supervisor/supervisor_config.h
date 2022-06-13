@@ -81,17 +81,16 @@ struct supervisor_context {
   UT_array *config_ifinfo_array; /**< @c config_ifinfo_array from @c struct
                                     app_config */
   UT_array *subscribers_array;   /**< The array of events subscribers */
-  struct bridge_mac_list *bridge_list;  /**< List of assigned bridges */
-  char domain_delim;                    /**< Control server command delimiter */
-  int domain_sock;                      /**< The domain socket */
-  struct firewall_conf firewall_config; /**< Firewall service configuration. */
-  struct capture_conf capture_config;   /**< Capture service configuration. */
-  struct apconf hconfig;                /**< AP service configuration. */
-  struct dhcp_conf dconfig;             /**< DHCP service configuration. */
-  struct dns_conf nconfig;              /**< DNS service configuration. */
-  struct mdns_conf mconfig;             /**< DNS service configuration. */
-  struct radius_conf rconfig;           /**< Radius service configuration. */
-  sqlite3 *macconn_db;                  /**< The macconn db structure. */
+  struct bridge_mac_list *bridge_list;   /**< List of assigned bridges */
+  int domain_sock;                       /**< The domain socket */
+  struct firewall_conf firewall_config;  /**< Firewall service configuration. */
+  struct capture_conf capture_config;    /**< Capture service configuration. */
+  struct apconf hconfig;                 /**< AP service configuration. */
+  struct dhcp_conf dconfig;              /**< DHCP service configuration. */
+  struct dns_conf nconfig;               /**< DNS service configuration. */
+  struct mdns_conf mconfig;              /**< DNS service configuration. */
+  struct radius_conf rconfig;            /**< Radius service configuration. */
+  sqlite3 *macconn_db;                   /**< The macconn db structure. */
   struct radius_server_data *radius_srv; /**< The radius server context. */
   struct crypt_context *crypt_ctx;       /**< The crypt context. */
   struct iface_context *iface_ctx;       /**< The interface context. */

@@ -36,7 +36,6 @@ immediate = false
 [supervisor]
 supervisorControlPort = 32001
 supervisorControlPath = "@EDGESEC_full_runstate_dir@/edgesec-control-server"
-delim = 32
 
 [ap]
 apBinPath = "@EDGESEC_full_libexec_dir@/hostapd"
