@@ -16,9 +16,6 @@ if(NOT DEFINED openwrt_toolchain_location)
         URL https://downloads.openwrt.org/releases/19.07.10/targets/mvebu/cortexa9/openwrt-sdk-19.07.10-mvebu-cortexa9_gcc-7.5.0_musl_eabi.Linux-x86_64.tar.xz
         # sha256 from https://downloads.openwrt.org/releases/19.07.10/targets/mvebu/cortexa9/sha256sums
         URL_HASH SHA256=17941f42e26d3c54a836f9897e78abaafcf66e5f0b28ffd8956378aa69c3a4d9
-        # Make sure that that the toolchain location is indepent from CMAKE_BINARY_DIR/CMAKE_SOURCE_DIR
-        # otherwise `check_include_file()` commands will redownload these files slowly
-        PREFIX "${CMAKE_CURRENT_LIST_DIR}/build/openwrt_sdk_mvebu_cortexa9"
     )
     FetchContent_Populate(openwrt_sdk_mvebu_cortexa9)
     set(
