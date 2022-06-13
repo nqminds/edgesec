@@ -57,11 +57,6 @@ set_tests_properties(test_mac_mapper
   PROPERTIES
   WILL_FAIL FALSE)
 
-add_test(NAME test_sqlite_fingerprint_writer COMMAND test_sqlite_fingerprint_writer)
-set_tests_properties(test_sqlite_fingerprint_writer
-  PROPERTIES
-  WILL_FAIL FALSE)
-
 add_test(NAME test_sqlite_macconn_writer COMMAND test_sqlite_macconn_writer)
 set_tests_properties(test_sqlite_macconn_writer
   PROPERTIES
