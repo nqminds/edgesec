@@ -63,7 +63,6 @@ struct dns_conf {
  *
  */
 struct mdns_conf {
-  char mdns_bin_path[MAX_OS_PATH_LEN]; /**< Path to the mDNS binary */
   char filter[MAX_FILTER_SIZE]; /**< Specifies the filter expression or pcap lib
                                  */
   bool reflect_ip4;             /**< Reflect mDNS IP4 addresses. */

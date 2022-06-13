@@ -84,7 +84,6 @@ natInterface = "enp2s0"
 
 [dns]
 servers = "8.8.4.4,8.8.8.8"
-mdnsBinPath = "./src/mdnsf"
 mdnsReflectIp4 = true
 mdnsReflectIp6 = true
 mdnsFilter = "src net 10.0 and dst net 10.0"
@@ -436,10 +435,6 @@ The dns groups defines the parameters for the DNS server configuration.
 ### servers (string)
 
 A comma delimited string of dns server IP addresses with the format `x.y.z.q,a.b.c.d,...`.
-
-### mdnsBinPath (string)
-
-The path to the `mdnsf` service.
 
 ### mdnsReflectIp4 (boolean)
 

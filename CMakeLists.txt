@@ -44,24 +44,21 @@ option(BUILD_HOSTAPD "Build hostapd" OFF)
 option(BUILD_SQLITE_LIB "Build sqlite3 library" ON)
 option(BUILD_CMOCKA_LIB "Build cmocka library" OFF)
 option(BUILD_UUID_LIB "Build uuid library" ON)
-
-option(BUILD_CAPTURE_SERVICE "Build Capture service" ON)
-cmake_dependent_option(BUILD_PCAP_LIB "Build pcap library" ON BUILD_CAPTURE_SERVICE OFF)
-cmake_dependent_option(BUILD_MDNS_SERVICE "Build mDNS service" ON BUILD_CAPTURE_SERVICE OFF)
+option(BUILD_PCAP_LIB "Build pcap library" ON)
 
 option(USE_NETLINK_SERVICE "Use netlink service" OFF)
 cmake_dependent_option(BUILD_MNL_LIB "Build mnl library" ON USE_NETLINK_SERVICE OFF)
 cmake_dependent_option(BUILD_NETLINK_LIB "Build netlink library" ON USE_NETLINK_SERVICE OFF)
 
-option(USE_UCI_SERVICE "Use OpenWRT uci service" ON)
+option(USE_UCI_SERVICE "Use OpenWRT uci service" OFF)
 option(USE_RADIUS_SERVICE "Use mDNS forwarder service" ON)
 option(USE_MDNS_SERVICE "Use mDNS forwarder service" ON)
 option(USE_CAPTURE_SERVICE "Use the capture service" ON)
 
 # Capture middleware options
 option(USE_CLEANER_MIDDLEWARE "Use the cleaner middleware" OFF)
-option(USE_HEADER_MIDDLEWARE "Use the header middleware" ON)
-option(USE_PCAP_MIDDLEWARE "Use the pcap middleware" ON)
+option(USE_HEADER_MIDDLEWARE "Use the header middleware" OFF)
+option(USE_PCAP_MIDDLEWARE "Use the pcap middleware" OFF)
 
 cmake_dependent_option(BUILD_UCI_LIB "Build OpenWRT UCI library" ON USE_UCI_SERVICE OFF)
 option(USE_GENERIC_IP_SERVICE "Use generic ip service" OFF)
@@ -70,7 +67,7 @@ if (USE_NETLINK_SERVICE AND USE_UCI_SERVICE AND USE_GENERIC_IP_SERVICE)
 endif ()
 
 option(USE_CRYPTO_SERVICE "Use the crypto service" OFF)
-cmake_dependent_option( BUILD_OPENSSL_LIB "Build OpenSSL" ON USE_CRYPTO_SERVICE OFF)
+cmake_dependent_option(BUILD_OPENSSL_LIB "Build OpenSSL" ON USE_CRYPTO_SERVICE OFF)
 if (USE_CRYPTO_SERVICE)
   add_compile_definitions(TEST_CRYPTO_SERVICE_KEY="12345")
 endif ()
