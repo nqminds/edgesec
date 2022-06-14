@@ -74,7 +74,7 @@ int run_capture(struct capture_middleware_context *context);
  *
  * @param ifname The capture interface name
  * @param config The capture service config structure
- * @param id The returned thread id
+ * @param[out] id The returned thread id
  * @return int 0 on success, -1 on error
  */
 int run_capture_thread(char *ifname, struct capture_conf const *config,
