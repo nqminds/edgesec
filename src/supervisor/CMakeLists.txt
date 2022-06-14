@@ -25,7 +25,11 @@ endif()
 
 if (USE_CRYPTO_SERVICE)
   add_library(crypt_commands crypt_commands.c)
-  target_link_libraries(crypt_commands PRIVATE ap_service crypt_service sqlite_macconn_writer mac_mapper eloop firewall_service base64 log os)
+  target_link_libraries(crypt_commands
+    PRIVATE
+      mac_mapper supervisor sqlite_macconn_writer network_commands
+      ap_config ap_service crypt_service capture_service allocs os log base64 eloop
+  )
 endif ()
 
 add_library(system_commands system_commands.c)
