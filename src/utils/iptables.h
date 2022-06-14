@@ -94,7 +94,7 @@ int iptables_delete_bridge(struct iptables_context *ctx, char *sip, char *sif,
  * @param sip Source IP string
  * @param sif Source interface name string
  * @param nif NAT interface name string
- * @return 0 on sucess, -1 on error
+ * @return 0 on success, -1 on error
  */
 int iptables_add_nat(struct iptables_context *ctx, char *sip, char *sif,
                      char *nif);
