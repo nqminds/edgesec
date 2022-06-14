@@ -31,8 +31,8 @@
         "USE_GENERIC_IP_SERVICE": false,
         "USE_RADIUS_SERVICE": true,
         "BUILD_HOSTAPD": true,
-        "USE_CRYPTO_SERVICE": false,
-        "BUILD_OPENSSL_LIB": false
+        "USE_CRYPTO_SERVICE": true,
+        "BUILD_OPENSSL_LIB": true
       }
     },
     {
