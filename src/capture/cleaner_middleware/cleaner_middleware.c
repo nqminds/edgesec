@@ -44,7 +44,7 @@
 #define CLEANER_PROCESS_INTERVAL                                               \
   5 /* Frequency in sec to run the cleaner function*/
 #define CLEANER_GROUP_INTERVAL                                                 \
-  1000 /* Number of rows to sum from the pcap metadata to calculate the store  \
+  1024 /* Number of rows to sum from the pcap metadata to calculate the store  \
           size*/
 
 #define CLEANER_STORE_SIZE 1000 /*Specifies the capture store size in KiB */
