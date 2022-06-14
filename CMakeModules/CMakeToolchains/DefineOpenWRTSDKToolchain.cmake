@@ -22,13 +22,28 @@ The general signature is
         # This should be the ouput of `uname -m` when you run OpenWRT, e.g. arm
         SYSTEM_PROCESSOR <CPU_NAME>
    )
+
+If the ``openwrt_toolchain_location`` cache variable or ``ENV{openwrt_toolchain_location}``
+environment variable points to an already downloaded OpenWRT SDK location,
+the download of the OpenWRT SDK is skipped. This is used to avoid re-downloading
+the ``openwrt_toolchain_location`` in sub-processes.
+
+If using `ExternalProject_Add()`, and are passing over a toolchain file,
+please also pass ``CMAKE_CACHE_ARGS -Dopenwrt_toolchain_location:STRING=${openwrt_toolchain_location}``,
+to avoid redownloading the OpenWRT SDK.
+
 #]=======================================================================]
 cmake_minimum_required(VERSION 3.9.0)
 
 function(defineOpenwrtSDKToolchain)
     set(
-        openwrt_toolchain_location ""
-        CACHE PATH "Path to OpenWRT SDK. If this is empty, CMake will automatically download it."
+        openwrt_toolchain_location
+        # this toolchain file is passed to sub-CMake processes.
+        # to prevent redownloading the OpenWRT SDK, try to load the toolchain
+        # location from an environment variable
+        "$ENV{openwrt_toolchain_location}"
+        CACHE PATH
+        "Path to OpenWRT SDK. If this is empty, CMake will automatically download it."
     )
 
     set(oneValueArgs
@@ -62,8 +77,11 @@ function(defineOpenwrtSDKToolchain)
         )
     endif()
 
-    # make sure we skip downloading the toolchain again for sub-CMake processes, e.g. like the ones run by
-    # check_include_file()
+
+    # make sure we skip downloading the toolchain again for sub-CMake processes
+    # Setting openwrt_toolchain_location should work for all sub-CMake processes
+    set(ENV{openwrt_toolchain_location} "${openwrt_toolchain_location}")
+    # setting CMAKE_REQUIRED_DEFINITIONS should be better for `check_include_file()`
     list(APPEND CMAKE_REQUIRED_DEFINITIONS "-Dopenwrt_toolchain_location=${openwrt_toolchain_location}")
     set(CMAKE_REQUIRED_DEFINITIONS "${CMAKE_REQUIRED_DEFINITIONS}" PARENT_SCOPE)
 
