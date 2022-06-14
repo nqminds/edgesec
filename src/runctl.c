@@ -460,8 +460,12 @@ int run_ctl(struct app_config *app_config) {
     }
   }
 
-  log_info("Creating supervisor on %s", app_config->supervisor_control_path);
-  if (run_supervisor(app_config->supervisor_control_path, context) < 0) {
+  log_info("Creating supervisor on %s with port %d",
+           app_config->supervisor_control_path,
+           app_config->supervisor_control_port);
+
+  if (run_supervisor(app_config->supervisor_control_path,
+                     app_config->supervisor_control_port, context) < 0) {
     log_error("run_supervisor fail");
     goto run_engine_fail;
   }

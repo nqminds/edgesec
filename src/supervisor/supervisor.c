@@ -274,58 +274,83 @@ void ap_service_callback(struct supervisor_context *context, uint8_t mac_addr[],
   }
 }
 
-void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx) {
+int process_received_data(int sock, struct client_address *claddr,
+                          struct supervisor_context *context) {
+  uint32_t bytes_available;
+  if (ioctl(sock, FIONREAD, &bytes_available) == -1) {
+    log_errno("ioctl");
+    return -1;
+  }
+
+  char *buf;
+  if ((buf = os_malloc(bytes_available)) == NULL) {
+    log_errno("os_malloc");
+    return -1;
+  }
+
+  ssize_t received;
+  if ((received = read_socket_data(sock, buf, bytes_available, claddr, 0)) ==
+      -1) {
+    log_error("read_socket_data fail");
+    os_free(buf);
+    return -1;
+  }
+
+  UT_array *args = NULL;
+  utarray_new(args, &ut_str_icd);
+
+  log_trace("Supervisor received %ld bytes", (long)received);
+  if (process_domain_buffer(buf, received, args, CMD_DELIMITER) == false) {
+    log_error("process_domain_buffer fail");
+    os_free(buf);
+    utarray_free(args);
+    return -1;
+  }
+
+  os_free(buf);
+
+  char **arg = NULL;
+  arg = (char **)utarray_next(args, arg);
+
+  process_cmd_fn cfn;
+  if ((cfn = get_command_function(*arg)) != NULL) {
+    if (cfn(sock, claddr, context, args) == -1) {
+      log_error("%s fail", *arg);
+      utarray_free(args);
+      return -1;
+    }
+  }
+
+  utarray_free(args);
+  return 0;
+}
+
+void eloop_read_domain_handler(int sock, void *eloop_ctx, void *sock_ctx) {
   (void)eloop_ctx;
 
-  char **ptr = NULL;
-  UT_array *cmd_arr;
-  process_cmd_fn cfn;
-  uint32_t bytes_available;
-  ssize_t num_bytes;
   struct client_address claddr;
-  char *buf;
   struct supervisor_context *context = (struct supervisor_context *)sock_ctx;
 
   os_memset(&claddr, 0, sizeof(struct client_address));
   claddr.type = SOCKET_TYPE_DOMAIN;
 
-  if (ioctl(sock, FIONREAD, &bytes_available) == -1) {
-    log_errno("ioctl");
-    return;
+  if (process_received_data(sock, &claddr, context) < 0) {
+    log_error("process_received_data fail");
   }
+}
 
-  if ((buf = os_malloc(bytes_available)) == NULL) {
-    log_errno("os_malloc");
-    return;
+void eloop_read_udp_handler(int sock, void *eloop_ctx, void *sock_ctx) {
+  (void)eloop_ctx;
+
+  struct client_address claddr;
+  struct supervisor_context *context = (struct supervisor_context *)sock_ctx;
+
+  os_memset(&claddr, 0, sizeof(struct client_address));
+  claddr.type = SOCKET_TYPE_UDP;
+
+  if (process_received_data(sock, &claddr, context) < 0) {
+    log_error("process_received_data fail");
   }
-
-  utarray_new(cmd_arr, &ut_str_icd);
-
-  if ((num_bytes = read_socket_data(sock, buf, bytes_available, &claddr, 0)) ==
-      -1) {
-    log_error("read_socket_data fail");
-    goto end;
-  }
-
-  log_trace("Supervisor received %ld bytes from socket length=%d",
-            (long)num_bytes, claddr.len);
-  if (process_domain_buffer(buf, num_bytes, cmd_arr, CMD_DELIMITER) == false) {
-    log_error("process_domain_buffer fail");
-    goto end;
-  }
-
-  ptr = (char **)utarray_next(cmd_arr, ptr);
-
-  if ((cfn = get_command_function(*ptr)) != NULL) {
-    if (cfn(sock, &claddr, context, cmd_arr) == -1) {
-      log_error("%s fail", *ptr);
-      goto end;
-    }
-  }
-
-end:
-  os_free(buf);
-  utarray_free(cmd_arr);
 }
 
 void close_supervisor(struct supervisor_context *context) {
@@ -340,24 +365,58 @@ void close_supervisor(struct supervisor_context *context) {
     }
   }
 
+  if (context->udp_sock != -1) {
+    if (close(context->udp_sock) == -1) {
+      log_errno("close");
+    }
+  }
+
   if (context->subscribers_array != NULL) {
     utarray_free(context->subscribers_array);
   }
 }
 
-int run_supervisor(char *server_path, struct supervisor_context *context) {
+int run_supervisor(char *server_path, unsigned int port,
+                   struct supervisor_context *context) {
+  if (server_path == NULL) {
+    log_error("server_path param is NULL");
+    return -1;
+  }
+
+  if (!port) {
+    log_error("port is zero");
+    return -1;
+  }
+
+  if (context == NULL) {
+    log_error("context param is NULL");
+    return -1;
+  }
+
   allocate_vlan(context);
 
   utarray_new(context->subscribers_array, &client_address_icd);
 
   if ((context->domain_sock = create_domain_server(server_path)) == -1) {
     log_error("create_domain_server fail");
-    close_supervisor(context);
+    return -1;
+  }
+
+  if ((context->udp_sock = create_udp_server(port)) == -1) {
+    log_error("create_udp_server fail");
     return -1;
   }
 
   if (eloop_register_read_sock(context->eloop, context->domain_sock,
-                               eloop_read_sock_handler, NULL,
+                               eloop_read_domain_handler, NULL,
+                               (void *)context) == -1) {
+    log_error("eloop_register_read_sock fail");
+    close_supervisor(context);
+    return -1;
+  }
+
+  if (eloop_register_read_sock(context->eloop, context->udp_sock,
+                               eloop_read_udp_handler, NULL,
                                (void *)context) == -1) {
     log_error("eloop_register_read_sock fail");
     close_supervisor(context);

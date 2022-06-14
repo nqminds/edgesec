@@ -158,7 +158,7 @@ int create_udp_server(unsigned int port) {
     return -1;
   }
 
-  return 0;
+  return sfd;
 }
 
 ssize_t read_socket_domain(int sock, char *data, size_t data_len,

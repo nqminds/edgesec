@@ -712,8 +712,8 @@ bool load_supervisor_config(const char *filename, struct app_config *config) {
   char *value;
 
   // Load the supervisor control port
-  config->supervisor_control_port =
-      (unsigned int)ini_getl("system", "supervisorControlPort", 0, filename);
+  config->supervisor_control_port = (unsigned int)ini_getl(
+      "supervisor", "supervisorControlPort", 0, filename);
 
   // Load supervisorControlPath
   value = os_malloc(INI_BUFFERSIZE);

@@ -239,6 +239,7 @@ static void test_write_socket_data(void **state) {
       write_socket_data(cfd, send_buf, strlen(send_buf) + 1, &caddr), -1);
   saddr.type = SOCKET_TYPE_UDP;
   assert_int_not_equal(read_socket_data(sfd, read_buf, 100, &saddr, 0), -1);
+  assert_int_equal(os_strnlen_s(read_buf, 100), strlen(send_buf));
   assert_int_equal(strncmp(send_buf, read_buf, 100), 0);
   close(sfd);
   close(cfd);
