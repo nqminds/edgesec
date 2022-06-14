@@ -144,11 +144,9 @@ void eloop_tout_cleaner_handler(void *eloop_ctx, void *user_ctx) {
     if (sum_pcap_group(context->db, lt, CLEANER_GROUP_INTERVAL, &ht, &sum) <
         0) {
       log_trace("sum_pcap_group fail");
-    } else {
-      if (ht != lt) {
-        cleaner_context->store_sum += sum;
-        cleaner_context->next_timestamp = ht;
-      }
+    } else if (ht != lt) {
+      cleaner_context->store_sum += sum;
+      cleaner_context->next_timestamp = ht;
     }
   }
 
