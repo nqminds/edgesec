@@ -183,9 +183,6 @@ void free_cleaner_middleware(struct middleware_context *context) {
 struct middleware_context *init_cleaner_middleware(sqlite3 *db, char *db_path,
                                                    struct eloop_data *eloop,
                                                    struct pcap_context *pc) {
-  struct middleware_context *context = NULL;
-  struct cleaner_middleware_context *cleaner_context = NULL;
-
   log_info("Init cleaner middleware...");
 
   if (db == NULL) {
@@ -203,13 +200,15 @@ struct middleware_context *init_cleaner_middleware(sqlite3 *db, char *db_path,
     return NULL;
   }
 
-  if ((context = os_zalloc(sizeof(struct middleware_context))) == NULL) {
+  struct middleware_context *context = os_zalloc(sizeof(struct middleware_context));
+  
+  if (context == NULL) {
     log_errno("zalloc");
     return NULL;
   }
 
-  if ((cleaner_context =
-           os_zalloc(sizeof(struct cleaner_middleware_context))) == NULL) {
+  struct cleaner_middleware_context *cleaner_context = os_zalloc(sizeof(struct cleaner_middleware_context));
+  if (cleaner_context == NULL) {
     log_errno("zalloc");
     free_cleaner_middleware(context);
     return NULL;
