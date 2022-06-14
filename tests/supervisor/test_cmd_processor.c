@@ -21,7 +21,7 @@
 #include "utils/iptables.h"
 #include "runctl.h"
 
-ssize_t __wrap_write_domain_data(int sock, char *data, size_t data_len,
+ssize_t __wrap_write_socket_data(int sock, char *data, size_t data_len,
                                  struct sockaddr_un *addr, int addr_len) {
   (void)sock;
   (void)data;

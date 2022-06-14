@@ -215,9 +215,9 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx) {
     return;
   }
 
-  if ((num_bytes = read_domain_data(sock, (char *)buf, bytes_available,
+  if ((num_bytes = read_socket_data(sock, (char *)buf, bytes_available,
                                     &peer_addr, 0)) == -1) {
-    log_error("read_domain_data fail");
+    log_error("read_socket_data fail");
     os_free(buf);
     return;
   }

@@ -82,7 +82,7 @@ int send_events(struct supervisor_context *context, char *name,
 
   while ((p = (struct client_address *)utarray_next(context->subscribers_array,
                                                     p)) != NULL) {
-    if (write_domain_data(context->domain_sock, send_buf, strlen(send_buf),
+    if (write_socket_data(context->domain_sock, send_buf, strlen(send_buf),
                           p) <= 0) {
       log_trace("Error sending event to client with size=%d", p->len);
     }

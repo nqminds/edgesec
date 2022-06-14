@@ -131,7 +131,7 @@ int create_domain_server(char *server_path) {
   return sfd;
 }
 
-ssize_t read_domain_data(int sock, char *data, size_t data_len,
+ssize_t read_socket_data(int sock, char *data, size_t data_len,
                          struct client_address *addr, int flags) {
   if (data == NULL) {
     log_error("data param is NULL");
@@ -166,7 +166,9 @@ ssize_t read_domain_data_s(int sock, char *data, size_t data_len, char *addr,
     return -1;
   }
 
-  num_bytes = read_domain_data(sock, data, data_len, &claddr, flags);
+  claddr.type = SOCKET_TYPE_DOMAIN;
+
+  num_bytes = read_socket_data(sock, data, data_len, &claddr, flags);
 
   strcpy(addr, claddr.addr_un.sun_path);
 
@@ -183,11 +185,12 @@ ssize_t write_domain_data_s(int sock, char *data, size_t data_len, char *addr) {
 
   init_domain_addr(&claddr.addr_un, addr);
   claddr.len = sizeof(struct sockaddr_un);
+  claddr.type = SOCKET_TYPE_DOMAIN;
 
-  return write_domain_data(sock, data, data_len, &claddr);
+  return write_socket_data(sock, data, data_len, &claddr);
 }
 
-ssize_t write_domain_data(int sock, char *data, size_t data_len,
+ssize_t write_socket_data(int sock, char *data, size_t data_len,
                           struct client_address *addr) {
   ssize_t num_bytes;
 

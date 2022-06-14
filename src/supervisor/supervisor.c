@@ -300,9 +300,9 @@ void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx) {
 
   utarray_new(cmd_arr, &ut_str_icd);
 
-  if ((num_bytes = read_domain_data(sock, buf, bytes_available, &claddr, 0)) ==
+  if ((num_bytes = read_socket_data(sock, buf, bytes_available, &claddr, 0)) ==
       -1) {
-    log_error("read_domain_data fail");
+    log_error("read_socket_data fail");
     goto end;
   }
 
