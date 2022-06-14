@@ -68,7 +68,6 @@ int clean_capture(struct middleware_context *context) {
 
   UT_array *pcap_meta_arr = NULL;
   uint64_t timestamp = cleaner_context->low_timestamp, lt;
-  char *path;
   utarray_new(pcap_meta_arr, &pcap_file_meta_icd);
 
   while (timestamp <= cleaner_context->next_timestamp) {
@@ -82,8 +81,8 @@ int clean_capture(struct middleware_context *context) {
 
     while ((p = (struct pcap_file_meta *)utarray_next(pcap_meta_arr, p)) !=
            NULL) {
-      if ((path = construct_path(cleaner_context->pcap_path, p->name)) ==
-          NULL) {
+      char * const path = construct_path(cleaner_context->pcap_path, p->name);
+      if (path == NULL) {
         log_errno("os_malloc");
       }
 
