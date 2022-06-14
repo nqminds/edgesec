@@ -287,6 +287,7 @@ void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx) {
   struct supervisor_context *context = (struct supervisor_context *)sock_ctx;
 
   os_memset(&claddr, 0, sizeof(struct client_address));
+  claddr.type = SOCKET_TYPE_DOMAIN;
 
   if (ioctl(sock, FIONREAD, &bytes_available) == -1) {
     log_errno("ioctl");

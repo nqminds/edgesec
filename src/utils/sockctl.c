@@ -35,6 +35,7 @@
 #include "allocs.h"
 #include "os.h"
 #include "log.h"
+#include "net.h"
 
 #define SOCK_EXTENSION ".sock"
 
@@ -77,6 +78,7 @@ int create_domain_client(char *addr) {
   if (addr == NULL) {
     if ((client_addr = generate_socket_name()) == NULL) {
       log_error("generate_socket_name fail");
+      close(sock);
       return -1;
     }
 
@@ -90,6 +92,7 @@ int create_domain_client(char *addr) {
 
   if (bind(sock, (struct sockaddr *)&claddr, addrlen) == -1) {
     log_errno("bind");
+    close(sock);
     return -1;
   }
 
@@ -113,11 +116,13 @@ int create_domain_server(char *server_path) {
   */
   if (strlen(server_path) > sizeof(svaddr.sun_path) - 1) {
     log_error("Server socket path too long: %s", server_path);
+    close(sfd);
     return -1;
   }
 
   if (remove(server_path) == -1 && errno != ENOENT) {
     log_errno("remove-%s", server_path);
+    close(sfd);
     return -1;
   }
 
@@ -125,10 +130,69 @@ int create_domain_server(char *server_path) {
 
   if (bind(sfd, (struct sockaddr *)&svaddr, sizeof(struct sockaddr_un)) == -1) {
     log_errno("bind");
+    close(sfd);
     return -1;
   }
 
   return sfd;
+}
+
+int create_udp_server(unsigned int port) {
+  struct sockaddr_in svaddr;
+  int sfd;
+
+  /* Create server socket */
+  sfd = socket(AF_INET, SOCK_DGRAM, 0);
+  if (sfd == -1) {
+    log_errno("socket");
+    return -1;
+  }
+
+  os_memset(&svaddr, 0, sizeof(struct sockaddr_in));
+  svaddr.sin_family = AF_INET;
+  svaddr.sin_port = htons(port);
+
+  if (bind(sfd, (struct sockaddr *)&svaddr, sizeof(struct sockaddr_in)) == -1) {
+    log_errno("bind");
+    close(sfd);
+    return -1;
+  }
+
+  return 0;
+}
+
+ssize_t read_socket_domain(int sock, char *data, size_t data_len,
+                           struct client_address *addr, int flags) {
+  ssize_t received;
+
+  addr->len = sizeof(struct sockaddr_un);
+  received =
+      recvfrom(sock, data, data_len, flags, (struct sockaddr *)&addr->addr_un,
+               (socklen_t *)&addr->len);
+
+  if (received == -1) {
+    log_errno("recvfrom");
+    return -1;
+  }
+
+  return received;
+}
+
+ssize_t read_socket_udp(int sock, char *data, size_t data_len,
+                        struct client_address *addr, int flags) {
+  ssize_t received;
+
+  addr->len = sizeof(struct sockaddr_in);
+  received =
+      recvfrom(sock, data, data_len, flags, (struct sockaddr *)&addr->addr_in,
+               (socklen_t *)&addr->len);
+
+  if (received == -1) {
+    log_errno("recvfrom");
+    return -1;
+  }
+
+  return received;
 }
 
 ssize_t read_socket_data(int sock, char *data, size_t data_len,
@@ -143,17 +207,15 @@ ssize_t read_socket_data(int sock, char *data, size_t data_len,
     return -1;
   }
 
-  addr->len = sizeof(struct sockaddr_un);
-
-  ssize_t num_bytes =
-      recvfrom(sock, data, data_len, flags, (struct sockaddr *)&addr->addr_un,
-               (socklen_t *)&addr->len);
-  if (num_bytes == -1) {
-    log_errno("recvfrom");
-    return -1;
+  switch (addr->type) {
+    case SOCKET_TYPE_DOMAIN:
+      return read_socket_domain(sock, data, data_len, addr, flags);
+    case SOCKET_TYPE_UDP:
+      return read_socket_udp(sock, data, data_len, addr, flags);
+    default:
+      log_error("socket type not specified");
+      return -1;
   }
-
-  return num_bytes;
 }
 
 ssize_t read_domain_data_s(int sock, char *data, size_t data_len, char *addr,
@@ -190,10 +252,43 @@ ssize_t write_domain_data_s(int sock, char *data, size_t data_len, char *addr) {
   return write_socket_data(sock, data, data_len, &claddr);
 }
 
+ssize_t write_socket_domain(int sock, char *data, size_t data_len,
+                            struct client_address *addr) {
+  ssize_t sent;
+
+  log_trace("Sending to domain socket on %.*s", addr->len,
+            addr->addr_un.sun_path);
+  if ((sent = sendto(sock, data, data_len, 0, (struct sockaddr *)&addr->addr_un,
+                     addr->len)) < 0) {
+    log_errno("sendto");
+    return -1;
+  }
+
+  return sent;
+}
+
+ssize_t write_socket_udp(int sock, char *data, size_t data_len,
+                         struct client_address *addr) {
+  ssize_t sent;
+  char ip[OS_INET_ADDRSTRLEN];
+
+  if (inaddr4_2_ip(&addr->addr_in.sin_addr, ip) == NULL) {
+    log_errno("inet_ntop");
+    return -1;
+  }
+
+  log_trace("Sending to udp socket on %s:%d", ip, addr->addr_in.sin_port);
+  if ((sent = sendto(sock, data, data_len, 0, (struct sockaddr *)&addr->addr_in,
+                     addr->len)) < 0) {
+    log_errno("sendto");
+    return -1;
+  }
+
+  return sent;
+}
+
 ssize_t write_socket_data(int sock, char *data, size_t data_len,
                           struct client_address *addr) {
-  ssize_t num_bytes;
-
   if (data == NULL) {
     log_error("data param is NULL");
     return -1;
@@ -204,23 +299,15 @@ ssize_t write_socket_data(int sock, char *data, size_t data_len,
     return -1;
   }
 
-  errno = 0;
-  log_trace("Sending to socket on %.*s", addr->len, addr->addr_un.sun_path);
-  if ((num_bytes = sendto(sock, data, data_len, 0,
-                          (struct sockaddr *)&addr->addr_un, addr->len)) < 0) {
-    log_errno("sendto");
-    return -1;
+  switch (addr->type) {
+    case SOCKET_TYPE_DOMAIN:
+      return write_socket_domain(sock, data, data_len, addr);
+    case SOCKET_TYPE_UDP:
+      return write_socket_udp(sock, data, data_len, addr);
+    default:
+      log_error("socket type not specified");
+      return -1;
   }
-
-  return num_bytes;
-}
-
-int close_domain(int sfd) {
-  if (sfd) {
-    return close(sfd);
-  }
-
-  return 0;
 }
 
 int writeread_domain_data_str(char *socket_path, char *write_str,

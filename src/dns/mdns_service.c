@@ -204,6 +204,7 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx) {
   struct mdns_context *context = (struct mdns_context *)eloop_ctx;
 
   os_memset(&peer_addr, 0, sizeof(struct client_address));
+  peer_addr.type = SOCKET_TYPE_DOMAIN;
 
   if (ioctl(sock, FIONREAD, &bytes_available) == -1) {
     log_errno("ioctl");
@@ -483,7 +484,7 @@ int close_mdns(struct mdns_context *context) {
     free_command_mapper(&context->command_mapper);
     context->command_mapper = NULL;
 
-    close_domain(context->sfd);
+    close(context->sfd);
     context->sfd = 0;
   }
 

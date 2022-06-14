@@ -31,7 +31,8 @@
 #include <netinet/in.h>
 
 enum SOCKET_TYPE {
-  SOCKET_TYPE_DOMAIN = 0,
+  SOCKET_TYPE_NONE = 0,
+  SOCKET_TYPE_DOMAIN,
   SOCKET_TYPE_UDP,
 };
 
@@ -61,6 +62,14 @@ int create_domain_client(char *add);
  * @return int Domain server socket
  */
 int create_domain_server(char *server_path);
+
+/**
+ * @brief Create a udp server object
+ *
+ * @param port Server port
+ * @return int UDP server socket
+ */
+int create_udp_server(unsigned int port);
 
 /**
  * @brief Read data from the server socket
@@ -110,14 +119,6 @@ ssize_t write_socket_data(int sock, char *data, size_t data_len,
  * @return ssize_t Size of written data
  */
 ssize_t write_domain_data_s(int sock, char *data, size_t data_len, char *addr);
-
-/**
- * @brief Closes the domain socket
- *
- * @param sfd The domain socket
- * @return int 0 on success, -1 on failure
- */
-int close_domain(int sfd);
 
 /**
  * @brief Write and read a domain data string
