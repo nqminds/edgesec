@@ -4,12 +4,10 @@ include_directories (
 
 add_library(hostapd hostapd.c)
 if (USE_UCI_SERVICE)
-  target_include_directories(hostapd PRIVATE ${LIBUCI_INCLUDE_PATH})
-  target_link_libraries(hostapd PRIVATE log os iface ${LIBUCI_STATIC_LIB})
+  target_link_libraries(hostapd PRIVATE log os iface OpenWRT::UCI)
 else ()
   target_link_libraries(hostapd PRIVATE log os iface)
 endif()
 
 add_library(ap_service ap_service.c)
-target_include_directories(ap_service PRIVATE ${LIBSQLITE_INCLUDE_DIR} PUBLIC $<TARGET_PROPERTY:iface,INCLUDE_DIRECTORIES>)
-target_link_libraries(ap_service PRIVATE domain hostapd log os eloop)
+target_link_libraries(ap_service PUBLIC supervisor_config PRIVATE domain hostapd log os eloop)

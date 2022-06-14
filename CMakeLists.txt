@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13.0) # required by FindMNL.cmake
+cmake_minimum_required(VERSION 3.14.0) # required by lib/sqlite.cmake
 
 project(EDGESEC C CXX)
 
@@ -9,6 +9,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/docs")
 include(CTest)
 include(FetchContent)
 include(ExternalProject)
+include(CMakeDependentOption)
 
 
 string(TOLOWER ${CMAKE_HOST_SYSTEM_PROCESSOR} _sys)
@@ -39,43 +40,32 @@ set(
 )
 
 option(BUILD_ONLY_DOCS "Build only docs" OFF)
-option(BUILD_MDNS_SERVICE "Build mDNS service" ON)
-option(BUILD_CAPTURE_SERVICE "Build Capture service" ON)
 option(BUILD_HOSTAPD "Build hostapd" OFF)
 option(BUILD_SQLITE_LIB "Build sqlite3 library" ON)
-option(BUILD_OPENSSL_LIB "Build OpenSSL" ON)
 option(BUILD_CMOCKA_LIB "Build cmocka library" OFF)
-# off by default since we should apt install libmnl-dev
-option(BUILD_MNL_LIB "Build mnl library" OFF)
-option(BUILD_NETLINK_LIB "Build netlink library" OFF)
-option(BUILD_NL_LIB "Build nl library" OFF)
 option(BUILD_UUID_LIB "Build uuid library" ON)
-option(BUILD_PCAP_LIB "Build pcap library" ON)
+
+option(BUILD_CAPTURE_SERVICE "Build Capture service" ON)
+cmake_dependent_option(BUILD_PCAP_LIB "Build pcap library" ON BUILD_CAPTURE_SERVICE OFF)
+cmake_dependent_option(BUILD_MDNS_SERVICE "Build mDNS service" ON BUILD_CAPTURE_SERVICE OFF)
 
 option(USE_NETLINK_SERVICE "Use netlink service" OFF)
+cmake_dependent_option(BUILD_MNL_LIB "Build mnl library" ON USE_NETLINK_SERVICE OFF)
+cmake_dependent_option(BUILD_NETLINK_LIB "Build netlink library" ON USE_NETLINK_SERVICE OFF)
 option(USE_UCI_SERVICE "Use OpenWRT uci service" ON)
+cmake_dependent_option(BUILD_UCI_LIB "Build OpenWRT UCI library" ON USE_UCI_SERVICE OFF)
 option(USE_GENERIC_IP_SERVICE "Use generic ip service" OFF)
-option(USE_CRYPTO_SERVICE "Use the crypto service" OFF)
-option(USE_SQLITE3_LIB "Use sqlite3 library" ON)
-option(USE_UUID_LIB "Use uuid library" ON)
-option(USE_ZYMKEY4_HSM "Use the Zymkey4 HSM" OFF)
-
-if (USE_CRYPTO_SERVICE)
-  add_compile_definitions(TEST_CRYPTO_SERVICE_KEY="12345")
-endif ()
-
 if (USE_NETLINK_SERVICE AND USE_UCI_SERVICE AND USE_GENERIC_IP_SERVICE)
   message(FATAL_ERROR "Only USE_NETLINK_SERVICE or USE_UCI_SERVICE allowed.")
 endif ()
 
-# CMake hides $ENV{MAKEFLAGS}, so we need to define it ourselves
-set(LIB_MAKEFLAGS "--jobs=2" CACHE STRING "Flags to pass to make for building libraries (e.g. -j12)")
-if(LIB_MAKEFLAGS OR TRUE)
-  # set makeflags so that OpenSSL can build in parallel
-  # Prefix with LIB_*, so it only applies when we use
-  # MAKEFLAGS="$LIB_MAKEFLAGS" in our compile_*.sh scripts
-  set(ENV{LIB_MAKEFLAGS} "${LIB_MAKEFLAGS}")
-endif()
+option(USE_CRYPTO_SERVICE "Use the crypto service" OFF)
+cmake_dependent_option( BUILD_OPENSSL_LIB "Build OpenSSL" ON USE_CRYPTO_SERVICE OFF)
+if (USE_CRYPTO_SERVICE)
+  add_compile_definitions(TEST_CRYPTO_SERVICE_KEY="12345")
+endif ()
+
+option(USE_ZYMKEY4_HSM "Use the Zymkey4 HSM" OFF)
 
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -97,8 +87,7 @@ endfunction(get_autoconf_os)
 
 get_autoconf_os(${CMAKE_HOST_SYSTEM_NAME} build_autoconf_os)
 string(TOLOWER "${CMAKE_HOST_SYSTEM_PROCESSOR}-${build_autoconf_os}" build_autoconf_triple)
-get_autoconf_os(${CMAKE_SYSTEM_NAME} target_autoconf_os)
-string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}-${target_autoconf_os}" target_autoconf_triple)
+set(target_autoconf_triple "${CMAKE_LIBRARY_ARCHITECTURE}")
 
 if (CMAKE_CROSSCOMPILING)
   message("Cross-compiling, setting cross-compiling autoconf/pkg-config vars")
@@ -111,6 +100,9 @@ else(CMAKE_CROSSCOMPILING)
   # unset so that sqlite.cmake and etc. do not activate this
   unset(target_autoconf_triple)
 endif(CMAKE_CROSSCOMPILING)
+
+# currenty doesn't work if on, due to cyclical dependencies
+set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Build shared libraries")
 
 # C compiler options
 set(CMAKE_C_STANDARD 11) # we use C11 raw-strings

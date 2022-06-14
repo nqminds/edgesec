@@ -4,18 +4,17 @@ install(
   RUNTIME
 )
 
-if (BUILD_CAPTURE_SERVICE AND BUILD_PCAP_LIB)
+if (BUILD_CAPTURE_SERVICE)
   install(
     TARGETS capsrv
     RUNTIME
   )
-endif ()
-
-if (BUILD_MDNS_SERVICE AND BUILD_PCAP_LIB)
-  install(
-    TARGETS mdnsf
-    RUNTIME
-  )
+  if(BUILD_MDNS_SERVICE)
+    install(
+      TARGETS mdnsf
+      RUNTIME
+    )
+  endif()
 endif ()
 
 # usually /usr/local/lib/edgesec (or /usr/lib/edgesec for .deb)
@@ -53,23 +52,20 @@ if (BUILD_UUID_LIB AND LIBUUID_LIB)
     install(DIRECTORY "${LIBUUID_LIB_DIR}/" DESTINATION ${EDGESEC_private_lib_dir} PATTERN "*.la" EXCLUDE)
 endif ()
 
-if (BUILD_SQLITE_LIB AND LIBSQLITE_LIB)
-  install(DIRECTORY "${LIBSQLITE_LIB_DIR}/" DESTINATION ${EDGESEC_private_lib_dir} PATTERN "*.la" EXCLUDE)
+if (BUILD_SQLITE_LIB AND TARGET SQLite::SQLite3 AND LIBSQLITE_LIB_DIR)
+  get_target_property(SQLite3_type SQLite::SQLite3 TYPE)
+  if(SQLite3_type STREQUAL STATIC_LIBRARY)
+    # don't bother installing static libs
+  else()
+    install(DIRECTORY "${LIBSQLITE_LIB_DIR}/" DESTINATION ${EDGESEC_private_lib_dir} PATTERN "*.la" EXCLUDE)
+  endif()
 endif ()
 
-if(BUILD_PCAP_LIB AND LIBPCAP_LIB)
-  install(DIRECTORY "${LIBPCAP_LIB_DIR}/" DESTINATION ${EDGESEC_private_lib_dir})
-endif ()
-
-if(BUILD_OPENSSL_LIB AND LIBCRYPTO_LIB)
+if(BUILD_OPENSSL_LIB AND LIBCRYPTO_LIB AND LIBOPENSSL_LIB_PATH)
   install(DIRECTORY "${LIBOPENSSL_LIB_PATH}/" DESTINATION ${EDGESEC_private_lib_dir})
 endif ()
 
-if (BUILD_NETLINK_LIB AND LIBNETLINK_LIB)
-  install(DIRECTORY "${LIBNETLINK_LIB_PATH}/" DESTINATION ${EDGESEC_private_lib_dir})
-endif ()
-
-if (BUILD_MNL_LIB AND MNL_FOUND)
+if (BUILD_MNL_LIB AND TARGET MNL::mnl AND MNL_LIBRARY)
   get_filename_component(MNL_LIBRARY_DIR ${MNL_LIBRARY} DIRECTORY)
   install(DIRECTORY ${MNL_LIBRARY_DIR}/ DESTINATION ${EDGESEC_private_lib_dir} PATTERN "*.la" EXCLUDE)
 endif ()

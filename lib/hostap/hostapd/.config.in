@@ -1,13 +1,8 @@
 # Example hostapd build time configuration
 #
-# This file lists the configuration options that are used when building the
-# hostapd binary. All lines starting with # are ignored. Configuration option
-# lines must be commented out complete, if they are not to be included, i.e.,
-# just setting VARIABLE=n is not disabling that variable.
-#
-# This file is included in Makefile, so variables like CFLAGS and LIBS can also
-# be modified from here. In most cass, these lines should use += in order not
-# to override previous values of the variables.
+# Automatically generated from CMake.
+CC="@CMAKE_C_COMPILER@"
+PKG_CONFIG="@PKG_CONFIG_EXECUTABLE@"
 
 # Driver interface for Host AP driver
 CONFIG_DRIVER_HOSTAP=y
