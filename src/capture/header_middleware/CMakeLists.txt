@@ -18,7 +18,7 @@ add_library(packet_queue packet_queue.c)
 target_link_libraries(packet_queue PUBLIC packet_decoder PRIVATE log os)
 
 add_library(sqlite_header sqlite_header.c)
-target_link_libraries(sqlite_header PUBLIC PCAP::pcap SQLite::SQLite3 PRIVATE sqliteu log os iface SQLite::SQLite3)
+target_link_libraries(sqlite_header PUBLIC PCAP::pcap SQLite::SQLite3 PRIVATE sqliteu log os iface)
 
 add_library(header_middleware header_middleware.c)
 target_include_directories(header_middleware PRIVATE ${PROJECT_BINARY_DIR})
