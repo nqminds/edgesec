@@ -629,7 +629,8 @@ int read_file_string(char *path, char **out);
 /**
  * @brief Returns the absolute path of system binaries
  *
- * @param[in] commands Array of system binaries name strings. The last entry must be a `NULL` ptr.
+ * @param[in] commands Array of system binaries name strings. The last entry
+ * must be a `NULL` ptr.
  * @param[int] bin_path_arr Array of system binaries default search paths
  * @param[out] hmap_bin_paths The created map of system binary to absolute path.
  * @return int 0 on success, -1 on failure

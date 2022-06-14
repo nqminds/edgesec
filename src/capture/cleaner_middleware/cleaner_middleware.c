@@ -81,7 +81,7 @@ int clean_capture(struct middleware_context *context) {
 
     while ((p = (struct pcap_file_meta *)utarray_next(pcap_meta_arr, p)) !=
            NULL) {
-      char * const path = construct_path(cleaner_context->pcap_path, p->name);
+      char *const path = construct_path(cleaner_context->pcap_path, p->name);
       if (path == NULL) {
         log_errno("os_malloc");
       }
@@ -198,14 +198,16 @@ struct middleware_context *init_cleaner_middleware(sqlite3 *db, char *db_path,
     return NULL;
   }
 
-  struct middleware_context *context = os_zalloc(sizeof(struct middleware_context));
-  
+  struct middleware_context *context =
+      os_zalloc(sizeof(struct middleware_context));
+
   if (context == NULL) {
     log_errno("zalloc");
     return NULL;
   }
 
-  struct cleaner_middleware_context *cleaner_context = os_zalloc(sizeof(struct cleaner_middleware_context));
+  struct cleaner_middleware_context *cleaner_context =
+      os_zalloc(sizeof(struct cleaner_middleware_context));
   if (cleaner_context == NULL) {
     log_errno("zalloc");
     free_cleaner_middleware(context);
