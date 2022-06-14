@@ -43,12 +43,15 @@ target_link_libraries(system_commands
 )
 
 add_library(cmd_processor cmd_processor.c)
-target_include_directories(cmd_processor PUBLIC ${LIBSQLITE_INCLUDE_DIR})
+target_link_libraries(cmd_processor
+  PUBLIC utarray domain supervisor_config
+  PRIVATE
+    mac_mapper network_commands system_commands
+    allocs os log net base64 utarray domain # the ./utils/
+)
 if (USE_CRYPTO_SERVICE)
-  target_link_libraries(cmd_processor PRIVATE system_commands crypt_commands network_commands mac_mapper domain net log os firewall_service iface base64)
-else ()
-  target_link_libraries(cmd_processor PRIVATE system_commands network_commands mac_mapper domain net log os firewall_service iface base64)
-endif ()
+  target_link_libraries(cmd_processor PRIVATE crypt_commands)
+endif()
 
 add_library(supervisor_config INTERFACE)
 set_target_properties(supervisor_config PROPERTIES PUBLIC_HEADER "supervisor_config.h")
