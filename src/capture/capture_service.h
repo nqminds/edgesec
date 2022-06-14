@@ -77,7 +77,7 @@ int run_capture(struct capture_middleware_context *context);
  * @param id The returned thread id
  * @return int 0 on success, -1 on error
  */
-int run_capture_thread(char *ifname, struct capture_conf *config,
+int run_capture_thread(char *ifname, struct capture_conf const *config,
                        pthread_t *id);
 
 #endif
