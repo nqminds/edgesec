@@ -1362,6 +1362,24 @@ int get_commands_paths(char *commands[], UT_array *bin_path_arr,
   return 0;
 }
 
+char *string_append_char(char *str, char character) {
+  char *appended = NULL;
+
+  if (str == NULL) {
+    log_error("str param is NULL");
+    return NULL;
+  }
+
+  if ((appended = os_zalloc(strlen(str) + 2)) == NULL) {
+    log_errno("os_zalloc");
+    return NULL;
+  }
+
+  sprintf(appended, "%s%c", str, character);
+
+  return appended;
+}
+
 // void *os_malloc(size_t size)
 // {
 //   void *ptr = malloc(size);

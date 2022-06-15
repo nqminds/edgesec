@@ -589,4 +589,13 @@ int read_file_string(char *path, char **out);
  */
 int get_commands_paths(char *commands[], UT_array *bin_path_arr,
                        hmap_str_keychar **hmap_bin_paths);
+
+/**
+ * @brief Append a character to a string and return the new string
+ *
+ * @param[in] str The string to append to
+ * @param[in] character The character to append
+ * @return char * the appended string on success, NULL on failure
+ */
+char *string_append_char(char *str, char character);
 #endif /* OS_H */

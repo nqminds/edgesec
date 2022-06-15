@@ -75,8 +75,8 @@
 
 #define CMD_DELIMITER 0x20
 
-#define OK_REPLY "OK"
-#define FAIL_REPLY "FAIL"
+#define OK_REPLY "OK\n"
+#define FAIL_REPLY "FAIL\n"
 
 #define MAX_QUERY_OP_LEN 3
 

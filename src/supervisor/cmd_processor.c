@@ -76,6 +76,18 @@ bool process_domain_buffer(char *domain_buffer, size_t domain_buffer_len,
   return true;
 }
 
+int write_newline_socket_data(int sock, char *data,
+                              struct client_address *client_addr) {
+  char *msg;
+  if ((msg = string_append_char(data, '\n')) == NULL) {
+    log_error("string_append_char fail");
+    return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+  }
+  int ret = write_socket_data(sock, msg, strlen(msg), client_addr);
+  os_free(msg);
+  return ret;
+}
+
 ssize_t process_ping_cmd(int sock, struct client_address *client_addr,
                          struct supervisor_context *context,
                          UT_array *cmd_arr) {
@@ -549,8 +561,7 @@ ssize_t process_register_ticket_cmd(int sock,
                   (char *)register_ticket_cmd(context, mac_addr, label, vlanid);
 
               if (passphrase != NULL) {
-                return write_socket_data(sock, passphrase, strlen(passphrase),
-                                         client_addr);
+                return write_newline_socket_data(sock, passphrase, client_addr);
               } else {
                 return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                          client_addr);
@@ -648,7 +659,7 @@ ssize_t process_get_crypt_cmd(int sock, struct client_address *client_addr,
     if (strlen(trimmed)) {
       if (!get_crypt_cmd(context, key, &value)) {
         os_free(key);
-        ret = write_socket_data(sock, value, strlen(value), client_addr);
+        ret = write_newline_socket_data(sock, value, client_addr);
         os_free(value);
         return ret;
       }
@@ -850,8 +861,8 @@ ssize_t process_encrypt_blob_cmd(int sock, struct client_address *client_addr,
         if (strlen(*ptr)) {
           if ((encrypted = encrypt_blob_cmd(context, keyid, ivid, *ptr)) !=
               NULL) {
-            ret = write_socket_data(sock, encrypted, strlen(encrypted),
-                                    client_addr);
+            ret = write_newline_socket_data(sock, encrypted, client_addr);
+
             os_free(ivid);
             os_free(keyid);
             os_free(encrypted);
@@ -901,8 +912,7 @@ ssize_t process_decrypt_blob_cmd(int sock, struct client_address *client_addr,
         if (strlen(*ptr)) {
           if ((decrypted = decrypt_blob_cmd(context, keyid, ivid, *ptr)) !=
               NULL) {
-            ret = write_socket_data(sock, decrypted, strlen(decrypted),
-                                    client_addr);
+            ret = write_newline_socket_data(sock, decrypted, client_addr);
             os_free(keyid);
             os_free(ivid);
             os_free(decrypted);
@@ -940,8 +950,7 @@ ssize_t process_sign_blob_cmd(int sock, struct client_address *client_addr,
     if (ptr != NULL && *ptr != NULL) {
       if (strlen(*ptr)) {
         if ((signed_str = sign_blob_cmd(context, keyid, *ptr)) != NULL) {
-          ret = write_socket_data(sock, signed_str, strlen(signed_str),
-                                  client_addr);
+          ret = write_newline_socket_data(sock, signed_str, client_address);
           os_free(keyid);
           os_free(signed_str);
           return ret;
