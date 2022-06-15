@@ -950,7 +950,7 @@ ssize_t process_sign_blob_cmd(int sock, struct client_address *client_addr,
     if (ptr != NULL && *ptr != NULL) {
       if (strlen(*ptr)) {
         if ((signed_str = sign_blob_cmd(context, keyid, *ptr)) != NULL) {
-          ret = write_newline_socket_data(sock, signed_str, client_address);
+          ret = write_newline_socket_data(sock, signed_str, client_addr);
           os_free(keyid);
           os_free(signed_str);
           return ret;
