@@ -68,11 +68,14 @@ struct app_config {
                               or if MAC is not in the list of connections. */
   int quarantine_vlanid; /**< Sets the vlan index for the quarantine MACs, -1 if
                             there's no quarantine vlan. */
-  int risk_score;        /**< Sets the risk score. */
   UT_array *config_ifinfo_array; /**< Interface list mapping bridge interface
                                     name and IP address range. */
-  char domain_server_path[MAX_OS_PATH_LEN]; /**< Path to the control server. */
-  char db_path[MAX_OS_PATH_LEN]; /**< Specifies the path to the sqlite3 dbs */
+  unsigned int supervisor_control_port; /**< The port number for the supervisor
+                                           control server */
+  char supervisor_control_path[MAX_OS_PATH_LEN]; /**< Path to the control
+                                                    server. */
+  char connection_db_path[MAX_OS_PATH_LEN];      /**< Specifies the path to the
+                                                    connection sqlite3 dbs */
 #ifdef WITH_CRYPTO_SERVICE
   char crypt_db_path[MAX_OS_PATH_LEN]; /**< Specifies the crypt db path to the
                                           sqlite3 db */
@@ -80,10 +83,8 @@ struct app_config {
   char crypt_secret[MAX_USER_SECRET];  /**< Specifies the crypt user master
                                           secret */
 #endif
-  char domain_delim;          /**< Control server command delimiter. */
   bool allow_all_connections; /**< Flag to allow all connections. */
   bool allow_all_nat;         /**< Flag to allow all nat connections. */
-  bool kill_running_proc;     /**< Flag to terminate running app processes. */
   bool set_ip_forward; /**< Flag to set the ip forward os system param. */
   char pid_file_path[MAX_OS_PATH_LEN];   /**< Path to the pid file. */
   char config_ini_path[MAX_OS_PATH_LEN]; /**< Path to the config.ini file. */

@@ -19,6 +19,8 @@
 
 static const UT_icd mac_conn_icd = {sizeof(struct mac_conn), NULL, NULL, NULL};
 
+extern int __real_sqlite3_open(const char *filename, sqlite3 **ppDb);
+
 int __wrap_sqlite3_open(const char *filename, sqlite3 **ppDb) {
   return __real_sqlite3_open(filename, ppDb);
 }

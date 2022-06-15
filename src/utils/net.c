@@ -35,15 +35,16 @@
 #include "uthash.h"
 #include "allocs.h"
 #include "os.h"
+#include "net.h"
 
 bool validate_ipv4_string(char *ip) {
   struct sockaddr_in sa;
-  char proc_ip[IP_LEN];
+  char proc_ip[OS_INET_ADDRSTRLEN];
   char *netmask_sep = strchr(ip, '/');
   int netmask_char_size, ret;
   size_t ip_len;
 
-  os_memset(proc_ip, 0, IP_LEN);
+  os_memset(proc_ip, 0, OS_INET_ADDRSTRLEN);
   if (netmask_sep) {
     ip_len = strlen(ip) - strlen(netmask_sep);
     os_strlcpy(proc_ip, ip, ip_len + 1);
@@ -64,7 +65,7 @@ bool validate_ipv4_string(char *ip) {
       return false;
     }
   } else
-    os_strlcpy(proc_ip, ip, IP_LEN);
+    os_strlcpy(proc_ip, ip, OS_INET_ADDRSTRLEN);
 
   errno = 0;
   ret = inet_pton(AF_INET, proc_ip, &(sa.sin_addr));
@@ -185,4 +186,37 @@ int get_ip_host(char *ip, char *subnet_mask, uint32_t *host) {
                                (mbuf[2] << 8) + mbuf[3]);
 
   return 0;
+}
+
+int disable_pmtu_discovery(int sock) {
+  int action = IP_PMTUDISC_DONT;
+  if (setsockopt(sock, IPPROTO_IP, IP_MTU_DISCOVER, &action, sizeof(action)) <
+      0) {
+    log_errno("setsockopt");
+    return -1;
+  }
+
+  return 0;
+}
+
+int hwaddr_aton2(const char *txt, uint8_t *addr) {
+  int i;
+  const char *pos = txt;
+
+  for (i = 0; i < 6; i++) {
+    int a, b;
+
+    while (*pos == ':' || *pos == '.' || *pos == '-')
+      pos++;
+
+    a = hex2num(*pos++);
+    if (a < 0)
+      return -1;
+    b = hex2num(*pos++);
+    if (b < 0)
+      return -1;
+    *addr++ = (a << 4) | b;
+  }
+
+  return pos - txt;
 }

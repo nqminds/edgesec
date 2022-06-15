@@ -3,7 +3,6 @@
 
 [system]
 binPath = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"
-hashIpCommand = ""
 createInterfaces = true
 ignoreErrorOnIfCreate = true
 allowAllConnections = true
@@ -13,8 +12,6 @@ generateSsid = true
 allocateVlans = true
 defaultOpenVlanId = 0
 quarantineVlanId = 10
-riskScore = -1  # the value of -1 ignores the device score
-killRunningProcess = false
 # Set to `true` to let edgesec process start hostapd
 execAp = true
 execRadius = true
@@ -23,30 +20,21 @@ execCapture = true
 execMdnsForward = true
 execFirewall = true
 setIpForward = true
-dbPath = "@EDGESEC_full_local_lib_dir@/db"
+connectionDbPath = "@EDGESEC_full_local_lib_dir@/connection.sqlite"
 cryptDbPath = "@EDGESEC_full_local_lib_dir@/crypt.sqlite"
 cryptKeyId = "master"
 pidFilePath = "@EDGESEC_full_runstate_dir@/edgesec.pid"
 
 [capture]
-captureBinPath = "@EDGESEC_full_bin_dir@/capsrv"
-captureInterface = ""
+captureDbPath = "@EDGESEC_full_local_lib_dir@/capture.sqlite"
 filter = ""
 promiscuous = false
 bufferTimeout = 10
-processInterval = 10
 immediate = false
-analyser = "default"
-fileWrite = false
-dbWrite = true
-command = "SET_ALERT"
-syncStoreSize = 1000
-syncSendSize = 20
-captureStoreSize = 1000000
 
 [supervisor]
-domainServerPath = "@EDGESEC_full_runstate_dir@/edgesec-domain-server"
-delim = 32
+supervisorControlPort = 32001
+supervisorControlPath = "@EDGESEC_full_runstate_dir@/edgesec-control-server"
 
 [ap]
 apBinPath = "@EDGESEC_full_libexec_dir@/hostapd"
@@ -93,7 +81,6 @@ firewallBinPath = ""
 
 [dns]
 servers="8.8.4.4,8.8.8.8"
-mdnsBinPath = "@EDGESEC_full_bin_dir@/mdnsf"
 mdnsReflectIp4=true
 mdnsReflectIp6=true
 mdnsFilter = "src net 10.0 and dst net 10.0"

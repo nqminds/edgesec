@@ -55,7 +55,7 @@
 #define HOSTAPD_LOG_FILE_OPTION "-f"
 
 #define PROCESS_RESTART_TIME 5 /* In seconds */
-#define MAX_AP_CHECK_COUNT 100 /* Number of tries */
+#define MAX_AP_CHECK_COUNT 5   /* Number of tries */
 
 static char hostapd_proc_name[MAX_OS_PATH_LEN];
 static bool ap_process_started = false;
@@ -76,7 +76,7 @@ int generate_vlan_conf(char *vlan_file, char *interface) {
     return -1;
   }
 
-  log_trace("Writing into %s", vlan_file);
+  log_debug("Writing into %s", vlan_file);
 
   fprintf(fp, "*\t%s.#\n", interface);
 
@@ -90,11 +90,11 @@ int generate_hostapd_conf(struct apconf *hconf, struct radius_conf *rconf) {
   struct uctx *context = uwrt_init_context(NULL);
 
   if (context == NULL) {
-    log_trace("uwrt_init_context fail");
+    log_error("uwrt_init_context fail");
     return -1;
   }
 
-  log_trace("Writing hostapd config using uci");
+  log_debug("Writing hostapd config using uci");
 
   params.device = hconf->device;
   params.auth_algs = hconf->auth_algs;
@@ -115,13 +115,13 @@ int generate_hostapd_conf(struct apconf *hconf, struct radius_conf *rconf) {
   params.wpa_passphrase = hconf->wpa_passphrase;
 
   if (uwrt_gen_hostapd_instance(context, &params) < 0) {
-    log_trace("uwrt_gen_hostapd_instance fail");
+    log_error("uwrt_gen_hostapd_instance fail");
     uwrt_free_context(context);
     return -1;
   }
 
   if (uwrt_commit_section(context, "wireless") < 0) {
-    log_trace("uwrt_commit_section fail");
+    log_error("uwrt_commit_section fail");
     uwrt_free_context(context);
     return -1;
   }
@@ -146,7 +146,7 @@ int generate_hostapd_conf(struct apconf *hconf, struct radius_conf *rconf) {
     return -1;
   }
 
-  log_trace("Writing into %s", hconf->ap_file_path);
+  log_debug("Writing into %s", hconf->ap_file_path);
 
   fprintf(fp, "interface=%s\n", hconf->interface);
   fprintf(fp, "driver=%s\n", hconf->driver);
@@ -216,7 +216,7 @@ int check_ap_running(char *name, char *if_name, int wait_time) {
   while ((!running || check_sock_file_exists(if_name) < 0) &&
          count < MAX_AP_CHECK_COUNT) {
     if ((running = is_proc_running(name)) < 0) {
-      log_trace("is_proc_running fail");
+      log_error("is_proc_running fail");
       return -1;
     }
     count++;
@@ -225,6 +225,7 @@ int check_ap_running(char *name, char *if_name, int wait_time) {
 
   return running;
 }
+
 #if (defined(WITH_UCI_SERVICE) && defined(WITH_HOSTAPD_UCI))
 int run_ap_process(struct apconf *hconf) {
   pid_t child_pid = 0;
@@ -236,17 +237,21 @@ int run_ap_process(struct apconf *hconf) {
                    process_argv);
 
   if ((ret = run_process(process_argv, &child_pid)) < 0) {
-    log_trace("Restarting process in %d seconds", PROCESS_RESTART_TIME);
+    log_error("hostapd process exited with status=%d", ret);
     return -1;
   }
 
   log_trace("Checking ap proc running...");
-  if (check_ap_running(hostapd_proc_name, hconf->ctrl_interface_path, 1) <= 0) {
-    log_trace("check_ap_running or process not running");
+  ret = check_ap_running(hostapd_proc_name, hconf->ctrl_interface_path, 1);
+  if (ret < 0) {
+    log_error("check_ap_running fail");
+    return -1;
+  } else if (ret == 0) {
+    log_error("hostapd not running");
     return -1;
   }
 
-  log_trace("hostapd running with pid=%d", child_pid);
+  log_trace("hostapd instance running");
   ap_process_started = true;
 
   return 0;
@@ -267,17 +272,11 @@ int run_ap_process(struct apconf *hconf) {
     return -1;
   }
 
-  // log_trace("Resetting wifi interface %s", hconf->interface);
-  // if (!reset_interface(hconf->interface)) {
-  //   log_debug("reset_interface fail");
-  //   return -1;
-  // }
-
   while ((ret = run_process(process_argv, &child_pid)) < 0) {
     log_trace("Killing hostapd process");
     // Kill any running hostapd process
     if (!kill_process(hostapd_proc_name)) {
-      log_trace("kill_process fail");
+      log_error("kill_process fail");
       return -1;
     }
     log_trace("Restarting process in %d seconds", PROCESS_RESTART_TIME);
@@ -285,17 +284,11 @@ int run_ap_process(struct apconf *hconf) {
   }
 
   if (ret > 0) {
-    log_trace("hostapd process exited with status=%d", ret);
+    log_error("hostapd process exited with status=%d", ret);
     return -1;
   }
 
-  log_trace("Checking ap proc running...");
-  if (check_ap_running(hostapd_proc_name, hconf->ctrl_interface_path, 1) <= 0) {
-    log_trace("check_ap_running or process not running");
-    return -1;
-  }
-
-  log_trace("hostapd running with pid=%d", child_pid);
+  log_trace("hostapd instance running (pid=%d)", child_pid);
   ap_process_started = true;
 
   return 0;
@@ -319,16 +312,9 @@ int signal_ap_process(struct apconf *hconf) {
 
   os_strlcpy(hostapd_proc_name, basename(hconf->ap_bin_path), MAX_OS_PATH_LEN);
 
-  log_trace("Checking ap proc running...");
-  if (check_ap_running(basename(process_argv[0]), hconf->ctrl_interface_path,
-                       1) <= 0) {
-    log_trace("check_ap_running or process not running");
-    return -1;
-  }
-
   // Signal any running hostapd process to reload the config
   if (!signal_process(hostapd_proc_name, SIGHUP)) {
-    log_trace("signal_process fail");
+    log_error("signal_process fail");
     return -1;
   }
 

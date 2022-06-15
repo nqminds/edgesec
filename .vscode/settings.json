@@ -107,6 +107,8 @@
         "iface_mapper.h": "c",
         "hashmap.h": "c",
         "firewall_config.h": "c",
-        "crypt_service.h": "c"
+        "crypt_service.h": "c",
+        "header_middleware.h": "c",
+        "*.in": "cpp"
     }
 }

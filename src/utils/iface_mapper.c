@@ -133,6 +133,19 @@ int get_vlan_mapper(hmap_vlan_conn **hmap, int vlanid, struct vlan_conn *conn) {
   return 0;
 }
 
+int copy_vlan_mapper(hmap_vlan_conn **hmap, hmap_vlan_conn **copy) {
+  hmap_vlan_conn *current, *tmp;
+
+  HASH_ITER(hh, *hmap, current, tmp) {
+    if (!put_vlan_mapper(copy, &current->value)) {
+      log_error("put_vlan_mapper fail");
+      return -1;
+    }
+  }
+
+  return 0;
+}
+
 bool put_vlan_mapper(hmap_vlan_conn **hmap, struct vlan_conn *conn) {
   hmap_vlan_conn *s;
 
@@ -299,7 +312,7 @@ bool create_vlan_mapper(UT_array *config_ifinfo_array, hmap_vlan_conn **hmap) {
                 p->ifname);
       vlan_conn.vlanid = p->vlanid;
       os_memcpy(vlan_conn.ifname, p->ifname, IFNAMSIZ);
-      vlan_conn.analyser_pid = 0;
+      vlan_conn.capture_pid = 0;
       if (!put_vlan_mapper(hmap, &vlan_conn)) {
         log_trace("put_if_mapper fail");
         free_vlan_mapper(hmap);

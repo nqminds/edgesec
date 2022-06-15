@@ -4,19 +4,6 @@ install(
   RUNTIME
 )
 
-if (BUILD_CAPTURE_SERVICE)
-  install(
-    TARGETS capsrv
-    RUNTIME
-  )
-  if(BUILD_MDNS_SERVICE)
-    install(
-      TARGETS mdnsf
-      RUNTIME
-    )
-  endif()
-endif ()
-
 # usually /usr/local/lib/edgesec (or /usr/lib/edgesec for .deb)
 # EDGESEC_private_lib_dir is set in main CMakeLists.txt, as we need it to set RPATH before targets
 # currently only hostapd, so it doesn't conflict with other hostapds

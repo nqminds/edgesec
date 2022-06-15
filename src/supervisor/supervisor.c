@@ -31,22 +31,19 @@
 #include <libgen.h>
 #include <time.h>
 
-#include "sqlite_fingerprint_writer.h"
-#include "sqlite_alert_writer.h"
 #include "subscriber_events.h"
 
-#include "utils/log.h"
-#include "utils/allocs.h"
-#include "utils/os.h"
-#include "utils/eloop.h"
-#include "utils/utarray.h"
-#include "utils/domain.h"
+#include "../utils/log.h"
+#include "../utils/allocs.h"
+#include "../utils/os.h"
+#include "../utils/eloop.h"
+#include "../utils/utarray.h"
+#include "../utils/sockctl.h"
+
+#include "../capture/capture_service.h"
 
 #include "cmd_processor.h"
 #include "network_commands.h"
-
-#define FINGERPRINT_DB_NAME "fingerprint" SQLITE_EXTENSION
-#define ALERT_DB_NAME "alert" SQLITE_EXTENSION
 
 static const UT_icd client_address_icd = {sizeof(struct client_address), NULL,
                                           NULL, NULL};
@@ -63,61 +60,37 @@ void configure_mac_info(struct mac_conn_info *info, bool allow_connection,
   }
 }
 
-int run_analyser(struct capture_conf *config, pid_t *child_pid) {
-  int ret;
-  char **process_argv = capture_config2opt(config);
-  char *proc_name;
-  if (process_argv == NULL) {
-    log_trace("capture_config2opt fail");
+int run_analyser(char *ifname, struct capture_conf *config, pthread_t *pid) {
+  if (run_capture_thread(ifname, config, pid) < 0) {
+    log_error("run_capture_thread fail");
     return -1;
   }
 
-  ret = run_process(process_argv, child_pid);
-
-  if ((proc_name = os_strdup(basename(process_argv[0]))) == NULL) {
-    log_errno("os_malloc");
-    capture_freeopt(process_argv);
-    return -1;
-  }
-
-  // if (is_proc_running(proc_name) <= 0) {
-  //   log_trace("is_proc_running fail (%s)", proc_name);
-  //   os_free(proc_name);
-  //   capture_freeopt(process_argv);
-  //   return -1;
-  // }
-
-  log_trace("Found capture process running with pid=%d (%s)", *child_pid,
-            proc_name);
-  os_free(proc_name);
-  capture_freeopt(process_argv);
-  return ret;
+  return 0;
 }
 
 int schedule_analyser(struct supervisor_context *context, int vlanid) {
-  pid_t child_pid;
+  pthread_t pid;
   struct capture_conf config;
   struct vlan_conn vlan_conn;
 
   if (get_vlan_mapper(&context->vlan_mapper, vlanid, &vlan_conn) <= 0) {
-    log_trace("ifname not found for vlanid=%d", vlanid);
+    log_error("ifname not found for vlanid=%d", vlanid);
     return -1;
   }
 
-  if (!vlan_conn.analyser_pid) {
+  if (!vlan_conn.capture_pid) {
     os_memcpy(&config, &context->capture_config, sizeof(config));
 
     log_trace("Starting analyser on if=%s", vlan_conn.ifname);
-    os_memcpy(config.capture_interface, vlan_conn.ifname, IFNAMSIZ);
-
-    if (run_analyser(&config, &child_pid) != 0) {
-      log_trace("run_analyser fail");
+    if (run_analyser(vlan_conn.ifname, &config, &pid) != 0) {
+      log_error("run_analyser fail");
       return -1;
     }
 
-    vlan_conn.analyser_pid = child_pid;
+    vlan_conn.capture_pid = pid;
     if (!put_vlan_mapper(&context->vlan_mapper, &vlan_conn)) {
-      log_trace("put_vlan_mapper fail");
+      log_error("put_vlan_mapper fail");
       return -1;
     }
   }
@@ -166,19 +139,19 @@ int save_device_vlan(struct supervisor_context *context, uint8_t mac_addr[],
 
   if (context->exec_capture) {
     if (schedule_analyser(context, info->vlanid) < 0) {
-      log_trace("execute_capture fail");
-      log_trace("REJECTING mac=" MACSTR, MAC2STR(mac_addr));
+      log_error("execute_capture fail");
+      log_debug("REJECTING mac=" MACSTR, MAC2STR(mac_addr));
       return -1;
     }
   }
 
   if (os_get_timestamp(&info->join_timestamp) < 0) {
-    log_trace("os_get_timestamp fail");
-    log_trace("REJECTING mac=" MACSTR, MAC2STR(mac_addr));
+    log_error("os_get_timestamp fail");
+    log_debug("REJECTING mac=" MACSTR, MAC2STR(mac_addr));
     return -1;
   }
 
-  log_trace("ALLOWING mac=" MACSTR " on vlanid=%d", MAC2STR(mac_addr),
+  log_debug("ALLOWING mac=" MACSTR " on vlanid=%d", MAC2STR(mac_addr),
             info->vlanid);
   os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
   os_memcpy(&conn.info, info, sizeof(struct mac_conn_info));
@@ -198,17 +171,17 @@ struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg) {
   int alloc_vlanid = allocate_vlan(context);
   init_default_mac_info(&info, alloc_vlanid, context->allow_all_nat);
 
-  log_trace("REQUESTING vlanid=%d for mac=" MACSTR, alloc_vlanid,
+  log_debug("REQUESTING vlanid=%d for mac=" MACSTR, alloc_vlanid,
             MAC2STR(mac_addr));
 
   if (mac_addr == NULL) {
-    log_trace("mac_addr is NULL");
+    log_error("mac_addr is NULL");
     info.vlanid = -1;
     return info;
   }
 
   if (context == NULL) {
-    log_trace("context is NULL");
+    log_error("context is NULL");
     info.vlanid = -1;
     return info;
   }
@@ -227,7 +200,7 @@ struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg) {
     }
 
     if (save_device_vlan(context, mac_addr, &info) < 0) {
-      log_trace("assign_device_vlan fail");
+      log_error("assign_device_vlan fail");
       info.vlanid = -1;
     }
 
@@ -235,23 +208,23 @@ struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg) {
   } else if (!context->allow_all_connections &&
              (find_mac == 1 && info.allow_connection && info.pass_len)) {
     if (save_device_vlan(context, mac_addr, &info) < 0) {
-      log_trace("assign_device_vlan fail");
+      log_error("assign_device_vlan fail");
       info.vlanid = -1;
     }
 
     return info;
   } else if (!context->allow_all_connections && find_mac == -1) {
-    log_trace("get_mac_mapper fail");
+    log_error("get_mac_mapper fail");
   } else if (!context->allow_all_connections &&
              (find_mac == 0 ||
               (find_mac == 1 && info.allow_connection && !info.pass_len))) {
-    log_trace("mac=" MACSTR " not assigned, checking for the active tickets",
+    log_debug("mac=" MACSTR " not assigned, checking for the active tickets",
               MAC2STR(mac_addr));
     info.allow_connection = true;
 
     if (context->ticket != NULL) {
       // Use ticket
-      log_trace("Assigning auth ticket");
+      log_debug("Assigning auth ticket");
       info.vlanid = context->ticket->vlanid;
       info.pass_len = context->ticket->passphrase_len;
       os_memcpy(info.pass, context->ticket->passphrase, info.pass_len);
@@ -260,21 +233,21 @@ struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg) {
       free_ticket(context);
     } else {
       // Assign to default VLAN ID
-      log_trace("Assigning default connection");
+      log_debug("Assigning default connection");
       info.vlanid = alloc_vlanid;
       info.pass_len = context->wpa_passphrase_len;
       os_memcpy(info.pass, context->wpa_passphrase, info.pass_len);
     }
 
     if (save_device_vlan(context, mac_addr, &info) < 0) {
-      log_trace("assign_device_vlan fail");
+      log_error("assign_device_vlan fail");
       info.vlanid = -1;
     }
 
     return info;
   }
 
-  log_trace("REJECTING mac=" MACSTR, MAC2STR(mac_addr));
+  log_debug("REJECTING mac=" MACSTR, MAC2STR(mac_addr));
   info.vlanid = -1;
   return info;
 }
@@ -291,73 +264,98 @@ void ap_service_callback(struct supervisor_context *context, uint8_t mac_addr[],
     conn.info = info;
 
     if (!save_mac_mapper(context, conn)) {
-      log_trace("save_mac_mapper fail");
+      log_error("save_mac_mapper fail");
     }
   }
 
   if (send_events_subscriber(context, SUBSCRIBER_EVENT_AP, MACSTR " %d",
                              MAC2STR(mac_addr), status) < 0) {
-    log_trace("send_events_subscriber fail");
+    log_error("send_events_subscriber fail");
   }
 }
 
-void eloop_read_sock_handler(int sock, void *eloop_ctx, void *sock_ctx) {
-  (void)eloop_ctx;
-
-  char **ptr = NULL;
-  UT_array *cmd_arr;
-  process_cmd_fn cfn;
+int process_received_data(int sock, struct client_address *claddr,
+                          struct supervisor_context *context) {
   uint32_t bytes_available;
-  ssize_t num_bytes;
-  struct client_address claddr;
-  char *buf;
-  struct supervisor_context *context = (struct supervisor_context *)sock_ctx;
-
-  os_memset(&claddr, 0, sizeof(struct client_address));
-
   if (ioctl(sock, FIONREAD, &bytes_available) == -1) {
     log_errno("ioctl");
-    return;
+    return -1;
   }
 
+  char *buf;
   if ((buf = os_malloc(bytes_available)) == NULL) {
     log_errno("os_malloc");
-    return;
+    return -1;
   }
 
-  utarray_new(cmd_arr, &ut_str_icd);
-
-  if ((num_bytes = read_domain_data(sock, buf, bytes_available, &claddr, 0)) ==
+  ssize_t received;
+  if ((received = read_socket_data(sock, buf, bytes_available, claddr, 0)) ==
       -1) {
-    log_trace("read_domain_data fail");
-    goto end;
+    log_error("read_socket_data fail");
+    os_free(buf);
+    return -1;
   }
 
-  log_trace("Supervisor received %ld bytes from socket length=%d",
-            (long)num_bytes, claddr.len);
-  if (process_domain_buffer(buf, num_bytes, cmd_arr, context->domain_delim) ==
-      false) {
-    log_trace("process_domain_buffer fail");
-    goto end;
+  UT_array *args = NULL;
+  utarray_new(args, &ut_str_icd);
+
+  log_trace("Supervisor received %ld bytes", (long)received);
+  if (process_domain_buffer(buf, received, args, CMD_DELIMITER) == false) {
+    log_error("process_domain_buffer fail");
+    os_free(buf);
+    utarray_free(args);
+    return -1;
   }
 
-  ptr = (char **)utarray_next(cmd_arr, ptr);
+  os_free(buf);
 
-  if ((cfn = get_command_function(*ptr)) != NULL) {
-    if (cfn(sock, &claddr, context, cmd_arr) == -1) {
-      log_trace("%s fail", *ptr);
-      goto end;
+  char **arg = NULL;
+  arg = (char **)utarray_next(args, arg);
+
+  process_cmd_fn cfn;
+  if ((cfn = get_command_function(*arg)) != NULL) {
+    if (cfn(sock, claddr, context, args) == -1) {
+      log_error("%s fail", *arg);
+      utarray_free(args);
+      return -1;
     }
   }
 
-end:
-  os_free(buf);
-  utarray_free(cmd_arr);
+  utarray_free(args);
+  return 0;
+}
+
+void eloop_read_domain_handler(int sock, void *eloop_ctx, void *sock_ctx) {
+  (void)eloop_ctx;
+
+  struct client_address claddr;
+  struct supervisor_context *context = (struct supervisor_context *)sock_ctx;
+
+  os_memset(&claddr, 0, sizeof(struct client_address));
+  claddr.type = SOCKET_TYPE_DOMAIN;
+
+  if (process_received_data(sock, &claddr, context) < 0) {
+    log_error("process_received_data fail");
+  }
+}
+
+void eloop_read_udp_handler(int sock, void *eloop_ctx, void *sock_ctx) {
+  (void)eloop_ctx;
+
+  struct client_address claddr;
+  struct supervisor_context *context = (struct supervisor_context *)sock_ctx;
+
+  os_memset(&claddr, 0, sizeof(struct client_address));
+  claddr.type = SOCKET_TYPE_UDP;
+
+  if (process_received_data(sock, &claddr, context) < 0) {
+    log_error("process_received_data fail");
+  }
 }
 
 void close_supervisor(struct supervisor_context *context) {
   if (context == NULL) {
-    log_trace("context param is NULL");
+    log_error("context param is NULL");
     return;
   }
 
@@ -367,54 +365,60 @@ void close_supervisor(struct supervisor_context *context) {
     }
   }
 
-  free_sqlite_fingerprint_db(context->fingeprint_db);
-  free_sqlite_alert_db(context->alert_db);
+  if (context->udp_sock != -1) {
+    if (close(context->udp_sock) == -1) {
+      log_errno("close");
+    }
+  }
+
   if (context->subscribers_array != NULL) {
     utarray_free(context->subscribers_array);
   }
 }
 
-int run_supervisor(char *server_path, struct supervisor_context *context) {
-  char *db_path = NULL;
+int run_supervisor(char *server_path, unsigned int port,
+                   struct supervisor_context *context) {
+  if (server_path == NULL) {
+    log_error("server_path param is NULL");
+    return -1;
+  }
+
+  if (!port) {
+    log_error("port is zero");
+    return -1;
+  }
+
+  if (context == NULL) {
+    log_error("context param is NULL");
+    return -1;
+  }
 
   allocate_vlan(context);
-  db_path = construct_path(context->db_path, FINGERPRINT_DB_NAME);
-  if (db_path == NULL) {
-    log_debug("construct_path fail");
-    return -1;
-  }
-
-  if (open_sqlite_fingerprint_db(db_path, &context->fingeprint_db) < 0) {
-    log_trace("open_sqlite_fingerprint_db fail");
-    os_free(db_path);
-    return -1;
-  }
-
-  os_free(db_path);
-  db_path = construct_path(context->db_path, ALERT_DB_NAME);
-  if (db_path == NULL) {
-    log_debug("construct_path fail");
-    return -1;
-  }
-
-  if (open_sqlite_alert_db(db_path, &context->alert_db) < 0) {
-    log_trace("open_sqlite_alert_db fail");
-    os_free(db_path);
-    return -1;
-  }
-  os_free(db_path);
 
   utarray_new(context->subscribers_array, &client_address_icd);
 
   if ((context->domain_sock = create_domain_server(server_path)) == -1) {
-    log_trace("create_domain_server fail");
+    log_error("create_domain_server fail");
+    return -1;
+  }
+
+  if ((context->udp_sock = create_udp_server(port)) == -1) {
+    log_error("create_udp_server fail");
+    return -1;
+  }
+
+  if (eloop_register_read_sock(context->eloop, context->domain_sock,
+                               eloop_read_domain_handler, NULL,
+                               (void *)context) == -1) {
+    log_error("eloop_register_read_sock fail");
     close_supervisor(context);
     return -1;
   }
 
-  if (eloop_register_read_sock(context->domain_sock, eloop_read_sock_handler,
-                               NULL, (void *)context) == -1) {
-    log_trace("eloop_register_read_sock fail");
+  if (eloop_register_read_sock(context->eloop, context->udp_sock,
+                               eloop_read_udp_handler, NULL,
+                               (void *)context) == -1) {
+    log_error("eloop_register_read_sock fail");
     close_supervisor(context);
     return -1;
   }

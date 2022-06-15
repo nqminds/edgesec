@@ -30,7 +30,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
-#include "../utils/domain.h"
+#include "../utils/sockctl.h"
 #include "supervisor_config.h"
 
 enum DHCP_IP_TYPE {
@@ -38,6 +38,7 @@ enum DHCP_IP_TYPE {
   DHCP_IP_NEW,
   DHCP_IP_OLD,
   DHCP_IP_DEL,
+  DHCP_IP_ARP,
 };
 
 /**

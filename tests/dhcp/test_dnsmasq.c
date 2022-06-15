@@ -21,15 +21,15 @@
 static const UT_icd config_dhcpinfo_icd = {sizeof(config_dhcpinfo_t), NULL,
                                            NULL, NULL};
 
-static const char *test_dhcp_conf_path = "/tmp/dnsmasq-test.conf";
-static const char *test_dhcp_script_path = "/tmp/dnsmasq_exec-test.sh";
-static const char *test_dhcp_leasefile_path = "/tmp/dnsmasq.leases";
-static const char *test_domain_server_path = "/tmp/edgesec-domain-server";
-static const char *test_dhcp_conf_content =
+static char *test_dhcp_conf_path = "/tmp/dnsmasq-test.conf";
+static char *test_dhcp_script_path = "/tmp/dnsmasq_exec-test.sh";
+static char *test_dhcp_leasefile_path = "/tmp/test_dnsmasq.leases";
+static char *test_supervisor_control_path = "/tmp/edgesec-control-server";
+static char *test_dhcp_conf_content =
     "no-resolv\n"
     "server=8.8.4.4\n"
     "server=8.8.8.8\n"
-    "dhcp-leasefile=/tmp/dnsmasq.leases\n"
+    "dhcp-leasefile=/tmp/test_dnsmasq.leases\n"
     "dhcp-script=/tmp/dnsmasq_exec-test.sh\n"
     "dhcp-range=wifi_if,10.0.0.2,10.0.0.254,255.255.255.0,24h\n"
     "dhcp-range=wifi_if.1,10.0.1.2,10.0.1.254,255.255.255.0,24h\n"
@@ -37,9 +37,9 @@ static const char *test_dhcp_conf_content =
     "dhcp-range=wifi_if.3,10.0.3.2,10.0.3.254,255.255.255.0,24h\n";
 
 // why aren't we using amazing C++11 which has the R"(...) string literal??? 😭
-static const char *test_dhcp_script_content =
+static char *test_dhcp_script_content =
     "#!/bin/sh\n"
-    "sockpath=\"/tmp/edgesec-domain-server\"\n"
+    "sockpath=\"/tmp/edgesec-control-server\"\n"
     "str=\"SET_IP $1 $2 $3\"\n"
     "\n"
     "nccheck=`nc -help 2>&1 >/dev/null | grep 'OpenBSD netcat'`\n"
@@ -55,13 +55,13 @@ static const char *test_dhcp_script_content =
     "echo \"Sending $str ...\"\n"
     "echo $str | $command\n";
 
-static const char *test_dhcp_leasefile_content =
+static char *test_dhcp_leasefile_content =
     "1635860140 11:22:33:44:55:66 10.0.1.10 pc 11:22:33:44:55:66\n"
     "1635860148 44:2a:60:db:f3:91 10.0.1.209 iMac 01:44:2a:60:db:f3:91\n"
     "1635860076 1c:bf:ce:17:1f:1c 10.0.2.178 * 01:1c:bf:ce:17:1f:1c\n";
 
-static const char *interface = "wifi_if";
-static const char *dns_server = "8.8.4.4,8.8.8.8";
+static char *interface = "wifi_if";
+static char *dns_server = "8.8.4.4,8.8.8.8";
 
 bool __wrap_signal_process(char *proc_name, int sig) {
   (void)sig;
@@ -210,8 +210,8 @@ static void test_generate_dnsmasq_conf(void **state) {
 static void test_generate_dnsmasq_script(void **state) {
   (void)state; /* unused */
 
-  error_t ret =
-      generate_dnsmasq_script(test_dhcp_script_path, test_domain_server_path);
+  error_t ret = generate_dnsmasq_script(test_dhcp_script_path,
+                                        test_supervisor_control_path);
   assert_true(ret == 0);
 
   FILE *fp = fopen(test_dhcp_script_path, "r");
@@ -296,9 +296,7 @@ static void test_signal_dhcp_process(void **state) {
   (void)state;
 
   expect_string(__wrap_signal_process, proc_name, "dnsmasq");
-  expect_string(__wrap_is_proc_running, name, "dnsmasq");
-  assert_int_equal(
-      signal_dhcp_process("/tmp/sbin/dnsmasq", "/tmp/dnsmasq.conf"), 0);
+  assert_int_equal(signal_dhcp_process("/tmp/sbin/dnsmasq"), 0);
 }
 
 int main(int argc, char *argv[]) {

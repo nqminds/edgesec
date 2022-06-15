@@ -36,6 +36,9 @@
 #include "uthash.h"
 #include "allocs.h"
 #include "os.h"
+#include "net.h"
+
+#define LINK_TYPE_LEN 64
 
 enum IF_STATE {
   IF_STATE_UNKNOWN = 0,
@@ -58,11 +61,12 @@ typedef struct {
   enum IF_STATE state;                /**< Interface state */
   char link_type[LINK_TYPE_LEN];      /**< Interface link type */
   uint8_t ifa_family;                 /**< Interface family */
-  char ip_addr[IP_LEN];               /**< Interface string IP4 address */
+  char ip_addr[OS_INET_ADDRSTRLEN];   /**< Interface string IP4 address */
   char ip_addr6[OS_INET6_ADDRSTRLEN]; /**< Interface string IP6 address */
-  char peer_addr[IP_LEN];             /**< Interface string peer IP address */
-  char brd_addr[IP_LEN];      /**< Interface string IP broadcast address */
-  uint8_t mac_addr[ETH_ALEN]; /**< Interface byte MAC address */
+  char peer_addr[OS_INET_ADDRSTRLEN]; /**< Interface string peer IP address */
+  char brd_addr[OS_INET_ADDRSTRLEN];  /**< Interface string IP broadcast address
+                                       */
+  uint8_t mac_addr[ETH_ALEN];         /**< Interface byte MAC address */
 } netif_info_t;
 
 /**
@@ -70,12 +74,13 @@ typedef struct {
  *
  */
 typedef struct config_ifinfo_t {
-  int vlanid;               /**< Interface VLAN ID */
-  char ifname[IFNAMSIZ];    /**< Interface string name */
-  char brname[IFNAMSIZ];    /**< Bridge string name */
-  char ip_addr[IP_LEN];     /**< Interface string IP address */
-  char brd_addr[IP_LEN];    /**< Interface string IP broadcast address */
-  char subnet_mask[IP_LEN]; /**< Interface string IP subnet mask */
+  int vlanid;                        /**< Interface VLAN ID */
+  char ifname[IFNAMSIZ];             /**< Interface string name */
+  char brname[IFNAMSIZ];             /**< Bridge string name */
+  char ip_addr[OS_INET_ADDRSTRLEN];  /**< Interface string IP address */
+  char brd_addr[OS_INET_ADDRSTRLEN]; /**< Interface string IP broadcast address
+                                      */
+  char subnet_mask[OS_INET_ADDRSTRLEN]; /**< Interface string IP subnet mask */
 } config_ifinfo_t;
 
 /**
@@ -95,7 +100,7 @@ typedef struct hashmap_if_conn {
 struct vlan_conn {
   int vlanid;            /**< the VLAN ID */
   char ifname[IFNAMSIZ]; /**< the interface name */
-  pid_t analyser_pid;    /**< Analyser process descriptor */
+  pthread_t capture_pid; /**< Capture thread descriptor */
 };
 
 /**
@@ -145,6 +150,15 @@ void free_if_mapper(hmap_if_conn **hmap);
  * @return int 1 if found, 0 not found, -1 on error
  */
 int get_vlan_mapper(hmap_vlan_conn **hmap, int vlanid, struct vlan_conn *conn);
+
+/**
+ * @brief Makes a copy of the VLAn mapper structure
+ *
+ * @param hmap The VLAN ID to vlan connection mapper object
+ * @param copy The copied VLAN mapper
+ * @return int 1 if found, 0 not found, -1 on error
+ */
+int copy_vlan_mapper(hmap_vlan_conn **hmap, hmap_vlan_conn **copy);
 
 /**
  * @brief Inserts a vlan connection structure and VLAN ID value into the

@@ -43,12 +43,12 @@ bool find_device(char *ifname, bpf_u_int32 *net, bpf_u_int32 *mask) {
   char err[PCAP_ERRBUF_SIZE];
 
   if (ifname == NULL) {
-    log_trace("ifname is NULL");
+    log_error("ifname is NULL");
     return false;
   }
 
   if (pcap_findalldevs(&ifs, err) == -1) {
-    log_trace("pcap_findalldevs fail with error %s", err);
+    log_error("pcap_findalldevs fail with error %s", err);
     return false;
   }
 
@@ -56,7 +56,7 @@ bool find_device(char *ifname, bpf_u_int32 *net, bpf_u_int32 *mask) {
     log_trace("Checking interface %s (%s)", temp->name, temp->description);
     if (strcmp(temp->name, ifname) == 0) {
       if (pcap_lookupnet(ifname, net, mask, err) == -1) {
-        log_trace("Can't get netmask for device %s\n", ifname);
+        log_error("Can't get netmask for device %s\n", ifname);
         return false;
       }
 
@@ -95,10 +95,10 @@ void close_pcap(struct pcap_context *ctx) {
 }
 
 int capture_pcap_start(struct pcap_context *ctx) {
-  if (ctx != NULL)
+  if (ctx != NULL) {
     return pcap_loop(ctx->pd, -1, receive_pcap_packet, (u_char *)ctx);
-  else {
-    log_trace("ctx is NULL");
+  } else {
+    log_error("ctx is NULL");
     return -1;
   }
 }
@@ -113,7 +113,7 @@ int get_pcap_datalink(struct pcap_context *ctx) {
   if (ctx != NULL) {
     return pcap_datalink(ctx->pd);
   } else {
-    log_trace("ctx is NULL");
+    log_error("ctx is NULL");
     return -1;
   }
 }
@@ -129,7 +129,7 @@ int run_pcap(char *interface, bool immediate, bool promiscuous, int timeout,
   struct pcap_context *ctx = NULL;
 
   if (!find_device(interface, &net, &mask)) {
-    log_trace("find_interfaces fail");
+    log_error("find_interfaces fail");
     return -1;
   }
 
@@ -145,39 +145,39 @@ int run_pcap(char *interface, bool immediate, bool promiscuous, int timeout,
   ctx->pcap_fn = pcap_fn;
   ctx->fn_ctx = fn_ctx;
   if ((ctx->pd = pcap_create(interface, err)) == NULL) {
-    log_trace("Couldn't open device %s: %s", interface, err);
+    log_error("Couldn't open device %s: %s", interface, err);
     os_free(ctx);
     *pctx = NULL;
     return -1;
   }
 
   if ((ret = pcap_set_snaplen(ctx->pd, PCAP_SNAPSHOT_LENGTH)) < 0) {
-    log_trace("pcap_set_snaplen fail %d", ret);
+    log_error("pcap_set_snaplen fail %d", ret);
     goto fail;
   }
 
   if ((ret = pcap_set_immediate_mode(ctx->pd, immediate)) < 0) {
-    log_trace("pcap_set_immediate_mode fail %d", ret);
+    log_error("pcap_set_immediate_mode fail %d", ret);
     goto fail;
   }
 
   if ((ret = pcap_set_promisc(ctx->pd, promiscuous)) < 0) {
-    log_trace("pcap_set_promisc fail: %d", ret);
+    log_error("pcap_set_promisc fail: %d", ret);
     goto fail;
   }
 
   if ((ret = pcap_set_timeout(ctx->pd, timeout)) < 0) {
-    log_trace("pcap_set_timeout fail: %d", ret);
+    log_error("pcap_set_timeout fail: %d", ret);
     goto fail;
   }
 
   if ((ret = pcap_set_buffer_size(ctx->pd, PCAP_BUFFER_SIZE)) < 0) {
-    log_trace("pcap_set_buffer_size fail: %d", ret);
+    log_error("pcap_set_buffer_size fail: %d", ret);
     goto fail;
   }
 
   if ((ret = pcap_activate(ctx->pd)) < 0) {
-    log_trace("pcap_activate fail: %d", ret);
+    log_error("pcap_activate fail: %d", ret);
     goto fail;
   }
 
@@ -185,14 +185,14 @@ int run_pcap(char *interface, bool immediate, bool promiscuous, int timeout,
   if (filter != NULL) {
     if (strlen(filter)) {
       if (pcap_compile(ctx->pd, &fp, filter, 0, mask) == -1) {
-        log_trace("Couldn't parse filter %s: %s\n", filter,
+        log_error("Couldn't parse filter %s: %s\n", filter,
                   pcap_geterr(ctx->pd));
         goto fail;
       }
 
-      log_debug("Setting filter to=%s", filter);
+      log_trace("Setting filter to=%s", filter);
       if (pcap_setfilter(ctx->pd, &fp) == -1) {
-        log_trace("Couldn't set filter %s: %s\n", filter, pcap_geterr(ctx->pd));
+        log_error("Couldn't set filter %s: %s\n", filter, pcap_geterr(ctx->pd));
         pcap_freecode(&fp);
         goto fail;
       }
@@ -202,7 +202,7 @@ int run_pcap(char *interface, bool immediate, bool promiscuous, int timeout,
   }
 
   if ((ctx->pcap_fd = pcap_get_selectable_fd(ctx->pd)) == -1) {
-    log_debug("pcap device doesn't support file descriptors");
+    log_error("pcap device doesn't support file descriptors");
     goto fail;
   }
 
@@ -210,14 +210,14 @@ int run_pcap(char *interface, bool immediate, bool promiscuous, int timeout,
             pcap_datalink_val_to_name(pcap_datalink(ctx->pd)));
 
   if (nonblock) {
-    log_debug("Setting nonblock mode");
+    log_trace("Setting nonblock mode");
     if (pcap_setnonblock(ctx->pd, 1, err) < 0) {
-      log_trace("pcap_setnonblock fail: %s", err);
+      log_error("pcap_setnonblock fail: %s", err);
       goto fail;
     }
   }
 
-  log_debug("Non-blocking state %d", pcap_getnonblock(ctx->pd, err));
+  log_trace("Non-blocking state %d", pcap_getnonblock(ctx->pd, err));
 
   return 0;
 
@@ -231,7 +231,7 @@ int dump_file_pcap(struct pcap_context *ctx, char *file_path,
                    struct pcap_pkthdr *header, uint8_t *packet) {
   pcap_dumper_t *dumper;
   if ((dumper = pcap_dump_open(ctx->pd, file_path)) == NULL) {
-    log_trace("pcap_dump_open fail");
+    log_error("pcap_dump_open fail");
     return -1;
   }
   pcap_dump((u_char *)dumper, header, packet);

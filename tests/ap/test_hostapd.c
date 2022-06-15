@@ -90,7 +90,7 @@ int __wrap_list_dir(char *dirpath, list_dir_fn fun, void *args) {
 int __wrap_check_sock_file_exists(char *path) {
   (void)path;
 
-  return mock_type(int);
+  return 0;
 }
 
 static void test_generate_hostapd_conf(void **state) {
@@ -190,7 +190,6 @@ static void test_run_ap_process(void **state) {
   strcpy(hconf.ap_file_path, test_hostapd_conf_file);
   strcpy(hconf.ap_log_path, test_ap_log_path);
 
-  will_return(__wrap_check_sock_file_exists, 1);
   expect_any(__wrap_kill_process, proc_name);
   int ret = run_ap_process(&hconf);
   assert_int_equal(ret, 0);
@@ -210,7 +209,6 @@ static void test_kill_ap_process(void **state) {
   strcpy(hconf.ap_file_path, test_hostapd_conf_file);
   strcpy(hconf.ap_log_path, test_ap_log_path);
 
-  will_return(__wrap_check_sock_file_exists, 1);
   expect_any(__wrap_kill_process, proc_name);
   int ret = run_ap_process(&hconf);
   assert_int_equal(ret, 0);
@@ -230,12 +228,10 @@ static void test_signal_ap_process(void **state) {
   strcpy(hconf.ap_file_path, test_hostapd_conf_file);
   strcpy(hconf.ap_log_path, test_ap_log_path);
 
-  will_return(__wrap_check_sock_file_exists, 1);
   expect_any(__wrap_kill_process, proc_name);
   int ret = run_ap_process(&hconf);
   assert_int_equal(ret, 0);
 
-  will_return(__wrap_check_sock_file_exists, 1);
   expect_string(__wrap_signal_process, proc_name, "hostapd");
   ret = signal_ap_process(&hconf);
   assert_int_equal(ret, 0);

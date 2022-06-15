@@ -13,6 +13,7 @@
 #include <cmocka.h>
 
 #include "supervisor/bridge_list.h"
+#include "utils/net.h"
 #include "utils/log.h"
 
 static void test_add_bridge_mac(void **state) {
@@ -312,6 +313,9 @@ static void test_get_src_mac_list(void **state) {
 }
 
 int main(int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
+
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {

@@ -15,7 +15,7 @@
 #include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/log.h"
-#include "capture/pcap_queue.h"
+#include "capture/pcap_middleware/pcap_queue.h"
 
 static void test_push_pcap_queue(void **state) {
   (void)state; /* unused */
@@ -71,6 +71,9 @@ static void test_pop_pcap_queue(void **state) {
 }
 
 int main(int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
+
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {cmocka_unit_test(test_push_pcap_queue),

@@ -152,7 +152,7 @@ UT_array *iface_get(char *ifname) {
       }
 
       if (nif.ifa_family == AF_INET) {
-        os_strlcpy(nif.ip_addr, ipaddr, IP_LEN);
+        os_strlcpy(nif.ip_addr, ipaddr, OS_INET_ADDRSTRLEN);
       } else if (nif.ifa_family == AF_INET6) {
         os_strlcpy(nif.ip_addr6, ipaddr, OS_INET6_ADDRSTRLEN);
       }
@@ -228,7 +228,7 @@ int iface_create(struct iface_context *ctx, char *brname, char *ifname,
 }
 
 int iface_commit(struct iface_context *ctx) {
-  log_trace("Commiting interface changes");
+  log_debug("Commiting interface changes");
 #ifdef WITH_NETLINK_SERVICE
   (void)ctx;
   return 0;

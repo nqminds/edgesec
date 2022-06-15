@@ -8,7 +8,6 @@ Below is an example of the configuration file that is passed as a parameter to `
 ```
 [system]
 binPath = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"
-hashIpCommand = ""
 createInterfaces = true
 ignoreErrorOnIfCreate = true
 allowAllConnections = true
@@ -18,8 +17,6 @@ generateSsid = true
 allocateVlans = true
 defaultOpenVlanId = 0
 quarantineVlanId = 10
-riskScore = 100
-killRunningProcess = false
 execAp = false
 execRadius = true
 execDhcp = true
@@ -27,34 +24,20 @@ execCapture = true
 execMdnsForward = true
 execIptables = true
 setIpForward = true
-dbPath = "./db"
 cryptDbPath = "./crypt.sqlite"
 cryptKeyId = "master"
 pidFilePath = "/var/run/edgesec.pid"
 
 [capture]
-captureBinPath = "./src/capsrv"
-captureInterface = "enp2s0"
+captureDbPath = "./capture.sqlite"
 filter = ""
 promiscuous = false
 bufferTimeout = 10
-processInterval = 10
 immediate = false
-analyser = "default"
-fileWrite = true
-dbWrite = true
-dbSync = false
-dbSyncAddress = "localhost"
-dbSyncPort = 8512
-syncCaPath = "./cert/CA/CA.pem"
-command = "SET_ALERT"
-syncStoreSize = 1000
-syncSendSize = 20
-captureStoreSize = 1000000
 
 [supervisor]
-domainServerPath = "/tmp/edgesec-domain-server"
-delim = 32
+supervisorControlPort = 32001
+supervisorControlPath = "/tmp/edgesec-control-server"
 
 [ap]
 apBinPath = "./hostapd"
@@ -98,7 +81,6 @@ natInterface = "enp2s0"
 
 [dns]
 servers = "8.8.4.4,8.8.8.8"
-mdnsBinPath = "./src/mdnsf"
 mdnsReflectIp4 = true
 mdnsReflectIp6 = true
 mdnsFilter = "src net 10.0 and dst net 10.0"
@@ -107,7 +89,7 @@ mdnsFilter = "src net 10.0 and dst net 10.0"
 dhcpBinPath = "/usr/sbin/dnsmasq"
 dhcpConfigPath = "/tmp/dnsmasq.conf"
 dhcpScriptPath = "/tmp/dnsmasq_exec.sh"
-dhcpLeasefilePath = "./db/dnsmasq.leases"
+dhcpLeasefilePath = "/tmp/dnsmasq.leases"
 dhcpRange0 = "0,10.0.0.2,10.0.0.254,255.255.255.0,24h"
 dhcpRange1 = "1,10.0.1.2,10.0.1.254,255.255.255.0,24h"
 dhcpRange2 = "2,10.0.2.2,10.0.2.254,255.255.255.0,24h"
@@ -155,10 +137,6 @@ The system group contains all the parameters that are reponsible to configure th
 
 A list of systems binary paths separated with ":" used by the `edgesec` tool to configure interfaces, etc.
 
-### hashIpCommand (string)
-
-A list of hashes for each system binary used by the tool. [WIP]
-
 ### createInterfaces (boolean)
 
 `edgesec` will create subnetnetwork interfaces if the flag is set to `true`. If set to `false` one will have to use a similar service to `dhcpcd` to preconfigure the network interfaces.
@@ -195,14 +173,6 @@ The default VLAN ID positive integer number assigned to new devices if `allowAll
 
 The VLAN ID assigned to devices that are quarantined.
 
-### riskScore (integer)
-
-The risk score threshold for a device to be quarantined.
-
-### killRunningProcess (boolean)
-
-If set to true the current running `edgesec` will terminate exisiting running `edgesec` processes.
-
 ### execAp (boolean)
 
 If set to `true`, `edgesec` will execute the `hostapd` service using `excve` system command. If set to `false` the `hostapd` service has to be run before executing `edgesec`.
@@ -231,10 +201,6 @@ If set to `true`, `edgesec` will execute the `iptables` command.
 
 If set to true `edgesec` will set the ip forward os system param.
 
-### dbPath (string)
-
-The path to the `db` folder.
-
 ### cryptDbPath (string)
 
 The path to the `crypt` sqlite db.
@@ -251,14 +217,6 @@ The path to the edgesec PID file.
 
 The capture group contains all the parameters that are reponsible to configure the `capture` app service.
 
-### captureBinPath (string)
-
-The path to the `capsrv` service.
-
-### captureInterface (string)
-
-The name of the capture interface. If set to "any" the service will traffic from all interfaces.
-
 ### filter (string)
 
 The pcap lib capture filter.
@@ -271,25 +229,9 @@ If set to `true` the capture interface is set to promiscuous mode. The default v
 
 The timeout in milliseconds to read a packet. The default value is 10.
 
-### processInterval (number)
-
-The interval in milliseconds to process a packet from the queue. The default value is 10.
-
 ### immediate (boolean)
 
 If set to `true` the capture interface is set to immediate mode. The default value is `false`.
-
-### analyser (string)
-
-The analyser name for the capture service. Currently supported `default` and `ndpi` analysers.
-
-### fileWrite (boolean)
-
-Write the packet data to file(s).
-
-### dbWrite (boolean)
-
-If set to true the capture service will store the packet into an sqlite db
 
 ### dbSync (boolean)
 
@@ -311,29 +253,17 @@ The path to the certificate authority file used for gRPC syncing
 
 The UNIX domain command used by the capture service
 
-### syncStoreSize (integer)
-
-Number of capture strings to store in memory before
-
-### syncSendSize (integer)
-
-Number of string to send (sync) from the memory buffer
-
-### captureStoreSize (integer)
-
-Number of pcap Kb to store before cleaning. Used by capture `cleaner` service
-
 ## [supervisor] group
 
 The supervisor group defines the parameters to run the supervisor service.
 
-### domainServerPath (string)
+### supervisorControlPort (number)
+
+The supervisor server control port number.
+
+### supervisorControlPath (string)
 
 The absolute path to the UNIX domain socket used by the supervisor service.
-
-### delim (integer)
-
-The decimal ASCII number used to delimit command parameters.
 
 ## [ap] group
 
@@ -490,10 +420,6 @@ The dns groups defines the parameters for the DNS server configuration.
 ### servers (string)
 
 A comma delimited string of dns server IP addresses with the format `x.y.z.q,a.b.c.d,...`.
-
-### mdnsBinPath (string)
-
-The path to the `mdnsf` service.
 
 ### mdnsReflectIp4 (boolean)
 

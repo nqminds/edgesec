@@ -25,6 +25,7 @@
 
 #include "allocs.h"
 #include "os.h"
+#include "list.h"
 
 /**
  * ELOOP_ALL_CTX - eloop_cancel_timeout() magic number to match all timeouts
@@ -72,22 +73,64 @@ typedef void (*eloop_timeout_handler)(void *eloop_ctx, void *user_ctx);
  * eloop_register_signal(), eloop_register_signal_terminate(), or
  * eloop_register_signal_reconfig() call)
  */
-typedef void (*eloop_signal_handler)(int sig, void *signal_ctx);
+// typedef void (*eloop_signal_handler)(int sig, void *signal_ctx);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+struct eloop_sock {
+  int sock;
+  void *eloop_data;
+  void *user_data;
+  eloop_sock_handler handler;
+};
+
+struct eloop_timeout {
+  struct dl_list list;
+  struct os_reltime time;
+  void *eloop_data;
+  void *user_data;
+  eloop_timeout_handler handler;
+};
+
+struct eloop_sock_table {
+  int count;
+  struct eloop_sock *table;
+  eloop_event_type type;
+  int changed;
+};
+
+struct eloop_data {
+  int max_sock;
+  int count; /* sum of all table counts */
+  int max_fd;
+  struct eloop_sock *fd_table;
+  int epollfd;
+  int epoll_max_event_num;
+  struct epoll_event *epoll_events;
+  struct eloop_sock_table readers;
+  struct eloop_sock_table writers;
+  struct eloop_sock_table exceptions;
+  struct dl_list timeout;
+  int terminate;
+};
 
 /**
  * eloop_init() - Initialize global event loop data
- * Returns: 0 on success, -1 on failure
+ * Returns: struct eloop_data on success, NULL on failure
  *
  * This function must be called before any other eloop_* function.
  */
-int eloop_init(void);
+struct eloop_data *eloop_init(void);
+
+/**
+ * eloop_free() - Free's the eloop context
+ * @eloop: eloop context
+ *
+ * This function must be called before any other eloop_* function.
+ */
+void eloop_free(struct eloop_data *eloop);
 
 /**
  * eloop_register_read_sock - Register handler for read events
+ * @eloop: eloop context
  * @sock: File descriptor number for the socket
  * @handler: Callback function to be called when data is available for reading
  * @eloop_data: Callback context data (eloop_ctx)
@@ -100,20 +143,23 @@ int eloop_init(void);
  * having processed it in order to avoid eloop from calling the handler again
  * for the same event.
  */
-int eloop_register_read_sock(int sock, eloop_sock_handler handler,
-                             void *eloop_data, void *user_data);
+int eloop_register_read_sock(struct eloop_data *eloop, int sock,
+                             eloop_sock_handler handler, void *eloop_data,
+                             void *user_data);
 
 /**
  * eloop_unregister_read_sock - Unregister handler for read events
+ * @eloop: eloop context
  * @sock: File descriptor number for the socket
  *
  * Unregister a read socket notifier that was previously registered with
  * eloop_register_read_sock().
  */
-void eloop_unregister_read_sock(int sock);
+void eloop_unregister_read_sock(struct eloop_data *eloop, int sock);
 
 /**
  * eloop_register_sock - Register handler for socket events
+ * @eloop: eloop context
  * @sock: File descriptor number for the socket
  * @type: Type of event to wait for
  * @handler: Callback function to be called when the event is triggered
@@ -127,22 +173,25 @@ void eloop_unregister_read_sock(int sock);
  * having processed it in order to avoid eloop from calling the handler again
  * for the same event.
  */
-int eloop_register_sock(int sock, eloop_event_type type,
-                        eloop_sock_handler handler, void *eloop_data,
-                        void *user_data);
+int eloop_register_sock(struct eloop_data *eloop, int sock,
+                        eloop_event_type type, eloop_sock_handler handler,
+                        void *eloop_data, void *user_data);
 
 /**
  * eloop_unregister_sock - Unregister handler for socket events
+ * @eloop: eloop context
  * @sock: File descriptor number for the socket
  * @type: Type of event for which sock was registered
  *
  * Unregister a socket event notifier that was previously registered with
  * eloop_register_sock().
  */
-void eloop_unregister_sock(int sock, eloop_event_type type);
+void eloop_unregister_sock(struct eloop_data *eloop, int sock,
+                           eloop_event_type type);
 
 /**
  * eloop_register_event - Register handler for generic events
+ * @eloop: eloop context
  * @event: Event to wait (eloop implementation specific)
  * @event_size: Size of event data
  * @handler: Callback function to be called when event is triggered
@@ -163,22 +212,25 @@ void eloop_unregister_sock(int sock, eloop_event_type type);
  * and they would call this function with eloop_register_event(h, sizeof(h),
  * ...).
  */
-int eloop_register_event(void *event, size_t event_size,
-                         eloop_event_handler handler, void *eloop_data,
-                         void *user_data);
+int eloop_register_event(struct eloop_data *eloop, void *event,
+                         size_t event_size, eloop_event_handler handler,
+                         void *eloop_data, void *user_data);
 
 /**
  * eloop_unregister_event - Unregister handler for a generic event
+ * @eloop: eloop context
  * @event: Event to cancel (eloop implementation specific)
  * @event_size: Size of event data
  *
  * Unregister a generic event notifier that was previously registered with
  * eloop_register_event().
  */
-void eloop_unregister_event(void *event, size_t event_size);
+void eloop_unregister_event(struct eloop_data *eloop, void *event,
+                            size_t event_size);
 
 /**
  * eloop_register_timeout - Register timeout
+ * @eloop: eloop context
  * @secs: Number of seconds to the timeout
  * @usecs: Number of microseconds to the timeout
  * @handler: Callback function to be called when timeout occurs
@@ -189,12 +241,13 @@ void eloop_unregister_event(void *event, size_t event_size);
  * Register a timeout that will cause the handler function to be called after
  * given time.
  */
-int eloop_register_timeout(unsigned long secs, unsigned long usecs,
-                           eloop_timeout_handler handler, void *eloop_data,
-                           void *user_data);
+int eloop_register_timeout(struct eloop_data *eloop, unsigned long secs,
+                           unsigned long usecs, eloop_timeout_handler handler,
+                           void *eloop_data, void *user_data);
 
 /**
  * eloop_cancel_timeout - Cancel timeouts
+ * @eloop: eloop context
  * @handler: Matching callback function
  * @eloop_data: Matching eloop_data or %ELOOP_ALL_CTX to match all
  * @user_data: Matching user_data or %ELOOP_ALL_CTX to match all
@@ -204,11 +257,13 @@ int eloop_register_timeout(unsigned long secs, unsigned long usecs,
  * eloop_register_timeout(). ELOOP_ALL_CTX can be used as a wildcard for
  * cancelling all timeouts regardless of eloop_data/user_data.
  */
-int eloop_cancel_timeout(eloop_timeout_handler handler, void *eloop_data,
+int eloop_cancel_timeout(struct eloop_data *eloop,
+                         eloop_timeout_handler handler, void *eloop_data,
                          void *user_data);
 
 /**
  * eloop_cancel_timeout_one - Cancel a single timeout
+ * @eloop: eloop context
  * @handler: Matching callback function
  * @eloop_data: Matching eloop_data
  * @user_data: Matching user_data
@@ -218,11 +273,13 @@ int eloop_cancel_timeout(eloop_timeout_handler handler, void *eloop_data,
  * Cancel matching <handler,eloop_data,user_data> timeout registered with
  * eloop_register_timeout() and return the remaining time left.
  */
-int eloop_cancel_timeout_one(eloop_timeout_handler handler, void *eloop_data,
+int eloop_cancel_timeout_one(struct eloop_data *eloop,
+                             eloop_timeout_handler handler, void *eloop_data,
                              void *user_data, struct os_reltime *remaining);
 
 /**
  * eloop_is_timeout_registered - Check if a timeout is already registered
+ * @eloop: eloop context
  * @handler: Matching callback function
  * @eloop_data: Matching eloop_data
  * @user_data: Matching user_data
@@ -231,11 +288,13 @@ int eloop_cancel_timeout_one(eloop_timeout_handler handler, void *eloop_data,
  * Determine if a matching <handler,eloop_data,user_data> timeout is registered
  * with eloop_register_timeout().
  */
-int eloop_is_timeout_registered(eloop_timeout_handler handler, void *eloop_data,
+int eloop_is_timeout_registered(struct eloop_data *eloop,
+                                eloop_timeout_handler handler, void *eloop_data,
                                 void *user_data);
 
 /**
  * eloop_deplete_timeout - Deplete a timeout that is already registered
+ * @eloop: eloop context
  * @req_secs: Requested number of seconds to the timeout
  * @req_usecs: Requested number of microseconds to the timeout
  * @handler: Matching callback function
@@ -247,12 +306,14 @@ int eloop_is_timeout_registered(eloop_timeout_handler handler, void *eloop_data,
  * Find a registered matching <handler,eloop_data,user_data> timeout. If found,
  * deplete the timeout if remaining time is more than the requested time.
  */
-int eloop_deplete_timeout(unsigned long req_secs, unsigned long req_usecs,
+int eloop_deplete_timeout(struct eloop_data *eloop, unsigned long req_secs,
+                          unsigned long req_usecs,
                           eloop_timeout_handler handler, void *eloop_data,
                           void *user_data);
 
 /**
  * eloop_replenish_timeout - Replenish a timeout that is already registered
+ * @eloop: eloop context
  * @req_secs: Requested number of seconds to the timeout
  * @req_usecs: Requested number of microseconds to the timeout
  * @handler: Matching callback function
@@ -264,101 +325,39 @@ int eloop_deplete_timeout(unsigned long req_secs, unsigned long req_usecs,
  * Find a registered matching <handler,eloop_data,user_data> timeout. If found,
  * replenish the timeout if remaining time is less than the requested time.
  */
-int eloop_replenish_timeout(unsigned long req_secs, unsigned long req_usecs,
+int eloop_replenish_timeout(struct eloop_data *eloop, unsigned long req_secs,
+                            unsigned long req_usecs,
                             eloop_timeout_handler handler, void *eloop_data,
                             void *user_data);
 
 /**
- * eloop_register_signal - Register handler for signals
- * @sig: Signal number (e.g., SIGHUP)
- * @handler: Callback function to be called when the signal is received
- * @user_data: Callback context data (signal_ctx)
- * Returns: 0 on success, -1 on failure
- *
- * Register a callback function that will be called when a signal is received.
- * The callback function is actually called only after the system signal
- * handler has returned. This means that the normal limits for sighandlers
- * (i.e., only "safe functions" allowed) do not apply for the registered
- * callback.
- */
-int eloop_register_signal(int sig, eloop_signal_handler handler,
-                          void *user_data);
-
-/**
- * eloop_register_signal_terminate - Register handler for terminate signals
- * @handler: Callback function to be called when the signal is received
- * @user_data: Callback context data (signal_ctx)
- * Returns: 0 on success, -1 on failure
- *
- * Register a callback function that will be called when a process termination
- * signal is received. The callback function is actually called only after the
- * system signal handler has returned. This means that the normal limits for
- * sighandlers (i.e., only "safe functions" allowed) do not apply for the
- * registered callback.
- *
- * This function is a more portable version of eloop_register_signal() since
- * the knowledge of exact details of the signals is hidden in eloop
- * implementation. In case of operating systems using signal(), this function
- * registers handlers for SIGINT and SIGTERM.
- */
-int eloop_register_signal_terminate(eloop_signal_handler handler,
-                                    void *user_data);
-
-/**
- * eloop_register_signal_reconfig - Register handler for reconfig signals
- * @handler: Callback function to be called when the signal is received
- * @user_data: Callback context data (signal_ctx)
- * Returns: 0 on success, -1 on failure
- *
- * Register a callback function that will be called when a reconfiguration /
- * hangup signal is received. The callback function is actually called only
- * after the system signal handler has returned. This means that the normal
- * limits for sighandlers (i.e., only "safe functions" allowed) do not apply
- * for the registered callback.
- *
- * This function is a more portable version of eloop_register_signal() since
- * the knowledge of exact details of the signals is hidden in eloop
- * implementation. In case of operating systems using signal(), this function
- * registers a handler for SIGHUP.
- */
-int eloop_register_signal_reconfig(eloop_signal_handler handler,
-                                   void *user_data);
-
-/**
  * eloop_sock_requeue - Requeue sockets
- *
+ * @eloop: eloop context
  * Requeue sockets after forking because some implementations require this,
  * such as epoll and kqueue.
  */
-int eloop_sock_requeue(void);
+int eloop_sock_requeue(struct eloop_data *eloop);
 
 /**
  * eloop_run - Start the event loop
- *
+ * @eloop: eloop context
  * Start the event loop and continue running as long as there are any
  * registered event handlers. This function is run after event loop has been
  * initialized with event_init() and one or more events have been registered.
  */
-void eloop_run(void);
+void eloop_run(struct eloop_data *eloop);
 
 /**
  * eloop_terminate - Terminate event loop
- *
+ * @eloop: eloop context
  * Terminate event loop even if there are registered events. This can be used
  * to request the program to be terminated cleanly.
  */
-void eloop_terminate(void);
-
-/**
- * eloop_destroy - Free any resources allocated for the event loop
- *
- * After calling eloop_destroy(), other eloop_* functions must not be called
- * before re-running eloop_init().
- */
-void eloop_destroy(void);
+void eloop_terminate(struct eloop_data *eloop);
 
 /**
  * eloop_terminated - Check whether event loop has been terminated
+ * @eloop: eloop context
  * Returns: 1 = event loop terminate, 0 = event loop still running
  *
  * This function can be used to check whether eloop_terminate() has been called
@@ -366,18 +365,15 @@ void eloop_destroy(void);
  * operations that may still be queued to be run when eloop_terminate() was
  * called.
  */
-int eloop_terminated(void);
+int eloop_terminated(struct eloop_data *eloop);
 
 /**
  * eloop_wait_for_read_sock - Wait for a single reader
+ *
  * @sock: File descriptor number for the socket
  *
  * Do a blocking wait for a single read socket.
  */
 void eloop_wait_for_read_sock(int sock);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* ELOOP_H */

@@ -22,8 +22,6 @@ Architecture: any
 Multi-Arch: foreign
 Depends: libedgesec (= ${binary:Version}),
     edgesec-common (= ${source:Version}),
-    edgesec-capsrv (= ${binary:Version}),
-    edgesec-mdnsf (= ${binary:Version}),
     ${shlibs:Depends},
     ${misc:Depends},
     dnsmasq, jq
@@ -70,30 +68,6 @@ Architecture: all
 Description: NquiringMinds EDGESec common files.
  This includes config files and CA certificates
  that may be shared with all binaries.
-
-Package: edgesec-mdnsf
-Architecture: any
-Multi-Arch: foreign
-Depends: libedgesec (= ${binary:Version}),
-    edgesec-common (= ${source:Version}),
-    ${shlibs:Depends},
-    ${misc:Depends}
-Description: NquiringMinds EDGESEC mdns forwarder.
- Forwards and captures EDGESEC mDNS network traffic for each connected device.
- The resulting captured mDNS traffic is forwarded across subnets and bridge
- commands are issued accordingly.
-
-Package: edgesec-capsrv
-Architecture: any
-Multi-Arch: foreign
-Depends: libedgesec (= ${binary:Version}),
-    edgesec-common (= ${source:Version}),
-    ${shlibs:Depends},
-    ${misc:Depends}
-Description: NquiringMinds EDGESEC capture server.
- Monitors and captures EDGESEC network traffic for each connected device.
- The resulting traffic analytics is sent to the network controller
- for device management.
 
 Package: libedgesec
 Section: libs

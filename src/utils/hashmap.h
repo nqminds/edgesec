@@ -53,13 +53,6 @@ typedef struct hashmap_str_keyptr {
 } hmap_str_keyptr;
 
 /**
- * @brief Creates a new string hasmap
- *
- * @return hmap_str_keychar* The string hashmap object
- */
-hmap_str_keychar *hmap_str_keychar_new(void);
-
-/**
  * @brief Retrieves a string from string hashmap for a given key
  *
  * @param hmap The string hashmap object

@@ -11,9 +11,12 @@ endif ()
 add_library(base64 base64.c)
 target_link_libraries(base64 PRIVATE os log)
 
+add_library(hashmap hashmap.c)
+target_link_libraries(hashmap PRIVATE log os)
+
 add_library(os os.c)
 set_property(TARGET os PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_link_libraries(os PRIVATE allocs log LibUUID::LibUUID)
+target_link_libraries(os PRIVATE hashmap allocs log LibUUID::LibUUID)
 
 add_library(ifaceu ifaceu.c)
 target_link_libraries(ifaceu PRIVATE log)
@@ -45,9 +48,6 @@ elseif (USE_GENERIC_IP_SERVICE)
   target_link_libraries(iface PUBLIC ipgen)
 endif ()
 
-add_library(hashmap hashmap.c)
-target_link_libraries(hashmap PRIVATE log os)
-
 add_library(minIni minIni.c)
 
 add_library(eloop eloop.c)
@@ -62,5 +62,9 @@ target_link_libraries(squeue PRIVATE log os)
 add_library(sqliteu sqliteu.c)
 target_link_libraries(sqliteu PUBLIC SQLite::SQLite3 PRIVATE log os)
 
-add_library(domain domain.c)
-target_link_libraries(domain PRIVATE log os)
+add_library(sockctl sockctl.c)
+target_link_libraries(sockctl PRIVATE net log os)
+
+add_library(utarray INTERFACE) # header only lib
+add_library(uthash INTERFACE) # header only lib
+target_link_libraries(utarray INTERFACE allocs)

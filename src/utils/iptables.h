@@ -69,10 +69,10 @@ void iptables_free(struct iptables_context *ctx);
  * @param sif Source interface name string
  * @param dip Destination IP string
  * @param dif Destination interface name string
- * @return true on sucess, false on error
+ * @return 0 on sucess, -1 on error
  */
-bool iptables_add_bridge(struct iptables_context *ctx, char *sip, char *sif,
-                         char *dip, char *dif);
+int iptables_add_bridge(struct iptables_context *ctx, char *sip, char *sif,
+                        char *dip, char *dif);
 
 /**
  * @brief Delete a bridge rule
@@ -82,10 +82,10 @@ bool iptables_add_bridge(struct iptables_context *ctx, char *sip, char *sif,
  * @param sif Source interface name string
  * @param dip Destination IP string
  * @param dif Destination interface name string
- * @return true on sucess, false on error
+ * @return 0 on sucess, -1 on error
  */
-bool iptables_delete_bridge(struct iptables_context *ctx, char *sip, char *sif,
-                            char *dip, char *dif);
+int iptables_delete_bridge(struct iptables_context *ctx, char *sip, char *sif,
+                           char *dip, char *dif);
 
 /**
  * @brief Add a NAT rule
@@ -94,10 +94,10 @@ bool iptables_delete_bridge(struct iptables_context *ctx, char *sip, char *sif,
  * @param sip Source IP string
  * @param sif Source interface name string
  * @param nif NAT interface name string
- * @return true on sucess, false on error
+ * @return 0 on sucess, -1 on error
  */
-bool iptables_add_nat(struct iptables_context *ctx, char *sip, char *sif,
-                      char *nif);
+int iptables_add_nat(struct iptables_context *ctx, char *sip, char *sif,
+                     char *nif);
 
 /**
  * @brief Delete a NAT rule
@@ -106,9 +106,9 @@ bool iptables_add_nat(struct iptables_context *ctx, char *sip, char *sif,
  * @param sip Source IP string
  * @param sif Source interface name string
  * @param nif NAT interface name string
- * @return true on sucess, false on error
+ * @return 0 on sucess, -1 on error
  */
-bool iptables_delete_nat(struct iptables_context *ctx, char *sip, char *sif,
-                         char *nif);
+int iptables_delete_nat(struct iptables_context *ctx, char *sip, char *sif,
+                        char *nif);
 
 #endif

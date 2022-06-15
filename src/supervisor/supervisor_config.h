@@ -34,10 +34,9 @@
 #include "../dns/dns_config.h"
 #include "../utils/iface_mapper.h"
 #include "../utils/iface.h"
+#include "../utils/eloop.h"
 #include "../capture/capture_config.h"
-#ifdef WITH_CRYPTO_SERVICE
 #include "../crypt/crypt_config.h"
-#endif
 #include "../firewall/firewall_service.h"
 
 #include "mac_mapper.h"
@@ -59,6 +58,7 @@ struct auth_ticket {
  *
  */
 struct supervisor_context {
+  struct fwctx *fw_ctx;             /**< The firewall context. */
   hmap_mac_conn *mac_mapper;        /**< MAC mapper connection structure */
   hmap_if_conn *if_mapper;          /**< WiFi subnet to interface mapper */
   hmap_vlan_conn *vlan_mapper;      /**< WiFi VLAN to interface mapper */
@@ -78,32 +78,26 @@ struct supervisor_context {
   int default_open_vlanid; /**< @c default_open_vlanid from @c struct app_config
                             */
   int quarantine_vlanid; /**< @c quarantine_vlanid from @c struct app_config */
-  int risk_score;        /**< @c risk_score from @c struct app_config */
-  char db_path[MAX_OS_PATH_LEN]; /**< @c db_path from @c struct app_config */
   UT_array *config_ifinfo_array; /**< @c config_ifinfo_array from @c struct
                                     app_config */
   UT_array *subscribers_array;   /**< The array of events subscribers */
   struct bridge_mac_list *bridge_list;  /**< List of assigned bridges */
-  char domain_delim;                    /**< Control server command delimiter */
-  int domain_sock;                      /**< The domain socket */
+  int domain_sock;                      /**< The control server domain socket */
+  int udp_sock;                         /**< The control server udp socket */
   struct firewall_conf firewall_config; /**< Firewall service configuration. */
   struct capture_conf capture_config;   /**< Capture service configuration. */
   struct apconf hconfig;                /**< AP service configuration. */
-  struct radius_conf rconfig;           /**< Radius service configuration. */
   struct dhcp_conf dconfig;             /**< DHCP service configuration. */
   struct dns_conf nconfig;              /**< DNS service configuration. */
   struct mdns_conf mconfig;             /**< DNS service configuration. */
-  sqlite3 *fingeprint_db; /**< The fingerprint sqlite db structure. */
-  sqlite3 *alert_db;      /**< The alert sqlite db structure. */
-  sqlite3 *macconn_db;    /**< The macconn db structure. */
+  struct radius_conf rconfig;           /**< Radius service configuration. */
+  sqlite3 *macconn_db;                  /**< The macconn db structure. */
   struct radius_server_data *radius_srv; /**< The radius server context. */
-  struct fwctx *fw_ctx;                  /**< The firewall context. */
-#ifdef WITH_CRYPTO_SERVICE
-  struct crypt_context *crypt_ctx; /**< The crypt context. */
-#endif
-  struct iface_context *iface_ctx; /**< The interface context. */
-  struct auth_ticket *ticket;      /**< The authentication ticket. */
-  int ap_sock;                     /**< The AP notifier socket. */
+  struct crypt_context *crypt_ctx;       /**< The crypt context. */
+  struct iface_context *iface_ctx;       /**< The interface context. */
+  struct auth_ticket *ticket;            /**< The authentication ticket. */
+  int ap_sock;                           /**< The AP notifier socket. */
+  struct eloop_data *eloop;              /**< The main eloop context. */
 };
 
 #endif

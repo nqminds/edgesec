@@ -28,7 +28,6 @@
 #include "system_commands.h"
 #include "mac_mapper.h"
 #include "supervisor.h"
-#include "sqlite_fingerprint_writer.h"
 #include "sqlite_macconn_writer.h"
 #include "network_commands.h"
 #include "subscriber_events.h"
@@ -41,11 +40,11 @@
 #include "../utils/log.h"
 #include "../utils/base64.h"
 #include "../utils/eloop.h"
-#include "../utils/domain.h"
+#include "../utils/sockctl.h"
 #include "../utils/utarray.h"
 #include "../utils/iface_mapper.h"
 
-#define PING_REPLY "PONG"
+#define PING_REPLY "PONG\n"
 
 int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
                char *ip_addr, enum DHCP_IP_TYPE ip_type) {
@@ -56,18 +55,19 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
   struct mac_conn_info right_info, info;
   int ret;
   bool add = (ip_type == DHCP_IP_NEW || ip_type == DHCP_IP_OLD);
+  bool primary;
 
   init_default_mac_info(&info, context->default_open_vlanid,
                         context->allow_all_nat);
 
   if (get_ifname_from_ip(context->config_ifinfo_array, ip_addr, ifname) < 0) {
-    log_trace("get_ifname_from_ip fail");
+    log_error("get_ifname_from_ip fail");
     return -1;
   }
 
   ret = get_mac_mapper(&context->mac_mapper, mac_addr, &info);
   if (ret < 0) {
-    log_trace("get_mac_mapper fail");
+    log_error("get_mac_mapper fail");
     return -1;
   }
 
@@ -75,29 +75,31 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
     case DHCP_IP_NEW:
     case DHCP_IP_OLD:
       if (strcmp(info.ip_addr, ip_addr) == 0) {
-        log_trace("IP %s already assigned as primary", ip_addr);
+        log_debug("IP %s already assigned as primary", ip_addr);
         return 0;
       } else if (strcmp(info.ip_sec_addr, ip_addr) == 0) {
-        log_trace("IP %s already assigned as secondary", ip_addr);
+        log_debug("IP %s already assigned as secondary", ip_addr);
         return 0;
       }
 
       if (!strlen(info.ip_addr)) {
-        os_strlcpy(info.ip_addr, ip_addr, IP_LEN);
+        os_strlcpy(info.ip_addr, ip_addr, OS_INET_ADDRSTRLEN);
+        primary = true;
       } else if (strlen(info.ip_addr) && !strlen(info.ip_sec_addr)) {
-        os_strlcpy(info.ip_sec_addr, ip_addr, IP_LEN);
+        os_strlcpy(info.ip_sec_addr, ip_addr, OS_INET_ADDRSTRLEN);
+        primary = false;
       } else {
-        log_trace("IPs already present");
+        log_debug("IPs already present");
         return -1;
       }
       break;
     case DHCP_IP_DEL:
       if (strcmp(info.ip_addr, ip_addr) == 0) {
-        os_memset(info.ip_addr, 0x0, IP_LEN);
+        os_memset(info.ip_addr, 0x0, OS_INET_ADDRSTRLEN);
       }
 
       if (strcmp(info.ip_sec_addr, ip_addr) == 0) {
-        os_memset(info.ip_sec_addr, 0, IP_LEN);
+        os_memset(info.ip_sec_addr, 0, OS_INET_ADDRSTRLEN);
       }
       break;
     default:
@@ -109,30 +111,33 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
   os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
   os_memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
 
-  log_trace("SET_IP type=%d mac=" MACSTR " ip=%s if=%s", ip_type,
+  log_debug("SET_IP type=%d mac=" MACSTR " ip=%s if=%s", ip_type,
             MAC2STR(mac_addr), ip_addr, ifname);
   if (!save_mac_mapper(context, conn)) {
-    log_trace("save_mac_mapper fail");
+    log_error("save_mac_mapper fail");
     return -1;
   }
 
-  if (send_events_subscriber(context, SUBSCRIBER_EVENT_IP, MACSTR " %s %d",
-                             MAC2STR(mac_addr), ip_addr, add) < 0) {
-    log_trace("send_events_subscriber fail");
-    return -1;
+  if (add) {
+    if (send_events_subscriber(context, SUBSCRIBER_EVENT_IP, MACSTR " %s %d %d",
+                               MAC2STR(mac_addr), ip_addr, ip_type,
+                               primary) < 0) {
+      log_error("send_events_subscriber fail");
+      return -1;
+    }
   }
 
   // Change the NAT iptables rules
   if (add && info.nat) {
-    log_trace("Adding NAT rule");
+    log_debug("Adding NAT rule");
     if (add_nat_ip(context, ip_addr) < 0) {
-      log_trace("add_nat_ip fail");
+      log_error("add_nat_ip fail");
       return -1;
     }
   } else if (!add && info.nat) {
-    log_trace("Deleting NAT rule");
+    log_debug("Deleting NAT rule");
     if (remove_nat_ip(context, ip_addr) < 0) {
-      log_trace("remove_nat_ip fail");
+      log_error("remove_nat_ip fail");
       return -1;
     }
   }
@@ -140,7 +145,7 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
   // Change the bridge iptables rules
   // Get the list of all dst MACs to update the iptables
   if (get_src_mac_list(context->bridge_list, mac_addr, &mac_list_arr) < 0) {
-    log_trace("get_src_mac_list fail");
+    log_error("get_src_mac_list fail");
     return -1;
   }
 
@@ -148,23 +153,23 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
     if (get_mac_mapper(&context->mac_mapper, p, &right_info) == 1) {
       if (add) {
         if (add_bridge_ip(context, ip_addr, right_info.ip_addr) < 0) {
-          log_trace("add_bridge_ip fail");
+          log_error("add_bridge_ip fail");
           utarray_free(mac_list_arr);
           return -1;
         }
         if (add_bridge_ip(context, ip_addr, right_info.ip_sec_addr) < 0) {
-          log_trace("add_bridge_ip fail");
+          log_error("add_bridge_ip fail");
           utarray_free(mac_list_arr);
           return -1;
         }
       } else {
         if (delete_bridge_ip(context, ip_addr, right_info.ip_addr) < 0) {
-          log_trace("delete_bridge_ip fail");
+          log_error("delete_bridge_ip fail");
           utarray_free(mac_list_arr);
           return -1;
         }
         if (delete_bridge_ip(context, ip_addr, right_info.ip_sec_addr) < 0) {
-          log_trace("delete_bridge_ip fail");
+          log_error("delete_bridge_ip fail");
           utarray_free(mac_list_arr);
           return -1;
         }
@@ -180,6 +185,6 @@ char *ping_cmd(void) { return os_strdup(PING_REPLY); }
 
 int subscribe_events_cmd(struct supervisor_context *context,
                          struct client_address *addr) {
-  log_trace("SUBSCRIBE_EVENTS with size=%d", addr->len);
+  log_debug("SUBSCRIBE_EVENTS with size=%d and type=%d", addr->len, addr->type);
   return add_events_subscriber(context, addr);
 }

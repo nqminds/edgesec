@@ -17,7 +17,5 @@ start() {
 }
 
 stop() {
-    killall -q capsrv
-    killall -q mdnsf
     kill -9 `cat /var/run/edgesec.pid`
 }

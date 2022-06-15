@@ -26,7 +26,6 @@
 
 #include "mac_mapper.h"
 #include "supervisor.h"
-#include "sqlite_fingerprint_writer.h"
 #include "sqlite_macconn_writer.h"
 #include "network_commands.h"
 
@@ -71,7 +70,7 @@ bool save_mac_mapper(struct supervisor_context *context, struct mac_conn conn) {
   }
 
   if (!put_mac_mapper(&context->mac_mapper, conn)) {
-    log_trace("put_mac_mapper fail");
+    log_error("put_mac_mapper fail");
     return false;
   }
 
@@ -88,7 +87,7 @@ bool save_mac_mapper(struct supervisor_context *context, struct mac_conn conn) {
 #endif
 
   if (save_sqlite_macconn_entry(context->macconn_db, &conn) < 0) {
-    log_trace("upsert_sqlite_macconn_entry fail");
+    log_error("upsert_sqlite_macconn_entry fail");
     return false;
   }
 
@@ -98,7 +97,7 @@ bool save_mac_mapper(struct supervisor_context *context, struct mac_conn conn) {
 void free_ticket(struct supervisor_context *context) {
   struct auth_ticket *ticket = context->ticket;
   if (ticket != NULL) {
-    log_trace("Freeing ticket");
+    log_debug("Freeing ticket");
     os_free(ticket);
     context->ticket = NULL;
   }
@@ -108,7 +107,7 @@ void eloop_ticket_timeout_handler(void *eloop_ctx, void *user_ctx) {
   (void)eloop_ctx;
 
   struct supervisor_context *context = (struct supervisor_context *)user_ctx;
-  log_trace("Auth ticket timeout, removing ticket");
+  log_debug("Auth ticket timeout, removing ticket");
   free_ticket(context);
 }
 
@@ -122,10 +121,10 @@ int accept_mac_cmd(struct supervisor_context *context, uint8_t *mac_addr,
                         context->allow_all_nat);
 
   sprintf(mac_str, MACSTR, MAC2STR(mac_addr));
-  log_trace("ACCEPT_MAC mac=%s with vlanid=%d", mac_str, vlanid);
+  log_debug("ACCEPT_MAC mac=%s with vlanid=%d", mac_str, vlanid);
 
   if (get_mac_mapper(&context->mac_mapper, mac_addr, &info) < 0) {
-    log_trace("get_mac_mapper fail");
+    log_error("get_mac_mapper fail");
     return -1;
   }
 
@@ -136,24 +135,24 @@ int accept_mac_cmd(struct supervisor_context *context, uint8_t *mac_addr,
 
   if (get_vlan_mapper(&context->vlan_mapper, conn.info.vlanid, &vlan_conn) <=
       0) {
-    log_trace("get_vlan_mapper fail");
+    log_error("get_vlan_mapper fail");
     return -1;
   }
 
   os_memcpy(conn.info.ifname, vlan_conn.ifname, IFNAMSIZ);
   if (!save_mac_mapper(context, conn)) {
-    log_trace("save_mac_mapper fail");
+    log_error("save_mac_mapper fail");
     return -1;
   }
 
   if (clear_dhcp_lease(mac_str, &context->dconfig) < 0) {
-    log_trace("clear_dhcp_lease fail");
+    log_error("clear_dhcp_lease fail");
     return -1;
   }
 
   if (check_sta_ap_command(&context->hconfig, mac_str) == 0) {
     if (disconnect_ap_command(&context->hconfig, mac_str) < 0) {
-      log_trace("disconnect_ap_command fail");
+      log_error("disconnect_ap_command fail");
       return -1;
     }
   }
@@ -169,19 +168,19 @@ int deny_mac_cmd(struct supervisor_context *context, uint8_t *mac_addr) {
                         context->allow_all_nat);
 
   sprintf(mac_str, MACSTR, MAC2STR(mac_addr));
-  log_trace("DENY_MAC mac=%s", mac_str);
+  log_debug("DENY_MAC mac=%s", mac_str);
 
   get_mac_mapper(&context->mac_mapper, mac_addr, &info);
   os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
   info.allow_connection = false;
   os_memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
   if (!save_mac_mapper(context, conn)) {
-    log_trace("save_mac_mapper fail");
+    log_error("save_mac_mapper fail");
     return -1;
   }
 
   if (disconnect_ap_command(&context->hconfig, mac_str) < 0) {
-    log_trace("disconnect_ap_command fail");
+    log_error("disconnect_ap_command fail");
     return -1;
   }
 
@@ -191,7 +190,7 @@ int deny_mac_cmd(struct supervisor_context *context, uint8_t *mac_addr) {
 int add_nat_ip(struct supervisor_context *context, char *ip_addr) {
   if (validate_ipv4_string(ip_addr)) {
     if (fw_add_nat(context->fw_ctx, ip_addr) < 0) {
-      log_trace("fw_add_nat fail");
+      log_error("fw_add_nat fail");
       return -1;
     }
   }
@@ -202,7 +201,7 @@ int add_nat_ip(struct supervisor_context *context, char *ip_addr) {
 int remove_nat_ip(struct supervisor_context *context, char *ip_addr) {
   if (validate_ipv4_string(ip_addr)) {
     if (fw_remove_nat(context->fw_ctx, ip_addr) < 0) {
-      log_trace("fw_remove_nat fail");
+      log_error("fw_remove_nat fail");
       return -1;
     }
   }
@@ -216,9 +215,9 @@ int add_nat_cmd(struct supervisor_context *context, uint8_t *mac_addr) {
   init_default_mac_info(&info, context->default_open_vlanid,
                         context->allow_all_nat);
 
-  log_trace("ADD_NAT mac=" MACSTR, MAC2STR(mac_addr));
+  log_debug("ADD_NAT mac=" MACSTR, MAC2STR(mac_addr));
   if (get_mac_mapper(&context->mac_mapper, mac_addr, &info) < 0) {
-    log_trace("get_mac_mapper fail");
+    log_error("get_mac_mapper fail");
     return -1;
   }
 
@@ -227,17 +226,17 @@ int add_nat_cmd(struct supervisor_context *context, uint8_t *mac_addr) {
   os_memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
 
   if (add_nat_ip(context, info.ip_addr) < 0) {
-    log_trace("add_nat_ip fail");
+    log_error("add_nat_ip fail");
     return -1;
   }
 
   if (add_nat_ip(context, info.ip_sec_addr) < 0) {
-    log_trace("add_nat_ip fail");
+    log_error("add_nat_ip fail");
     return -1;
   }
 
   if (!save_mac_mapper(context, conn)) {
-    log_trace("save_mac_mapper fail");
+    log_error("save_mac_mapper fail");
     return -1;
   }
 
@@ -250,9 +249,9 @@ int remove_nat_cmd(struct supervisor_context *context, uint8_t *mac_addr) {
   init_default_mac_info(&info, context->default_open_vlanid,
                         context->allow_all_nat);
 
-  log_trace("REMOVE_NAT mac=" MACSTR, MAC2STR(mac_addr));
+  log_debug("REMOVE_NAT mac=" MACSTR, MAC2STR(mac_addr));
   if (get_mac_mapper(&context->mac_mapper, mac_addr, &info) < 0) {
-    log_trace("get_mac_mapper fail");
+    log_error("get_mac_mapper fail");
     return -1;
   }
 
@@ -261,17 +260,17 @@ int remove_nat_cmd(struct supervisor_context *context, uint8_t *mac_addr) {
   os_memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
 
   if (remove_nat_ip(context, info.ip_addr) < 0) {
-    log_trace("remove_nat_ip fail");
+    log_error("remove_nat_ip fail");
     return -1;
   }
 
   if (remove_nat_ip(context, info.ip_sec_addr) < 0) {
-    log_trace("remove_nat_ip fail");
+    log_error("remove_nat_ip fail");
     return -1;
   }
 
   if (!save_mac_mapper(context, conn)) {
-    log_trace("save_mac_mapper fail");
+    log_error("save_mac_mapper fail");
     return -1;
   }
 
@@ -285,7 +284,7 @@ int assign_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr,
   init_default_mac_info(&info, context->default_open_vlanid,
                         context->allow_all_nat);
 
-  log_trace("ASSIGN_PSK mac=" MACSTR ", pass_len=%d", MAC2STR(mac_addr),
+  log_debug("ASSIGN_PSK mac=" MACSTR ", pass_len=%d", MAC2STR(mac_addr),
             pass_len);
 
   get_mac_mapper(&context->mac_mapper, mac_addr, &info);
@@ -295,7 +294,7 @@ int assign_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr,
   os_memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
 
   if (!save_mac_mapper(context, conn)) {
-    log_trace("save_mac_mapper fail");
+    log_error("save_mac_mapper fail");
     return -1;
   }
 
@@ -307,7 +306,7 @@ int add_bridge_ip(struct supervisor_context *context, char *ip_addr_left,
   if (validate_ipv4_string(ip_addr_left) &&
       validate_ipv4_string(ip_addr_right)) {
     if (fw_add_bridge(context->fw_ctx, ip_addr_left, ip_addr_right) < 0) {
-      log_trace("fw_add_bridge fail");
+      log_error("fw_add_bridge fail");
       return -1;
     }
   }
@@ -320,7 +319,7 @@ int delete_bridge_ip(struct supervisor_context *context, char *ip_addr_left,
   if (validate_ipv4_string(ip_addr_left) &&
       validate_ipv4_string(ip_addr_right)) {
     if (fw_remove_bridge(context->fw_ctx, ip_addr_left, ip_addr_right) < 0) {
-      log_trace("fw_remove_bridge fail");
+      log_error("fw_remove_bridge fail");
       return -1;
     }
   }
@@ -332,7 +331,7 @@ int add_bridge_mac_cmd(struct supervisor_context *context,
                        uint8_t *left_mac_addr, uint8_t *right_mac_addr) {
   struct mac_conn_info left_info, right_info;
 
-  log_trace("ADD_BRIDGE left_mac=" MACSTR ", right_mac=" MACSTR,
+  log_debug("ADD_BRIDGE left_mac=" MACSTR ", right_mac=" MACSTR,
             MAC2STR(left_mac_addr), MAC2STR(right_mac_addr));
 
   if (add_bridge_mac(context->bridge_list, left_mac_addr, right_mac_addr) >=
@@ -341,27 +340,27 @@ int add_bridge_mac_cmd(struct supervisor_context *context,
         get_mac_mapper(&context->mac_mapper, right_mac_addr, &right_info) ==
             1) {
       if (add_bridge_ip(context, left_info.ip_addr, right_info.ip_addr) < 0) {
-        log_trace("add_bridge_ip fail");
+        log_error("add_bridge_ip fail");
         return -1;
       }
       if (add_bridge_ip(context, left_info.ip_addr, right_info.ip_sec_addr) <
           0) {
-        log_trace("add_bridge_ip fail");
+        log_error("add_bridge_ip fail");
         return -1;
       }
       if (add_bridge_ip(context, left_info.ip_sec_addr, right_info.ip_addr) <
           0) {
-        log_trace("add_bridge_ip fail");
+        log_error("add_bridge_ip fail");
         return -1;
       }
       if (add_bridge_ip(context, left_info.ip_sec_addr,
                         right_info.ip_sec_addr) < 0) {
-        log_trace("add_bridge_ip fail");
+        log_error("add_bridge_ip fail");
         return -1;
       }
     }
   } else {
-    log_trace("add_bridge_mac fail");
+    log_error("add_bridge_mac fail");
     return -1;
   }
 
@@ -375,10 +374,10 @@ int add_bridge_ip_cmd(struct supervisor_context *context, char *left_ip_addr,
 
   ret = get_ip_mapper(&context->mac_mapper, left_ip_addr, left_mac_addr);
   if (ret < 0) {
-    log_trace("get_ip_mapper fail");
+    log_error("get_ip_mapper fail");
     return -1;
   } else if (!ret) {
-    log_trace("src MAC not found for bridge connection left_ip=%s, right_ip=%s",
+    log_error("src MAC not found for bridge connection left_ip=%s, right_ip=%s",
               left_ip_addr, right_ip_addr);
     return -1;
   }
@@ -386,25 +385,25 @@ int add_bridge_ip_cmd(struct supervisor_context *context, char *left_ip_addr,
   ret = get_ip_mapper(&context->mac_mapper, right_ip_addr, right_mac_addr);
 
   if (ret < 0) {
-    log_trace("get_ip_mapper fail");
+    log_error("get_ip_mapper fail");
     return -1;
   } else if (!ret) {
-    log_trace("dst MAC not found for bridge connection left_ip=%s, right_ip=%s",
+    log_error("dst MAC not found for bridge connection left_ip=%s, right_ip=%s",
               left_ip_addr, right_ip_addr);
     return -1;
   }
 
-  log_trace("ADD_BRIDGE left_ip=%s, right_ip=%s", left_ip_addr, right_ip_addr);
+  log_debug("ADD_BRIDGE left_ip=%s, right_ip=%s", left_ip_addr, right_ip_addr);
 
   if (check_bridge_exist(context->bridge_list, left_mac_addr, right_mac_addr) >
       0) {
-    log_trace("Bridge between %s and %s already exists", left_ip_addr,
+    log_debug("Bridge between %s and %s already exists", left_ip_addr,
               right_ip_addr);
     return 0;
   }
 
   if (add_bridge_mac_cmd(context, left_mac_addr, right_mac_addr) < 0) {
-    log_trace("add_bridge_cmd fail");
+    log_error("add_bridge_cmd fail");
     return -1;
   }
 
@@ -415,7 +414,7 @@ int remove_bridge_cmd(struct supervisor_context *context,
                       uint8_t *left_mac_addr, uint8_t *right_mac_addr) {
   struct mac_conn_info left_info, right_info;
 
-  log_trace("REMOVE_BRIDGE left_mac=" MACSTR ", right_mac=" MACSTR,
+  log_debug("REMOVE_BRIDGE left_mac=" MACSTR ", right_mac=" MACSTR,
             MAC2STR(left_mac_addr), MAC2STR(right_mac_addr));
 
   if (remove_bridge_mac(context->bridge_list, left_mac_addr, right_mac_addr) >=
@@ -425,27 +424,27 @@ int remove_bridge_cmd(struct supervisor_context *context,
             1) {
       if (delete_bridge_ip(context, left_info.ip_addr, right_info.ip_addr) <
           0) {
-        log_trace("delete_bridge_ip fail");
+        log_error("delete_bridge_ip fail");
         return -1;
       }
       if (delete_bridge_ip(context, left_info.ip_addr, right_info.ip_sec_addr) <
           0) {
-        log_trace("delete_bridge_ip fail");
+        log_error("delete_bridge_ip fail");
         return -1;
       }
       if (delete_bridge_ip(context, left_info.ip_sec_addr, right_info.ip_addr) <
           0) {
-        log_trace("delete_bridge_ip fail");
+        log_error("delete_bridge_ip fail");
         return -1;
       }
       if (delete_bridge_ip(context, left_info.ip_sec_addr,
                            right_info.ip_sec_addr) < 0) {
-        log_trace("delete_bridge_ip fail");
+        log_error("delete_bridge_ip fail");
         return -1;
       }
     }
   } else {
-    log_trace("remove_bridge_mac fail");
+    log_error("remove_bridge_mac fail");
     return -1;
   }
 
@@ -456,7 +455,7 @@ int clear_bridges_cmd(struct supervisor_context *context, uint8_t *mac_addr) {
   struct mac_conn *mac_list = NULL;
   int mac_list_len = get_mac_list(&context->mac_mapper, &mac_list);
 
-  log_trace("CLEAR_BRIDGES mac=" MACSTR, MAC2STR(mac_addr));
+  log_debug("CLEAR_BRIDGES mac=" MACSTR, MAC2STR(mac_addr));
 
   if (mac_list != NULL) {
     for (int count = 0; count < mac_list_len; count++) {
@@ -472,11 +471,11 @@ int clear_bridges_cmd(struct supervisor_context *context, uint8_t *mac_addr) {
 
 uint8_t *register_ticket_cmd(struct supervisor_context *context,
                              uint8_t *mac_addr, char *label, int vlanid) {
-  log_trace("REGISTER_TICKET for mac=" MACSTR ", label=%s and vlanid=%d",
+  log_debug("REGISTER_TICKET for mac=" MACSTR ", label=%s and vlanid=%d",
             MAC2STR(mac_addr), label, vlanid);
 
   if (context->ticket != NULL) {
-    log_trace("Auth ticket is still active");
+    log_debug("Auth ticket is still active");
     return NULL;
   }
 
@@ -494,14 +493,15 @@ uint8_t *register_ticket_cmd(struct supervisor_context *context,
 
   if (os_get_random_number_s(context->ticket->passphrase,
                              context->ticket->passphrase_len) < 0) {
-    log_trace("os_get_random_number_s fail");
+    log_error("os_get_random_number_s fail");
     os_free(context->ticket);
     return NULL;
   }
 
-  if (eloop_register_timeout(TICKET_TIMEOUT, 0, eloop_ticket_timeout_handler,
-                             NULL, (void *)context) < 0) {
-    log_trace("eloop_register_timeout fail");
+  if (eloop_register_timeout(context->eloop, TICKET_TIMEOUT, 0,
+                             eloop_ticket_timeout_handler, NULL,
+                             (void *)context) < 0) {
+    log_error("eloop_register_timeout fail");
     os_free(context->ticket);
     return NULL;
   }
@@ -516,7 +516,7 @@ int clear_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr) {
   init_default_mac_info(&info, context->default_open_vlanid,
                         context->allow_all_nat);
 
-  log_trace("CLEAR_PSK for mac=" MACSTR, MAC2STR(mac_addr));
+  log_debug("CLEAR_PSK for mac=" MACSTR, MAC2STR(mac_addr));
 
   get_mac_mapper(&context->mac_mapper, mac_addr, &info);
   os_memset(info.pass, 0, AP_SECRET_LEN);
@@ -525,7 +525,7 @@ int clear_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr) {
   os_memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
 
   if (!save_mac_mapper(context, conn)) {
-    log_trace("save_mac_mapper fail");
+    log_error("save_mac_mapper fail");
     return -1;
   }
 

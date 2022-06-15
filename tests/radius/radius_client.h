@@ -19,6 +19,7 @@
 #include <stdbool.h>
 #include <net/if.h>
 
+#include "../../src/utils/eloop.h"
 #include "ip_addr.h"
 
 struct radius_msg;
@@ -263,7 +264,8 @@ int radius_client_send(struct radius_client_data *radius,
 uint8_t radius_client_get_id(struct radius_client_data *radius);
 void radius_client_flush(struct radius_client_data *radius, int only_auth);
 struct radius_client_data *
-radius_client_init(void *ctx, struct hostapd_radius_servers *conf);
+radius_client_init(struct eloop_data *eloop, void *ctx,
+                   struct hostapd_radius_servers *conf);
 void radius_client_deinit(struct radius_client_data *radius);
 void radius_client_flush_auth(struct radius_client_data *radius,
                               const uint8_t *addr);

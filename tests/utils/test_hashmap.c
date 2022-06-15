@@ -18,7 +18,7 @@
 static void test_hashmap_str_keychar(void **state) {
   (void)state; /* unused */
 
-  hmap_str_keychar *hmap = hmap_str_keychar_new();
+  hmap_str_keychar *hmap = NULL;
 
   /* Inserting value value1 for key key1 */
   hmap_str_keychar_put(&hmap, "key1", "value1");
@@ -59,6 +59,9 @@ static void test_hashmap_str_keychar(void **state) {
 }
 
 int main(int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
+
   log_set_quiet(true);
 
   const struct CMUnitTest tests[] = {

@@ -70,19 +70,19 @@ bool get_config_dhcpinfo(char *info, config_dhcpinfo_t *el) {
 
   p = (char **)utarray_next(info_arr, p);
   if (*p != NULL) {
-    os_strlcpy(el->ip_addr_low, *p, IP_LEN);
+    os_strlcpy(el->ip_addr_low, *p, OS_INET_ADDRSTRLEN);
   } else
     goto err;
 
   p = (char **)utarray_next(info_arr, p);
   if (*p != NULL)
-    os_strlcpy(el->ip_addr_upp, *p, IP_LEN);
+    os_strlcpy(el->ip_addr_upp, *p, OS_INET_ADDRSTRLEN);
   else
     goto err;
 
   p = (char **)utarray_next(info_arr, p);
   if (*p != NULL)
-    os_strlcpy(el->subnet_mask, *p, IP_LEN);
+    os_strlcpy(el->subnet_mask, *p, OS_INET_ADDRSTRLEN);
   else
     goto err;
 
@@ -124,19 +124,19 @@ bool get_config_ifinfo(char *info, config_ifinfo_t *el) {
 
   p = (char **)utarray_next(info_arr, p);
   if (*p != NULL) {
-    os_strlcpy(el->ip_addr, *p, IP_LEN);
+    os_strlcpy(el->ip_addr, *p, OS_INET_ADDRSTRLEN);
   } else
     goto err;
 
   p = (char **)utarray_next(info_arr, p);
   if (*p != NULL)
-    os_strlcpy(el->brd_addr, *p, IP_LEN);
+    os_strlcpy(el->brd_addr, *p, OS_INET_ADDRSTRLEN);
   else
     goto err;
 
   p = (char **)utarray_next(info_arr, p);
   if (*p != NULL)
-    os_strlcpy(el->subnet_mask, *p, IP_LEN);
+    os_strlcpy(el->subnet_mask, *p, OS_INET_ADDRSTRLEN);
   else
     goto err;
 
@@ -252,7 +252,7 @@ bool load_radius_conf(const char *filename, struct app_config *config) {
   value = os_malloc(INI_BUFFERSIZE);
   ini_gets("radius", "clientIP", "127.0.0.1", value, INI_BUFFERSIZE, filename);
 
-  os_strlcpy(config->rconfig.radius_client_ip, value, IP_LEN);
+  os_strlcpy(config->rconfig.radius_client_ip, value, OS_INET_ADDRSTRLEN);
   os_free(value);
 
   // Load radius client mask
@@ -263,7 +263,7 @@ bool load_radius_conf(const char *filename, struct app_config *config) {
   value = os_malloc(INI_BUFFERSIZE);
   ini_gets("radius", "serverIP", "127.0.0.1", value, INI_BUFFERSIZE, filename);
 
-  os_strlcpy(config->rconfig.radius_server_ip, value, IP_LEN);
+  os_strlcpy(config->rconfig.radius_server_ip, value, OS_INET_ADDRSTRLEN);
   os_free(value);
 
   // Load radius server mask
@@ -473,18 +473,6 @@ bool load_mdns_conf(const char *filename, struct app_config *config) {
   int ret;
   char *value = NULL;
 
-  // Load ap bin path
-  value = os_malloc(INI_BUFFERSIZE);
-  ret = ini_gets("dns", "mdnsBinPath", "", value, INI_BUFFERSIZE, filename);
-  if (!ret) {
-    log_debug("mdnsBinPath was not specified\n");
-    os_free(value);
-    return false;
-  }
-
-  os_strlcpy(config->mdns_config.mdns_bin_path, value, MAX_OS_PATH_LEN);
-  os_free(value);
-
   // Load mdnsReflectIp4 param
   config->mdns_config.reflect_ip4 =
       (int)ini_getbool("dns", "mdnsReflectIp4", 0, filename);
@@ -551,7 +539,7 @@ bool load_dhcp_conf(const char *filename, struct app_config *config) {
   ret = ini_gets("dhcp", "dhcpLeasefilePath", "", value, INI_BUFFERSIZE,
                  filename);
   if (!ret) {
-    log_debug("dhcp dhcpLeasefilePath was not specified\n");
+    log_error("dhcp dhcpLeasefilePath was not specified\n");
     os_free(value);
     return false;
   }
@@ -568,47 +556,12 @@ bool load_dhcp_conf(const char *filename, struct app_config *config) {
   return true;
 }
 
-char load_delim(const char *filename) {
-  return (char)ini_getl("supervisor", "delim", 32, filename);
-}
-
 bool load_capture_config(const char *filename, struct capture_conf *config) {
   char *value = os_zalloc(INI_BUFFERSIZE);
 
-  // Load db param
-  ini_gets("system", "dbPath", "./", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->db_path, value, MAX_OS_PATH_LEN);
-  os_free(value);
-
-  // Load domainServerPath
-  value = os_zalloc(INI_BUFFERSIZE);
-  ini_gets("supervisor", "domainServerPath", "", value, INI_BUFFERSIZE,
-           filename);
-  os_strlcpy(config->domain_server_path, value, MAX_OS_PATH_LEN);
-  os_free(value);
-
-  // Load the domain command delimiter
-  if ((config->domain_delim = load_delim(filename)) == 0) {
-    log_debug("delim parsing error");
-    return false;
-  }
-
-  // Load capture bin path
-  value = os_zalloc(INI_BUFFERSIZE);
-  ini_gets("capture", "captureBinPath", "", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->capture_bin_path, value, MAX_OS_PATH_LEN);
-  os_free(value);
-
-  // Load dhpc config file path
-  value = os_zalloc(INI_BUFFERSIZE);
-  ini_gets("capture", "captureInterface", "", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->capture_interface, value, IFNAMSIZ);
-  os_free(value);
-
-  // Load the domain command value
-  value = os_zalloc(INI_BUFFERSIZE);
-  ini_gets("capture", "command", "", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->domain_command, value, MAX_SUPERVISOR_CMD_SIZE);
+  // Load captureDbParam param
+  ini_gets("capture", "captureDbPath", "./", value, INI_BUFFERSIZE, filename);
+  os_strlcpy(config->capture_db_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
   // Load filter param
@@ -627,31 +580,6 @@ bool load_capture_config(const char *filename, struct capture_conf *config) {
   // Load bufferTimeout param
   config->buffer_timeout =
       (uint16_t)ini_getl("capture", "bufferTimeout", 10, filename);
-
-  // Load processInterval param
-  config->process_interval =
-      (uint16_t)ini_getl("capture", "processInterval", 10, filename);
-
-  // Load analyser param
-  value = os_zalloc(INI_BUFFERSIZE);
-  ini_gets("capture", "analyser", PACKET_ANALYSER_DEFAULT, value,
-           INI_BUFFERSIZE, filename);
-  os_strlcpy(config->analyser, value, MAX_ANALYSER_NAME_SIZE);
-  os_free(value);
-
-  // Load fileWrite param
-  config->file_write = (int)ini_getbool("capture", "fileWrite", 0, filename);
-
-  // Load dbWrite param
-  config->db_write = (int)ini_getbool("capture", "dbWrite", 0, filename);
-
-  // Load syncStoreSize param
-  config->sync_store_size =
-      (ssize_t)ini_getl("capture", "syncStoreSize", -1, filename);
-
-  // Load syncSendSize param
-  config->sync_send_size =
-      (ssize_t)ini_getl("capture", "syncSendSize", -1, filename);
 
   return true;
 }
@@ -710,9 +638,6 @@ bool load_system_config(const char *filename, struct app_config *config) {
   config->quarantine_vlanid =
       (int)ini_getl("system", "quarantineVlanId", -1, filename);
 
-  // Load the risk score
-  config->risk_score = (int)ini_getl("system", "riskScore", 100, filename);
-
   // Load allow all connection flag
   config->allow_all_connections =
       ini_getbool("system", "allowAllConnections", 0, filename);
@@ -720,14 +645,11 @@ bool load_system_config(const char *filename, struct app_config *config) {
   // Load allow all nat connection flag
   config->allow_all_nat = ini_getbool("system", "allowAllNat", 0, filename);
 
-  // Load killRunningProcess flag
-  config->kill_running_proc =
-      ini_getbool("system", "killRunningProcess", 0, filename);
-
-  // Load db param
+  // Load connection db param
   value = os_zalloc(INI_BUFFERSIZE);
-  ret = ini_gets("system", "dbPath", "./", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->db_path, value, MAX_OS_PATH_LEN);
+  ret = ini_gets("system", "connectionDbPath", "", value, INI_BUFFERSIZE,
+                 filename);
+  os_strlcpy(config->connection_db_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
 #ifdef WITH_CRYPTO_SERVICE
@@ -785,23 +707,21 @@ bool load_supervisor_config(const char *filename, struct app_config *config) {
   int ret;
   char *value;
 
-  // Load domainServerPath
+  // Load the supervisor control port
+  config->supervisor_control_port = (unsigned int)ini_getl(
+      "supervisor", "supervisorControlPort", 0, filename);
+
+  // Load supervisorControlPath
   value = os_malloc(INI_BUFFERSIZE);
-  ret = ini_gets("supervisor", "domainServerPath", "", value, INI_BUFFERSIZE,
-                 filename);
+  ret = ini_gets("supervisor", "supervisorControlPath", "", value,
+                 INI_BUFFERSIZE, filename);
   if (!ret) {
-    log_debug("Domain server path was not specified\n");
+    log_debug("Supervisor control server path was not specified\n");
     os_free(value);
     return false;
   }
-  os_strlcpy(config->domain_server_path, value, MAX_OS_PATH_LEN);
+  os_strlcpy(config->supervisor_control_path, value, MAX_OS_PATH_LEN);
   os_free(value);
-
-  // Load delim
-  if ((config->domain_delim = load_delim(filename)) == 0) {
-    log_debug("delim parsing error");
-    return false;
-  }
 
   return true;
 }

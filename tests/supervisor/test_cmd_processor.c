@@ -19,11 +19,9 @@
 #include "utils/utarray.h"
 #include "utils/log.h"
 #include "utils/iptables.h"
-#include "engine.h"
+#include "runctl.h"
 
-#define CMD_DELIMITER 0x20
-
-ssize_t __wrap_write_domain_data(int sock, char *data, size_t data_len,
+ssize_t __wrap_write_socket_data(int sock, char *data, size_t data_len,
                                  struct sockaddr_un *addr, int addr_len) {
   (void)sock;
   (void)data;
@@ -136,36 +134,6 @@ int __wrap_clear_bridges_cmd(struct supervisor_context *context,
   check_expected(mac_addr);
 
   return 0;
-}
-
-int __wrap_set_fingerprint_cmd(struct supervisor_context *context,
-                               char *src_mac_addr, char *dst_mac_addr,
-                               char *protocol, char *fingerprint,
-                               uint64_t timestamp, char *query) {
-  (void)context;
-
-  check_expected(src_mac_addr);
-  check_expected(dst_mac_addr);
-  check_expected(protocol);
-  check_expected(fingerprint);
-  check_expected(timestamp);
-  check_expected(query);
-
-  return 0;
-}
-
-ssize_t __wrap_query_fingerprint_cmd(struct supervisor_context *context,
-                                     char *mac_addr, uint64_t timestamp,
-                                     char *op, char *protocol, char **out) {
-  (void)context;
-
-  check_expected(mac_addr);
-  check_expected(timestamp);
-  check_expected(op);
-  check_expected(protocol);
-  *out = os_malloc(sizeof(char));
-
-  return strlen(OK_REPLY);
 }
 
 uint8_t *__wrap_register_ticket_cmd(struct supervisor_context *context,
@@ -811,127 +779,6 @@ static void test_process_clear_bridges_cmd(void **state) {
   utarray_free(cmd_arr);
 }
 
-static void test_process_set_fingerprint_cmd(void **state) {
-  (void)state; /* unused */
-
-  UT_array *cmd_arr;
-  struct client_address claddr;
-
-  utarray_new(cmd_arr, &ut_str_icd);
-  assert_int_not_equal(
-      split_string_array(
-          "SET_FINGERPRINT 11:22:33:44:55:66 aa:bb:cc:dd:ee:ff IP 12345 test",
-          CMD_DELIMITER, cmd_arr),
-      -1);
-  expect_string(__wrap_set_fingerprint_cmd, src_mac_addr, "11:22:33:44:55:66");
-  expect_string(__wrap_set_fingerprint_cmd, dst_mac_addr, "aa:bb:cc:dd:ee:ff");
-  expect_string(__wrap_set_fingerprint_cmd, protocol, "IP");
-  expect_string(__wrap_set_fingerprint_cmd, fingerprint, "12345");
-  expect_any(__wrap_set_fingerprint_cmd, timestamp);
-  expect_string(__wrap_set_fingerprint_cmd, query, "test");
-  assert_int_equal(process_set_fingerprint_cmd(0, &claddr, NULL, cmd_arr),
-                   strlen(OK_REPLY));
-  utarray_free(cmd_arr);
-
-  utarray_new(cmd_arr, &ut_str_icd);
-  assert_int_not_equal(
-      split_string_array(
-          "SET_FINGERPRINT 11:22:33:44:55: aa:bb:cc:dd:ee:ff IP 12345 test",
-          CMD_DELIMITER, cmd_arr),
-      -1);
-  assert_int_equal(process_set_fingerprint_cmd(0, &claddr, NULL, cmd_arr),
-                   strlen(FAIL_REPLY));
-  utarray_free(cmd_arr);
-
-  utarray_new(cmd_arr, &ut_str_icd);
-  assert_int_not_equal(
-      split_string_array(
-          "SET_FINGERPRINT 11:22:33:44:55:66 aa:bb:cc:dd:ee: IP 12345 test",
-          CMD_DELIMITER, cmd_arr),
-      -1);
-  assert_int_equal(process_set_fingerprint_cmd(0, &claddr, NULL, cmd_arr),
-                   strlen(FAIL_REPLY));
-  utarray_free(cmd_arr);
-
-  utarray_new(cmd_arr, &ut_str_icd);
-  assert_int_not_equal(
-      split_string_array(
-          "SET_FINGERPRINT 11:22:33:44:55:66 aa:bb:cc:dd:ee:ff 12345 test",
-          CMD_DELIMITER, cmd_arr),
-      -1);
-  assert_int_equal(process_set_fingerprint_cmd(0, &claddr, NULL, cmd_arr),
-                   strlen(FAIL_REPLY));
-  utarray_free(cmd_arr);
-
-  utarray_new(cmd_arr, &ut_str_icd);
-  assert_int_not_equal(
-      split_string_array(
-          "SET_FINGERPRINT 11:22:33:44:55:66 aa:bb:cc:dd:ee:ff IP ",
-          CMD_DELIMITER, cmd_arr),
-      -1);
-  assert_int_equal(process_set_fingerprint_cmd(0, &claddr, NULL, cmd_arr),
-                   strlen(FAIL_REPLY));
-  utarray_free(cmd_arr);
-}
-
-static void test_process_query_fingerprint_cmd(void **state) {
-  (void)state; /* unused */
-
-  UT_array *cmd_arr;
-  struct client_address claddr;
-
-  utarray_new(cmd_arr, &ut_str_icd);
-  assert_int_not_equal(
-      split_string_array("QUERY_FINGERPRINT 11:22:33:44:55:66 12345 >= IP4",
-                         CMD_DELIMITER, cmd_arr),
-      -1);
-  expect_string(__wrap_query_fingerprint_cmd, mac_addr, "11:22:33:44:55:66");
-  expect_value(__wrap_query_fingerprint_cmd, timestamp, 12345);
-  expect_string(__wrap_query_fingerprint_cmd, op, ">=");
-  expect_string(__wrap_query_fingerprint_cmd, protocol, "IP4");
-  assert_int_equal(process_query_fingerprint_cmd(0, &claddr, NULL, cmd_arr),
-                   strlen(OK_REPLY));
-  utarray_free(cmd_arr);
-
-  utarray_new(cmd_arr, &ut_str_icd);
-  assert_int_not_equal(
-      split_string_array("QUERY_FINGERPRINT 11:22:33:44:55: 12345 >= IP4",
-                         CMD_DELIMITER, cmd_arr),
-      -1);
-  assert_int_equal(process_query_fingerprint_cmd(0, &claddr, NULL, cmd_arr),
-                   strlen(FAIL_REPLY));
-  utarray_free(cmd_arr);
-
-  utarray_new(cmd_arr, &ut_str_icd);
-  assert_int_not_equal(
-      split_string_array("QUERY_FINGERPRINT 11:22:33:44:55:66 a12345 >= IP4",
-                         CMD_DELIMITER, cmd_arr),
-      -1);
-  assert_int_equal(process_query_fingerprint_cmd(0, &claddr, NULL, cmd_arr),
-                   strlen(FAIL_REPLY));
-  utarray_free(cmd_arr);
-
-  utarray_new(cmd_arr, &ut_str_icd);
-  assert_int_not_equal(
-      split_string_array("QUERY_FINGERPRINT 11:22:33:44:55:66 12345 >== IP4",
-                         CMD_DELIMITER, cmd_arr),
-      -1);
-  assert_int_equal(process_query_fingerprint_cmd(0, &claddr, NULL, cmd_arr),
-                   strlen(FAIL_REPLY));
-  utarray_free(cmd_arr);
-
-  utarray_new(cmd_arr, &ut_str_icd);
-  assert_int_not_equal(
-      split_string_array(
-          "QUERY_FINGERPRINT 11:22:33:44:55:66 12345 >= "
-          "1234567812345678123456781234567812345678123456781234567812345678",
-          CMD_DELIMITER, cmd_arr),
-      -1);
-  assert_int_equal(process_query_fingerprint_cmd(0, &claddr, NULL, cmd_arr),
-                   strlen(FAIL_REPLY));
-  utarray_free(cmd_arr);
-}
-
 static void test_process_register_ticket_cmd(void **state) {
   (void)state; /* unused */
 
@@ -1334,8 +1181,6 @@ int main(int argc, char *argv[]) {
       cmocka_unit_test(test_process_add_bridge_cmd),
       cmocka_unit_test(test_process_remove_bridge_cmd),
       cmocka_unit_test(test_process_clear_bridges_cmd),
-      cmocka_unit_test(test_process_set_fingerprint_cmd),
-      cmocka_unit_test(test_process_query_fingerprint_cmd),
       cmocka_unit_test(test_process_register_ticket_cmd),
       cmocka_unit_test(test_process_clear_psk_cmd),
 #ifdef WITH_CRYPTO_SERVICE

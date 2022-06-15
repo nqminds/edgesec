@@ -30,6 +30,7 @@
 #include <fcntl.h>
 #include <uuid/uuid.h>
 
+#include "hashmap.h"
 #include "utarray.h"
 #include "allocs.h"
 #include "os.h"
@@ -135,7 +136,7 @@ bool is_number(const char *ptr) {
   return (*ptr == '\0') ? false : true;
 }
 
-static int hex2num(char c) {
+int hex2num(char c) {
   if (c >= '0' && c <= '9')
     return c - '0';
   if (c >= 'a' && c <= 'f')
@@ -188,28 +189,6 @@ int hexstr2bin(const char *hex, uint8_t *buf, size_t len) {
     ipos += 2;
   }
   return 0;
-}
-
-int hwaddr_aton2(const char *txt, uint8_t *addr) {
-  int i;
-  const char *pos = txt;
-
-  for (i = 0; i < 6; i++) {
-    int a, b;
-
-    while (*pos == ':' || *pos == '.' || *pos == '-')
-      pos++;
-
-    a = hex2num(*pos++);
-    if (a < 0)
-      return -1;
-    b = hex2num(*pos++);
-    if (b < 0)
-      return -1;
-    *addr++ = (a << 4) | b;
-  }
-
-  return pos - txt;
 }
 
 size_t os_strlcpy(char *dest, const char *src, size_t siz) {
@@ -833,19 +812,19 @@ bool signal_process(char *proc_name, int sig) {
   struct proc_signal_arg sarg = {.proc_name = proc_name, .sig = sig};
 
   if (proc_name == NULL) {
-    log_trace("proc_name is NULL");
+    log_error("proc_name is NULL");
     return false;
   }
 
   if (!os_strnlen_s(proc_name, MAX_OS_PATH_LEN)) {
-    log_trace("proc_name is empty");
+    log_error("proc_name is empty");
     return false;
   }
 
   // Signal a process process if running
-  log_trace("Signalling process %s with signal=%d", proc_name, sig);
+  log_debug("Signalling process %s with signal=%d", proc_name, sig);
   if (list_dir("/proc", signal_dir_fn, &sarg) == -1) {
-    log_trace("list_dir fail");
+    log_error("list_dir fail");
     return false;
   }
 
@@ -1348,6 +1327,59 @@ int read_file_string(char *path, char **out) {
   os_free(data);
   return 0;
 }
+
+int get_commands_paths(char *commands[], UT_array *bin_path_arr,
+                       hmap_str_keychar **hmap_bin_paths) {
+  if (bin_path_arr == NULL) {
+    log_error("bin_path_arr param NULL");
+    return -1;
+  }
+
+  if (commands == NULL) {
+    log_error("commands param NULL");
+    return -1;
+  }
+
+  *hmap_bin_paths = NULL;
+
+  for (uint8_t idx = 0; commands[idx] != NULL; idx++) {
+    log_debug("Getting %s command...", commands[idx]);
+    char *path = get_secure_path(bin_path_arr, commands[idx], false);
+    if (path == NULL) {
+      log_trace("%s command not found", commands[idx]);
+    } else {
+      log_debug("%s command found at %s", commands[idx], path);
+      if (!hmap_str_keychar_put(hmap_bin_paths, commands[idx], path)) {
+        log_error("hmap_str_keychar_put error");
+        os_free(path);
+        hmap_str_keychar_free(hmap_bin_paths);
+        return -1;
+      }
+      os_free(path);
+    }
+  }
+
+  return 0;
+}
+
+char *string_append_char(char *str, char character) {
+  char *appended = NULL;
+
+  if (str == NULL) {
+    log_error("str param is NULL");
+    return NULL;
+  }
+
+  if ((appended = os_zalloc(strlen(str) + 2)) == NULL) {
+    log_errno("os_zalloc");
+    return NULL;
+  }
+
+  sprintf(appended, "%s%c", str, character);
+
+  return appended;
+}
+
 // void *os_malloc(size_t size)
 // {
 //   void *ptr = malloc(size);

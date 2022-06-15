@@ -26,8 +26,8 @@
 #include <stdbool.h>
 
 #include "../utils/os.h"
-
-#define RADIUS_SECRET_LEN 255
+#include "../utils/eloop.h"
+#include "radius_config.h"
 
 /**
  * struct radius_server_counters - RADIUS server statistics counters
@@ -102,6 +102,11 @@ struct radius_client {
  */
 struct radius_server_data {
   /**
+   * eloop - The eloop context
+   */
+  struct eloop_data *eloop;
+
+  /**
    * auth_sock - Socket for RADIUS authentication messages
    */
   int auth_sock;
@@ -134,20 +139,8 @@ struct radius_server_data {
   struct radius_server_counters counters;
 };
 
-/**
- * @brief Radius configuration structure
- *
- */
-struct radius_conf {
-  int radius_port;                       /**< Radius port */
-  char radius_client_ip[IP_LEN];         /**< Radius client IP string */
-  int radius_client_mask;                /**< Radius client IP mask string */
-  char radius_server_ip[IP_LEN];         /**< Radius server IP string */
-  int radius_server_mask;                /**< Radius server IP mask string */
-  char radius_secret[RADIUS_SECRET_LEN]; /**< Radius secret string */
-};
-
-struct radius_server_data *radius_server_init(int auth_port,
+struct radius_server_data *radius_server_init(struct eloop_data *eloop,
+                                              int auth_port,
                                               struct radius_client *clients);
 void radius_server_deinit(struct radius_server_data *data);
 int radius_server_get_mib(struct radius_server_data *data, char *buf,

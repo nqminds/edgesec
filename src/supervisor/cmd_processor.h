@@ -31,7 +31,7 @@
 #include <stdbool.h>
 
 #include "../utils/utarray.h"
-#include "../utils/domain.h"
+#include "../utils/sockctl.h"
 
 #include "supervisor_config.h"
 
@@ -73,8 +73,10 @@
 #define CMD_SIGN_BLOB "SIGN_BLOB"
 #endif
 
-#define OK_REPLY "OK"
-#define FAIL_REPLY "FAIL"
+#define CMD_DELIMITER 0x20
+
+#define OK_REPLY "OK\n"
+#define FAIL_REPLY "FAIL\n"
 
 #define MAX_QUERY_OP_LEN 3
 

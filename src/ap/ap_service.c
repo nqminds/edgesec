@@ -41,7 +41,7 @@
 #include "../utils/eloop.h"
 #include "../utils/iface.h"
 #include "../utils/log.h"
-#include "../utils/domain.h"
+#include "../utils/sockctl.h"
 
 #define ATTACH_AP_COMMAND "ATTACH"
 
@@ -57,12 +57,12 @@ int ping_ap_command(struct apconf *hconf) {
 
   if (writeread_domain_data_str(hconf->ctrl_interface_path, PING_AP_COMMAND,
                                 &reply) < 0) {
-    log_trace("writeread_domain_data_str fail");
+    log_error("writeread_domain_data_str fail");
     return -1;
   }
 
   if (strcmp(reply, PING_AP_COMMAND_REPLY) != 0) {
-    log_trace(PING_AP_COMMAND_REPLY " reply doesn't match %s", reply);
+    log_error(PING_AP_COMMAND_REPLY " reply doesn't match %s", reply);
     os_free(reply);
     return -1;
   }
@@ -76,7 +76,7 @@ int denyacl_ap_command(struct apconf *hconf, char *cmd, char *mac_addr) {
   char *reply = NULL;
 
   if (mac_addr == NULL) {
-    log_trace("mac_addr is NULL");
+    log_error("mac_addr is NULL");
     return -1;
   }
 
@@ -88,12 +88,12 @@ int denyacl_ap_command(struct apconf *hconf, char *cmd, char *mac_addr) {
   sprintf(buffer, "%s %s", cmd, mac_addr);
   if (writeread_domain_data_str(hconf->ctrl_interface_path, buffer, &reply) <
       0) {
-    log_trace("writeread_domain_data_str fail");
+    log_error("writeread_domain_data_str fail");
     return -1;
   }
 
   if (strcmp(reply, GENERIC_AP_COMMAND_OK_REPLY) != 0) {
-    log_trace(GENERIC_AP_COMMAND_OK_REPLY " reply doesn't match %s", reply);
+    log_error(GENERIC_AP_COMMAND_OK_REPLY " reply doesn't match %s", reply);
     os_free(reply);
     return -1;
   }
@@ -112,12 +112,12 @@ int denyacl_del_ap_command(struct apconf *hconf, char *mac_addr) {
 
 int disconnect_ap_command(struct apconf *hconf, char *mac_addr) {
   if (denyacl_add_ap_command(hconf, mac_addr) < 0) {
-    log_trace("denyacl_add_ap_command fail");
+    log_error("denyacl_add_ap_command fail");
     return -1;
   }
 
   if (denyacl_del_ap_command(hconf, mac_addr) < 0) {
-    log_trace("denyacl_del_ap_command fail");
+    log_error("denyacl_del_ap_command fail");
     return -1;
   }
 
@@ -129,7 +129,7 @@ int check_sta_ap_command(struct apconf *hconf, char *mac_addr) {
   char *reply = NULL;
 
   if (mac_addr == NULL) {
-    log_trace("mac_addr is NULL");
+    log_error("mac_addr is NULL");
     return -1;
   }
 
@@ -142,18 +142,18 @@ int check_sta_ap_command(struct apconf *hconf, char *mac_addr) {
   sprintf(buffer, STA_AP_COMMAND " %s", mac_addr);
   if (writeread_domain_data_str(hconf->ctrl_interface_path, buffer, &reply) <
       0) {
-    log_trace("writeread_domain_data_str fail");
+    log_error("writeread_domain_data_str fail");
     return -1;
   }
 
   if (strcmp(reply, GENERIC_AP_COMMAND_FAIL_REPLY) == 0) {
-    log_trace("no STA registered with mac=%s", mac_addr);
+    log_error("no STA registered with mac=%s", mac_addr);
     os_free(reply);
     return -1;
   }
 
   if (!strlen(reply)) {
-    log_trace("no reply for mac=%s", mac_addr);
+    log_error("no reply for mac=%s", mac_addr);
     os_free(reply);
     return -1;
   }
@@ -217,13 +217,13 @@ void ap_sock_handler(int sock, void *eloop_ctx, void *sock_ctx) {
   if (read_domain_data_s(sock, rec_data, bytes_available,
                          context->hconfig.ctrl_interface_path,
                          MSG_DONTWAIT) < 0) {
-    log_trace("read_domain_data_s fail");
+    log_error("read_domain_data_s fail");
     os_free(rec_data);
     return;
   }
 
   if ((trimmed = rtrim(rec_data, NULL)) == NULL) {
-    log_trace("rtrim fail");
+    log_error("rtrim fail");
     os_free(rec_data);
     return;
   }
@@ -240,21 +240,22 @@ int register_ap_event(struct supervisor_context *context,
   ssize_t cmd_len = (ssize_t)STRLEN(ATTACH_AP_COMMAND);
 
   if ((context->ap_sock = create_domain_client(NULL)) == -1) {
-    log_debug("create_domain_client fail");
+    log_error("create_domain_client fail");
     return -1;
   }
 
-  if (eloop_register_read_sock(context->ap_sock, ap_sock_handler,
-                               ap_callback_fn, (void *)context) == -1) {
-    log_trace("eloop_register_read_sock fail");
+  if (eloop_register_read_sock(context->eloop, context->ap_sock,
+                               ap_sock_handler, ap_callback_fn,
+                               (void *)context) == -1) {
+    log_error("eloop_register_read_sock fail");
     return -1;
   }
 
-  log_trace("Sending command %s to socket_path=%s", ATTACH_AP_COMMAND,
+  log_debug("Sending command %s to socket_path=%s", ATTACH_AP_COMMAND,
             context->hconfig.ctrl_interface_path);
   if (write_domain_data_s(context->ap_sock, ATTACH_AP_COMMAND, cmd_len,
                           context->hconfig.ctrl_interface_path) != cmd_len) {
-    log_trace("write_domain_data_s fail");
+    log_error("write_domain_data_s fail");
     return -1;
   }
 
@@ -267,22 +268,22 @@ int run_ap(struct supervisor_context *context, bool exec_ap, bool generate_ssid,
   int res;
   if (generate_vlan_conf(context->hconfig.vlan_file,
                          context->hconfig.interface) < 0) {
-    log_trace("generate_vlan_conf fail");
+    log_error("generate_vlan_conf fail");
     return -1;
   }
 
   if (generate_ssid) {
     if (get_hostname(hostname) < 0) {
-      log_debug("get_hostname fail");
+      log_error("get_hostname fail");
       return -1;
     }
     os_strlcpy(context->hconfig.ssid, hostname, AP_NAME_LEN);
-    log_info("Regenarating SSID=%s", context->hconfig.ssid);
+    log_debug("Regenerating SSID=%s", context->hconfig.ssid);
   }
 
   if (generate_hostapd_conf(&context->hconfig, &context->rconfig) < 0) {
     unlink(context->hconfig.vlan_file);
-    log_trace("generate_hostapd_conf fail");
+    log_error("generate_hostapd_conf fail");
     return -1;
   }
 
@@ -293,13 +294,11 @@ int run_ap(struct supervisor_context *context, bool exec_ap, bool generate_ssid,
   }
 
   if (!res && ping_ap_command(&context->hconfig) < 0) {
-    log_trace("ping_ap_command fail");
-    return -1;
+    log_warn("ping_ap_command fail");
   }
 
   if (register_ap_event(context, ap_callback_fn) < 0) {
-    log_trace("register_ap_event fail");
-    return -1;
+    log_warn("register_ap_event fail");
   }
 
   return res;

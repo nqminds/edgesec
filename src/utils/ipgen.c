@@ -91,7 +91,7 @@ int ipgen_create_interface(struct ipgenctx *context, char *ifname, char *type,
                            char *ip_addr, char *brd_addr, char *subnet_mask) {
   (void)context;
 
-  char longip[IP_LONG_LEN];
+  char longip[OS_INET_ADDRSTRLEN];
 
   if (ifname == NULL) {
     log_trace("ifname param is NULL");
@@ -118,7 +118,7 @@ int ipgen_create_interface(struct ipgenctx *context, char *ifname, char *type,
     return -1;
   }
 
-  snprintf(longip, IP_LONG_LEN, "%s/%d", ip_addr,
+  snprintf(longip, OS_INET_ADDRSTRLEN, "%s/%d", ip_addr,
            (int)get_short_subnet(subnet_mask));
 
   if (ipgen_new_interface(context->ipcmd_path, ifname, type) < 0) {

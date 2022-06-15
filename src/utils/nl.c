@@ -116,7 +116,7 @@ int ip_link_list(req_filter_fn_t filter_fn, struct nlmsg_chain *linfo) {
   }
 
   if (rtnl_dump_filter(&rth, store_nlmsg, linfo) < 0) {
-    log_trace("Dump terminated");
+    log_error("Dump terminated");
     return 1;
   }
 
@@ -152,7 +152,7 @@ static int ip_addr_list(struct nlmsg_chain *ainfo, int if_id) {
   }
 
   if (rtnl_dump_filter(&rth, store_nlmsg, ainfo) < 0) {
-    log_trace("Dump terminated");
+    log_error("Dump terminated");
     return 1;
   }
 
@@ -208,7 +208,7 @@ int get_addrinfo(struct nlmsghdr *n, netif_info_t *info) {
     return 0;
   len -= NLMSG_LENGTH(sizeof(*ifa));
   if (len < 0) {
-    log_trace("BUG: wrong nlmsg len %d\n", len);
+    log_error("BUG: wrong nlmsg len %d\n", len);
     return -1;
   }
 
@@ -234,19 +234,22 @@ int get_addrinfo(struct nlmsghdr *n, netif_info_t *info) {
 
   if (rta_tb[IFA_LOCAL] && info->ifa_family == AF_INET) {
     os_strlcpy(info->ip_addr,
-               format_host_rta(ifa->ifa_family, rta_tb[IFA_LOCAL]), IP_LEN);
+               format_host_rta(ifa->ifa_family, rta_tb[IFA_LOCAL]),
+               OS_INET_ADDRSTRLEN);
     log_trace("ifindex=%d ip_addr=%s", info->ifindex, info->ip_addr);
     if (rta_tb[IFA_ADDRESS] &&
         memcmp(RTA_DATA(rta_tb[IFA_ADDRESS]), RTA_DATA(rta_tb[IFA_LOCAL]), 4)) {
       os_strlcpy(info->peer_addr,
-                 format_host_rta(ifa->ifa_family, rta_tb[IFA_ADDRESS]), IP_LEN);
+                 format_host_rta(ifa->ifa_family, rta_tb[IFA_ADDRESS]),
+                 OS_INET_ADDRSTRLEN);
       log_trace("ifindex=%d peer_addr=%s", info->ifindex, info->peer_addr);
     }
   }
 
   if (rta_tb[IFA_BROADCAST] && info->ifa_family == AF_INET) {
     os_strlcpy(info->brd_addr,
-               format_host_rta(ifa->ifa_family, rta_tb[IFA_BROADCAST]), IP_LEN);
+               format_host_rta(ifa->ifa_family, rta_tb[IFA_BROADCAST]),
+               OS_INET_ADDRSTRLEN);
     log_trace("ifindex=%d brd_addr=%s", info->ifindex, info->brd_addr);
   }
 
@@ -616,21 +619,21 @@ static int ipaddr_modify(int cmd, int flags, int argc, char **argv) {
     addattr32(&req.n, sizeof(req), IFA_FLAGS, ifa_flags);
 
   if (d == NULL) {
-    log_trace("Not enough information: \"dev\" argument is required.");
+    log_error("Not enough information: \"dev\" argument is required.");
     return -1;
   }
 
   if (local_len) {
     if (cmd == RTM_DELADDR && lcl.family == AF_INET &&
         !(lcl.flags & PREFIXLEN_SPECIFIED)) {
-      log_trace("Warning: Executing wildcard deletion to stay compatible with "
-                "old scripts.\n"
-                "         Explicitly specify the prefix length (%d) to avoid "
-                "this warning.\n"
-                "         This special behaviour is likely to disappear in "
-                "further releases,\n"
-                "         fix your scripts!",
-                local_len * 8);
+      log_warn("Warning: Executing wildcard deletion to stay compatible with "
+               "old scripts.\n"
+               "         Explicitly specify the prefix length (%d) to avoid "
+               "this warning.\n"
+               "         This special behaviour is likely to disappear in "
+               "further releases,\n"
+               "         fix your scripts!",
+               local_len * 8);
     } else {
       peer = lcl;
       addattr_l(&req.n, sizeof(req), IFA_ADDRESS, &lcl.data, lcl.bytelen);
@@ -645,7 +648,7 @@ static int ipaddr_modify(int cmd, int flags, int argc, char **argv) {
     int i;
 
     if (req.ifa.ifa_family != AF_INET) {
-      log_trace("Broadcast can be set only for IPv4 addresses");
+      log_error("Broadcast can be set only for IPv4 addresses");
       return -1;
     }
 
@@ -684,19 +687,19 @@ UT_array *nl_get_interfaces(int if_id) {
   utarray_new(arr, &netif_info_icd);
 
   if (rtnl_open(&rth, 0) < 0) {
-    log_trace("rtnl_open error");
+    log_error("rtnl_open error");
     goto err;
   }
 
   rtnl_set_strict_dump(&rth);
 
   if (ip_link_list(iplink_filter_req, &linfo) != 0) {
-    log_trace("ip_link_list error");
+    log_error("ip_link_list error");
     goto err;
   }
 
   if (ip_addr_list(ainfo, if_id) != 0) {
-    log_trace("ip_addr_list error");
+    log_error("ip_addr_list error");
     goto err;
   }
 
@@ -732,10 +735,10 @@ bool nl_new_interface(char *if_name, char *type) {
   int ret;
   char *argv[4] = {"name", if_name, "type", type};
 
-  log_trace("nl_new_interface for if_name=%s type=%s", if_name, type);
+  log_debug("nl_new_interface for if_name=%s type=%s", if_name, type);
 
   if (rtnl_open(&rth, 0) < 0) {
-    log_trace("rtnl_open error");
+    log_error("rtnl_open error");
     goto err;
   }
 
@@ -744,11 +747,11 @@ bool nl_new_interface(char *if_name, char *type) {
   if (iplink_have_newlink()) {
     ret = iplink_modify(RTM_NEWLINK, NLM_F_CREATE | NLM_F_EXCL, 4, argv);
     if (ret != 0) {
-      log_trace("iplink_modify error %d", ret);
+      log_error("iplink_modify error %d", ret);
       goto err;
     }
   } else {
-    log_trace("iplink_have_newlink error");
+    log_error("iplink_have_newlink error");
     goto err;
   }
 
@@ -763,11 +766,11 @@ err:
 bool nl_set_interface_ip(char *ip_addr, char *brd_addr, char *if_name) {
   char *argv[5] = {ip_addr, "brd", brd_addr, "dev", if_name};
 
-  log_trace("set_interface_ip for if_name=%s ip_addr=%s brd_addr=%s", if_name,
+  log_debug("set_interface_ip for if_name=%s ip_addr=%s brd_addr=%s", if_name,
             ip_addr, brd_addr);
 
   if (rtnl_open(&rth, 0) < 0) {
-    log_trace("rtnl_open error");
+    log_error("rtnl_open error");
     goto err;
   }
 
@@ -776,7 +779,7 @@ bool nl_set_interface_ip(char *ip_addr, char *brd_addr, char *if_name) {
   int ret;
   ret = ipaddr_modify(RTM_NEWADDR, NLM_F_CREATE | NLM_F_EXCL, 5, argv);
   if (ret != 0) {
-    log_trace("ipaddr_modify error %d", ret);
+    log_error("ipaddr_modify error %d", ret);
     goto err;
   }
 
@@ -792,11 +795,11 @@ bool nl_set_interface_state(char *if_name, bool state) {
   char *if_state = (state) ? "up" : "down";
   char *argv[3] = {"dev", if_name, if_state};
 
-  log_trace("set_interface_state for if_name=%s if_state=%s", if_name,
+  log_debug("set_interface_state for if_name=%s if_state=%s", if_name,
             if_state);
 
   if (rtnl_open(&rth, 0) < 0) {
-    log_trace("rtnl_open error");
+    log_error("rtnl_open error");
     goto err;
   }
 
@@ -807,11 +810,11 @@ bool nl_set_interface_state(char *if_name, bool state) {
   if (iplink_have_newlink()) {
     ret = iplink_modify(RTM_NEWLINK, 0, 3, argv);
     if (ret != 0) {
-      log_trace("iplink_modify error %d", ret);
+      log_error("iplink_modify error %d", ret);
       goto err;
     }
   } else {
-    log_trace("iplink_have_newlink error");
+    log_error("iplink_have_newlink error");
     goto err;
   }
 
@@ -844,48 +847,48 @@ int nl_create_interface(struct nlctx *context, char *ifname, char *type,
                         char *ip_addr, char *brd_addr, char *subnet_mask) {
   (void)context;
 
-  char longip[IP_LONG_LEN];
+  char longip[OS_INET_ADDRSTRLEN];
 
   if (ifname == NULL) {
-    log_trace("ifname param is NULL");
+    log_error("ifname param is NULL");
     return -1;
   }
 
   if (type == NULL) {
-    log_trace("type param is NULL");
+    log_error("type param is NULL");
     return -1;
   }
 
   if (ip_addr == NULL) {
-    log_trace("ip_addr param is NULL");
+    log_error("ip_addr param is NULL");
     return -1;
   }
 
   if (brd_addr == NULL) {
-    log_trace("brd_addr param is NULL");
+    log_error("brd_addr param is NULL");
     return -1;
   }
 
   if (subnet_mask == NULL) {
-    log_trace("subnet_mask param is NULL");
+    log_error("subnet_mask param is NULL");
     return -1;
   }
 
-  snprintf(longip, IP_LONG_LEN, "%s/%d", ip_addr,
+  snprintf(longip, OS_INET_ADDRSTRLEN, "%s/%d", ip_addr,
            (int)get_short_subnet(subnet_mask));
 
   if (!nl_new_interface(ifname, type)) {
-    log_trace("nl_new_interface fail");
+    log_error("nl_new_interface fail");
     return -1;
   }
 
   if (!nl_set_interface_ip(longip, brd_addr, ifname)) {
-    log_trace("nl_set_interface_ip fail");
+    log_error("nl_set_interface_ip fail");
     return -1;
   }
 
   if (!nl_set_interface_state(ifname, true)) {
-    log_trace("nl_set_interface_state fail");
+    log_error("nl_set_interface_state fail");
     return -1;
   }
 
@@ -894,12 +897,12 @@ int nl_create_interface(struct nlctx *context, char *ifname, char *type,
 
 int nl_reset_interface(char *ifname) {
   if (!nl_set_interface_state(ifname, false)) {
-    log_trace("nl_set_interface_state fail");
+    log_error("nl_set_interface_state fail");
     return -1;
   }
 
   if (!nl_set_interface_state(ifname, true)) {
-    log_trace("nl_set_interface_state fail");
+    log_error("nl_set_interface_state fail");
     return -1;
   }
 
@@ -1028,7 +1031,7 @@ static int process_phy_handler(struct nl_msg *msg, void *arg) {
 
   if (tb_msg[NL80211_ATTR_WIPHY_NAME])
     wiphy = nla_get_string(tb_msg[NL80211_ATTR_WIPHY_NAME]);
-  log_debug("Using Wiphy %s", wiphy);
+  log_trace("Using Wiphy %s", wiphy);
 
   if (tb_msg[NL80211_ATTR_SUPPORTED_IFTYPES]) {
     char modebuf[100];
@@ -1095,14 +1098,14 @@ static int8_t nl_new(struct nl80211_state *nlstate, struct nl_cb **cb,
 
   *msg = nlmsg_alloc();
   if (*msg == NULL) {
-    log_trace("failed to allocate netlink message");
+    log_error("failed to allocate netlink message");
     nl_socket_free(nlstate->nl_sock);
     return 1;
   }
 
   *cb = nl_cb_alloc(NL_CB_TYPE);
   if (*cb == NULL) {
-    log_trace("failed to allocate netlink callbacks\n");
+    log_error("failed to allocate netlink callbacks\n");
     nlmsg_free(*msg);
     nl_socket_free(nlstate->nl_sock);
     return 1;
@@ -1147,7 +1150,7 @@ bool iwace_isvlan(uint32_t wiphy) {
   return isvlan;
 
 nla_put_failure:
-  log_trace("NLA_PUT_U32 failed");
+  log_error("NLA_PUT_U32 failed");
   nl_cb_put(cb);
   nlmsg_free(msg);
   nl_socket_free(nlstate.nl_sock);
@@ -1187,7 +1190,7 @@ UT_array *get_netiw_info(void) {
   nl_socket_free(nlstate.nl_sock);
   return arr;
 
-  log_trace("NLA_PUT_U32 failed");
+  log_error("NLA_PUT_U32 failed");
   nl_cb_put(cb);
   nlmsg_free(msg);
   nl_socket_free(nlstate.nl_sock);
@@ -1198,14 +1201,14 @@ UT_array *get_netiw_info(void) {
 int nl_is_iw_vlan(const char *ifname) {
   log_debug("Checking %s exists", ifname);
   if (!iface_exists(ifname)) {
-    log_trace("WiFi interface %s doesn't exist", ifname);
+    log_error("WiFi interface %s doesn't exist", ifname);
     return 1;
   }
 
   UT_array *netif_list = get_netiw_info();
 
   if (netif_list == NULL) {
-    log_trace("Couldn't list wifi interfaces");
+    log_error("Couldn't list wifi interfaces");
     return -1;
   }
 
@@ -1214,7 +1217,7 @@ int nl_is_iw_vlan(const char *ifname) {
        el = (netiw_info_t *)utarray_next(netif_list, el)) {
     if (!strcmp(el->ifname, ifname)) {
       if (!iwace_isvlan(el->wiphy)) {
-        log_trace("WiFi interface %s doesn't suport vlan tagging", ifname);
+        log_error("WiFi interface %s doesn't suport vlan tagging", ifname);
         utarray_free(netif_list);
         return 1;
       } else {
@@ -1232,12 +1235,12 @@ char *nl_get_valid_iw(char *buf) {
   UT_array *netif_list = get_netiw_info();
 
   if (netif_list == NULL) {
-    log_trace("Couldn't list wifi interfaces");
+    log_error("Couldn't list wifi interfaces");
     return NULL;
   }
 
   if (buf == NULL) {
-    log_trace("if_buf param is NULL");
+    log_error("if_buf param is NULL");
     utarray_free(netif_list);
     return NULL;
   }

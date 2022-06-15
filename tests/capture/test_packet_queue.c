@@ -13,7 +13,7 @@
 #include <cmocka.h>
 
 #include "utils/log.h"
-#include "capture/packet_queue.h"
+#include "capture/header_middleware/packet_queue.h"
 
 static void test_push_packet_queue(void **state) {
   (void)state; /* unused */
@@ -67,6 +67,9 @@ static void test_pop_packet_queue(void **state) {
 }
 
 int main(int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
+
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {cmocka_unit_test(test_push_packet_queue),

@@ -35,7 +35,6 @@
 #include "cmd_processor.h"
 #include "mac_mapper.h"
 #include "network_commands.h"
-#include "monitor_commands.h"
 #ifdef WITH_CRYPTO_SERVICE
 #include "crypt_commands.h"
 #endif
@@ -47,7 +46,7 @@
 #include "utils/net.h"
 #include "utils/base64.h"
 #include "utils/utarray.h"
-#include "utils/domain.h"
+#include "utils/sockctl.h"
 
 bool process_domain_buffer(char *domain_buffer, size_t domain_buffer_len,
                            UT_array *cmd_arr, char sep) {
@@ -68,13 +67,25 @@ bool process_domain_buffer(char *domain_buffer, size_t domain_buffer_len,
 
   // remove the end new line character
   if (split_string_array(rtrim(cmd_line, NULL), sep, cmd_arr) < 0) {
-    log_trace("split_string_array fail");
+    log_error("split_string_array fail");
     os_free(cmd_line);
     return false;
   }
 
   os_free(cmd_line);
   return true;
+}
+
+int write_newline_socket_data(int sock, char *data,
+                              struct client_address *client_addr) {
+  char *msg;
+  if ((msg = string_append_char(data, '\n')) == NULL) {
+    log_error("string_append_char fail");
+    return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+  }
+  int ret = write_socket_data(sock, msg, strlen(msg), client_addr);
+  os_free(msg);
+  return ret;
 }
 
 ssize_t process_ping_cmd(int sock, struct client_address *client_addr,
@@ -85,11 +96,11 @@ ssize_t process_ping_cmd(int sock, struct client_address *client_addr,
   char *reply = NULL;
   int ret;
   if ((reply = ping_cmd()) != NULL) {
-    ret = write_domain_data(sock, reply, strlen(reply), client_addr);
+    ret = write_socket_data(sock, reply, strlen(reply), client_addr);
     os_free(reply);
     return ret;
   }
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+  return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
 ssize_t process_subscribe_events_cmd(int sock,
@@ -99,11 +110,11 @@ ssize_t process_subscribe_events_cmd(int sock,
   (void)cmd_arr; /* unused */
 
   if (subscribe_events_cmd(context, client_addr) < 0) {
-    log_trace("subscribe_events_cmd fail");
-    return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+    log_error("subscribe_events_cmd fail");
+    return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
   }
 
-  return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
+  return write_socket_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
 }
 
 ssize_t process_accept_mac_cmd(int sock, struct client_address *client_addr,
@@ -124,18 +135,18 @@ ssize_t process_accept_mac_cmd(int sock, struct client_address *client_addr,
         vlanid = (int)strtoul(*ptr, NULL, 10);
         if (errno != ERANGE && is_number(*ptr)) {
           if (accept_mac_cmd(context, addr, vlanid) < 0) {
-            log_trace("accept_mac_cmd fail");
-            return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
+            log_error("accept_mac_cmd fail");
+            return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                      client_addr);
           }
-          return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY),
+          return write_socket_data(sock, OK_REPLY, strlen(OK_REPLY),
                                    client_addr);
         }
       }
     }
   }
 
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+  return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
 ssize_t process_deny_mac_cmd(int sock, struct client_address *client_addr,
@@ -149,16 +160,16 @@ ssize_t process_deny_mac_cmd(int sock, struct client_address *client_addr,
   if (ptr != NULL && *ptr != NULL) {
     if (hwaddr_aton2(*ptr, addr) != -1) {
       if (deny_mac_cmd(context, addr) < 0) {
-        log_trace("deny_mac_cmd fail");
-        return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
+        log_error("deny_mac_cmd fail");
+        return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                  client_addr);
       }
 
-      return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
+      return write_socket_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
     }
   }
 
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+  return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
 ssize_t process_add_nat_cmd(int sock, struct client_address *client_addr,
@@ -172,16 +183,16 @@ ssize_t process_add_nat_cmd(int sock, struct client_address *client_addr,
   if (ptr != NULL && *ptr != NULL) {
     if (hwaddr_aton2(*ptr, addr) != -1) {
       if (add_nat_cmd(context, addr) < 0) {
-        log_trace("add_nat_cmd fail");
-        return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
+        log_error("add_nat_cmd fail");
+        return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                  client_addr);
       }
 
-      return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
+      return write_socket_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
     }
   }
 
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+  return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
 ssize_t process_remove_nat_cmd(int sock, struct client_address *client_addr,
@@ -195,16 +206,16 @@ ssize_t process_remove_nat_cmd(int sock, struct client_address *client_addr,
   if (ptr != NULL && *ptr != NULL) {
     if (hwaddr_aton2(*ptr, addr) != -1) {
       if (remove_nat_cmd(context, addr) < 0) {
-        log_trace("remove_nat_cmd fail");
-        return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
+        log_error("remove_nat_cmd fail");
+        return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                  client_addr);
       }
 
-      return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
+      return write_socket_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
     }
   }
 
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+  return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
 ssize_t process_assign_psk_cmd(int sock, struct client_address *client_addr,
@@ -224,19 +235,19 @@ ssize_t process_assign_psk_cmd(int sock, struct client_address *client_addr,
         pass_len = strlen(*ptr);
         if (pass_len <= AP_SECRET_LEN && pass_len) {
           if (assign_psk_cmd(context, addr, *ptr, pass_len) < 0) {
-            log_trace("assign_psk_cmd fail");
-            return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
+            log_error("assign_psk_cmd fail");
+            return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                      client_addr);
           }
 
-          return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY),
+          return write_socket_data(sock, OK_REPLY, strlen(OK_REPLY),
                                    client_addr);
         }
       }
     }
   }
 
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+  return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
 ssize_t process_get_map_cmd(int sock, struct client_address *client_addr,
@@ -267,14 +278,14 @@ ssize_t process_get_map_cmd(int sock, struct client_address *client_addr,
             info.ip_sec_addr, info.vlanid, (info.nat) ? 1 : 0, info.label,
             info.id, (info.pass_len) ? 1 : 0, info.join_timestamp,
             (int)info.status);
-        return write_domain_data(sock, temp, line_size, client_addr);
+        return write_socket_data(sock, temp, line_size, client_addr);
       } else if (!ret) {
-        return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
+        return write_socket_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
       }
     }
   }
 
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+  return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
 ssize_t process_get_all_cmd(int sock, struct client_address *client_addr,
@@ -311,13 +322,13 @@ ssize_t process_get_all_cmd(int sock, struct client_address *client_addr,
     }
 
     bytes_sent =
-        write_domain_data(sock, reply_buf, strlen(reply_buf), client_addr);
+        write_socket_data(sock, reply_buf, strlen(reply_buf), client_addr);
 
     os_free(mac_list);
     os_free(reply_buf);
   } else {
     bytes_sent =
-        write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
+        write_socket_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
   }
 
   return bytes_sent;
@@ -335,21 +346,24 @@ ssize_t process_set_ip_cmd(int sock, struct client_address *client_addr,
   ptr = (char **)utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
     os_strlcpy(dhcp_type, *ptr, 4);
-    log_trace("Received DHCP request with type=%s", dhcp_type);
+    log_debug("Received DHCP request with type=%s", dhcp_type);
     if (strcmp(dhcp_type, "add") == 0) {
       ip_type = DHCP_IP_NEW;
     } else if (strcmp(dhcp_type, "old") == 0) {
       ip_type = DHCP_IP_OLD;
     } else if (strcmp(dhcp_type, "del") == 0) {
       ip_type = DHCP_IP_DEL;
+    } else if (strcmp(dhcp_type, "arp") == 0) {
+      ip_type = DHCP_IP_ARP;
+      return write_socket_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
     } else {
       log_trace("Wrong type");
-      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
+      return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                client_addr);
     }
   } else {
     log_trace("Wrong type");
-    return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+    return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
   }
 
   // MAC address
@@ -361,23 +375,23 @@ ssize_t process_set_ip_cmd(int sock, struct client_address *client_addr,
       if (ptr != NULL && *ptr != NULL) {
         if (validate_ipv4_string(*ptr)) {
           if (set_ip_cmd(context, addr, *ptr, ip_type) < 0) {
-            log_trace("set_ip_cmd fail");
-            return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
+            log_error("set_ip_cmd fail");
+            return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                      client_addr);
           }
 
-          return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY),
+          return write_socket_data(sock, OK_REPLY, strlen(OK_REPLY),
                                    client_addr);
         } else {
-          log_trace("IP string, wrong format");
-          return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
+          log_error("IP string, wrong format");
+          return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                    client_addr);
         }
       }
     }
   }
 
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+  return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
 ssize_t process_add_bridge_cmd(int sock, struct client_address *client_addr,
@@ -385,7 +399,7 @@ ssize_t process_add_bridge_cmd(int sock, struct client_address *client_addr,
                                UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
   uint8_t left_addr[ETH_ALEN], right_addr[ETH_ALEN];
-  char left_ip[IP_LONG_LEN], right_ip[IP_LONG_LEN];
+  char left_ip[OS_INET_ADDRSTRLEN], right_ip[OS_INET_ADDRSTRLEN];
 
   // MAC address source
   ptr = (char **)utarray_next(cmd_arr, ptr);
@@ -396,36 +410,36 @@ ssize_t process_add_bridge_cmd(int sock, struct client_address *client_addr,
       if (ptr != NULL && *ptr != NULL) {
         if (hwaddr_aton2(*ptr, right_addr) != -1) {
           if (add_bridge_mac_cmd(context, left_addr, right_addr) < 0) {
-            log_trace("add_bridge_cmd fail");
-            return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
+            log_error("add_bridge_cmd fail");
+            return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                      client_addr);
           }
-          return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY),
+          return write_socket_data(sock, OK_REPLY, strlen(OK_REPLY),
                                    client_addr);
         }
       }
     } else if (validate_ipv4_string(*ptr)) {
-      os_strlcpy(left_ip, *ptr, IP_LONG_LEN);
+      os_strlcpy(left_ip, *ptr, OS_INET_ADDRSTRLEN);
 
       // IP address destination
       ptr = (char **)utarray_next(cmd_arr, ptr);
       if (ptr != NULL && *ptr != NULL) {
         if (validate_ipv4_string(*ptr)) {
-          os_strlcpy(right_ip, *ptr, IP_LONG_LEN);
+          os_strlcpy(right_ip, *ptr, OS_INET_ADDRSTRLEN);
 
           if (add_bridge_ip_cmd(context, left_ip, right_ip) < 0) {
-            log_trace("add_bridge_cmd fail");
-            return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
+            log_error("add_bridge_cmd fail");
+            return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                      client_addr);
           }
-          return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY),
+          return write_socket_data(sock, OK_REPLY, strlen(OK_REPLY),
                                    client_addr);
         }
       }
     }
   }
 
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+  return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
 ssize_t process_remove_bridge_cmd(int sock, struct client_address *client_addr,
@@ -444,18 +458,18 @@ ssize_t process_remove_bridge_cmd(int sock, struct client_address *client_addr,
       if (ptr != NULL && *ptr != NULL) {
         if (hwaddr_aton2(*ptr, right_addr) != -1) {
           if (remove_bridge_cmd(context, left_addr, right_addr) < 0) {
-            log_trace("remove_bridge_cmd fail");
-            return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
+            log_error("remove_bridge_cmd fail");
+            return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                      client_addr);
           }
-          return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY),
+          return write_socket_data(sock, OK_REPLY, strlen(OK_REPLY),
                                    client_addr);
         }
       }
     }
   }
 
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+  return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
 ssize_t process_clear_bridges_cmd(int sock, struct client_address *client_addr,
@@ -469,15 +483,15 @@ ssize_t process_clear_bridges_cmd(int sock, struct client_address *client_addr,
   if (ptr != NULL && *ptr != NULL) {
     if (hwaddr_aton2(*ptr, left_addr) != -1) {
       if (clear_bridges_cmd(context, left_addr) < 0) {
-        log_trace("remove_bridge_cmd fail");
-        return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
+        log_error("remove_bridge_cmd fail");
+        return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                  client_addr);
       }
-      return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
+      return write_socket_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
     }
   }
 
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+  return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
 ssize_t process_get_bridges_cmd(int sock, struct client_address *client_addr,
@@ -507,196 +521,14 @@ ssize_t process_get_bridges_cmd(int sock, struct client_address *client_addr,
     utarray_free(tuple_list_arr);
     if (reply_buf) {
       bytes_sent =
-          write_domain_data(sock, reply_buf, strlen(reply_buf), client_addr);
+          write_socket_data(sock, reply_buf, strlen(reply_buf), client_addr);
       os_free(reply_buf);
       return bytes_sent;
     } else
-      return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
+      return write_socket_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
   }
 
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
-}
-
-ssize_t process_set_fingerprint_cmd(int sock,
-                                    struct client_address *client_addr,
-                                    struct supervisor_context *context,
-                                    UT_array *cmd_arr) {
-  char **ptr = (char **)utarray_next(cmd_arr, NULL);
-  uint8_t addr[ETH_ALEN];
-  char src_mac_addr[MACSTR_LEN];
-  char dst_mac_addr[MACSTR_LEN];
-  char protocol[MAX_PROTOCOL_NAME_LEN];
-  char fingerprint[MAX_FINGERPRINT_LEN];
-  uint64_t timestamp;
-  char *query = NULL;
-
-  if (os_get_timestamp(&timestamp) < 0) {
-    return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
-  }
-
-  // MAC address source
-  ptr = (char **)utarray_next(cmd_arr, ptr);
-  if (ptr != NULL && *ptr != NULL) {
-    os_strlcpy(src_mac_addr, *ptr, MACSTR_LEN);
-
-    if (hwaddr_aton2(src_mac_addr, addr) == -1) {
-      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
-                               client_addr);
-    }
-
-    // MAC address destination
-    ptr = (char **)utarray_next(cmd_arr, ptr);
-    if (ptr != NULL && *ptr != NULL) {
-      os_strlcpy(dst_mac_addr, *ptr, MACSTR_LEN);
-
-      if (hwaddr_aton2(dst_mac_addr, addr) == -1) {
-        return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
-                                 client_addr);
-      }
-
-      ptr = (char **)utarray_next(cmd_arr, ptr);
-      // Protocol
-      if (ptr != NULL && *ptr != NULL) {
-        os_strlcpy(protocol, *ptr, MAX_PROTOCOL_NAME_LEN);
-        ptr = (char **)utarray_next(cmd_arr, ptr);
-        // Fingerprint
-        if (ptr != NULL && *ptr != NULL) {
-          os_strlcpy(fingerprint, *ptr, MAX_FINGERPRINT_LEN);
-          ptr = (char **)utarray_next(cmd_arr, ptr);
-          // Query
-          if (ptr != NULL && *ptr != NULL) {
-            query = *ptr;
-            if ((set_fingerprint_cmd(context, src_mac_addr, dst_mac_addr,
-                                     protocol, fingerprint, timestamp,
-                                     query) >= 0)) {
-              return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY),
-                                       client_addr);
-            }
-          }
-        }
-      }
-    }
-  }
-
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
-}
-
-ssize_t process_set_alert_cmd(int sock, struct client_address *client_addr,
-                              struct supervisor_context *context,
-                              UT_array *cmd_arr) {
-  char **ptr = (char **)utarray_next(cmd_arr, NULL);
-  uint8_t *meta, *info = NULL;
-  size_t meta_size, info_size;
-
-  // alert meta
-  ptr = (char **)utarray_next(cmd_arr, ptr);
-  if (ptr != NULL && *ptr != NULL) {
-    if ((meta = (uint8_t *)base64_url_decode(
-             (unsigned char *)*ptr, strlen(*ptr), &meta_size)) == NULL) {
-      log_trace("base64_url_decode fail\n");
-      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
-                               client_addr);
-    }
-
-    if (meta_size != sizeof(struct alert_meta)) {
-      log_trace("meta size not equal to alert_meta");
-      os_free(meta);
-      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
-                               client_addr);
-    }
-
-    // info
-    ptr = (char **)utarray_next(cmd_arr, ptr);
-    if (ptr != NULL && *ptr != NULL) {
-      if (strlen(rtrim(*ptr, NULL))) {
-        if ((info = (uint8_t *)base64_url_decode(
-                 (unsigned char *)*ptr, strlen(*ptr), &info_size)) == NULL) {
-          log_trace("base64_url_decode fail\n");
-          os_free(meta);
-          return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
-                                   client_addr);
-        }
-      }
-    }
-
-    if (set_alert_cmd(context, (struct alert_meta *)meta, info, info_size) <
-        0) {
-      log_trace("set_alert_cmd fail");
-      os_free(meta);
-      if (info != NULL) {
-        os_free(info);
-      }
-      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
-                               client_addr);
-    }
-
-    os_free(meta);
-    if (info != NULL) {
-      os_free(info);
-    }
-
-    return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
-  }
-
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
-}
-
-ssize_t process_query_fingerprint_cmd(int sock,
-                                      struct client_address *client_addr,
-                                      struct supervisor_context *context,
-                                      UT_array *cmd_arr) {
-  char **ptr = (char **)utarray_next(cmd_arr, NULL);
-  uint8_t addr[ETH_ALEN];
-  char mac_addr[MACSTR_LEN];
-  char op[MAX_QUERY_OP_LEN];
-  char protocol[MAX_PROTOCOL_NAME_LEN];
-  uint64_t timestamp;
-  char *out;
-  ssize_t out_len, ret;
-
-  // MAC address source
-  ptr = (char **)utarray_next(cmd_arr, ptr);
-  if (ptr != NULL && *ptr != NULL) {
-    os_strlcpy(mac_addr, *ptr, MACSTR_LEN);
-
-    if (hwaddr_aton2(mac_addr, addr) == -1) {
-      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
-                               client_addr);
-    }
-
-    ptr = (char **)utarray_next(cmd_arr, ptr);
-    // Timestamp
-    if (ptr != NULL && *ptr != NULL) {
-      errno = 0;
-      timestamp = (uint64_t)strtoull(*ptr, NULL, 10);
-      if (errno != ERANGE && is_number(*ptr)) {
-        ptr = (char **)utarray_next(cmd_arr, ptr);
-        // Query operator
-        if (ptr != NULL && *ptr != NULL) {
-          if (os_strnlen_s(*ptr, MAX_QUERY_OP_LEN) < MAX_QUERY_OP_LEN) {
-            os_strlcpy(op, *ptr, MAX_QUERY_OP_LEN);
-            ptr = (char **)utarray_next(cmd_arr, ptr);
-            // Protocol
-            if (ptr != NULL && *ptr != NULL) {
-              if (os_strnlen_s(*ptr, MAX_PROTOCOL_NAME_LEN) <
-                  MAX_PROTOCOL_NAME_LEN) {
-                os_strlcpy(protocol, *ptr, MAX_PROTOCOL_NAME_LEN);
-                if ((out_len =
-                         query_fingerprint_cmd(context, mac_addr, timestamp, op,
-                                               protocol, &out)) > 0) {
-                  ret = write_domain_data(sock, out, out_len, client_addr);
-
-                  os_free(out);
-                  return ret;
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+  return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
 ssize_t process_register_ticket_cmd(int sock,
@@ -729,10 +561,9 @@ ssize_t process_register_ticket_cmd(int sock,
                   (char *)register_ticket_cmd(context, mac_addr, label, vlanid);
 
               if (passphrase != NULL) {
-                return write_domain_data(sock, passphrase, strlen(passphrase),
-                                         client_addr);
+                return write_newline_socket_data(sock, passphrase, client_addr);
               } else {
-                return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
+                return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                          client_addr);
               }
             }
@@ -742,7 +573,7 @@ ssize_t process_register_ticket_cmd(int sock,
     }
   }
 
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+  return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
 ssize_t process_clear_psk_cmd(int sock, struct client_address *client_addr,
@@ -756,12 +587,12 @@ ssize_t process_clear_psk_cmd(int sock, struct client_address *client_addr,
   if (ptr != NULL && *ptr != NULL) {
     if (hwaddr_aton2(*ptr, mac_addr) != -1) {
       if (clear_psk_cmd(context, mac_addr) >= 0) {
-        return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
+        return write_socket_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
       }
     }
   }
 
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+  return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
 #ifdef WITH_CRYPTO_SERVICE
@@ -777,7 +608,7 @@ ssize_t process_put_crypt_cmd(int sock, struct client_address *client_addr,
   if (ptr != NULL && *ptr != NULL) {
     if ((key = os_strdup(*ptr)) == NULL) {
       log_errno("os_strdup");
-      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
+      return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                client_addr);
     }
 
@@ -787,7 +618,7 @@ ssize_t process_put_crypt_cmd(int sock, struct client_address *client_addr,
       if ((value = os_strdup(*ptr)) == NULL) {
         log_errno("os_strdup");
         os_free(key);
-        return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
+        return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                  client_addr);
       }
 
@@ -796,7 +627,7 @@ ssize_t process_put_crypt_cmd(int sock, struct client_address *client_addr,
         if (!put_crypt_cmd(context, key, trimmed)) {
           os_free(key);
           os_free(value);
-          return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY),
+          return write_socket_data(sock, OK_REPLY, strlen(OK_REPLY),
                                    client_addr);
         }
       }
@@ -805,7 +636,7 @@ ssize_t process_put_crypt_cmd(int sock, struct client_address *client_addr,
     os_free(key);
   }
 
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+  return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
 ssize_t process_get_crypt_cmd(int sock, struct client_address *client_addr,
@@ -820,7 +651,7 @@ ssize_t process_get_crypt_cmd(int sock, struct client_address *client_addr,
   if (ptr != NULL && *ptr != NULL) {
     if ((key = os_strdup(*ptr)) == NULL) {
       log_errno("os_strdup");
-      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
+      return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                client_addr);
     }
 
@@ -828,7 +659,7 @@ ssize_t process_get_crypt_cmd(int sock, struct client_address *client_addr,
     if (strlen(trimmed)) {
       if (!get_crypt_cmd(context, key, &value)) {
         os_free(key);
-        ret = write_domain_data(sock, value, strlen(value), client_addr);
+        ret = write_newline_socket_data(sock, value, client_addr);
         os_free(value);
         return ret;
       }
@@ -836,7 +667,7 @@ ssize_t process_get_crypt_cmd(int sock, struct client_address *client_addr,
   }
   os_free(key);
 
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+  return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
 ssize_t process_gen_randkey_cmd(int sock, struct client_address *client_addr,
@@ -851,7 +682,7 @@ ssize_t process_gen_randkey_cmd(int sock, struct client_address *client_addr,
   if (ptr != NULL && *ptr != NULL) {
     if ((keyid = os_strdup(*ptr)) == NULL) {
       log_errno("os_strdup");
-      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
+      return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                client_addr);
     }
 
@@ -863,7 +694,7 @@ ssize_t process_gen_randkey_cmd(int sock, struct client_address *client_addr,
       if (errno != ERANGE && is_number(*ptr)) {
         if (!gen_randkey_cmd(context, keyid, key_size)) {
           os_free(keyid);
-          return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY),
+          return write_socket_data(sock, OK_REPLY, strlen(OK_REPLY),
                                    client_addr);
         }
       }
@@ -871,7 +702,7 @@ ssize_t process_gen_randkey_cmd(int sock, struct client_address *client_addr,
     os_free(keyid);
   }
 
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+  return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
 ssize_t process_gen_privkey_cmd(int sock, struct client_address *client_addr,
@@ -886,7 +717,7 @@ ssize_t process_gen_privkey_cmd(int sock, struct client_address *client_addr,
   if (ptr != NULL && *ptr != NULL) {
     if ((keyid = os_strdup(*ptr)) == NULL) {
       log_errno("os_strdup");
-      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
+      return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                client_addr);
     }
 
@@ -898,7 +729,7 @@ ssize_t process_gen_privkey_cmd(int sock, struct client_address *client_addr,
       if (errno != ERANGE && is_number(*ptr)) {
         if (!gen_privkey_cmd(context, keyid, key_size)) {
           os_free(keyid);
-          return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY),
+          return write_socket_data(sock, OK_REPLY, strlen(OK_REPLY),
                                    client_addr);
         }
       }
@@ -906,7 +737,7 @@ ssize_t process_gen_privkey_cmd(int sock, struct client_address *client_addr,
     os_free(keyid);
   }
 
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+  return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
 ssize_t process_gen_pubkey_cmd(int sock, struct client_address *client_addr,
@@ -920,7 +751,7 @@ ssize_t process_gen_pubkey_cmd(int sock, struct client_address *client_addr,
   if (ptr != NULL && *ptr != NULL) {
     if ((pubid = os_strdup(*ptr)) == NULL) {
       log_errno("os_strdup");
-      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
+      return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                client_addr);
     }
 
@@ -930,7 +761,7 @@ ssize_t process_gen_pubkey_cmd(int sock, struct client_address *client_addr,
       if (strlen(*ptr)) {
         if (!gen_pubkey_cmd(context, pubid, *ptr)) {
           os_free(pubid);
-          return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY),
+          return write_socket_data(sock, OK_REPLY, strlen(OK_REPLY),
                                    client_addr);
         }
       }
@@ -938,7 +769,7 @@ ssize_t process_gen_pubkey_cmd(int sock, struct client_address *client_addr,
     os_free(pubid);
   }
 
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+  return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
 ssize_t process_gen_cert_cmd(int sock, struct client_address *client_addr,
@@ -961,7 +792,7 @@ ssize_t process_gen_cert_cmd(int sock, struct client_address *client_addr,
   if (ptr != NULL && *ptr != NULL) {
     if ((certid = os_strdup(*ptr)) == NULL) {
       log_errno("os_strdup");
-      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
+      return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                client_addr);
     }
 
@@ -971,7 +802,7 @@ ssize_t process_gen_cert_cmd(int sock, struct client_address *client_addr,
       if ((keyid = os_strdup(*ptr)) == NULL) {
         log_errno("os_strdup");
         os_free(certid);
-        return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
+        return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                  client_addr);
       }
 
@@ -983,7 +814,7 @@ ssize_t process_gen_cert_cmd(int sock, struct client_address *client_addr,
           if (!gen_cert_cmd(context, certid, keyid, &meta)) {
             os_free(keyid);
             os_free(certid);
-            return write_domain_data(sock, OK_REPLY, strlen(OK_REPLY),
+            return write_socket_data(sock, OK_REPLY, strlen(OK_REPLY),
                                      client_addr);
           }
         }
@@ -993,7 +824,7 @@ ssize_t process_gen_cert_cmd(int sock, struct client_address *client_addr,
     os_free(certid);
   }
 
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+  return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
 ssize_t process_encrypt_blob_cmd(int sock, struct client_address *client_addr,
@@ -1010,7 +841,7 @@ ssize_t process_encrypt_blob_cmd(int sock, struct client_address *client_addr,
   if (ptr != NULL && *ptr != NULL) {
     if ((keyid = os_strdup(*ptr)) == NULL) {
       log_errno("os_strdup");
-      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
+      return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                client_addr);
     }
 
@@ -1020,7 +851,7 @@ ssize_t process_encrypt_blob_cmd(int sock, struct client_address *client_addr,
       if ((ivid = os_strdup(*ptr)) == NULL) {
         log_errno("os_strdup");
         os_free(keyid);
-        return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
+        return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                  client_addr);
       }
 
@@ -1030,8 +861,8 @@ ssize_t process_encrypt_blob_cmd(int sock, struct client_address *client_addr,
         if (strlen(*ptr)) {
           if ((encrypted = encrypt_blob_cmd(context, keyid, ivid, *ptr)) !=
               NULL) {
-            ret = write_domain_data(sock, encrypted, strlen(encrypted),
-                                    client_addr);
+            ret = write_newline_socket_data(sock, encrypted, client_addr);
+
             os_free(ivid);
             os_free(keyid);
             os_free(encrypted);
@@ -1044,7 +875,7 @@ ssize_t process_encrypt_blob_cmd(int sock, struct client_address *client_addr,
     }
   }
 
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+  return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
 ssize_t process_decrypt_blob_cmd(int sock, struct client_address *client_addr,
@@ -1061,7 +892,7 @@ ssize_t process_decrypt_blob_cmd(int sock, struct client_address *client_addr,
   if (ptr != NULL && *ptr != NULL) {
     if ((keyid = os_strdup(*ptr)) == NULL) {
       log_errno("os_strdup");
-      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
+      return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                client_addr);
     }
 
@@ -1071,7 +902,7 @@ ssize_t process_decrypt_blob_cmd(int sock, struct client_address *client_addr,
       if ((ivid = os_strdup(*ptr)) == NULL) {
         log_errno("os_strdup");
         os_free(keyid);
-        return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
+        return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                  client_addr);
       }
 
@@ -1081,8 +912,7 @@ ssize_t process_decrypt_blob_cmd(int sock, struct client_address *client_addr,
         if (strlen(*ptr)) {
           if ((decrypted = decrypt_blob_cmd(context, keyid, ivid, *ptr)) !=
               NULL) {
-            ret = write_domain_data(sock, decrypted, strlen(decrypted),
-                                    client_addr);
+            ret = write_newline_socket_data(sock, decrypted, client_addr);
             os_free(keyid);
             os_free(ivid);
             os_free(decrypted);
@@ -1095,7 +925,7 @@ ssize_t process_decrypt_blob_cmd(int sock, struct client_address *client_addr,
     }
   }
 
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+  return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
 ssize_t process_sign_blob_cmd(int sock, struct client_address *client_addr,
@@ -1111,7 +941,7 @@ ssize_t process_sign_blob_cmd(int sock, struct client_address *client_addr,
   if (ptr != NULL && *ptr != NULL) {
     if ((keyid = os_strdup(*ptr)) == NULL) {
       log_errno("os_strdup");
-      return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
+      return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                client_addr);
     }
 
@@ -1120,8 +950,7 @@ ssize_t process_sign_blob_cmd(int sock, struct client_address *client_addr,
     if (ptr != NULL && *ptr != NULL) {
       if (strlen(*ptr)) {
         if ((signed_str = sign_blob_cmd(context, keyid, *ptr)) != NULL) {
-          ret = write_domain_data(sock, signed_str, strlen(signed_str),
-                                  client_addr);
+          ret = write_newline_socket_data(sock, signed_str, client_address);
           os_free(keyid);
           os_free(signed_str);
           return ret;
@@ -1131,7 +960,7 @@ ssize_t process_sign_blob_cmd(int sock, struct client_address *client_addr,
     os_free(keyid);
   }
 
-  return write_domain_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+  return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 #endif
 
@@ -1164,12 +993,6 @@ process_cmd_fn get_command_function(char *cmd) {
     return process_clear_bridges_cmd;
   } else if (!strcmp(cmd, CMD_GET_BRIDGES)) {
     return process_get_bridges_cmd;
-  } else if (!strcmp(cmd, CMD_SET_FINGERPRINT)) {
-    return process_set_fingerprint_cmd;
-  } else if (!strcmp(cmd, CMD_SET_ALERT)) {
-    return process_set_alert_cmd;
-  } else if (!strcmp(cmd, CMD_QUERY_FINGERPRINT)) {
-    return process_query_fingerprint_cmd;
   } else if (!strcmp(cmd, CMD_REGISTER_TICKET)) {
     return process_register_ticket_cmd;
   } else if (!strcmp(cmd, CMD_CLEAR_PSK)) {
@@ -1197,7 +1020,7 @@ process_cmd_fn get_command_function(char *cmd) {
   }
 #endif
   else {
-    log_debug("unknown command");
+    log_trace("unknown command");
   }
 
   return NULL;

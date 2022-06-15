@@ -37,12 +37,12 @@
  *
  * @param dconf The dhcp configuration structures.
  * @param dns_server_array The array including the DNS servers IP addresses.
- * @param domain_server_path The UNIX domain server path.
+ * @param supervisor_control_path The UNIX domain control path.
  * @param exec_dhcp Flag to execute/signal the DHCP process.
  * @return int 0 on success, -1 on error
  */
 int run_dhcp(struct dhcp_conf *dconf, UT_array *dns_server_array,
-             char *domain_server_path, bool exec_dhcp);
+             char *supervisor_control_path, bool exec_dhcp);
 
 /**
  * @brief Closes (terminates) dhcp process

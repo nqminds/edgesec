@@ -52,10 +52,12 @@ void ap_service_callback(struct supervisor_context *context, uint8_t mac_addr[],
  * @brief Executes the supervisor service
  *
  * @param server_path The domain socket path
+ * @param port The UDP port
  * @param context The supervisor structure
  * @return int The domain socket
  */
-int run_supervisor(char *server_path, struct supervisor_context *context);
+int run_supervisor(char *server_path, unsigned int port,
+                   struct supervisor_context *context);
 
 /**
  * @brief Closes the supervisor service

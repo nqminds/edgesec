@@ -32,17 +32,15 @@
 
 #include "supervisor_config.h"
 
-#include "../utils/domain.h"
+#include "../utils/sockctl.h"
 #include "../utils/utarray.h"
 
 enum SUBSCRIBER_EVENT {
   SUBSCRIBER_EVENT_NONE = 0,
-  SUBSCRIBER_EVENT_ALERT,
   SUBSCRIBER_EVENT_IP,
   SUBSCRIBER_EVENT_AP,
 };
 
-#define EVENT_ALERT_TEXT "ALERT"
 #define EVENT_IP_TEXT "IP"
 #define EVENT_AP_TEXT "AP"
 

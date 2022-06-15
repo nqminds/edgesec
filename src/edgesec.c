@@ -37,6 +37,7 @@
 #include <sys/socket.h>
 #include <linux/if.h>
 #include <libgen.h>
+#include <pthread.h>
 
 #include "version.h"
 #include "utils/log.h"
@@ -47,7 +48,7 @@
 #include "utils/iface.h"
 #include "utils/eloop.h"
 #include "dhcp/dhcp_config.h"
-#include "engine.h"
+#include "runctl.h"
 #include "config.h"
 
 #define OPT_STRING ":c:f:mdvh"
@@ -71,7 +72,17 @@ const char description_string[] = R"==(
 
 static __thread char version_buf[10];
 
-void eloop_sighup_handler(int sig, void *ctx) {
+pthread_mutex_t log_lock;
+
+void log_lock_fun(bool lock) {
+  if (lock) {
+    pthread_mutex_lock(&log_lock);
+  } else {
+    pthread_mutex_unlock(&log_lock);
+  }
+}
+
+void sighup_handler(int sig, void *ctx) {
   (void)sig;
 
   char *log_filename = (char *)ctx;
@@ -208,6 +219,13 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
 
+  if (pthread_mutex_init(&log_lock, NULL) != 0) {
+    fprintf(stderr, "mutex init has failed\n");
+    return EXIT_FAILURE;
+  }
+
+  log_set_lock(log_lock_fun);
+
   /* Set the log level */
   log_set_level(level);
 
@@ -223,34 +241,16 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
 
-  /* Kill all edgesec processes if running */
-  if (config.kill_running_proc) {
-    if (!kill_process(get_app_name(argv[0]))) {
-      fprintf(stderr, "kill_process fail.\n");
-      return EXIT_FAILURE;
-    }
-  }
-
   if (create_pid_file(config.pid_file_path, FD_CLOEXEC) < 0) {
     fprintf(stderr, "create_pid_file fail");
     return EXIT_FAILURE;
   }
 
-  if (eloop_init() < 0) {
-    fprintf(stderr, "Failed to initialize event loop");
-    return EXIT_FAILURE;
-  }
-
-  if (eloop_register_signal_reconfig(eloop_sighup_handler,
-                                     (void *)log_filename) < 0) {
-    fprintf(stderr, "Failed to register signal");
-    return EXIT_FAILURE;
-  }
-
   os_init_random_seed();
 
-  if (!run_engine(&config)) {
+  if (run_ctl(&config) < 0) {
     fprintf(stderr, "Failed to start edgesec engine.\n");
+    return EXIT_FAILURE;
   } else
     fprintf(stderr, "Edgesec engine stopped.\n");
 
@@ -261,5 +261,6 @@ int main(int argc, char *argv[]) {
   if (log_filename != NULL)
     os_free(log_filename);
 
+  pthread_mutex_destroy(&log_lock);
   return EXIT_SUCCESS;
 }
