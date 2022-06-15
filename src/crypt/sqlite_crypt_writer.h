@@ -60,10 +60,10 @@
  *
  */
 struct store_row {
-  char *key;   /**< The key */
-  char *value; /**< The stored value */
-  char *id;    /**< The key ID */
-  char *iv;    /**< The IV of the key */
+  const char *key; /**< The key */
+  char *value;     /**< The stored value */
+  char *id;        /**< The key ID */
+  char *iv;        /**< The IV of the key */
 };
 
 /**
@@ -118,7 +118,7 @@ int save_sqlite_secrets_entry(sqlite3 *db, struct secrets_row *row);
  * @param key The store column key
  * @return struct store_row* row value, NULL on failure
  */
-struct store_row *get_sqlite_store_row(sqlite3 *db, char *key);
+struct store_row *get_sqlite_store_row(sqlite3 *db, const char *key);
 
 /**
  * @brief Frees a store row entry

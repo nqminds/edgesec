@@ -130,7 +130,7 @@ char *decrypt_blob_cmd(struct supervisor_context *context, char *keyid,
  * @param blob The blob base64 string to sign
  * @return char* the signed blob in base64, NULL on failure
  */
-char *sign_blob_cmd(struct supervisor_context *context, char *keyid,
-                    char *blob);
+char *sign_blob_cmd(struct supervisor_context *context, const char *keyid,
+                    const char *blob);
 
 #endif

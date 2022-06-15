@@ -402,7 +402,7 @@ void free_crypt_pair(struct crypt_pair *pair) {
   }
 }
 
-struct crypt_pair *get_crypt_pair(struct crypt_context *ctx, char *key) {
+struct crypt_pair *get_crypt_pair(struct crypt_context *ctx, const char *key) {
   struct crypt_pair *pair;
   struct store_row *row;
   uint8_t *enc_value;
