@@ -594,9 +594,11 @@ int get_commands_paths(char *commands[], UT_array *bin_path_arr,
 /**
  * @brief Append a character to a string and return the new string
  *
+ * The returned pointer must be passed to `free()` to avoid a memory leak.
+ *
  * @param[in] str The string to append to
- * @param[in] character The character to append
- * @return char * the appended string on success, NULL on failure
+ * @param character The character to append
+ * @return The appended string on success, NULL on failure
  */
-char *string_append_char(char *str, char character);
+char *string_append_char(const char *str, char character);
 #endif /* OS_H */
