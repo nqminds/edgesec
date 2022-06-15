@@ -313,7 +313,9 @@ ssize_t process_query_fingerprint_cmd(int sock,
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
  * @param cmd_arr The array of received commands
- * @return ssize_t Size of reply written data
+ * @return Size of reply written data.
+ * This would be the length of the passphrase.
+ * Returns `strlen(FAIL_REPLY)` on error.
  */
 ssize_t process_register_ticket_cmd(int sock,
                                     struct client_address *client_addr,
