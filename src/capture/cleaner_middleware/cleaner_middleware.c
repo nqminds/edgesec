@@ -44,7 +44,7 @@
 #define CLEANER_PROCESS_INTERVAL                                               \
   5 /* Frequency in sec to run the cleaner function*/
 #define CLEANER_GROUP_INTERVAL                                                 \
-  1000 /* Number of rows to sum from the pcap metadata to calculate the store  \
+  1024 /* Number of rows to sum from the pcap metadata to calculate the store  \
           size*/
 
 #define CLEANER_STORE_SIZE 1000 /*Specifies the capture store size in KiB */
@@ -68,7 +68,6 @@ int clean_capture(struct middleware_context *context) {
 
   UT_array *pcap_meta_arr = NULL;
   uint64_t timestamp = cleaner_context->low_timestamp, lt;
-  char *path;
   utarray_new(pcap_meta_arr, &pcap_file_meta_icd);
 
   while (timestamp <= cleaner_context->next_timestamp) {
@@ -82,8 +81,8 @@ int clean_capture(struct middleware_context *context) {
 
     while ((p = (struct pcap_file_meta *)utarray_next(pcap_meta_arr, p)) !=
            NULL) {
-      if ((path = construct_path(cleaner_context->pcap_path, p->name)) ==
-          NULL) {
+      char *const path = construct_path(cleaner_context->pcap_path, p->name);
+      if (path == NULL) {
         log_errno("os_malloc");
       }
 
@@ -145,11 +144,9 @@ void eloop_tout_cleaner_handler(void *eloop_ctx, void *user_ctx) {
     if (sum_pcap_group(context->db, lt, CLEANER_GROUP_INTERVAL, &ht, &sum) <
         0) {
       log_trace("sum_pcap_group fail");
-    } else {
-      if (ht != lt) {
-        cleaner_context->store_sum += sum;
-        cleaner_context->next_timestamp = ht;
-      }
+    } else if (ht != lt) {
+      cleaner_context->store_sum += sum;
+      cleaner_context->next_timestamp = ht;
     }
   }
 
@@ -184,9 +181,6 @@ void free_cleaner_middleware(struct middleware_context *context) {
 struct middleware_context *init_cleaner_middleware(sqlite3 *db, char *db_path,
                                                    struct eloop_data *eloop,
                                                    struct pcap_context *pc) {
-  struct middleware_context *context = NULL;
-  struct cleaner_middleware_context *cleaner_context = NULL;
-
   log_info("Init cleaner middleware...");
 
   if (db == NULL) {
@@ -204,13 +198,17 @@ struct middleware_context *init_cleaner_middleware(sqlite3 *db, char *db_path,
     return NULL;
   }
 
-  if ((context = os_zalloc(sizeof(struct middleware_context))) == NULL) {
+  struct middleware_context *context =
+      os_zalloc(sizeof(struct middleware_context));
+
+  if (context == NULL) {
     log_errno("zalloc");
     return NULL;
   }
 
-  if ((cleaner_context =
-           os_zalloc(sizeof(struct cleaner_middleware_context))) == NULL) {
+  struct cleaner_middleware_context *cleaner_context =
+      os_zalloc(sizeof(struct cleaner_middleware_context));
+  if (cleaner_context == NULL) {
     log_errno("zalloc");
     free_cleaner_middleware(context);
     return NULL;

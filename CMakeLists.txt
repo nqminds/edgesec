@@ -51,7 +51,7 @@ cmake_dependent_option(BUILD_MNL_LIB "Build mnl library" ON USE_NETLINK_SERVICE 
 cmake_dependent_option(BUILD_NETLINK_LIB "Build netlink library" ON USE_NETLINK_SERVICE OFF)
 
 option(USE_UCI_SERVICE "Use OpenWRT uci service" OFF)
-option(USE_RADIUS_SERVICE "Use mDNS forwarder service" ON)
+option(USE_RADIUS_SERVICE "Use RADIUS service" ON)
 option(USE_MDNS_SERVICE "Use mDNS forwarder service" ON)
 option(USE_CAPTURE_SERVICE "Use the capture service" ON)
 

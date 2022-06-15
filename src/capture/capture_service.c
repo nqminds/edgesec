@@ -162,7 +162,7 @@ void *capture_thread(void *arg) {
   return NULL;
 }
 
-int run_capture_thread(char *ifname, struct capture_conf *config,
+int run_capture_thread(char *ifname, struct capture_conf const *config,
                        pthread_t *id) {
   struct capture_middleware_context *context = NULL;
 
