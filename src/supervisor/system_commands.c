@@ -82,9 +82,9 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
       }
 
       if (!strlen(info.ip_addr)) {
-        os_strlcpy(info.ip_addr, ip_addr, IP_LEN);
+        os_strlcpy(info.ip_addr, ip_addr, OS_INET_ADDRSTRLEN);
       } else if (strlen(info.ip_addr) && !strlen(info.ip_sec_addr)) {
-        os_strlcpy(info.ip_sec_addr, ip_addr, IP_LEN);
+        os_strlcpy(info.ip_sec_addr, ip_addr, OS_INET_ADDRSTRLEN);
       } else {
         log_debug("IPs already present");
         return -1;
@@ -92,11 +92,11 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
       break;
     case DHCP_IP_DEL:
       if (strcmp(info.ip_addr, ip_addr) == 0) {
-        os_memset(info.ip_addr, 0x0, IP_LEN);
+        os_memset(info.ip_addr, 0x0, OS_INET_ADDRSTRLEN);
       }
 
       if (strcmp(info.ip_sec_addr, ip_addr) == 0) {
-        os_memset(info.ip_sec_addr, 0, IP_LEN);
+        os_memset(info.ip_sec_addr, 0, OS_INET_ADDRSTRLEN);
       }
       break;
     default:

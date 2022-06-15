@@ -17,7 +17,6 @@ generateSsid = true
 allocateVlans = true
 defaultOpenVlanId = 0
 quarantineVlanId = 10
-killRunningProcess = false
 execAp = false
 execRadius = true
 execDhcp = true
@@ -173,10 +172,6 @@ The default VLAN ID positive integer number assigned to new devices if `allowAll
 ### quarantineVlanId (integer)
 
 The VLAN ID assigned to devices that are quarantined.
-
-### killRunningProcess (boolean)
-
-If set to true the current running `edgesec` will terminate exisiting running `edgesec` processes.
 
 ### execAp (boolean)
 

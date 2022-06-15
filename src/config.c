@@ -70,19 +70,19 @@ bool get_config_dhcpinfo(char *info, config_dhcpinfo_t *el) {
 
   p = (char **)utarray_next(info_arr, p);
   if (*p != NULL) {
-    os_strlcpy(el->ip_addr_low, *p, IP_LEN);
+    os_strlcpy(el->ip_addr_low, *p, OS_INET_ADDRSTRLEN);
   } else
     goto err;
 
   p = (char **)utarray_next(info_arr, p);
   if (*p != NULL)
-    os_strlcpy(el->ip_addr_upp, *p, IP_LEN);
+    os_strlcpy(el->ip_addr_upp, *p, OS_INET_ADDRSTRLEN);
   else
     goto err;
 
   p = (char **)utarray_next(info_arr, p);
   if (*p != NULL)
-    os_strlcpy(el->subnet_mask, *p, IP_LEN);
+    os_strlcpy(el->subnet_mask, *p, OS_INET_ADDRSTRLEN);
   else
     goto err;
 
@@ -124,19 +124,19 @@ bool get_config_ifinfo(char *info, config_ifinfo_t *el) {
 
   p = (char **)utarray_next(info_arr, p);
   if (*p != NULL) {
-    os_strlcpy(el->ip_addr, *p, IP_LEN);
+    os_strlcpy(el->ip_addr, *p, OS_INET_ADDRSTRLEN);
   } else
     goto err;
 
   p = (char **)utarray_next(info_arr, p);
   if (*p != NULL)
-    os_strlcpy(el->brd_addr, *p, IP_LEN);
+    os_strlcpy(el->brd_addr, *p, OS_INET_ADDRSTRLEN);
   else
     goto err;
 
   p = (char **)utarray_next(info_arr, p);
   if (*p != NULL)
-    os_strlcpy(el->subnet_mask, *p, IP_LEN);
+    os_strlcpy(el->subnet_mask, *p, OS_INET_ADDRSTRLEN);
   else
     goto err;
 
@@ -252,7 +252,7 @@ bool load_radius_conf(const char *filename, struct app_config *config) {
   value = os_malloc(INI_BUFFERSIZE);
   ini_gets("radius", "clientIP", "127.0.0.1", value, INI_BUFFERSIZE, filename);
 
-  os_strlcpy(config->rconfig.radius_client_ip, value, IP_LEN);
+  os_strlcpy(config->rconfig.radius_client_ip, value, OS_INET_ADDRSTRLEN);
   os_free(value);
 
   // Load radius client mask
@@ -263,7 +263,7 @@ bool load_radius_conf(const char *filename, struct app_config *config) {
   value = os_malloc(INI_BUFFERSIZE);
   ini_gets("radius", "serverIP", "127.0.0.1", value, INI_BUFFERSIZE, filename);
 
-  os_strlcpy(config->rconfig.radius_server_ip, value, IP_LEN);
+  os_strlcpy(config->rconfig.radius_server_ip, value, OS_INET_ADDRSTRLEN);
   os_free(value);
 
   // Load radius server mask
@@ -644,10 +644,6 @@ bool load_system_config(const char *filename, struct app_config *config) {
 
   // Load allow all nat connection flag
   config->allow_all_nat = ini_getbool("system", "allowAllNat", 0, filename);
-
-  // Load killRunningProcess flag
-  config->kill_running_proc =
-      ini_getbool("system", "killRunningProcess", 0, filename);
 
   // Load connection db param
   value = os_zalloc(INI_BUFFERSIZE);

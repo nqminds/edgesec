@@ -35,10 +35,6 @@
 #include <stdarg.h>
 #include <string.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /**
  * @brief Allocate and zero memory
  *
@@ -125,8 +121,4 @@ void *os_memdup(const void *src, size_t len);
  * @return char* The dublicate string pointer, NULL on error
  */
 char *os_strdup(const char *s);
-
-#ifdef __cplusplus
-}
-#endif
 #endif

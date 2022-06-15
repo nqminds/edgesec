@@ -90,13 +90,6 @@ struct eloop_timeout {
   eloop_timeout_handler handler;
 };
 
-// struct eloop_signal {
-//   int sig;
-//   void *user_data;
-//   eloop_signal_handler handler;
-//   int signaled;
-// };
-
 struct eloop_sock_table {
   int count;
   struct eloop_sock *table;
@@ -116,10 +109,6 @@ struct eloop_data {
   struct eloop_sock_table writers;
   struct eloop_sock_table exceptions;
   struct dl_list timeout;
-  // int signal_count;
-  // struct eloop_signal *signals;
-  // int signaled;
-  // int pending_terminate;
   int terminate;
 };
 
@@ -340,68 +329,6 @@ int eloop_replenish_timeout(struct eloop_data *eloop, unsigned long req_secs,
                             unsigned long req_usecs,
                             eloop_timeout_handler handler, void *eloop_data,
                             void *user_data);
-
-/**
- * eloop_register_signal - Register handler for signals
- * @eloop: eloop context
- * @sig: Signal number (e.g., SIGHUP)
- * @handler: Callback function to be called when the signal is received
- * @user_data: Callback context data (signal_ctx)
- * Returns: 0 on success, -1 on failure
- *
- * Register a callback function that will be called when a signal is received.
- * The callback function is actually called only after the system signal
- * handler has returned. This means that the normal limits for sighandlers
- * (i.e., only "safe functions" allowed) do not apply for the registered
- * callback.
- */
-// int eloop_register_signal(struct eloop_data *eloop,
-//                           int sig, eloop_signal_handler handler,
-//                           void *user_data);
-
-/**
- * eloop_register_signal_terminate - Register handler for terminate signals
- * @eloop: eloop context
- * @handler: Callback function to be called when the signal is received
- * @user_data: Callback context data (signal_ctx)
- * Returns: 0 on success, -1 on failure
- *
- * Register a callback function that will be called when a process termination
- * signal is received. The callback function is actually called only after the
- * system signal handler has returned. This means that the normal limits for
- * sighandlers (i.e., only "safe functions" allowed) do not apply for the
- * registered callback.
- *
- * This function is a more portable version of eloop_register_signal() since
- * the knowledge of exact details of the signals is hidden in eloop
- * implementation. In case of operating systems using signal(), this function
- * registers handlers for SIGINT and SIGTERM.
- */
-// int eloop_register_signal_terminate(struct eloop_data *eloop,
-//                                     eloop_signal_handler handler,
-//                                     void *user_data);
-
-/**
- * eloop_register_signal_reconfig - Register handler for reconfig signals
- * @eloop: eloop context
- * @handler: Callback function to be called when the signal is received
- * @user_data: Callback context data (signal_ctx)
- * Returns: 0 on success, -1 on failure
- *
- * Register a callback function that will be called when a reconfiguration /
- * hangup signal is received. The callback function is actually called only
- * after the system signal handler has returned. This means that the normal
- * limits for sighandlers (i.e., only "safe functions" allowed) do not apply
- * for the registered callback.
- *
- * This function is a more portable version of eloop_register_signal() since
- * the knowledge of exact details of the signals is hidden in eloop
- * implementation. In case of operating systems using signal(), this function
- * registers a handler for SIGHUP.
- */
-// int eloop_register_signal_reconfig(struct eloop_data *eloop,
-//                                    eloop_signal_handler handler,
-//                                    void *user_data);
 
 /**
  * eloop_sock_requeue - Requeue sockets

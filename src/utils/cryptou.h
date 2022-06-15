@@ -38,10 +38,6 @@
 
 #define MAX_CERT_FIELD_SIZE 64
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 struct certificate_meta {
   long not_before;
   long not_after;
@@ -165,8 +161,4 @@ int crypto_generate_cert_str(struct certificate_meta *meta, uint8_t *key,
  */
 ssize_t crypto_sign_data(uint8_t *key, size_t key_size, uint8_t *in,
                          size_t in_size, uint8_t **out);
-#ifdef __cplusplus
-}
-#endif
-
 #endif

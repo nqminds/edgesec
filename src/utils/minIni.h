@@ -43,10 +43,6 @@
 #define INI_BUFFERSIZE 4096 // Original 512
 #endif
 
-#if defined __cplusplus
-extern "C" {
-#endif
-
 int ini_getbool(const mTCHAR *Section, const mTCHAR *Key, int DefValue,
                 const mTCHAR *Filename);
 long ini_getl(const mTCHAR *Section, const mTCHAR *Key, long DefValue,
@@ -79,10 +75,6 @@ typedef int (*INI_CALLBACK)(const mTCHAR *Section, const mTCHAR *Key,
                             const mTCHAR *Value, void *UserData);
 int ini_browse(INI_CALLBACK Callback, void *UserData, const mTCHAR *Filename);
 #endif /* INI_NOBROWSE */
-
-#if defined __cplusplus
-}
-#endif
 
 #if defined __cplusplus
 

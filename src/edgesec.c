@@ -241,14 +241,6 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
 
-  /* Kill all edgesec processes if running */
-  if (config.kill_running_proc) {
-    if (!kill_process(get_app_name(argv[0]))) {
-      fprintf(stderr, "kill_process fail.\n");
-      return EXIT_FAILURE;
-    }
-  }
-
   if (create_pid_file(config.pid_file_path, FD_CLOEXEC) < 0) {
     fprintf(stderr, "create_pid_file fail");
     return EXIT_FAILURE;

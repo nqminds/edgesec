@@ -28,6 +28,7 @@
 #include "../utils/log.h"
 #include "../utils/allocs.h"
 #include "../utils/os.h"
+#include "../utils/net.h"
 #include "../utils/list.h"
 #include "../supervisor/mac_mapper.h"
 

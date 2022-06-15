@@ -136,7 +136,7 @@ bool is_number(const char *ptr) {
   return (*ptr == '\0') ? false : true;
 }
 
-static int hex2num(char c) {
+int hex2num(char c) {
   if (c >= '0' && c <= '9')
     return c - '0';
   if (c >= 'a' && c <= 'f')
@@ -189,28 +189,6 @@ int hexstr2bin(const char *hex, uint8_t *buf, size_t len) {
     ipos += 2;
   }
   return 0;
-}
-
-int hwaddr_aton2(const char *txt, uint8_t *addr) {
-  int i;
-  const char *pos = txt;
-
-  for (i = 0; i < 6; i++) {
-    int a, b;
-
-    while (*pos == ':' || *pos == '.' || *pos == '-')
-      pos++;
-
-    a = hex2num(*pos++);
-    if (a < 0)
-      return -1;
-    b = hex2num(*pos++);
-    if (b < 0)
-      return -1;
-    *addr++ = (a << 4) | b;
-  }
-
-  return pos - txt;
 }
 
 size_t os_strlcpy(char *dest, const char *src, size_t siz) {

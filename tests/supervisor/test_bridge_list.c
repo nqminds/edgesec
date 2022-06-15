@@ -13,6 +13,7 @@
 #include <cmocka.h>
 
 #include "supervisor/bridge_list.h"
+#include "utils/net.h"
 #include "utils/log.h"
 
 static void test_add_bridge_mac(void **state) {

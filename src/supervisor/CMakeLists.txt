@@ -12,7 +12,7 @@ add_library(subscriber_events subscriber_events.c)
 target_link_libraries(subscriber_events PUBLIC supervisor_config PRIVATE log os sockctl SQLite::SQLite3)
 
 add_library(sqlite_macconn_writer sqlite_macconn_writer.c)
-target_link_libraries(sqlite_macconn_writer PRIVATE sqliteu squeue log os SQLite::SQLite3)
+target_link_libraries(sqlite_macconn_writer PRIVATE sqliteu squeue log net os SQLite::SQLite3)
 
 add_library(network_commands network_commands.c)
 target_link_libraries(network_commands

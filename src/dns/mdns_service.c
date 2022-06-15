@@ -141,7 +141,7 @@ int forward_reflector_if6(uint8_t *send_buf, size_t len,
 
     sa_group6.sin6_scope_id = el->ifindex;
     if (sendto(el->send_fd, send_buf, len, 0, dst, dst_len) == -1) {
-      if (errno == EWOULDBLOCK) {
+      if (errno == EWOULDBLOCK || errno == EADDRNOTAVAIL) {
         continue;
       }
       log_errno("sendto");
@@ -590,11 +590,15 @@ int send_bridge_command(struct mdns_context *context, struct tuple_packet *tp) {
     return -1;
   }
 
+  /*
   log_trace("Command: %s", domain);
+  */
 
   ret = check_command_mapper(&context->command_mapper, domain);
   if (ret > 0) {
+    /*
     log_trace("Command in hash map");
+    */
   } else if (!ret) {
     if (put_command_mapper(&context->command_mapper, domain) < 0) {
       log_error("put_command_mapper fail");

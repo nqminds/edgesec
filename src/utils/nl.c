@@ -234,19 +234,22 @@ int get_addrinfo(struct nlmsghdr *n, netif_info_t *info) {
 
   if (rta_tb[IFA_LOCAL] && info->ifa_family == AF_INET) {
     os_strlcpy(info->ip_addr,
-               format_host_rta(ifa->ifa_family, rta_tb[IFA_LOCAL]), IP_LEN);
+               format_host_rta(ifa->ifa_family, rta_tb[IFA_LOCAL]),
+               OS_INET_ADDRSTRLEN);
     log_trace("ifindex=%d ip_addr=%s", info->ifindex, info->ip_addr);
     if (rta_tb[IFA_ADDRESS] &&
         memcmp(RTA_DATA(rta_tb[IFA_ADDRESS]), RTA_DATA(rta_tb[IFA_LOCAL]), 4)) {
       os_strlcpy(info->peer_addr,
-                 format_host_rta(ifa->ifa_family, rta_tb[IFA_ADDRESS]), IP_LEN);
+                 format_host_rta(ifa->ifa_family, rta_tb[IFA_ADDRESS]),
+                 OS_INET_ADDRSTRLEN);
       log_trace("ifindex=%d peer_addr=%s", info->ifindex, info->peer_addr);
     }
   }
 
   if (rta_tb[IFA_BROADCAST] && info->ifa_family == AF_INET) {
     os_strlcpy(info->brd_addr,
-               format_host_rta(ifa->ifa_family, rta_tb[IFA_BROADCAST]), IP_LEN);
+               format_host_rta(ifa->ifa_family, rta_tb[IFA_BROADCAST]),
+               OS_INET_ADDRSTRLEN);
     log_trace("ifindex=%d brd_addr=%s", info->ifindex, info->brd_addr);
   }
 
@@ -844,7 +847,7 @@ int nl_create_interface(struct nlctx *context, char *ifname, char *type,
                         char *ip_addr, char *brd_addr, char *subnet_mask) {
   (void)context;
 
-  char longip[IP_LONG_LEN];
+  char longip[OS_INET_ADDRSTRLEN];
 
   if (ifname == NULL) {
     log_error("ifname param is NULL");
@@ -871,7 +874,7 @@ int nl_create_interface(struct nlctx *context, char *ifname, char *type,
     return -1;
   }
 
-  snprintf(longip, IP_LONG_LEN, "%s/%d", ip_addr,
+  snprintf(longip, OS_INET_ADDRSTRLEN, "%s/%d", ip_addr,
            (int)get_short_subnet(subnet_mask));
 
   if (!nl_new_interface(ifname, type)) {

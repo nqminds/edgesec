@@ -43,54 +43,14 @@
 /* Common costant definitions */
 #define MAX_OS_PATH_LEN 4096
 #define MAX_WEB_PATH_LEN 2048
-#define IP_ALEN 4
-#define IP_LEN 20
-#define IP_LONG_LEN 24
-
 #define MAX_RANDOM_UUID_LEN 37
 
 #define OS_HOST_NAME_MAX 64
-
-#define OS_INET_ADDRSTRLEN 22
-#define OS_INET6_ADDRSTRLEN 63
-
-#define MAX_SUPERVISOR_CMD_SIZE 40
-
-#define SQLITE_EXTENSION ".sqlite"
-#define PCAP_EXTENSION ".pcap"
-#define SOCK_EXTENSION ".sock"
-
-#define MAX_UINT64_DIGITS 20
 
 #ifdef __GNUC__
 #define STRUCT_PACKED __attribute__((packed))
 #else
 #define STRUCT_PACKED
-#endif
-
-#ifndef MAC2STR
-#define MAC2STR(a) (a)[0], (a)[1], (a)[2], (a)[3], (a)[4], (a)[5]
-#define MACSTR "%02x:%02x:%02x:%02x:%02x:%02x"
-#define MACSTR_LEN 18 // Including the '\0' character
-/*
- * Compact form for string representation of MAC address
- * To be used, e.g., for constructing dbus paths for P2P Devices
- */
-#define COMPACT_MACSTR "%02x%02x%02x%02x%02x%02x"
-#define COMPACT_MACSTR_LEN 13 // Including the '\0' character
-#endif
-
-#ifndef IP2STR
-#define IP2STR(a) (a)[0], (a)[1], (a)[2], (a)[3]
-#define IPSTR "%d.%d.%d.%d"
-#endif
-
-#ifndef IP62STR
-#define IP62STR(a)                                                             \
-  (a)[0], (a)[1], (a)[2], (a)[3], (a)[4], (a)[5], (a)[6], (a)[7], (a)[8],      \
-      (a)[9], (a)[10], (a)[11], (a)[12], (a)[13], (a)[14], (a)[15]
-#define IP6STR                                                                 \
-  "%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x"
 #endif
 
 #ifndef BIT
@@ -237,6 +197,14 @@ int os_get_random_number_s(unsigned char *buf, size_t len);
 int hex2byte(const char *hex);
 
 /**
+ * @brief Hex char two number
+ *
+ * @param[in] c Hex char
+ * @return int converted number
+ */
+int hex2num(char c);
+
+/**
  * @brief Convert ASCII hex string into binary data
  *
  * @param hex ASCII hex string (e.g., "01ab")
@@ -246,16 +214,6 @@ int hex2byte(const char *hex);
  * @return int 0 on success, -1 on failure (invalid hex string)
  */
 int hexstr2bin(const char *hex, uint8_t *buf, size_t len);
-
-/**
- * @brief Convert ASCII string to MAC address (in any known format)
- *
- * @param txt MAC address as a string (e.g., 00:11:22:33:44:55 or
- * 0011.2233.4455)
- * @param addr Buffer for the MAC address (ETH_ALEN = 6 bytes)
- * @return int Characters used (> 0) on success, -1 on failure
- */
-int hwaddr_aton2(const char *txt, uint8_t *addr);
 
 /**
  * @brief Check if a string is a number

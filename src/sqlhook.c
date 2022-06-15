@@ -15,6 +15,7 @@
 
 SQLITE_EXTENSION_INIT1
 
+#define SOCK_EXTENSION ".sock"
 #define ENV_DB_KEY "EDGESEC"
 #define DOMAIN_ID_STR "domain"
 #define DELIMITER_CHAR '_'

@@ -53,10 +53,11 @@ struct mac_conn_info {
   bool allow_connection; /**< If set allows the MAC device to connect ot the
                             network */
   uint8_t pass[AP_SECRET_LEN]; /**< WiFi password assigned to the MAC devices */
-  ssize_t pass_len;     /**< WiFi password length assigned to the MAC devices */
-  char ip_addr[IP_LEN]; /**< IP address assigned to the MAC device */
-  char ip_sec_addr[IP_LEN]; /**< The secondary IP address assigned to the MAC
-                               device */
+  ssize_t pass_len; /**< WiFi password length assigned to the MAC devices */
+  char
+      ip_addr[OS_INET_ADDRSTRLEN]; /**< IP address assigned to the MAC device */
+  char ip_sec_addr[OS_INET_ADDRSTRLEN]; /**< The secondary IP address assigned
+                               to the MAC device */
   char
       ifname[IFNAMSIZ]; /**< WiFi subnet interface assigned to the MAC device */
   char label[MAX_DEVICE_LABEL_SIZE]; /**< The MAC device label */

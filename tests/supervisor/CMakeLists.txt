@@ -3,7 +3,7 @@ include_directories(
 )
 
 add_executable(test_bridge_list test_bridge_list.c)
-target_link_libraries(test_bridge_list PRIVATE bridge_list log cmocka::cmocka)
+target_link_libraries(test_bridge_list PRIVATE bridge_list net log cmocka::cmocka)
 
 add_executable(test_sockctl_server test_sockctl_server.c)
 target_link_libraries(test_sockctl_server PRIVATE sockctl os log cmocka::cmocka)

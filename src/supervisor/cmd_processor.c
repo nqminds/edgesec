@@ -387,7 +387,7 @@ ssize_t process_add_bridge_cmd(int sock, struct client_address *client_addr,
                                UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
   uint8_t left_addr[ETH_ALEN], right_addr[ETH_ALEN];
-  char left_ip[IP_LONG_LEN], right_ip[IP_LONG_LEN];
+  char left_ip[OS_INET_ADDRSTRLEN], right_ip[OS_INET_ADDRSTRLEN];
 
   // MAC address source
   ptr = (char **)utarray_next(cmd_arr, ptr);
@@ -407,13 +407,13 @@ ssize_t process_add_bridge_cmd(int sock, struct client_address *client_addr,
         }
       }
     } else if (validate_ipv4_string(*ptr)) {
-      os_strlcpy(left_ip, *ptr, IP_LONG_LEN);
+      os_strlcpy(left_ip, *ptr, OS_INET_ADDRSTRLEN);
 
       // IP address destination
       ptr = (char **)utarray_next(cmd_arr, ptr);
       if (ptr != NULL && *ptr != NULL) {
         if (validate_ipv4_string(*ptr)) {
-          os_strlcpy(right_ip, *ptr, IP_LONG_LEN);
+          os_strlcpy(right_ip, *ptr, OS_INET_ADDRSTRLEN);
 
           if (add_bridge_ip_cmd(context, left_ip, right_ip) < 0) {
             log_error("add_bridge_cmd fail");
