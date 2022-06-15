@@ -108,4 +108,12 @@ uint8_t get_short_subnet(char *subnet_mask);
  * @return 0 on success, -1 on failure
  */
 int get_ip_host(char *ip, char *subnet_mask, uint32_t *host);
+
+/**
+ * @brief Disable the PMTU discovery for sockets
+ *
+ * @param[in] sock The socket descriptor
+ * @return 0 on success, -1 on failure
+ */
+int disable_pmtu_discovery(int sock);
 #endif

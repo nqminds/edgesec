@@ -148,6 +148,13 @@ int create_udp_server(unsigned int port) {
     return -1;
   }
 
+  /* Turn off Path MTU discovery on IPv4/UDP sockets. */
+  if (disable_pmtu_discovery(sfd) < 0) {
+    log_error("disable_pmtu_discovery fail");
+    close(sfd);
+    return -1;
+  }
+
   os_memset(&svaddr, 0, sizeof(struct sockaddr_in));
   svaddr.sin_family = AF_INET;
   svaddr.sin_port = htons(port);

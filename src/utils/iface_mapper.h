@@ -37,6 +37,8 @@
 #include "allocs.h"
 #include "os.h"
 
+#define LINK_TYPE_LEN 64
+
 enum IF_STATE {
   IF_STATE_UNKNOWN = 0,
   IF_STATE_NOTPRESENT,

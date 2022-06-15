@@ -186,3 +186,14 @@ int get_ip_host(char *ip, char *subnet_mask, uint32_t *host) {
 
   return 0;
 }
+
+int disable_pmtu_discovery(int sock) {
+  int action = IP_PMTUDISC_DONT;
+  if (setsockopt(sock, IPPROTO_IP, IP_MTU_DISCOVER, &action, sizeof(action)) <
+      0) {
+    log_errno("setsockopt");
+    return -1;
+  }
+
+  return 0;
+}

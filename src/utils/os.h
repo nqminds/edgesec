@@ -46,7 +46,6 @@
 #define IP_ALEN 4
 #define IP_LEN 20
 #define IP_LONG_LEN 24
-#define LINK_TYPE_LEN 64
 
 #define MAX_RANDOM_UUID_LEN 37
 
@@ -125,10 +124,6 @@ struct os_reltime {
   os_time_t sec;
   os_time_t usec;
 };
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * @brief Becomes a daemon
@@ -636,8 +631,4 @@ int read_file_string(char *path, char **out);
  */
 int get_commands_paths(char *commands[], UT_array *bin_path_arr,
                        hmap_str_keychar **hmap_bin_paths);
-#ifdef __cplusplus
-}
-#endif
-
 #endif /* OS_H */
