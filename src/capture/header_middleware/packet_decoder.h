@@ -44,6 +44,7 @@
 #include "../../utils/utarray.h"
 #include "../../utils/allocs.h"
 #include "../../utils/os.h"
+#include "../../utils/net.h"
 
 #define MAX_QUESTION_LEN 255
 

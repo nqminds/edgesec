@@ -24,7 +24,7 @@ static const UT_icd config_dhcpinfo_icd = {sizeof(config_dhcpinfo_t), NULL,
 static char *test_dhcp_conf_path = "/tmp/dnsmasq-test.conf";
 static char *test_dhcp_script_path = "/tmp/dnsmasq_exec-test.sh";
 static char *test_dhcp_leasefile_path = "/tmp/test_dnsmasq.leases";
-static char *test_domain_server_path = "/tmp/edgesec-domain-server";
+static char *test_supervisor_control_path = "/tmp/edgesec-control-server";
 static char *test_dhcp_conf_content =
     "no-resolv\n"
     "server=8.8.4.4\n"
@@ -39,7 +39,7 @@ static char *test_dhcp_conf_content =
 // why aren't we using amazing C++11 which has the R"(...) string literal??? 😭
 static char *test_dhcp_script_content =
     "#!/bin/sh\n"
-    "sockpath=\"/tmp/edgesec-domain-server\"\n"
+    "sockpath=\"/tmp/edgesec-control-server\"\n"
     "str=\"SET_IP $1 $2 $3\"\n"
     "\n"
     "nccheck=`nc -help 2>&1 >/dev/null | grep 'OpenBSD netcat'`\n"
@@ -210,8 +210,8 @@ static void test_generate_dnsmasq_conf(void **state) {
 static void test_generate_dnsmasq_script(void **state) {
   (void)state; /* unused */
 
-  error_t ret =
-      generate_dnsmasq_script(test_dhcp_script_path, test_domain_server_path);
+  error_t ret = generate_dnsmasq_script(test_dhcp_script_path,
+                                        test_supervisor_control_path);
   assert_true(ret == 0);
 
   FILE *fp = fopen(test_dhcp_script_path, "r");
@@ -306,12 +306,11 @@ int main(int argc, char *argv[]) {
 
   const struct CMUnitTest tests[] = {
       cmocka_unit_test(test_generate_dnsmasq_conf),
-      // cmocka_unit_test(test_generate_dnsmasq_script),
-      // cmocka_unit_test(test_run_dhcp_process),
-      // cmocka_unit_test(test_kill_dhcp_process),
-      // cmocka_unit_test(test_signal_dhcp_process),
-      // cmocka_unit_test(test_clear_dhcp_lease_entry)
-  };
+      cmocka_unit_test(test_generate_dnsmasq_script),
+      cmocka_unit_test(test_run_dhcp_process),
+      cmocka_unit_test(test_kill_dhcp_process),
+      cmocka_unit_test(test_signal_dhcp_process),
+      cmocka_unit_test(test_clear_dhcp_lease_entry)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

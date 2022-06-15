@@ -14,8 +14,9 @@
 #include <sys/un.h>
 #include <sys/socket.h>
 #include <ctype.h>
+#include <arpa/inet.h>
 
-#include "utils/domain.h"
+#include "utils/sockctl.h"
 #include "utils/hashmap.h"
 #include "utils/utarray.h"
 #include "utils/log.h"
@@ -126,16 +127,18 @@ static void test_read_domain_data_s(void **state) {
   assert_int_equal(ret, buf_len);
 
   os_memset(&addr, 0, sizeof(struct client_address));
-  ret = read_domain_data(server_sock, read_buf, 100, &addr, 0);
+  addr.type = SOCKET_TYPE_DOMAIN;
+  ret = read_socket_data(server_sock, read_buf, 100, &addr, 0);
   assert_int_equal(ret, buf_len);
   assert_string_equal(send_buf, read_buf);
 
-  ret = sendto(server_sock, send_buf, buf_len, 0, (struct sockaddr *)&addr.addr,
-               addr.len);
+  ret = sendto(server_sock, send_buf, buf_len, 0,
+               (struct sockaddr *)&addr.addr_un, addr.len);
   assert_int_equal(ret, buf_len);
 
   os_memset(&addr, 0, sizeof(struct client_address));
-  ret = read_domain_data(client_sock, read_buf, 100, &addr, 0);
+  addr.type = SOCKET_TYPE_DOMAIN;
+  ret = read_socket_data(client_sock, read_buf, 100, &addr, 0);
   assert_int_equal(ret, buf_len);
   assert_string_equal(send_buf, read_buf);
 
@@ -145,7 +148,7 @@ static void test_read_domain_data_s(void **state) {
   close(server_sock);
 }
 
-static void test_write_domain_data(void **state) {
+static void test_write_domain_data_s(void **state) {
   (void)state; /* unused */
 
   struct client_address addr;
@@ -183,9 +186,10 @@ static void test_write_domain_data(void **state) {
   client_sock = create_domain_client(NULL);
   assert_int_not_equal(client_sock, -1);
 
-  os_memcpy(&addr.addr, &svaddr, sizeof(struct sockaddr_un));
+  os_memcpy(&addr.addr_un, &svaddr, sizeof(struct sockaddr_un));
   addr.len = len;
-  ret = write_domain_data(client_sock, send_buf, buf_len, &addr);
+  addr.type = SOCKET_TYPE_DOMAIN;
+  ret = write_socket_data(client_sock, send_buf, buf_len, &addr);
   assert_int_equal(ret, buf_len);
 
   len = sizeof(struct sockaddr_un);
@@ -199,6 +203,48 @@ static void test_write_domain_data(void **state) {
   close(server_sock);
 }
 
+static void test_create_udp_server(void **state) {
+  (void)state;
+
+  int sock = create_udp_server(12345);
+
+  assert_int_not_equal(sock, -1);
+
+  close(sock);
+}
+
+static void test_write_socket_data(void **state) {
+  (void)state; /* unused */
+
+  struct client_address caddr, saddr;
+  char *send_buf = "udp";
+  char read_buf[100];
+
+  int sfd = create_udp_server(12346);
+
+  assert_int_not_equal(sfd, -1);
+
+  int cfd = socket(AF_INET, SOCK_DGRAM, 0);
+  assert_int_not_equal(cfd, -1);
+
+  os_memset(&caddr, 0, sizeof(struct client_address));
+  caddr.addr_in.sin_family = AF_INET;
+  caddr.addr_in.sin_port = htons(12346);
+  assert_int_not_equal(inet_pton(AF_INET, "127.0.0.1", &caddr.addr_in.sin_addr),
+                       -1);
+  caddr.len = sizeof(struct sockaddr_in);
+  caddr.type = SOCKET_TYPE_UDP;
+
+  assert_int_not_equal(
+      write_socket_data(cfd, send_buf, strlen(send_buf) + 1, &caddr), -1);
+  saddr.type = SOCKET_TYPE_UDP;
+  assert_int_not_equal(read_socket_data(sfd, read_buf, 100, &saddr, 0), -1);
+  assert_int_equal(os_strnlen_s(read_buf, 100), strlen(send_buf));
+  assert_int_equal(strncmp(send_buf, read_buf, 100), 0);
+  close(sfd);
+  close(cfd);
+}
+
 int main(int argc, char *argv[]) {
   (void)argc;
   (void)argv;
@@ -209,7 +255,9 @@ int main(int argc, char *argv[]) {
       cmocka_unit_test(test_create_domain_server),
       cmocka_unit_test(test_create_domain_client),
       cmocka_unit_test(test_read_domain_data_s),
-      cmocka_unit_test(test_write_domain_data)};
+      cmocka_unit_test(test_write_domain_data_s),
+      cmocka_unit_test(test_create_udp_server),
+      cmocka_unit_test(test_write_socket_data)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

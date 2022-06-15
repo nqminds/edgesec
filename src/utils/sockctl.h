@@ -18,30 +18,33 @@
  ****************************************************************************/
 
 /**
- * @file domain.h
+ * @file sockctl.h
  * @author Alexandru Mereacre
- * @brief File containing the definition of the domain utilities.
+ * @brief File containing the definition of the socket control utilities.
  */
 
-#ifndef DOMAIN_H
-#define DOMAIN_H
+#ifndef SOCKCTL_H
+#define SOCKCTL_H
 
 #include <sys/un.h>
 #include <sys/types.h>
+#include <netinet/in.h>
 
-#define DOMAIN_SOCKET_NAME_SIZE 14
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+enum SOCKET_TYPE {
+  SOCKET_TYPE_NONE = 0,
+  SOCKET_TYPE_DOMAIN,
+  SOCKET_TYPE_UDP,
+};
 
 /**
  * @brief Client address structure definition
  *
  */
 struct client_address {
-  struct sockaddr_un addr;
+  struct sockaddr_un addr_un;
+  struct sockaddr_in addr_in;
   int len;
+  enum SOCKET_TYPE type;
 };
 
 /**
@@ -61,16 +64,24 @@ int create_domain_client(char *add);
 int create_domain_server(char *server_path);
 
 /**
- * @brief Read data from the domain server socket
+ * @brief Create a udp server object
  *
- * @param sock Domain Server socket
+ * @param port Server port
+ * @return int UDP server socket
+ */
+int create_udp_server(unsigned int port);
+
+/**
+ * @brief Read data from the server socket
+ *
+ * @param sock Server socket
  * @param data Data buffer
  * @param data_len Data buffer length
  * @param claddr The sender address structure
  * @param flags The flags for recvfrom function
  * @return ssize_t Size of read data
  */
-ssize_t read_domain_data(int sock, char *data, size_t data_len,
+ssize_t read_socket_data(int sock, char *data, size_t data_len,
                          struct client_address *addr, int flags);
 
 /**
@@ -87,15 +98,15 @@ ssize_t read_domain_data_s(int sock, char *data, size_t data_len, char *addr,
                            int flags);
 
 /**
- * @brief Write data to the domain server socket
+ * @brief Write data to the erver socket
  *
- * @param sock Domain server socket
+ * @param sock Server socket
  * @param data Data buffer
  * @param data_len Data buffer length
  * @param addr The recipient address structure
  * @return ssize_t Size of written data
  */
-ssize_t write_domain_data(int sock, char *data, size_t data_len,
+ssize_t write_socket_data(int sock, char *data, size_t data_len,
                           struct client_address *addr);
 
 /**
@@ -110,14 +121,6 @@ ssize_t write_domain_data(int sock, char *data, size_t data_len,
 ssize_t write_domain_data_s(int sock, char *data, size_t data_len, char *addr);
 
 /**
- * @brief Closes the domain socket
- *
- * @param sfd The domain socket
- * @return int 0 on success, -1 on failure
- */
-int close_domain(int sfd);
-
-/**
  * @brief Write and read a domain data string
  *
  * @param socket_path The domain socket path
@@ -126,8 +129,4 @@ int close_domain(int sfd);
  * @return int 0 on success, -1 on failure
  */
 int writeread_domain_data_str(char *socket_path, char *write_str, char **reply);
-#ifdef __cplusplus
-}
-#endif
-
 #endif

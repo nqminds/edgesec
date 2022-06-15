@@ -43,7 +43,7 @@
 #include "../utils/net.h"
 #include "../utils/log.h"
 #include "../utils/eloop.h"
-#include "../utils/domain.h"
+#include "../utils/sockctl.h"
 #include "../utils/squeue.h"
 #include "../utils/hashmap.h"
 #include "../utils/iface_mapper.h"
@@ -141,7 +141,7 @@ int forward_reflector_if6(uint8_t *send_buf, size_t len,
 
     sa_group6.sin6_scope_id = el->ifindex;
     if (sendto(el->send_fd, send_buf, len, 0, dst, dst_len) == -1) {
-      if (errno == EWOULDBLOCK) {
+      if (errno == EWOULDBLOCK || errno == EADDRNOTAVAIL) {
         continue;
       }
       log_errno("sendto");
@@ -204,6 +204,7 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx) {
   struct mdns_context *context = (struct mdns_context *)eloop_ctx;
 
   os_memset(&peer_addr, 0, sizeof(struct client_address));
+  peer_addr.type = SOCKET_TYPE_DOMAIN;
 
   if (ioctl(sock, FIONREAD, &bytes_available) == -1) {
     log_errno("ioctl");
@@ -215,21 +216,21 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx) {
     return;
   }
 
-  if ((num_bytes = read_domain_data(sock, (char *)buf, bytes_available,
+  if ((num_bytes = read_socket_data(sock, (char *)buf, bytes_available,
                                     &peer_addr, 0)) == -1) {
-    log_error("read_domain_data fail");
+    log_error("read_socket_data fail");
     os_free(buf);
     return;
   }
 
-  if (sockaddr2str((struct sockaddr_storage *)&peer_addr.addr, peer_addr_str,
+  if (sockaddr2str((struct sockaddr_storage *)&peer_addr.addr_un, peer_addr_str,
                    &port) < 0) {
     log_error("sockaddr2str fail");
     os_free(buf);
     return;
   }
 
-  if (peer_addr.addr.sun_family == AF_INET) {
+  if (peer_addr.addr_un.sun_family == AF_INET) {
     if (ip4_2_buf(peer_addr_str, qip) < 0) {
       log_error("Wrong IP4 mDNS address");
       os_free(buf);
@@ -280,7 +281,7 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx) {
 
   while ((qel = (struct mdns_query_entry *)utarray_next(queries, qel)) !=
          NULL) {
-    if (peer_addr.addr.sun_family == AF_INET) {
+    if (peer_addr.addr_un.sun_family == AF_INET) {
       if (put_mdns_query_mapper(&context->imap, qip, qel) < 0) {
         log_error("put_mdns_query_mapper fail");
       }
@@ -300,7 +301,7 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx) {
   utarray_free(queries);
   utarray_free(answers);
 
-  if (peer_addr.addr.sun_family == AF_INET6) {
+  if (peer_addr.addr_un.sun_family == AF_INET6) {
     if (context->config.reflect_ip6) {
       if (forward_reflector_if6(buf, num_bytes, rif) < 0) {
         log_error("forward_reflector_if6 fail");
@@ -308,7 +309,7 @@ void eloop_reflector_handler(int sock, void *eloop_ctx, void *sock_ctx) {
         return;
       }
     }
-  } else if (peer_addr.addr.sun_family == AF_INET) {
+  } else if (peer_addr.addr_un.sun_family == AF_INET) {
     if (context->config.reflect_ip4) {
       if (forward_reflector_if4(buf, num_bytes, rif) < 0) {
         log_error("forward_reflector_if4 fail");
@@ -483,18 +484,18 @@ int close_mdns(struct mdns_context *context) {
     free_command_mapper(&context->command_mapper);
     context->command_mapper = NULL;
 
-    close_domain(context->sfd);
+    close(context->sfd);
     context->sfd = 0;
   }
 
   return 0;
 }
 
-int create_domain_command(char *src_ip, char *dst_ip, char delim, char **out) {
+int create_domain_command(char *src_ip, char *dst_ip, char **out) {
   struct string_queue *squeue = NULL;
   char delim_str[2];
 
-  sprintf(delim_str, "%c", delim);
+  sprintf(delim_str, "%c", CMD_DELIMITER);
 
   *out = NULL;
 
@@ -584,17 +585,20 @@ int send_bridge_command(struct mdns_context *context, struct tuple_packet *tp) {
     return 0;
   }
 
-  if (create_domain_command(sch->ip_src, sch->ip_dst, context->domain_delim,
-                            &domain) < 0) {
+  if (create_domain_command(sch->ip_src, sch->ip_dst, &domain) < 0) {
     log_error("create_domain_command fail");
     return -1;
   }
 
+  /*
   log_trace("Command: %s", domain);
+  */
 
   ret = check_command_mapper(&context->command_mapper, domain);
   if (ret > 0) {
+    /*
     log_trace("Command in hash map");
+    */
   } else if (!ret) {
     if (put_command_mapper(&context->command_mapper, domain) < 0) {
       log_error("put_command_mapper fail");
@@ -603,7 +607,7 @@ int send_bridge_command(struct mdns_context *context, struct tuple_packet *tp) {
     }
 
     if (write_domain_data_s(context->sfd, domain, strlen(domain),
-                            context->domain_server_path) < 0) {
+                            context->supervisor_control_path) < 0) {
       log_error("write_domain_data_s fail");
       os_free(domain);
       return -1;
@@ -738,15 +742,16 @@ void free_mdns_context(struct mdns_context *context) {
   }
 }
 
-int init_mdns_context(struct mdns_conf *mdns_config, char *domain_server_path,
-                      char domain_delim, hmap_vlan_conn *vlan_mapper,
+int init_mdns_context(struct mdns_conf *mdns_config,
+                      char *supervisor_control_path,
+                      hmap_vlan_conn *vlan_mapper,
                       struct mdns_context *context) {
 
   context->vlan_mapper = NULL;
   os_memcpy(&context->config, mdns_config, sizeof(struct mdns_conf));
   context->pctx_list = NULL;
-  os_strlcpy(context->domain_server_path, domain_server_path, MAX_OS_PATH_LEN);
-  context->domain_delim = domain_delim;
+  os_strlcpy(context->supervisor_control_path, supervisor_control_path,
+             MAX_OS_PATH_LEN);
   context->command_mapper = NULL;
   context->sfd = 0;
 
@@ -772,8 +777,8 @@ void *mdns_thread(void *arg) {
   return NULL;
 }
 
-int run_mdns_thread(struct mdns_conf *mdns_config, char *domain_server_path,
-                    char domain_delim, hmap_vlan_conn *vlan_mapper,
+int run_mdns_thread(struct mdns_conf *mdns_config,
+                    char *supervisor_control_path, hmap_vlan_conn *vlan_mapper,
                     pthread_t *id) {
   struct mdns_context *context = NULL;
 
@@ -782,8 +787,8 @@ int run_mdns_thread(struct mdns_conf *mdns_config, char *domain_server_path,
     return -1;
   }
 
-  if (init_mdns_context(mdns_config, domain_server_path, domain_delim,
-                        vlan_mapper, context) < 0) {
+  if (init_mdns_context(mdns_config, supervisor_control_path, vlan_mapper,
+                        context) < 0) {
     log_error("init_mdns_context fail");
     free_mdns_context(context);
     return -1;

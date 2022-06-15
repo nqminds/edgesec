@@ -42,8 +42,8 @@ struct iptables_columns {
   char target[20];
   char in[IFNAMSIZ];
   char out[IFNAMSIZ];
-  char source[IP_LEN];
-  char destination[IP_LEN];
+  char source[OS_INET_ADDRSTRLEN];
+  char destination[OS_INET_ADDRSTRLEN];
 };
 
 #define BASIC_FLUSH_COMMANDS                                                    \
@@ -135,12 +135,12 @@ struct iptables_columns process_rule_column(char *column) {
           break;
         case 8:
           // source column
-          os_strlcpy(row.source, *p, IP_LEN);
+          os_strlcpy(row.source, *p, OS_INET_ADDRSTRLEN);
           state = 9;
           break;
         case 9:
           // destination column
-          os_strlcpy(row.destination, *p, IP_LEN);
+          os_strlcpy(row.destination, *p, OS_INET_ADDRSTRLEN);
           state = 10;
           break;
       }

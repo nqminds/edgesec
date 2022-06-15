@@ -62,8 +62,8 @@ target_link_libraries(squeue PRIVATE log os)
 add_library(sqliteu sqliteu.c)
 target_link_libraries(sqliteu PUBLIC SQLite::SQLite3 PRIVATE log os)
 
-add_library(domain domain.c)
-target_link_libraries(domain PRIVATE log os)
+add_library(sockctl sockctl.c)
+target_link_libraries(sockctl PRIVATE net log os)
 
 add_library(utarray INTERFACE) # header only lib
 add_library(uthash INTERFACE) # header only lib

@@ -36,6 +36,9 @@
 #include "uthash.h"
 #include "allocs.h"
 #include "os.h"
+#include "net.h"
+
+#define LINK_TYPE_LEN 64
 
 enum IF_STATE {
   IF_STATE_UNKNOWN = 0,
@@ -58,11 +61,12 @@ typedef struct {
   enum IF_STATE state;                /**< Interface state */
   char link_type[LINK_TYPE_LEN];      /**< Interface link type */
   uint8_t ifa_family;                 /**< Interface family */
-  char ip_addr[IP_LEN];               /**< Interface string IP4 address */
+  char ip_addr[OS_INET_ADDRSTRLEN];   /**< Interface string IP4 address */
   char ip_addr6[OS_INET6_ADDRSTRLEN]; /**< Interface string IP6 address */
-  char peer_addr[IP_LEN];             /**< Interface string peer IP address */
-  char brd_addr[IP_LEN];      /**< Interface string IP broadcast address */
-  uint8_t mac_addr[ETH_ALEN]; /**< Interface byte MAC address */
+  char peer_addr[OS_INET_ADDRSTRLEN]; /**< Interface string peer IP address */
+  char brd_addr[OS_INET_ADDRSTRLEN];  /**< Interface string IP broadcast address
+                                       */
+  uint8_t mac_addr[ETH_ALEN];         /**< Interface byte MAC address */
 } netif_info_t;
 
 /**
@@ -70,12 +74,13 @@ typedef struct {
  *
  */
 typedef struct config_ifinfo_t {
-  int vlanid;               /**< Interface VLAN ID */
-  char ifname[IFNAMSIZ];    /**< Interface string name */
-  char brname[IFNAMSIZ];    /**< Bridge string name */
-  char ip_addr[IP_LEN];     /**< Interface string IP address */
-  char brd_addr[IP_LEN];    /**< Interface string IP broadcast address */
-  char subnet_mask[IP_LEN]; /**< Interface string IP subnet mask */
+  int vlanid;                        /**< Interface VLAN ID */
+  char ifname[IFNAMSIZ];             /**< Interface string name */
+  char brname[IFNAMSIZ];             /**< Bridge string name */
+  char ip_addr[OS_INET_ADDRSTRLEN];  /**< Interface string IP address */
+  char brd_addr[OS_INET_ADDRSTRLEN]; /**< Interface string IP broadcast address
+                                      */
+  char subnet_mask[OS_INET_ADDRSTRLEN]; /**< Interface string IP subnet mask */
 } config_ifinfo_t;
 
 /**

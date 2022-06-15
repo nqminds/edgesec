@@ -34,6 +34,7 @@
 
 #include "../utils/allocs.h"
 #include "../utils/os.h"
+#include "../utils/net.h"
 #include "../utils/log.h"
 #include "../utils/sqliteu.h"
 #include "../utils/utarray.h"

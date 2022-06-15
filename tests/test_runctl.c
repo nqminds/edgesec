@@ -122,11 +122,10 @@ struct radius_server_data *__wrap_run_radius(struct eloop_data *eloop,
 
 #ifdef WITH_MDNS_SERVICE
 int __wrap_run_mdns_thread(struct mdns_conf *mdns_config,
-                           char *domain_server_path, char domain_delim,
+                           char *supervisor_control_path,
                            hmap_vlan_conn *vlan_mapper, pthread_t *id) {
   (void)mdns_config;
-  (void)domain_server_path;
-  (void)domain_delim;
+  (void)supervisor_control_path;
   (void)vlan_mapper;
   (void)id;
 
@@ -135,10 +134,10 @@ int __wrap_run_mdns_thread(struct mdns_conf *mdns_config,
 #endif
 
 int __wrap_run_dhcp(struct dhcp_conf *dconf, UT_array *dns_server_array,
-                    char *domain_server_path, bool exec_dhcp) {
+                    char *supervisor_control_path, bool exec_dhcp) {
   (void)dconf;
   (void)dns_server_array;
-  (void)domain_server_path;
+  (void)supervisor_control_path;
   (void)exec_dhcp;
 
   return 0;

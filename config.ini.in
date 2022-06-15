@@ -12,7 +12,6 @@ generateSsid = true
 allocateVlans = true
 defaultOpenVlanId = 0
 quarantineVlanId = 10
-killRunningProcess = false
 # Set to `true` to let edgesec process start hostapd
 execAp = true
 execRadius = true
@@ -34,8 +33,8 @@ bufferTimeout = 10
 immediate = false
 
 [supervisor]
-domainServerPath = "@EDGESEC_full_runstate_dir@/edgesec-domain-server"
-delim = 32
+supervisorControlPort = 32001
+supervisorControlPath = "@EDGESEC_full_runstate_dir@/edgesec-control-server"
 
 [ap]
 apBinPath = "@EDGESEC_full_libexec_dir@/hostapd"

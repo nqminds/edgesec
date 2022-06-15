@@ -492,94 +492,6 @@ int eloop_replenish_timeout(struct eloop_data *eloop, unsigned long req_secs,
 
   return -1;
 }
-
-// static void eloop_handle_alarm(int sig) {
-//   (void)sig;
-//   log_trace("eloop: could not process SIGINT or SIGTERM in "
-//             "two seconds. Looks like there\n"
-//             "is a bug that ends up in a busy loop that "
-//             "prevents clean shutdown.\n"
-//             "Killing program forcefully.");
-//   exit(1);
-// }
-
-// static void eloop_handle_signal(int sig) {
-//   int i;
-
-//   if ((sig == SIGINT || sig == SIGTERM) && !eloop->pending_terminate) {
-//     /* Use SIGALRM to break out from potential busy loops that
-//      * would not allow the program to be killed. */
-//     eloop->pending_terminate = 1;
-//     signal(SIGALRM, eloop_handle_alarm);
-//     alarm(2);
-//   }
-
-//   eloop->signaled++;
-//   for (i = 0; i < eloop->signal_count; i++) {
-//     if (eloop->signals[i].sig == sig) {
-//       eloop->signals[i].signaled++;
-//       break;
-//     }
-//   }
-// }
-
-// static void eloop_process_pending_signals(struct eloop_data *eloop) {
-//   int i;
-
-//   if (eloop->signaled == 0)
-//     return;
-//   eloop->signaled = 0;
-
-//   if (eloop->pending_terminate) {
-//     alarm(0);
-//     eloop->pending_terminate = 0;
-//   }
-
-//   for (i = 0; i < eloop->signal_count; i++) {
-//     if (eloop->signals[i].signaled) {
-//       eloop->signals[i].signaled = 0;
-//       eloop->signals[i].handler(eloop->signals[i].sig,
-//                                eloop->signals[i].user_data);
-//     }
-//   }
-// }
-
-// int eloop_register_signal(struct eloop_data *eloop,
-//                           int sig, eloop_signal_handler handler,
-//                           void *user_data) {
-//   struct eloop_signal *tmp;
-
-//   tmp = os_realloc_array(eloop->signals, eloop->signal_count + 1,
-//                          sizeof(struct eloop_signal));
-//   if (tmp == NULL)
-//     return -1;
-
-//   tmp[eloop->signal_count].sig = sig;
-//   tmp[eloop->signal_count].user_data = user_data;
-//   tmp[eloop->signal_count].handler = handler;
-//   tmp[eloop->signal_count].signaled = 0;
-//   eloop->signal_count++;
-//   eloop->signals = tmp;
-//   signal(sig, eloop_handle_signal);
-
-//   return 0;
-// }
-
-// int eloop_register_signal_terminate(struct eloop_data *eloop,
-//                                     eloop_signal_handler handler,
-//                                     void *user_data) {
-//   int ret = eloop_register_signal(eloop, SIGINT, handler, user_data);
-//   if (ret == 0)
-//     ret = eloop_register_signal(eloop, SIGTERM, handler, user_data);
-//   return ret;
-// }
-
-// int eloop_register_signal_reconfig(struct eloop_data *eloop,
-//                                    eloop_signal_handler handler,
-//                                    void *user_data) {
-//   return eloop_register_signal(eloop, SIGHUP, handler, user_data);
-// }
-
 void eloop_run(struct eloop_data *eloop) {
   int timeout_ms = -1;
   int res;
@@ -594,19 +506,6 @@ void eloop_run(struct eloop_data *eloop) {
          (!dl_list_empty(&eloop->timeout) || eloop->readers.count > 0 ||
           eloop->writers.count > 0 || eloop->exceptions.count > 0)) {
     struct eloop_timeout *timeout;
-
-    // if (eloop->pending_terminate) {
-    //   /*
-    //    * This may happen in some corner cases where a signal
-    //    * is received during a blocking operation. We need to
-    //    * process the pending signals and exit if requested to
-    //    * avoid hitting the SIGALRM limit if the blocking
-    //    * operation took more than two seconds.
-    //    */
-    //   eloop_process_pending_signals(eloop);
-    //   if (eloop->terminate)
-    //     break;
-    // }
 
     timeout = dl_list_first(&eloop->timeout, struct eloop_timeout, list);
     if (timeout) {
@@ -632,8 +531,6 @@ void eloop_run(struct eloop_data *eloop) {
     eloop->readers.changed = 0;
     eloop->writers.changed = 0;
     eloop->exceptions.changed = 0;
-
-    // eloop_process_pending_signals(eloop);
 
     /* check if some registered timeouts have occurred */
     timeout = dl_list_first(&eloop->timeout, struct eloop_timeout, list);
@@ -741,7 +638,7 @@ int eloop_terminated(struct eloop_data *eloop) {
     return -1;
   }
 
-  return eloop->terminate /*|| eloop->pending_terminate*/;
+  return eloop->terminate;
 }
 
 void eloop_wait_for_read_sock(int sock) {

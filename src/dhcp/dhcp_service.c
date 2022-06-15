@@ -32,14 +32,14 @@
 #include "../utils/utarray.h"
 
 int run_dhcp(struct dhcp_conf *dconf, UT_array *dns_server_array,
-             char *domain_server_path, bool exec_dhcp) {
+             char *supervisor_control_path, bool exec_dhcp) {
   if (generate_dnsmasq_conf(dconf, dns_server_array) < 0) {
     log_trace("generate_dnsmasq_conf fail");
     return -1;
   }
 
-  if (generate_dnsmasq_script(dconf->dhcp_script_path, domain_server_path) <
-      0) {
+  if (generate_dnsmasq_script(dconf->dhcp_script_path,
+                              supervisor_control_path) < 0) {
     log_trace("generate_dnsmasq_script fail");
     return -1;
   }

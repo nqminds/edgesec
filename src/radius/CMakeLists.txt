@@ -15,7 +15,7 @@ add_library(radius radius.c)
 target_link_libraries(radius PRIVATE wpabuf md5 md5_internal log os)
 
 add_library(radius_server radius_server.c)
-target_link_libraries(radius_server PRIVATE radius wpabuf log os eloop)
+target_link_libraries(radius_server PRIVATE radius wpabuf log net os eloop)
 
 add_library(radius_service radius_service.c)
 target_link_libraries(radius_service PRIVATE radius_server)

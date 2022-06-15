@@ -3,16 +3,16 @@ include_directories(
 )
 
 add_executable(test_bridge_list test_bridge_list.c)
-target_link_libraries(test_bridge_list PRIVATE bridge_list log cmocka::cmocka)
+target_link_libraries(test_bridge_list PRIVATE bridge_list net log cmocka::cmocka)
 
-add_executable(test_domain_server test_domain_server.c)
-target_link_libraries(test_domain_server PRIVATE domain os log cmocka::cmocka)
+add_executable(test_sockctl_server test_sockctl_server.c)
+target_link_libraries(test_sockctl_server PRIVATE sockctl os log cmocka::cmocka)
 
 add_executable(test_cmd_processor test_cmd_processor.c)
 target_link_libraries(test_cmd_processor PRIVATE cmd_processor iptables log cmocka::cmocka)
 
-set(TEST_CMD_PROPS "-Wl,--wrap=write_domain_data -Wl,--wrap=accept_mac_cmd -Wl,--wrap=deny_mac_cmd")
-set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=write_domain_data -Wl,--wrap=accept_mac_cmd -Wl,--wrap=deny_mac_cmd")
+set(TEST_CMD_PROPS "-Wl,--wrap=write_socket_data -Wl,--wrap=accept_mac_cmd -Wl,--wrap=deny_mac_cmd")
+set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=write_socket_data -Wl,--wrap=accept_mac_cmd -Wl,--wrap=deny_mac_cmd")
 set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=add_nat_cmd -Wl,--wrap=remove_nat_cmd -Wl,--wrap=assign_psk_cmd")
 set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=set_ip_cmd -Wl,--wrap=add_bridge_mac_cmd -Wl,--wrap=add_bridge_ip_cmd")
 set(TEST_CMD_PROPS "${TEST_CMD_PROPS} -Wl,--wrap=set_fingerprint_cmd -Wl,--wrap=query_fingerprint_cmd")
@@ -42,8 +42,8 @@ set_tests_properties(test_bridge_list
   PROPERTIES
   WILL_FAIL FALSE)
 
-add_test(NAME test_domain_server COMMAND test_domain_server)
-set_tests_properties(test_domain_server
+add_test(NAME test_sockctl_server COMMAND test_sockctl_server)
+set_tests_properties(test_sockctl_server
   PROPERTIES
   WILL_FAIL FALSE)
 

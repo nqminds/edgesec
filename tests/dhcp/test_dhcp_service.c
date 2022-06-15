@@ -31,9 +31,9 @@ bool __wrap_generate_dnsmasq_conf(struct dhcp_conf *dconf,
 }
 
 bool __wrap_generate_dnsmasq_script(char *dhcp_script_path,
-                                    char *domain_server_path) {
+                                    char *supervisor_control_path) {
   (void)dhcp_script_path;
-  (void)domain_server_path;
+  (void)supervisor_control_path;
 
   return true;
 }

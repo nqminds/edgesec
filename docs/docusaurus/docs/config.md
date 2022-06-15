@@ -17,7 +17,6 @@ generateSsid = true
 allocateVlans = true
 defaultOpenVlanId = 0
 quarantineVlanId = 10
-killRunningProcess = false
 execAp = false
 execRadius = true
 execDhcp = true
@@ -37,8 +36,8 @@ bufferTimeout = 10
 immediate = false
 
 [supervisor]
-domainServerPath = "/tmp/edgesec-domain-server"
-delim = 32
+supervisorControlPort = 32001
+supervisorControlPath = "/tmp/edgesec-control-server"
 
 [ap]
 apBinPath = "./hostapd"
@@ -174,10 +173,6 @@ The default VLAN ID positive integer number assigned to new devices if `allowAll
 
 The VLAN ID assigned to devices that are quarantined.
 
-### killRunningProcess (boolean)
-
-If set to true the current running `edgesec` will terminate exisiting running `edgesec` processes.
-
 ### execAp (boolean)
 
 If set to `true`, `edgesec` will execute the `hostapd` service using `excve` system command. If set to `false` the `hostapd` service has to be run before executing `edgesec`.
@@ -262,13 +257,13 @@ The UNIX domain command used by the capture service
 
 The supervisor group defines the parameters to run the supervisor service.
 
-### domainServerPath (string)
+### supervisorControlPort (number)
+
+The supervisor server control port number.
+
+### supervisorControlPath (string)
 
 The absolute path to the UNIX domain socket used by the supervisor service.
-
-### delim (integer)
-
-The decimal ASCII number used to delimit command parameters.
 
 ## [ap] group
 

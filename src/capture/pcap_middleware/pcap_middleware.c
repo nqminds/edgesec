@@ -47,7 +47,7 @@
 #define PCAP_SUBFOLDER_NAME                                                    \
   "./capture" /* Subfodler name to store raw pcap data                         \
                */
-
+#define PCAP_EXTENSION ".pcap"
 #define PCAP_PROCESS_INTERVAL 10 * 1000 // In microseconds
 
 #define MAX_PCAP_FILE_NAME_LENGTH MAX_RANDOM_UUID_LEN + STRLEN(PCAP_EXTENSION)

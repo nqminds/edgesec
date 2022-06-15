@@ -41,7 +41,7 @@
 #include "../utils/eloop.h"
 #include "../utils/iface.h"
 #include "../utils/log.h"
-#include "../utils/domain.h"
+#include "../utils/sockctl.h"
 
 #define ATTACH_AP_COMMAND "ATTACH"
 

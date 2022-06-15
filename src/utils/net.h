@@ -37,6 +37,35 @@
 #include "allocs.h"
 #include "os.h"
 
+#define IP_ALEN 4
+#define OS_INET_ADDRSTRLEN 22
+#define OS_INET6_ADDRSTRLEN 63
+
+#ifndef MAC2STR
+#define MAC2STR(a) (a)[0], (a)[1], (a)[2], (a)[3], (a)[4], (a)[5]
+#define MACSTR "%02x:%02x:%02x:%02x:%02x:%02x"
+#define MACSTR_LEN 18 // Including the '\0' character
+/*
+ * Compact form for string representation of MAC address
+ * To be used, e.g., for constructing dbus paths for P2P Devices
+ */
+#define COMPACT_MACSTR "%02x%02x%02x%02x%02x%02x"
+#define COMPACT_MACSTR_LEN 13 // Including the '\0' character
+#endif
+
+#ifndef IP2STR
+#define IP2STR(a) (a)[0], (a)[1], (a)[2], (a)[3]
+#define IPSTR "%d.%d.%d.%d"
+#endif
+
+#ifndef IP62STR
+#define IP62STR(a)                                                             \
+  (a)[0], (a)[1], (a)[2], (a)[3], (a)[4], (a)[5], (a)[6], (a)[7], (a)[8],      \
+      (a)[9], (a)[10], (a)[11], (a)[12], (a)[13], (a)[14], (a)[15]
+#define IP6STR                                                                 \
+  "%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x"
+#endif
+
 /**
  * @brief Checks whether a string denotes a IPv4 address
  *
@@ -108,4 +137,23 @@ uint8_t get_short_subnet(char *subnet_mask);
  * @return 0 on success, -1 on failure
  */
 int get_ip_host(char *ip, char *subnet_mask, uint32_t *host);
+
+/**
+ * @brief Disable the PMTU discovery for sockets
+ *
+ * @param[in] sock The socket descriptor
+ * @return 0 on success, -1 on failure
+ */
+int disable_pmtu_discovery(int sock);
+
+/**
+ * @brief Convert ASCII string to MAC address (in any known format)
+ *
+ * @param txt MAC address as a string (e.g., 00:11:22:33:44:55 or
+ * 0011.2233.4455)
+ * @param addr Buffer for the MAC address (ETH_ALEN = 6 bytes)
+ * @return int Characters used (> 0) on success, -1 on failure
+ */
+int hwaddr_aton2(const char *txt, uint8_t *addr);
+
 #endif

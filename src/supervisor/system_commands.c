@@ -40,11 +40,11 @@
 #include "../utils/log.h"
 #include "../utils/base64.h"
 #include "../utils/eloop.h"
-#include "../utils/domain.h"
+#include "../utils/sockctl.h"
 #include "../utils/utarray.h"
 #include "../utils/iface_mapper.h"
 
-#define PING_REPLY "PONG"
+#define PING_REPLY "PONG\n"
 
 int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
                char *ip_addr, enum DHCP_IP_TYPE ip_type) {
@@ -55,6 +55,7 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
   struct mac_conn_info right_info, info;
   int ret;
   bool add = (ip_type == DHCP_IP_NEW || ip_type == DHCP_IP_OLD);
+  bool primary;
 
   init_default_mac_info(&info, context->default_open_vlanid,
                         context->allow_all_nat);
@@ -82,9 +83,11 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
       }
 
       if (!strlen(info.ip_addr)) {
-        os_strlcpy(info.ip_addr, ip_addr, IP_LEN);
+        os_strlcpy(info.ip_addr, ip_addr, OS_INET_ADDRSTRLEN);
+        primary = true;
       } else if (strlen(info.ip_addr) && !strlen(info.ip_sec_addr)) {
-        os_strlcpy(info.ip_sec_addr, ip_addr, IP_LEN);
+        os_strlcpy(info.ip_sec_addr, ip_addr, OS_INET_ADDRSTRLEN);
+        primary = false;
       } else {
         log_debug("IPs already present");
         return -1;
@@ -92,11 +95,11 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
       break;
     case DHCP_IP_DEL:
       if (strcmp(info.ip_addr, ip_addr) == 0) {
-        os_memset(info.ip_addr, 0x0, IP_LEN);
+        os_memset(info.ip_addr, 0x0, OS_INET_ADDRSTRLEN);
       }
 
       if (strcmp(info.ip_sec_addr, ip_addr) == 0) {
-        os_memset(info.ip_sec_addr, 0, IP_LEN);
+        os_memset(info.ip_sec_addr, 0, OS_INET_ADDRSTRLEN);
       }
       break;
     default:
@@ -115,10 +118,13 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
     return -1;
   }
 
-  if (send_events_subscriber(context, SUBSCRIBER_EVENT_IP, MACSTR " %s %d",
-                             MAC2STR(mac_addr), ip_addr, add) < 0) {
-    log_error("send_events_subscriber fail");
-    return -1;
+  if (add) {
+    if (send_events_subscriber(context, SUBSCRIBER_EVENT_IP, MACSTR " %s %d %d",
+                               MAC2STR(mac_addr), ip_addr, ip_type,
+                               primary) < 0) {
+      log_error("send_events_subscriber fail");
+      return -1;
+    }
   }
 
   // Change the NAT iptables rules
@@ -179,6 +185,6 @@ char *ping_cmd(void) { return os_strdup(PING_REPLY); }
 
 int subscribe_events_cmd(struct supervisor_context *context,
                          struct client_address *addr) {
-  log_debug("SUBSCRIBE_EVENTS with size=%d", addr->len);
+  log_debug("SUBSCRIBE_EVENTS with size=%d and type=%d", addr->len, addr->type);
   return add_events_subscriber(context, addr);
 }
