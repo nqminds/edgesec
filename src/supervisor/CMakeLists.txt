@@ -44,10 +44,10 @@ target_link_libraries(system_commands
 
 add_library(cmd_processor cmd_processor.c)
 target_link_libraries(cmd_processor
-  PUBLIC utarray domain supervisor_config
+  PUBLIC utarray sockctl supervisor_config
   PRIVATE
     mac_mapper network_commands system_commands
-    allocs os log net base64 utarray domain # the ./utils/
+    allocs os log net base64 utarray sockctl # the ./utils/
 )
 if (USE_CRYPTO_SERVICE)
   target_link_libraries(cmd_processor PRIVATE crypt_commands)

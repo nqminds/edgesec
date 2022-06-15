@@ -13,6 +13,7 @@
 #include <cmocka.h>
 
 #include "supervisor/sqlite_macconn_writer.h"
+#include "crypt/crypt_service.h"
 #include "utils/hashmap.h"
 #include "utils/log.h"
 #include "utils/utarray.h"

@@ -18,6 +18,11 @@
 
 static sqlite3 *global_db = NULL;
 
+extern int __real_sqlite3_close(sqlite3 *db);
+extern int __real_crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
+                                 uint8_t *iv, uint8_t *out);
+extern int __real_sqlite3_open(const char *filename, sqlite3 **ppDb);
+
 int __wrap_sqlite3_open(const char *filename, sqlite3 **ppDb) {
   if (strcmp(filename, "global_db") == 0) {
     *ppDb = global_db;
@@ -125,6 +130,9 @@ static void test_get_crypt_pair(void **state) {
 }
 
 int main(int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
+
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {cmocka_unit_test(test_load_crypt_service),

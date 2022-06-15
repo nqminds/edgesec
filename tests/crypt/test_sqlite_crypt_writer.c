@@ -16,6 +16,8 @@
 #include "utils/sqliteu.h"
 #include "crypt/sqlite_crypt_writer.h"
 
+extern int __real_sqlite3_open(const char *filename, sqlite3 **ppDb);
+
 int __wrap_sqlite3_open(const char *filename, sqlite3 **ppDb) {
   return __real_sqlite3_open(filename, ppDb);
 }
@@ -140,6 +142,9 @@ static void test_get_sqlite_secrets_row(void **state) {
 }
 
 int main(int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
+
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
