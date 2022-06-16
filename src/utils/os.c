@@ -1362,20 +1362,25 @@ int get_commands_paths(char *commands[], UT_array *bin_path_arr,
   return 0;
 }
 
-char *string_append_char(char *str, char character) {
-  char *appended = NULL;
-
+char *string_append_char(const char *str, char character) {
   if (str == NULL) {
     log_error("str param is NULL");
     return NULL;
   }
+  size_t str_len = strlen(str);
 
-  if ((appended = os_zalloc(strlen(str) + 2)) == NULL) {
+  char *appended = os_malloc(str_len + 2);
+  if (appended == NULL) {
     log_errno("os_zalloc");
     return NULL;
   }
 
-  sprintf(appended, "%s%c", str, character);
+  // first copy the str, without NULL terminator
+  memcpy(appended, str, str_len);
+  // set the char to append
+  appended[str_len] = character;
+  // set the string NULL terminator
+  appended[str_len + 1] = 0;
 
   return appended;
 }

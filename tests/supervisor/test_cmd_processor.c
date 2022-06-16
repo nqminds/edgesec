@@ -136,6 +136,9 @@ int __wrap_clear_bridges_cmd(struct supervisor_context *context,
   return 0;
 }
 
+// mock result to return from register_ticket_cmd
+#define MOCK_PASSPHRASE "mock-test-passphrase"
+
 uint8_t *__wrap_register_ticket_cmd(struct supervisor_context *context,
                                     uint8_t *mac_addr, char *label,
                                     int vlanid) {
@@ -145,7 +148,7 @@ uint8_t *__wrap_register_ticket_cmd(struct supervisor_context *context,
   check_expected(label);
   check_expected(vlanid);
 
-  return (uint8_t *)OK_REPLY;
+  return (uint8_t *)MOCK_PASSPHRASE;
 }
 
 int __wrap_clear_psk_cmd(struct supervisor_context *context,
@@ -168,12 +171,13 @@ int __wrap_put_crypt_cmd(struct supervisor_context *context, char *key,
   return 0;
 }
 
+#define MOCK_CRYPT_VALUE "mock-get-crypt-cmd-value"
 int __wrap_get_crypt_cmd(struct supervisor_context *context, char *key,
                          char **value) {
   (void)context;
 
   check_expected(key);
-  *value = os_strdup(OK_REPLY);
+  *value = os_strdup(MOCK_CRYPT_VALUE);
 
   return 0;
 }
@@ -219,6 +223,7 @@ int __wrap_gen_cert_cmd(struct supervisor_context *context, char *certid,
   return 0;
 }
 
+#define MOCK_ENCRYPT_BLOB_CMD "mock-encrypt-blob-cmd-success"
 char *__wrap_encrypt_blob_cmd(struct supervisor_context *context, char *keyid,
                               char *ivid, char *blob) {
   (void)context;
@@ -227,9 +232,10 @@ char *__wrap_encrypt_blob_cmd(struct supervisor_context *context, char *keyid,
   check_expected(ivid);
   check_expected(blob);
 
-  return os_strdup(OK_REPLY);
+  return os_strdup(MOCK_ENCRYPT_BLOB_CMD);
 }
 
+#define MOCK_DECRYPT_BLOB_CMD "mock-decrypt-blob-cmd-success"
 char *__wrap_decrypt_blob_cmd(struct supervisor_context *context, char *keyid,
                               char *ivid, char *blob) {
   (void)context;
@@ -238,9 +244,10 @@ char *__wrap_decrypt_blob_cmd(struct supervisor_context *context, char *keyid,
   check_expected(ivid);
   check_expected(blob);
 
-  return os_strdup(OK_REPLY);
+  return os_strdup(MOCK_DECRYPT_BLOB_CMD);
 }
 
+#define MOCK_SIGN_BLOB_CMD "mock-sign-blob-cmd-success"
 char *__wrap_sign_blob_cmd(struct supervisor_context *context, char *keyid,
                            char *blob) {
   (void)context;
@@ -248,7 +255,7 @@ char *__wrap_sign_blob_cmd(struct supervisor_context *context, char *keyid,
   check_expected(keyid);
   check_expected(blob);
 
-  return os_strdup(OK_REPLY);
+  return os_strdup(MOCK_SIGN_BLOB_CMD);
 }
 #endif
 
@@ -795,7 +802,7 @@ static void test_process_register_ticket_cmd(void **state) {
   expect_string(__wrap_register_ticket_cmd, label, "test");
   expect_value(__wrap_register_ticket_cmd, vlanid, 23);
   assert_int_equal(process_register_ticket_cmd(0, &claddr, NULL, cmd_arr),
-                   strlen(OK_REPLY));
+                   strlen(MOCK_PASSPHRASE "\n"));
   utarray_free(cmd_arr);
 
   utarray_new(cmd_arr, &ut_str_icd);
@@ -893,7 +900,7 @@ static void test_process_get_crypt_cmd(void **state) {
       split_string_array("GET_CRYPT 12345", CMD_DELIMITER, cmd_arr), -1);
   expect_string(__wrap_get_crypt_cmd, key, "12345");
   assert_int_equal(process_get_crypt_cmd(0, &claddr, NULL, cmd_arr),
-                   strlen(OK_REPLY));
+                   strlen(MOCK_CRYPT_VALUE "\n"));
   utarray_free(cmd_arr);
 
   utarray_new(cmd_arr, &ut_str_icd);
@@ -1065,7 +1072,7 @@ static void test_process_encrypt_blob(void **state) {
   expect_string(__wrap_encrypt_blob_cmd, ivid, "ivid");
   expect_string(__wrap_encrypt_blob_cmd, blob, "12345");
   assert_int_equal(process_encrypt_blob_cmd(0, &claddr, NULL, cmd_arr),
-                   strlen(OK_REPLY));
+                   strlen(MOCK_ENCRYPT_BLOB_CMD "\n"));
   utarray_free(cmd_arr);
 
   utarray_new(cmd_arr, &ut_str_icd);
@@ -1105,7 +1112,7 @@ static void test_process_decrypt_blob(void **state) {
   expect_string(__wrap_decrypt_blob_cmd, ivid, "ivid");
   expect_string(__wrap_decrypt_blob_cmd, blob, "12345");
   assert_int_equal(process_decrypt_blob_cmd(0, &claddr, NULL, cmd_arr),
-                   strlen(OK_REPLY));
+                   strlen(MOCK_DECRYPT_BLOB_CMD "\n"));
   utarray_free(cmd_arr);
 
   utarray_new(cmd_arr, &ut_str_icd);
@@ -1143,7 +1150,7 @@ static void test_process_sign_blob(void **state) {
   expect_string(__wrap_sign_blob_cmd, keyid, "keyid");
   expect_string(__wrap_sign_blob_cmd, blob, "12345");
   assert_int_equal(process_sign_blob_cmd(0, &claddr, NULL, cmd_arr),
-                   strlen(OK_REPLY));
+                   strlen(MOCK_SIGN_BLOB_CMD "\n"));
   utarray_free(cmd_arr);
 
   utarray_new(cmd_arr, &ut_str_icd);

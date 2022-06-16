@@ -42,9 +42,13 @@ int put_crypt_cmd(struct supervisor_context *context, char *key, char *value);
 /**
  * @brief GET_CRYPT command
  *
- * @param context The supervisor structure instance
- * @param key The crypt key
- * @param value The crypt output value
+ * Sets `value` to point new string containing the crypt output value.
+ * Please remember to `os_free()` the `value` when you're finished with using
+ * it.
+ *
+ * @param[in] context The supervisor structure instance
+ * @param[in] key The crypt key
+ * @param[out] value Pointer to crypt output value
  * @return 0 on success, -1 on failure
  */
 int get_crypt_cmd(struct supervisor_context *context, char *key, char **value);

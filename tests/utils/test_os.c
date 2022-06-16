@@ -559,6 +559,13 @@ static void test_make_dirs_to_path(void **state) {
   assert_int_equal(ret, 0);
 }
 
+static void test_string_append_char(void **state) {
+  (void)state; /* unused */
+  const char input_str[] = "Hello World";
+  char *combined_str = string_append_char(input_str, "!");
+  assert_string_equal(combined_str, "Hello World!");
+}
+
 int main(int argc, char *argv[]) {
   (void)argc;
   (void)argv;
