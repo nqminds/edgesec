@@ -409,7 +409,7 @@ int run_ctl(struct app_config *app_config) {
 #ifdef WITH_CRYPTO_SERVICE
   log_info("Loading crypt service...");
   if ((context->crypt_ctx = load_crypt_service(
-           app_config->crypt_db_path, app_config->crypt_key_id,
+           app_config->crypt_db_path, MAIN_CRYPT_KEY_ID,
            (uint8_t *)app_config->crypt_secret,
            os_strnlen_s(app_config->crypt_secret, MAX_USER_SECRET))) == NULL) {
     log_error("load_crypt_service fail");

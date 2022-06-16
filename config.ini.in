@@ -22,7 +22,6 @@ execFirewall = true
 setIpForward = true
 connectionDbPath = "@EDGESEC_full_local_lib_dir@/connection.sqlite"
 cryptDbPath = "@EDGESEC_full_local_lib_dir@/crypt.sqlite"
-cryptKeyId = "master"
 pidFilePath = "@EDGESEC_full_runstate_dir@/edgesec.pid"
 
 [capture]

@@ -663,17 +663,6 @@ bool load_system_config(const char *filename, struct app_config *config) {
     return false;
   }
   os_free(value);
-
-  // Load the crypt key id param
-  value = os_zalloc(INI_BUFFERSIZE);
-  ret = ini_gets("system", "cryptKeyId", "", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->crypt_key_id, value, MAX_KEY_ID_SIZE);
-  if (!ret) {
-    log_debug("Crypt key id was not specified\n");
-    os_free(value);
-    return false;
-  }
-  os_free(value);
 #endif
 
   // Load pidFilePath

@@ -34,6 +34,8 @@
 #include "../utils/os.h"
 #include "../utils/utarray.h"
 
+#define MAIN_CRYPT_KEY_ID "main"
+
 /**
  * @brief crypt context structure definition
  *

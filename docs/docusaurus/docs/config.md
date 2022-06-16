@@ -25,7 +25,6 @@ execMdnsForward = true
 execIptables = true
 setIpForward = true
 cryptDbPath = "./crypt.sqlite"
-cryptKeyId = "master"
 pidFilePath = "/var/run/edgesec.pid"
 
 [capture]
@@ -204,10 +203,6 @@ If set to true `edgesec` will set the ip forward os system param.
 ### cryptDbPath (string)
 
 The path to the `crypt` sqlite db.
-
-### cryptKeyId (string)
-
-The master key ID for the `crypt` sqlite db.
 
 ### pidFilePath (string)
 

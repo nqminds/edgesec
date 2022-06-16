@@ -79,8 +79,7 @@ struct app_config {
 #ifdef WITH_CRYPTO_SERVICE
   char crypt_db_path[MAX_OS_PATH_LEN]; /**< Specifies the crypt db path to the
                                           sqlite3 db */
-  char crypt_key_id[MAX_KEY_ID_SIZE];  /**< Specifies the crypt key id */
-  char crypt_secret[MAX_USER_SECRET];  /**< Specifies the crypt user master
+  char crypt_secret[MAX_USER_SECRET];  /**< Specifies the crypt user main
                                           secret */
 #endif
   bool allow_all_connections; /**< Flag to allow all connections. */
