@@ -41,8 +41,10 @@ enum SOCKET_TYPE {
  *
  */
 struct client_address {
-  struct sockaddr_un addr_un;
-  struct sockaddr_in addr_in;
+  union {
+    struct sockaddr_un addr_un;
+    struct sockaddr_in addr_in;
+  } caddr;
   int len;
   enum SOCKET_TYPE type;
 };

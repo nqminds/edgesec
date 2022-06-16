@@ -562,7 +562,7 @@ static void test_make_dirs_to_path(void **state) {
 static void test_string_append_char(void **state) {
   (void)state; /* unused */
   const char input_str[] = "Hello World";
-  char *combined_str = string_append_char(input_str, "!");
+  char *combined_str = string_append_char(input_str, '!');
   assert_string_equal(combined_str, "Hello World!");
 }
 
@@ -582,6 +582,7 @@ int main(int argc, char *argv[]) {
       cmocka_unit_test(test_construct_path),
       cmocka_unit_test(test_get_secure_path),
       cmocka_unit_test(test_list_dir),
+      cmocka_unit_test(test_string_append_char),
       cmocka_unit_test_setup_teardown(test_make_dirs_to_path,
                                       test_make_dirs_to_path_setup,
                                       test_make_dirs_to_path_teardown)};

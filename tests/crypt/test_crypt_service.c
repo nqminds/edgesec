@@ -97,7 +97,7 @@ static void test_put_crypt_pair(void **state) {
   char *key = "key";
   char *value = "value";
   struct crypt_pair pair = {
-      .key = key, .value = value, .value_size = strlen(value)};
+      .key = key, .value = (uint8_t *)value, .value_size = strlen(value)};
   ignore_function_calls(__wrap_crypto_decrypt);
   struct crypt_context *ctx = load_crypt_service("", "key", secret, 4);
 
@@ -113,7 +113,7 @@ static void test_get_crypt_pair(void **state) {
   char *key = "key";
   char *value = "value";
   struct crypt_pair in = {.key = key,
-                          .value = value,
+                          .value = (uint8_t *)value,
                           .value_size = strlen(value)},
                     *out;
   ignore_function_calls(__wrap_crypto_decrypt);

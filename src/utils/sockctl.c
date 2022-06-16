@@ -173,9 +173,9 @@ ssize_t read_socket_domain(int sock, char *data, size_t data_len,
   ssize_t received;
 
   addr->len = sizeof(struct sockaddr_un);
-  received =
-      recvfrom(sock, data, data_len, flags, (struct sockaddr *)&addr->addr_un,
-               (socklen_t *)&addr->len);
+  received = recvfrom(sock, data, data_len, flags,
+                      (struct sockaddr *)&addr->caddr.addr_un,
+                      (socklen_t *)&addr->len);
 
   if (received == -1) {
     log_errno("recvfrom");
@@ -190,9 +190,9 @@ ssize_t read_socket_udp(int sock, char *data, size_t data_len,
   ssize_t received;
 
   addr->len = sizeof(struct sockaddr_in);
-  received =
-      recvfrom(sock, data, data_len, flags, (struct sockaddr *)&addr->addr_in,
-               (socklen_t *)&addr->len);
+  received = recvfrom(sock, data, data_len, flags,
+                      (struct sockaddr *)&addr->caddr.addr_in,
+                      (socklen_t *)&addr->len);
 
   if (received == -1) {
     log_errno("recvfrom");
@@ -239,7 +239,7 @@ ssize_t read_domain_data_s(int sock, char *data, size_t data_len, char *addr,
 
   num_bytes = read_socket_data(sock, data, data_len, &claddr, flags);
 
-  strcpy(addr, claddr.addr_un.sun_path);
+  strcpy(addr, claddr.caddr.addr_un.sun_path);
 
   return num_bytes;
 }
@@ -252,7 +252,7 @@ ssize_t write_domain_data_s(int sock, char *data, size_t data_len, char *addr) {
     return -1;
   }
 
-  init_domain_addr(&claddr.addr_un, addr);
+  init_domain_addr(&claddr.caddr.addr_un, addr);
   claddr.len = sizeof(struct sockaddr_un);
   claddr.type = SOCKET_TYPE_DOMAIN;
 
@@ -264,9 +264,9 @@ ssize_t write_socket_domain(int sock, char *data, size_t data_len,
   ssize_t sent;
 
   log_trace("Sending to domain socket on %.*s", addr->len,
-            addr->addr_un.sun_path);
-  if ((sent = sendto(sock, data, data_len, 0, (struct sockaddr *)&addr->addr_un,
-                     addr->len)) < 0) {
+            addr->caddr.addr_un.sun_path);
+  if ((sent = sendto(sock, data, data_len, 0,
+                     (struct sockaddr *)&addr->caddr.addr_un, addr->len)) < 0) {
     log_errno("sendto");
     return -1;
   }
@@ -279,14 +279,14 @@ ssize_t write_socket_udp(int sock, char *data, size_t data_len,
   ssize_t sent;
   char ip[OS_INET_ADDRSTRLEN];
 
-  if (inaddr4_2_ip(&addr->addr_in.sin_addr, ip) == NULL) {
+  if (inaddr4_2_ip(&addr->caddr.addr_in.sin_addr, ip) == NULL) {
     log_errno("inet_ntop");
     return -1;
   }
 
-  log_trace("Sending to udp socket on %s:%d", ip, addr->addr_in.sin_port);
-  if ((sent = sendto(sock, data, data_len, 0, (struct sockaddr *)&addr->addr_in,
-                     addr->len)) < 0) {
+  log_trace("Sending to udp socket on %s:%d", ip, addr->caddr.addr_in.sin_port);
+  if ((sent = sendto(sock, data, data_len, 0,
+                     (struct sockaddr *)&addr->caddr.addr_in, addr->len)) < 0) {
     log_errno("sendto");
     return -1;
   }

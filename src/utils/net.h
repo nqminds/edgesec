@@ -149,9 +149,15 @@ int disable_pmtu_discovery(int sock);
 /**
  * @brief Convert ASCII string to MAC address (in any known format)
  *
- * @param txt MAC address as a string (e.g., 00:11:22:33:44:55 or
+ * @authors Jouni Malinen <j@w1.fi> and wpa_supplicant contributors
+ * @date 2003-2019
+ * @copyright BSD
+ * @see
+ * https://w1.fi/wpa_supplicant/devel/common_8h.html#ab7ec8839c8e817e241c52ad7a0299be3
+ *
+ * @param[in] txt MAC address as a string (e.g., 00:11:22:33:44:55 or
  * 0011.2233.4455)
- * @param addr Buffer for the MAC address (ETH_ALEN = 6 bytes)
+ * @param[out] addr Buffer for the MAC address (ETH_ALEN = 6 bytes)
  * @return int Characters used (> 0) on success, -1 on failure
  */
 int hwaddr_aton2(const char *txt, uint8_t *addr);

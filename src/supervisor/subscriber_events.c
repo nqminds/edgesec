@@ -42,14 +42,13 @@ int compare_client_addresses(const struct client_address *a,
     return -1;
   } else {
     if (a->type == SOCKET_TYPE_DOMAIN) {
-      return os_memcmp(a->addr_un.sun_path, b->addr_un.sun_path, a->len);
+      return os_memcmp(a->caddr.addr_un.sun_path, b->caddr.addr_un.sun_path,
+                       a->len);
     } else if (a->type == SOCKET_TYPE_UDP) {
-      if (a->addr_in.sin_port != b->addr_in.sin_port) {
-        return (a->addr_in.sin_port < b->addr_in.sin_port)
-                   ? -1
-                   : (a->addr_in.sin_port > b->addr_in.sin_port);
+      if (a->caddr.addr_in.sin_port != b->caddr.addr_in.sin_port) {
+        return (a->caddr.addr_in.sin_port < b->caddr.addr_in.sin_port) ? -1 : 1;
       } else {
-        return os_memcmp(&a->addr_in.sin_addr, &b->addr_in.sin_addr,
+        return os_memcmp(&a->caddr.addr_in.sin_addr, &b->caddr.addr_in.sin_addr,
                          sizeof(struct in_addr));
       }
     } else

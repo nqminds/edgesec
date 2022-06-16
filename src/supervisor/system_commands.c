@@ -75,10 +75,10 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
     case DHCP_IP_NEW:
     case DHCP_IP_OLD:
       if (strcmp(info.ip_addr, ip_addr) == 0) {
-        log_debug("IP %s already assigned as primary", ip_addr);
+        log_trace("IP %s already assigned as primary", ip_addr);
         return 0;
       } else if (strcmp(info.ip_sec_addr, ip_addr) == 0) {
-        log_debug("IP %s already assigned as secondary", ip_addr);
+        log_trace("IP %s already assigned as secondary", ip_addr);
         return 0;
       }
 
@@ -89,7 +89,7 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
         os_strlcpy(info.ip_sec_addr, ip_addr, OS_INET_ADDRSTRLEN);
         primary = false;
       } else {
-        log_debug("IPs already present");
+        log_error("IPs already present");
         return -1;
       }
       break;
@@ -102,8 +102,11 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
         os_memset(info.ip_sec_addr, 0, OS_INET_ADDRSTRLEN);
       }
       break;
+    case DHCP_IP_ARP:
+      log_trace("DHCP ARP request");
+      return 0;
     default:
-      log_trace("Wrong DHCP IP type");
+      log_error("Wrong DHCP IP type");
       return -1;
   }
 

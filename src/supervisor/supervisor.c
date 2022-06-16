@@ -309,8 +309,7 @@ int process_received_data(int sock, struct client_address *claddr,
 
   os_free(buf);
 
-  char **arg = NULL;
-  arg = (char **)utarray_next(args, arg);
+  char **arg = (char **)utarray_front(args);
 
   process_cmd_fn cfn;
   if ((cfn = get_command_function(*arg)) != NULL) {
@@ -328,11 +327,11 @@ int process_received_data(int sock, struct client_address *claddr,
 void eloop_read_domain_handler(int sock, void *eloop_ctx, void *sock_ctx) {
   (void)eloop_ctx;
 
-  struct client_address claddr;
   struct supervisor_context *context = (struct supervisor_context *)sock_ctx;
 
-  os_memset(&claddr, 0, sizeof(struct client_address));
-  claddr.type = SOCKET_TYPE_DOMAIN;
+  struct client_address claddr = {
+      .type = SOCKET_TYPE_DOMAIN,
+  };
 
   if (process_received_data(sock, &claddr, context) < 0) {
     log_error("process_received_data fail");
@@ -342,11 +341,11 @@ void eloop_read_domain_handler(int sock, void *eloop_ctx, void *sock_ctx) {
 void eloop_read_udp_handler(int sock, void *eloop_ctx, void *sock_ctx) {
   (void)eloop_ctx;
 
-  struct client_address claddr;
   struct supervisor_context *context = (struct supervisor_context *)sock_ctx;
 
-  os_memset(&claddr, 0, sizeof(struct client_address));
-  claddr.type = SOCKET_TYPE_UDP;
+  struct client_address claddr = {
+      .type = SOCKET_TYPE_UDP,
+  };
 
   if (process_received_data(sock, &claddr, context) < 0) {
     log_error("process_received_data fail");
