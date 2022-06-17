@@ -369,14 +369,14 @@ int run_mdns_forwarder(char *mdns_bin_path, char *config_ini_path) {
   return ret;
 }
 
-void close_capture_thread(hmap_vlan_conn **vlan_mapper) {
-  hmap_vlan_conn *current, *tmp;
-
-  HASH_ITER(hh, *vlan_mapper, current, tmp) {
-    if (current->value.capture_pid > 0) {
-      if (pthread_join(current->value.capture_pid, NULL) != 0) {
-        log_errno("pthread_join");
-      }
+void close_capture_thread(const hmap_vlan_conn *vlan_mapper) {
+  for (const hmap_vlan_conn *current = vlan_mapper; current != NULL;
+       current = current->hh.next) {
+    if (current->value.capture_pid == 0) {
+      continue; // vlan has no capture thread running
+    }
+    if (pthread_join(current->value.capture_pid, NULL) != 0) {
+      log_errno("pthread_join");
     }
   }
 }
@@ -517,7 +517,7 @@ int run_ctl(struct app_config *app_config) {
   eloop_run(context->eloop);
 
   if (context->exec_capture) {
-    close_capture_thread(&context->vlan_mapper);
+    close_capture_thread(context->vlan_mapper);
   }
 
 #ifdef WITH_MDNS_SERVICE
