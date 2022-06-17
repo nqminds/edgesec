@@ -356,8 +356,8 @@ char *decrypt_blob_cmd(struct supervisor_context *context, char *keyid,
   return decrypted_str;
 }
 
-char *sign_blob_cmd(struct supervisor_context *context, char *keyid,
-                    char *blob) {
+char *sign_blob_cmd(struct supervisor_context *context, const char *keyid,
+                    const char *blob) {
   struct crypt_pair *pair = NULL;
   uint8_t *blob_data = NULL, *signed_data = NULL;
   size_t blob_data_size;

@@ -212,7 +212,7 @@ void free_sqlite_store_row(struct store_row *row) {
   }
 }
 
-struct store_row *get_sqlite_store_row(sqlite3 *db, char *key) {
+struct store_row *get_sqlite_store_row(sqlite3 *db, const char *key) {
   struct store_row *row;
   sqlite3_stmt *res;
   int rc;

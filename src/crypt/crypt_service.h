@@ -41,7 +41,7 @@
  *
  */
 struct crypt_pair {
-  char *key;          /**< The crypt key string. */
+  const char *key;    /**< The crypt key string. */
   uint8_t *value;     /**< The crypt value array. */
   ssize_t value_size; /**< The crypt value array size. */
 };
@@ -74,7 +74,7 @@ void free_crypt_service(struct crypt_context *ctx);
  * @param key The key string
  * @return struct crypt_pair* The returned pair, NULL on failure
  */
-struct crypt_pair *get_crypt_pair(struct crypt_context *ctx, char *key);
+struct crypt_pair *get_crypt_pair(struct crypt_context *ctx, const char *key);
 
 /**
  * @brief Inserts a key/value pair into the crypt
