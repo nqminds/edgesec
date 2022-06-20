@@ -18,7 +18,7 @@ uci add_list dhcp.edgesec.notinterface="loopback"
 uci delete dhcp.edgesec.server
 uci add_list dhcp.edgesec.server="8.8.4.4"
 uci add_list dhcp.edgesec.server="8.8.8.8"
-uci set dhcp.edgesec.leasefile="/tmp/db/dnsmasq.leases"
+uci set dhcp.edgesec.leasefile="/tmp/dnsmasq.leases"
 uci set dhcp.edgesec.dhcpscript="/tmp/dnsmasq_exec.sh"
 uci set dhcp.br0=dhcp
 uci set dhcp.br0.interface="br0"
