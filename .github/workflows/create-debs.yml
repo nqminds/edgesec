@@ -14,7 +14,10 @@ jobs:
     name: Compile Locally
     strategy:
       matrix:
-        cmake-preset: [linux, openwrt/mvebu/cortexa9]
+        cmake-preset:
+          - linux # Normal linux tests
+          - linux-with-crypt # Tests whether crypto service works
+          - openwrt/mvebu/cortexa9 # Tests whether OpenWRT ARM 32-bit target works
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

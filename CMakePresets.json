@@ -36,6 +36,16 @@
       }
     },
     {
+      "name": "linux-with-crypt",
+      "inherits": "default",
+      "displayName": "Linux",
+      "description": "Build for Linux using encrypted crypto service",
+      "cacheVariables": {
+        "USE_CRYPTO_SERVICE": true,
+        "BUILD_OPENSSL_LIB": true
+      }
+    },
+    {
       "name": "openwrt/default",
       "inherits": "default",
       "displayName": "OpenWRT ARM32",
@@ -93,6 +103,10 @@
     {
       "name": "linux",
       "configurePreset": "linux"
+    },
+    {
+      "name": "linux-with-crypt",
+      "configurePreset": "linux-with-crypt"
     },
     {
       "name": "openwrt/default",
