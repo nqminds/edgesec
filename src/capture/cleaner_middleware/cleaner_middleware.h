@@ -26,47 +26,13 @@
 #ifndef CLEANER_MIDDLEWARE_H
 #define CLEANER_MIDDLEWARE_H
 
-#include <sqlite3.h>
-#include <pcap.h>
-#include <stdint.h>
-
-#include "../../utils/allocs.h"
-#include "../../utils/os.h"
-#include "../../utils/eloop.h"
+#include "../middleware.h"
 
 /**
- * @brief Initialises the cleaner middleware
- *
- * @param db The sqlite3 db
- * @param db_path The sqlite3 db path
- * @param eloop The eloop structure
- * @param pc The pcap context
- * @return struct middleware_context* the middleware context on success, NULL on
- * failure
+ * @brief Cleaner Middleware.
+ * @author Alexandru Mereacre, Alois Klink
+ * The cleaner middleware is designed to periodically remove the oldest
+ * PCAP files when the use more than `CLEANER_STORE_SIZE` KiB.
  */
-struct middleware_context *init_cleaner_middleware(sqlite3 *db, char *db_path,
-                                                   struct eloop_data *eloop,
-                                                   struct pcap_context *pc);
-
-/**
- * @brief Cleaner processors
- *
- * @param context The middleware context
- * @param ltype The packet type
- * @param header The pcap packet header
- * @param packet The pcap packet
- * @param ifname The capture interface
- * @return int 0 on success, -1 on failure
- */
-int process_cleaner_middleware(struct middleware_context *context, char *ltype,
-                               struct pcap_pkthdr *header, uint8_t *packet,
-                               char *ifname);
-
-/**
- * @brief Frees the middleware context
- *
- * @param context The middleware context
- */
-void free_cleaner_middleware(struct middleware_context *context);
-
+extern struct capture_middleware cleaner_middleware;
 #endif
