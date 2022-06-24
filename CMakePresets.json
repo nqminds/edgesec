@@ -46,6 +46,17 @@
       }
     },
     {
+      "name": "linux-with-example-middlewares",
+      "inherits": "linux",
+      "displayName": "Linux (with example middlewares)",
+      "description": "Build for Linux all example capture middlewares",
+      "cacheVariables": {
+        "USE_CLEANER_MIDDLEWARE": true,
+        "USE_HEADER_MIDDLEWARE": true,
+        "USE_PCAP_MIDDLEWARE": true
+      }
+    },
+    {
       "name": "openwrt/default",
       "inherits": "default",
       "displayName": "OpenWRT ARM32",
@@ -109,6 +120,10 @@
       "configurePreset": "linux-with-crypt"
     },
     {
+      "name": "linux-with-example-middlewares",
+      "configurePreset": "linux-with-example-middlewares"
+    },
+    {
       "name": "openwrt/default",
       "configurePreset": "openwrt/default"
     },
@@ -133,6 +148,10 @@
     {
       "name": "linux",
       "configurePreset": "linux"
+    },
+    {
+      "name": "linux-with-example-middlewares",
+      "configurePreset": "linux-with-example-middlewares"
     }
   ]
 }
