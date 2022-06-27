@@ -40,10 +40,15 @@ struct middleware_context {
 };
 
 /**
- * @brief Structure describing a middleware for the EDGESec capture service
+ * @brief Structure describing a middleware for the EDGESec capture service.
+ *
+ * All EDGESec capture service middlewares should expose a variable
+ * of type ::capture_middleware only.
+ *
+ * You can then use the CMake function `edgesecAddCaptureMiddleware` to
+ * add your middleware to the EDGESec capture service when building
+ * EDGESec.
  * @author Alois Klink, Alexandru Mereacre
- * All EDGESec capture service middlewares should expose the following
- * structure only.
  */
 struct capture_middleware {
   /**
@@ -67,7 +72,8 @@ struct capture_middleware {
    * @param header The pcap packet header
    * @param packet The pcap packet
    * @param ifname The capture interface
-   * @return int 0 on success, -1 on failure
+   * @retval 0 on success
+   * @retval -1 on failure
    */
   int (*const process)(struct middleware_context *context, char *ltype,
                        struct pcap_pkthdr *header, uint8_t *packet,
