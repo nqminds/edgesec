@@ -5,7 +5,6 @@
  * @copyright
  * SPDX-FileCopyrightText: © 2022 NQMCyber Ltd and edgesec contributors
  * SPDX-License-Identifier: LGPL-3.0-or-later
- *
  * @brief File containing the definition of the firewall service commands.
  */
 
