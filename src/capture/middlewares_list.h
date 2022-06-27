@@ -1,3 +1,6 @@
+#ifndef MIDDLEWARES_LIST_H
+#define MIDDLEWARES_LIST_H
+
 #include <sqlite3.h>
 #include <pcap.h>
 #include "middleware.h"
@@ -56,3 +59,5 @@ static inline void process_middlewares(UT_array *handlers, char *ltype,
     }
   }
 }
+
+#endif /* !MIDDLEWARES_LIST_H */
