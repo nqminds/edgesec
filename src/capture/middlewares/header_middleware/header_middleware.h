@@ -21,55 +21,19 @@
  * @file header_middleware.h
  * @author Alexandru Mereacre
  * @brief File containing the definition of the header middleware utilities.
+ *
  */
 
 #ifndef HEADER_MIDDLEWARE_H
 #define HEADER_MIDDLEWARE_H
 
-#include <sqlite3.h>
-#include <pcap.h>
-#include <stdint.h>
-
-#include "../../utils/allocs.h"
-#include "../../utils/os.h"
-#include "../../utils/eloop.h"
-
-#include "packet_queue.h"
-#include "../pcap_service.h"
+#include "../../middleware.h"
 
 /**
- * @brief Initialises the header middleware
- *
- * @param db The sqlite3 db
- * @param db_path The sqlite3 db path
- * @param eloop The eloop structure
- * @param pc The pcap context
- * @return struct middleware_context* the middleware context on success, NULL on
- * failure
+ * @brief Packet Header Capture Middleware.
+ * The header middleware stores packet headers and other packet metadata
+ * into the capture SQLite database.
+ * @author Alexandru Mereacre, Alois Klink
  */
-struct middleware_context *init_header_middleware(sqlite3 *db, char *db_path,
-                                                  struct eloop_data *eloop,
-                                                  struct pcap_context *pc);
-
-/**
- * @brief Header packet processors
- *
- * @param context The middleware context
- * @param ltype The packet type
- * @param header The pcap packet header
- * @param packet The pcap packet
- * @param ifname The capture interface
- * @return int 0 on success, -1 on failure
- */
-int process_header_middleware(struct middleware_context *context, char *ltype,
-                              struct pcap_pkthdr *header, uint8_t *packet,
-                              char *ifname);
-
-/**
- * @brief Frees the middleware context
- *
- * @param context The middleware context
- */
-void free_header_middleware(struct middleware_context *context);
-
+extern struct capture_middleware header_middleware;
 #endif

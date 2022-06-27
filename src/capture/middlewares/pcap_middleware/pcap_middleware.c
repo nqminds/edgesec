@@ -35,14 +35,13 @@
 #include "pcap_queue.h"
 #include "sqlite_pcap.h"
 
-#include "middlewares.h"
+#include "../../../utils/allocs.h"
+#include "../../../utils/os.h"
+#include "../../../utils/log.h"
+#include "../../../utils/squeue.h"
+#include "../../../utils/eloop.h"
 
-#include "../../utils/allocs.h"
-#include "../../utils/os.h"
-#include "../../utils/log.h"
-#include "../../utils/eloop.h"
-
-#include "../pcap_service.h"
+#include "../../pcap_service.h"
 
 #define PCAP_SUBFOLDER_NAME                                                    \
   "./capture" /* Subfodler name to store raw pcap data                         \
@@ -273,3 +272,10 @@ int process_pcap_middleware(struct middleware_context *context, char *ltype,
 
   return 0;
 }
+
+struct capture_middleware pcap_middleware = {
+    .init = init_pcap_middleware,
+    .process = process_pcap_middleware,
+    .free = free_pcap_middleware,
+    .name = "pcap middleware",
+};

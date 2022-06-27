@@ -23,23 +23,24 @@
  * @brief File containing the implementation of the header middleware
  * utilities.
  */
+#include "header_middleware.h"
 
+#include <sqlite3.h>
+#include <pcap.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
 
-#include "header_middleware.h"
 #include "sqlite_header.h"
 #include "packet_decoder.h"
 #include "packet_queue.h"
+#include "../../../utils/allocs.h"
+#include "../../../utils/os.h"
+#include "../../../utils/log.h"
+#include "../../../utils/eloop.h"
 
-#include "middlewares.h"
-
-#include "../../utils/allocs.h"
-#include "../../utils/os.h"
-#include "../../utils/log.h"
-#include "../../utils/eloop.h"
+#include "../../pcap_service.h"
 
 #define HEADER_PROCESS_INTERVAL 10 * 1000 // In microseconds
 
@@ -186,3 +187,9 @@ int process_header_middleware(struct middleware_context *context, char *ltype,
 
   return 0;
 }
+struct capture_middleware header_middleware = {
+    .init = init_header_middleware,
+    .process = process_header_middleware,
+    .free = free_header_middleware,
+    .name = "header middleware",
+};

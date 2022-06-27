@@ -30,6 +30,14 @@ cmake --build --preset linux -j4 # build EDGESec for Linux using 4 threads
 ctest --preset linux # test EDGESec for Linux
 ```
 
+A useful one-liner is the following, which given a preset, automatically
+configures, compiles (using all cores, but `nice -n19` for lower CPU priority),
+tests (if a test config exists), then installs into the `./tmp` folder.
+
+```bash
+export PRESET=linux; cmake --preset "$PRESET" && nice -n19 cmake --build --preset "$PRESET" -j=$(nproc) && ( ctest --list-presets | grep "\"$PRESET\"" ) && ctest --preset "$PRESET"; cmake --install "./build/$PRESET" --prefix "./tmp/$PRESET"
+```
+
 For older versions of CMake, or for manual configuration, please see the next headings for more details.
 
 ### Configure

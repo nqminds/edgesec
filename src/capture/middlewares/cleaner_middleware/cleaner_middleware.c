@@ -29,17 +29,20 @@
  * store size is give by the parameter CLEANER_STORE_SIZE in Kb.
  */
 
+#include "./cleaner_middleware.h"
+
 #include <sqlite3.h>
 #include <libgen.h>
 
 #include "../pcap_middleware/sqlite_pcap.h"
-#include "../capture_service.h"
-#include "../capture_config.h"
+#include "../../capture_service.h"
+#include "../../capture_config.h"
 
-#include "middlewares.h"
+#include "../../../utils/allocs.h"
+#include "../../../utils/os.h"
 
-#include "../../utils/eloop.h"
-#include "../../utils/utarray.h"
+#include "../../../utils/eloop.h"
+#include "../../../utils/utarray.h"
 
 #define CLEANER_PROCESS_INTERVAL                                               \
   5 /* Frequency in sec to run the cleaner function*/
@@ -254,3 +257,10 @@ int process_cleaner_middleware(struct middleware_context *context, char *ltype,
 
   return 0;
 }
+
+struct capture_middleware cleaner_middleware = {
+    .init = init_cleaner_middleware,
+    .process = process_cleaner_middleware,
+    .free = free_cleaner_middleware,
+    .name = "cleaner middleware",
+};

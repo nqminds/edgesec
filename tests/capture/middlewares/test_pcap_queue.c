@@ -15,7 +15,7 @@
 #include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/log.h"
-#include "capture/pcap_middleware/pcap_queue.h"
+#include "capture/middlewares/pcap_middleware/pcap_queue.h"
 
 static void test_push_pcap_queue(void **state) {
   (void)state; /* unused */

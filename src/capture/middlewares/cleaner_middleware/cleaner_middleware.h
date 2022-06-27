@@ -18,57 +18,21 @@
  ****************************************************************************/
 
 /**
- * @file pcap_middleware.h
+ * @file cleaner_middleware.h
  * @author Alexandru Mereacre
- * @brief File containing the definition of the pcap middleware utilities.
+ * @brief File containing the definition of the middleware cleaner utilities.
  */
 
-#ifndef PCAP_MIDDLEWARE_H
-#define PCAP_MIDDLEWARE_H
+#ifndef CLEANER_MIDDLEWARE_H
+#define CLEANER_MIDDLEWARE_H
 
-#include <stdint.h>
-#include <pcap.h>
-
-#include "../../utils/allocs.h"
-#include "../../utils/os.h"
-#include "../../utils/squeue.h"
-#include "../../utils/eloop.h"
-
-#include "../pcap_service.h"
+#include "../../middleware.h"
 
 /**
- * @brief Initialises the pcap middleware
- *
- * @param db The sqlite3 db
- * @param db_path The sqlite3 db path
- * @param eloop The eloop structure
- * @param pc The pcap context
- * @return struct middleware_context* the middleware context on success, NULL on
- * failure
+ * @brief Cleaner Middleware.
+ * The cleaner middleware is designed to periodically remove the oldest
+ * PCAP files when the use more than `CLEANER_STORE_SIZE` KiB.
+ * @author Alexandru Mereacre, Alois Klink
  */
-struct middleware_context *init_pcap_middleware(sqlite3 *db, char *db_path,
-                                                struct eloop_data *eloop,
-                                                struct pcap_context *pc);
-
-/**
- * @brief Pcap processor
- *
- * @param context The middleware context
- * @param ltype The packet type
- * @param header The pcap packet header
- * @param packet The pcap packet
- * @param ifname The capture interface
- * @return int 0 on success, -1 on failure
- */
-int process_pcap_middleware(struct middleware_context *context, char *ltype,
-                            struct pcap_pkthdr *header, uint8_t *packet,
-                            char *ifname);
-
-/**
- * @brief Frees the pcap context
- *
- * @param context The pcap context
- */
-void free_pcap_middleware(struct middleware_context *context);
-
+extern struct capture_middleware cleaner_middleware;
 #endif

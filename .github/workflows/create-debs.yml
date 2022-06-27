@@ -17,6 +17,7 @@ jobs:
         cmake-preset:
           - linux # Normal linux tests
           - linux-with-crypt # Tests whether crypto service works
+          - linux-with-example-middlewares # tests whether example capture middlewares work
           - openwrt/mvebu/cortexa9 # Tests whether OpenWRT ARM 32-bit target works
     runs-on: ubuntu-latest
     steps:

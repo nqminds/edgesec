@@ -18,55 +18,22 @@
  ****************************************************************************/
 
 /**
- * @file cleaner_middleware.h
+ * @file pcap_middleware.h
  * @author Alexandru Mereacre
- * @brief File containing the definition of the middleware cleaner utilities.
+ * @brief File containing the definition of the pcap middleware utilities.
  */
 
-#ifndef CLEANER_MIDDLEWARE_H
-#define CLEANER_MIDDLEWARE_H
+#ifndef PCAP_MIDDLEWARE_H
+#define PCAP_MIDDLEWARE_H
 
-#include <sqlite3.h>
-#include <pcap.h>
-#include <stdint.h>
-
-#include "../../utils/allocs.h"
-#include "../../utils/os.h"
-#include "../../utils/eloop.h"
+#include "../../middleware.h"
 
 /**
- * @brief Initialises the cleaner middleware
- *
- * @param db The sqlite3 db
- * @param db_path The sqlite3 db path
- * @param eloop The eloop structure
- * @param pc The pcap context
- * @return struct middleware_context* the middleware context on success, NULL on
- * failure
+ * @brief PCAP Capture Middleware.
+ * The PCAP capture middleware stores the full PCAP data from captured
+ * middlewares. Because this is a lot of data, we recommended using the
+ * ::cleaner_middleware too, to automatically cleanup/delete old PCAP files.
+ * @author Alexandru Mereacre, Alois Klink
  */
-struct middleware_context *init_cleaner_middleware(sqlite3 *db, char *db_path,
-                                                   struct eloop_data *eloop,
-                                                   struct pcap_context *pc);
-
-/**
- * @brief Cleaner processors
- *
- * @param context The middleware context
- * @param ltype The packet type
- * @param header The pcap packet header
- * @param packet The pcap packet
- * @param ifname The capture interface
- * @return int 0 on success, -1 on failure
- */
-int process_cleaner_middleware(struct middleware_context *context, char *ltype,
-                               struct pcap_pkthdr *header, uint8_t *packet,
-                               char *ifname);
-
-/**
- * @brief Frees the middleware context
- *
- * @param context The middleware context
- */
-void free_cleaner_middleware(struct middleware_context *context);
-
+extern struct capture_middleware pcap_middleware;
 #endif
