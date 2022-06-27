@@ -18,19 +18,21 @@
  ****************************************************************************/
 
 /**
- * @file pcap_middleware.h
+ * @file cleaner_middleware.h
  * @author Alexandru Mereacre
- * @brief File containing the definition of the pcap middleware utilities.
+ * @brief File containing the definition of the middleware cleaner utilities.
  */
 
-#ifndef PCAP_MIDDLEWARE_H
-#define PCAP_MIDDLEWARE_H
+#ifndef CLEANER_MIDDLEWARE_H
+#define CLEANER_MIDDLEWARE_H
 
-#include "../middleware.h"
+#include "../../middleware.h"
 
 /**
- * @brief PCAP Middleware.
+ * @brief Cleaner Middleware.
  * @author Alexandru Mereacre, Alois Klink
+ * The cleaner middleware is designed to periodically remove the oldest
+ * PCAP files when the use more than `CLEANER_STORE_SIZE` KiB.
  */
-extern struct capture_middleware pcap_middleware;
+extern struct capture_middleware cleaner_middleware;
 #endif

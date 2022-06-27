@@ -29,7 +29,6 @@
 #include "../utils/os.h"
 #include "../utils/utarray.h"
 #include "../utils/uthash.h"
-#include "../capture/header_middleware/mdns_decoder.h"
 
 int put_mdns_info(hmap_mdns_conn **imap, uint8_t *ip,
                   struct mdns_list_info *info) {

@@ -43,12 +43,12 @@
 
 #include <pcap.h>
 
-#include "../../utils/log.h"
-#include "../../utils/allocs.h"
-#include "../../utils/os.h"
-#include "../../utils/net.h"
-#include "../../utils/hash.h"
-#include "../../utils/utarray.h"
+#include "../../../utils/log.h"
+#include "../../../utils/allocs.h"
+#include "../../../utils/os.h"
+#include "../../../utils/net.h"
+#include "../../../utils/hash.h"
+#include "../../../utils/utarray.h"
 
 #include "packet_decoder.h"
 #include "dns_decoder.h"

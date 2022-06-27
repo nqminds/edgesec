@@ -35,14 +35,14 @@
 #include <libgen.h>
 
 #include "../pcap_middleware/sqlite_pcap.h"
-#include "../capture_service.h"
-#include "../capture_config.h"
+#include "../../capture_service.h"
+#include "../../capture_config.h"
 
-#include "../../utils/allocs.h"
-#include "../../utils/os.h"
+#include "../../../utils/allocs.h"
+#include "../../../utils/os.h"
 
-#include "../../utils/eloop.h"
-#include "../../utils/utarray.h"
+#include "../../../utils/eloop.h"
+#include "../../../utils/utarray.h"
 
 #define CLEANER_PROCESS_INTERVAL                                               \
   5 /* Frequency in sec to run the cleaner function*/

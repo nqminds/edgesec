@@ -47,9 +47,9 @@
 #include "../utils/squeue.h"
 #include "../utils/hashmap.h"
 #include "../utils/iface_mapper.h"
-#include "../capture/header_middleware/mdns_decoder.h"
+#include "../capture/middlewares/header_middleware/mdns_decoder.h"
 #include "../capture/pcap_service.h"
-#include "../capture/header_middleware/packet_queue.h"
+#include "../capture/middlewares/header_middleware/packet_queue.h"
 #include "../supervisor/supervisor_config.h"
 #include "../supervisor/cmd_processor.h"
 

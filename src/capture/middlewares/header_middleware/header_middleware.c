@@ -35,16 +35,12 @@
 #include "sqlite_header.h"
 #include "packet_decoder.h"
 #include "packet_queue.h"
-#include "../../utils/allocs.h"
-#include "../../utils/os.h"
-#include "../../utils/eloop.h"
+#include "../../../utils/allocs.h"
+#include "../../../utils/os.h"
+#include "../../../utils/log.h"
+#include "../../../utils/eloop.h"
 
-#include "../../utils/allocs.h"
-#include "../../utils/os.h"
-#include "../../utils/log.h"
-#include "../../utils/eloop.h"
-#include "packet_queue.h"
-#include "../pcap_service.h"
+#include "../../pcap_service.h"
 
 #define HEADER_PROCESS_INTERVAL 10 * 1000 // In microseconds
 

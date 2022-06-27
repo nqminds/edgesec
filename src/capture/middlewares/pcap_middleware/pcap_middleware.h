@@ -18,19 +18,19 @@
  ****************************************************************************/
 
 /**
- * @file header_middleware.h
+ * @file pcap_middleware.h
  * @author Alexandru Mereacre
- * @brief File containing the definition of the header middleware utilities.
+ * @brief File containing the definition of the pcap middleware utilities.
  */
 
-#ifndef HEADER_MIDDLEWARE_H
-#define HEADER_MIDDLEWARE_H
+#ifndef PCAP_MIDDLEWARE_H
+#define PCAP_MIDDLEWARE_H
 
-#include "../middleware.h"
+#include "../../middleware.h"
 
 /**
- * @brief Header Middleware.
+ * @brief PCAP Middleware.
  * @author Alexandru Mereacre, Alois Klink
  */
-extern struct capture_middleware header_middleware;
+extern struct capture_middleware pcap_middleware;
 #endif

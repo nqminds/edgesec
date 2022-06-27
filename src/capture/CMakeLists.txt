@@ -57,9 +57,10 @@ Example: `CMakeLists.txt`
 #]=======================================================================]
 
 if (USE_CAPTURE_SERVICE)
-  add_subdirectory(cleaner_middleware)
-  add_subdirectory(header_middleware)
-  add_subdirectory(pcap_middleware)
+  # some of these files are required, even if USE_*_MIDDLEWARE is off
+  add_subdirectory(./middlewares/cleaner_middleware)
+  add_subdirectory(./middlewares/header_middleware)
+  add_subdirectory(./middlewares/pcap_middleware)
 
   add_library(capture_config INTERFACE) # header only library
   target_link_libraries(capture_config INTERFACE os)

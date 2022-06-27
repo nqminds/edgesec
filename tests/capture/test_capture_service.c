@@ -16,11 +16,8 @@
 #include "utils/log.h"
 #include "utils/eloop.h"
 #include "capture/capture_service.h"
-#include "capture/header_middleware/header_middleware.h"
-#include "capture/pcap_middleware/pcap_middleware.h"
+#include "capture/middlewares/header_middleware/packet_decoder.h"
 #include "capture/pcap_service.h"
-#include "capture/pcap_middleware/pcap_queue.h"
-#include "capture/header_middleware/packet_queue.h"
 
 static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL,
                                    NULL};

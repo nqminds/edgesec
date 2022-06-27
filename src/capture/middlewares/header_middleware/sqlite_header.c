@@ -30,10 +30,10 @@
 #include <stdint.h>
 #include <sqlite3.h>
 
-#include "../../utils/allocs.h"
-#include "../../utils/os.h"
-#include "../../utils/log.h"
-#include "../../utils/sqliteu.h"
+#include "../../../utils/allocs.h"
+#include "../../../utils/os.h"
+#include "../../../utils/log.h"
+#include "../../../utils/sqliteu.h"
 
 #include "sqlite_header.h"
 #include "packet_decoder.h"
