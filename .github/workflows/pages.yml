@@ -1,0 +1,33 @@
+# Workflow that always runs
+name: GitHub Pages
+
+# This action should run on every commit
+on: [push, pull_request]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build-docs"
+  build-docs:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    # warning! This is a shallow clone, and has no git history for docs!
+    - uses: actions/checkout@v2
+    - name: Install Dependencies
+      run: sudo apt-get update && sudo apt-get install doxygen graphviz texinfo -y
+    - name: Configure
+      run: cmake . -B build/docs/ -DBUILD_ONLY_DOCS=true
+    - name: Build Docs
+      run: cmake --build build/docs/ --target=doxydocs
+    - name: publish docs (main-branch only)
+      if: github.ref == 'refs/heads/main'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./build/docs/html
+        enable_jekyll: false
+        allow_empty_commit: false
+        force_orphan: true
+        publish_branch: gh-pages
