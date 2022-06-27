@@ -1,6 +1,5 @@
 # EDGESec
 
-[![GitHub Pages](https://github.com/nqminds/EDGESec/actions/workflows/docs.yml/badge.svg)](https://github.com/nqminds/EDGESec/actions/workflows/docs.yml)
 [![Build Debian Packages](https://github.com/nqminds/EDGESec/actions/workflows/create-debs.yml/badge.svg)](https://github.com/nqminds/EDGESec/actions/workflows/create-debs.yml)
 
 EDGESec defines a new architecture and toolset for edge based routers addressing
