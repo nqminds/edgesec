@@ -6,7 +6,6 @@
  * SPDX-FileCopyrightText: © 2020 NQMCyber Ltd and edgesec contributors
  * SPDX-License-Identifier: LGPL-3.0-or-later
  *
- * @author Alexandru Mereacre
  * @brief File containing the definition of AP config structures.
  *
  * Defines the access point (AP) configuration structure used to configure the

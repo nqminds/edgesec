@@ -6,7 +6,6 @@
  * SPDX-FileCopyrightText: © 2021 NQMCyber Ltd and edgesec contributors
  * SPDX-License-Identifier: LGPL-3.0-or-later
  *
- * @author Alexandru Mereacre
  * @brief File containing the definition of crypt configuration structure.
  */
 #ifndef CRYPT_CONFIG_H
