@@ -18,7 +18,7 @@
  * @brief Packet Header Capture Middleware.
  * The header middleware stores packet headers and other packet metadata
  * into the capture SQLite database.
- * @author Alexandru Mereacre, Alois Klink
+ * @authors Alexandru Mereacre, Alois Klink
  */
 extern struct capture_middleware header_middleware;
 #endif

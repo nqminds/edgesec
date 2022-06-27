@@ -17,7 +17,7 @@
  * @brief Cleaner Middleware.
  * The cleaner middleware is designed to periodically remove the oldest
  * PCAP files when the use more than `CLEANER_STORE_SIZE` KiB.
- * @author Alexandru Mereacre, Alois Klink
+ * @authors Alexandru Mereacre, Alois Klink
  */
 extern struct capture_middleware cleaner_middleware;
 #endif

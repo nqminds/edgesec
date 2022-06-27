@@ -18,7 +18,7 @@
  * The PCAP capture middleware stores the full PCAP data from captured
  * middlewares. Because this is a lot of data, we recommended using the
  * ::cleaner_middleware too, to automatically cleanup/delete old PCAP files.
- * @author Alexandru Mereacre, Alois Klink
+ * @authors Alexandru Mereacre, Alois Klink
  */
 extern struct capture_middleware pcap_middleware;
 #endif

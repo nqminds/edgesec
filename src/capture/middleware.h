@@ -1,12 +1,11 @@
 /**
  * @file
  * @author Alexandru Mereacre
+ * @author Alois Klink
  * @date 2022
  * @copyright
  * SPDX-FileCopyrightText: © 2022 NQMCyber Ltd and edgesec contributors
  * SPDX-License-Identifier: LGPL-3.0-or-later
- *
- * @author Alois Klink
  * @brief File containing the definition of a generic middleware.
  */
 
@@ -35,7 +34,7 @@ struct middleware_context {
  * You can then use the CMake function `edgesecAddCaptureMiddleware` to
  * add your middleware to the EDGESec capture service when building
  * EDGESec.
- * @author Alois Klink, Alexandru Mereacre
+ * @authors Alois Klink, Alexandru Mereacre
  */
 struct capture_middleware {
   /**
