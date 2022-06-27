@@ -5,10 +5,7 @@
  * @copyright
  * SPDX-FileCopyrightText: © 2020 NQMCyber Ltd and edgesec contributors
  * SPDX-License-Identifier: LGPL-3.0-or-later
- */
-
-/**
- * @file ifaceu.c
+ *
  * @author Alexandru Mereacre
  * @brief File containing the implementation of the network interface utilities.
  */

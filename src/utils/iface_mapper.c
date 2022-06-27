@@ -5,10 +5,7 @@
  * @copyright
  * SPDX-FileCopyrightText: © 2022 NQMCyber Ltd and edgesec contributors
  * SPDX-License-Identifier: LGPL-3.0-or-later
- */
-
-/**
- * @file iface_mapper.c
+ *
  * @author Alexandru Mereacre
  * @brief File containing the implementation of the interface mapper utilities.
  */

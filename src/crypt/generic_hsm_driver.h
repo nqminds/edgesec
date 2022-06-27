@@ -5,10 +5,7 @@
  * @copyright
  * SPDX-FileCopyrightText: © 2021 NQMCyber Ltd and edgesec contributors
  * SPDX-License-Identifier: LGPL-3.0-or-later
- */
-
-/**
- * @file generic_hsm_driver.h
+ *
  * @author Alexandru Mereacre
  * @brief File containing the definition of generic HSM driver configuration
  * utilities.

@@ -5,10 +5,7 @@
  * @copyright
  * SPDX-FileCopyrightText: © 2021 NQMCyber Ltd and edgesec contributors
  * SPDX-License-Identifier: LGPL-3.0-or-later
- */
-
-/**
- * @file zymkey4_driver.c
+ *
  * @author Alexandru Mereacre
  * @brief File containing the implementation of zymkey4 driver configuration
  * utilities.

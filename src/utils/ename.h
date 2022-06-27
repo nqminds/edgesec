@@ -5,10 +5,7 @@
  * @copyright
  * SPDX-FileCopyrightText: © 2020 NQMCyber Ltd and edgesec contributors
  * SPDX-License-Identifier: LGPL-3.0-or-later
- */
-
-/**
- * @file ename.h
+ *
  * @author Alexandru Mereacre
  * @brief error strings from errno.h include file.
  */

@@ -8,7 +8,7 @@
  */
 
 /**
- * @file config.c
+ *
  * @author Alexandru Mereacre
  * @brief File containing the implementation of the app configuration utilities.
  */
