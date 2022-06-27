@@ -69,7 +69,10 @@ if (USE_CAPTURE_SERVICE)
 
   add_library(capture_service capture_service.c)
   target_include_directories(capture_service PRIVATE ${PROJECT_BINARY_DIR})
-  target_link_libraries(capture_service PUBLIC PCAP::pcap middlewares PRIVATE dns_decoder pcap_service pcap_queue packet_queue packet_decoder squeue eloop iface log os hashmap SQLite::SQLite3)
+  target_link_libraries(
+    capture_service
+    PUBLIC PCAP::pcap middlewares_list
+    PRIVATE dns_decoder pcap_service pcap_queue packet_queue packet_decoder squeue eloop iface log os hashmap SQLite::SQLite3)
 
   set(CAPTURE_MIDDLEWARES "")
 
@@ -83,8 +86,8 @@ if (USE_CAPTURE_SERVICE)
 
     if (NOT DEFINED arg_CAPTURE_MIDDLEWARES)
       configure_file(
-        "middlewares.c.in"
-        "middlewares.c"
+        "middlewares_list.c.in"
+        "middlewares_list.c"
       )
       return()
     endif()
@@ -96,17 +99,17 @@ if (USE_CAPTURE_SERVICE)
     set(_CAPTURE_MIDDLEWARES_DEFINITIONS "extern struct capture_middleware ${_CAPTURE_MIDDLEWARES_LIST_INITIALISER};")
 
     configure_file(
-      "middlewares.c.in"
-      "middlewares.c"
+      "middlewares_list.c.in"
+      "middlewares_list.c"
     )
   endfunction()
 
   # creates initial empty middlewares.c file
   # future calls to edgesecAddCaptureMiddleware() will create middlewares.c
   _edgesec_buildMiddlewaresSource(CAPTURE_MIDDLEWARES "${CAPTURE_MIDDLEWARES}")
-  add_library(middlewares "${CMAKE_CURRENT_BINARY_DIR}/middlewares.c")
-  target_include_directories(middlewares PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
-  target_link_libraries(middlewares PUBLIC SQLite::SQLite3 PCAP::pcap eloop)
+  add_library(middlewares_list "${CMAKE_CURRENT_BINARY_DIR}/middlewares_list.c")
+  target_include_directories(middlewares_list PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+  target_link_libraries(middlewares_list PUBLIC SQLite::SQLite3 PCAP::pcap eloop)
 
   function(edgesecAddCaptureMiddleware)
     set(oneValueArgs
@@ -123,7 +126,7 @@ if (USE_CAPTURE_SERVICE)
       message(FATAL_ERROR "MIDDLEWARE_STRUCT is not defined for edgesecAddCaptureMiddleware")
     endif()
 
-    target_link_libraries(middlewares PRIVATE "${arg_MIDDLEWARE_TARGET}")
+    target_link_libraries(middlewares_list PRIVATE "${arg_MIDDLEWARE_TARGET}")
     list(APPEND CAPTURE_MIDDLEWARES "${arg_MIDDLEWARE_STRUCT}")
     set(CAPTURE_MIDDLEWARES "${CAPTURE_MIDDLEWARES}" PARENT_SCOPE)
     _edgesec_buildMiddlewaresSource(CAPTURE_MIDDLEWARES "${CAPTURE_MIDDLEWARES}")

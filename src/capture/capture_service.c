@@ -47,7 +47,7 @@
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 
-#include "middlewares.h"
+#include "middlewares_list.h"
 
 void pcap_callback(const void *ctx, const void *pcap_ctx, char *ltype,
                    struct pcap_pkthdr *header, uint8_t *packet) {
