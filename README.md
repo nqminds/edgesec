@@ -1,6 +1,6 @@
 # edgesec
 
-[![Build Debian Packages](https://github.com/nqminds/edgesec/actions/workflows/create-debs.yml/badge.svg)](https://github.com/nqminds/edgesec/actions/workflows/create-debs.yml)
+[![Build Debian Packages](https://github.com/nqminds/edgesec/actions/workflows/create-debs.yml/badge.svg)](https://github.com/nqminds/edgesec/actions/workflows/create-debs.yml) ![Release](https://badgen.net/badge/release/0.0.8/blue?icon=color)
 
 edgesec defines a new architecture and toolset for edge based routers addressing
 fundamental security weaknesses that impact current IP and IoT router implementations.
