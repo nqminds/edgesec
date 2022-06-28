@@ -1,6 +1,6 @@
 /**
  * @file middlewares_list.h
- * @author Alexandru Mereacre, Alois Klink
+ * @authors Alexandru Mereacre, Alois Klink
  * @brief File containing the definition of generic middleware creation
  * functions.
  * @details The CMake function `edgesecAddCaptureMiddleware` generated a custom

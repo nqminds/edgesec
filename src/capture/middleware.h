@@ -1,25 +1,11 @@
-/****************************************************************************
- * Copyright (C) 2022 by NQMCyber Ltd                                       *
- *                                                                          *
- * This file is part of EDGESec.                                            *
- *                                                                          *
- *   EDGESec is free software: you can redistribute it and/or modify it     *
- *   under the terms of the GNU Lesser General Public License as published  *
- *   by the Free Software Foundation, either version 3 of the License, or   *
- *   (at your option) any later version.                                    *
- *                                                                          *
- *   EDGESec is distributed in the hope that it will be useful,             *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of         *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
- *   GNU Lesser General Public License for more details.                    *
- *                                                                          *
- *   You should have received a copy of the GNU Lesser General Public       *
- *   License along with EDGESec. If not, see <http://www.gnu.org/licenses/>.*
- ****************************************************************************/
-
 /**
- * @file middleware.h
+ * @file
+ * @author Alexandru Mereacre
  * @author Alois Klink
+ * @date 2022
+ * @copyright
+ * SPDX-FileCopyrightText: © 2022 NQMCyber Ltd and edgesec contributors
+ * SPDX-License-Identifier: LGPL-3.0-or-later
  * @brief File containing the definition of a generic middleware.
  */
 
@@ -48,7 +34,7 @@ struct middleware_context {
  * You can then use the CMake function `edgesecAddCaptureMiddleware` to
  * add your middleware to the EDGESec capture service when building
  * EDGESec.
- * @author Alois Klink, Alexandru Mereacre
+ * @authors Alois Klink, Alexandru Mereacre
  */
 struct capture_middleware {
   /**
