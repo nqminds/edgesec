@@ -136,8 +136,8 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # The edgesec version number.
 set(EDGESEC_VERSION_MAJOR 0)
-set(EDGESEC_VERSION_MINOR 9)
-set(EDGESEC_VERSION_PATCH 9)
+set(EDGESEC_VERSION_MINOR 0)
+set(EDGESEC_VERSION_PATCH 8)
 
 # Include the libraries
 include(hostapd)
