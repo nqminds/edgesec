@@ -4,6 +4,8 @@ cmake_policy(SET CMP0048 NEW)
 
 project(EDGESEC
   VERSION 0.0.8
+  HOMEPAGE_URL "https://github.com/nqminds/edgesec"
+  DESCRIPTION "Secure router - reference implementation"
   LANGUAGES C CXX
 )
 
