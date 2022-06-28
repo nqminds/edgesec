@@ -1,5 +1,5 @@
 include_directories (
-  "${EDGESEC_SOURCE_DIR}/src"
+  "${PROJECT_SOURCE_DIR}/src"
 )
 
 if (USE_CAPTURE_SERVICE)
