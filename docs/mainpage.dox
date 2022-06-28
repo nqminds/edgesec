@@ -1,5 +1,13 @@
 /**
 \mainpage Documentation for EDGESec
 
+EDGESec C API documentation.
+
+The API is currently unstable and in development.
+We recommend using the CLI instead of this C API.
+
+If adding your own capture middleware, please follow the instructions
+::capture_middleware
+
 \tableofcontents
 */
