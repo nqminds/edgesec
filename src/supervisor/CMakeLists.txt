@@ -1,5 +1,5 @@
 include_directories (
-  "${EDGESEC_SOURCE_DIR}/src"
+  "${PROJECT_SOURCE_DIR}/src"
 )
 
 add_library(bridge_list bridge_list.c)

@@ -1,5 +1,5 @@
 include_directories (
-  "${EDGESEC_SOURCE_DIR}/src"
+  "${PROJECT_SOURCE_DIR}/src"
 )
 
 add_executable(test_sqlite_crypt_writer test_sqlite_crypt_writer.c)
