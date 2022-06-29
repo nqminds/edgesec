@@ -1,6 +1,13 @@
 cmake_minimum_required(VERSION 3.14.0) # required by lib/sqlite.cmake
 
-project(edgesec C CXX)
+cmake_policy(SET CMP0048 NEW)
+
+project(EDGESEC
+  VERSION 0.0.8
+  HOMEPAGE_URL "https://github.com/nqminds/edgesec"
+  DESCRIPTION "Secure router - reference implementation"
+  LANGUAGES C CXX
+)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/lib")
@@ -133,11 +140,6 @@ set(CMAKE_C_EXTENSIONS ON)
 # sqlhook is a shared library that links to static libs, so -fPIC is needed
 # todo: enable only for sqlhook dependencies
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-# The edgesec version number.
-set(EDGESEC_VERSION_MAJOR 0)
-set(EDGESEC_VERSION_MINOR 0)
-set(EDGESEC_VERSION_PATCH 8)
 
 # Include the libraries
 include(hostapd)
