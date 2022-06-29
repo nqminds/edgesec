@@ -1,5 +1,5 @@
 include_directories (
-  "${EDGESEC_SOURCE_DIR}/src"
+  "${PROJECT_SOURCE_DIR}/src"
 )
 
 # we include packet_decoder.h, so need to include its dependencies

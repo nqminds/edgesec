@@ -1,7 +1,7 @@
 add_subdirectory(./middlewares)
 
 include_directories (
-  "${EDGESEC_SOURCE_DIR}/src",
+  "${PROJECT_SOURCE_DIR}/src",
 )
 
 add_executable(test_capture_service test_capture_service.c)

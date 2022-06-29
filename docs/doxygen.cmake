@@ -20,8 +20,6 @@ if (DOXYGEN_FOUND)
     # currently unused, set if we want to use the `@dotfile` command
     # set(DOXYGEN_DOTFILE_DIRS "${PROJECT_SOURCE_DIR}/docs")
     # set(DOXYGEN_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/docs")
-
-    set(DOXYGEN_PROJECT_NAME "edgesec") # defaults to EDGESEC
     set(DOXYGEN_EXTRACT_ALL YES) # document even files missing `@file` command
 
     if (BUILD_ONLY_DOCS)
