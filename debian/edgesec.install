@@ -1,2 +1,3 @@
 usr/bin/edgesec
 usr/libexec/edgesec/hostapd
+etc/edgesec/config.ini

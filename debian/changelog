@@ -1,3 +1,11 @@
+edgesec (1:0.0.8) UNRELEASED; urgency=low
+
+  * Removed `edgesec-common` package. The `/etc/edgesec/config.ini` file is now
+    included in the `edgesec` package, as all other executable/binary packages
+    that reply on `/etc/edgesec/config.ini` are gone.
+
+ -- Alois Klink <alois@nquiringminds.com>  Fri, 01 Jul 2022 12:10:50 +0100
+
 edgesec (0.9.9-alpha6) UNRELEASED; urgency=low
 
   * Fixed missing `edgesec-common` `/etc/edgesec/config.ini` file
