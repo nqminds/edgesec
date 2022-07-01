@@ -46,8 +46,6 @@ where ``path_name`` is one of:
   Directory of EDGESec persistant files (e.g. databases), (``/var/lib/edgesec``)
 ``runstate_dir``
   Directory of EDGESec run-state files (.pid and socket files), (``/var/run/edgesec``)
-``cert_location``
-  Path to edgesec certificate authority file, (``/etc/edgesec/CA/CA.pem``)
 #]=======================================================================]
 
 cmake_minimum_required(VERSION 3.7.0)
@@ -82,5 +80,3 @@ _create_edgesec_path(log_dir "${CMAKE_INSTALL_LOCALSTATEDIR}/log/${_project_lowe
 _create_edgesec_path(local_lib_dir "${CMAKE_INSTALL_LOCALSTATEDIR}/lib/${_project_lower}" LOCALSTATEDIR)
 # Directory of EDGESec run-state files (.pid and socket files)
 _create_edgesec_path(runstate_dir "${CMAKE_INSTALL_RUNSTATEDIR}/${_project_lower}" RUNSTATEDIR)
-# Path to edgesec certificate authority file
-_create_edgesec_path(cert_location "${EDGESEC_config_dir}/CA/CA.pem" SYSCONFDIR)
