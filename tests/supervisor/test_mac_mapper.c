@@ -18,60 +18,52 @@
 
 static const UT_icd mac_conn_icd = {sizeof(struct mac_conn), NULL, NULL, NULL};
 
-static struct mac_conn el[6] = {{{0x04, 0xf0, 0x21, 0x5a, 0xf4, 0xc4},
-                                 0,
-                                 0,
-                                 1,
-                                 0,
-                                 {},
-                                 0,
-                                 {},
-                                 {'b', 'r', '0', '\0'}},
-                                {{0x30, 0x52, 0xcb, 0xe9, 0x00, 0x8f},
-                                 0,
-                                 1,
-                                 0,
-                                 0,
-                                 {},
-                                 0,
-                                 {},
-                                 {'b', 'r', '1', '\0'}},
-                                {{0x40, 0xb4, 0xcd, 0xf1, 0x18, 0xbc},
-                                 0,
-                                 2,
-                                 1,
-                                 0,
-                                 {},
-                                 0,
-                                 {},
-                                 {'b', 'r', '2', '\0'}},
-                                {{0x50, 0x80, 0xd0, 0x0b, 0x13, 0xaa},
-                                 0,
-                                 3,
-                                 0,
-                                 0,
-                                 {},
-                                 0,
-                                 {},
-                                 {'b', 'r', '3', '\0'}},
-                                {{0x60, 0x70, 0xc0, 0x0a, 0x23, 0xba},
-                                 0,
-                                 4,
-                                 1,
-                                 0,
-                                 {},
-                                 0,
-                                 {},
-                                 {'b', 'r', '4', '\0'}},
-                                {{0x00, 0x0f, 0x00, 0x70, 0x62, 0x88},
-                                 0,
-                                 5,
-                                 1,
-                                 0,
-                                 {},
-                                 0,
-                                 {},
-                                 {'b', 'r', '5', '\0'}}};
+static struct mac_conn el[6] = {
+    {
+        .mac_addr = {0x04, 0xf0, 0x21, 0x5a, 0xf4, 0xc4},
+        .info =
+            {
+                .vlanid = 0,
+                .nat = true,
+                .ip_sec_addr = "br0",
+            },
+    },
+    {.mac_addr = {0x30, 0x52, 0xcb, 0xe9, 0x00, 0x8f},
+     .info =
+         {
+             .vlanid = 1,
+             .nat = false,
+             .ip_sec_addr = "br1",
+         }},
+    {.mac_addr = {0x40, 0xb4, 0xcd, 0xf1, 0x18, 0xbc},
+     .info =
+         {
+             .vlanid = 2,
+             .nat = true,
+             .ip_sec_addr = "br2",
+         }},
+    {.mac_addr = {0x50, 0x80, 0xd0, 0x0b, 0x13, 0xaa},
+     .info =
+         {
+             .vlanid = 3,
+             .nat = false,
+             .ip_sec_addr = "br3",
+         }},
+    {.mac_addr = {0x60, 0x70, 0xc0, 0x0a, 0x23, 0xba},
+     .info =
+         {
+             .vlanid = 4,
+             .nat = true,
+             .ip_sec_addr = "br4",
+         }},
+    {.mac_addr = {0x00, 0x0f, 0x00, 0x70, 0x62, 0x88},
+     .info =
+         {
+             .vlanid = 5,
+             .nat = true,
+             .ip_sec_addr = "br5",
+         }},
+};
 
 static void test_put_mac_mapper(void **state) {
   (void)state; /* unused */
