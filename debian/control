@@ -20,7 +20,7 @@ Vcs-Git: https://github.com/nqminds/EDGESec.git
 Package: edgesec
 Architecture: any
 Multi-Arch: foreign
-Depends: libedgesec (= ${binary:Version}),
+Depends:
     edgesec-common (= ${source:Version}),
     ${shlibs:Depends},
     ${misc:Depends},
@@ -68,11 +68,3 @@ Architecture: all
 Description: NquiringMinds EDGESec common files.
  This includes config files and CA certificates
  that may be shared with all binaries.
-
-Package: libedgesec
-Section: libs
-Architecture: any
-Multi-Arch: same
-Pre-Depends: ${misc:Pre-Depends}
-Depends: ${misc:Depends}, ${shlibs:Depends}
-Description: Shared library files required for edgesec packages.

@@ -1,3 +1,11 @@
+edgesec (1:0.0.8) UNRELEASED; urgency=low
+
+  * Removed `libedgesec` package.
+    All of edgesec dependencies are either in the `Depends:` section,
+    or are statically linked to the edgesec binary.
+
+ -- Alois Klink <alois@nquiringminds.com>  Fri, 01 Jul 2022 12:10:50 +0100
+
 edgesec (0.9.9-alpha6) UNRELEASED; urgency=low
 
   * Fixed missing `edgesec-common` `/etc/edgesec/config.ini` file

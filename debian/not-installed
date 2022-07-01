@@ -1,5 +1,0 @@
-# static library files are not needed
-# we don't have a libedgesec-dev package
-usr/lib/*/edgesec/*.a
-# No need for pkgconfig files either
-usr/lib/*/edgesec/pkgconfig
