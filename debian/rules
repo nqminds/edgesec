@@ -20,6 +20,11 @@ override_dh_auto_configure:
 		 -DUSE_UCI_SERVICE=OFF\
 		 -DBUILD_HOSTAPD=ON
 
+# make sure to always install into `debian/tmp` and use
+# *.install files, even if we only have one package
+override_dh_auto_install:
+	dh_auto_install --destdir debian/tmp
+
 # make sure to tell dh_shlibdeps about our private shared libs
 override_dh_shlibdeps:
 	dh_shlibdeps -l/usr/lib/$(DEB_HOST_GNU_TYPE)/edgesec
