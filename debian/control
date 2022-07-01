@@ -20,7 +20,7 @@ Vcs-Git: https://github.com/nqminds/EDGESec.git
 Package: edgesec
 Architecture: any
 Multi-Arch: foreign
-Depends: libedgesec (= ${binary:Version}),
+Depends:
     ${shlibs:Depends},
     ${misc:Depends},
     dnsmasq, jq
@@ -61,11 +61,3 @@ Description: NquiringMinds EDGESec Network Security Router.
  It also uses the capture service, which executes self contained traffic
  capturing routines to monitor the flow of packet and disect identify the
  device types.
-
-Package: libedgesec
-Section: libs
-Architecture: any
-Multi-Arch: same
-Pre-Depends: ${misc:Pre-Depends}
-Depends: ${misc:Depends}, ${shlibs:Depends}
-Description: Shared library files required for edgesec packages.
