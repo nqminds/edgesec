@@ -14,7 +14,7 @@ override_dh_auto_configure:
 	dh_auto_configure -- \
 	     -DCMAKE_LIBRARY_ARCHITECTURE="$(DEB_TARGET_MULTIARCH)" \
 		 -DCMAKE_BUILD_TYPE=Release \
-		 -DBUILD_MNL_LIB=ON\
+		 -DBUILD_MNL_LIB=OFF\
 		 -DBUILD_NETLINK_LIB=ON\
 		 -DUSE_NETLINK_SERVICE=ON\
 		 -DUSE_UCI_SERVICE=OFF\
