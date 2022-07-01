@@ -14,6 +14,12 @@ else()
   set(LIBSQLITE_INSTALL_ROOT "${CMAKE_CURRENT_BINARY_DIR}/lib")
   set(LIBSQLITE_INSTALL_DIR "${LIBSQLITE_INSTALL_ROOT}/sqlite")
 
+  if(BUILD_SHARED_LIBS)
+    set(configure_args "--enable-shared" "--disable-static")
+  else()
+    set(configure_args "--enable-static" "--disable-shared")
+  endif()
+
   message("Downloading and compiling our own libsqlite library")
   ExternalProject_Add(
     libsqlite
@@ -25,7 +31,7 @@ else()
       ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}"
       <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> "--host=${CMAKE_LIBRARY_ARCHITECTURE}"
       # use position independent code, even for static lib, in case we want to make shared lib later
-      --with-pic=on
+      --with-pic=on ${configure_args}
     # need to manually specify PATH, so that make knows where to find cross-compiling GCC
     BUILD_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" $(MAKE)
     INSTALL_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" $(MAKE) install
