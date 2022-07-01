@@ -25,7 +25,7 @@ static struct mac_conn el[6] = {
             {
                 .vlanid = 0,
                 .nat = true,
-                .ip_sec_addr = "br0",
+                .ifname = "br0",
             },
     },
     {.mac_addr = {0x30, 0x52, 0xcb, 0xe9, 0x00, 0x8f},
@@ -33,35 +33,35 @@ static struct mac_conn el[6] = {
          {
              .vlanid = 1,
              .nat = false,
-             .ip_sec_addr = "br1",
+             .ifname = "br1",
          }},
     {.mac_addr = {0x40, 0xb4, 0xcd, 0xf1, 0x18, 0xbc},
      .info =
          {
              .vlanid = 2,
              .nat = true,
-             .ip_sec_addr = "br2",
+             .ifname = "br2",
          }},
     {.mac_addr = {0x50, 0x80, 0xd0, 0x0b, 0x13, 0xaa},
      .info =
          {
              .vlanid = 3,
              .nat = false,
-             .ip_sec_addr = "br3",
+             .ifname = "br3",
          }},
     {.mac_addr = {0x60, 0x70, 0xc0, 0x0a, 0x23, 0xba},
      .info =
          {
              .vlanid = 4,
              .nat = true,
-             .ip_sec_addr = "br4",
+             .ifname = "br4",
          }},
     {.mac_addr = {0x00, 0x0f, 0x00, 0x70, 0x62, 0x88},
      .info =
          {
              .vlanid = 5,
              .nat = true,
-             .ip_sec_addr = "br5",
+             .ifname = "br5",
          }},
 };
 
