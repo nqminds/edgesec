@@ -29,10 +29,6 @@ install(CODE
   )"
 )
 
-get_filename_component(EDGESEC_cert_directory ${EDGESEC_cert_location} DIRECTORY)
-get_filename_component(EDGESEC_cert_filename ${EDGESEC_cert_location} NAME)
-install(FILES "${CMAKE_SOURCE_DIR}/deployment/rpi-config/CA.pem" DESTINATION "${EDGESEC_cert_directory}" RENAME "${EDGESEC_cert_filename}")
-
 # for install /lib directories, we need to add a trailing "/" to avoid
 # installing into ${EDGESEC_private_lib_dir}/lib
 if (BUILD_UUID_LIB AND LIBUUID_LIB)

@@ -21,7 +21,6 @@ Package: edgesec
 Architecture: any
 Multi-Arch: foreign
 Depends:
-    edgesec-common (= ${source:Version}),
     ${shlibs:Depends},
     ${misc:Depends},
     dnsmasq, jq
@@ -62,9 +61,3 @@ Description: NquiringMinds EDGESec Network Security Router.
  It also uses the capture service, which executes self contained traffic
  capturing routines to monitor the flow of packet and disect identify the
  device types.
-
-Package: edgesec-common
-Architecture: all
-Description: NquiringMinds EDGESec common files.
- This includes config files and CA certificates
- that may be shared with all binaries.
