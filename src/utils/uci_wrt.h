@@ -109,6 +109,7 @@ int uwrt_gen_dnsmasq_instance(struct uctx *context,
  *
  * @param context The uci context
  * @param ifname The interface name
+ * @param vlanid The VLAN id
  * @param ip_addr_low Interface string IP address lower bound
  * @param ip_addr_upp Interface string IP address upper bound
  * @param subnet_mask Interface string IP subnet mask
