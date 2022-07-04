@@ -93,7 +93,7 @@ To compile the tests use:
 ```bash
 cmake -B build/ -S . # configure CMAKE
 cmake --build build/ -j4 # or make -j4
-cmake --build build/ --target test -j4 # or `make test`
+cmake --build build/ --target test -j4 # or 'make test'
 ```
 
 To run each test individually, the test binaries can be located in `./build/tests` folder.
