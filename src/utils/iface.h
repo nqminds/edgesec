@@ -53,7 +53,7 @@ struct iface_context *iface_init_context(void *params);
  *
  * @param context The interface context
  */
-void iface_free_context(struct iface_context *xontext);
+void iface_free_context(struct iface_context *context);
 
 /**
  * @brief Returns an exisiting WiFi interface name that supports VLAN
