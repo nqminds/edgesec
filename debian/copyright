@@ -42,6 +42,10 @@ Copyright: 2017, rxi
            2021-2022, NquiringMinds Ltd.
 License: Expat
 
+Files: src/utils/list.h
+Copyright: 2009-2019, Jouni Malinen <j@w1.fi>
+License: BSD-3-clause
+
 Files: src/utils/minIni.* src/utils/minGlue.h
 Copyright: 2008-2017, CompuPhase
 License: Apache-2.0
