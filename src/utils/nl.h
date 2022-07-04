@@ -117,7 +117,7 @@ int nl_create_interface(struct nlctx *context, char *ifname, char *type,
 /**
  * @brief Resets the interface
  *
- * @param if_name The interface name string
+ * @param ifname The interface name string
  * @return 0 on success, -1 otherwise
  */
 int nl_reset_interface(char *ifname);
