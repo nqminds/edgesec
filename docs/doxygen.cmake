@@ -20,6 +20,7 @@ if (DOXYGEN_FOUND)
     # currently unused, set if we want to use the `@dotfile` command
     # set(DOXYGEN_DOTFILE_DIRS "${PROJECT_SOURCE_DIR}/docs")
     # set(DOXYGEN_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/docs")
+    set(DOXYGEN_DOT_IMAGE_FORMAT svg)
     set(DOXYGEN_EXTRACT_ALL YES) # document even files missing `@file` command
 
     set(doxygen_input_files
