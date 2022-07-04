@@ -176,7 +176,7 @@ int get_ifname_from_ip(UT_array *config_ifinfo_array, char *ip, char *ifname);
  * @brief Get the bridge name from an IP string
  *
  * @param config_ifinfo_array The list of IP subnets
- * @param ip The input IP address
+ * @param ip_addr The input IP address
  * @param ifname The returned interface name (buffer has to be preallocated)
  * @return 0 on success, -1 otherwise
  */
