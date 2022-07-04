@@ -168,7 +168,7 @@ void free_vlan_mapper(hmap_vlan_conn **hmap);
  * @param[in] config_ifinfo_array The list of IP subnets
  * @param[in] ip The input IP address
  * @param[out] ifname The returned interface name (buffer has to be
- * preallocated)
+ * preallocated at least the size of config_ifinfo_t::ifname)
  * @return 0 on success, -1 otherwise
  */
 int get_ifname_from_ip(UT_array *config_ifinfo_array, char *ip, char *ifname);
@@ -178,8 +178,8 @@ int get_ifname_from_ip(UT_array *config_ifinfo_array, char *ip, char *ifname);
  *
  * @param[in] config_ifinfo_array The list of IP subnets
  * @param[in] ip_addr The input IP address
- * @param[out] ifname The returned interface name (buffer has to be
- * preallocated)
+ * @param[out] brname The returned bridge name (buffer has to be
+ * preallocated to at least the size of config_ifinfo_t::brname).
  * @return 0 on success, -1 otherwise
  */
 int get_brname_from_ip(UT_array *config_ifinfo_array, char *ip_addr,
