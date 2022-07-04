@@ -84,7 +84,7 @@ int uwrt_create_interface(struct uctx *context, char *ifname, char *type,
  * @brief Commit a uci section
  *
  * @param context The uci context
- * @param context The uci section
+ * @param section The uci section
  * @return int 0 on success, -1 on failure
  */
 int uwrt_commit_section(struct uctx *context, char *section);
