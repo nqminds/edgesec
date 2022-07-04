@@ -66,7 +66,7 @@ char *iface_get_vlan(char *if_buf);
 /**
  * @brief Get the array of @c struct netif_info_t for each available interface
  *
- * @param id The interface name, if NULL return all interfaces
+ * @param[in] ifname The interface name, if NULL return all interfaces
  * @return UT_array* The returned array of @c struct netif_info_t
  */
 UT_array *iface_get(char *ifname);
