@@ -23,7 +23,7 @@ if (DOXYGEN_FOUND)
     set(DOXYGEN_EXTRACT_ALL YES) # document even files missing `@file` command
 
     set(doxygen_input_files
-      "${PROJECT_SOURCE_DIR}/src" "${PROJECT_SOURCE_DIR}/docs"
+      "${PROJECT_SOURCE_DIR}/src" "${PROJECT_SOURCE_DIR}/docs" "${PROJECT_SOURCE_DIR}/README.md"
     )
 
     if (BUILD_ONLY_DOCS)
