@@ -283,7 +283,7 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn fn,
  *
  * @param path The command path
  * @param argv The command arguments without the process path
- * @param process_callback_fn Callback function
+ * @param fn Callback function
  * @param ctx The callback function context
  * @return int excve status code
  */
