@@ -81,7 +81,7 @@ void free_string_queue_el(struct string_queue *el);
 /**
  * @brief Returns the string queue length
  *
- * @param el The pointer to the string queue
+ * @param queue The pointer to the string queue
  * @return ssize_t The string queue length
  */
 ssize_t get_string_queue_length(struct string_queue *queue);
