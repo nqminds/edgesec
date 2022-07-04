@@ -40,7 +40,7 @@ struct client_address {
  * @param addr The socket addr, if NULL is auto genereated and hidden
  * @return int Client socket
  */
-int create_domain_client(char *add);
+int create_domain_client(char *addr);
 
 /**
  * @brief Create a domain server object
