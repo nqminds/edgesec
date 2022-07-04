@@ -15,7 +15,7 @@ On Debian/Ubuntu, build dependencies are listed in the
 You can use [`mk-build-deps`](https://manpages.ubuntu.com/manpages/focal/man1/mk-build-deps.1.html)
 to automatically install these build-dependencies.
 
-```console
+```bash
 sudo apt install devscripts # install mk-build-depends
 sudo mk-build-deps --install debian/control
 ```
@@ -26,7 +26,7 @@ Compiling edgesec is done with CMake.
 
 If you have CMake v3.22+, you can use the following `cmake-presets` to compile edgesec:
 
-```console
+```bash
 cmake --preset linux # configure edgesec for Linux
 cmake --build --preset linux -j4 # build edgesec for Linux using 4 threads
 ctest --preset linux # test edgesec for Linux
@@ -36,7 +36,7 @@ A useful one-liner is the following, which given a preset, automatically
 configures, compiles (using all cores, but `nice -n19` for lower CPU priority),
 tests (if a test config exists), then installs into the `./tmp` folder.
 
-```console
+```bash
 export PRESET=linux; cmake --preset "$PRESET" && nice -n19 cmake --build --preset "$PRESET" -j=$(nproc) && ( ctest --list-presets | grep "\"$PRESET\"" ) && ctest --preset "$PRESET"; cmake --install "./build/$PRESET" --prefix "./tmp/$PRESET"
 ```
 
@@ -46,7 +46,7 @@ For older versions of CMake, or for manual configuration, please see the next he
 
 Configure `cmake` in the `build/` directory by running the following:
 
-```console
+```bash
 # or for old versions of cmake, do: mkdir build/ && cd build/ && cmake ..
 cmake -S . -B build
 ```
@@ -57,14 +57,14 @@ The configure stage will download some of the edgesec dependencies, so this may 
 
 To build, you can then run:
 
-```console
+```bash
 # or for old versions of cmake, do: cd build/ && make
 cmake --build build/
 ```
 
 or to built on multiple core run:
 
-```console
+```bash
 cmake --build build/ -j4
 ```
 
@@ -76,13 +76,13 @@ After succesful compilation the binary will be located in `./build/src` folder.
 
 To run `edgesec` tool with the configuration file `dev-config.ini` located in `./build` folder use:
 
-```console
+```bash
 ./build/src/edgesec -c ./build/dev-config.ini
 ```
 
 To enable verbose debug mode use:
 
-```console
+```bash
 ./build/src/edgesec -c ./build/dev-config.ini -ddddd
 ```
 
@@ -90,7 +90,7 @@ To enable verbose debug mode use:
 
 To compile the tests use:
 
-```console
+```bash
 cmake -B build/ -S . # configure CMAKE
 cmake --build build/ -j4 # or make -j4
 cmake --build build/ --target test -j4 # or `make test`
@@ -102,7 +102,7 @@ To run each test individually, the test binaries can be located in `./build/test
 
 To compile the docs from `./build` folder:
 
-```console
+```bash
 make doxydocs
 ```
 
