@@ -64,7 +64,7 @@ int create_udp_server(unsigned int port);
  * @param sock Server socket
  * @param data Data buffer
  * @param data_len Data buffer length
- * @param claddr The sender address structure
+ * @param addr The sender address structure
  * @param flags The flags for recvfrom function
  * @return ssize_t Size of read data
  */
