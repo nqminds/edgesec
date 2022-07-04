@@ -133,7 +133,7 @@ int uwrt_gen_hostapd_instance(struct uctx *context,
  * @brief Generate a firewall zone for a bridge
  *
  * @param context The uci context
- * @param params The bridge name
+ * @param brname The bridge name
  * @return int 0 on success, -1 on failure
  */
 int uwrt_gen_firewall_zone(struct uctx *context, char *brname);
