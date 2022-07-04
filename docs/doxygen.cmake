@@ -22,15 +22,19 @@ if (DOXYGEN_FOUND)
     # set(DOXYGEN_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/docs")
     set(DOXYGEN_EXTRACT_ALL YES) # document even files missing `@file` command
 
+    set(doxygen_input_files
+      "${PROJECT_SOURCE_DIR}/src" "${PROJECT_SOURCE_DIR}/docs" "${PROJECT_SOURCE_DIR}/README.md"
+    )
+
     if (BUILD_ONLY_DOCS)
       doxygen_add_docs(doxydocs
-        "${PROJECT_SOURCE_DIR}/src" "${PROJECT_SOURCE_DIR}/docs"
+        ${doxygen_input_files}
         ALL # part of make all
         COMMENT "Generating API documentation with Doxygen"
       )
     else ()
       doxygen_add_docs(doxydocs
-        "${PROJECT_SOURCE_DIR}/src" "${PROJECT_SOURCE_DIR}/docs"
+        ${doxygen_input_files}
         COMMENT "Generating API documentation with Doxygen"
       )
     endif()

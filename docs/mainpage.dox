@@ -10,4 +10,9 @@ If adding your own capture middleware, please follow the instructions
 ::capture_middleware
 
 \tableofcontents
+
+Please see the general project \ref md_README "README.md" file for an overview.
+
+The website https://edgesec.info goes into more details about the
+edgesec project, and contains compilation/usage instructions.
 */
