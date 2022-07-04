@@ -271,11 +271,11 @@ typedef void (*process_callback_fn)(void *ctx, void *buf, size_t count);
  *
  * @param argv The command arguments including the process path
  * @param envp The environment variables
- * @param process_callback_fn Callback function
+ * @param fn Callback function
  * @param ctx The callback function context
  * @return int excve status code
  */
-int run_command(char *const argv[], char *const envp[], process_callback_fn,
+int run_command(char *const argv[], char *const envp[], process_callback_fn fn,
                 void *ctx);
 
 /**
