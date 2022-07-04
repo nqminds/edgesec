@@ -20,6 +20,7 @@
 #include <stdbool.h>
 #include <fnmatch.h>
 #include <linux/netlink.h>
+#include <linux/nl80211.h>
 #include <arpa/inet.h>
 
 #include <netlink/genl/genl.h>
@@ -36,7 +37,6 @@
 #include "linux/if_addr.h"
 #include "linux/if_infiniband.h"
 
-#include "nl80211.h"
 #include "allocs.h"
 #include "os.h"
 #include "log.h"
