@@ -53,7 +53,7 @@ struct iface_context *iface_init_context(void *params);
  *
  * @param context The interface context
  */
-void iface_free_context(struct iface_context *xontext);
+void iface_free_context(struct iface_context *context);
 
 /**
  * @brief Returns an exisiting WiFi interface name that supports VLAN
@@ -66,7 +66,7 @@ char *iface_get_vlan(char *if_buf);
 /**
  * @brief Get the array of @c struct netif_info_t for each available interface
  *
- * @param id The interface name, if NULL return all interfaces
+ * @param[in] ifname The interface name, if NULL return all interfaces
  * @return UT_array* The returned array of @c struct netif_info_t
  */
 UT_array *iface_get(char *ifname);

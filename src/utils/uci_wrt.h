@@ -84,7 +84,7 @@ int uwrt_create_interface(struct uctx *context, char *ifname, char *type,
  * @brief Commit a uci section
  *
  * @param context The uci context
- * @param context The uci section
+ * @param section The uci section
  * @return int 0 on success, -1 on failure
  */
 int uwrt_commit_section(struct uctx *context, char *section);
@@ -109,6 +109,7 @@ int uwrt_gen_dnsmasq_instance(struct uctx *context,
  *
  * @param context The uci context
  * @param ifname The interface name
+ * @param vlanid The VLAN id
  * @param ip_addr_low Interface string IP address lower bound
  * @param ip_addr_upp Interface string IP address upper bound
  * @param subnet_mask Interface string IP subnet mask
@@ -133,7 +134,7 @@ int uwrt_gen_hostapd_instance(struct uctx *context,
  * @brief Generate a firewall zone for a bridge
  *
  * @param context The uci context
- * @param params The bridge name
+ * @param brname The bridge name
  * @return int 0 on success, -1 on failure
  */
 int uwrt_gen_firewall_zone(struct uctx *context, char *brname);

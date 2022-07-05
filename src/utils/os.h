@@ -127,7 +127,7 @@ static inline void os_reltime_sub(struct os_reltime *a, struct os_reltime *b,
 /**
  * @brief get the timestamp in microseconds from system time
  *
- * @patat, timestamp The returned timestamp
+ * @param timestamp The returned timestamp
  * @return int 0 on success, -1 on failure
  */
 int os_get_timestamp(uint64_t *timestamp);
@@ -271,11 +271,11 @@ typedef void (*process_callback_fn)(void *ctx, void *buf, size_t count);
  *
  * @param argv The command arguments including the process path
  * @param envp The environment variables
- * @param process_callback_fn Callback function
+ * @param fn Callback function
  * @param ctx The callback function context
  * @return int excve status code
  */
-int run_command(char *const argv[], char *const envp[], process_callback_fn,
+int run_command(char *const argv[], char *const envp[], process_callback_fn fn,
                 void *ctx);
 
 /**
@@ -283,7 +283,7 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn,
  *
  * @param path The command path
  * @param argv The command arguments without the process path
- * @param process_callback_fn Callback function
+ * @param fn Callback function
  * @param ctx The callback function context
  * @return int excve status code
  */
@@ -573,7 +573,7 @@ int read_file_string(char *path, char **out);
  *
  * @param[in] commands Array of system binaries name strings. The last entry
  * must be a `NULL` ptr.
- * @param[int] bin_path_arr Array of system binaries default search paths
+ * @param[in] bin_path_arr Array of system binaries default search paths
  * @param[out] hmap_bin_paths The created map of system binary to absolute path.
  * @return int 0 on success, -1 on failure
  */
