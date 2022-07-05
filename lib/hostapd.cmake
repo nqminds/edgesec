@@ -5,7 +5,6 @@ cmake_minimum_required(VERSION 3.14.0)
 include(ExternalProject)
 
 if (BUILD_HOSTAPD AND NOT (BUILD_ONLY_DOCS))
-  set(HOSTAPD_SOURCE_DIR "${CMAKE_SOURCE_DIR}/lib/hostap")
   set(HOSTAPD_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 
   include(FindPkgConfig)
@@ -22,14 +21,15 @@ if (BUILD_HOSTAPD AND NOT (BUILD_ONLY_DOCS))
   endif()
 
   configure_file(
-    "${HOSTAPD_SOURCE_DIR}/hostapd/.config.in"
+    "${CMAKE_CURRENT_LIST_DIR}/hostapd.config.in"
     "${CMAKE_CURRENT_BINARY_DIR}/hostapd.config"
     @ONLY
   )
 
   ExternalProject_Add(
     hostapd_externalproject
-    URL "${HOSTAPD_SOURCE_DIR}"
+    GIT_REPOSITORY https://w1.fi/hostap.git
+    GIT_TAG 81121319a9e5cfcd4531fda7ce869b113d79caa0 # From: Sun Nov 17 21:02:42 2019 +0200
     INSTALL_DIR "${HOSTAPD_INSTALL_DIR}"
     BUILD_IN_SOURCE true
     SOURCE_SUBDIR "hostapd" # we only care about hostapd, not the entire hostap dir
