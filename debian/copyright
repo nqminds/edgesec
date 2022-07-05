@@ -10,10 +10,6 @@ Files: *
 Copyright: 2020-2021, NquiringMinds Ltd.
 License: LGPL-3+
 
-Files: lib/hostapd/*
-Copyright: 2002-2014, Jouni Malinen <j@w1.fi>
-License: BSD-3-clause
-
 Files: CMakeModules/FindLibUUID.cmake
 Copyright: 2000-2022 Kitware, Inc. and Contributors
 License: BSD-3-clause
