@@ -28,7 +28,9 @@ if (BUILD_HOSTAPD AND NOT (BUILD_ONLY_DOCS))
 
   ExternalProject_Add(
     hostapd_externalproject
-    GIT_REPOSITORY https://w1.fi/hostap.git
+    # can't use https since debian build doesn't like the https certificats of https://w1.fi
+    # not super secure since SHA1-ttered attack can be used to fake GIT_TAG with MITM attack
+    GIT_REPOSITORY git://w1.fi/hostap.git
     GIT_TAG 81121319a9e5cfcd4531fda7ce869b113d79caa0 # From: Sun Nov 17 21:02:42 2019 +0200
     INSTALL_DIR "${HOSTAPD_INSTALL_DIR}"
     BUILD_IN_SOURCE true
