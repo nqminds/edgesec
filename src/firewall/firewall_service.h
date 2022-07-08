@@ -29,6 +29,7 @@
  * @param hmap_bin_paths The Mapper for paths to systems binaries
  * @param config_ifinfo_array The @c config_ifinfo_array from @c struct
  * app_config
+ * @param nat_bridge The NAT bridge name
  * @param nat_interface The nat interface string
  * @param exec_firewall if true runs the firewall system commands
  * @param path The firewall bin path
