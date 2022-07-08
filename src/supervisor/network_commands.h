@@ -127,8 +127,7 @@ int remove_bridge_cmd(struct supervisor_context *context,
  * @param mac_addr The MAC address
  * @return int 0 on success, -1 on failure
  */
-int clear_bridges_cmd(struct supervisor_context *context,
-                      uint8_t *left_mac_addr);
+int clear_bridges_cmd(struct supervisor_context *context, uint8_t *mac_addr);
 
 /**
  * @brief REGISTER_TICKET command
