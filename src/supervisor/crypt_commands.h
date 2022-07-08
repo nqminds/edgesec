@@ -64,7 +64,7 @@ int gen_privkey_cmd(struct supervisor_context *context, char *keyid,
  * @brief GEN_PUBKEY command
  *
  * @param context The supervisor structure instance
- * @param certid The public id
+ * @param pubid The public id
  * @param keyid The private key id
  * @return 0 on success, -1 on failure
  */
