@@ -33,7 +33,7 @@ bool save_mac_mapper(struct supervisor_context *context, struct mac_conn conn);
 /**
  * @brief Frees an allocated ticket
  *
- * @param The supervisor context
+ * @param context The supervisor context
  */
 void free_ticket(struct supervisor_context *context);
 
