@@ -36,7 +36,7 @@ struct mdns_answer_entry {
  * @param len The mdns payload length
  * @param first The starting index to the queries field
  * @param nqueries The number of queries
- * @param answers The queries array
+ * @param queries The queries array
  * @return 0 Success, -1 on failure
  */
 int decode_mdns_queries(uint8_t *payload, size_t len, size_t *first,
