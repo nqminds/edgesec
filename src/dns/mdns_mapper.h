@@ -54,7 +54,7 @@ int put_mdns_answer_mapper(hmap_mdns_conn **imap, uint8_t *ip,
 /**
  * @brief Frees the mDNS mapper connection object
  *
- * @param hmap mDNS mapper connection object
+ * @param imap mDNS mapper connection object
  */
 void free_mdns_mapper(hmap_mdns_conn **imap);
 

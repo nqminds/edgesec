@@ -29,7 +29,7 @@ struct capture_middleware_context {
  * @brief Callback for pcap packet module
  *
  * @param ctx The capture context
- * @param ctx The pcap context
+ * @param pcap_ctx The pcap context
  * @param ltype The link type
  * @param header pcap header structure
  * @param packet Returned pcap packet

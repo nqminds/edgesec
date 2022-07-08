@@ -74,7 +74,7 @@ int open_sqlite_crypt_db(char *db_path, sqlite3 **sql);
 /**
  * @brief Closes the sqlite db
  *
- * @param ctx The sqlite db structure pointer
+ * @param db The sqlite db structure pointer
  */
 void free_sqlite_crypt_db(sqlite3 *db);
 
@@ -108,7 +108,7 @@ struct store_row *get_sqlite_store_row(sqlite3 *db, const char *key);
 /**
  * @brief Frees a store row entry
  *
- * @param column The store row value
+ * @param row The store row value
  */
 void free_sqlite_store_row(struct store_row *row);
 
@@ -124,7 +124,7 @@ struct secrets_row *get_sqlite_secrets_row(sqlite3 *db, char *id);
 /**
  * @brief Frees a secrets row entry
  *
- * @param column The secrets row value
+ * @param row The secrets row value
  */
 void free_sqlite_secrets_row(struct secrets_row *row);
 #endif

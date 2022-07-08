@@ -23,8 +23,8 @@
 /**
  * @brief Save a MAC entry into the mapper
  *
- * @param The supervisor context
- * @param The MAc connection structure
+ * @param context The supervisor context
+ * @param conn The MAc connection structure
  *
  * @return true on success, false on failure
  */
@@ -33,7 +33,7 @@ bool save_mac_mapper(struct supervisor_context *context, struct mac_conn conn);
 /**
  * @brief Frees an allocated ticket
  *
- * @param The supervisor context
+ * @param context The supervisor context
  */
 void free_ticket(struct supervisor_context *context);
 
@@ -127,8 +127,7 @@ int remove_bridge_cmd(struct supervisor_context *context,
  * @param mac_addr The MAC address
  * @return int 0 on success, -1 on failure
  */
-int clear_bridges_cmd(struct supervisor_context *context,
-                      uint8_t *left_mac_addr);
+int clear_bridges_cmd(struct supervisor_context *context, uint8_t *mac_addr);
 
 /**
  * @brief REGISTER_TICKET command

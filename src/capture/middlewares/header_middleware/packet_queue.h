@@ -69,7 +69,7 @@ void free_packet_queue_el(struct packet_queue *el);
 /**
  * @brief Returns the packet queue length
  *
- * @param el The pointer to the packet queue
+ * @param queue The pointer to the packet queue
  * @return ssize_t The packet queue length
  */
 ssize_t get_packet_queue_length(struct packet_queue *queue);
