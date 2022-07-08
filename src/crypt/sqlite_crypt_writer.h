@@ -74,7 +74,7 @@ int open_sqlite_crypt_db(char *db_path, sqlite3 **sql);
 /**
  * @brief Closes the sqlite db
  *
- * @param ctx The sqlite db structure pointer
+ * @param db The sqlite db structure pointer
  */
 void free_sqlite_crypt_db(sqlite3 *db);
 
