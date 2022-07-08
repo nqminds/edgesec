@@ -65,7 +65,7 @@ void free_pcap_queue_el(struct pcap_queue *el);
 /**
  * @brief Returns the pcap queue length
  *
- * @param el The pointer to the pcap queue
+ * @param queue The pointer to the pcap queue
  * @return ssize_t The pcap queue length
  */
 ssize_t get_pcap_queue_length(struct pcap_queue *queue);
