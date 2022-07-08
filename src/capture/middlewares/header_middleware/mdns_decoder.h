@@ -34,9 +34,11 @@ struct mdns_answer_entry {
  *
  * @param payload The mdns payload
  * @param len The mdns payload length
- * @param first The starting index to the queries field
+ * @param[in,out] first The starting index to the queries field in the mdns @p
+ * payload. When done, this will be modified to be the starting index of the
+ * next field.
  * @param nqueries The number of queries
- * @param queries The queries array
+ * @param[in,out] queries The ::mdns_query_entry queries array
  * @return 0 Success, -1 on failure
  */
 int decode_mdns_queries(uint8_t *payload, size_t len, size_t *first,
@@ -47,9 +49,11 @@ int decode_mdns_queries(uint8_t *payload, size_t len, size_t *first,
  *
  * @param payload The mdns payload
  * @param len The mdns payload length
- * @param first The starting index to the answers field
+ * @param[in,out] first The starting index to the answers field in the mdns @p
+ * payload. When done, this will be modified to be the starting index of the
+ * next field.
  * @param nanswers The number of answers
- * @param answers The answers array
+ * @param[in,out] answers The ::mdns_answer_entry answers array
  * @return 0 Success, -1 on failure
  */
 int decode_mdns_answers(uint8_t *payload, size_t len, size_t *first,
