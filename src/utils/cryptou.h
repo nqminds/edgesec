@@ -37,8 +37,8 @@ enum CRYPTO_KEY_TYPE { CRYPTO_KEY_NONE = 0, CRYPTO_KEY_RSA, CRYPTO_KEY_EC };
 /**
  * @brief Generate IV
  *
- * @param The output buffer
- * @param The IV size
+ * @param buf The output buffer
+ * @param iv_size The IV size
  * @return 1 on success, 0 on failure
  */
 int crypto_geniv(uint8_t *buf, int iv_size);
