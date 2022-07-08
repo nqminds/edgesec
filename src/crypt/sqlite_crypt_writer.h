@@ -124,7 +124,7 @@ struct secrets_row *get_sqlite_secrets_row(sqlite3 *db, char *id);
 /**
  * @brief Frees a secrets row entry
  *
- * @param column The secrets row value
+ * @param row The secrets row value
  */
 void free_sqlite_secrets_row(struct secrets_row *row);
 #endif
