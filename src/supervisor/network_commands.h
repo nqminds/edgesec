@@ -23,8 +23,8 @@
 /**
  * @brief Save a MAC entry into the mapper
  *
- * @param The supervisor context
- * @param The MAc connection structure
+ * @param context The supervisor context
+ * @param conn The MAc connection structure
  *
  * @return true on success, false on failure
  */
