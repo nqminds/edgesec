@@ -39,7 +39,7 @@ struct mdns_context {
 /**
  * @brief Runs the mDNS forwarder service
  *
- * @param config The mDNS config structure
+ * @param context The mDNS context structure.
  * @return int 0 on success, -1 on failure
  */
 int run_mdns(struct mdns_context *context);
