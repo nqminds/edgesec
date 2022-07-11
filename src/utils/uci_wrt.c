@@ -682,9 +682,8 @@ int uwrt_gen_dnsmasq_instance(struct uctx *context,
   return 0;
 }
 
-int uwrt_add_dhcp_pool(struct uctx *context, char *ifname, int vlanid,
-                       char *ip_addr_low, char *ip_addr_upp, char *subnet_mask,
-                       char *lease_time) {
+int uwrt_add_dhcp_pool(struct uctx *context, char *ifname, char *ip_addr_low,
+                       char *ip_addr_upp, char *subnet_mask, char *lease_time) {
   uint32_t start, limit;
   char property[128];
 
@@ -730,62 +729,61 @@ int uwrt_add_dhcp_pool(struct uctx *context, char *ifname, int vlanid,
 
   limit = (limit < start) ? 0 : (limit - start) + 1;
 
-  sprintf(property, "dhcp.%s%d=dhcp", ifname, vlanid);
+  sprintf(property, "dhcp.%s=dhcp", ifname);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "dhcp.%s%d.interface=%s%d", ifname, vlanid, ifname, vlanid);
+  sprintf(property, "dhcp.%s.interface=%s", ifname, ifname);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "dhcp.%s%d.networkid=br-%s%d", ifname, vlanid, ifname,
-          vlanid);
+  sprintf(property, "dhcp.%s.networkid=br-%s", ifname, ifname);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "dhcp.%s%d.dhcpv4=server", ifname, vlanid);
+  sprintf(property, "dhcp.%s.dhcpv4=server", ifname);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "dhcp.%s%d.instance=edgesec", ifname, vlanid);
+  sprintf(property, "dhcp.%s.instance=edgesec", ifname);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "dhcp.%s%d.ignore=0", ifname, vlanid);
+  sprintf(property, "dhcp.%s.ignore=0", ifname);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "dhcp.%s%d.force=1", ifname, vlanid);
+  sprintf(property, "dhcp.%s.force=1", ifname);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "dhcp.%s%d.start=%d", ifname, vlanid, start);
+  sprintf(property, "dhcp.%s.start=%d", ifname, start);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "dhcp.%s%d.limit=%d", ifname, vlanid, limit);
+  sprintf(property, "dhcp.%s.limit=%d", ifname, limit);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "dhcp.%s%d.leasetime=%s", ifname, vlanid, lease_time);
+  sprintf(property, "dhcp.%s.leasetime=%s", ifname, lease_time);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;

@@ -274,7 +274,9 @@ int init_context(struct app_config *app_config,
   os_memcpy(&ctx->mconfig, &app_config->mdns_config, sizeof(struct mdns_conf));
 
   strcpy(ctx->dconfig.bridge_prefix, app_config->bridge_prefix);
+  strcpy(ctx->dconfig.interface_prefix, app_config->interface_prefix);
   strcpy(ctx->dconfig.wifi_interface, app_config->hconfig.interface);
+
   strcpy(ctx->hconfig.vlan_bridge, app_config->interface_prefix);
 
   log_debug("Opening the macconn db=%s", app_config->connection_db_path);
@@ -403,23 +405,6 @@ int run_ctl(struct app_config *app_config) {
     return false;
   }
 
-  if (app_config->ap_detect) {
-    log_info("Looking for VLAN capable wifi interface...");
-    if (iface_get_vlan(context->hconfig.interface) == NULL) {
-      log_error("iface_get_vlan fail");
-      goto run_engine_fail;
-    }
-  }
-
-  log_info("Using wifi interface %s", context->hconfig.interface);
-
-  if (construct_ap_ctrlif(context->hconfig.ctrl_interface,
-                          context->hconfig.interface,
-                          context->hconfig.ctrl_interface_path) < 0) {
-    log_error("construct_ap_ctrlif fail");
-    goto run_engine_fail;
-  }
-
   if (app_config->create_interfaces) {
     log_info("Creating subnet interfaces...");
     if (create_subnet_interfaces(context->iface_ctx,
@@ -440,11 +425,29 @@ int run_ctl(struct app_config *app_config) {
     goto run_engine_fail;
   }
 
-  log_info("Running the ap service...");
-  if (run_ap(context, app_config->exec_ap, app_config->generate_ssid,
-             ap_service_callback) < 0) {
-    log_error("run_ap fail");
-    goto run_engine_fail;
+  if (app_config->ap_detect) {
+    log_info("Looking for VLAN capable wifi interface...");
+    if (iface_get_vlan(context->hconfig.interface) == NULL) {
+      log_error("iface_get_vlan fail");
+      goto run_engine_fail;
+    }
+  }
+
+  if (strlen(context->hconfig.interface)) {
+    log_info("Running the AP service on %s ...", context->hconfig.interface);
+
+    if (construct_ap_ctrlif(context->hconfig.ctrl_interface,
+                            context->hconfig.interface,
+                            context->hconfig.ctrl_interface_path) < 0) {
+      log_error("construct_ap_ctrlif fail");
+      goto run_engine_fail;
+    }
+
+    if (run_ap(context, app_config->exec_ap, app_config->generate_ssid,
+               ap_service_callback) < 0) {
+      log_error("run_ap fail");
+      goto run_engine_fail;
+    }
   }
 
 #ifdef WITH_RADIUS_SERVICE

@@ -63,11 +63,39 @@
 static char dnsmasq_proc_name[MAX_OS_PATH_LEN];
 static bool dns_process_started = false;
 
+int define_dhcp_interface_name(struct dhcp_conf *dconf, int vlanid,
+                               char *ifname) {
+  if (dconf == NULL) {
+    log_error("dconf param is NULL");
+    return -1;
+  }
+
+  if (ifname == NULL) {
+    log_error("ifname param is NULL");
+    return -1;
+  }
+
+#ifdef WITH_UCI_SERVICE
+  sprintf(ifname, "%s%d", dconf->bridge_prefix, vlanid);
+#else
+  if (strlen(dconf->wifi_interface)) {
+    if (vlanid) {
+      sprintf(ifname, "%s.%d", dconf->wifi_interface, vlanid);
+    } else {
+      sprintf(ifname, "%s", dconf->wifi_interface);
+    }
+  } else {
+    sprintf(ifname, "%s%d", dconf->interface_prefix, vlanid);
+  }
+#endif
+  return 0;
+}
+
 #ifdef WITH_UCI_SERVICE
 struct string_queue *make_interface_list(struct dhcp_conf *dconf) {
   config_dhcpinfo_t *el = NULL;
   struct string_queue *squeue = init_string_queue(-1);
-  char buf[IFNAMSIZ];
+  char ifname[IFNAMSIZ];
 
   if (squeue == NULL) {
     log_error("init_string_queue fail");
@@ -76,8 +104,14 @@ struct string_queue *make_interface_list(struct dhcp_conf *dconf) {
 
   while ((el = (config_dhcpinfo_t *)utarray_next(dconf->config_dhcpinfo_array,
                                                  el)) != NULL) {
-    snprintf(buf, IFNAMSIZ, "%s%d", dconf->bridge_prefix, el->vlanid);
-    if (push_string_queue(squeue, buf) < 0) {
+
+    if (define_dhcp_interface_name(dconf, el->vlanid, ifname) < 0) {
+      log_error("define_dhcp_interface_name fail");
+      free_string_queue(squeue);
+      return NULL;
+    }
+
+    if (push_string_queue(squeue, ifname) < 0) {
       log_error("push_string_queue fail");
       free_string_queue(squeue);
       return NULL;
@@ -91,6 +125,7 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array) {
   struct string_queue *squeue;
   config_dhcpinfo_t *el = NULL;
   struct uctx *context = uwrt_init_context(NULL);
+  char ifname[IFNAMSIZ];
 
   if (context == NULL) {
     log_error("uwrt_init_context fail");
@@ -116,9 +151,15 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array) {
   while ((el = (config_dhcpinfo_t *)utarray_next(dconf->config_dhcpinfo_array,
                                                  el)) != NULL) {
 
-    if (uwrt_add_dhcp_pool(context, dconf->bridge_prefix, el->vlanid,
-                           el->ip_addr_low, el->ip_addr_upp, el->subnet_mask,
-                           el->lease_time) < 0) {
+    if (define_dhcp_interface_name(dconf, el->vlanid, ifname) < 0) {
+      log_error("define_dhcp_interface_name fail");
+      uwrt_free_context(context);
+      free_string_queue(squeue);
+      return NULL;
+    }
+
+    if (uwrt_add_dhcp_pool(context, ifname, el->ip_addr_low, el->ip_addr_upp,
+                           el->subnet_mask, el->lease_time) < 0) {
       log_error("uwrt_add_dhcp_pool fail");
       uwrt_free_context(context);
       free_string_queue(squeue);
@@ -141,6 +182,7 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array) {
 int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array) {
   char **p = NULL;
   config_dhcpinfo_t *el = NULL;
+  char ifname[IFNAMSIZ];
 
   // Delete the config file if present
   int stat = unlink(dconf->dhcp_conf_path);
@@ -168,14 +210,14 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array) {
   fprintf(fp, "dhcp-script=%s\n", dconf->dhcp_script_path);
   while ((el = (config_dhcpinfo_t *)utarray_next(dconf->config_dhcpinfo_array,
                                                  el)) != NULL) {
-    if (el->vlanid)
-      fprintf(fp, "dhcp-range=%s.%d,%s,%s,%s,%s\n", dconf->wifi_interface,
-              el->vlanid, el->ip_addr_low, el->ip_addr_upp, el->subnet_mask,
-              el->lease_time);
-    else
-      fprintf(fp, "dhcp-range=%s,%s,%s,%s,%s\n", dconf->wifi_interface,
-              el->ip_addr_low, el->ip_addr_upp, el->subnet_mask,
-              el->lease_time);
+    if (define_dhcp_interface_name(dconf, el->vlanid, ifname) < 0) {
+      log_error("define_dhcp_interface_name fail");
+      fclose(fp);
+      return -1;
+    }
+
+    fprintf(fp, "dhcp-range=%s,%s,%s,%s,%s\n", ifname, el->ip_addr_low,
+            el->ip_addr_upp, el->subnet_mask, el->lease_time);
   }
 
   fclose(fp);

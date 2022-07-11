@@ -97,7 +97,7 @@ int allocate_vlan(struct supervisor_context *context) {
     return context->default_open_vlanid;
   }
 
-  len = utarray_len(config_ifinfo_array) - 1;
+  len = utarray_len(config_ifinfo_array);
   if ((vlan_arr = (int *)os_malloc(sizeof(int) * len)) == NULL) {
     log_errno("os_malloc");
     return -1;
@@ -108,7 +108,7 @@ int allocate_vlan(struct supervisor_context *context) {
     vlan_arr[idx++] = p->vlanid;
   }
 
-  vlanid = vlan_arr[os_get_random_int_range(0, len - 1)];
+  vlanid = vlan_arr[os_get_random_int_range(0, len)];
   os_free(vlan_arr);
 
   return vlanid;
@@ -373,17 +373,17 @@ int run_supervisor(char *server_path, unsigned int port,
     return -1;
   }
 
-  allocate_vlan(context);
-
   utarray_new(context->subscribers_array, &client_address_icd);
 
   if ((context->domain_sock = create_domain_server(server_path)) == -1) {
     log_error("create_domain_server fail");
+    close_supervisor(context);
     return -1;
   }
 
   if ((context->udp_sock = create_udp_server(port)) == -1) {
     log_error("create_udp_server fail");
+    close_supervisor(context);
     return -1;
   }
 

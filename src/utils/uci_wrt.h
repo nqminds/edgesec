@@ -109,16 +109,14 @@ int uwrt_gen_dnsmasq_instance(struct uctx *context,
  *
  * @param context The uci context
  * @param ifname The interface name
- * @param vlanid The VLAN id
  * @param ip_addr_low Interface string IP address lower bound
  * @param ip_addr_upp Interface string IP address upper bound
  * @param subnet_mask Interface string IP subnet mask
  * @param lease_time Interface lease time string
  * @return int 0 on success, -1 on failure
  */
-int uwrt_add_dhcp_pool(struct uctx *context, char *ifname, int vlanid,
-                       char *ip_addr_low, char *ip_addr_upp, char *subnet_mask,
-                       char *lease_time);
+int uwrt_add_dhcp_pool(struct uctx *context, char *ifname, char *ip_addr_low,
+                       char *ip_addr_upp, char *subnet_mask, char *lease_time);
 
 /**
  * @brief Generate the hostapd configf
