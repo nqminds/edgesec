@@ -93,9 +93,7 @@ int allocate_vlan(struct supervisor_context *context) {
     return context->default_open_vlanid;
   }
 
-  // Exclude the quarantine vlanid
-  if (utarray_len(config_ifinfo_array) <= 2 &&
-      context->quarantine_vlanid >= 0) {
+  if (utarray_len(config_ifinfo_array) <= 1) {
     return context->default_open_vlanid;
   }
 
@@ -107,9 +105,7 @@ int allocate_vlan(struct supervisor_context *context) {
 
   while ((p = (config_ifinfo_t *)utarray_next(config_ifinfo_array, p)) !=
          NULL) {
-    if (p->vlanid != context->quarantine_vlanid) {
-      vlan_arr[idx++] = p->vlanid;
-    }
+    vlan_arr[idx++] = p->vlanid;
   }
 
   vlanid = vlan_arr[os_get_random_int_range(0, len - 1)];

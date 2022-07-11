@@ -11,7 +11,6 @@ apDetect = false
 generateSsid = true
 allocateVlans = true
 defaultOpenVlanId = 0
-quarantineVlanId = 10
 # Set to `true` to let edgesec process start hostapd
 execAp = true
 execRadius = true

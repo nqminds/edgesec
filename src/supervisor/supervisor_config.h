@@ -62,7 +62,6 @@ struct supervisor_context {
   bool allocate_vlans;     /**< @c allocate_vlans from @c struct app_config */
   int default_open_vlanid; /**< @c default_open_vlanid from @c struct app_config
                             */
-  int quarantine_vlanid; /**< @c quarantine_vlanid from @c struct app_config */
   UT_array *config_ifinfo_array; /**< @c config_ifinfo_array from @c struct
                                     app_config */
   UT_array *subscribers_array;   /**< The array of events subscribers */

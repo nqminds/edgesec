@@ -109,6 +109,7 @@
         "firewall_config.h": "c",
         "crypt_service.h": "c",
         "header_middleware.h": "c",
-        "*.c.in": "c"
+        "*.c.in": "c",
+        "*.in": "c"
     }
 }

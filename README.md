@@ -24,6 +24,7 @@ sudo mk-build-deps --install debian/control
 
 Compiling edgesec is done with CMake.
 
+
 If you have CMake v3.22+, you can use the following `cmake-presets` to compile edgesec:
 
 ```bash

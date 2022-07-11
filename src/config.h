@@ -51,8 +51,6 @@ struct app_config {
   bool allocate_vlans; /**< Flag if set allocates a random vlan for a device. */
   int default_open_vlanid; /**< Sets the default vlan index for open connections
                               or if MAC is not in the list of connections. */
-  int quarantine_vlanid; /**< Sets the vlan index for the quarantine MACs, -1 if
-                            there's no quarantine vlan. */
   UT_array *config_ifinfo_array; /**< Interface list mapping bridge interface
                                     name and IP address range. */
   unsigned int supervisor_control_port; /**< The port number for the supervisor
