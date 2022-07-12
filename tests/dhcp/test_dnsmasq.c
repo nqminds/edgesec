@@ -21,11 +21,15 @@
 static const UT_icd config_dhcpinfo_icd = {sizeof(config_dhcpinfo_t), NULL,
                                            NULL, NULL};
 
+static char *wifi_interface = "wifi_if";
+static char *interface_prefix = "eth_if";
+static char *dns_server = "8.8.4.4,8.8.8.8";
+
 static char *test_dhcp_conf_path = "/tmp/dnsmasq-test.conf";
 static char *test_dhcp_script_path = "/tmp/dnsmasq_exec-test.sh";
 static char *test_dhcp_leasefile_path = "/tmp/test_dnsmasq.leases";
 static char *test_supervisor_control_path = "/tmp/edgesec-control-server";
-static char *test_dhcp_conf_content =
+static char *test_dhcp_conf_wifi_if =
     "no-resolv\n"
     "server=8.8.4.4\n"
     "server=8.8.8.8\n"
@@ -35,6 +39,17 @@ static char *test_dhcp_conf_content =
     "dhcp-range=wifi_if.1,10.0.1.2,10.0.1.254,255.255.255.0,24h\n"
     "dhcp-range=wifi_if.2,10.0.2.2,10.0.2.254,255.255.255.0,24h\n"
     "dhcp-range=wifi_if.3,10.0.3.2,10.0.3.254,255.255.255.0,24h\n";
+
+static char *test_dhcp_conf_prefix_if =
+    "no-resolv\n"
+    "server=8.8.4.4\n"
+    "server=8.8.8.8\n"
+    "dhcp-leasefile=/tmp/test_dnsmasq.leases\n"
+    "dhcp-script=/tmp/dnsmasq_exec-test.sh\n"
+    "dhcp-range=eth_if0,10.0.0.2,10.0.0.254,255.255.255.0,24h\n"
+    "dhcp-range=eth_if1,10.0.1.2,10.0.1.254,255.255.255.0,24h\n"
+    "dhcp-range=eth_if2,10.0.2.2,10.0.2.254,255.255.255.0,24h\n"
+    "dhcp-range=eth_if3,10.0.3.2,10.0.3.254,255.255.255.0,24h\n";
 
 // why aren't we using amazing C++11 which has the R"(...) string literal??? 😭
 static char *test_dhcp_script_content =
@@ -59,9 +74,6 @@ static char *test_dhcp_leasefile_content =
     "1635860140 11:22:33:44:55:66 10.0.1.10 pc 11:22:33:44:55:66\n"
     "1635860148 44:2a:60:db:f3:91 10.0.1.209 iMac 01:44:2a:60:db:f3:91\n"
     "1635860076 1c:bf:ce:17:1f:1c 10.0.2.178 * 01:1c:bf:ce:17:1f:1c\n";
-
-static char *interface = "wifi_if";
-static char *dns_server = "8.8.4.4,8.8.8.8";
 
 bool __wrap_signal_process(char *proc_name, int sig) {
   (void)sig;
@@ -160,9 +172,9 @@ static void test_generate_dnsmasq_conf(void **state) {
   strcpy(dconf.dhcp_conf_path, test_dhcp_conf_path);
   strcpy(dconf.dhcp_script_path, test_dhcp_script_path);
   strcpy(dconf.dhcp_leasefile_path, test_dhcp_leasefile_path);
-  const size_t WIFI_INTERFACE_STR_LEN =
-      sizeof(dconf.wifi_interface) / sizeof(dconf.wifi_interface[0]);
-  strncpy(dconf.wifi_interface, interface, WIFI_INTERFACE_STR_LEN);
+  const size_t WIFI_INTERFACE_STR_LEN = STRLEN(dconf.wifi_interface);
+
+  strncpy(dconf.wifi_interface, wifi_interface, WIFI_INTERFACE_STR_LEN);
   assert_null(dconf.wifi_interface[WIFI_INTERFACE_STR_LEN - 1]);
 
   assert_true(
@@ -183,25 +195,29 @@ static void test_generate_dnsmasq_conf(void **state) {
   error_t ret = generate_dnsmasq_conf(&dconf, server_arr);
   assert_true(ret == 0);
 
-  FILE *fp = fopen(test_dhcp_conf_path, "r");
-  assert_non_null(fp);
+  char *fdata = NULL;
+  assert_int_equal(read_file_string(test_dhcp_conf_path, &fdata), 0);
 
-  long lSize;
-  char *buffer;
-
-  fseek(fp, 0, SEEK_END);
-  lSize = ftell(fp);
-  rewind(fp);
-  buffer = (char *)malloc(sizeof(char) * lSize);
-  assert_non_null(buffer);
-
-  size_t result = fread(buffer, 1, lSize, fp);
-  assert_int_equal(result, strlen(test_dhcp_conf_content));
-  int cmp = memcmp(buffer, test_dhcp_conf_content, result);
+  int cmp = strcmp(fdata, test_dhcp_conf_wifi_if);
   assert_int_equal(cmp, 0);
 
-  fclose(fp);
-  free(buffer);
+  os_free(fdata);
+
+  const size_t INTERFACE_PREFIX_STR_LEN = STRLEN(dconf.interface_prefix);
+
+  os_memset(dconf.wifi_interface, 0, WIFI_INTERFACE_STR_LEN);
+  strncpy(dconf.interface_prefix, interface_prefix, INTERFACE_PREFIX_STR_LEN);
+
+  ret = generate_dnsmasq_conf(&dconf, server_arr);
+  assert_true(ret == 0);
+
+  assert_int_equal(read_file_string(test_dhcp_conf_path, &fdata), 0);
+
+  printf("%s", fdata);
+  cmp = strcmp(fdata, test_dhcp_conf_prefix_if);
+  assert_int_equal(cmp, 0);
+
+  os_free(fdata);
 
   utarray_free(server_arr);
   utarray_free(dconf.config_dhcpinfo_array);
