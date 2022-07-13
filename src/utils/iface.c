@@ -147,7 +147,6 @@ UT_array *iface_get(char *ifname) {
       } else {
         if (strcmp(ifname, nif.ifname) == 0) {
           utarray_push_back(interfaces, &nif);
-          break;
         }
       }
     }
@@ -155,6 +154,41 @@ UT_array *iface_get(char *ifname) {
 
   freeifaddrs(ifaddr);
   return interfaces;
+}
+
+UT_array *iface_get_ip4(char *ifname) {
+  UT_array *ip4s = NULL;
+
+  if (ifname == NULL) {
+    log_error("ifname param is NULL");
+    return NULL;
+  }
+
+  utarray_new(ip4s, &ut_str_icd);
+
+#ifndef WITH_UCI_SERVICE
+  UT_array *if_list = iface_get(ifname);
+
+  if (if_list == NULL) {
+    log_error("iface_get fail");
+    utarray_free(ip4s);
+    return NULL;
+  }
+
+  netif_info_t *el = NULL;
+  while ((el = (netif_info_t *)utarray_next(if_list, el)) != NULL) {
+    if (el->ifa_family == AF_INET) {
+      char *ip4 = el->ip_addr;
+      utarray_push_back(ip4s, &ip4);
+    }
+  }
+  utarray_free(if_list);
+#else
+  log_trace("iface_get_ip4 not implemented");
+  return NULL;
+#endif
+
+  return ip4s;
 }
 
 char *iface_get_vlan(char *buf) {
@@ -208,6 +242,35 @@ int iface_create(struct iface_context *ctx, char *brname, char *ifname,
   (void)subnet_mask;
 
   log_trace("iface_create not implemented");
+  return -1;
+#endif
+}
+
+int iface_set_ip4(struct iface_context *ctx, char *brname, char *ifname,
+                  char *ip_addr, char *brd_addr, char *subnet_mask) {
+
+#ifdef WITH_NETLINK_SERVICE
+  (void)brname;
+  // return nl_create_interface(ctx->context, ifname, type, ip_addr, brd_addr,
+  //                            subnet_mask);
+#elif WITH_UCI_SERVICE
+  (void)ifname;
+  // return uwrt_create_interface(ctx->context, brname, type, ip_addr, brd_addr,
+  //                              subnet_mask);
+#elif WITH_IP_GENERIC_SERVICE
+  (void)brname;
+  // return ipgen_create_interface(ctx->context, ifname, type, ip_addr,
+  // brd_addr,
+  //                               subnet_mask);
+#else
+  (void)ctx;
+  (void)brname;
+  (void)ifname;
+  (void)ip_addr;
+  (void)brd_addr;
+  (void)subnet_mask;
+
+  log_trace("iface_set_ip4 not implemented");
   return -1;
 #endif
 }

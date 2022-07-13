@@ -185,6 +185,17 @@ int create_subnet_interfaces(struct iface_context *context,
   return 0;
 }
 
+int set_subnet_ips(struct iface_context *context, UT_array *ifinfo_array) {
+  UT_array *arr = iface_get_ip4("eth0");
+  char **p = NULL;
+  while ((p = (char **)utarray_next(arr, p)) != NULL) {
+    log_trace("%s", *p);
+  }
+
+  utarray_free(arr);
+  return 0;
+}
+
 int construct_ap_ctrlif(char *ctrl_interface, char *interface,
                         char *ap_ctrl_if_path) {
   char *ctrl_if_path = construct_path(ctrl_interface, interface);
