@@ -84,12 +84,15 @@ bool nl_new_interface(char *if_name, char *type);
 /**
  * @brief Set the interface IP
  *
+ * @param context The nl context
+ * @param ifname The interface name string
  * @param ip_addr The IP address string
  * @param brd_addr The broadcast IP address string
- * @param if_name The interface name string
+ * @param subnet_mask The subnet mask
  * @return true on success, false otherwise
  */
-bool nl_set_interface_ip(char *ip_addr, char *brd_addr, char *if_name);
+bool nl_set_interface_ip(struct nlctx *context, char *ifname, char *ip_addr,
+                         char *brd_addr, char *subnet_mask);
 
 /**
  * @brief Set the interface state

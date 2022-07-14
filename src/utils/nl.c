@@ -748,11 +748,19 @@ err:
   return false;
 }
 
-bool nl_set_interface_ip(char *ip_addr, char *brd_addr, char *if_name) {
-  char *argv[5] = {ip_addr, "brd", brd_addr, "dev", if_name};
+bool nl_set_interface_ip(struct nlctx *context, char *ifname, char *ip_addr,
+                         char *brd_addr, char *subnet_mask) {
+  (void)context;
 
-  log_debug("set_interface_ip for if_name=%s ip_addr=%s brd_addr=%s", if_name,
-            ip_addr, brd_addr);
+  char longip[OS_INET_ADDRSTRLEN];
+
+  snprintf(longip, OS_INET_ADDRSTRLEN, "%s/%d", ip_addr,
+           (int)get_short_subnet(subnet_mask));
+
+  char *argv[5] = {longip, "brd", brd_addr, "dev", ifname};
+
+  log_debug("set_interface_ip for ifname=%s ip_addr=%s brd_addr=%s", ifname,
+            longip, brd_addr);
 
   if (rtnl_open(&rth, 0) < 0) {
     log_error("rtnl_open error");
@@ -832,8 +840,6 @@ int nl_create_interface(struct nlctx *context, char *ifname, char *type,
                         char *ip_addr, char *brd_addr, char *subnet_mask) {
   (void)context;
 
-  char longip[OS_INET_ADDRSTRLEN];
-
   if (ifname == NULL) {
     log_error("ifname param is NULL");
     return -1;
@@ -859,15 +865,12 @@ int nl_create_interface(struct nlctx *context, char *ifname, char *type,
     return -1;
   }
 
-  snprintf(longip, OS_INET_ADDRSTRLEN, "%s/%d", ip_addr,
-           (int)get_short_subnet(subnet_mask));
-
   if (!nl_new_interface(ifname, type)) {
     log_error("nl_new_interface fail");
     return -1;
   }
 
-  if (!nl_set_interface_ip(longip, brd_addr, ifname)) {
+  if (!nl_set_interface_ip(context, ifname, ip_addr, brd_addr, subnet_mask)) {
     log_error("nl_set_interface_ip fail");
     return -1;
   }

@@ -53,6 +53,19 @@ int ipgen_create_interface(struct ipgenctx *context, char *ifname, char *type,
                            char *ip_addr, char *brd_addr, char *subnet_mask);
 
 /**
+ * @brief Set the IP address for an interface
+ *
+ * @param context The ipgen context interface
+ * @param ifname The interface name
+ * @param ip_addr The interface IP4 address
+ * @param brd_addr The interface IP4 broadcast address
+ * @param subnet_mask The interface IP4 subnet mask
+ * @return int 0 on success, -1 on failure
+ */
+int ipgen_set_interface_ip(struct ipgenctx *context, char *path, char *ifname,
+                           char *ip_addr, char *brd_addr);
+
+/**
  * @brief Resets the interface
  *
  * @param context The ipgen context interface

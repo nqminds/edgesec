@@ -59,11 +59,15 @@ int ipgen_new_interface(char *path, char *ifname, char *type) {
   return run_ip(path, argv);
 }
 
-int ipgen_set_interface_ip(char *path, char *ifname, char *ip_addr,
-                           char *brd_addr) {
-  char *argv[8] = {"addr",   "add", ip_addr, "brd",
-                   brd_addr, "dev", ifname,  NULL};
-  return run_ip(path, argv);
+int ipgen_set_interface_ip(struct ipgenctx *context, char *ifname,
+                           char *ip_addr, char *brd_addr, char *subnet_mask) {
+  char longip[OS_INET_ADDRSTRLEN];
+
+  snprintf(longip, OS_INET_ADDRSTRLEN, "%s/%d", ip_addr,
+           (int)get_short_subnet(subnet_mask));
+
+  char *argv[8] = {"addr", "add", longip, "brd", brd_addr, "dev", ifname, NULL};
+  return run_ip(context->ipcmd_path, argv);
 }
 
 int ipgen_set_interface_state(char *path, char *ifname, bool state) {
@@ -74,10 +78,6 @@ int ipgen_set_interface_state(char *path, char *ifname, bool state) {
 
 int ipgen_create_interface(struct ipgenctx *context, char *ifname, char *type,
                            char *ip_addr, char *brd_addr, char *subnet_mask) {
-  (void)context;
-
-  char longip[OS_INET_ADDRSTRLEN];
-
   if (ifname == NULL) {
     log_trace("ifname param is NULL");
     return -1;
@@ -103,15 +103,12 @@ int ipgen_create_interface(struct ipgenctx *context, char *ifname, char *type,
     return -1;
   }
 
-  snprintf(longip, OS_INET_ADDRSTRLEN, "%s/%d", ip_addr,
-           (int)get_short_subnet(subnet_mask));
-
   if (ipgen_new_interface(context->ipcmd_path, ifname, type) < 0) {
     log_trace("ipgen_new_interface fail");
     return -1;
   }
 
-  if (ipgen_set_interface_ip(context->ipcmd_path, ifname, longip, brd_addr) <
+  if (ipgen_set_interface_ip(context, ifname, ip_addr, brd_addr, subnet_mask) <
       0) {
     log_trace("ipgen_set_interface_ip fail");
     return -1;

@@ -251,17 +251,15 @@ int iface_set_ip4(struct iface_context *ctx, char *brname, char *ifname,
 
 #ifdef WITH_NETLINK_SERVICE
   (void)brname;
-  // return nl_create_interface(ctx->context, ifname, type, ip_addr, brd_addr,
-  //                            subnet_mask);
+  return nl_set_interface_ip(ctx->context, ifname, ip_addr, brd_addr,
+                             subnet_mask);
 #elif WITH_UCI_SERVICE
   (void)ifname;
-  // return uwrt_create_interface(ctx->context, brname, type, ip_addr, brd_addr,
-  //                              subnet_mask);
+  log_trace("iface_set_ip4 not implemented");
 #elif WITH_IP_GENERIC_SERVICE
   (void)brname;
-  // return ipgen_create_interface(ctx->context, ifname, type, ip_addr,
-  // brd_addr,
-  //                               subnet_mask);
+  return ipgen_set_interface_ip(ctx->context, ifname, ip_addr, brd_addr,
+                                subnet_mask);
 #else
   (void)ctx;
   (void)brname;
