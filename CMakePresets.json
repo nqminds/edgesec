@@ -69,13 +69,37 @@
         "USE_UCI_SERVICE": true,
         "USE_GENERIC_IP_SERVICE": false,
         "USE_RADIUS_SERVICE": true,
+        "USE_MDNS_SERVICE": true,
         "BUILD_HOSTAPD": false,
         "USE_CRYPTO_SERVICE": false,
         "BUILD_OPENSSL_LIB": false
       }
     },
     {
-      "name": "openwrt/mvebu/cortexa9",
+      "name": "openwrt/header",
+      "inherits": "openwrt/default",
+      "displayName": "OpenWRT ARM32 Header",
+      "description": "OpenWRT ARM32 (with header middlewares)",
+      "cacheVariables": {
+        "USE_CLEANER_MIDDLEWARE": false,
+        "USE_HEADER_MIDDLEWARE": true,
+        "USE_PCAP_MIDDLEWARE": false
+      }
+    },
+    {
+      "name": "openwrt/mvebu/header",
+      "inherits": "openwrt/header",
+      "displayName": "OpenWRT mvebu/cortexa9/header",
+      "description": "OpenWRT mvebu/cortexa9/header (uses uci)",
+      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/openwrt-mvebu-cortexa9.cmake",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "openwrt/mvebu/default",
       "inherits": "openwrt/default",
       "displayName": "OpenWRT mvebu/cortexa9",
       "description": "OpenWRT mvebu/cortexa9 (uses uci)",
@@ -128,8 +152,16 @@
       "configurePreset": "openwrt/default"
     },
     {
-      "name": "openwrt/mvebu/cortexa9",
-      "configurePreset": "openwrt/mvebu/cortexa9"
+      "name": "openwrt/header",
+      "configurePreset": "openwrt/header"
+    },
+    {
+      "name": "openwrt/mvebu/default",
+      "configurePreset": "openwrt/mvebu/default"
+    },
+    {
+      "name": "openwrt/mvebu/header",
+      "configurePreset": "openwrt/mvebu/header"
     },
     {
       "name": "openwrt/ath79/generic",
