@@ -605,146 +605,58 @@ int init_sqlite_header_db(sqlite3 *db) {
 
   log_debug("sqlite autocommit mode=%d", sqlite3_get_autocommit(db));
 
-  rc = check_table_exists(db, "eth");
-
-  if (rc == 0) {
-    log_debug("eth table doesn't exist creating...");
-    if (execute_sqlite_query(db, ETH_CREATE_TABLE) < 0) {
-      log_error("execute_sqlite_query fail");
-      return -1;
-    }
-  } else if (rc < 0) {
-    log_error("check_table_exists fail");
+  if (execute_sqlite_query(db, ETH_CREATE_TABLE) < 0) {
+    log_error("execute_sqlite_query fail");
     return -1;
   }
 
-  rc = check_table_exists(db, "arp");
-
-  if (rc == 0) {
-    log_debug("arp table doesn't exist creating...");
-    if (execute_sqlite_query(db, ARP_CREATE_TABLE) < 0) {
-      log_error("execute_sqlite_query fail");
-      return -1;
-    }
-  } else if (rc < 0) {
-    log_error("check_table_exists fail");
+  if (execute_sqlite_query(db, ARP_CREATE_TABLE) < 0) {
+    log_error("execute_sqlite_query fail");
     return -1;
   }
 
-  rc = check_table_exists(db, "ip4");
-
-  if (rc == 0) {
-    log_debug("ip4 table doesn't exist creating...");
-    if (execute_sqlite_query(db, IP4_CREATE_TABLE) < 0) {
-      log_error("execute_sqlite_query fail");
-      return -1;
-    }
-  } else if (rc < 0) {
-    log_error("check_table_exists fail");
+  if (execute_sqlite_query(db, IP4_CREATE_TABLE) < 0) {
+    log_error("execute_sqlite_query fail");
     return -1;
   }
 
-  rc = check_table_exists(db, "ip6");
-
-  if (rc == 0) {
-    log_debug("ip6 table doesn't exist creating...");
-    if (execute_sqlite_query(db, IP6_CREATE_TABLE) < 0) {
-      log_error("execute_sqlite_query fail");
-      return -1;
-    }
-  } else if (rc < 0) {
-    log_error("check_table_exists fail");
+  if (execute_sqlite_query(db, IP6_CREATE_TABLE) < 0) {
+    log_error("execute_sqlite_query fail");
     return -1;
   }
 
-  rc = check_table_exists(db, "tcp");
-
-  if (rc == 0) {
-    log_debug("tcp table doesn't exist creating...");
-    if (execute_sqlite_query(db, TCP_CREATE_TABLE) < 0) {
-      log_error("execute_sqlite_query fail");
-      return -1;
-    }
-  } else if (rc < 0) {
-    log_error("check_table_exists fail");
+  if (execute_sqlite_query(db, TCP_CREATE_TABLE) < 0) {
+    log_error("execute_sqlite_query fail");
     return -1;
   }
 
-  rc = check_table_exists(db, "udp");
-
-  if (rc == 0) {
-    log_debug("udp table doesn't exist creating...");
-    if (execute_sqlite_query(db, UDP_CREATE_TABLE) < 0) {
-      log_error("execute_sqlite_query fail");
-      return -1;
-    }
-  } else if (rc < 0) {
-    log_error("check_table_exists fail");
+  if (execute_sqlite_query(db, UDP_CREATE_TABLE) < 0) {
+    log_error("execute_sqlite_query fail");
     return -1;
   }
 
-  rc = check_table_exists(db, "icmp4");
-
-  if (rc == 0) {
-    log_debug("icmp4 table doesn't exist creating...");
-    if (execute_sqlite_query(db, ICMP4_CREATE_TABLE) < 0) {
-      log_error("execute_sqlite_query fail");
-      return -1;
-    }
-  } else if (rc < 0) {
-    log_error("check_table_exists fail");
+  if (execute_sqlite_query(db, ICMP4_CREATE_TABLE) < 0) {
+    log_error("execute_sqlite_query fail");
     return -1;
   }
 
-  rc = check_table_exists(db, "icmp6");
-
-  if (rc == 0) {
-    log_debug("icmp6 table doesn't exist creating...");
-    if (execute_sqlite_query(db, ICMP6_CREATE_TABLE) < 0) {
-      log_error("execute_sqlite_query fail");
-      return -1;
-    }
-  } else if (rc < 0) {
-    log_error("check_table_exists fail");
+  if (execute_sqlite_query(db, ICMP6_CREATE_TABLE) < 0) {
+    log_error("execute_sqlite_query fail");
     return -1;
   }
 
-  rc = check_table_exists(db, "dns");
-
-  if (rc == 0) {
-    log_debug("dns table doesn't exist creating...");
-    if (execute_sqlite_query(db, DNS_CREATE_TABLE) < 0) {
-      log_error("execute_sqlite_query fail");
-      return -1;
-    }
-  } else if (rc < 0) {
-    log_error("check_table_exists fail");
+  if (execute_sqlite_query(db, DNS_CREATE_TABLE) < 0) {
+    log_error("execute_sqlite_query fail");
     return -1;
   }
 
-  rc = check_table_exists(db, "mdns");
-
-  if (rc == 0) {
-    log_debug("mdns table doesn't exist creating...");
-    if (execute_sqlite_query(db, MDNS_CREATE_TABLE) < 0) {
-      log_error("execute_sqlite_query fail");
-      return -1;
-    }
-  } else if (rc < 0) {
-    log_error("check_table_exists fail");
+  if (execute_sqlite_query(db, MDNS_CREATE_TABLE) < 0) {
+    log_error("execute_sqlite_query fail");
     return -1;
   }
 
-  rc = check_table_exists(db, "dhcp");
-
-  if (rc == 0) {
-    log_debug("dhcp table doesn't exist creating...");
-    if (execute_sqlite_query(db, DHCP_CREATE_TABLE) < 0) {
-      log_error("execute_sqlite_query fail");
-      return -1;
-    }
-  } else if (rc < 0) {
-    log_error("check_table_exists fail");
+  if (execute_sqlite_query(db, DHCP_CREATE_TABLE) < 0) {
+    log_error("execute_sqlite_query fail");
     return -1;
   }
 
