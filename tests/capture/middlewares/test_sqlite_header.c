@@ -17,6 +17,7 @@
 #include "utils/sqliteu.h"
 #include "capture/middlewares/header_middleware/header_middleware.h"
 #include "capture/middlewares/header_middleware/sqlite_header.h"
+#include "capture/capture_service.h"
 
 char *test_header_db = "/tmp/test_header.sqlite";
 
@@ -26,6 +27,7 @@ void *test_sqlite_header_thread(void *arg) {
   sqlite3 *db;
 
   assert_int_equal(sqlite3_open(test_header_db, &db), SQLITE_OK);
+  assert_int_equal(sqlite3_busy_timeout(db, DB_BUSY_TIMEOUT), 0);
   assert_int_equal(init_sqlite_header_db(db), 0);
   sqlite3_close(db);
   return NULL;
