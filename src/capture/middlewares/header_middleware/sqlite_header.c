@@ -595,9 +595,6 @@ int save_packet_statement(sqlite3 *db, struct tuple_packet *tp) {
 }
 
 int init_sqlite_header_db(sqlite3 *db) {
-
-  int rc;
-
   if (db == NULL) {
     log_error("db param is NULL");
     return -1;

@@ -19,14 +19,14 @@
 #include "capture/middlewares/header_middleware/sqlite_header.h"
 #include "capture/capture_service.h"
 
-char *test_header_db = "/tmp/test_header.sqlite";
+char *test_capture_db = "/tmp/test_capture.sqlite";
 
 void *test_sqlite_header_thread(void *arg) {
   (void)arg;
 
   sqlite3 *db;
 
-  assert_int_equal(sqlite3_open(test_header_db, &db), SQLITE_OK);
+  assert_int_equal(sqlite3_open(test_capture_db, &db), SQLITE_OK);
   assert_int_equal(sqlite3_busy_timeout(db, DB_BUSY_TIMEOUT), 0);
   assert_int_equal(init_sqlite_header_db(db), 0);
   sqlite3_close(db);
@@ -38,7 +38,7 @@ static void test_init_sqlite_header_db(void **state) {
 
   pthread_t id1, id2, id3;
 
-  remove(test_header_db);
+  remove(test_capture_db);
 
   assert_int_equal(pthread_create(&id1, NULL, test_sqlite_header_thread, NULL),
                    0);
