@@ -5,6 +5,9 @@ set_target_properties(test_header_middleware
   LINK_FLAGS  "-Wl,--wrap=sqlite3_open"
 )
 
+add_executable(test_sqlite_header test_sqlite_header.c)
+target_link_libraries(test_sqlite_header PUBLIC SQLite::SQLite3 PRIVATE sqlite_header os log cmocka::cmocka)
+
 add_executable(test_packet_queue test_packet_queue.c)
 target_link_libraries(test_packet_queue PUBLIC PCAP::pcap SQLite::SQLite3 PRIVATE packet_queue os log cmocka::cmocka)
 
@@ -19,7 +22,12 @@ set_tests_properties(test_header_middleware
   PROPERTIES
   WILL_FAIL FALSE)
 
-  add_test(NAME test_packet_queue COMMAND test_packet_queue)
+add_test(NAME test_sqlite_header COMMAND test_sqlite_header)
+set_tests_properties(test_sqlite_header
+  PROPERTIES
+  WILL_FAIL FALSE)
+
+add_test(NAME test_packet_queue COMMAND test_packet_queue)
 set_tests_properties(test_packet_queue
   PROPERTIES
   WILL_FAIL FALSE)

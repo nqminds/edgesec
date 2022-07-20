@@ -28,19 +28,37 @@ int execute_sqlite_query(sqlite3 *db, char *statement) {
   return 0;
 }
 
-int check_table_exists(sqlite3 *db, char *table_name) {
-  sqlite3_stmt *res;
+int prepare_find_table(sqlite3 *db, char *table_name, sqlite3_stmt *res) {
   char *sql = "SELECT name FROM sqlite_master WHERE type='table' AND name=?;";
   int rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
+
+  log_trace("%s", sql);
 
   if (rc == SQLITE_OK)
     sqlite3_bind_text(res, 1, table_name, -1, NULL);
   else {
     log_error("Failed to execute statement: %s", sqlite3_errmsg(db));
-    return -1;
+    // Return the error code of the prepare statement
+    return -1 * rc;
   }
 
-  log_trace("%s", sql);
+  return SQLITE_OK;
+}
+
+int check_table_exists(sqlite3 *db, char *table_name) {
+  sqlite3_stmt *res = NULL;
+  int rc;
+
+  while ((rc = prepare_find_table(db, table_name, res)) != SQLITE_OK) {
+    if (rc == -1 * SQLITE_LOCKED) {
+      log_trace("Again");
+      continue;
+    } else {
+      log_error("prepare_find_table fail");
+      return -1;
+    }
+  }
+
   rc = sqlite3_step(res);
 
   if (rc == SQLITE_ROW) {
