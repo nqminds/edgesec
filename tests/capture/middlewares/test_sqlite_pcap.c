@@ -18,7 +18,7 @@
 #include "capture/middlewares/pcap_middleware/sqlite_pcap.h"
 #include "capture/capture_service.h"
 
-char *test_capture_db = "/tmp/test_capture.sqlite";
+char *test_capture_db = "/tmp/test_pcap.sqlite";
 
 void *test_sqlite_pcap_thread(void *arg) {
   (void)arg;
