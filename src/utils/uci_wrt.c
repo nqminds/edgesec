@@ -631,11 +631,11 @@ int uwrt_gen_dnsmasq_instance(struct uctx *context,
     return -1;
   }
 
-  sprintf(property, "dhcp.edgesec.noresolv=1");
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  // sprintf(property, "dhcp.edgesec.noresolv=1");
+  // if (uwrt_set_property(context->uctx, property) < 0) {
+  //   log_trace("uwrt_set_property fail for %s", property);
+  //   return -1;
+  // }
 
   sprintf(property, "dhcp.edgesec.nonwildcard=1");
   if (uwrt_set_property(context->uctx, property) < 0) {
@@ -653,11 +653,11 @@ int uwrt_gen_dnsmasq_instance(struct uctx *context,
     }
   }
 
-  sprintf(property, "dhcp.edgesec.notinterface=loopback");
-  if (uwrt_add_list(context->uctx, property) < 0) {
-    log_trace("uwrt_add_list fail for %s", property);
-    return -1;
-  }
+  // sprintf(property, "dhcp.edgesec.notinterface=loopback");
+  // if (uwrt_add_list(context->uctx, property) < 0) {
+  //   log_trace("uwrt_add_list fail for %s", property);
+  //   return -1;
+  // }
 
   while ((p = (char **)utarray_next(server_array, p)) != NULL) {
     sprintf(property, "dhcp.edgesec.server=%s", *p);
