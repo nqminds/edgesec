@@ -156,7 +156,9 @@ UT_array *iface_get(char *ifname) {
   return interfaces;
 }
 
-UT_array *iface_get_ip4(char *ifname) {
+UT_array *iface_get_ip4(struct iface_context *ctx, char *ifname) {
+  (void)ctx;
+
   UT_array *ip4s = NULL;
 
   if (ifname == NULL) {

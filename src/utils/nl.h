@@ -77,9 +77,9 @@ UT_array *nl_get_interfaces(int if_id);
  *
  * @param if_name The interface string name
  * @param type The interface string type (ex. "bridge")
- * @return true on success, false otherwise
+ * @return 0 on success, -1 otherwise
  */
-bool nl_new_interface(char *if_name, char *type);
+int nl_new_interface(char *if_name, char *type);
 
 /**
  * @brief Set the interface IP
@@ -89,19 +89,19 @@ bool nl_new_interface(char *if_name, char *type);
  * @param ip_addr The IP address string
  * @param brd_addr The broadcast IP address string
  * @param subnet_mask The subnet mask
- * @return true on success, false otherwise
+ * @return 0 on success, -1 otherwise
  */
-bool nl_set_interface_ip(struct nlctx *context, char *ifname, char *ip_addr,
-                         char *brd_addr, char *subnet_mask);
+int nl_set_interface_ip(struct nlctx *context, char *ifname, char *ip_addr,
+                        char *brd_addr, char *subnet_mask);
 
 /**
  * @brief Set the interface state
  *
  * @param if_name The interface name string
  * @param state The interface state value (true - "up", false - "down")
- * @return true on success, false otherwise
+ * @return 0 on success, -1 otherwise
  */
-bool nl_set_interface_state(char *if_name, bool state);
+int nl_set_interface_state(char *if_name, bool state);
 
 /**
  * @brief Creates and interface and assigns an IP
@@ -129,9 +129,9 @@ int nl_reset_interface(char *ifname);
  * @brief Check if wireless physical interface has VLAN capability
  *
  * @param wiphy Wireless physical interface ID
- * @return true if capability present, false otherwise
+ * @return 1 if capability present, 0 otherwise, -1 on error
  */
-bool iwace_isvlan(uint32_t wiphy);
+int iwace_isvlan(uint32_t wiphy);
 
 /**
  * @brief Get the array of all wireless physical interfaces

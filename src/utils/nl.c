@@ -673,19 +673,19 @@ UT_array *nl_get_interfaces(int if_id) {
 
   if (rtnl_open(&rth, 0) < 0) {
     log_error("rtnl_open error");
-    goto err;
+    goto nl_get_interfaces_err;
   }
 
   rtnl_set_strict_dump(&rth);
 
   if (ip_link_list(iplink_filter_req, &linfo) != 0) {
     log_error("ip_link_list error");
-    goto err;
+    goto nl_get_interfaces_err;
   }
 
   if (ip_addr_list(ainfo, if_id) != 0) {
     log_error("ip_addr_list error");
-    goto err;
+    goto nl_get_interfaces_err;
   }
 
   ipaddr_filter(&linfo, ainfo);
@@ -708,7 +708,7 @@ UT_array *nl_get_interfaces(int if_id) {
   rtnl_close(&rth);
   return arr;
 
-err:
+nl_get_interfaces_err:
   free_nlmsg_chain(ainfo);
   free_nlmsg_chain(&linfo);
   rtnl_close(&rth);
@@ -716,7 +716,7 @@ err:
   return NULL;
 }
 
-bool nl_new_interface(char *if_name, char *type) {
+int nl_new_interface(char *if_name, char *type) {
   int ret;
   char *argv[4] = {"name", if_name, "type", type};
 
@@ -724,7 +724,7 @@ bool nl_new_interface(char *if_name, char *type) {
 
   if (rtnl_open(&rth, 0) < 0) {
     log_error("rtnl_open error");
-    goto err;
+    goto nl_new_interface_err;
   }
 
   rtnl_set_strict_dump(&rth);
@@ -733,23 +733,23 @@ bool nl_new_interface(char *if_name, char *type) {
     ret = iplink_modify(RTM_NEWLINK, NLM_F_CREATE | NLM_F_EXCL, 4, argv);
     if (ret != 0) {
       log_error("iplink_modify error %d", ret);
-      goto err;
+      goto nl_new_interface_err;
     }
   } else {
     log_error("iplink_have_newlink error");
-    goto err;
+    goto nl_new_interface_err;
   }
 
   rtnl_close(&rth);
-  return true;
+  return 0;
 
-err:
+nl_new_interface_err:
   rtnl_close(&rth);
-  return false;
+  return -1;
 }
 
-bool nl_set_interface_ip(struct nlctx *context, char *ifname, char *ip_addr,
-                         char *brd_addr, char *subnet_mask) {
+int nl_set_interface_ip(struct nlctx *context, char *ifname, char *ip_addr,
+                        char *brd_addr, char *subnet_mask) {
   (void)context;
 
   char longip[OS_INET_ADDRSTRLEN];
@@ -764,7 +764,7 @@ bool nl_set_interface_ip(struct nlctx *context, char *ifname, char *ip_addr,
 
   if (rtnl_open(&rth, 0) < 0) {
     log_error("rtnl_open error");
-    goto err;
+    goto nl_set_interface_ip_err;
   }
 
   rtnl_set_strict_dump(&rth);
@@ -773,18 +773,18 @@ bool nl_set_interface_ip(struct nlctx *context, char *ifname, char *ip_addr,
   ret = ipaddr_modify(RTM_NEWADDR, NLM_F_CREATE | NLM_F_EXCL, 5, argv);
   if (ret != 0) {
     log_error("ipaddr_modify error %d", ret);
-    goto err;
+    goto nl_set_interface_ip_err;
   }
 
   rtnl_close(&rth);
-  return true;
+  return 0;
 
-err:
+nl_set_interface_ip_err:
   rtnl_close(&rth);
-  return false;
+  return -1;
 }
 
-bool nl_set_interface_state(char *if_name, bool state) {
+int nl_set_interface_state(char *if_name, bool state) {
   char *if_state = (state) ? "up" : "down";
   char *argv[3] = {"dev", if_name, if_state};
 
@@ -793,7 +793,7 @@ bool nl_set_interface_state(char *if_name, bool state) {
 
   if (rtnl_open(&rth, 0) < 0) {
     log_error("rtnl_open error");
-    goto err;
+    goto nl_set_interface_state_err;
   }
 
   rtnl_set_strict_dump(&rth);
@@ -804,19 +804,19 @@ bool nl_set_interface_state(char *if_name, bool state) {
     ret = iplink_modify(RTM_NEWLINK, 0, 3, argv);
     if (ret != 0) {
       log_error("iplink_modify error %d", ret);
-      goto err;
+      goto nl_set_interface_state_err;
     }
   } else {
     log_error("iplink_have_newlink error");
-    goto err;
+    goto nl_set_interface_state_err;
   }
 
   rtnl_close(&rth);
-  return true;
+  return 0;
 
-err:
+nl_set_interface_state_err:
   rtnl_close(&rth);
-  return false;
+  return -1;
 }
 
 struct nlctx *nl_init_context(void) {
@@ -865,17 +865,18 @@ int nl_create_interface(struct nlctx *context, char *ifname, char *type,
     return -1;
   }
 
-  if (!nl_new_interface(ifname, type)) {
+  if (nl_new_interface(ifname, type) < 0) {
     log_error("nl_new_interface fail");
     return -1;
   }
 
-  if (!nl_set_interface_ip(context, ifname, ip_addr, brd_addr, subnet_mask)) {
+  if (nl_set_interface_ip(context, ifname, ip_addr, brd_addr, subnet_mask) <
+      0) {
     log_error("nl_set_interface_ip fail");
     return -1;
   }
 
-  if (!nl_set_interface_state(ifname, true)) {
+  if (nl_set_interface_state(ifname, true) < 0) {
     log_error("nl_set_interface_state fail");
     return -1;
   }
@@ -884,12 +885,12 @@ int nl_create_interface(struct nlctx *context, char *ifname, char *type,
 }
 
 int nl_reset_interface(char *ifname) {
-  if (!nl_set_interface_state(ifname, false)) {
+  if (nl_set_interface_state(ifname, false) < 0) {
     log_error("nl_set_interface_state fail");
     return -1;
   }
 
-  if (!nl_set_interface_state(ifname, true)) {
+  if (nl_set_interface_state(ifname, true) < 0) {
     log_error("nl_set_interface_state fail");
     return -1;
   }
@@ -1106,24 +1107,27 @@ static int8_t nl_new(struct nl80211_state *nlstate, struct nl_cb **cb,
   return 0;
 }
 
-bool iwace_isvlan(uint32_t wiphy) {
+int iwace_isvlan(uint32_t wiphy) {
   bool isvlan = false;
   int err = 1;
   struct nl_cb *cb;
   struct nl_msg *msg;
   struct nl80211_state nlstate;
 
-  if (nl_new(&nlstate, &cb, &msg, &err) != 0)
-    return false;
+  if (nl_new(&nlstate, &cb, &msg, &err) != 0) {
+    log_error("nl_new fail");
+    return -1;
+  }
 
   genlmsg_put(msg, 0, 0, nlstate.nl80211_id, 0, 0, NL80211_CMD_GET_WIPHY, 0);
   NLA_PUT_U32(msg, NL80211_ATTR_WIPHY, wiphy);
 
   if (nl_send_auto_complete(nlstate.nl_sock, msg) < 0) {
+    log_error("nl_send_auto_complete fail");
     nl_cb_put(cb);
     nlmsg_free(msg);
     nl_socket_free(nlstate.nl_sock);
-    return false;
+    return -1;
   }
 
   nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, process_phy_handler, &isvlan);
@@ -1135,14 +1139,14 @@ bool iwace_isvlan(uint32_t wiphy) {
   nl_cb_put(cb);
   nlmsg_free(msg);
   nl_socket_free(nlstate.nl_sock);
-  return isvlan;
+  return (isvlan) ? 1 : 0;
 
 nla_put_failure:
   log_error("NLA_PUT_U32 failed");
   nl_cb_put(cb);
   nlmsg_free(msg);
   nl_socket_free(nlstate.nl_sock);
-  return false;
+  return -1;
 }
 
 UT_array *get_netiw_info(void) {
@@ -1204,13 +1208,18 @@ int nl_is_iw_vlan(const char *ifname) {
   for (el = (netiw_info_t *)utarray_front(netif_list); el != NULL;
        el = (netiw_info_t *)utarray_next(netif_list, el)) {
     if (!strcmp(el->ifname, ifname)) {
-      if (!iwace_isvlan(el->wiphy)) {
-        log_error("WiFi interface %s doesn't suport vlan tagging", ifname);
+      int ret = iwace_isvlan(el->wiphy);
+      if (ret == 0) {
+        log_warn("WiFi interface %s doesn't suport vlan tagging", ifname);
         utarray_free(netif_list);
         return 1;
-      } else {
+      } else if (ret == 1) {
         utarray_free(netif_list);
         return 0;
+      } else {
+        log_error("iwace_isvlan fail");
+        utarray_free(netif_list);
+        return -1;
       }
     }
   }
@@ -1236,10 +1245,16 @@ char *nl_get_valid_iw(char *buf) {
   netiw_info_t *el;
   for (el = (netiw_info_t *)utarray_front(netif_list); el != NULL;
        el = (netiw_info_t *)utarray_next(netif_list, el)) {
-    if (iwace_isvlan(el->wiphy)) {
+    int ret = iwace_isvlan(el->wiphy);
+
+    if (ret == 1) {
       os_strlcpy(buf, el->ifname, IFNAMSIZ);
       utarray_free(netif_list);
       return buf;
+    } else if (ret < 0) {
+      log_error("iwace_isvlan fail");
+      utarray_free(netif_list);
+      return NULL;
     }
   }
 

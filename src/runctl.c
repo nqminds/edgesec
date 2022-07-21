@@ -186,13 +186,43 @@ int create_subnet_interfaces(struct iface_context *context,
 }
 
 int set_subnet_ips(struct iface_context *context, UT_array *ifinfo_array) {
-  UT_array *arr = iface_get_ip4("eth0");
-  char **p = NULL;
-  while ((p = (char **)utarray_next(arr, p)) != NULL) {
-    log_trace("%s", *p);
+  config_ifinfo_t *p = NULL;
+  char **ip = NULL;
+
+  if (ifinfo_array == NULL) {
+    log_error("ifinfo_array param is NULL");
+    return -1;
   }
 
-  utarray_free(arr);
+  while ((p = (config_ifinfo_t *)utarray_next(ifinfo_array, p)) != NULL) {
+    log_debug("Setting IP for ifname=%s ip_addr=%s brd_addr=%s subnet_mask=%s",
+              p->ifname, p->ip_addr, p->brd_addr, p->subnet_mask);
+    UT_array *iparr = iface_get_ip4(context, p->ifname);
+    int found = 0;
+    while ((ip = (char **)utarray_next(iparr, ip)) != NULL) {
+      if (strcmp(*ip, p->ip_addr) == 0) {
+        found = 1;
+        break;
+      }
+    }
+    utarray_free(iparr);
+
+    if (!found) {
+      if (iface_set_ip4(context, p->brname, p->ifname, p->ip_addr, p->brd_addr,
+                        p->subnet_mask) < 0) {
+        log_error("iface_set_ip4 fail");
+        return -1;
+      }
+    } else {
+      log_trace("IP already set");
+    }
+  }
+
+  if (iface_commit(context) < 0) {
+    log_error("iface_commit fail");
+    return -1;
+  }
+
   return 0;
 }
 
@@ -422,6 +452,12 @@ int run_ctl(struct app_config *app_config) {
                                  context->config_ifinfo_array,
                                  app_config->ignore_if_error) < 0) {
       log_error("create_subnet_interfaces fail");
+      goto run_engine_fail;
+    }
+  } else {
+    log_info("Assigning subnet IPs...");
+    if (set_subnet_ips(context->iface_ctx, context->config_ifinfo_array) < 0) {
+      log_error("set_subnet_ips fail");
       goto run_engine_fail;
     }
   }
