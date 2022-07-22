@@ -76,6 +76,8 @@ int run_capture(struct capture_middleware_context *context) {
 
   ret = sqlite3_open(context->config.capture_db_path, &db);
 
+  sqlite3_busy_timeout(db, DB_BUSY_TIMEOUT);
+
   if (ret != SQLITE_OK) {
     log_error("Cannot open database: %s", sqlite3_errmsg(db));
     sqlite3_close(db);

@@ -22,23 +22,13 @@
 #include "../../../utils/sqliteu.h"
 
 int init_sqlite_pcap_db(sqlite3 *db) {
-  int rc;
-
   if (db == NULL) {
     log_error("db param is NULL");
     return -1;
   }
 
-  rc = check_table_exists(db, PCAP_TABLE_NAME);
-
-  if (rc == 0) {
-    log_debug("pcap table doesn't exist creating...");
-    if (execute_sqlite_query(db, PCAP_CREATE_TABLE) < 0) {
-      log_error("execute_sqlite_query fail");
-      return -1;
-    }
-  } else if (rc < 0) {
-    log_error("check_table_exists fail");
+  if (execute_sqlite_query(db, PCAP_CREATE_TABLE) < 0) {
+    log_error("execute_sqlite_query fail");
     return -1;
   }
 

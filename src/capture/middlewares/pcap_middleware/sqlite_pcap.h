@@ -20,7 +20,7 @@
 
 #define PCAP_TABLE_NAME "pcap"
 #define PCAP_CREATE_TABLE                                                      \
-  "CREATE TABLE " PCAP_TABLE_NAME                                              \
+  "CREATE TABLE IF NOT EXISTS " PCAP_TABLE_NAME                                \
   " (timestamp INTEGER NOT NULL, name TEXT NOT NULL, "                         \
   "caplen INTEGER, length INTEGER, "                                           \
   "PRIMARY KEY (name));"
