@@ -595,6 +595,13 @@ int save_packet_statement(sqlite3 *db, struct tuple_packet *tp) {
 }
 
 int init_sqlite_header_db(sqlite3 *db) {
+  const char *tables[] = {
+      ETH_CREATE_TABLE,   ARP_CREATE_TABLE,   IP4_CREATE_TABLE,
+      IP6_CREATE_TABLE,   TCP_CREATE_TABLE,   UDP_CREATE_TABLE,
+      ICMP4_CREATE_TABLE, ICMP6_CREATE_TABLE, DNS_CREATE_TABLE,
+      MDNS_CREATE_TABLE,  DHCP_CREATE_TABLE,
+  };
+
   if (db == NULL) {
     log_error("db param is NULL");
     return -1;
@@ -602,59 +609,11 @@ int init_sqlite_header_db(sqlite3 *db) {
 
   log_debug("sqlite autocommit mode=%d", sqlite3_get_autocommit(db));
 
-  if (execute_sqlite_query(db, ETH_CREATE_TABLE) < 0) {
-    log_error("execute_sqlite_query fail");
-    return -1;
-  }
-
-  if (execute_sqlite_query(db, ARP_CREATE_TABLE) < 0) {
-    log_error("execute_sqlite_query fail");
-    return -1;
-  }
-
-  if (execute_sqlite_query(db, IP4_CREATE_TABLE) < 0) {
-    log_error("execute_sqlite_query fail");
-    return -1;
-  }
-
-  if (execute_sqlite_query(db, IP6_CREATE_TABLE) < 0) {
-    log_error("execute_sqlite_query fail");
-    return -1;
-  }
-
-  if (execute_sqlite_query(db, TCP_CREATE_TABLE) < 0) {
-    log_error("execute_sqlite_query fail");
-    return -1;
-  }
-
-  if (execute_sqlite_query(db, UDP_CREATE_TABLE) < 0) {
-    log_error("execute_sqlite_query fail");
-    return -1;
-  }
-
-  if (execute_sqlite_query(db, ICMP4_CREATE_TABLE) < 0) {
-    log_error("execute_sqlite_query fail");
-    return -1;
-  }
-
-  if (execute_sqlite_query(db, ICMP6_CREATE_TABLE) < 0) {
-    log_error("execute_sqlite_query fail");
-    return -1;
-  }
-
-  if (execute_sqlite_query(db, DNS_CREATE_TABLE) < 0) {
-    log_error("execute_sqlite_query fail");
-    return -1;
-  }
-
-  if (execute_sqlite_query(db, MDNS_CREATE_TABLE) < 0) {
-    log_error("execute_sqlite_query fail");
-    return -1;
-  }
-
-  if (execute_sqlite_query(db, DHCP_CREATE_TABLE) < 0) {
-    log_error("execute_sqlite_query fail");
-    return -1;
+  for (size_t i = 0; i < STRLEN(tables); i++) {
+    if (execute_sqlite_query(db, tables[i]) < 0) {
+      log_error("execute_sqlite_query fail: %s", tables[i]);
+      return -1;
+    }
   }
 
   return 0;

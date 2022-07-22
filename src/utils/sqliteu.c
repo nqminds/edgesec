@@ -16,7 +16,7 @@
 
 #define SQLITE_EXEC_TRIES 10000
 
-int execute_sqlite_query(sqlite3 *db, char *statement) {
+int execute_sqlite_query(sqlite3 *db, const char *statement) {
   int rc = sqlite3_exec(db, statement, 0, 0, NULL);
 
   if (rc != SQLITE_OK) {
