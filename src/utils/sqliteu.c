@@ -27,7 +27,7 @@ int execute_sqlite_query(sqlite3 *db, char *statement) {
   return 0;
 }
 
-int prepare_find_table(sqlite3 *db, char *table_name, sqlite3_stmt *res) {
+int prepare_find_table(sqlite3 *db, const char *table_name, sqlite3_stmt *res) {
   char *sql = "SELECT name FROM sqlite_master WHERE type='table' AND name=?;";
   int rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
 
