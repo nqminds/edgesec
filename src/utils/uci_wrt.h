@@ -67,6 +67,17 @@ void uwrt_free_context(struct uctx *context);
 UT_array *uwrt_get_interfaces(struct uctx *context, char *ifname);
 
 /**
+ * @brief Assigns an IP to an interface
+ *
+ * @param context The uci context
+ * @param ifname The interface name
+ * @param ip_addr The interface IP4 address
+ * @param netmask The interface IP4 netmask
+ * @return int 0 on success, -1 on failure
+ */
+int uwrt_set_interface_ip(struct uctx *context, char *ifname, char *ip_addr,
+                          char *netmask);
+/**
  * @brief Creates and interface and assigns an IP
  *
  * @param context The uci context

@@ -24,7 +24,7 @@
 #define MACCONN_TABLE_NAME "instance"
 
 #define MACCONN_CREATE_TABLE                                                   \
-  "CREATE TABLE " MACCONN_TABLE_NAME                                           \
+  "CREATE TABLE IF NOT EXISTS " MACCONN_TABLE_NAME                             \
   " (id TEXT NOT NULL, mac TEXT NOT NULL, status INTEGER, vlanid INTEGER, "    \
   "primaryip TEXT, secondaryip TEXT, nat INTEGER, allow INTEGER, label TEXT, " \
   "timestamp INTEGER, pass TEXT, PRIMARY KEY (id, mac));"

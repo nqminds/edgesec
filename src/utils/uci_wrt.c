@@ -317,6 +317,7 @@ int uwrt_get_net_if(UT_array *kv, netif_info_t *nif) {
     }
 
     if ((value = uwrt_extract_value(*ptr, IPADDR_EXPR)) != NULL) {
+      nif->ifa_family = AF_INET;
       strcpy(nif->ip_addr, value);
     }
   }
@@ -433,21 +434,21 @@ UT_array *uwrt_get_interfaces(struct uctx *context, char *ifname) {
   UT_array *kv = NULL;
   UT_array *interfaces = NULL;
   netif_info_t nif;
-  char key[64];
+  char key[128];
 
   utarray_new(interfaces, &netif_info_icd);
 
   while (true) {
     if (ifname == NULL) {
-      snprintf(key, 64, "network.@interface[%d]", idx++);
+      snprintf(key, 128, "network.@interface[%d]", idx++);
     } else {
-      snprintf(key, 64, "network.%s", ifname);
+      snprintf(key, 128, "network.%s", ifname);
     }
 
     utarray_new(kv, &ut_str_icd);
     ret = uwrt_lookup_key(context->uctx, key, kv);
 
-    if (!ret) {
+    if (ret == 0) {
       utarray_free(kv);
       break;
     } else if (ret < 0) {
@@ -465,7 +466,7 @@ UT_array *uwrt_get_interfaces(struct uctx *context, char *ifname) {
     utarray_free(kv);
     utarray_push_back(interfaces, &nif);
 
-    if (ifname != NULL && ret > 0) {
+    if (ifname != NULL) {
       break;
     }
   }
@@ -475,6 +476,45 @@ UT_array *uwrt_get_interfaces(struct uctx *context, char *ifname) {
 uwrt_get_fail:
   utarray_free(interfaces);
   return NULL;
+}
+
+int uwrt_set_interface_ip(struct uctx *context, char *ifname, char *ip_addr,
+                          char *netmask) {
+  char property[128];
+
+  if (context == NULL) {
+    log_trace("context param is NULL");
+    return -1;
+  }
+
+  if (ifname == NULL) {
+    log_trace("ifname param is NULL");
+    return -1;
+  }
+
+  if (ip_addr == NULL) {
+    log_trace("ip_addr param is NULL");
+    return -1;
+  }
+
+  if (netmask == NULL) {
+    log_trace("subnet_mask param is NULL");
+    return -1;
+  }
+
+  sprintf(property, "network.%s.ipaddr=%s", ifname, ip_addr);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "network.%s.netmask=%s", ifname, netmask);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  return 0;
 }
 
 int uwrt_create_interface(struct uctx *context, char *ifname, char *type,
@@ -535,15 +575,8 @@ int uwrt_create_interface(struct uctx *context, char *ifname, char *type,
     return -1;
   }
 
-  sprintf(property, "network.%s.ipaddr=%s", ifname, ip_addr);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
-
-  sprintf(property, "network.%s.netmask=%s", ifname, netmask);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
+  if (uwrt_set_interface_ip(context, ifname, ip_addr, netmask) < 0) {
+    log_trace("uwrt_set_interface_ip fail for ifname=%s", ifname);
     return -1;
   }
 

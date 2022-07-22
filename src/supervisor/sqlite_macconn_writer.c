@@ -42,17 +42,8 @@ int open_sqlite_macconn_db(char *db_path, sqlite3 **sql) {
 
   *sql = db;
 
-  rc = check_table_exists(db, MACCONN_TABLE_NAME);
-
-  if (rc == 0) {
-    log_debug("%s table doesn't exist creating...", MACCONN_TABLE_NAME);
-    if (execute_sqlite_query(db, MACCONN_CREATE_TABLE) < 0) {
-      log_debug("execute_sqlite_query fail");
-      free_sqlite_macconn_db(db);
-      return -1;
-    }
-  } else if (rc < 0) {
-    log_debug("check_table_exists fail");
+  if (execute_sqlite_query(db, MACCONN_CREATE_TABLE) < 0) {
+    log_debug("execute_sqlite_query fail");
     free_sqlite_macconn_db(db);
     return -1;
   }

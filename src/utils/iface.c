@@ -156,26 +156,33 @@ UT_array *iface_get(char *ifname) {
   return interfaces;
 }
 
-UT_array *iface_get_ip4(struct iface_context *ctx, char *ifname) {
+UT_array *iface_get_ip4(struct iface_context *ctx, char *brname, char *ifname) {
   (void)ctx;
 
   UT_array *ip4s = NULL;
+
+  if (brname == NULL) {
+    log_error("brname param is NULL");
+    return NULL;
+  }
 
   if (ifname == NULL) {
     log_error("ifname param is NULL");
     return NULL;
   }
 
-  utarray_new(ip4s, &ut_str_icd);
-
-#ifndef WITH_UCI_SERVICE
+#ifdef WITH_UCI_SERVICE
+  UT_array *if_list = uwrt_get_interfaces(ctx->context, brname);
+#else
   UT_array *if_list = iface_get(ifname);
+#endif
 
   if (if_list == NULL) {
     log_error("iface_get fail");
-    utarray_free(ip4s);
     return NULL;
   }
+
+  utarray_new(ip4s, &ut_str_icd);
 
   netif_info_t *el = NULL;
   while ((el = (netif_info_t *)utarray_next(if_list, el)) != NULL) {
@@ -185,10 +192,6 @@ UT_array *iface_get_ip4(struct iface_context *ctx, char *ifname) {
     }
   }
   utarray_free(if_list);
-#else
-  log_trace("iface_get_ip4 not implemented");
-  return NULL;
-#endif
 
   return ip4s;
 }
@@ -257,8 +260,8 @@ int iface_set_ip4(struct iface_context *ctx, char *brname, char *ifname,
                              subnet_mask);
 #elif WITH_UCI_SERVICE
   (void)ifname;
-  log_trace("iface_set_ip4 not implemented");
-  return -1;
+  (void)brd_addr;
+  return uwrt_set_interface_ip(ctx->context, brname, ip_addr, subnet_mask);
 #elif WITH_IP_GENERIC_SERVICE
   (void)brname;
   return ipgen_set_interface_ip(ctx->context, ifname, ip_addr, brd_addr,

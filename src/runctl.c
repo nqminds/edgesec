@@ -187,7 +187,6 @@ int create_subnet_interfaces(struct iface_context *context,
 
 int set_subnet_ips(struct iface_context *context, UT_array *ifinfo_array) {
   config_ifinfo_t *p = NULL;
-  char **ip = NULL;
 
   if (ifinfo_array == NULL) {
     log_error("ifinfo_array param is NULL");
@@ -195,9 +194,11 @@ int set_subnet_ips(struct iface_context *context, UT_array *ifinfo_array) {
   }
 
   while ((p = (config_ifinfo_t *)utarray_next(ifinfo_array, p)) != NULL) {
-    log_debug("Setting IP for ifname=%s ip_addr=%s brd_addr=%s subnet_mask=%s",
-              p->ifname, p->ip_addr, p->brd_addr, p->subnet_mask);
-    UT_array *iparr = iface_get_ip4(context, p->ifname);
+    log_debug("Setting IP for brname=%s ifname=%s ip_addr=%s brd_addr=%s "
+              "subnet_mask=%s",
+              p->brname, p->ifname, p->ip_addr, p->brd_addr, p->subnet_mask);
+    UT_array *iparr = iface_get_ip4(context, p->brname, p->ifname);
+    char **ip = NULL;
     int found = 0;
     while ((ip = (char **)utarray_next(iparr, ip)) != NULL) {
       if (strcmp(*ip, p->ip_addr) == 0) {

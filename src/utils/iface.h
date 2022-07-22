@@ -75,10 +75,12 @@ UT_array *iface_get(char *ifname);
  * @brief Get the IP4 addresses for a given interface
  *
  * @param context The interface context
+ * @param[in] brname The bridge name
  * @param[in] ifname The interface name
  * @return UT_array* The returned array of IP4 strings
  */
-UT_array *iface_get_ip4(struct iface_context *context, char *ifname);
+UT_array *iface_get_ip4(struct iface_context *context, char *brname,
+                        char *ifname);
 
 /**
  * @brief Creates and interface and assigns an IP

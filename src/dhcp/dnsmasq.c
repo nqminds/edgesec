@@ -155,7 +155,7 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array) {
       log_error("define_dhcp_interface_name fail");
       uwrt_free_context(context);
       free_string_queue(squeue);
-      return NULL;
+      return -1;
     }
 
     if (uwrt_add_dhcp_pool(context, ifname, el->ip_addr_low, el->ip_addr_upp,
