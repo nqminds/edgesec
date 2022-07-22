@@ -23,7 +23,7 @@
  * @param statement The sqlite query statement.
  * @return int 0 on success, -1 on failure.
  */
-int execute_sqlite_query(sqlite3 *db, char *statement);
+int execute_sqlite_query(sqlite3 *db, const char *statement);
 
 /**
  * @brief Check if sqlite table exists

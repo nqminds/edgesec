@@ -14,33 +14,43 @@
 
 #include "../utils/log.h"
 
-int execute_sqlite_query(sqlite3 *db, char *statement) {
-  char *err = NULL;
-  int rc = sqlite3_exec(db, statement, 0, 0, &err);
+#define SQLITE_EXEC_TRIES 10000
+
+int execute_sqlite_query(sqlite3 *db, const char *statement) {
+  int rc = sqlite3_exec(db, statement, 0, 0, NULL);
 
   if (rc != SQLITE_OK) {
-    log_error("Failed to execute statement %s", err);
-    sqlite3_free(err);
-
+    log_error("Failed to execute statement: %s", sqlite3_errmsg(db));
     return -1;
   }
 
   return 0;
 }
 
-int check_table_exists(sqlite3 *db, char *table_name) {
-  sqlite3_stmt *res;
+int prepare_find_table(sqlite3 *db, const char *table_name, sqlite3_stmt *res) {
   char *sql = "SELECT name FROM sqlite_master WHERE type='table' AND name=?;";
   int rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
 
-  if (rc == SQLITE_OK)
+  if (rc == SQLITE_OK) {
+    log_trace("%s", sql);
     sqlite3_bind_text(res, 1, table_name, -1, NULL);
-  else {
+  } else {
+    return -1 * rc;
+  }
+
+  return SQLITE_OK;
+}
+
+int check_table_exists(sqlite3 *db, char *table_name) {
+  sqlite3_stmt *res = NULL;
+  int rc;
+
+  if ((rc = prepare_find_table(db, table_name, res)) != SQLITE_OK) {
     log_error("Failed to execute statement: %s", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
     return -1;
   }
 
-  log_trace("%s", sql);
   rc = sqlite3_step(res);
 
   if (rc == SQLITE_ROW) {

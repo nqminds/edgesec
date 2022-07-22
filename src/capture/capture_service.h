@@ -19,6 +19,8 @@
 #include "pcap_service.h"
 #include "capture_config.h"
 
+#define DB_BUSY_TIMEOUT 5000 // Sets the sqlite busy timeout in milliseconds
+
 struct capture_middleware_context {
   struct capture_conf config;
   UT_array *handlers;
