@@ -762,7 +762,7 @@ int uwrt_add_dhcp_pool(struct uctx *context, char *ifname, char *ip_addr_low,
 
   limit = (limit < start) ? 0 : (limit - start) + 1;
 
-  sprintf(property, "dhcp.%s=dhcp", ifname);
+  snprintf(property, ARRAY_SIZE(property), "dhcp.%s=dhcp", ifname);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
