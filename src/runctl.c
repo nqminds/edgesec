@@ -318,7 +318,6 @@ int init_context(struct app_config *app_config,
   strcpy(ctx->dconfig.bridge_prefix, app_config->bridge_prefix);
   strcpy(ctx->dconfig.interface_prefix, app_config->interface_prefix);
   strcpy(ctx->dconfig.wifi_interface, app_config->hconfig.interface);
-
   strcpy(ctx->hconfig.vlan_bridge, app_config->interface_prefix);
 
   log_debug("Opening the macconn db=%s", app_config->connection_db_path);
