@@ -785,7 +785,7 @@ nl_set_interface_ip_err:
   return -1;
 }
 
-int nl_set_interface_state(char *if_name, bool state) {
+int nl_set_interface_state(const char *if_name, bool state) {
   char *if_state = (state) ? "up" : "down";
   char *argv[3] = {"dev", if_name, if_state};
 
