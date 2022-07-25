@@ -471,7 +471,6 @@ uint8_t *register_ticket_cmd(struct supervisor_context *context,
     return NULL;
   }
 
-  os_memcpy(context->ticket->issuer_mac_addr, mac_addr, ETH_ALEN);
   strcpy(context->ticket->device_label, label);
   context->ticket->vlanid = vlanid;
   context->ticket->passphrase_len = TICKET_PASSPHRASE_SIZE;
