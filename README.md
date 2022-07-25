@@ -90,7 +90,7 @@ To enable verbose debug mode use:
 
 The following commands also work using the `podman` container runtime (recommended on Linux):
 
-```console
+```bash
 alias docker=podman
 ```
 
