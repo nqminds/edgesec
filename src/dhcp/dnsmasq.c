@@ -63,7 +63,7 @@
 static char dnsmasq_proc_name[MAX_OS_PATH_LEN];
 static bool dns_process_started = false;
 
-int define_dhcp_interface_name(struct dhcp_conf *dconf, int vlanid,
+int define_dhcp_interface_name(const struct dhcp_conf *dconf, int vlanid,
                                char *ifname) {
   if (dconf == NULL) {
     log_error("dconf param is NULL");
@@ -76,16 +76,16 @@ int define_dhcp_interface_name(struct dhcp_conf *dconf, int vlanid,
   }
 
 #ifdef WITH_UCI_SERVICE
-  sprintf(ifname, "%s%d", dconf->bridge_prefix, vlanid);
+  snprintf(ifname, IFNAMSIZ, "%s%d", dconf->bridge_prefix, vlanid);
 #else
   if (strlen(dconf->wifi_interface)) {
     if (vlanid) {
-      sprintf(ifname, "%s.%d", dconf->wifi_interface, vlanid);
+      snprintf(ifname, IFNAMSIZ, "%s.%d", dconf->wifi_interface, vlanid);
     } else {
-      sprintf(ifname, "%s", dconf->wifi_interface);
+      snprintf(ifname, IFNAMSIZ, "%s", dconf->wifi_interface);
     }
   } else {
-    sprintf(ifname, "%s%d", dconf->interface_prefix, vlanid);
+    snprintf(ifname, IFNAMSIZ, "%s%d", dconf->interface_prefix, vlanid);
   }
 #endif
   return 0;

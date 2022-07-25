@@ -748,8 +748,9 @@ nl_new_interface_err:
   return -1;
 }
 
-int nl_set_interface_ip(struct nlctx *context, char *ifname, char *ip_addr,
-                        char *brd_addr, char *subnet_mask) {
+int nl_set_interface_ip(struct nlctx *context, const char *ifname,
+                        const char *ip_addr, const char *brd_addr,
+                        char *subnet_mask) {
   (void)context;
 
   char longip[OS_INET_ADDRSTRLEN];
@@ -784,7 +785,7 @@ nl_set_interface_ip_err:
   return -1;
 }
 
-int nl_set_interface_state(char *if_name, bool state) {
+int nl_set_interface_state(const char *if_name, bool state) {
   char *if_state = (state) ? "up" : "down";
   char *argv[3] = {"dev", if_name, if_state};
 

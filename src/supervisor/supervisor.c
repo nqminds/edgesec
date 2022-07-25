@@ -94,7 +94,6 @@ int allocate_vlan(struct supervisor_context *context) {
   }
 
   len = utarray_len(config_ifinfo_array);
-
   if (len <= 1) {
     return context->default_open_vlanid;
   }

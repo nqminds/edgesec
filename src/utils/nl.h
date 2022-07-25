@@ -91,8 +91,9 @@ int nl_new_interface(char *if_name, char *type);
  * @param subnet_mask The subnet mask
  * @return 0 on success, -1 otherwise
  */
-int nl_set_interface_ip(struct nlctx *context, char *ifname, char *ip_addr,
-                        char *brd_addr, char *subnet_mask);
+int nl_set_interface_ip(struct nlctx *context, const char *ifname,
+                        const char *ip_addr, const char *brd_addr,
+                        char *subnet_mask);
 
 /**
  * @brief Set the interface state
@@ -101,7 +102,7 @@ int nl_set_interface_ip(struct nlctx *context, char *ifname, char *ip_addr,
  * @param state The interface state value (true - "up", false - "down")
  * @return 0 on success, -1 otherwise
  */
-int nl_set_interface_state(char *if_name, bool state);
+int nl_set_interface_state(const char *if_name, bool state);
 
 /**
  * @brief Creates and interface and assigns an IP

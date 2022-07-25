@@ -440,9 +440,9 @@ UT_array *uwrt_get_interfaces(struct uctx *context, char *ifname) {
 
   while (true) {
     if (ifname == NULL) {
-      snprintf(key, 128, "network.@interface[%d]", idx++);
+      snprintf(key, ARRAY_SIZE(key), "network.@interface[%d]", idx++);
     } else {
-      snprintf(key, 128, "network.%s", ifname);
+      snprintf(key, ARRAY_SIZE(key), "network.%s", ifname);
     }
 
     utarray_new(kv, &ut_str_icd);
@@ -502,13 +502,13 @@ int uwrt_set_interface_ip(struct uctx *context, char *ifname, char *ip_addr,
     return -1;
   }
 
-  sprintf(property, "network.%s.ipaddr=%s", ifname, ip_addr);
+  snprintf(property, ARRAY_SIZE(property), "network.%s.ipaddr=%s", ifname, ip_addr);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "network.%s.netmask=%s", ifname, netmask);
+  snprintf(property, ARRAY_SIZE(property), "network.%s.netmask=%s", ifname, netmask);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
@@ -762,43 +762,43 @@ int uwrt_add_dhcp_pool(struct uctx *context, char *ifname, char *ip_addr_low,
 
   limit = (limit < start) ? 0 : (limit - start) + 1;
 
-  sprintf(property, "dhcp.%s=dhcp", ifname);
+  snprintf(property, ARRAY_SIZE(property), "dhcp.%s=dhcp", ifname);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "dhcp.%s.interface=%s", ifname, ifname);
+  snprintf(property, ARRAY_SIZE(property), "dhcp.%s.interface=%s", ifname, ifname);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "dhcp.%s.networkid=br-%s", ifname, ifname);
+  snprintf(property, ARRAY_SIZE(property), "dhcp.%s.networkid=br-%s", ifname, ifname);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "dhcp.%s.dhcpv4=server", ifname);
+  snprintf(property, ARRAY_SIZE(property), "dhcp.%s.dhcpv4=server", ifname);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "dhcp.%s.instance=edgesec", ifname);
+  snprintf(property, ARRAY_SIZE(property), "dhcp.%s.instance=edgesec", ifname);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "dhcp.%s.ignore=0", ifname);
+  snprintf(property, ARRAY_SIZE(property), "dhcp.%s.ignore=0", ifname);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "dhcp.%s.force=1", ifname);
+  snprintf(property, ARRAY_SIZE(property), "dhcp.%s.force=1", ifname);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
@@ -810,13 +810,13 @@ int uwrt_add_dhcp_pool(struct uctx *context, char *ifname, char *ip_addr_low,
     return -1;
   }
 
-  sprintf(property, "dhcp.%s.limit=%d", ifname, limit);
+  snprintf(property, ARRAY_SIZE(property), "dhcp.%s.limit=%d", ifname, limit);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "dhcp.%s.leasetime=%s", ifname, lease_time);
+  snprintf(property, ARRAY_SIZE(property), "dhcp.%s.leasetime=%s", ifname, lease_time);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;

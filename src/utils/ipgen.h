@@ -62,8 +62,9 @@ int ipgen_create_interface(struct ipgenctx *context, char *ifname, char *type,
  * @param subnet_mask The interface IP4 subnet mask
  * @return int 0 on success, -1 on failure
  */
-int ipgen_set_interface_ip(struct ipgenctx *context, char *path, char *ifname,
-                           char *ip_addr, char *brd_addr);
+int ipgen_set_interface_ip(struct ipgenctx *context, const char *ifname,
+                           const char *ip_addr, const char *brd_addr,
+                           char *subnet_mask);
 
 /**
  * @brief Resets the interface

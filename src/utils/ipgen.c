@@ -59,8 +59,9 @@ int ipgen_new_interface(char *path, char *ifname, char *type) {
   return run_ip(path, argv);
 }
 
-int ipgen_set_interface_ip(struct ipgenctx *context, char *ifname,
-                           char *ip_addr, char *brd_addr, char *subnet_mask) {
+int ipgen_set_interface_ip(struct ipgenctx *context, const char *ifname,
+                           const char *ip_addr, const char *brd_addr,
+                           char *subnet_mask) {
   char longip[OS_INET_ADDRSTRLEN];
 
   snprintf(longip, OS_INET_ADDRSTRLEN, "%s/%d", ip_addr,
