@@ -172,7 +172,7 @@ static void test_generate_dnsmasq_conf(void **state) {
   strcpy(dconf.dhcp_conf_path, test_dhcp_conf_path);
   strcpy(dconf.dhcp_script_path, test_dhcp_script_path);
   strcpy(dconf.dhcp_leasefile_path, test_dhcp_leasefile_path);
-  const size_t WIFI_INTERFACE_STR_LEN = STRLEN(dconf.wifi_interface);
+  const size_t WIFI_INTERFACE_STR_LEN = ARRAY_SIZE(dconf.wifi_interface);
 
   strncpy(dconf.wifi_interface, wifi_interface, WIFI_INTERFACE_STR_LEN);
   assert_null(dconf.wifi_interface[WIFI_INTERFACE_STR_LEN - 1]);
@@ -203,7 +203,7 @@ static void test_generate_dnsmasq_conf(void **state) {
 
   os_free(fdata);
 
-  const size_t INTERFACE_PREFIX_STR_LEN = STRLEN(dconf.interface_prefix);
+  const size_t INTERFACE_PREFIX_STR_LEN = ARRAY_SIZE(dconf.interface_prefix);
 
   os_memset(dconf.wifi_interface, 0, WIFI_INTERFACE_STR_LEN);
   strncpy(dconf.interface_prefix, interface_prefix, INTERFACE_PREFIX_STR_LEN);

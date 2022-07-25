@@ -199,10 +199,10 @@ int set_subnet_ips(struct iface_context *context, UT_array *ifinfo_array) {
               p->brname, p->ifname, p->ip_addr, p->brd_addr, p->subnet_mask);
     UT_array *iparr = iface_get_ip4(context, p->brname, p->ifname);
     char **ip = NULL;
-    int found = 0;
+    bool found = false;
     while ((ip = (char **)utarray_next(iparr, ip)) != NULL) {
       if (strcmp(*ip, p->ip_addr) == 0) {
-        found = 1;
+        found = true;
         break;
       }
     }

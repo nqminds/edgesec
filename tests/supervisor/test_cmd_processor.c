@@ -497,7 +497,7 @@ static void test_process_get_map_cmd(void **state) {
   expect_any(__wrap_get_mac_mapper, info);
 
   int ret = process_get_map_cmd(0, &claddr, &context, cmd_arr);
-  bool comp = ret > (int)(STRLEN("11:22:33:44:55:66"));
+  bool comp = ret > (int)(ARRAY_SIZE("11:22:33:44:55:66"));
   assert_true(comp);
   utarray_free(cmd_arr);
 
@@ -543,7 +543,7 @@ static void test_process_get_all_cmd(void **state) {
   put_mac_mapper(&(ctx.mac_mapper), p);
 
   int ret = process_get_all_cmd(0, &claddr, &ctx, cmd_arr);
-  bool comp = ret > (int)(2 * STRLEN("11:22:33:44:55:66"));
+  bool comp = ret > (int)(2 * ARRAY_SIZE("11:22:33:44:55:66"));
   assert_true(comp);
   utarray_free(cmd_arr);
   free_mac_mapper(&(ctx.mac_mapper));

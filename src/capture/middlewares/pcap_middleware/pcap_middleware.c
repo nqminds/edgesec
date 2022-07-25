@@ -34,7 +34,8 @@
 #define PCAP_EXTENSION ".pcap"
 #define PCAP_PROCESS_INTERVAL 10 * 1000 // In microseconds
 
-#define MAX_PCAP_FILE_NAME_LENGTH MAX_RANDOM_UUID_LEN + STRLEN(PCAP_EXTENSION)
+#define MAX_PCAP_FILE_NAME_LENGTH                                              \
+  MAX_RANDOM_UUID_LEN + ARRAY_SIZE(PCAP_EXTENSION)
 
 struct pcap_middleware_context {
   char pcap_path[MAX_OS_PATH_LEN];

@@ -222,7 +222,7 @@ void ap_sock_handler(int sock, void *eloop_ctx, void *sock_ctx) {
 
 int register_ap_event(struct supervisor_context *context,
                       void *ap_callback_fn) {
-  ssize_t cmd_len = (ssize_t)STRLEN(ATTACH_AP_COMMAND);
+  ssize_t cmd_len = (ssize_t)ARRAY_SIZE(ATTACH_AP_COMMAND);
 
   if ((context->ap_sock = create_domain_client(NULL)) == -1) {
     log_error("create_domain_client fail");
