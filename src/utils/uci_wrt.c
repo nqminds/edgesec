@@ -442,7 +442,7 @@ UT_array *uwrt_get_interfaces(struct uctx *context, char *ifname) {
     if (ifname == NULL) {
       snprintf(key, ARRAY_SIZE(key), "network.@interface[%d]", idx++);
     } else {
-      snprintf(key, 128, "network.%s", ifname);
+      snprintf(key, ARRAY_SIZE(key), "network.%s", ifname);
     }
 
     utarray_new(kv, &ut_str_icd);
