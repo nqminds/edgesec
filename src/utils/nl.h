@@ -102,7 +102,7 @@ int nl_set_interface_ip(struct nlctx *context, const char *ifname,
  * @param state The interface state value (true - "up", false - "down")
  * @return 0 on success, -1 otherwise
  */
-int nl_set_interface_state(char *if_name, bool state);
+int nl_set_interface_state(const char *if_name, bool state);
 
 /**
  * @brief Creates and interface and assigns an IP
