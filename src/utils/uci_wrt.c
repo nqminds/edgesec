@@ -502,13 +502,13 @@ int uwrt_set_interface_ip(struct uctx *context, char *ifname, char *ip_addr,
     return -1;
   }
 
-  sprintf(property, "network.%s.ipaddr=%s", ifname, ip_addr);
+  snprintf(property, ARRAY_SIZE(property), "network.%s.ipaddr=%s", ifname, ip_addr);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
-  sprintf(property, "network.%s.netmask=%s", ifname, netmask);
+  snprintf(property, ARRAY_SIZE(property), "network.%s.netmask=%s", ifname, netmask);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
