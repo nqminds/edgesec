@@ -63,7 +63,7 @@
 static char dnsmasq_proc_name[MAX_OS_PATH_LEN];
 static bool dns_process_started = false;
 
-int define_dhcp_interface_name(struct dhcp_conf *dconf, int vlanid,
+int define_dhcp_interface_name(const struct dhcp_conf *dconf, int vlanid,
                                char *ifname) {
   if (dconf == NULL) {
     log_error("dconf param is NULL");
