@@ -774,7 +774,7 @@ int uwrt_add_dhcp_pool(struct uctx *context, char *ifname, char *ip_addr_low,
     return -1;
   }
 
-  sprintf(property, "dhcp.%s.networkid=br-%s", ifname, ifname);
+  snprintf(property, ARRAY_SIZE(property), "dhcp.%s.networkid=br-%s", ifname, ifname);
   if (uwrt_set_property(context->uctx, property) < 0) {
     log_trace("uwrt_set_property fail for %s", property);
     return -1;
