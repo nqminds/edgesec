@@ -42,7 +42,9 @@
 #define BIT(x) (1U << (x))
 #endif
 
-#define STRLEN(s) (sizeof(s) / sizeof(s[0]))
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(s) (sizeof(s) / sizeof(s[0]))
+#endif
 
 #define BD_NO_CHDIR 01       /* Don't chdir("/") */
 #define BD_NO_CLOSE_FILES 02 /* Don't close all open files */

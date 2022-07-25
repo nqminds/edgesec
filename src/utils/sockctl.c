@@ -39,7 +39,7 @@ char *generate_socket_name(void) {
     log_error("os_get_random fail");
     return NULL;
   }
-  buf = os_zalloc(sizeof(crypto_rand) * 2 + STRLEN(SOCK_EXTENSION) + 1);
+  buf = os_zalloc(sizeof(crypto_rand) * 2 + ARRAY_SIZE(SOCK_EXTENSION) + 1);
   sprintf(buf, "%x%x%x%x" SOCK_EXTENSION, crypto_rand[0], crypto_rand[1],
           crypto_rand[2], crypto_rand[3]);
   return buf;

@@ -609,7 +609,7 @@ int init_sqlite_header_db(sqlite3 *db) {
 
   log_debug("sqlite autocommit mode=%d", sqlite3_get_autocommit(db));
 
-  for (size_t i = 0; i < STRLEN(tables); i++) {
+  for (size_t i = 0; i < ARRAY_SIZE(tables); i++) {
     if (execute_sqlite_query(db, tables[i]) < 0) {
       log_error("execute_sqlite_query fail: %s", tables[i]);
       return -1;

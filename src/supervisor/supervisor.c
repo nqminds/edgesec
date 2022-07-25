@@ -93,11 +93,12 @@ int allocate_vlan(struct supervisor_context *context) {
     return context->default_open_vlanid;
   }
 
-  if (utarray_len(config_ifinfo_array) <= 1) {
+  len = utarray_len(config_ifinfo_array);
+
+  if (len <= 1) {
     return context->default_open_vlanid;
   }
 
-  len = utarray_len(config_ifinfo_array);
   if ((vlan_arr = (int *)os_malloc(sizeof(int) * len)) == NULL) {
     log_errno("os_malloc");
     return -1;
