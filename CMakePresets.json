@@ -36,6 +36,39 @@
       }
     },
     {
+      "name": "linux/header",
+      "inherits": "linux",
+      "displayName": "Linux Header",
+      "description": "Linux header (with header middlewares)",
+      "cacheVariables": {
+        "USE_CLEANER_MIDDLEWARE": false,
+        "USE_HEADER_MIDDLEWARE": true,
+        "USE_PCAP_MIDDLEWARE": false
+      }
+    },
+    {
+      "name": "recap",
+      "inherits": "default",
+      "displayName": "recap tool",
+      "description": "recap tool",
+      "cacheVariables": {
+        "BUILD_MNL_LIB": false,
+        "BUILD_NETLINK_LIB": false,
+        "USE_NETLINK_SERVICE": false,
+        "USE_UCI_SERVICE": false,
+        "USE_GENERIC_IP_SERVICE": false,
+        "USE_RADIUS_SERVICE": false,
+        "BUILD_HOSTAPD": false,
+        "USE_CRYPTO_SERVICE": false,
+        "BUILD_OPENSSL_LIB": false,
+        "USE_HEADER_MIDDLEWARE": true,
+        "USE_CAPTURE_SERVICE": true,
+        "BUILD_SQLITE_LIB": true,
+        "BUILD_UUID_LIB": true,
+        "BUILD_PCAP_LIB": true
+      }
+    },
+    {
       "name": "linux-with-crypt",
       "inherits": "default",
       "displayName": "Linux",
@@ -138,6 +171,14 @@
     {
       "name": "linux",
       "configurePreset": "linux"
+    },
+    {
+      "name": "recap",
+      "configurePreset": "recap"
+    },
+    {
+      "name": "linux/header",
+      "configurePreset": "linux/header"
     },
     {
       "name": "linux-with-crypt",
