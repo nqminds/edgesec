@@ -1,4 +1,4 @@
-# edgesec
+# [edgesec](https://edgesec.info)
 
 [![GitHub release (latest stable SemVer)](https://img.shields.io/github/v/release/nqminds/edgesec?label=stable&logo=github&sort=semver)](https://github.com/nqminds/nqm-ssh-tunnel/releases)
 [![Build Debian Packages](https://github.com/nqminds/edgesec/actions/workflows/create-debs.yml/badge.svg)](https://github.com/nqminds/edgesec/actions/workflows/create-debs.yml)
