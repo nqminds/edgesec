@@ -22,6 +22,7 @@
 #include <pcap.h>
 
 #include "utils/os.h"
+#include "capture/middlewares/header_middleware/header_middleware.h"
 
 #define RECAP_VERSION_MAJOR 0
 #define RECAP_VERSION_MINOR 0
@@ -111,6 +112,7 @@ int main(int argc, char *argv[]) {
   uint8_t verbosity = 0;
   uint8_t level = 0;
   char *pcap_path = NULL, *db_path = NULL;
+  sqlite3 *db;
 
   process_app_options(argc, argv, &verbosity, &pcap_path, &db_path);
 
@@ -129,12 +131,22 @@ int main(int argc, char *argv[]) {
   /* Set the log level */
   log_set_level(level);
 
-  if (pcap_path != NULL) {
+  int ret = sqlite3_open(db_path, &db);
+
+  fprintf(stdout, "Openning db at %s\n", db_path);
+
+  if (ret != SQLITE_OK) {
+    fprintf(stdout, "Cannot open database: %s", sqlite3_errmsg(db));
     os_free(pcap_path);
-  }
-  if (db_path != NULL) {
     os_free(db_path);
+    sqlite3_close(db);
+    return EXIT_FAILURE;
   }
 
+  fprintf(stdout, "Using %s\n", header_middleware.name);
+
+  os_free(pcap_path);
+  os_free(db_path);
+  sqlite3_close(db);
   return EXIT_SUCCESS;
 }

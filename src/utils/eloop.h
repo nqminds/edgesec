@@ -190,45 +190,6 @@ void eloop_unregister_sock(struct eloop_data *eloop, int sock,
                            eloop_event_type type);
 
 /**
- * eloop_register_event - Register handler for generic events
- * @eloop: eloop context
- * @event: Event to wait (eloop implementation specific)
- * @event_size: Size of event data
- * @handler: Callback function to be called when event is triggered
- * @eloop_data: Callback context data (eloop_data)
- * @user_data: Callback context data (user_data)
- * Returns: 0 on success, -1 on failure
- *
- * Register an event handler for the given event. This function is used to
- * register eloop implementation specific events which are mainly targeted for
- * operating system specific code (driver interface and l2_packet) since the
- * portable code will not be able to use such an OS-specific call. The handler
- * function will be called whenever the event is triggered. The handler
- * function is responsible for clearing the event after having processed it in
- * order to avoid eloop from calling the handler again for the same event.
- *
- * In case of Windows implementation (eloop_win.c), event pointer is of HANDLE
- * type, i.e., void*. The callers are likely to have 'HANDLE h' type variable,
- * and they would call this function with eloop_register_event(h, sizeof(h),
- * ...).
- */
-int eloop_register_event(struct eloop_data *eloop, void *event,
-                         size_t event_size, eloop_event_handler handler,
-                         void *eloop_data, void *user_data);
-
-/**
- * eloop_unregister_event - Unregister handler for a generic event
- * @eloop: eloop context
- * @event: Event to cancel (eloop implementation specific)
- * @event_size: Size of event data
- *
- * Unregister a generic event notifier that was previously registered with
- * eloop_register_event().
- */
-void eloop_unregister_event(struct eloop_data *eloop, void *event,
-                            size_t event_size);
-
-/**
  * eloop_register_timeout - Register timeout
  * @eloop: eloop context
  * @secs: Number of seconds to the timeout
