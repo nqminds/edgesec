@@ -22,6 +22,11 @@ if (DOXYGEN_FOUND)
     # set(DOXYGEN_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/docs")
     set(DOXYGEN_DOT_IMAGE_FORMAT svg)
     set(DOXYGEN_EXTRACT_ALL YES) # document even files missing `@file` command
+    set(DOXYGEN_FULL_PATH_NAMES NO) # use relative paths, not absolute paths
+
+    if(YES)
+      set(DOXYGEN_WARN_FORMAT "::warning file=\"$file\",line=\"$line\",title=doxydocs::\"$text\"")
+    endif()
 
     # allows for more complitated include diagrams
     set(DOXYGEN_DOT_GRAPH_MAX_NODES 128)
