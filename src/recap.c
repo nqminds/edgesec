@@ -22,11 +22,14 @@
 #include <pcap.h>
 
 #include "utils/os.h"
+#include "capture/middleware.h"
 #include "capture/middlewares/header_middleware/header_middleware.h"
 
 #define RECAP_VERSION_MAJOR 0
 #define RECAP_VERSION_MINOR 0
 #define RECAP_VERSION_PATCH 1
+
+#define PCAP_READ_INTERVAL 10 // in ms
 
 #define OPT_STRING ":p:f:mdvh"
 #define USAGE_STRING "\t%s [-p filename] [-f filename] [-d] [-h] [-v]\n"
@@ -108,11 +111,20 @@ void process_app_options(int argc, char *argv[], uint8_t *verbosity,
   }
 }
 
+void eloop_tout_pcapfile_handler(void *eloop_ctx, void *user_ctx) {
+  char *pcap_path = (char *)eloop_ctx;
+  struct middleware_context *context = (struct middleware_context *)user_ctx;
+
+  fprintf(stdout, "Here %s\n", pcap_path);
+}
+
 int main(int argc, char *argv[]) {
   uint8_t verbosity = 0;
   uint8_t level = 0;
   char *pcap_path = NULL, *db_path = NULL;
   sqlite3 *db;
+  struct eloop_data *eloop;
+  struct middleware_context *context = NULL;
 
   process_app_options(argc, argv, &verbosity, &pcap_path, &db_path);
 
@@ -143,10 +155,41 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
 
+  os_free(db_path);
+
   fprintf(stdout, "Using %s\n", header_middleware.name);
 
+  if ((eloop = eloop_init()) == NULL) {
+    fprintf(stdout, "eloop_init fail\n");
+    os_free(pcap_path);
+    sqlite3_close(db);
+    return EXIT_FAILURE;
+  }
+
+  if ((context = header_middleware.init(db, NULL, eloop, NULL)) == NULL) {
+    fprintf(stdout, "init_header_middleware fail\n");
+    eloop_free(eloop);
+    os_free(pcap_path);
+    sqlite3_close(db);
+    return EXIT_FAILURE;
+  }
+
+  if (eloop_register_timeout(eloop, 0, PCAP_READ_INTERVAL,
+                             eloop_tout_pcapfile_handler, (void *)pcap_path,
+                             (void *)&context) == -1) {
+    fprintf(stdout, "eloop_register_timeout fail\n");
+    eloop_free(eloop);
+    os_free(pcap_path);
+    sqlite3_close(db);
+    header_middleware.free(context);
+    return EXIT_FAILURE;
+  }
+
+  eloop_run(eloop);
+
+  eloop_free(eloop);
   os_free(pcap_path);
-  os_free(db_path);
   sqlite3_close(db);
+  header_middleware.free(context);
   return EXIT_SUCCESS;
 }
