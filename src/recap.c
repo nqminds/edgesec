@@ -37,6 +37,19 @@ const char description_string[] = R"==(
   Run capture on an input pcap file and output to a capture db.
 )==";
 
+enum PCAP_STATE {
+  PCAP_STATE_INIT = 0,
+  PCAP_STATE_READ_HEADER,
+  PCAP_STATE_READ_PHEADER,
+  PCAP_STATE_READ_PACKET
+};
+
+struct pcap_stream_context {
+  FILE *pcap_fd;
+  void *data;
+  enum PCAP_STATE state;
+};
+
 void show_app_version(void) {
   char buf[10];
 
@@ -112,10 +125,10 @@ void process_app_options(int argc, char *argv[], uint8_t *verbosity,
 }
 
 void eloop_tout_pcapfile_handler(void *eloop_ctx, void *user_ctx) {
-  char *pcap_path = (char *)eloop_ctx;
+  struct pcap_stream_context *pctx = (struct pcap_stream_context *)eloop_ctx;
   struct middleware_context *context = (struct middleware_context *)user_ctx;
 
-  fprintf(stdout, "Here %s\n", pcap_path);
+  fprintf(stdout, "Here\n");
 }
 
 int main(int argc, char *argv[]) {
@@ -125,6 +138,7 @@ int main(int argc, char *argv[]) {
   sqlite3 *db;
   struct eloop_data *eloop;
   struct middleware_context *context = NULL;
+  struct pcap_stream_context pctx = {.pcap_fd = NULL, .state = PCAP_STATE_INIT};
 
   process_app_options(argc, argv, &verbosity, &pcap_path, &db_path);
 
@@ -149,7 +163,9 @@ int main(int argc, char *argv[]) {
 
   if (ret != SQLITE_OK) {
     fprintf(stdout, "Cannot open database: %s", sqlite3_errmsg(db));
-    os_free(pcap_path);
+    if (pcap_path != NULL) {
+      os_free(pcap_path);
+    }
     os_free(db_path);
     sqlite3_close(db);
     return EXIT_FAILURE;
@@ -161,7 +177,9 @@ int main(int argc, char *argv[]) {
 
   if ((eloop = eloop_init()) == NULL) {
     fprintf(stdout, "eloop_init fail\n");
-    os_free(pcap_path);
+    if (pcap_path != NULL) {
+      os_free(pcap_path);
+    }
     sqlite3_close(db);
     return EXIT_FAILURE;
   }
@@ -169,26 +187,46 @@ int main(int argc, char *argv[]) {
   if ((context = header_middleware.init(db, NULL, eloop, NULL)) == NULL) {
     fprintf(stdout, "init_header_middleware fail\n");
     eloop_free(eloop);
-    os_free(pcap_path);
+    if (pcap_path != NULL) {
+      os_free(pcap_path);
+    }
     sqlite3_close(db);
     return EXIT_FAILURE;
   }
 
-  if (eloop_register_timeout(eloop, 0, PCAP_READ_INTERVAL,
-                             eloop_tout_pcapfile_handler, (void *)pcap_path,
-                             (void *)&context) == -1) {
-    fprintf(stdout, "eloop_register_timeout fail\n");
-    eloop_free(eloop);
-    os_free(pcap_path);
-    sqlite3_close(db);
-    header_middleware.free(context);
-    return EXIT_FAILURE;
+  if (pcap_path != NULL) {
+    if ((pctx.pcap_fd = fopen(pcap_path, "rb")) == NULL) {
+      perror("fopen");
+      eloop_free(eloop);
+      os_free(pcap_path);
+      sqlite3_close(db);
+      header_middleware.free(context);
+      return EXIT_FAILURE;
+    }
+
+    if (eloop_register_timeout(eloop, 0, PCAP_READ_INTERVAL,
+                               eloop_tout_pcapfile_handler, (void *)&pctx,
+                               (void *)&context) == -1) {
+      fprintf(stdout, "eloop_register_timeout fail\n");
+      eloop_free(eloop);
+      os_free(pcap_path);
+      sqlite3_close(db);
+      header_middleware.free(context);
+      fclose(pctx.pcap_fd);
+      return EXIT_FAILURE;
+    }
   }
 
   eloop_run(eloop);
 
   eloop_free(eloop);
-  os_free(pcap_path);
+  if (pcap_path != NULL) {
+    os_free(pcap_path);
+  }
+
+  if (pctx.pcap_fd != NULL) {
+    fclose(pctx.pcap_fd);
+  }
   sqlite3_close(db);
   header_middleware.free(context);
   return EXIT_SUCCESS;
