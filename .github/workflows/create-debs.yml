@@ -26,24 +26,9 @@ jobs:
       - name: Install Dependencies
         shell: bash # we're using bash arrays here
         run: |
-          build_dependencies=(
-            cmake # build-tool
-            git # required to download dependencies
-            ca-certificates # required for git+https downloads
-            doxygen texinfo graphviz # documentation
-            build-essential # C and C++ compilers
-            libnl-genl-3-dev libnl-route-3-dev # netlink dependencies
-            autopoint gettext # required by libuuid
-            autoconf # required by compile_sqlite.sh
-            libtool-bin # required by autoconf somewhere
-            pkg-config # seems to be required by nDPI
-            libjson-c-dev # mystery requirement
-            flex bison # required by pcap
-            libssl-dev # required by hostapd only. We compile OpenSSL 3 for EDGESec
-            libcmocka-dev # cmocka, can be removed if -DBUILD_CMOCKA_LIB=ON
-            libmnl-dev # libmnl, can be removed if -DBUILD_LIBMNL_LIB=ON
-          )
-          sudo apt install -y "${build_dependencies[@]}"
+          sudo apt-get update
+          sudo apt-get install devscripts equivs -y # install mk-build-depends
+          sudo mk-build-deps --install --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes'  debian/control
       - name: Configure
         run: |
           cmake -B build/ --preset "${{ matrix.cmake-preset }}"
