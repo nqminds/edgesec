@@ -128,6 +128,13 @@
       "displayName": "OpenWRT ath79/generic OpenWRT 21",
       "description": "OpenWRT ath79/generic OpenWRT 21 (uses uci)",
       "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/openwrt-21-ath79-generic.cmake"
+    },
+    {
+      "name": "openwrt-21.02.1/bcm27xx/bcm2710",
+      "inherits": "openwrt/default",
+      "displayName": "OpenWRT bcm27xx/bcm2710 OpenWRT 21.02.1",
+      "description": "Raspberry Pi 3B+ OpenWRT bcm27xx/bcm2710 OpenWRT 21.02.1",
+      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/openwrt-21.02.1-bcm27xx-bcm2710.cmake"
     }
   ],
   "buildPresets": [
@@ -170,6 +177,10 @@
     {
       "name": "openwrt-21/ath79/generic",
       "configurePreset": "openwrt-21/ath79/generic"
+    },
+    {
+      "name": "openwrt-21.02.1/bcm27xx/bcm2710",
+      "configurePreset": "openwrt-21.02.1/bcm27xx/bcm2710"
     }
   ],
   "testPresets": [
