@@ -21,13 +21,25 @@ jobs:
       run: cmake . -B build/docs/ -DBUILD_ONLY_DOCS=true
     - name: Build Docs
       run: cmake --build build/docs/ --target=doxydocs
-    - name: publish docs (main-branch only)
-      if: github.ref == 'refs/heads/main'
-      uses: peaceiris/actions-gh-pages@v3
+    - name: Upload docs
+      uses: actions/upload-pages-artifact@v1
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./build/docs/html
-        enable_jekyll: false
-        allow_empty_commit: false
-        force_orphan: true
-        publish_branch: gh-pages
+        path: ./build/docs/html
+  deploy-docs:
+    name: publish docs (main-branch only)
+    if: github.ref == 'refs/heads/main'
+    needs: build-docs
+    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+    permissions:
+      pages: write      # to deploy to Pages
+      id-token: write   # to verify the deployment originates from an appropriate source
+    # Deploy to the github-pages environment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    # Specify runner + deployment step
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
