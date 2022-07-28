@@ -15,7 +15,7 @@ COPY ./debian/control ./debian/control
 RUN apt-get update && apt-get install devscripts equivs wget -y && \
     mk-build-deps --install --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' ./debian/control
 
-RUN wget https://github.com/richfelker/musl-cross-make/archive/master.tar.gz
+ADD https://github.com/richfelker/musl-cross-make/archive/master.tar.gz ./master.tar.gz
 RUN tar xzf master.tar.gz
 WORKDIR /opt/musl-cross-make-master
 COPY ./config.mak ./
