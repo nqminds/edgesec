@@ -46,5 +46,5 @@ set_target_properties(edgesec PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 if (USE_CAPTURE_SERVICE AND USE_HEADER_MIDDLEWARE)
   add_executable(recap recap.c)
-  target_link_libraries(recap PRIVATE header_middleware eloop os log PCAP::pcap)
+  target_link_libraries(recap PRIVATE packet_queue header_middleware eloop os log PCAP::pcap)
 endif()

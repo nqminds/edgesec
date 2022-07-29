@@ -24,13 +24,14 @@
 #include "utils/os.h"
 #include "capture/middleware.h"
 #include "capture/middlewares/header_middleware/header_middleware.h"
+#include "capture/middlewares/header_middleware/packet_queue.h"
 
 #define RECAP_VERSION_MAJOR 0
 #define RECAP_VERSION_MINOR 0
 #define RECAP_VERSION_PATCH 1
 
 #define PCAP_READ_INTERVAL 10 // in ms
-#define PCAP_READ_SIZE 10     // bytes
+#define PCAP_READ_SIZE 100000 // bytes
 
 #define OPT_STRING ":p:f:mdvh"
 #define USAGE_STRING "\t%s [-p filename] [-f filename] [-d] [-h] [-v]\n"
@@ -143,7 +144,8 @@ ssize_t read_pcap_stream(struct pcap_stream_context *pctx, char **data) {
     log_errno("os_malloc");
     return -1;
   }
-  return fread(*data, sizeof(char), PCAP_READ_SIZE, pctx->pcap_fd);
+
+  return (ssize_t)fread(*data, sizeof(char), PCAP_READ_SIZE, pctx->pcap_fd);
 }
 
 void process_pcap_header_state(struct pcap_stream_context *pctx,
@@ -204,18 +206,47 @@ int process_pkt_header_state(struct pcap_stream_context *pctx,
   return 0;
 }
 
-void process_pkt_read_state(struct pcap_stream_context *pctx,
-                            ssize_t read_size) {
+int process_pkt_read_state(struct pcap_stream_context *pctx,
+                           struct middleware_context *mctx, ssize_t read_size) {
+  char *data;
   ssize_t current_size = read_size + pctx->data_size;
 
   if (current_size >= pctx->pkt_header.caplen) {
+    log_trace("Received pkt data");
+    if ((data = os_malloc(pctx->pkt_header.caplen)) == NULL) {
+      log_errno("os_malloc");
+      return -1;
+    }
+    os_memcpy(data, pctx->pcap_data, pctx->pkt_header.caplen);
 
+    struct pcap_pkthdr header;
+    header.ts.tv_sec = pctx->pkt_header.ts_sec;
+    header.ts.tv_usec = pctx->pkt_header.ts_usec;
+    header.caplen = pctx->pkt_header.caplen;
+    header.len = pctx->pkt_header.len;
+
+    if (header_middleware.process(
+            mctx, pcap_datalink_val_to_name(pctx->pcap_header.linktype),
+            &header, (uint8_t *)data, "pcap") < 0) {
+      log_error("process_header_middleware fail");
+      os_free(data);
+      return -1;
+    }
+
+    os_free(data);
+
+    pctx->data_size = current_size - pctx->pkt_header.caplen;
+    os_memcpy(pctx->pcap_data, &pctx->pcap_data[pctx->pkt_header.caplen],
+              pctx->data_size);
+    pctx->state = PCAP_STATE_READ_PKT_HEADER;
   } else if (current_size < pctx->pkt_header.caplen && read_size == 0) {
     log_trace("No data received");
     pctx->state = PCAP_STATE_FIN;
   } else {
     pctx->data_size += read_size;
   }
+
+  return 0;
 }
 
 int process_pcap_stream_state(struct pcap_stream_context *pctx,
@@ -223,15 +254,15 @@ int process_pcap_stream_state(struct pcap_stream_context *pctx,
   char *data = NULL;
   ssize_t read_size, current_size;
 
-  log_trace("Processing pcap file stream %zu", pctx->total_size);
+  log_trace("Processing pcap file stream %zu bytes", pctx->total_size);
 
   if (pctx->state != PCAP_STATE_INIT && pctx->state != PCAP_STATE_FIN) {
     if ((read_size = read_pcap_stream(pctx, &data)) < 0) {
       log_error("read_pcap_stream fail");
       os_free(pctx->pcap_data);
+      pctx->pcap_data = NULL;
       return -1;
     }
-
     pctx->total_size += read_size;
 
     current_size = read_size + pctx->data_size;
@@ -242,6 +273,7 @@ int process_pcap_stream_state(struct pcap_stream_context *pctx,
         log_errno("os_realloc");
         os_free(data);
         os_free(pctx->pcap_data);
+        pctx->pcap_data = NULL;
         return -1;
       }
       os_memcpy(&pctx->pcap_data[pctx->data_size], data, read_size);
@@ -266,18 +298,28 @@ int process_pcap_stream_state(struct pcap_stream_context *pctx,
       if (process_pkt_header_state(pctx, read_size) < 0) {
         log_error("process_pkt_header_state fail");
         os_free(pctx->pcap_data);
+        pctx->pcap_data = NULL;
         return -1;
       }
       return 1;
     case PCAP_STATE_READ_PACKET:
-      process_pkt_read_state(pctx, read_size);
+      if (process_pkt_read_state(pctx, mctx, read_size) < 0) {
+        log_error("process_pkt_read_state fail");
+        os_free(pctx->pcap_data);
+        pctx->pcap_data = NULL;
+        return -1;
+      }
       return 1;
     case PCAP_STATE_FIN:
       os_free(pctx->pcap_data);
-      return 0;
+      pctx->pcap_data = NULL;
+      return (is_packet_queue_empty((struct packet_queue *)mctx->mdata) == 1)
+                 ? 0
+                 : 1;
     default:
       log_trace("Unknown state");
       os_free(pctx->pcap_data);
+      pctx->pcap_data = NULL;
       return -1;
   }
 }
@@ -328,7 +370,7 @@ int main(int argc, char *argv[]) {
   char *pcap_path = NULL, *db_path = NULL;
   sqlite3 *db;
   struct eloop_data *eloop;
-  struct middleware_context *context = NULL;
+  struct middleware_context *mctx = NULL;
   struct pcap_stream_context pctx = {.pcap_fd = NULL,
                                      .state = PCAP_STATE_INIT,
                                      .exit_error = false,
@@ -378,7 +420,7 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
 
-  if ((context = header_middleware.init(db, NULL, eloop, NULL)) == NULL) {
+  if ((mctx = header_middleware.init(db, NULL, eloop, NULL)) == NULL) {
     fprintf(stdout, "init_header_middleware fail\n");
     eloop_free(eloop);
     if (pcap_path != NULL) {
@@ -394,18 +436,18 @@ int main(int argc, char *argv[]) {
       eloop_free(eloop);
       os_free(pcap_path);
       sqlite3_close(db);
-      header_middleware.free(context);
+      header_middleware.free(mctx);
       return EXIT_FAILURE;
     }
 
     if (eloop_register_timeout(eloop, 0, PCAP_READ_INTERVAL,
                                eloop_tout_pcapfile_handler, (void *)&pctx,
-                               (void *)&context) == -1) {
+                               (void *)mctx) == -1) {
       fprintf(stdout, "eloop_register_timeout fail\n");
       eloop_free(eloop);
       os_free(pcap_path);
       sqlite3_close(db);
-      header_middleware.free(context);
+      header_middleware.free(mctx);
       fclose(pctx.pcap_fd);
       return EXIT_FAILURE;
     }
@@ -422,7 +464,7 @@ int main(int argc, char *argv[]) {
     fclose(pctx.pcap_fd);
   }
   sqlite3_close(db);
-  header_middleware.free(context);
+  header_middleware.free(mctx);
   if (pctx.exit_error) {
     return EXIT_FAILURE;
   } else {
