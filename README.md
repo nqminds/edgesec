@@ -25,6 +25,15 @@ sudo apt install devscripts equivs # install mk-build-depends
 sudo mk-build-deps --install debian/control
 ```
 
+On other OSes, you can try to find dependencies yourself, or you can run the
+instructions in a new Ubuntu Docker or Podman container:
+
+```bash
+# in root of git repo (where the `CMakePresets.json` file is)
+docker run --rm -it --volume "$PWD":/opt/EDGESec --workdir /opt/EDGESec ubuntu:jammy bash
+# then run the Debian/Ubuntu dependencies setup instructions
+```
+
 ## Compile & Build
 
 Compiling edgesec is done with CMake.
