@@ -112,6 +112,8 @@
         "*.c.in": "c",
         "pcap.h": "c",
         "pcap-inttypes.h": "c",
-        "bpf.h": "c"
+        "bpf.h": "c",
+        "types.h": "c",
+        "time_t.h": "c"
     }
 }

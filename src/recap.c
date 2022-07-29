@@ -46,6 +46,13 @@ enum PCAP_STATE {
   PCAP_STATE_FIN
 };
 
+struct pcap_pkthdr32 {
+  uint32_t ts_sec;  /* timestamp seconds.*/
+  uint32_t ts_usec; /* timestamp microseconds.*/
+  uint32_t caplen;  /* length of portion present */
+  uint32_t len;     /* length this packet (off wire) */
+} STRUCT_PACKED;
+
 struct pcap_stream_context {
   FILE *pcap_fd;
   char *pcap_data;
@@ -54,7 +61,7 @@ struct pcap_stream_context {
   enum PCAP_STATE state;
   bool exit_error;
   struct pcap_file_header pcap_header;
-  struct pcap_pkthdr pkt_header;
+  struct pcap_pkthdr32 pkt_header;
 };
 
 void show_app_version(void) {
@@ -167,20 +174,16 @@ void process_pcap_header_state(struct pcap_stream_context *pctx,
 
 void process_pkt_header_state(struct pcap_stream_context *pctx,
                               ssize_t read_size) {
-  ssize_t pkt_header_size = (ssize_t)sizeof(struct pcap_pkthdr);
+  ssize_t pkt_header_size = (ssize_t)sizeof(struct pcap_pkthdr32);
   ssize_t current_size = read_size + pctx->data_size;
 
-  log_trace("sizeof(pkt_header_size)=%zd, sizeof(struct timeval)=%zd",
-            pkt_header_size, sizeof(struct timeval));
   if (current_size >= pkt_header_size) {
     log_trace("Received pkt header");
     os_memcpy(&pctx->pkt_header, pctx->pcap_data, pkt_header_size);
-    // log_trace("pcap_file_header version_major = %d",
-    //           pctx->pcap_header.version_major);
-    // log_trace("pcap_file_header version_minor = %d",
-    //           pctx->pcap_header.version_minor);
-    log_trace("pcap_pkthdr caplen = %d", pctx->pkt_header.caplen);
-    log_trace("pcap_pkthdr len = %d", pctx->pkt_header.len);
+    log_trace("pcap_pkthdr ts_sec = %llu", pctx->pkt_header.ts_sec);
+    log_trace("pcap_pkthdr ts_usec = %llu", pctx->pkt_header.ts_usec);
+    log_trace("pcap_pkthdr caplen = %llu", pctx->pkt_header.caplen);
+    log_trace("pcap_pkthdr len = %llu", pctx->pkt_header.len);
     pctx->data_size = current_size - pkt_header_size;
     os_memcpy(pctx->pcap_data, &pctx->pcap_data[pkt_header_size],
               pctx->data_size);
@@ -193,6 +196,7 @@ void process_pkt_header_state(struct pcap_stream_context *pctx,
     pctx->data_size += read_size;
   }
 }
+
 int process_pcap_stream_state(struct pcap_stream_context *pctx,
                               struct middleware_context *mctx) {
   char *data = NULL;
