@@ -69,6 +69,24 @@ cmake -S . -B build
 
 The configure stage will download some of the edgesec dependencies, so this may take a while.
 
+#### Configure for cross-compiling
+
+To cross-compile edgesec, pass CMake a
+[cmake-toolchain file](https://cmake.org/cmake/help/latest/manual/cmake-toolchains.7.html).
+
+For example:
+
+```bash
+cmake -S . -B build --toolchain ./CMakeModules/CMakeToolchains/openwrt-ath79-generic.cmake
+```
+
+In [`./CMakeModules/CMakeToolchains`](./CMakeModules/CMakeToolchains), we have
+some example toolchains that automatically download the OpenWRT SDK to cross-compile
+for specific OpenWRT SDK versions.
+
+You can also make a new preset in the [`CMakePresets.json`](./CMakePresets.json)
+file that points to this toolchain.
+
 ### Building
 
 To build, you can then run:
