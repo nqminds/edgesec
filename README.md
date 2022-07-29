@@ -42,6 +42,7 @@ Compiling edgesec is done with CMake.
 If you have CMake v3.22+, you can use the following `cmake-presets` to compile edgesec:
 
 ```bash
+cmake --list-presets # list all available presets
 cmake --preset linux # configure edgesec for Linux
 cmake --build --preset linux -j4 # build edgesec for Linux using 4 threads
 ctest --preset linux # test edgesec for Linux
