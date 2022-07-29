@@ -6,6 +6,7 @@
 [![GitHub license](https://img.shields.io/github/license/nqminds/edgesec)](https://github.com/nqminds/edgesec/blob/main/LICENSE)
 ![CMake](https://img.shields.io/badge/CMake-%23008FBA.svg?logo=cmake&logoColor=white)
 ![C11](https://img.shields.io/badge/C11-informational.svg?logo=c)
+[![OpenWRT package feed](https://img.shields.io/badge/OpenWRT%20Package%20Feed-%23002B49.svg?logo=OpenWrt&logoColor=white)](https://github.com/nqminds/manysecured-openwrt-packages)
 
 edgesec defines a new architecture and toolset for edge based routers addressing
 fundamental security weaknesses that impact current IP and IoT router implementations.
@@ -25,6 +26,15 @@ sudo apt install devscripts equivs # install mk-build-depends
 sudo mk-build-deps --install debian/control
 ```
 
+On other OSes, you can try to find dependencies yourself, or you can run the
+instructions in a new Ubuntu Docker or Podman container:
+
+```bash
+# in root of git repo (where the `CMakePresets.json` file is)
+docker run --rm -it --volume "$PWD":/opt/EDGESec --workdir /opt/EDGESec ubuntu:jammy bash
+# then run the Debian/Ubuntu dependencies setup instructions
+```
+
 ## Compile & Build
 
 Compiling edgesec is done with CMake.
@@ -33,6 +43,7 @@ Compiling edgesec is done with CMake.
 If you have CMake v3.22+, you can use the following `cmake-presets` to compile edgesec:
 
 ```bash
+cmake --list-presets # list all available presets
 cmake --preset linux # configure edgesec for Linux
 cmake --build --preset linux -j4 # build edgesec for Linux using 4 threads
 ctest --preset linux # test edgesec for Linux
@@ -58,6 +69,34 @@ cmake -S . -B build
 ```
 
 The configure stage will download some of the edgesec dependencies, so this may take a while.
+
+#### Configure for cross-compiling
+
+To cross-compile edgesec, pass CMake a
+[cmake-toolchain file](https://cmake.org/cmake/help/latest/manual/cmake-toolchains.7.html).
+
+For example:
+
+```bash
+cmake -S . -B build --toolchain ./CMakeModules/CMakeToolchains/openwrt-ath79-generic.cmake
+```
+
+In [`./CMakeModules/CMakeToolchains`](./CMakeModules/CMakeToolchains), we have
+some example toolchains that automatically download the OpenWRT SDK to cross-compile
+for specific OpenWRT SDK versions.
+
+You can also make a new preset in the [`CMakePresets.json`](./CMakePresets.json)
+file that points to this toolchain.
+
+#### Configure for OpenWRT
+
+For production uses of edgesec, we recommend using the edgesec OpenWRT package
+feed at https://github.com/nqminds/manysecured-openwrt-packages
+
+It comes with an `/etc/init.d/edgesec` script that can be used to automatically
+run edgesec on startup.
+
+Additionally, this package allows easy installation/uninstallation of edgesec.
 
 ### Building
 
@@ -91,66 +130,6 @@ To enable verbose debug mode use:
 ```bash
 ./build/src/edgesec -c ./build/dev-config.ini -ddddd
 ```
-
-## Docker for cross compile
-
-The following commands also work using the `podman` container runtime (recommended on Linux):
-
-```bash
-alias docker=podman
-```
-
-### Configure
-
-#### Step 1
-
-In `config.mak` change the `TARGET` key to the desired architecture (see details [https://github.com/richfelker/musl-cross-make](https://github.com/richfelker/musl-cross-make)):
-- aarch64[_be]-linux-musl
-- arm[eb]-linux-musleabi[hf]
-- i*86-linux-musl
-- microblaze[el]-linux-musl
-- mips-linux-musl
-- mips[el]-linux-musl[sf]
-- mips64[el]-linux-musl[n32][sf]
-- powerpc-linux-musl[sf]
-- powerpc64[le]-linux-musl
-- riscv64-linux-musl
-- s390x-linux-musl
-- sh*[eb]-linux-musl[fdpic][sf]
-- x86_64-linux-musl[x32]
-
-Set `MUSL_VER` key to the platform MUSL library version. Use
-
-```bash
-ldd --version
-```
-
-to find the MUSL library version `x.y.z`.
-
-#### Step 2
-
-Using the container name `openwrt` build the docker container using the command:
-
-```bash
-docker build -t openwrt .
-```
-
-### Building
-
-To build EDGESec in the docker container, go back to the root of the Git Repo, and run.
-
-```bash
-# in root of git repo (where the `CMakePresets.json` file is)
-docker run --rm --volume "$PWD":/opt/EDGESec --workdir /opt/EDGESec openwrt cmake --preset openwrt/default
-```
-
-To compile using cmake (on 4 cores)
-
-```bash
-docker run --rm --volume "$PWD":/opt/EDGESec --workdir /opt/EDGESec openwrt cmake --build --preset openwrt/default -j4
-```
-
-Afterwards, you'll find the compiled binaries in the `build/openwrt/default` folder.
 
 ## Testing
 
