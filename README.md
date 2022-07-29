@@ -21,7 +21,7 @@ You can use [`mk-build-deps`](https://manpages.ubuntu.com/manpages/focal/man1/mk
 to automatically install these build-dependencies.
 
 ```bash
-sudo apt install devscripts # install mk-build-depends
+sudo apt install devscripts equivs # install mk-build-depends
 sudo mk-build-deps --install debian/control
 ```
 
