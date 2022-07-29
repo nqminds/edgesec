@@ -6,6 +6,7 @@
 [![GitHub license](https://img.shields.io/github/license/nqminds/edgesec)](https://github.com/nqminds/edgesec/blob/main/LICENSE)
 ![CMake](https://img.shields.io/badge/CMake-%23008FBA.svg?logo=cmake&logoColor=white)
 ![C11](https://img.shields.io/badge/C11-informational.svg?logo=c)
+[![OpenWRT package feed](https://img.shields.io/badge/OpenWRT%20Package%20Feed-%23002B49.svg?logo=OpenWrt&logoColor=white)](https://github.com/nqminds/manysecured-openwrt-packages)
 
 edgesec defines a new architecture and toolset for edge based routers addressing
 fundamental security weaknesses that impact current IP and IoT router implementations.
@@ -86,6 +87,16 @@ for specific OpenWRT SDK versions.
 
 You can also make a new preset in the [`CMakePresets.json`](./CMakePresets.json)
 file that points to this toolchain.
+
+#### Configure for OpenWRT
+
+For production uses of edgesec, we recommend using the edgesec OpenWRT package
+feed at https://github.com/nqminds/manysecured-openwrt-packages
+
+It comes with an `/etc/init.d/edgesec` script that can be used to automatically
+run edgesec on startup.
+
+Additionally, this package allows easy installation/uninstallation of edgesec.
 
 ### Building
 
