@@ -22,7 +22,7 @@ if (USE_MDNS_SERVICE)
 endif ()
 
 add_executable(test_runctl test_runctl.c)
-target_link_libraries(test_runctl PUBLIC SQLite::SQLite3 PRIVATE runctl log os mac_mapper cmocka::cmocka)
+target_link_libraries(test_runctl PUBLIC SQLite::SQLite3 PRIVATE runctl log os supervisor_config mac_mapper cmocka::cmocka)
 set(TEST_RUNCTL_PROPS "-Wl,--wrap=get_vlan_mapper -Wl,--wrap=eloop_run -Wl,--wrap=get_commands_paths -Wl,--wrap=hmap_str_keychar_get")
 set(TEST_RUNCTL_PROPS "${TEST_RUNCTL_PROPS} -Wl,--wrap=fw_init_context -Wl,--wrap=fw_set_ip_forward")
 if (USE_CRYPTO_SERVICE)
