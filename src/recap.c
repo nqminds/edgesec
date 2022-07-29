@@ -152,14 +152,14 @@ void process_pcap_header_state(struct pcap_stream_context *pctx,
   ssize_t current_size = read_size + pctx->data_size;
 
   if (current_size >= pcap_header_size) {
-    log_trace("Received pcap header");
+    log_trace("Received pcap header:");
     os_memcpy(&pctx->pcap_header, pctx->pcap_data, pcap_header_size);
-    log_trace("pcap_file_header version_major = %d",
+    log_trace("\tpcap_file_header version_major = %d",
               pctx->pcap_header.version_major);
-    log_trace("pcap_file_header version_minor = %d",
+    log_trace("\tpcap_file_header version_minor = %d",
               pctx->pcap_header.version_minor);
-    log_trace("pcap_file_header snaplen = %d", pctx->pcap_header.snaplen);
-    log_trace("pcap_file_header linktype = %d", pctx->pcap_header.linktype);
+    log_trace("\tpcap_file_header snaplen = %d", pctx->pcap_header.snaplen);
+    log_trace("\tpcap_file_header linktype = %d", pctx->pcap_header.linktype);
     pctx->data_size = current_size - pcap_header_size;
     os_memcpy(pctx->pcap_data, &pctx->pcap_data[pcap_header_size],
               pctx->data_size);
@@ -172,24 +172,45 @@ void process_pcap_header_state(struct pcap_stream_context *pctx,
   }
 }
 
-void process_pkt_header_state(struct pcap_stream_context *pctx,
-                              ssize_t read_size) {
+int process_pkt_header_state(struct pcap_stream_context *pctx,
+                             ssize_t read_size) {
   ssize_t pkt_header_size = (ssize_t)sizeof(struct pcap_pkthdr32);
   ssize_t current_size = read_size + pctx->data_size;
 
   if (current_size >= pkt_header_size) {
-    log_trace("Received pkt header");
+    log_trace("Received pkt header:");
     os_memcpy(&pctx->pkt_header, pctx->pcap_data, pkt_header_size);
-    log_trace("pcap_pkthdr ts_sec = %llu", pctx->pkt_header.ts_sec);
-    log_trace("pcap_pkthdr ts_usec = %llu", pctx->pkt_header.ts_usec);
-    log_trace("pcap_pkthdr caplen = %llu", pctx->pkt_header.caplen);
-    log_trace("pcap_pkthdr len = %llu", pctx->pkt_header.len);
+    log_trace("\tpcap_pkthdr ts_sec = %llu", pctx->pkt_header.ts_sec);
+    log_trace("\tpcap_pkthdr ts_usec = %llu", pctx->pkt_header.ts_usec);
+    log_trace("\tpcap_pkthdr caplen = %llu", pctx->pkt_header.caplen);
+    log_trace("\tpcap_pkthdr len = %llu", pctx->pkt_header.len);
+
+    if (pctx->pkt_header.caplen > pctx->pkt_header.len) {
+      log_error("caplen > len");
+      return -1;
+    }
+
     pctx->data_size = current_size - pkt_header_size;
     os_memcpy(pctx->pcap_data, &pctx->pcap_data[pkt_header_size],
               pctx->data_size);
-    // pctx->state = PCAP_STATE_READ_PKT_HEADER;
-    pctx->state = PCAP_STATE_FIN;
+    pctx->state = PCAP_STATE_READ_PACKET;
   } else if (current_size < pkt_header_size && read_size == 0) {
+    log_trace("No data received");
+    pctx->state = PCAP_STATE_FIN;
+  } else {
+    pctx->data_size += read_size;
+  }
+
+  return 0;
+}
+
+void process_pkt_read_state(struct pcap_stream_context *pctx,
+                            ssize_t read_size) {
+  ssize_t current_size = read_size + pctx->data_size;
+
+  if (current_size >= pctx->pkt_header.caplen) {
+
+  } else if (current_size < pctx->pkt_header.caplen && read_size == 0) {
     log_trace("No data received");
     pctx->state = PCAP_STATE_FIN;
   } else {
@@ -242,9 +263,14 @@ int process_pcap_stream_state(struct pcap_stream_context *pctx,
       process_pcap_header_state(pctx, read_size);
       return 1;
     case PCAP_STATE_READ_PKT_HEADER:
-      process_pkt_header_state(pctx, read_size);
+      if (process_pkt_header_state(pctx, read_size) < 0) {
+        log_error("process_pkt_header_state fail");
+        os_free(pctx->pcap_data);
+        return -1;
+      }
       return 1;
     case PCAP_STATE_READ_PACKET:
+      process_pkt_read_state(pctx, read_size);
       return 1;
     case PCAP_STATE_FIN:
       os_free(pctx->pcap_data);
