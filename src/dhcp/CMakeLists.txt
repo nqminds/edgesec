@@ -3,10 +3,9 @@ include_directories (
 )
 
 add_library(dnsmasq dnsmasq.c)
+target_link_libraries(dnsmasq PRIVATE log os)
 if (USE_UCI_SERVICE)
-    target_link_libraries(dnsmasq PRIVATE log os squeue OpenWRT::UCI)
-else ()
-  target_link_libraries(dnsmasq PRIVATE log os)
+    target_link_libraries(dnsmasq PRIVATE squeue uci_wrt)
 endif ()
 
 
