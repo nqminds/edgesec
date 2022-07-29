@@ -81,7 +81,7 @@ jobs:
         with:
           path: |
             /var/cache/pbuilder/base.tgz
-          key: ${{ runner.os }}-${{ matrix.distribution }}
+          key: ${{ runner.os }}-${{ matrix.distribution }}-${{ matrix.architecture }}
       - name: Install dependencies
         run: |
           sudo apt-get update && sudo apt-get install pbuilder debhelper -y
