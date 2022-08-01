@@ -19,7 +19,7 @@
 #include "capture/middlewares/header_middleware/sqlite_header.h"
 #include "capture/capture_service.h"
 
-char *test_capture_db = "/tmp/test_capture.sqlite";
+char *test_capture_db = "/tmp/edgesec/test_capture.sqlite";
 
 void *test_sqlite_header_thread(void *arg) {
   (void)arg;
