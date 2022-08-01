@@ -68,7 +68,10 @@ jobs:
     strategy:
       matrix:
         architecture: [arm64, amd64]
-        distribution: [focal]
+        distribution:
+          # focal and jammy are incompatible due to ABI incompatible libssl versions
+          - focal # uses libssl1.1
+          - jammy # uses libssl3
     env:
       OTHER_MIRROR:
         deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${{ matrix.distribution }} main universe | deb [arch=amd64] http://archive.ubuntu.com/ubuntu ${{ matrix.distribution }} main universe
