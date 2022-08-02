@@ -82,13 +82,11 @@ jobs:
           sudo mk-build-deps --install --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes'  debian/control
       - run: cmake --preset coverage
       - run: cmake --build --preset coverage
-      - name: Report code coverage
-        uses: zgosalvez/github-actions-report-lcov@v1
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
         with:
-          coverage-files: build/coverage/*.info
-          minimum-coverage: 0
-          artifact-name: code-coverage-report
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          files: build/coverage/coverage.info
+          fail_ci_if_error: true
 
   build-deb:
     name: Build Debian Package
