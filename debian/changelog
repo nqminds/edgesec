@@ -6,11 +6,11 @@ edgesec (0.0.8) UNRELEASED; urgency=low
     - Compile doxygen with CI actions and added docs as iframe to [https://edgesec.info](https://edgesec.info)
 
 
-* Changed
+  * Changed
     - The dnsmasq config uses three types of interfaces (bridge, interface and wifi interface) for the config
     - Changed the code licence info to linux kernel style licence
 
-* Removed
+  * Removed
     - Quarantine parameter removed from the config.ini
     - Docusaurus page moved to [https://edgesec.info](https://edgesec.info) site and repo [https://github.com/nqminds/edgesec.info](https://github.com/nqminds/edgesec.info)
 
