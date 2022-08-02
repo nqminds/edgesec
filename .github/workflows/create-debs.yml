@@ -68,7 +68,10 @@ jobs:
     strategy:
       matrix:
         architecture: [arm64, amd64]
-        distribution: [focal]
+        distribution:
+          # focal and jammy are incompatible due to ABI incompatible libssl versions
+          - focal # uses libssl1.1
+          - jammy # uses libssl3
     env:
       OTHER_MIRROR:
         deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${{ matrix.distribution }} main universe | deb [arch=amd64] http://archive.ubuntu.com/ubuntu ${{ matrix.distribution }} main universe
@@ -105,9 +108,12 @@ jobs:
       - name: Load output .deb name
         id: load-deb-name
         run: |
-          DEB_PATH="$(ls -rt '${{ runner.temp }}/pbuilder/result'/edgesec*.deb | head -1)"
-          echo " ::set-output name=deb-path::${DEB_PATH}"
-          echo " ::set-output name=deb-name::$(basename "${DEB_PATH}")"
+          OLD_DEB_PATH="$(ls -rt '${{ runner.temp }}/pbuilder/result'/edgesec*.deb | head -1)"
+          NEW_DEB_PATH="$(echo "$OLD_DEB_PATH" | sed -E 's/_(([[:digit:]]\.){0,2}[[:digit:]](-[A-Za-z0-9+.~])?)_/_\1_${{ matrix.distribution }}_/')"
+          mv "$OLD_DEB_PATH" "$NEW_DEB_PATH"
+          echo " ::set-output name=old-deb-path::${OLD_DEB_PATH}"
+          echo " ::set-output name=deb-path::${NEW_DEB_PATH}"
+          echo " ::set-output name=deb-name::$(basename "${NEW_DEB_PATH}")"
       - name: Archive built debs
         uses: actions/upload-artifact@v2
         with:
