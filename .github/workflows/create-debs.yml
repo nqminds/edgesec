@@ -61,6 +61,35 @@ jobs:
           retention-days: 7
           path: |
             ${{ runner.temp }}/edgesec-${{ matrix.cmake-preset }}/
+  coverage:
+    name: Code Coverage
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # we need to be able to write to a PR to make a comment
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Install Dependencies
+        shell: bash # we're using bash arrays here
+        run: |
+          sudo apt-get update
+          # we need lcov to generate coverage reports
+          sudo apt-get install devscripts equivs lcov -y # install mk-build-depends
+          sudo mk-build-deps --install --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes'  debian/control
+      - run: cmake --preset coverage
+      - run: cmake --build --preset coverage
+      - name: Report code coverage
+        uses: zgosalvez/github-actions-report-lcov@v1
+        with:
+          coverage-files: build/coverage/*.info
+          minimum-coverage: 0
+          artifact-name: code-coverage-report
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
   build-deb:
     name: Build Debian Package
     # building a deb is super slow, but we're a public repo now, so it's free!!
