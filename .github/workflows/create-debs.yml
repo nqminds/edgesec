@@ -151,7 +151,7 @@ jobs:
                   url: context.payload.release.upload_url,
                   headers,
                   name: basename(filePath),
-                  file: await filePromise,
+                  data: await filePromise,
                 });
               } catch (error) {
                 // upload errors are usually since the file already exists
