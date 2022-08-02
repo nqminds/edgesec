@@ -139,7 +139,9 @@ void capture_config(struct capture_conf *config) {
   config->immediate = true;
   config->buffer_timeout = 100;
   strcpy(config->filter, "port 80");
-  strcpy(config->capture_db_path, "/tmp/test_capture.sqlite");
+  int ret = mkdir("/tmp/edgesec", 0755);
+  assert_int_equal(ret, 0);
+  strcpy(config->capture_db_path, "/tmp/edgesec/test_capture.sqlite");
 }
 
 static void test_run_capture(void **state) {
