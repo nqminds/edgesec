@@ -28,20 +28,36 @@ jobs:
         shell: bash # we're using bash arrays here
         run: |
           sudo apt-get update
-          sudo apt-get install devscripts equivs -y # install mk-build-depends
+          sudo apt-get install devscripts equivs lcov -y # install mk-build-depends
           sudo mk-build-deps --install --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes'  debian/control
       - name: Configure
         run: |
-          cmake -B build/ --preset "${{ matrix.cmake-preset }}"
+          cmake -B build/ --preset "${{ matrix.cmake-preset }}" -DCONFIGURE_COVERAGE=BOOL:ON
       - name: Build
         run: |
           # can't use --preset "${{ matrix.cmake-preset }}" since we want to specify a custom build dir
           cmake --build build/ --parallel "$(($(nproc) + 1))"
-      - name: Test
+      - id: test
+        name: Test
         run: |
           if ctest --list-presets | grep -s "${{ matrix.cmake-preset }}"; then
             ctest --test-dir build/ --preset "${{ matrix.cmake-preset }}"
+            echo "::set-output name=tested::true"
+          else
+            echo "::set-output name=tested::false"
           fi
+      - name: Code Coverage
+        # code coverage only works if ctest works
+        if: steps.test.outputs.tested == 'true'
+        run: |
+          cmake --build build/ --parallel "$(($(nproc) + 1))" --target coverage
+          mv build/coverage.info "build/coverage-${{ matrix.cmake-preset }}.info"
+      - name: Archive code coverage results
+        if: steps.test.outputs.tested == 'true'
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-coverage-lcov
+          path: build/coverage-${{ matrix.cmake-preset }}.info
       - name: Install to ${{ runner.temp }}/edgesec-${{ matrix.cmake-preset }}/
         run: |
           cmake --install build/ --prefix "${{ runner.temp }}/edgesec-${{ matrix.cmake-preset }}"
@@ -63,29 +79,34 @@ jobs:
             ${{ runner.temp }}/edgesec-${{ matrix.cmake-preset }}/
   coverage:
     name: Code Coverage
+    runs-on: ubuntu-latest
     needs:
       - build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      # we need to be able to write to a PR to make a comment
-      pull-requests: write
     steps:
       - name: Checkout code
+        # not sure if needed, maybe the codecov action uses it
         uses: actions/checkout@v3
-      - name: Install Dependencies
-        shell: bash # we're using bash arrays here
+      - name: Install Coverage Tools
         run: |
-          sudo apt-get update
-          # we need lcov to generate coverage reports
-          sudo apt-get install devscripts equivs lcov -y # install mk-build-depends
-          sudo mk-build-deps --install --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes'  debian/control
-      - run: cmake --preset coverage
-      - run: cmake --build --preset coverage
-      - name: Upload coverage to Codecov
+          sudo apt-get install lcov -y || ( sudo apt-get update && sudo apt-get install lcov -y )
+      - name: Download Coverage Results
+        uses: actions/download-artifact@v3
+        id: download
+        with:
+          name: 'code-coverage-lcov'
+      - name: 'Echo download path'
+        run: echo ${{steps.download.outputs.download-path}}
+      - name: 'Combine Coverage Results'
+        run: |
+          inputs=('lcov' '--output-file' 'coverage.info' '--rc' 'lcov_branch_coverage=1')
+          for input in coverage-*.info; do
+            inputs+=('--add-tracefile' "$input")
+          done
+          "${inputs[@]}"
+      - name: Upload combined coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
-          files: build/coverage/coverage.info
+          files: coverage.info
           fail_ci_if_error: true
 
   build-deb:
