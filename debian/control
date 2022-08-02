@@ -23,7 +23,7 @@ Multi-Arch: foreign
 Depends:
     ${shlibs:Depends},
     ${misc:Depends},
-    dnsmasq, jq
+    dnsmasq
 Description: NquiringMinds EDGESec Network Security Router.
  This is NquiringMind's EDGESec Network Analyser.
  It usually creates a secure and paritioned Wifi access point, using vlans,
