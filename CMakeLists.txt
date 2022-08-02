@@ -80,6 +80,7 @@ if (USE_CRYPTO_SERVICE)
 endif ()
 
 option(USE_ZYMKEY4_HSM "Use the Zymkey4 HSM" OFF)
+option(CONFIGURE_COVERAGE "Configure for code coverage (requires lcov)" OFF)
 
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -123,10 +124,6 @@ set(CMAKE_C_STANDARD 11) # we use C11 raw-strings
 set(CMAKE_C_STANDARD_REQUIRED TRUE)
 set(CMAKE_C_EXTENSIONS ON) # We use GNU C specific features
 set(CMAKE_C_FLAGS "-Wunused-variable -Wall -Wextra")
-
-# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs")
-# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ftest-coverage")
-# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_LIBNL")
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -172,10 +169,21 @@ configure_file(
 include(doxygen)
 
 if (NOT BUILD_ONLY_DOCS)
-  add_subdirectory(src)
   if (NOT CMAKE_CROSSCOMPILING)
+    if (CONFIGURE_COVERAGE)
+      include(CodeCoverage)
+      # enable before the src() flag to enable code coverage
+      append_coverage_compiler_flags()
+      setup_target_for_coverage_lcov(
+        NAME coverage
+        EXECUTABLE ctest -j "${PROCESSOR_COUNT}"
+        EXCLUDE "${PROJECT_SOURCE_DIR}/lib/*"
+      )
+    endif()
+
     add_subdirectory(tests)
   endif ()
+  add_subdirectory(src)
   include(install)
 endif ()
 
