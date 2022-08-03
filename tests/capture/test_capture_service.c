@@ -1,6 +1,5 @@
 #define _GNU_SOURCE
 
-#include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -140,11 +139,10 @@ void capture_config(struct capture_conf *config) {
   config->immediate = true;
   config->buffer_timeout = 100;
   strcpy(config->filter, "port 80");
-  int ret = mkdir("/tmp/edgesec", 0755);
-  if (ret == -1) {
-    assert_int_equal(errno, EEXIST);
-  }
-  strcpy(config->capture_db_path, "/tmp/edgesec/test_capture.sqlite");
+  const char *capture_db_path = "/tmp/edgesec/test_capture.sqlite";
+  int ret = make_dirs_to_path(capture_db_path, 0755);
+  assert_int_equal(ret, 0);
+  strcpy(config->capture_db_path, capture_db_path);
 }
 
 static void test_run_capture(void **state) {
