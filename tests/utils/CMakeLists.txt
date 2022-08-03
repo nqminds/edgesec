@@ -20,6 +20,9 @@ target_link_libraries(test_net PRIVATE net cmocka::cmocka)
 add_executable(test_os test_os.c)
 target_link_libraries(test_os PRIVATE os hashmap cmocka::cmocka)
 
+add_executable(test_sqliteu test_sqliteu.c)
+target_link_libraries(test_sqliteu PRIVATE sqliteu cmocka::cmocka)
+
 add_executable(test_hashmap test_hashmap.c)
 target_link_libraries(test_hashmap PRIVATE hashmap cmocka::cmocka)
 
@@ -62,6 +65,11 @@ add_test(NAME test_os COMMAND test_os)
 set_tests_properties(test_os
   PROPERTIES
   WILL_FAIL FALSE)
+
+add_test(NAME test_sqliteu COMMAND test_sqliteu)
+  set_tests_properties(test_sqliteu
+    PROPERTIES
+    WILL_FAIL FALSE)
 
 add_test(NAME test_hashmap COMMAND test_hashmap)
 set_tests_properties(test_hashmap
