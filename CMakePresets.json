@@ -212,6 +212,10 @@
     {
       "name": "linux-with-example-middlewares",
       "configurePreset": "linux-with-example-middlewares"
+    },
+    {
+      "name": "linux-with-crypt",
+      "configurePreset": "linux-with-crypt"
     }
   ]
 }
