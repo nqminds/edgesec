@@ -95,6 +95,8 @@ struct iface_context *iface_init_context(void *params) {
     iface_free_context(ctx);
     return NULL;
   }
+#else
+#error You must enable an iface implementation
 #endif
 
   return ctx;

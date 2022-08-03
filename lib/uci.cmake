@@ -1,7 +1,5 @@
 # Compile libubox
 if (USE_UCI_SERVICE AND NOT (BUILD_ONLY_DOCS))
-  add_compile_definitions(WITH_UCI_SERVICE)
-
   if (NOT BUILD_UCI_LIB)
     find_package(UCI MODULE REQUIRED)
     message("Found libuci library: ${UCI_LIBRARIES}")
