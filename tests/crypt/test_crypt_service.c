@@ -50,6 +50,7 @@ static void test_load_crypt_service(void **state) {
   int rc = sqlite3_open("file::memory:?cache=shared", &db);
   assert_int_equal(rc, 0);
 
+  expect_function_call(__wrap_crypto_decrypt);
   ctx = load_crypt_service("file::memory:?cache=shared", "key", secret, 4);
   assert_non_null(ctx);
 
