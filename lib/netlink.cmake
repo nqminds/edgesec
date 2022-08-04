@@ -1,8 +1,4 @@
 # Compile library libnetlink
-if (USE_NETLINK_SERVICE)
-  add_compile_definitions(WITH_NETLINK_SERVICE)
-endif ()
-
 if (BUILD_NETLINK_LIB AND NOT (BUILD_ONLY_DOCS))
   set(LIBNETLINK_SOURCE_DIR "${CMAKE_SOURCE_DIR}/lib/libnetlink")
   FetchContent_Declare(
