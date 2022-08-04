@@ -36,15 +36,6 @@
       }
     },
     {
-      "name": "coverage",
-      "displayName": "Code-Coverage",
-      "description": "Configure for code coverage",
-      "inherits": "linux",
-      "cacheVariables": {
-        "CONFIGURE_COVERAGE": true
-      }
-    },
-    {
       "name": "linux-with-crypt",
       "inherits": "linux",
       "displayName": "Linux (with crypto service)",
@@ -190,14 +181,6 @@
     {
       "name": "openwrt-21.02.1/bcm27xx/bcm2710",
       "configurePreset": "openwrt-21.02.1/bcm27xx/bcm2710"
-    },
-    {
-      "name": "coverage",
-      "configurePreset": "coverage",
-      "targets": [
-        "all",
-        "coverage"
-      ]
     }
   ],
   "testPresets": [
