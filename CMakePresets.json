@@ -37,7 +37,7 @@
     },
     {
       "name": "linux-with-crypt",
-      "inherits": "default",
+      "inherits": "linux",
       "displayName": "Linux (with crypto service)",
       "description": "Build for Linux using encrypted crypto service",
       "cacheVariables": {
