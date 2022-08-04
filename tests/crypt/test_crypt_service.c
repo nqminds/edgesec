@@ -16,33 +16,13 @@
 #include "utils/sqliteu.h"
 #include "crypt/crypt_service.h"
 
-static sqlite3 *global_db = NULL;
-
-extern int __real_sqlite3_close(sqlite3 *db);
 extern int __real_crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
                                  uint8_t *iv, uint8_t *out);
-extern int __real_sqlite3_open(const char *filename, sqlite3 **ppDb);
-
-int __wrap_sqlite3_open(const char *filename, sqlite3 **ppDb) {
-  if (strcmp(filename, "global_db") == 0) {
-    *ppDb = global_db;
-    return SQLITE_OK;
-  } else
-    return __real_sqlite3_open(":memory:", ppDb);
-}
 
 int __wrap_crypto_decrypt(uint8_t *in, int in_size, uint8_t *key, uint8_t *iv,
                           uint8_t *out) {
   function_called();
   return __real_crypto_decrypt(in, in_size, key, iv, out);
-}
-
-int __wrap_sqlite3_close(sqlite3 *db) {
-  if (db == global_db) {
-    return SQLITE_OK;
-  }
-
-  return __real_sqlite3_close(db);
 }
 
 struct hsm_context *__wrap_init_hsm(void) {
@@ -66,29 +46,34 @@ static void test_load_crypt_service(void **state) {
   ctx = load_crypt_service("", "key", secret, 0);
   assert_null(ctx);
 
-  __real_sqlite3_open(":memory:", &global_db);
-  ctx = load_crypt_service("global_db", "key", secret, 4);
+  sqlite3 *db = NULL;
+  int rc = sqlite3_open("file::memory:?cache=shared", &db);
+  assert_int_equal(rc, 0);
+
+  expect_function_call(__wrap_crypto_decrypt);
+  ctx = load_crypt_service("file::memory:?cache=shared", "key", secret, 4);
   assert_non_null(ctx);
 
   expect_function_call(__wrap_crypto_decrypt);
-  ctx1 = load_crypt_service("global_db", "key", secret, 4);
+  ctx1 = load_crypt_service("file::memory:?cache=shared", "key", secret, 4);
   assert_non_null(ctx1);
   free_crypt_service(ctx);
   free_crypt_service(ctx1);
-  __real_sqlite3_close(global_db);
-  global_db = NULL;
+  sqlite3_close(db);
+  db = NULL;
 
-  __real_sqlite3_open(":memory:", &global_db);
+  rc = sqlite3_open("file::memory:?cache=shared", &db);
+  assert_int_equal(rc, 0);
   ignore_function_calls(__wrap_crypto_decrypt);
-  ctx = load_crypt_service("global_db", "key", secret, 4);
+  ctx = load_crypt_service("file::memory:?cache=shared", "key", secret, 4);
   assert_non_null(ctx);
 
-  ctx1 = load_crypt_service("global_db", "key", secret1, 4);
+  ctx1 = load_crypt_service("file::memory:?cache=shared", "key", secret1, 4);
   assert_null(ctx1);
   free_crypt_service(ctx);
   free_crypt_service(ctx1);
-  __real_sqlite3_close(global_db);
-  global_db = NULL;
+  sqlite3_close(db);
+  db = NULL;
 }
 
 static void test_put_crypt_pair(void **state) {
