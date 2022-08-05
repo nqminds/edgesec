@@ -34,6 +34,7 @@ to avoid redownloading the OpenWRT SDK.
 
 #]=======================================================================]
 cmake_minimum_required(VERSION 3.9.0)
+cmake_policy(VERSION 3.9.0...3.24.0)
 
 function(defineOpenwrtSDKToolchain)
     set(
