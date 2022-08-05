@@ -1,6 +1,5 @@
-cmake_minimum_required(VERSION 3.14.0) # required by lib/sqlite.cmake
-
-cmake_policy(SET CMP0048 NEW)
+cmake_minimum_required(VERSION 3.14.0) # required for FindSQLite3
+cmake_policy(VERSION 3.14.0...3.24.0)
 
 project(EDGESEC
   VERSION 0.0.8
