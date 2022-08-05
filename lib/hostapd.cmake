@@ -1,7 +1,6 @@
 # Builds hostapd using ExternalProject
 
 # v3.14.0+ is required by BUILD_IN_SOURCE + SOURCE_SUBDIR together
-cmake_minimum_required(VERSION 3.14.0)
 include(ExternalProject)
 
 if (BUILD_HOSTAPD AND NOT (BUILD_ONLY_DOCS))

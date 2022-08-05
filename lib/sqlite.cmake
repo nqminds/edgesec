@@ -1,5 +1,4 @@
 # Compile libsqlite
-cmake_minimum_required(VERSION 3.14.0) # FindSQLite3.cmake is only in 3.14.0 and later
 include(CheckLibraryExists)
 include(ExternalProject)
 

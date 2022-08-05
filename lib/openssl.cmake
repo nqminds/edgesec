@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 3.11.0) # required by FetchContent
 include(FetchContent)
 
 if (USE_CRYPTO_SERVICE)
