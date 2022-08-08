@@ -15,7 +15,6 @@
 
 #include "utils/log.h"
 #include "utils/net.h"
-#include "utils/utarray.h"
 
 static void test_ip_2_nbo(void **state) {
   (void)state; /* unused */

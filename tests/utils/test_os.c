@@ -17,7 +17,7 @@
 
 #include "utils/log.h"
 #include "utils/os.h"
-#include "utils/utarray.h"
+#include "utils/allocs.h"
 
 static void command_out_fn(void *ctx, void *buf, size_t count) {
   (void)ctx;

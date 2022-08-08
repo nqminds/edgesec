@@ -13,8 +13,6 @@
 #include "utils/net.h"
 #include "utils/os.h"
 #include "utils/log.h"
-#include "utils/utarray.h"
-#include "utils/uthash.h"
 
 #include "mac_mapper.h"
 #include "bridge_list.h"

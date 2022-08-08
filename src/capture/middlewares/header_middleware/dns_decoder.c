@@ -20,8 +20,8 @@
 #include <netinet/tcp.h>
 #include <netinet/udp.h>
 #include <arpa/inet.h>
+#include <utarray.h>
 
-#include "../../../utils/utarray.h"
 #include "../../../utils/allocs.h"
 #include "../../../utils/os.h"
 #include "../../../utils/hash.h"

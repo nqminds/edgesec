@@ -16,7 +16,7 @@
 #include "crypt/crypt_service.h"
 #include "utils/hashmap.h"
 #include "utils/log.h"
-#include "utils/utarray.h"
+#include <utarray.h>
 
 #include "supervisor/supervisor_config.h"
 #include "runctl.h"

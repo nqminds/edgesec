@@ -16,7 +16,6 @@
 #include "supervisor/system_commands.h"
 
 #include "utils/hashmap.h"
-#include "utils/utarray.h"
 #include "utils/log.h"
 #include "utils/iptables.h"
 #include "runctl.h"

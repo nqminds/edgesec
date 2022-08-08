@@ -13,6 +13,8 @@
 
 #include <inttypes.h>
 #include <stdbool.h>
+#include <utarray.h>
+#include <uthash.h>
 
 #include "bridge_list.h"
 
@@ -20,8 +22,6 @@
 
 #include "../utils/allocs.h"
 #include "../utils/os.h"
-#include "../utils/utarray.h"
-#include "../utils/uthash.h"
 #include "../utils/hashmap.h"
 
 #define MAX_DEVICE_LABEL_SIZE 255

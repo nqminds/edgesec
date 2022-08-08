@@ -9,6 +9,7 @@
  */
 #include <sys/un.h>
 #include <libgen.h>
+#include <utarray.h>
 
 #include "system_commands.h"
 #include "mac_mapper.h"
@@ -26,7 +27,6 @@
 #include "../utils/base64.h"
 #include "../utils/eloop.h"
 #include "../utils/sockctl.h"
-#include "../utils/utarray.h"
 #include "../utils/iface_mapper.h"
 
 #define PING_REPLY "PONG\n"

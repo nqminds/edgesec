@@ -12,7 +12,6 @@
 #include "utils/os.h"
 #include "utils/log.h"
 #include "utils/list.h"
-#include "utils/utarray.h"
 
 #include "bridge_list.h"
 

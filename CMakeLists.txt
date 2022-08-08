@@ -146,6 +146,7 @@ include(openssl)
 include(sqlite)
 include(zymkey4)
 include(uci)
+include(uthash)
 
 # configure a header file to pass some of the CMake settings
 # to the source code

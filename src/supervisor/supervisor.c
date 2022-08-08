@@ -15,6 +15,7 @@
 #include <sys/ioctl.h>
 #include <libgen.h>
 #include <time.h>
+#include <utarray.h>
 
 #include "subscriber_events.h"
 
@@ -22,7 +23,6 @@
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/eloop.h"
-#include "../utils/utarray.h"
 #include "../utils/sockctl.h"
 
 #include "../capture/capture_service.h"

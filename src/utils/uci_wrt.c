@@ -16,7 +16,6 @@
 #include "uci_wrt.h"
 
 #include "iface_mapper.h"
-#include "utarray.h"
 #include "squeue.h"
 #include "allocs.h"
 #include "log.h"

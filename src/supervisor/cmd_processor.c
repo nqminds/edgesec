@@ -30,7 +30,6 @@
 #include "utils/log.h"
 #include "utils/net.h"
 #include "utils/base64.h"
-#include "utils/utarray.h"
 #include "utils/sockctl.h"
 
 bool process_domain_buffer(char *domain_buffer, size_t domain_buffer_len,

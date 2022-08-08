@@ -15,4 +15,4 @@ else ()
 endif ()
 
 add_library(crypt_service crypt_service.c)
-target_link_libraries(crypt_service PRIVATE generic_hsm_driver base64 sqlite_crypt_writer cryptou log os)
+target_link_libraries(crypt_service PUBLIC LibUTHash::LibUTHash SQLite::SQLite3 PRIVATE generic_hsm_driver base64 sqlite_crypt_writer cryptou log os)

@@ -1,19 +1,11 @@
 #define _GNU_SOURCE
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <stdarg.h>
-#include <string.h>
-#include <inttypes.h>
-#include <unistd.h>
+#include <stddef.h>
 #include <setjmp.h>
 #include <cmocka.h>
 
-#include "utils/utarray.h"
-#include "utils/log.h"
+#include <utarray.h>
 
 static void test_utarray(void **state) {
   (void)state; /* unused */

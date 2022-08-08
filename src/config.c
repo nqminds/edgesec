@@ -21,7 +21,6 @@
 #include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/minIni.h"
-#include "utils/utarray.h"
 #include "config.h"
 
 #include "supervisor/cmd_processor.h"

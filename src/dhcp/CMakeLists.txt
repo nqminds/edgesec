@@ -14,4 +14,4 @@ target_link_libraries(dhcp_service PUBLIC dhcp_config PRIVATE dnsmasq log os)
 
 add_library(dhcp_config INTERFACE)
 set_target_properties(dhcp_config PROPERTIES PUBLIC_HEADER "dhcp_config.h")
-target_link_libraries(dhcp_config INTERFACE utarray allocs os net)
+target_link_libraries(dhcp_config INTERFACE LibUTHash::LibUTHash allocs os net)

@@ -26,7 +26,6 @@
 #include "iface_mapper.h"
 #include "ifaceu.h"
 #include "net.h"
-#include "utarray.h"
 
 int get_if_mapper(hmap_if_conn **hmap, in_addr_t subnet, char *ifname) {
   hmap_if_conn *s;

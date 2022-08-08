@@ -14,8 +14,7 @@
 #include <linux/if.h>
 #include <netinet/if_ether.h>
 #include "linux/rtnetlink.h"
-
-#include "utarray.h"
+#include <utarray.h>
 
 #ifdef DEBUG_LIBNL
 #define NL_CB_TYPE NL_CB_DEBUG

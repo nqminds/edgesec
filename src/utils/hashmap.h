@@ -12,8 +12,7 @@
 #define HASHMAP_H_
 
 #include <stdbool.h>
-
-#include "uthash.h"
+#include <uthash.h>
 
 #define HASH_KEY_CHAR_SIZE 20
 
