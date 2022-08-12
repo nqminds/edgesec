@@ -520,8 +520,6 @@ int uwrt_set_interface_ip(struct uctx *context, char *ifname, char *ip_addr,
 
 int uwrt_create_interface(struct uctx *context, char *ifname, char *type,
                           char *ip_addr, char *brd_addr, char *netmask) {
-  char property[128];
-
   if (context == NULL) {
     log_trace("context param is NULL");
     return -1;
@@ -552,44 +550,49 @@ int uwrt_create_interface(struct uctx *context, char *ifname, char *type,
     return -1;
   }
 
+  UT_array *properties;
+  log_trace("here");
+  utarray_new(properties, &ut_str_icd);
+  log_trace("here");
+
+  char property_buffer[128];
+  // utarray_push_back doesn't support arrays, only pointers, due to being
+  // a C preprocessor macro
+  char *const property = property_buffer;
+
   sprintf(property, "network.%s=interface", ifname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "network.%s.enabled=1", ifname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "network.%s.type=%s", ifname, type);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "network.%s.proto=static", ifname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
+  utarray_push_back(properties, &property);
+
+  sprintf(property, "network.%s.bridge_empty=1", ifname);
+  utarray_push_back(properties, &property);
+
+  sprintf(property, "network.%s.ip6assign=60", ifname);
+  utarray_push_back(properties, &property);
+
+  log_trace("uwrt_set_property for %s", property);
+
+  for (const char *const *prop = utarray_front(properties); prop != NULL;
+       prop = utarray_next(properties, prop)) {
+    log_trace("uwrt_set_property for %s", *prop);
+    if (uwrt_set_property(context->uctx, *prop) < 0) {
+      log_trace("uwrt_set_property fail for %s", *prop);
+      utarray_free(properties);
+      return -1;
+    }
   }
+  utarray_free(properties);
 
   if (uwrt_set_interface_ip(context, ifname, ip_addr, netmask) < 0) {
     log_trace("uwrt_set_interface_ip fail for ifname=%s", ifname);
-    return -1;
-  }
-
-  sprintf(property, "network.%s.bridge_empty=1", ifname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
-
-  sprintf(property, "network.%s.ip6assign=60", ifname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
     return -1;
   }
 
