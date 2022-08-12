@@ -683,6 +683,18 @@ int uwrt_gen_dnsmasq_instance(struct uctx *context,
     return -1;
   }
 
+  sprintf(property, "dhcp.edgesec.leasefile=%s", leasefile);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
+  sprintf(property, "dhcp.edgesec.dhcpscript=%s", scriptfile);
+  if (uwrt_set_property(context->uctx, property) < 0) {
+    log_trace("uwrt_set_property fail for %s", property);
+    return -1;
+  }
+
   dl_list_for_each(el, &ifname_queue->list, struct string_queue, list) {
     if (el != NULL) {
       sprintf(property, "dhcp.edgesec.interface=%s", el->str);
@@ -705,18 +717,6 @@ int uwrt_gen_dnsmasq_instance(struct uctx *context,
       log_trace("uwrt_add_list fail for %s", property);
       return -1;
     }
-  }
-
-  sprintf(property, "dhcp.edgesec.leasefile=%s", leasefile);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
-
-  sprintf(property, "dhcp.edgesec.dhcpscript=%s", scriptfile);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
   }
 
   return 0;
