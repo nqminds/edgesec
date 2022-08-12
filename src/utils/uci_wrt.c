@@ -1369,7 +1369,6 @@ int uwrt_add_firewall_nat(struct uctx *context, char *brname, char *ip_addr,
 }
 
 int uwrt_delete_firewall_nat(struct uctx *context, char *ip_addr) {
-  char property[256];
   uint8_t ip_buf[4];
 
   if (context == NULL) {
@@ -1387,27 +1386,31 @@ int uwrt_delete_firewall_nat(struct uctx *context, char *ip_addr) {
     return -1;
   }
 
+  UT_array *props_to_delete;
+  utarray_new(props_to_delete, &ut_str_icd);
+
+  char property_buffer[256];
+  const size_t property_size = ARRAY_SIZE(property_buffer);
+  // utarray_push_back doesn't support arrays, only pointers, due to being
+  // a C preprocessor macro
+  char *const property = property_buffer;
+
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_backward",
           IP2STR(ip_buf));
-  if (uwrt_delete_property(context->uctx, property) < 0) {
-    log_trace("nothing to delete for %s", property);
-  }
+  utarray_push_back(props_to_delete, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_forward",
           IP2STR(ip_buf));
-  if (uwrt_delete_property(context->uctx, property) < 0) {
-    log_trace("nothing to delete for %s", property);
-  }
+  utarray_push_back(props_to_delete, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_snat", IP2STR(ip_buf));
-  if (uwrt_delete_property(context->uctx, property) < 0) {
-    log_trace("nothing to delete for %s", property);
-  }
+  utarray_push_back(props_to_delete, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_dnat", IP2STR(ip_buf));
-  if (uwrt_delete_property(context->uctx, property) < 0) {
-    log_trace("nothing to delete for %s", property);
-  }
+  utarray_push_back(props_to_delete, &property);
+
+  uwrt_delete_properties(context->uctx, props_to_delete);
+  utarray_free(props_to_delete);
 
   return 0;
 }
@@ -1565,7 +1568,6 @@ int uwrt_add_firewall_bridge(struct uctx *context, char *sip, char *sbr,
 }
 
 int uwrt_delete_firewall_bridge(struct uctx *context, char *sip, char *dip) {
-  char property[256];
   uint8_t sip_buf[4], dip_buf[4];
 
   if (context == NULL) {
@@ -1593,17 +1595,25 @@ int uwrt_delete_firewall_bridge(struct uctx *context, char *sip, char *dip) {
     return -1;
   }
 
+  UT_array *props_to_delete;
+  utarray_new(props_to_delete, &ut_str_icd);
+
+  char property_buffer[256];
+  const size_t property_size = ARRAY_SIZE(property_buffer);
+  // utarray_push_back doesn't support arrays, only pointers, due to being
+  // a C preprocessor macro
+  char *const property = property_buffer;
+
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR,
           IP2STR(sip_buf), IP2STR(dip_buf));
-  if (uwrt_delete_property(context->uctx, property) < 0) {
-    log_trace("nothing to delete for %s", property);
-  }
+  utarray_push_back(props_to_delete, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR,
           IP2STR(dip_buf), IP2STR(sip_buf));
-  if (uwrt_delete_property(context->uctx, property) < 0) {
-    log_trace("nothing to delete for %s", property);
-  }
+  utarray_push_back(props_to_delete, &property);
+
+  uwrt_delete_properties(context->uctx, props_to_delete);
+  utarray_free(props_to_delete);
 
   return 0;
 }
