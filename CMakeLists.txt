@@ -185,7 +185,7 @@ if (NOT BUILD_ONLY_DOCS)
       append_coverage_compiler_flags()
       setup_target_for_coverage_lcov(
         NAME coverage
-        EXECUTABLE ctest -j "${PROCESSOR_COUNT}"
+        EXECUTABLE ctest -j "${PROCESSOR_COUNT}" --output-on-failure
         EXCLUDE "${PROJECT_SOURCE_DIR}/lib/*"
       )
     endif()
