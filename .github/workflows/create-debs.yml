@@ -41,7 +41,7 @@ jobs:
         name: Test
         run: |
           if ctest --list-presets | grep -s "${{ matrix.cmake-preset }}"; then
-            ctest --test-dir build/ --preset "${{ matrix.cmake-preset }}"
+            ctest --test-dir build/ --preset "${{ matrix.cmake-preset }}" --output-on-failure
             echo "::set-output name=tested::true"
           else
             echo "::set-output name=tested::false"
