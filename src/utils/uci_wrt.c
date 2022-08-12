@@ -324,6 +324,8 @@ int uwrt_get_net_if(UT_array *kv, netif_info_t *nif) {
   return 0;
 }
 
+// Warning, property string must **NOT** be constant
+// uci_lookup_ptr will modify it
 int uwrt_set_property(struct uci_context *ctx, char *property) {
   struct uci_ptr ptr;
 
@@ -347,6 +349,26 @@ int uwrt_set_property(struct uci_context *ctx, char *property) {
   return 0;
 }
 
+/**
+ * @brief Set multiple OpenWRT UCI properties at once
+ * @param[in] ctx UCI context. The context ptr will be modified.
+ * @param[in] properties Array of properties to set. Warning, strings may be
+ * modified by UCI.
+ * @retval  0 Success
+ * @retval -1 Error
+ */
+int uwrt_set_properties(struct uci_context *ctx, UT_array *properties) {
+  for (char *const *prop = (char **)utarray_front(properties); prop != NULL;
+       prop = (char **)utarray_next(properties, prop)) {
+
+    if (uwrt_set_property(ctx, *prop) < 0) {
+      log_error("uwrt_set_property fail for %s", *prop);
+      return -1;
+    }
+  }
+  return 0;
+}
+
 int uwrt_add_list(struct uci_context *ctx, char *property) {
   struct uci_ptr ptr;
 
@@ -367,6 +389,25 @@ int uwrt_add_list(struct uci_context *ctx, char *property) {
     return -1;
   }
 
+  return 0;
+}
+
+/**
+ * @brief Set multiple OpenWRT UCI list properties at once
+ * @param[in] ctx UCI context. The context ptr will be modified.
+ * @param[in] properties Array of list properties to set. Warning, strings may
+ * be modified by UCI.
+ * @retval  0 Success
+ * @retval -1 Error
+ */
+int uwrt_add_list_properties(struct uci_context *ctx, UT_array *properties) {
+  for (char *const *prop = (char **)utarray_front(properties); prop != NULL;
+       prop = (char **)utarray_next(properties, prop)) {
+    if (uwrt_add_list(ctx, *prop) < 0) {
+      log_trace("uwrt_add_list fail for %s", *prop);
+      return -1;
+    }
+  }
   return 0;
 }
 
@@ -479,8 +520,6 @@ uwrt_get_fail:
 
 int uwrt_set_interface_ip(struct uctx *context, char *ifname, char *ip_addr,
                           char *netmask) {
-  char property[128];
-
   if (context == NULL) {
     log_trace("context param is NULL");
     return -1;
@@ -501,19 +540,27 @@ int uwrt_set_interface_ip(struct uctx *context, char *ifname, char *ip_addr,
     return -1;
   }
 
-  snprintf(property, ARRAY_SIZE(property), "network.%s.ipaddr=%s", ifname,
-           ip_addr);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  UT_array *properties;
+  utarray_new(properties, &ut_str_icd);
 
-  snprintf(property, ARRAY_SIZE(property), "network.%s.netmask=%s", ifname,
-           netmask);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
+  char property_buffer[128];
+  const size_t property_size = ARRAY_SIZE(property_buffer);
+  // utarray_push_back doesn't support arrays, only pointers, due to being
+  // a C preprocessor macro
+  char *const property = property_buffer;
+
+  snprintf(property, property_size, "network.%s.ipaddr=%s", ifname, ip_addr);
+  utarray_push_back(properties, &property);
+
+  snprintf(property, property_size, "network.%s.netmask=%s", ifname, netmask);
+  utarray_push_back(properties, &property);
+
+  if (uwrt_set_properties(context->uctx, properties) < 0) {
+    log_error("uwrt_set_interface_ip: failed to uwrt_set_properties");
+    utarray_free(properties);
     return -1;
   }
+  utarray_free(properties);
 
   return 0;
 }
@@ -551,9 +598,7 @@ int uwrt_create_interface(struct uctx *context, char *ifname, char *type,
   }
 
   UT_array *properties;
-  log_trace("here");
   utarray_new(properties, &ut_str_icd);
-  log_trace("here");
 
   char property_buffer[128];
   // utarray_push_back doesn't support arrays, only pointers, due to being
@@ -581,16 +626,10 @@ int uwrt_create_interface(struct uctx *context, char *ifname, char *type,
   sprintf(property, "network.%s.ip6assign=60", ifname);
   utarray_push_back(properties, &property);
 
-  log_trace("uwrt_set_property for %s", property);
-
-  for (const char *const *prop = utarray_front(properties); prop != NULL;
-       prop = utarray_next(properties, prop)) {
-    log_trace("uwrt_set_property for %s", *prop);
-    if (uwrt_set_property(context->uctx, *prop) < 0) {
-      log_trace("uwrt_set_property fail for %s", *prop);
-      utarray_free(properties);
-      return -1;
-    }
+  if (uwrt_set_properties(context->uctx, properties) < 0) {
+    log_error("uwrt_create_interface: failed to uwrt_set_properties");
+    utarray_free(properties);
+    return -1;
   }
   utarray_free(properties);
 
@@ -633,7 +672,6 @@ int uwrt_gen_dnsmasq_instance(struct uctx *context,
                               char *scriptfile) {
   char **p = NULL;
   struct string_queue *el = NULL;
-  char property[128];
 
   if (context == NULL) {
     log_trace("context param is NULL");
@@ -660,40 +698,41 @@ int uwrt_gen_dnsmasq_instance(struct uctx *context,
     return -1;
   }
 
+  UT_array *properties;
+  utarray_new(properties, &ut_str_icd);
+
+  char property_buffer[128];
+  const size_t property_size = ARRAY_SIZE(property_buffer);
+  // utarray_push_back doesn't support arrays, only pointers, due to being
+  // a C preprocessor macro
+  char *const property = property_buffer;
+
   sprintf(property, "dhcp.edgesec");
   if (uwrt_delete_property(context->uctx, property) < 0) {
     log_trace("nothing to delete for %s", property);
   }
 
   sprintf(property, "dhcp.edgesec=dnsmasq");
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   // sprintf(property, "dhcp.edgesec.noresolv=1");
-  // if (uwrt_set_property(context->uctx, property) < 0) {
-  //   log_trace("uwrt_set_property fail for %s", property);
-  //   return -1;
-  // }
+  // utarray_push_back(properties, &property);
 
   sprintf(property, "dhcp.edgesec.nonwildcard=1");
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "dhcp.edgesec.leasefile=%s", leasefile);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "dhcp.edgesec.dhcpscript=%s", scriptfile);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
+  utarray_push_back(properties, &property);
+
+  if (uwrt_set_properties(context->uctx, properties) < 0) {
+    log_error("uwrt_gen_dnsmasq_instance: failed to uwrt_set_properties");
+    utarray_free(properties);
     return -1;
   }
+  utarray_free(properties);
 
   dl_list_for_each(el, &ifname_queue->list, struct string_queue, list) {
     if (el != NULL) {
@@ -725,7 +764,6 @@ int uwrt_gen_dnsmasq_instance(struct uctx *context,
 int uwrt_add_dhcp_pool(struct uctx *context, char *ifname, char *ip_addr_low,
                        char *ip_addr_upp, char *subnet_mask, char *lease_time) {
   uint32_t start, limit;
-  char property[128];
 
   if (context == NULL) {
     log_trace("context param is NULL");
@@ -769,76 +807,57 @@ int uwrt_add_dhcp_pool(struct uctx *context, char *ifname, char *ip_addr_low,
 
   limit = (limit < start) ? 0 : (limit - start) + 1;
 
-  snprintf(property, ARRAY_SIZE(property), "dhcp.%s=dhcp", ifname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  UT_array *properties;
+  utarray_new(properties, &ut_str_icd);
 
-  snprintf(property, ARRAY_SIZE(property), "dhcp.%s.interface=%s", ifname,
-           ifname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  char property_buffer[128];
+  const size_t property_size = ARRAY_SIZE(property_buffer);
+  // utarray_push_back doesn't support arrays, only pointers, due to being
+  // a C preprocessor macro
+  char *const property = property_buffer;
 
-  snprintf(property, ARRAY_SIZE(property), "dhcp.%s.networkid=br-%s", ifname,
-           ifname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  snprintf(property, property_size, "dhcp.%s=dhcp", ifname);
+  utarray_push_back(properties, &property);
 
-  snprintf(property, ARRAY_SIZE(property), "dhcp.%s.dhcpv4=server", ifname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  snprintf(property, property_size, "dhcp.%s.interface=%s", ifname, ifname);
+  utarray_push_back(properties, &property);
 
-  snprintf(property, ARRAY_SIZE(property), "dhcp.%s.instance=edgesec", ifname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  snprintf(property, property_size, "dhcp.%s.networkid=br-%s", ifname, ifname);
+  utarray_push_back(properties, &property);
 
-  snprintf(property, ARRAY_SIZE(property), "dhcp.%s.ignore=0", ifname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  snprintf(property, property_size, "dhcp.%s.dhcpv4=server", ifname);
+  utarray_push_back(properties, &property);
 
-  snprintf(property, ARRAY_SIZE(property), "dhcp.%s.force=1", ifname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  snprintf(property, property_size, "dhcp.%s.instance=edgesec", ifname);
+  utarray_push_back(properties, &property);
+
+  snprintf(property, property_size, "dhcp.%s.ignore=0", ifname);
+  utarray_push_back(properties, &property);
+
+  snprintf(property, property_size, "dhcp.%s.force=1", ifname);
+  utarray_push_back(properties, &property);
 
   sprintf(property, "dhcp.%s.start=%d", ifname, start);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
-  snprintf(property, ARRAY_SIZE(property), "dhcp.%s.limit=%d", ifname, limit);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  snprintf(property, property_size, "dhcp.%s.limit=%d", ifname, limit);
+  utarray_push_back(properties, &property);
 
-  snprintf(property, ARRAY_SIZE(property), "dhcp.%s.leasetime=%s", ifname,
-           lease_time);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
+  snprintf(property, property_size, "dhcp.%s.leasetime=%s", ifname, lease_time);
+  utarray_push_back(properties, &property);
+
+  if (uwrt_set_properties(context->uctx, properties) < 0) {
+    log_error("uwrt_add_dhcp_pool: failed to uwrt_set_properties");
+    utarray_free(properties);
     return -1;
   }
+  utarray_free(properties);
 
   return 0;
 }
 
 int uwrt_gen_hostapd_instance(struct uctx *context,
                               struct hostapd_params *params) {
-  char property[128];
-
   if (context == NULL) {
     log_trace("context param is NULL");
     return -1;
@@ -854,193 +873,136 @@ int uwrt_gen_hostapd_instance(struct uctx *context,
     return -1;
   }
 
+  UT_array *properties;
+  utarray_new(properties, &ut_str_icd);
+
+  char property_buffer[128];
+  const size_t property_size = ARRAY_SIZE(property_buffer);
+  // utarray_push_back doesn't support arrays, only pointers, due to being
+  // a C preprocessor macro
+  char *const property = property_buffer;
+
   sprintf(property, "wireless.edgesec=wifi-iface");
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "wireless.edgesec.device=%s", params->device);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "wireless.edgesec.mode=ap");
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "wireless.edgesec.ssid=%s", params->ssid);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "wireless.edgesec.isolate=0");
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "wireless.edgesec.encryption=psk2");
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "wireless.edgesec.key=%s", params->wpa_passphrase);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "wireless.%s=wifi-device", params->device);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "wireless.%s.disabled=0", params->device);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "wireless.%s.channel=11", params->device);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "wireless.%s.band=2g", params->device);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "wireless.%s.htmode=HT20", params->device);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "wireless.%s.log_level=0", params->device);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
+  utarray_push_back(properties, &property);
+
+  if (uwrt_set_properties(context->uctx, properties) < 0) {
+    log_error("uwrt_gen_hostapd_instance: failed to uwrt_set_properties");
+    utarray_free(properties);
     return -1;
   }
+  utarray_free(properties);
 
   sprintf(property, "wireless.%s.hostapd_options", params->device);
   if (uwrt_delete_property(context->uctx, property) < 0) {
     log_trace("nothing to delete for %s", property);
   }
 
+  UT_array *list_properties;
+  utarray_new(list_properties, &ut_str_icd);
+
   sprintf(property, "wireless.%s.hostapd_options=auth_algs=%d", params->device,
           params->auth_algs);
-  if (uwrt_add_list(context->uctx, property) < 0) {
-    log_trace("uwrt_add_list fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(list_properties, &property);
 
   sprintf(property, "wireless.%s.hostapd_options=wpa=%d", params->device,
           params->wpa);
-  if (uwrt_add_list(context->uctx, property) < 0) {
-    log_trace("uwrt_add_list fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(list_properties, &property);
 
   sprintf(property, "wireless.%s.hostapd_options=wpa_key_mgmt=%s",
           params->device, params->wpa_key_mgmt);
-  if (uwrt_add_list(context->uctx, property) < 0) {
-    log_trace("uwrt_add_list fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(list_properties, &property);
 
   sprintf(property, "wireless.%s.hostapd_options=rsn_pairwise=%s",
           params->device, params->rsn_pairwise);
-  if (uwrt_add_list(context->uctx, property) < 0) {
-    log_trace("uwrt_add_list fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(list_properties, &property);
 
   sprintf(property, "wireless.%s.hostapd_options=own_ip_addr=%s",
           params->device, params->radius_client_ip);
-  if (uwrt_add_list(context->uctx, property) < 0) {
-    log_trace("uwrt_add_list fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(list_properties, &property);
 
   sprintf(property, "wireless.%s.hostapd_options=auth_server_addr=%s",
           params->device, params->radius_server_ip);
-  if (uwrt_add_list(context->uctx, property) < 0) {
-    log_trace("uwrt_add_list fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(list_properties, &property);
 
   sprintf(property, "wireless.%s.hostapd_options=auth_server_port=%d",
           params->device, params->radius_port);
-  if (uwrt_add_list(context->uctx, property) < 0) {
-    log_trace("uwrt_add_list fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(list_properties, &property);
 
   sprintf(property, "wireless.%s.hostapd_options=auth_server_shared_secret=%s",
           params->device, params->radius_secret);
-  if (uwrt_add_list(context->uctx, property) < 0) {
-    log_trace("uwrt_add_list fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(list_properties, &property);
 
   sprintf(property, "wireless.%s.hostapd_options=macaddr_acl=%d",
           params->device, params->macaddr_acl);
-  if (uwrt_add_list(context->uctx, property) < 0) {
-    log_trace("uwrt_add_list fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(list_properties, &property);
 
   sprintf(property, "wireless.%s.hostapd_options=dynamic_vlan=%d",
           params->device, params->dynamic_vlan);
-  if (uwrt_add_list(context->uctx, property) < 0) {
-    log_trace("uwrt_add_list fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(list_properties, &property);
 
   sprintf(property, "wireless.%s.hostapd_options=vlan_file=%s", params->device,
           params->vlan_file);
-  if (uwrt_add_list(context->uctx, property) < 0) {
-    log_trace("uwrt_add_list fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(list_properties, &property);
 
   sprintf(property, "wireless.%s.hostapd_options=ignore_broadcast_ssid=%d",
           params->device, params->ignore_broadcast_ssid);
-  if (uwrt_add_list(context->uctx, property) < 0) {
-    log_trace("uwrt_add_list fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(list_properties, &property);
 
   sprintf(property, "wireless.%s.hostapd_options=wpa_psk_radius=%d",
           params->device, params->wpa_psk_radius);
-  if (uwrt_add_list(context->uctx, property) < 0) {
-    log_trace("uwrt_add_list fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(list_properties, &property);
 
   sprintf(property, "wireless.%s.hostapd_options=vlan_bridge=%s",
           params->device, params->vlan_bridge);
-  if (uwrt_add_list(context->uctx, property) < 0) {
-    log_trace("uwrt_add_list fail for %s", property);
+  utarray_push_back(list_properties, &property);
+
+  if (uwrt_add_list_properties(context->uctx, properties) < 0) {
+    log_error("uwrt_gen_hostapd_instance: failed to uwrt_add_list_properties");
+    utarray_free(list_properties);
     return -1;
   }
+  utarray_free(list_properties);
 
   return 0;
 }
 
 int uwrt_gen_firewall_zone(struct uctx *context, char *brname) {
-  char property[256];
-
   if (context == NULL) {
     log_trace("context param is NULL");
     return -1;
@@ -1051,23 +1013,23 @@ int uwrt_gen_firewall_zone(struct uctx *context, char *brname) {
     return -1;
   }
 
+  UT_array *properties;
+  utarray_new(properties, &ut_str_icd);
+
+  char property_buffer[256];
+  const size_t property_size = ARRAY_SIZE(property_buffer);
+  // utarray_push_back doesn't support arrays, only pointers, due to being
+  // a C preprocessor macro
+  char *const property = property_buffer;
+
   sprintf(property, "firewall.edgesec_%s=zone", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s.enabled=1", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s.name=%s", brname, brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s.network", brname);
   if (uwrt_delete_property(context->uctx, property) < 0) {
@@ -1081,233 +1043,128 @@ int uwrt_gen_firewall_zone(struct uctx *context, char *brname) {
   }
 
   sprintf(property, "firewall.edgesec_%s.input=REJECT", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s.forward=REJECT", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s.output=ACCEPT", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_icmp=rule", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_icmp.enabled=1", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_icmp.name=%s icmp", brname, brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_icmp.src=%s", brname, brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_icmp.proto=icmp", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_icmp.icmp_type=echo-request", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_icmp.family=ipv4", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_icmp.target=ACCEPT", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_dns=rule", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_dns.enabled=1", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_dns.name=%s dns", brname, brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_dns.src=%s", brname, brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_dns.proto=tcp udp", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_dns.dest_port=53", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_dns.target=ACCEPT", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_dhcp=rule", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_dhcp.enabled=1", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_dhcp.name=%s dhcp", brname, brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_dhcp.src=%s", brname, brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_dhcp.proto=udp", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_dhcp.src_port=67-68", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_dhcp.dest_port=67-68", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_dhcp.target=ACCEPT", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_dhcp6=rule", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_dhcp6.enabled=1", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_dhcp6.name=%s dhcp6", brname, brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_dhcp6.src=%s", brname, brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_dhcp6.proto=udp", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_dhcp6.src_ip=fe80::/10", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_dhcp6.src_port=546-547", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_dhcp6.dest_ip=fe80::/10", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_dhcp6.dest_port=546-547", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_dhcp6.family=ipv6", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_%s_dhcp6.target=ACCEPT", brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
+  utarray_push_back(properties, &property);
+
+  if (uwrt_set_properties(context->uctx, properties) < 0) {
+    log_error("uwrt_gen_firewall_zone: failed to uwrt_set_properties");
+    utarray_free(properties);
     return -1;
   }
+  utarray_free(properties);
 
   return 0;
 }
 
 int uwrt_add_firewall_nat(struct uctx *context, char *brname, char *ip_addr,
                           char *nat_name) {
-  char property[256];
   uint8_t ip_buf[4];
 
   if (context == NULL) {
@@ -1335,246 +1192,160 @@ int uwrt_add_firewall_nat(struct uctx *context, char *brname, char *ip_addr,
     return -1;
   }
 
+  UT_array *properties;
+  utarray_new(properties, &ut_str_icd);
+
+  char property_buffer[256];
+  const size_t property_size = ARRAY_SIZE(property_buffer);
+  // utarray_push_back doesn't support arrays, only pointers, due to being
+  // a C preprocessor macro
+  char *const property = property_buffer;
+
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_dnat=nat",
           IP2STR(ip_buf));
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_dnat.enabled=1",
           IP2STR(ip_buf));
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_dnat.name=DNAT %s",
           IP2STR(ip_buf), ip_addr);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_dnat.src=%s",
           IP2STR(ip_buf), nat_name);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_dnat.src_ip=0.0.0.0",
           IP2STR(ip_buf));
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_dnat.dest=%s",
           IP2STR(ip_buf), brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_dnat.dest_ip=%s",
           IP2STR(ip_buf), ip_addr);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_dnat.proto=all",
           IP2STR(ip_buf));
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_dnat.target=DNAT",
           IP2STR(ip_buf));
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_snat=nat",
           IP2STR(ip_buf));
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_snat.enabled=1",
           IP2STR(ip_buf));
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_snat.name=SNAT %s",
           IP2STR(ip_buf), ip_addr);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_snat.src=%s",
           IP2STR(ip_buf), brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_snat.src_ip=%s",
           IP2STR(ip_buf), ip_addr);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_snat.dest=%s",
           IP2STR(ip_buf), nat_name);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_snat.dest_ip=0.0.0.0",
           IP2STR(ip_buf));
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_snat.proto=all",
           IP2STR(ip_buf));
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_snat.target=SNAT",
           IP2STR(ip_buf));
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_forward=rule",
           IP2STR(ip_buf));
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_forward.enabled=1",
           IP2STR(ip_buf));
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property,
           "firewall.edgesec_" IP_SECTION_STR "_forward.name=Forward %s",
           IP2STR(ip_buf), ip_addr);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_forward.src=%s",
           IP2STR(ip_buf), brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_forward.src_ip=%s",
           IP2STR(ip_buf), ip_addr);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_forward.dest=%s",
           IP2STR(ip_buf), nat_name);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_forward.proto=all",
           IP2STR(ip_buf));
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_forward.target=ACCEPT",
           IP2STR(ip_buf));
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_backward=rule",
           IP2STR(ip_buf));
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_backward.enabled=1",
           IP2STR(ip_buf));
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property,
           "firewall.edgesec_" IP_SECTION_STR "_backward.name=Backward %s",
           IP2STR(ip_buf), ip_addr);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_backward.src=%s",
           IP2STR(ip_buf), nat_name);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_backward.dest=%s",
           IP2STR(ip_buf), brname);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_backward.dest_ip=%s",
           IP2STR(ip_buf), ip_addr);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property, "firewall.edgesec_" IP_SECTION_STR "_backward.proto=all",
           IP2STR(ip_buf));
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property,
           "firewall.edgesec_" IP_SECTION_STR "_backward.target=ACCEPT",
           IP2STR(ip_buf));
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
+  utarray_push_back(properties, &property);
+
+  if (uwrt_set_properties(context->uctx, properties) < 0) {
+    log_error("uwrt_add_firewall_nat: failed to uwrt_set_properties");
+    utarray_free(properties);
     return -1;
   }
+  utarray_free(properties);
 
   return 0;
 }
@@ -1625,7 +1396,6 @@ int uwrt_delete_firewall_nat(struct uctx *context, char *ip_addr) {
 
 int uwrt_add_firewall_bridge(struct uctx *context, char *sip, char *sbr,
                              char *dip, char *dbr) {
-  char property[256];
   uint8_t sip_buf[4], dip_buf[4];
 
   if (context == NULL) {
@@ -1663,153 +1433,115 @@ int uwrt_add_firewall_bridge(struct uctx *context, char *sip, char *sbr,
     return -1;
   }
 
+  UT_array *properties;
+  utarray_new(properties, &ut_str_icd);
+
+  char property_buffer[256];
+  const size_t property_size = ARRAY_SIZE(property_buffer);
+  // utarray_push_back doesn't support arrays, only pointers, due to being
+  // a C preprocessor macro
+  char *const property = property_buffer;
+
   sprintf(property,
           "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR "=rule",
           IP2STR(sip_buf), IP2STR(dip_buf));
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property,
           "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR ".enabled=1",
           IP2STR(sip_buf), IP2STR(dip_buf));
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property,
           "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR
           ".name=Bridge %s->%s",
           IP2STR(sip_buf), IP2STR(dip_buf), sip, dip);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property,
           "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR ".src=%s",
           IP2STR(sip_buf), IP2STR(dip_buf), sbr);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property,
           "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR ".src_ip=%s",
           IP2STR(sip_buf), IP2STR(dip_buf), sip);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property,
           "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR ".dest=%s",
           IP2STR(sip_buf), IP2STR(dip_buf), dbr);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property,
           "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR ".dest_ip=%s",
           IP2STR(sip_buf), IP2STR(dip_buf), dip);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property,
           "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR ".proto=all",
           IP2STR(sip_buf), IP2STR(dip_buf));
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property,
           "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR
           ".target=ACCEPT",
           IP2STR(sip_buf), IP2STR(dip_buf));
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property,
           "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR "=rule",
           IP2STR(dip_buf), IP2STR(sip_buf));
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property,
           "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR ".enabled=1",
           IP2STR(dip_buf), IP2STR(sip_buf));
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property,
           "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR
           ".name=Bridge %s->%s",
           IP2STR(dip_buf), IP2STR(sip_buf), dip, sip);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property,
           "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR ".src=%s",
           IP2STR(dip_buf), IP2STR(sip_buf), dbr);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property,
           "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR ".src_ip=%s",
           IP2STR(dip_buf), IP2STR(sip_buf), dip);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property,
           "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR ".dest=%s",
           IP2STR(dip_buf), IP2STR(sip_buf), sbr);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property,
           "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR ".dest_ip=%s",
           IP2STR(dip_buf), IP2STR(sip_buf), sip);
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property,
           "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR ".proto=all",
           IP2STR(dip_buf), IP2STR(sip_buf));
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
-    return -1;
-  }
+  utarray_push_back(properties, &property);
 
   sprintf(property,
           "firewall.edgesec_" IP_SECTION_STR "_" IP_SECTION_STR
           ".target=ACCEPT",
           IP2STR(dip_buf), IP2STR(sip_buf));
-  if (uwrt_set_property(context->uctx, property) < 0) {
-    log_trace("uwrt_set_property fail for %s", property);
+  utarray_push_back(properties, &property);
+
+  if (uwrt_set_properties(context->uctx, properties) < 0) {
+    log_error("uwrt_add_firewall_nat: failed to uwrt_set_properties");
+    utarray_free(properties);
     return -1;
   }
+  utarray_free(properties);
 
   return 0;
 }
