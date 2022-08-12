@@ -15,7 +15,7 @@
 #include <sys/types.h>
 #include <stdbool.h>
 
-#include "../utils/utarray.h"
+#include <utarray.h>
 #include "../utils/sockctl.h"
 
 #include "supervisor_config.h"

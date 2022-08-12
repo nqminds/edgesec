@@ -13,11 +13,8 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
-#include "uci.h"
-
 #include "utils/log.h"
 #include "utils/uci_wrt.h"
-#include "utils/utarray.h"
 #include "utils/iface_mapper.h"
 
 static void test_uwrt_init_context(void **state) {

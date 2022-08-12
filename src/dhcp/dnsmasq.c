@@ -26,7 +26,6 @@
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/squeue.h"
-#include "../utils/utarray.h"
 
 #ifdef WITH_UCI_SERVICE
 #include "../utils/uci_wrt.h"

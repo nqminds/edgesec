@@ -15,6 +15,7 @@
 
 #include <sqlite3.h>
 #include <pcap.h>
+#include <utarray.h>
 #include "middleware.h"
 #include "../utils/eloop.h"
 

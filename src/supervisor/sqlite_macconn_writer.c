@@ -22,7 +22,6 @@
 #include "../utils/net.h"
 #include "../utils/log.h"
 #include "../utils/sqliteu.h"
-#include "../utils/utarray.h"
 
 void free_sqlite_macconn_db(sqlite3 *db) {
   if (db != NULL) {

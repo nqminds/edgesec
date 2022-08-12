@@ -16,7 +16,6 @@
 #include "os.h"
 #include "log.h"
 #include "hashmap.h"
-#include "uthash.h"
 
 char *hmap_str_keychar_get(hmap_str_keychar **hmap, char *keyptr) {
   hmap_str_keychar *s;

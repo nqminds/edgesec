@@ -16,8 +16,6 @@
 #include <arpa/inet.h>
 #include <errno.h>
 
-#include "utarray.h"
-#include "uthash.h"
 #include "allocs.h"
 #include "os.h"
 #include "net.h"

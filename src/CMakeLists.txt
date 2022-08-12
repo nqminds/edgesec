@@ -16,7 +16,7 @@ add_subdirectory(capture)
 
 
 add_library(sqlhook SHARED sqlhook.c)
-target_link_libraries(sqlhook PRIVATE sockctl os SQLite::SQLite3)
+target_link_libraries(sqlhook PRIVATE sockctl os allocs SQLite::SQLite3 LibUTHash::LibUTHash)
 
 add_library(runctl runctl.c)
 target_include_directories(runctl PRIVATE SQLite::SQLite3)
@@ -31,10 +31,10 @@ if (USE_MDNS_SERVICE)
   target_compile_definitions(runctl PUBLIC WITH_MDNS_SERVICE)
   target_link_libraries(runctl PRIVATE mdns_service)
 endif ()
-target_link_libraries(runctl PRIVATE capture_service net log iface_mapper os sqlite_macconn_writer firewall_service eloop supervisor network_commands mac_mapper ap_service firewall_service dhcp_service)
+target_link_libraries(runctl PRIVATE LibUTHash::LibUTHash capture_service net log iface_mapper os sqlite_macconn_writer firewall_service eloop supervisor network_commands mac_mapper ap_service firewall_service dhcp_service)
 
 add_library(config config.c)
-target_link_libraries(config PUBLIC supervisor_config PRIVATE minIni os log)
+target_link_libraries(config PUBLIC supervisor_config LibUTHash::LibUTHash PRIVATE minIni os log)
 
 add_executable(edgesec edgesec.c)
 if (USE_CRYPTO_SERVICE)

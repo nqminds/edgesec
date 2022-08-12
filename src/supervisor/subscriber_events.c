@@ -11,12 +11,12 @@
 #include <sys/un.h>
 #include <inttypes.h>
 #include <stdbool.h>
+#include <utarray.h>
 
 #include "supervisor_config.h"
 #include "subscriber_events.h"
 
 #include "../utils/sockctl.h"
-#include "../utils/utarray.h"
 #include "../utils/log.h"
 
 #define MAX_SEND_EVENTS_BUF_SIZE 4096

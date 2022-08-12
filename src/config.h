@@ -10,7 +10,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include "utils/utarray.h"
+#include <utarray.h>
 #include "utils/hashmap.h"
 #include "utils/allocs.h"
 #include "utils/os.h"

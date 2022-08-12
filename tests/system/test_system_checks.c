@@ -15,7 +15,6 @@
 #include "system_checks.h"
 #include "utils/hashmap.h"
 #include "utils/log.h"
-#include "utils/utarray.h"
 #include "utils/iw.h"
 
 static void test_check_systems_commands(void **state) {

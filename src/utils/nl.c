@@ -44,7 +44,6 @@
 #include "net.h"
 #include "iface_mapper.h"
 #include "ifaceu.h"
-#include "utarray.h"
 
 static int ifindex = 0;
 struct rtnl_handle rth = {.fd = -1};

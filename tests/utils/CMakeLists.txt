@@ -18,7 +18,7 @@ add_executable(test_net test_net.c)
 target_link_libraries(test_net PRIVATE net cmocka::cmocka)
 
 add_executable(test_os test_os.c)
-target_link_libraries(test_os PRIVATE os hashmap cmocka::cmocka)
+target_link_libraries(test_os PRIVATE os allocs hashmap cmocka::cmocka)
 
 add_executable(test_sqliteu test_sqliteu.c)
 target_link_libraries(test_sqliteu PRIVATE sqliteu cmocka::cmocka)
@@ -27,7 +27,7 @@ add_executable(test_hashmap test_hashmap.c)
 target_link_libraries(test_hashmap PRIVATE hashmap cmocka::cmocka)
 
 add_executable(test_utarray test_utarray.c)
-target_link_libraries(test_utarray PRIVATE log cmocka::cmocka)
+target_link_libraries(test_utarray PRIVATE LibUTHash::LibUTHash cmocka::cmocka)
 
 add_executable(test_minIni test_minIni.c)
 target_link_libraries(test_minIni PRIVATE minIni cmocka::cmocka)

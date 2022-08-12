@@ -12,6 +12,7 @@
 #define BRIDGE_LIST_H
 
 #include <net/ethernet.h>
+#include <utarray.h>
 
 #include "../utils/list.h"
 #include "../utils/allocs.h"

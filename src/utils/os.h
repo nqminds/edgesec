@@ -20,9 +20,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdarg.h>
+#include <utarray.h>
 
 #include "hashmap.h"
-#include "utarray.h"
 #include "log.h"
 
 /* Common costant definitions */

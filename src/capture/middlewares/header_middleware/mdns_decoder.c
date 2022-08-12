@@ -21,7 +21,6 @@
 #include <netinet/udp.h>
 #include <arpa/inet.h>
 
-#include "../../../utils/utarray.h"
 #include "../../../utils/allocs.h"
 #include "../../../utils/os.h"
 #include "../../../utils/iface.h"

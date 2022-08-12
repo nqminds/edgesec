@@ -3,6 +3,7 @@ include_directories(
 )
 
 add_library(ip_addr ip_addr.c)
+target_link_libraries(ip_addr PRIVATE os allocs)
 
 add_library(radius_client radius_client.c)
 target_link_libraries(radius_client ip_addr radius md5 wpabuf log os eloop)

@@ -42,8 +42,6 @@
 #include "ipgen.h"
 #endif
 
-#include "utarray.h"
-
 static const UT_icd netif_info_icd = {sizeof(netif_info_t), NULL, NULL, NULL};
 
 void iface_free_context(struct iface_context *ctx) {

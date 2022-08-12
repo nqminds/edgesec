@@ -12,7 +12,6 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
-#include "utils/utarray.h"
 #include "utils/log.h"
 #include "utils/eloop.h"
 #include "capture/capture_service.h"
