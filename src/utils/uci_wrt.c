@@ -436,20 +436,18 @@ int uwrt_delete_property(struct uci_context *ctx, char *property) {
 
 /**
  * @brief Delete multiple OpenWRT UCI properties at once
+ * Errors with uwrt_delete_property will be logged and ignored.
  * @param[in] ctx UCI context. The context ptr will be modified.
  * @param[in] properties Array of properties to delete. Warning, strings may
  * be modified by UCI.
- * @retval 0 Success. Never fails, even for invalid input.
  */
-int uwrt_delete_properties(struct uci_context *ctx, UT_array *properties) {
+void uwrt_delete_properties(struct uci_context *ctx, UT_array *properties) {
   for (char *const *prop = (char **)utarray_front(properties); prop != NULL;
        prop = (char **)utarray_next(properties, prop)) {
     if (uwrt_delete_property(ctx, *prop) < 0) {
       log_trace("nothing to delete for %s", *prop);
     }
   }
-
-  return 0;
 }
 
 void uwrt_free_context(struct uctx *context) {
@@ -1745,12 +1743,7 @@ int uwrt_cleanup_firewall(struct uctx *context) {
     }
   }
 
-  if (uwrt_delete_properties(context->uctx, parray) < 0) {
-    log_trace("uwrt_delete_properties fail");
-    utarray_free(kv);
-    utarray_free(parray);
-    return -1;
-  }
+  uwrt_delete_properties(context->uctx, parray);
 
   utarray_free(kv);
   utarray_free(parray);
