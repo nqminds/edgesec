@@ -563,6 +563,9 @@ int uwrt_create_interface(struct uctx *context, char *ifname, char *type,
   sprintf(property, "network.%s=interface", ifname);
   utarray_push_back(properties, &property);
 
+  sprintf(property, "network.%s.ifname=%s", ifname, ifname);
+  utarray_push_back(properties, &property);
+
   sprintf(property, "network.%s.enabled=1", ifname);
   utarray_push_back(properties, &property);
 
