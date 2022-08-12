@@ -1063,18 +1063,6 @@ int uwrt_gen_firewall_zone(struct uctx *context, char *brname) {
            brname);
   utarray_push_back(properties, &property);
 
-  snprintf(property, property_size, "firewall.edgesec_%s.network", brname);
-  if (uwrt_delete_property(context->uctx, property) < 0) {
-    log_trace("nothing to delete for %s", property);
-  }
-
-  snprintf(property, property_size, "firewall.edgesec_%s.network=%s", brname,
-           brname);
-  if (uwrt_add_list(context->uctx, property) < 0) {
-    log_trace("uwrt_add_list fail for %s", property);
-    return -1;
-  }
-
   snprintf(property, property_size, "firewall.edgesec_%s.input=REJECT", brname);
   utarray_push_back(properties, &property);
 
@@ -1224,6 +1212,18 @@ int uwrt_gen_firewall_zone(struct uctx *context, char *brname) {
     return -1;
   }
   utarray_free(properties);
+
+  snprintf(property, property_size, "firewall.edgesec_%s.network", brname);
+  if (uwrt_delete_property(context->uctx, property) < 0) {
+    log_trace("nothing to delete for %s", property);
+  }
+
+  snprintf(property, property_size, "firewall.edgesec_%s.network=%s", brname,
+           brname);
+  if (uwrt_add_list(context->uctx, property) < 0) {
+    log_trace("uwrt_add_list fail for %s", property);
+    return -1;
+  }
 
   return 0;
 }
