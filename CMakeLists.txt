@@ -184,9 +184,14 @@ if (NOT BUILD_ONLY_DOCS)
       include(CodeCoverage)
       # enable before the src() flag to enable code coverage
       append_coverage_compiler_flags()
+
+      include(ProcessorCount)
+      ProcessorCount(PROCESSOR_COUNT)
+
       setup_target_for_coverage_lcov(
         NAME coverage
-        EXECUTABLE ctest -j "${PROCESSOR_COUNT}"
+        EXECUTABLE ctest
+        EXECUTABLE_ARGS --output-on-failure -j "${PROCESSOR_COUNT}"
         EXCLUDE "${PROJECT_SOURCE_DIR}/lib/*"
       )
     endif()
