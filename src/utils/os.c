@@ -708,7 +708,7 @@ int list_dir(char *dirpath, list_dir_fn fun, void *args) {
 
   if (errno != 0) {
     log_errno("readdir");
-    return -1;
+    returnValue = -1;
   }
 
 exit_list_dir:
