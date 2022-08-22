@@ -557,6 +557,9 @@ static void test_make_dirs_to_path(void **state) {
   ret = make_dirs_to_path(path, 0755);
   // should return no error code
   assert_int_equal(ret, 0);
+
+  free(directories_to_build);
+  free(path);
 }
 
 static void test_string_append_char(void **state) {
