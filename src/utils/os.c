@@ -679,6 +679,8 @@ int list_dir(char *dirpath, list_dir_fn fun, void *args) {
     return -1;
   }
 
+  int returnValue = 0;
+
   /* Look at each of the entries in this directory */
   for (;;) {
     errno = 0; /* To distinguish error from end-of-directory */
@@ -696,6 +698,7 @@ int list_dir(char *dirpath, list_dir_fn fun, void *args) {
       if (!fun(path, args)) {
         log_trace("list_dir callback fail");
         os_free(path);
+        returnValue = -1;
         goto exit_list_dir;
       }
     }
@@ -714,7 +717,7 @@ exit_list_dir:
     return -1;
   }
 
-  return 0;
+  return returnValue;
 }
 
 bool is_string_in_cmdline_file(char *filename, char *str) {

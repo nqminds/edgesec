@@ -465,6 +465,12 @@ bool dir_fn(char *dirpath, void *args) {
   return true;
 }
 
+bool failing_dir_fn(char *dirpath, void *args) {
+  (void)dirpath;
+  (void)args;
+  return false;
+}
+
 static void test_list_dir(void **state) {
   (void)state;
 
@@ -472,6 +478,12 @@ static void test_list_dir(void **state) {
   int ret = list_dir("/bin", dir_fn, &is_uname);
   assert_int_equal(ret, 0);
   assert_int_equal(is_uname, 1);
+
+  // should fail for invalid folder
+  assert_int_equal(list_dir("/this-path-is-not-a-dir", dir_fn, &is_uname), -1);
+
+  // should fail if dir_fn fails
+  assert_int_equal(list_dir("/bin", failing_dir_fn, &is_uname), -1);
 }
 
 typedef struct {
