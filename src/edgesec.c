@@ -37,22 +37,21 @@
 
 #define OPT_STRING ":c:f:mdvh"
 #define USAGE_STRING "\t%s [-c filename] [-f filename] [-m] [-d] [-h] [-v]\n"
-const char description_string[] = R"==(
-  NquiringMinds EDGESec Network Security Router.
+const char description_string[] =
+    "NquiringMinds EDGESec Network Security Router.\n"
+    "\n"
+    "Creates a secure and paritioned Wifi access point, using vlans\n"
+    "and can analyse network traffic.\n"
 
-  Creates a secure and paritioned Wifi access point, using vlans,
-  and can analyse network traffic.
-
-  Contains multiple services controlled by the tool engine:
-    1. Supervisor: registers network joining and DHCP requests.
-       Exposes a command interface via a UNIX domain socket.
-    2. WiFi Access Point: Manages WiFi AP.
-    3. Subnet: Creates subnets, virtual LANs, and IP ranges.
-    4. DHCP: Assigns IP addresses to connected devices.
-    5. RADIUS: Access control for the WiFi AP using
-       credentials/MAC address.
-    6. State machine: Networking monitoring and management.
-)==";
+    "Contains multiple services controlled by the tool engine:\n"
+    "  1. Supervisor: registers network joining and DHCP requests.\n"
+    "     Exposes a command interface via a UNIX domain socket.\n"
+    "  2. WiFi Access Point: Manages WiFi AP.\n"
+    "  3. Subnet: Creates subnets, virtual LANs, and IP ranges.\n"
+    "  4. DHCP: Assigns IP addresses to connected devices.\n"
+    "  5. RADIUS: Access control for the WiFi AP using\n"
+    "     credentials/MAC address.\n"
+    "  6. State machine: Networking monitoring and management.\n";
 
 static __thread char version_buf[10];
 
