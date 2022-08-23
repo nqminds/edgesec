@@ -18,6 +18,7 @@ jobs:
           - linux # Normal linux tests
           - linux-with-crypt # Tests whether crypto service works
           - linux-with-example-middlewares # tests whether example capture middlewares work
+          - clang
           - openwrt-with-header
           - openwrt-21.02.1/bcm27xx/bcm2710 # Raspberry Pi 3 for OpenWRT 21.02.1
     runs-on: ubuntu-latest
