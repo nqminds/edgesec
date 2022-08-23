@@ -660,8 +660,11 @@ static int ipaddr_modify(int cmd, int flags, int argc,
     req.ifa.ifa_scope = default_scope(&lcl);
 
   req.ifa.ifa_index = ll_name_to_index(d);
-  if (!req.ifa.ifa_index)
-    return nodev(d);
+  if (!req.ifa.ifa_index) {
+
+    log_error("ipaddr_modify error: could not find interface '%s'", d);
+    return -1;
+  }
 
   if (rtnl_talk(&rth, &req.n, NULL) < 0)
     return -2;
@@ -779,7 +782,7 @@ int nl_set_interface_ip(struct nlctx *context, const char *ifname,
   int ret;
   ret = ipaddr_modify(RTM_NEWADDR, NLM_F_CREATE | NLM_F_EXCL, 5, argv);
   if (ret != 0) {
-    log_error("ipaddr_modify error %d", ret);
+    log_error("nl_set_interface_ip error: ipaddr_modify failed with %d", ret);
     goto nl_set_interface_ip_err;
   }
 

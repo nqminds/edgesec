@@ -44,6 +44,23 @@ target_link_libraries(test_log_level PRIVATE log)
 add_executable(test_log_err test_log_err.c)
 target_link_libraries(test_log_err PRIVATE log)
 
+add_library(wrap_log_error OBJECT wrap_log_error.c)
+target_link_libraries(wrap_log_error PRIVATE log cmocka::cmocka)
+target_link_options(wrap_log_error PUBLIC "LINKER:--wrap=log_levels")
+
+add_executable(test_wrap_log_error test_wrap_log_error.c)
+target_link_libraries(test_wrap_log_error PRIVATE log cmocka::cmocka wrap_log_error)
+
+if (USE_NETLINK_SERVICE)
+  add_executable(test_nl test_nl.c)
+  target_link_libraries(test_nl PRIVATE cmocka::cmocka nl wrap_log_error)
+
+  add_test(NAME test_nl COMMAND test_nl)
+  set_tests_properties(test_nl
+    PROPERTIES
+    WILL_FAIL FALSE)
+endif()
+
 if (USE_UCI_SERVICE)
   add_test(NAME test_uci_wrt COMMAND test_uci_wrt)
   set_tests_properties(test_uci_wrt
@@ -104,3 +121,8 @@ add_test(NAME test_log_err COMMAND test_log_err)
 set_tests_properties(test_log_err
   PROPERTIES
   PASS_REGULAR_EXPRESSION ".+ERROR")
+
+add_test(NAME test_wrap_log_error COMMAND test_wrap_log_error)
+set_tests_properties(test_wrap_log_error
+  PROPERTIES
+  WILL_FAIL FALSE)
