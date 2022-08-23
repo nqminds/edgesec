@@ -1,8 +1,8 @@
 add_executable(test_header_middleware test_header_middleware.c)
 target_link_libraries(test_header_middleware PUBLIC PCAP::pcap SQLite::SQLite3 PRIVATE header_middleware sqliteu os log cmocka::cmocka)
-set_target_properties(test_header_middleware
-  PROPERTIES
-  LINK_FLAGS  "-Wl,--wrap=sqlite3_open"
+target_link_options(test_header_middleware
+  PRIVATE
+  "LINKER:--wrap=sqlite3_open"
 )
 
 add_executable(test_sqlite_header test_sqlite_header.c)
