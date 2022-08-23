@@ -188,7 +188,11 @@ if (NOT BUILD_ONLY_DOCS)
         NAME coverage
         EXECUTABLE ctest
         EXECUTABLE_ARGS --output-on-failure -j "${PROCESSOR_COUNT}"
-        EXCLUDE "${PROJECT_SOURCE_DIR}/lib/*"
+        EXCLUDE
+          "${PROJECT_SOURCE_DIR}/lib/*"
+          # this file is only in the build/ directory, but
+          # llvm-cov gcov doesn't seem to like it
+          "${PROJECT_SOURCE_DIR}/middlewares_list.c"
       )
     endif()
 

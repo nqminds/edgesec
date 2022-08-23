@@ -31,6 +31,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install devscripts equivs lcov -y # install mk-build-depends
           sudo mk-build-deps --install --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes'  debian/control
+      - name: Install llvm (if clang)
+        if: matrix.cmake-preset == 'clang'
+        run: |
+          sudo apt-get install llvm -y
+          llvm-cov gcov --version
+          clang --version
+          whereis clang
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-10 100
+          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-10 100
+          clang --version
       - name: Configure
         run: |
           cmake -B build/ --preset "${{ matrix.cmake-preset }}" -DCONFIGURE_COVERAGE=BOOL:ON
