@@ -21,6 +21,7 @@
 #include <errno.h>
 #include <linux/if.h>
 #include <libgen.h>
+#include <pthread.h>
 
 #include "capture_config.h"
 #include "capture_service.h"

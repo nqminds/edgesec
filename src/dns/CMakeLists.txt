@@ -28,4 +28,5 @@ target_link_libraries(mdns_service
   PRIVATE
     ifaceu net log eloop sockctl squeue hashmap iface_mapper mdns_decoder
     pcap_service packet_queue supervisor_config cmd_processor mcast
+    Threads::Threads
 )
