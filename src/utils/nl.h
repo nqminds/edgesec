@@ -78,7 +78,7 @@ UT_array *nl_get_interfaces(int if_id);
  * @param type The interface string type (ex. "bridge")
  * @return 0 on success, -1 otherwise
  */
-int nl_new_interface(char *if_name, char *type);
+int nl_new_interface(const char *if_name, const char *type);
 
 /**
  * @brief Set the interface IP
