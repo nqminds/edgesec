@@ -118,17 +118,13 @@ set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Build shared libraries")
 # C compiler options
 set(CMAKE_C_STANDARD 11) # we use C11 raw-strings
 set(CMAKE_C_STANDARD_REQUIRED TRUE)
-set(CMAKE_C_EXTENSIONS ON) # We use GNU C specific features
+set(CMAKE_C_EXTENSIONS OFF) # We're aiming for Clang compatibility
 set(CMAKE_C_FLAGS "-Wunused-variable -Wall -Wextra")
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # use -std=c++11 rather than -std=gnu++11
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-# hostapd and libnetlink relies on GNU specific features, like strncasecmp
-set(CMAKE_C_EXTENSIONS ON)
 
 # sqlhook is a shared library that links to static libs, so -fPIC is needed
 # todo: enable only for sqlhook dependencies

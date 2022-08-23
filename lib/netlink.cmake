@@ -6,6 +6,9 @@ if (BUILD_NETLINK_LIB AND NOT (BUILD_ONLY_DOCS))
     SOURCE_DIR "${LIBNETLINK_SOURCE_DIR}"
   )
   # creates the targets libnetlink, ll_map, rt_names, utils
+
+  set(CMAKE_C_EXTENSIONS ON) # libnetlink uses non-POSIX C
+
   FetchContent_MakeAvailable(libnetlink_src)
 
   if (TARGET libnetlink)
