@@ -584,6 +584,10 @@ static void test_string_append_char(void **state) {
   const char input_str[] = "Hello World";
   char *combined_str = string_append_char(input_str, '!');
   assert_string_equal(combined_str, "Hello World!");
+
+  // should return NULL if input str is NULL
+  assert_ptr_equal(string_append_char(NULL, '!'), NULL);
+
   free(combined_str);
 }
 
