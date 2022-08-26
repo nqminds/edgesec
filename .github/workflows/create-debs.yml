@@ -37,10 +37,11 @@ jobs:
           sudo apt-get install llvm -y
           llvm-cov gcov --version
           clang --version
-          whereis clang
-          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-10 100
-          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-10 100
-          clang --version
+          # Very annoyingly, the Ubuntu-20.04 image uses Clang 11 by default
+          # however, the default version of LLVM that is installed is v10,
+          # which is too old for Clang 11 compatibility
+          echo 'set(CMAKE_C_COMPILER clang-10)
+          set(CMAKE_CXX_COMPILER clang++-10)' > CMakeModules/CMakeToolchains/clang.cmake
       - name: Configure
         run: |
           cmake -B build/ --preset "${{ matrix.cmake-preset }}" -DCONFIGURE_COVERAGE=BOOL:ON
