@@ -14,6 +14,12 @@
 #include <errno.h>
 #include <inttypes.h>
 
+#if !__linux__
+// FreeBSD includes
+#include <sys/socket.h>
+#include <sys/sysctl.h>
+#endif
+
 #include "allocs.h"
 #include "net.h"
 #include "os.h"
@@ -173,13 +179,23 @@ int get_ip_host(const char *ip, const char *subnet_mask, uint32_t *host) {
 }
 
 int disable_pmtu_discovery(int sock) {
+#if __linux__
   int action = IP_PMTUDISC_DONT;
   if (setsockopt(sock, IPPROTO_IP, IP_MTU_DISCOVER, &action, sizeof(action)) <
       0) {
     log_errno("setsockopt");
     return -1;
   }
-
+#else
+  // Documented in
+  // https://www.freebsd.org/cgi/man.cgi?query=ip&apropos=0&sektion=4&manpath=FreeBSD+14.0-current&arch=default&format=html
+  (void)sock;
+  const int action = 1; // enable IP_DONTFRAG
+  if (setsockopt(sock, IPPROTO_IP, IP_DONTFRAG, &action, sizeof(action)) < 0) {
+    log_errno("setsockopt");
+    return -1;
+  }
+#endif
   return 0;
 }
 
