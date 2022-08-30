@@ -24,7 +24,6 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <ifaddrs.h>
-#include <linux/if_link.h>
 
 #include "allocs.h"
 #include "os.h"
