@@ -92,7 +92,7 @@ function(get_autoconf_os system_name output_var)
   if (system_name STREQUAL "Linux")
     set(${output_var} "linux-gnu" PARENT_SCOPE)
   else (system_name STREQUAL "Linux")
-    message(FATAL_ERROR "'$system_name' could not be converted to an autoconf os specifier")
+    message(FATAL_ERROR "'${system_name}' could not be converted to an autoconf os specifier")
   endif(system_name STREQUAL "Linux")
 endfunction(get_autoconf_os)
 
