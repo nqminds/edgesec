@@ -10,7 +10,7 @@
 #ifndef DHCP_CONFIG_H
 #define DHCP_CONFIG_H
 
-#include <linux/if.h>
+#include <net/if.h>
 #include <utarray.h>
 
 #include "../utils/allocs.h"

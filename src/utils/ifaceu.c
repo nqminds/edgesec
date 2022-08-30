@@ -13,7 +13,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include <net/if.h>
 
 #include "log.h"
 
