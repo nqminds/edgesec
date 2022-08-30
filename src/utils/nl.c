@@ -305,11 +305,11 @@ int get_linkinfo(struct nlmsghdr *n, netif_info_t *info) {
              LINK_TYPE_LEN);
   log_trace("ifindex=%d link_type=%s", ifi->ifi_index, info->link_type);
   if (tb[IFLA_ADDRESS]) {
-    if (RTA_PAYLOAD(tb[IFLA_ADDRESS]) == ETH_ALEN) {
-      os_memcpy(info->mac_addr, RTA_DATA(tb[IFLA_ADDRESS]), ETH_ALEN);
-      log_trace(
-          "ifindex=%d mac_address=%s", ifi->ifi_index,
-          ll_addr_n2a(info->mac_addr, ETH_ALEN, ifi->ifi_type, b1, sizeof(b1)));
+    if (RTA_PAYLOAD(tb[IFLA_ADDRESS]) == ETHER_ADDR_LEN) {
+      os_memcpy(info->mac_addr, RTA_DATA(tb[IFLA_ADDRESS]), ETHER_ADDR_LEN);
+      log_trace("ifindex=%d mac_address=%s", ifi->ifi_index,
+                ll_addr_n2a(info->mac_addr, ETHER_ADDR_LEN, ifi->ifi_type, b1,
+                            sizeof(b1)));
     }
   }
 
@@ -902,7 +902,7 @@ static void mac_addr_n2a(char *mac_addr, const unsigned char *arg) {
   int i, l;
 
   l = 0;
-  for (i = 0; i < ETH_ALEN; i++) {
+  for (i = 0; i < ETHER_ADDR_LEN; i++) {
     if (i == 0) {
       sprintf(mac_addr + l, "%02x", arg[i]);
       l += 2;
@@ -1063,7 +1063,8 @@ static int process_iface_handler(struct nl_msg *msg, void *arg) {
 
     if (tb_msg[NL80211_ATTR_MAC]) {
       char mac_addr[20];
-      os_memcpy(element.addr, nla_data(tb_msg[NL80211_ATTR_MAC]), ETH_ALEN);
+      os_memcpy(element.addr, nla_data(tb_msg[NL80211_ATTR_MAC]),
+                ETHER_ADDR_LEN);
       mac_addr_n2a(mac_addr, element.addr);
       log_trace("%s -> addr=%s", element.ifname, mac_addr);
     }

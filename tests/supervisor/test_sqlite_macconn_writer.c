@@ -53,12 +53,12 @@ static void test_get_sqlite_macconn_entries(void **state) {
   (void)state; /* unused */
 
   sqlite3 *db;
-  uint8_t addr1[ETH_ALEN] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
+  uint8_t addr1[ETHER_ADDR_LEN] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
   struct mac_conn conn, *p = NULL;
   UT_array *rows;
 
   os_memset(&conn, 0, sizeof(struct mac_conn));
-  os_memcpy(conn.mac_addr, addr1, ETH_ALEN);
+  os_memcpy(conn.mac_addr, addr1, ETHER_ADDR_LEN);
 
   utarray_new(rows, &mac_conn_icd);
 
@@ -67,7 +67,7 @@ static void test_get_sqlite_macconn_entries(void **state) {
   assert_int_equal(get_sqlite_macconn_entries(db, rows), 0);
   p = (struct mac_conn *)utarray_next(rows, p);
   assert_non_null(p);
-  assert_memory_equal(p->mac_addr, addr1, ETH_ALEN);
+  assert_memory_equal(p->mac_addr, addr1, ETHER_ADDR_LEN);
 
   p = (struct mac_conn *)utarray_next(rows, p);
   assert_null(p);

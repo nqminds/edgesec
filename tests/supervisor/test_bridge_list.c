@@ -24,10 +24,10 @@ static void test_add_bridge_mac(void **state) {
   char *mac_str_2 = "aa:bb:cc:dd:ee:ff";
   char *mac_str_3 = "12:23:34:45:56:67";
   char *mac_str_4 = "FF:FF:FF:FF:FF:FF";
-  uint8_t mac_addr_1[ETH_ALEN];
-  uint8_t mac_addr_2[ETH_ALEN];
-  uint8_t mac_addr_3[ETH_ALEN];
-  uint8_t mac_addr_4[ETH_ALEN];
+  uint8_t mac_addr_1[ETHER_ADDR_LEN];
+  uint8_t mac_addr_2[ETHER_ADDR_LEN];
+  uint8_t mac_addr_3[ETHER_ADDR_LEN];
+  uint8_t mac_addr_4[ETHER_ADDR_LEN];
   hwaddr_aton2(mac_str_1, mac_addr_1);
   hwaddr_aton2(mac_str_2, mac_addr_2);
   hwaddr_aton2(mac_str_3, mac_addr_3);
@@ -101,10 +101,10 @@ static void test_remove_bridge_mac(void **state) {
   char *mac_str_2 = "aa:bb:cc:dd:ee:ff";
   char *mac_str_3 = "12:23:34:45:56:67";
   char *mac_str_4 = "FF:FF:FF:FF:FF:FF";
-  uint8_t mac_addr_1[ETH_ALEN];
-  uint8_t mac_addr_2[ETH_ALEN];
-  uint8_t mac_addr_3[ETH_ALEN];
-  uint8_t mac_addr_4[ETH_ALEN];
+  uint8_t mac_addr_1[ETHER_ADDR_LEN];
+  uint8_t mac_addr_2[ETHER_ADDR_LEN];
+  uint8_t mac_addr_3[ETHER_ADDR_LEN];
+  uint8_t mac_addr_4[ETHER_ADDR_LEN];
   hwaddr_aton2(mac_str_1, mac_addr_1);
   hwaddr_aton2(mac_str_2, mac_addr_2);
   hwaddr_aton2(mac_str_3, mac_addr_3);
@@ -184,10 +184,10 @@ static void test_get_all_bridge_edges(void **state) {
   char *mac_str_2 = "aa:bb:cc:dd:ee:ff";
   char *mac_str_3 = "12:23:34:45:56:67";
   char *mac_str_4 = "FF:FF:FF:FF:FF:FF";
-  uint8_t mac_addr_1[ETH_ALEN];
-  uint8_t mac_addr_2[ETH_ALEN];
-  uint8_t mac_addr_3[ETH_ALEN];
-  uint8_t mac_addr_4[ETH_ALEN];
+  uint8_t mac_addr_1[ETHER_ADDR_LEN];
+  uint8_t mac_addr_2[ETHER_ADDR_LEN];
+  uint8_t mac_addr_3[ETHER_ADDR_LEN];
+  uint8_t mac_addr_4[ETHER_ADDR_LEN];
   hwaddr_aton2(mac_str_1, mac_addr_1);
   hwaddr_aton2(mac_str_2, mac_addr_2);
   hwaddr_aton2(mac_str_3, mac_addr_3);
@@ -202,11 +202,11 @@ static void test_get_all_bridge_edges(void **state) {
   count = get_all_bridge_edges(bridge_list, &tuple_list_arr);
   assert_int_equal(count, 2);
   p = (struct bridge_mac_tuple *)utarray_next(tuple_list_arr, NULL);
-  assert_int_equal(memcmp(p->src_addr, mac_addr_2, ETH_ALEN), 0);
-  assert_int_equal(memcmp(p->dst_addr, mac_addr_1, ETH_ALEN), 0);
+  assert_int_equal(memcmp(p->src_addr, mac_addr_2, ETHER_ADDR_LEN), 0);
+  assert_int_equal(memcmp(p->dst_addr, mac_addr_1, ETHER_ADDR_LEN), 0);
   p = (struct bridge_mac_tuple *)utarray_next(tuple_list_arr, p);
-  assert_int_equal(memcmp(p->src_addr, mac_addr_1, ETH_ALEN), 0);
-  assert_int_equal(memcmp(p->dst_addr, mac_addr_2, ETH_ALEN), 0);
+  assert_int_equal(memcmp(p->src_addr, mac_addr_1, ETHER_ADDR_LEN), 0);
+  assert_int_equal(memcmp(p->dst_addr, mac_addr_2, ETHER_ADDR_LEN), 0);
   utarray_free(tuple_list_arr);
 
   add_bridge_mac(bridge_list, mac_addr_2, mac_addr_3);
@@ -215,23 +215,23 @@ static void test_get_all_bridge_edges(void **state) {
   assert_int_equal(count, 6);
   assert_int_equal(utarray_len(tuple_list_arr), 6);
   p = (struct bridge_mac_tuple *)utarray_next(tuple_list_arr, NULL);
-  assert_int_equal(memcmp(p->src_addr, mac_addr_4, ETH_ALEN), 0);
-  assert_int_equal(memcmp(p->dst_addr, mac_addr_3, ETH_ALEN), 0);
+  assert_int_equal(memcmp(p->src_addr, mac_addr_4, ETHER_ADDR_LEN), 0);
+  assert_int_equal(memcmp(p->dst_addr, mac_addr_3, ETHER_ADDR_LEN), 0);
   p = (struct bridge_mac_tuple *)utarray_next(tuple_list_arr, p);
-  assert_int_equal(memcmp(p->src_addr, mac_addr_3, ETH_ALEN), 0);
-  assert_int_equal(memcmp(p->dst_addr, mac_addr_4, ETH_ALEN), 0);
+  assert_int_equal(memcmp(p->src_addr, mac_addr_3, ETHER_ADDR_LEN), 0);
+  assert_int_equal(memcmp(p->dst_addr, mac_addr_4, ETHER_ADDR_LEN), 0);
   p = (struct bridge_mac_tuple *)utarray_next(tuple_list_arr, p);
-  assert_int_equal(memcmp(p->src_addr, mac_addr_3, ETH_ALEN), 0);
-  assert_int_equal(memcmp(p->dst_addr, mac_addr_2, ETH_ALEN), 0);
+  assert_int_equal(memcmp(p->src_addr, mac_addr_3, ETHER_ADDR_LEN), 0);
+  assert_int_equal(memcmp(p->dst_addr, mac_addr_2, ETHER_ADDR_LEN), 0);
   p = (struct bridge_mac_tuple *)utarray_next(tuple_list_arr, p);
-  assert_int_equal(memcmp(p->src_addr, mac_addr_2, ETH_ALEN), 0);
-  assert_int_equal(memcmp(p->dst_addr, mac_addr_3, ETH_ALEN), 0);
+  assert_int_equal(memcmp(p->src_addr, mac_addr_2, ETHER_ADDR_LEN), 0);
+  assert_int_equal(memcmp(p->dst_addr, mac_addr_3, ETHER_ADDR_LEN), 0);
   p = (struct bridge_mac_tuple *)utarray_next(tuple_list_arr, p);
-  assert_int_equal(memcmp(p->src_addr, mac_addr_2, ETH_ALEN), 0);
-  assert_int_equal(memcmp(p->dst_addr, mac_addr_1, ETH_ALEN), 0);
+  assert_int_equal(memcmp(p->src_addr, mac_addr_2, ETHER_ADDR_LEN), 0);
+  assert_int_equal(memcmp(p->dst_addr, mac_addr_1, ETHER_ADDR_LEN), 0);
   p = (struct bridge_mac_tuple *)utarray_next(tuple_list_arr, p);
-  assert_int_equal(memcmp(p->src_addr, mac_addr_1, ETH_ALEN), 0);
-  assert_int_equal(memcmp(p->dst_addr, mac_addr_2, ETH_ALEN), 0);
+  assert_int_equal(memcmp(p->src_addr, mac_addr_1, ETHER_ADDR_LEN), 0);
+  assert_int_equal(memcmp(p->dst_addr, mac_addr_2, ETHER_ADDR_LEN), 0);
 
   utarray_free(tuple_list_arr);
   free_bridge_list(bridge_list);
@@ -247,10 +247,10 @@ static void test_get_src_mac_list(void **state) {
   char *mac_str_2 = "aa:bb:cc:dd:ee:ff";
   char *mac_str_3 = "12:23:34:45:56:67";
   char *mac_str_4 = "FF:FF:FF:FF:FF:FF";
-  uint8_t mac_addr_1[ETH_ALEN];
-  uint8_t mac_addr_2[ETH_ALEN];
-  uint8_t mac_addr_3[ETH_ALEN];
-  uint8_t mac_addr_4[ETH_ALEN];
+  uint8_t mac_addr_1[ETHER_ADDR_LEN];
+  uint8_t mac_addr_2[ETHER_ADDR_LEN];
+  uint8_t mac_addr_3[ETHER_ADDR_LEN];
+  uint8_t mac_addr_4[ETHER_ADDR_LEN];
   hwaddr_aton2(mac_str_1, mac_addr_1);
   hwaddr_aton2(mac_str_2, mac_addr_2);
   hwaddr_aton2(mac_str_3, mac_addr_3);
@@ -267,7 +267,7 @@ static void test_get_src_mac_list(void **state) {
   assert_int_equal(count, 1);
 
   p = (uint8_t *)utarray_next(mac_list_arr, NULL);
-  assert_int_equal(memcmp(p, mac_addr_2, ETH_ALEN), 0);
+  assert_int_equal(memcmp(p, mac_addr_2, ETHER_ADDR_LEN), 0);
   utarray_free(mac_list_arr);
 
   add_bridge_mac(bridge_list, mac_addr_1, mac_addr_3);
@@ -275,29 +275,29 @@ static void test_get_src_mac_list(void **state) {
   count = get_src_mac_list(bridge_list, mac_addr_1, &mac_list_arr);
   assert_int_equal(count, 3);
   p = (uint8_t *)utarray_next(mac_list_arr, NULL);
-  assert_int_equal(memcmp(p, mac_addr_4, ETH_ALEN), 0);
+  assert_int_equal(memcmp(p, mac_addr_4, ETHER_ADDR_LEN), 0);
   p = (uint8_t *)utarray_next(mac_list_arr, p);
-  assert_int_equal(memcmp(p, mac_addr_3, ETH_ALEN), 0);
+  assert_int_equal(memcmp(p, mac_addr_3, ETHER_ADDR_LEN), 0);
   p = (uint8_t *)utarray_next(mac_list_arr, p);
-  assert_int_equal(memcmp(p, mac_addr_2, ETH_ALEN), 0);
+  assert_int_equal(memcmp(p, mac_addr_2, ETHER_ADDR_LEN), 0);
   utarray_free(mac_list_arr);
 
   count = get_src_mac_list(bridge_list, mac_addr_3, &mac_list_arr);
   assert_int_equal(count, 3);
   p = (uint8_t *)utarray_next(mac_list_arr, NULL);
-  assert_int_equal(memcmp(p, mac_addr_1, ETH_ALEN), 0);
+  assert_int_equal(memcmp(p, mac_addr_1, ETHER_ADDR_LEN), 0);
   p = (uint8_t *)utarray_next(mac_list_arr, p);
-  assert_int_equal(memcmp(p, mac_addr_4, ETH_ALEN), 0);
+  assert_int_equal(memcmp(p, mac_addr_4, ETHER_ADDR_LEN), 0);
   p = (uint8_t *)utarray_next(mac_list_arr, p);
-  assert_int_equal(memcmp(p, mac_addr_2, ETH_ALEN), 0);
+  assert_int_equal(memcmp(p, mac_addr_2, ETHER_ADDR_LEN), 0);
   utarray_free(mac_list_arr);
 
   count = get_src_mac_list(bridge_list, mac_addr_2, &mac_list_arr);
   assert_int_equal(count, 2);
   p = (uint8_t *)utarray_next(mac_list_arr, NULL);
-  assert_int_equal(memcmp(p, mac_addr_3, ETH_ALEN), 0);
+  assert_int_equal(memcmp(p, mac_addr_3, ETHER_ADDR_LEN), 0);
   p = (uint8_t *)utarray_next(mac_list_arr, p);
-  assert_int_equal(memcmp(p, mac_addr_1, ETH_ALEN), 0);
+  assert_int_equal(memcmp(p, mac_addr_1, ETHER_ADDR_LEN), 0);
   utarray_free(mac_list_arr);
 
   int ret = remove_bridge_mac(bridge_list, mac_addr_1, mac_addr_4);

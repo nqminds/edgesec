@@ -61,7 +61,7 @@ struct radius_session {
   unsigned int sess_id;
   char *username; /* from User-Name attribute */
   char *nas_ip;
-  uint8_t mac_addr[ETH_ALEN]; /* from Calling-Station-Id attribute */
+  uint8_t mac_addr[ETHER_ADDR_LEN]; /* from Calling-Station-Id attribute */
 
   struct radius_msg *last_msg;
   char *last_from_addr;

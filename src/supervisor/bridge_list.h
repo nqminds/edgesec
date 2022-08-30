@@ -23,9 +23,10 @@
  *
  */
 struct bridge_mac_tuple {
-  uint8_t src_addr[ETH_ALEN]; /**< MAC address in byte format for source node*/
-  uint8_t
-      dst_addr[ETH_ALEN]; /**< MAC address in byte format for destination node*/
+  uint8_t src_addr[ETHER_ADDR_LEN]; /**< MAC address in byte format for source
+                                       node*/
+  uint8_t dst_addr[ETHER_ADDR_LEN]; /**< MAC address in byte format for
+                                       destination node*/
 };
 /**
  * @brief The MAC bridge address store list

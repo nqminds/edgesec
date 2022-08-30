@@ -142,7 +142,7 @@ int disable_pmtu_discovery(int sock);
  *
  * @param[in] txt MAC address as a string (e.g., 00:11:22:33:44:55 or
  * 0011.2233.4455)
- * @param[out] addr Buffer for the MAC address (ETH_ALEN = 6 bytes)
+ * @param[out] addr Buffer for the MAC address (ETHER_ADDR_LEN = 6 bytes)
  * @return int Characters used (> 0) on success, -1 on failure
  */
 int hwaddr_aton2(const char *txt, uint8_t *addr);
