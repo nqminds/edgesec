@@ -6,7 +6,6 @@
 #include <fcntl.h>
 #include <ctype.h>
 #include <unistd.h>
-#include <pthread.h>
 #include <stdbool.h>
 #include <errno.h>
 #include <net/if.h>
@@ -162,11 +161,14 @@ err:
 
 static void test_generate_dnsmasq_conf(void **state) {
   (void)state; /* unused */
-  struct dhcp_conf dconf;
-  UT_array *server_arr;
-  config_dhcpinfo_t el;
-
+  struct dhcp_conf dconf = {
+      // must manually set bridge_prefix, otherwise we'll be working with
+      // undefined memory
+      .bridge_prefix = "",
+  };
   utarray_new(dconf.config_dhcpinfo_array, &config_dhcpinfo_icd);
+
+  UT_array *server_arr;
   utarray_new(server_arr, &ut_str_icd);
 
   strcpy(dconf.dhcp_conf_path, test_dhcp_conf_path);
@@ -177,6 +179,7 @@ static void test_generate_dnsmasq_conf(void **state) {
   strncpy(dconf.wifi_interface, wifi_interface, WIFI_INTERFACE_STR_LEN);
   assert_null(dconf.wifi_interface[WIFI_INTERFACE_STR_LEN - 1]);
 
+  config_dhcpinfo_t el;
   assert_true(
       get_config_dhcpinfo("0,10.0.0.2,10.0.0.254,255.255.255.0,24h", &el));
   utarray_push_back(dconf.config_dhcpinfo_array, &el);
@@ -195,13 +198,19 @@ static void test_generate_dnsmasq_conf(void **state) {
   error_t ret = generate_dnsmasq_conf(&dconf, server_arr);
   assert_true(ret == 0);
 
-  char *fdata = NULL;
-  assert_int_equal(read_file_string(test_dhcp_conf_path, &fdata), 0);
+#ifdef WITH_UCI_SERVICE
+  // todo: add some tests for dnsmasq UCI conf
+#else
+  {
+    char *fdata = NULL;
+    assert_int_equal(read_file_string(test_dhcp_conf_path, &fdata), 0);
 
-  int cmp = strcmp(fdata, test_dhcp_conf_wifi_if);
-  assert_int_equal(cmp, 0);
+    int cmp = strcmp(fdata, test_dhcp_conf_wifi_if);
+    assert_int_equal(cmp, 0);
 
-  os_free(fdata);
+    os_free(fdata);
+  }
+#endif
 
   const size_t INTERFACE_PREFIX_STR_LEN = ARRAY_SIZE(dconf.interface_prefix);
 
@@ -211,13 +220,19 @@ static void test_generate_dnsmasq_conf(void **state) {
   ret = generate_dnsmasq_conf(&dconf, server_arr);
   assert_true(ret == 0);
 
-  assert_int_equal(read_file_string(test_dhcp_conf_path, &fdata), 0);
+#ifdef WITH_UCI_SERVICE
+  // todo: add some tests for dnsmasq UCI conf
+#else
+  {
+    char *fdata = NULL;
+    assert_int_equal(read_file_string(test_dhcp_conf_path, &fdata), 0);
 
-  printf("%s", fdata);
-  cmp = strcmp(fdata, test_dhcp_conf_prefix_if);
-  assert_int_equal(cmp, 0);
+    int cmp = strcmp(fdata, test_dhcp_conf_prefix_if);
+    assert_int_equal(cmp, 0);
 
-  os_free(fdata);
+    os_free(fdata);
+  }
+#endif
 
   utarray_free(server_arr);
   utarray_free(dconf.config_dhcpinfo_array);
@@ -293,7 +308,11 @@ static void test_clear_dhcp_lease_entry(void **state) {
 static void test_run_dhcp_process(void **state) {
   (void)state;
 
+#ifdef WITH_UCI_SERVICE
+  // todo: add some tests for dnsmasq UCI conf
+#else
   expect_string(__wrap_kill_process, proc_name, "dnsmasq");
+#endif
   expect_string(__wrap_is_proc_running, name, "dnsmasq");
   char *ret = run_dhcp_process("/tmp/sbin/dnsmasq", "/tmp/dnsmasq.conf");
   assert_non_null(ret);
@@ -310,8 +329,11 @@ static void test_kill_dhcp_process(void **state) {
 
 static void test_signal_dhcp_process(void **state) {
   (void)state;
-
+#ifdef WITH_UCI_SERVICE
+  // signal_dhcp_process does nothing in UCI mode
+#else
   expect_string(__wrap_signal_process, proc_name, "dnsmasq");
+#endif
   assert_int_equal(signal_dhcp_process("/tmp/sbin/dnsmasq"), 0);
 }
 

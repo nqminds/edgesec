@@ -8,6 +8,9 @@ target_link_options(test_dnsmasq
   PRIVATE
   "LINKER:--wrap=kill_process,--wrap=run_process,--wrap=is_proc_running,--wrap=signal_process"
 )
+if (USE_UCI_SERVICE)
+  target_link_libraries(test_dnsmasq PRIVATE __wrap_uwrt_init_context)
+endif()
 
 add_executable(test_dhcp_service test_dhcp_service.c)
 target_link_libraries(test_dhcp_service PRIVATE dhcp_service dnsmasq log cmocka::cmocka)
