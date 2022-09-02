@@ -12,7 +12,6 @@ add_executable(test_cmd_processor test_cmd_processor.c)
 target_link_libraries(test_cmd_processor PRIVATE cmd_processor iptables log cmocka::cmocka)
 target_link_options(test_cmd_processor PRIVATE
   "LINKER:--wrap=write_socket_data,--wrap=accept_mac_cmd,--wrap=deny_mac_cmd"
-  "LINKER:--wrap=write_socket_data,--wrap=accept_mac_cmd,--wrap=deny_mac_cmd"
   "LINKER:--wrap=add_nat_cmd,--wrap=remove_nat_cmd,--wrap=assign_psk_cmd"
   "LINKER:--wrap=set_ip_cmd,--wrap=add_bridge_mac_cmd,--wrap=add_bridge_ip_cmd"
   "LINKER:--wrap=set_fingerprint_cmd,--wrap=query_fingerprint_cmd"
