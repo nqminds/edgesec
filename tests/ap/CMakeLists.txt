@@ -9,6 +9,10 @@ set_target_properties(test_hostapd
   LINK_FLAGS  "-Wl,--wrap=kill_process -Wl,--wrap=signal_process -Wl,--wrap=reset_interface -Wl,--wrap=run_process -Wl,--wrap=list_dir -Wl,--wrap=check_sock_file_exists"
 )
 
+if (USE_UCI_SERVICE)
+  target_link_libraries(test_hostapd PRIVATE __wrap_uwrt_init_context)
+endif()
+
 add_executable(test_ap_service test_ap_service.c)
 target_link_libraries(test_ap_service PRIVATE ap_service hostapd iface os log cmocka::cmocka)
 # sqlite3.h required by src/supervisor/supervisor_config.h

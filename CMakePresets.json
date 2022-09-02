@@ -199,6 +199,18 @@
     {
       "name": "linux-with-crypt",
       "configurePreset": "linux-with-crypt"
+    },
+    {
+      "name": "openwrt",
+      "configurePreset": "openwrt",
+      "environment": {
+        "LD_LIBRARY_PATH": "${sourceDir}/build/${presetName}/lib/ubox/lib"
+      }
+    },
+    {
+      "name": "openwrt-with-header",
+      "configurePreset": "openwrt-with-header",
+      "inherits": "openwrt"
     }
   ]
 }
