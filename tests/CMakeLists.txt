@@ -2,6 +2,15 @@ include_directories (
   "${PROJECT_SOURCE_DIR}/src"
 )
 
+if (USE_UCI_SERVICE)
+  add_compile_definitions(TEST_UCI_CONFIG_DIR="${CMAKE_SOURCE_DIR}/tests/data/uci")
+  add_library(
+    __wrap_uwrt_init_context OBJECT ./utils/__wrap_uwrt_init_context.c
+  )
+  target_link_libraries(__wrap_uwrt_init_context PRIVATE uci_wrt)
+  target_link_options(__wrap_uwrt_init_context PUBLIC "-Wl,--wrap=uwrt_init_context")
+endif ()
+
 if (USE_CAPTURE_SERVICE)
   add_subdirectory(capture)
 endif ()
@@ -36,6 +45,9 @@ if (USE_RADIUS_SERVICE)
 endif()
 if (USE_MDNS_SERVICE)
   set(TEST_RUNCTL_PROPS "${TEST_RUNCTL_PROPS} -Wl,--wrap=run_mdns_thread")
+endif()
+if (USE_UCI_SERVICE)
+  target_link_libraries(test_runctl PUBLIC __wrap_uwrt_init_context)
 endif()
 
 set_target_properties(test_runctl PROPERTIES LINK_FLAGS ${TEST_RUNCTL_PROPS})
