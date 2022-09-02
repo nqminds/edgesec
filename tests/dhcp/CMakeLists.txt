@@ -8,6 +8,9 @@ set_target_properties(test_dnsmasq
   PROPERTIES
   LINK_FLAGS  "-Wl,--wrap=kill_process -Wl,--wrap=run_process -Wl,--wrap=is_proc_running -Wl,--wrap=signal_process"
 )
+if (USE_UCI_SERVICE)
+  target_link_libraries(test_dnsmasq PRIVATE __wrap_uwrt_init_context)
+endif()
 
 add_executable(test_dhcp_service test_dhcp_service.c)
 target_link_libraries(test_dhcp_service PRIVATE dhcp_service dnsmasq log cmocka::cmocka)
