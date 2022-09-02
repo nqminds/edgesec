@@ -3,7 +3,6 @@ include_directories(
 )
 
 if (USE_UCI_SERVICE)
-  add_compile_definitions(TEST_UCI_CONFIG_DIR="${CMAKE_SOURCE_DIR}/tests/data/uci")
   add_executable(test_uci_wrt test_uci_wrt.c)
   target_link_libraries(test_uci_wrt PRIVATE uci_wrt cmocka::cmocka iface_mapper)
 endif ()
