@@ -32,25 +32,31 @@ endif ()
 
 add_executable(test_runctl test_runctl.c)
 target_link_libraries(test_runctl PUBLIC SQLite::SQLite3 LibUTHash::LibUTHash PRIVATE runctl log os supervisor_config mac_mapper cmocka::cmocka)
-set(TEST_RUNCTL_PROPS "-Wl,--wrap=get_vlan_mapper -Wl,--wrap=eloop_run -Wl,--wrap=get_commands_paths -Wl,--wrap=hmap_str_keychar_get")
-set(TEST_RUNCTL_PROPS "${TEST_RUNCTL_PROPS} -Wl,--wrap=fw_init_context -Wl,--wrap=fw_set_ip_forward")
+
+target_link_options(test_runctl PRIVATE
+  "LINKER:--wrap=get_vlan_mapper,--wrap=eloop_run,--wrap=get_commands_paths,--wrap=hmap_str_keychar_get"
+  "LINKER:--wrap=fw_init_context,--wrap=fw_set_ip_forward"
+)
+
 if (USE_CRYPTO_SERVICE)
   target_link_libraries(test_runctl PRIVATE crypt_service)
-  set(TEST_RUNCTL_PROPS "${TEST_RUNCTL_PROPS} -Wl,--wrap=load_crypt_service")
+  target_link_options(test_runctl PRIVATE "LINKER:--wrap=load_crypt_service")
 endif ()
-set(TEST_RUNCTL_PROPS "${TEST_RUNCTL_PROPS} -Wl,--wrap=iface_get_vlan -Wl,--wrap=run_supervisor")
-set(TEST_RUNCTL_PROPS "${TEST_RUNCTL_PROPS} -Wl,--wrap=run_ap -Wl,--wrap=run_dhcp")
+
+target_link_options(test_runctl PRIVATE
+  "LINKER:--wrap=iface_get_vlan,--wrap=run_supervisor"
+  "LINKER:--wrap=run_ap,--wrap=run_dhcp"
+)
+
 if (USE_RADIUS_SERVICE)
-  set(TEST_RUNCTL_PROPS "${TEST_RUNCTL_PROPS} -Wl,--wrap=run_radius")
+  target_link_options(test_runctl PRIVATE "LINKER:--wrap=run_radius")
 endif()
 if (USE_MDNS_SERVICE)
-  set(TEST_RUNCTL_PROPS "${TEST_RUNCTL_PROPS} -Wl,--wrap=run_mdns_thread")
+  target_link_options(test_runctl PRIVATE "LINKER:--wrap=run_mdns_thread")
 endif()
 if (USE_UCI_SERVICE)
   target_link_libraries(test_runctl PUBLIC __wrap_uwrt_init_context)
 endif()
-
-set_target_properties(test_runctl PROPERTIES LINK_FLAGS ${TEST_RUNCTL_PROPS})
 
 add_test(NAME test_runctl COMMAND test_runctl)
 set_tests_properties(test_runctl
