@@ -19,6 +19,8 @@ override_dh_auto_configure:
 		 -DUSE_NETLINK_SERVICE=ON\
 		 -DUSE_UCI_SERVICE=OFF\
 		 -DUSE_HEADER_MIDDLEWARE=ON\
+		 -DBUILD_SQLITE_LIB=OFF\
+		 -DBUILD_PCAP_LIB=OFF\
 		 -DBUILD_HOSTAPD=ON
 
 # make sure to always install into `debian/tmp` and use

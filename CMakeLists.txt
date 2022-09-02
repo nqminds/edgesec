@@ -148,6 +148,10 @@ include(zymkey4)
 include(uci)
 include(uthash)
 
+# On Linux, creates a Threads::Threads target that points to pthread
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+find_package(Threads REQUIRED)
+
 # configure a header file to pass some of the CMake settings
 # to the source code
 configure_file(
