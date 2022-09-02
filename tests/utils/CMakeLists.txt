@@ -35,7 +35,7 @@ add_executable(test_squeue test_squeue.c)
 target_link_libraries(test_squeue PRIVATE squeue os cmocka::cmocka)
 
 add_executable(test_log_thread_safe test_log_thread_safe.c)
-target_link_libraries(test_log_thread_safe log pthread)
+target_link_libraries(test_log_thread_safe log Threads::Threads)
 
 add_executable(test_log_level test_log_level.c)
 target_link_libraries(test_log_level PRIVATE log)
