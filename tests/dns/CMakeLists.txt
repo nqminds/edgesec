@@ -17,9 +17,9 @@ target_link_libraries(test_reflection_list PRIVATE os reflection_list log cmocka
 if (USE_MDNS_SERVICE AND USE_CAPTURE_SERVICE)
   add_executable(test_mdns_service test_mdns_service.c)
   target_link_libraries(test_mdns_service PRIVATE mdns_service pcap_service log cmocka::cmocka)
-  set_target_properties(test_mdns_service
-    PROPERTIES
-    LINK_FLAGS  "-Wl,--wrap=run_pcap -Wl,--wrap=eloop_register_read_sock -Wl,--wrap=eloop_init -Wl,--wrap=eloop_run -Wl,--wrap=eloop_free"
+  target_link_options(test_mdns_service
+    PRIVATE
+    "LINKER:--wrap=run_pcap,--wrap=eloop_register_read_sock,--wrap=eloop_init,--wrap=eloop_run,--wrap=eloop_free"
   )
 endif ()
 
