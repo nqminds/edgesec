@@ -569,6 +569,26 @@ static void test_make_dirs_to_path(void **state) {
   ret = make_dirs_to_path(path, 0755);
   // should return no error code
   assert_int_equal(ret, 0);
+
+  // should return an error on invalid input string
+  ret = make_dirs_to_path(NULL, 0755);
+  assert_int_equal(ret, -1);
+
+  // create a file in the directory
+  FILE *fp = fopen(path, "w");
+  assert_non_null(fp);
+  assert_int_not_equal(fputs("test file, should be deleted", fp), EOF);
+  assert_int_not_equal(fclose(fp), EOF);
+
+  // should throw a ENOTDIR (NOT A DIRECTORY) error when trying to create
+  // folder in `not_a_dir.txt`
+  const *enotdir_path = construct_path(directories_to_build,
+                                       "not_a_dir.txt/new_folder/new_file.txt");
+  assert_int_equal(make_dirs_to_path(enotdir_path, 0755), -1);
+  free(enotdir_path);
+
+  free(directories_to_build);
+  free(path);
 }
 
 static void test_string_append_char(void **state) {
@@ -576,6 +596,11 @@ static void test_string_append_char(void **state) {
   const char input_str[] = "Hello World";
   char *combined_str = string_append_char(input_str, '!');
   assert_string_equal(combined_str, "Hello World!");
+
+  // should return NULL if input str is NULL
+  assert_ptr_equal(string_append_char(NULL, '!'), NULL);
+
+  free(combined_str);
 }
 
 int main(int argc, char *argv[]) {

@@ -6,7 +6,7 @@ set_target_properties(test_header_middleware
 )
 
 add_executable(test_sqlite_header test_sqlite_header.c)
-target_link_libraries(test_sqlite_header PUBLIC SQLite::SQLite3 PRIVATE sqlite_header os log cmocka::cmocka)
+target_link_libraries(test_sqlite_header PRIVATE sqlite_header os log Threads::Threads cmocka::cmocka)
 
 add_executable(test_packet_queue test_packet_queue.c)
 target_link_libraries(test_packet_queue PUBLIC PCAP::pcap SQLite::SQLite3 PRIVATE packet_queue os log cmocka::cmocka)
@@ -15,7 +15,7 @@ add_executable(test_pcap_queue test_pcap_queue.c)
 target_link_libraries(test_pcap_queue PRIVATE pcap_queue os log cmocka::cmocka)
 
 add_executable(test_sqlite_pcap test_sqlite_pcap.c)
-target_link_libraries(test_sqlite_pcap PUBLIC SQLite::SQLite3 PRIVATE sqlite_pcap sqliteu os log cmocka::cmocka)
+target_link_libraries(test_sqlite_pcap PRIVATE sqlite_pcap sqliteu os log Threads::Threads cmocka::cmocka)
 
 add_test(NAME test_header_middleware COMMAND test_header_middleware)
 set_tests_properties(test_header_middleware
