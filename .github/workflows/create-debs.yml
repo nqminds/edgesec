@@ -34,16 +34,15 @@ jobs:
           sudo mk-build-deps --install --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes'  debian/control
       - name: Configure
         run: |
-          cmake -B build/ --preset "${{ matrix.cmake-preset }}" -DCONFIGURE_COVERAGE=BOOL:ON
+          cmake --preset "${{ matrix.cmake-preset }}" -DCONFIGURE_COVERAGE=BOOL:ON
       - name: Build
         run: |
-          # can't use --preset "${{ matrix.cmake-preset }}" since we want to specify a custom build dir
-          cmake --build build/ --parallel "$(($(nproc) + 1))"
+          cmake --build --preset "${{ matrix.cmake-preset }}" --parallel "$(($(nproc) + 1))"
       - id: test
         name: Test
         run: |
           if ctest --list-presets | grep -s "${{ matrix.cmake-preset }}"; then
-            ctest --test-dir build/ --preset "${{ matrix.cmake-preset }}" --output-on-failure
+            ctest --preset "${{ matrix.cmake-preset }}" --output-on-failure
             echo "::set-output name=tested::true"
           else
             echo "::set-output name=tested::false"
@@ -52,17 +51,21 @@ jobs:
         # code coverage only works if ctest works
         if: steps.test.outputs.tested == 'true'
         run: |
-          cmake --build build/ --parallel "$(($(nproc) + 1))" --target coverage
-          mv build/coverage.info "build/coverage-${{ matrix.cmake-preset }}.info"
+          cmake --build --preset "${{ matrix.cmake-preset }}" --parallel "$(($(nproc) + 1))" --target coverage
+          mv "build/${{ matrix.cmake-preset }}/coverage.info" "build/${{ matrix.cmake-preset }}/coverage-${{ matrix.cmake-preset }}.info"
+        env:
+          # --target coverage runs CTest internally, but it doesn't load our
+          # custom LD_LIBRARY_PATH from our ctest's cmake-presets file
+          LD_LIBRARY_PATH: ${{ github.workspace }}/build/${{ matrix.cmake-preset }}/lib/ubox/lib
       - name: Archive code coverage results
         if: steps.test.outputs.tested == 'true'
         uses: actions/upload-artifact@v3
         with:
           name: code-coverage-lcov
-          path: build/coverage-${{ matrix.cmake-preset }}.info
+          path: build/${{ matrix.cmake-preset }}/coverage-${{ matrix.cmake-preset }}.info
       - name: Install to ${{ runner.temp }}/edgesec-${{ matrix.cmake-preset }}/
         run: |
-          cmake --install build/ --prefix "${{ runner.temp }}/edgesec-${{ matrix.cmake-preset }}"
+          cmake --install "build/${{ matrix.cmake-preset }}" --prefix "${{ runner.temp }}/edgesec-${{ matrix.cmake-preset }}"
       - name: Escape invalid chars in artifact name
         id: escape_preset
         run: |

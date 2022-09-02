@@ -22,7 +22,7 @@ else()
   message("Downloading and compiling our own libsqlite library")
   ExternalProject_Add(
     libsqlite
-    # v3.31.01 is the version supported by OpenWRT 19.07
+    # v3.31.01 is the version supported by OpenWRT 19.07 and Ubuntu 20.04
     # see https://github.com/openwrt/packages/blob/5a399f144891d6774611c9903f12059270b09ca8/libs/sqlite3/Makefile#L10-L11
     URL https://www.sqlite.org/2020/sqlite-autoconf-3310100.tar.gz
     URL_HASH SHA256=62284efebc05a76f909c580ffa5c008a7d22a1287285d68b7825a2b6b51949ae
