@@ -20,7 +20,6 @@
 #include <stdbool.h>
 #include <errno.h>
 #include <libgen.h>
-#include <pcap.h>
 #include <pthread.h>
 
 #include "capture_config.h"

@@ -21,7 +21,6 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <libgen.h>
-#include <pthread.h>
 
 #include "version.h"
 #include "utils/log.h"
