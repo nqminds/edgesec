@@ -11,4 +11,9 @@ IncludeCategories:
   - Regex: '^<cmocka.h>'
     # <cmocha.h> relies on <std...h> being included first
     SortPriority: 2
+  - Regex: '^<netinet/in.h>'
+    SortPriority: 2
+  - Regex: '^<netinet/'
+    # On FreeBSD, you must include `<netinet/in.h>` before `<netinet/if_ether.h>`
+    SortPriority: 3
 ...
