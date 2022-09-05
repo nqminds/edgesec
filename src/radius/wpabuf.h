@@ -1,15 +1,12 @@
-/*
- * Dynamic data buffer
- * Copyright (c) 2007-2012, Jouni Malinen <j@w1.fi>
- *
- * This software may be distributed under the terms of the BSD license.
- * See README for more details.
- */
-
 /**
+ * @brief Dynamic data buffer.
  * @file wpabuf.h
  * @author Jouni Malinen
- * @brief Dynamic data buffer.
+ * @author Alois Klink
+ * @copyright
+ * SPDX-FileCopyrightText: Copyright (c) 2007-2012, Jouni Malinen <j@w1.fi>
+ * SPDX-FileCopyrightText: © 2022 NQMCyber Ltd and edgesec contributors
+ * SPDX-License-Identifier: BSD-3-clause
  */
 
 #ifndef WPABUF_H
