@@ -18,6 +18,7 @@ jobs:
           - linux # Normal linux tests
           - linux-with-crypt # Tests whether crypto service works
           - linux-with-example-middlewares # tests whether example capture middlewares work
+          - clang
           - openwrt-with-header
           - openwrt-21.02.1/bcm27xx/bcm2710 # Raspberry Pi 3 for OpenWRT 21.02.1
     permissions:
@@ -32,6 +33,17 @@ jobs:
           sudo apt-get update
           sudo apt-get install devscripts equivs lcov -y # install mk-build-depends
           sudo mk-build-deps --install --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes'  debian/control
+      - name: Install llvm (if clang)
+        if: matrix.cmake-preset == 'clang'
+        run: |
+          sudo apt-get install llvm -y
+          llvm-cov gcov --version
+          clang --version
+          # Very annoyingly, the Ubuntu-20.04 image uses Clang 11 by default
+          # however, the default version of LLVM that is installed is v10,
+          # which is too old for Clang 11 compatibility
+          echo 'set(CMAKE_C_COMPILER clang-10)
+          set(CMAKE_CXX_COMPILER clang++-10)' > CMakeModules/CMakeToolchains/clang.cmake
       - name: Configure
         run: |
           cmake --preset "${{ matrix.cmake-preset }}" -DCONFIGURE_COVERAGE=BOOL:ON

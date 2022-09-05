@@ -57,6 +57,12 @@
       }
     },
     {
+      "name": "clang",
+      "inherits": "linux",
+      "displayName": "Clang",
+      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/clang.cmake"
+    },
+    {
       "name": "openwrt",
       "inherits": "default",
       "displayName": "OpenWRT",
@@ -155,6 +161,10 @@
       "configurePreset": "linux-with-example-middlewares"
     },
     {
+      "name": "clang",
+      "configurePreset": "clang"
+    },
+    {
       "name": "openwrt",
       "configurePreset": "openwrt"
     },
@@ -211,6 +221,10 @@
       "name": "openwrt-with-header",
       "configurePreset": "openwrt-with-header",
       "inherits": "openwrt"
+    },
+    {
+      "name": "clang",
+      "configurePreset": "clang"
     }
   ]
 }
