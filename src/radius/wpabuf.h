@@ -38,18 +38,6 @@
 
 #ifndef WPA_BYTE_SWAP_DEFINED
 
-#ifndef __BYTE_ORDER
-#ifndef __LITTLE_ENDIAN
-#ifndef __BIG_ENDIAN
-#define __LITTLE_ENDIAN 1234
-#define __BIG_ENDIAN 4321
-#if defined(sparc)
-#define __BYTE_ORDER __BIG_ENDIAN
-#endif
-#endif /* __BIG_ENDIAN */
-#endif /* __LITTLE_ENDIAN */
-#endif /* __BYTE_ORDER */
-
 #define le_to_host16(n) le16toh(n)
 #define host_to_le16(n) htole16(n)
 #define be_to_host16(n) be16toh(n)
