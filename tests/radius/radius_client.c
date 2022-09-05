@@ -12,7 +12,6 @@
 #include <asm/types.h>
 #include <arpa/inet.h>
 #include <stdbool.h>
-#include <net/if.h>
 #include <netinet/if_ether.h>
 #include <errno.h>
 

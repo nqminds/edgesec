@@ -11,7 +11,6 @@
 #include <asm/types.h>
 #include <arpa/inet.h>
 #include <stdbool.h>
-#include <net/if.h>
 #include <errno.h>
 #include <sys/stat.h>
 #include <fcntl.h>

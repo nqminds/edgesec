@@ -11,7 +11,7 @@
 #ifndef NL_H_
 #define NL_H_
 
-#include <linux/if.h>
+#include <net/if.h>
 #include <netinet/if_ether.h>
 #include "linux/rtnetlink.h"
 #include <utarray.h>

@@ -15,7 +15,6 @@
 #include <asm/types.h>
 #include <arpa/inet.h>
 #include <stdbool.h>
-#include <net/if.h>
 
 struct hostapd_ip_addr {
   int af; /* AF_INET / AF_INET6 */

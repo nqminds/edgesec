@@ -11,7 +11,7 @@
 #ifndef IFACE_MAPPER_H_
 #define IFACE_MAPPER_H_
 
-#include <linux/if.h>
+#include <net/if.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include <netinet/in.h>
