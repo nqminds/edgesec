@@ -23,8 +23,14 @@ if (BUILD_CMOCKA_LIB AND NOT (BUILD_ONLY_DOCS) AND NOT (CMAKE_CROSSCOMPILING))
 
   FetchContent_Declare(
     cmocka
-    URL https://cmocka.org/files/1.1/cmocka-1.1.5.tar.xz
-    URL_HASH SHA256=f0ccd8242d55e2fd74b16ba518359151f6f8383ff8aef4976e48393f77bba8b6
+    # URL https://cmocka.org/files/1.1/cmocka-1.1.5.tar.xz
+    # URL_HASH SHA256=f0ccd8242d55e2fd74b16ba518359151f6f8383ff8aef4976e48393f77bba8b6
+
+    # Use upstream in development cmocka version to fix https://gitlab.com/cmocka/cmocka/-/issues/38
+    # Adds 64-bit Muslibc, Cheri ARM/Morello/128-bit pointer support
+    GIT_REPOSITORY https://gitlab.com/cmocka/cmocka.git
+    # latest master commit as of 2022-08-10
+    GIT_TAG 59dc0013f9f29fcf212fe4911c78e734263ce24c
   )
 
   set(WITH_STATIC_LIB ON CACHE BOOL "CMocka: Build with a static library" FORCE)
