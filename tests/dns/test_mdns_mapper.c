@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <libgen.h>
 #include <setjmp.h>
+#include <stdint.h>
 #include <cmocka.h>
 
 #include "utils/log.h"
