@@ -18,8 +18,6 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <linux/types.h>
-#include <linux/posix_types.h>
 #include <asm/types.h>
 #include <arpa/inet.h>
 
@@ -35,7 +33,7 @@
 struct radius_hdr {
   uint8_t code;
   uint8_t identifier;
-  __be16 length; /* including this header */
+  uint16_t length; /* Big-Endian length, including this header */
   uint8_t authenticator[16];
   /* followed by length-20 octets of attributes */
 } STRUCT_PACKED;

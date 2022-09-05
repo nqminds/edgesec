@@ -73,7 +73,9 @@ if (USE_CAPTURE_SERVICE)
   target_link_libraries(
     capture_service
     PUBLIC PCAP::pcap middlewares_list
-    PRIVATE dns_decoder pcap_service pcap_queue packet_queue packet_decoder squeue eloop iface log os hashmap SQLite::SQLite3)
+    PRIVATE
+      dns_decoder pcap_service pcap_queue packet_queue packet_decoder squeue
+      eloop iface log os hashmap SQLite::SQLite3 Threads::Threads)
 
   set(CAPTURE_MIDDLEWARES "")
 

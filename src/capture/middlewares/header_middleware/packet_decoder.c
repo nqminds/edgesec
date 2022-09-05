@@ -16,7 +16,6 @@
 
 #include <netinet/in.h>
 #include <netinet/ip.h>
-#include <linux/if.h>
 #include <net/if_arp.h>
 #include <netinet/if_ether.h>
 #include <netinet/ip6.h>

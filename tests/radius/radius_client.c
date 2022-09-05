@@ -9,12 +9,9 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <linux/types.h>
-#include <linux/posix_types.h>
 #include <asm/types.h>
 #include <arpa/inet.h>
 #include <stdbool.h>
-#include <net/if.h>
 #include <netinet/if_ether.h>
 #include <errno.h>
 
