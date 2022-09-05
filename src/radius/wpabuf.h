@@ -22,20 +22,6 @@
 #include "utils/allocs.h"
 #include "utils/os.h"
 
-/*
- * Definitions for sparse validation
- * (http://kernel.org/pub/linux/kernel/people/josh/sparse/)
- */
-#ifdef __CHECKER__
-#define __force __attribute__((force))
-#undef __bitwise
-#define __bitwise __attribute__((bitwise))
-#else
-#define __force
-#undef __bitwise
-#define __bitwise
-#endif
-
 #ifndef WPA_BYTE_SWAP_DEFINED
 
 #define le_to_host16(n) le16toh(n)
