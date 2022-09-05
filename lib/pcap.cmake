@@ -19,6 +19,8 @@ else()
 
   # create static lib using -fPIC, so we can make it into a sharedobject later
   set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+  set(CMAKE_C_EXTENSIONS ON) # libpcap uses non-POSIX C (e.g. BSD u_int)
   # declares the `pcap_static` target
   FetchContent_MakeAvailable(libpcap)
 
