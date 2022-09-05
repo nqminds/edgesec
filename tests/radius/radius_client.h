@@ -12,7 +12,6 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <asm/types.h>
 #include <arpa/inet.h>
 #include <stdbool.h>
 
