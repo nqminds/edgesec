@@ -25,6 +25,7 @@ if (BUILD_UUID_LIB AND NOT (BUILD_ONLY_DOCS))
       --prefix=<INSTALL_DIR>
       "--host=${target_autoconf_triple}"
       --disable-all-programs --enable-libuuid
+      "CC=${CMAKE_C_COMPILER}" "CXX=${CMAKE_CXX_COMPILER}"
     INSTALL_DIR "${LIBUUID_INSTALL_DIR}"
     # need to manually specify PATH, so that make knows where to find GCC
     BUILD_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" $(MAKE)

@@ -17,7 +17,7 @@
 #include "mac_mapper.h"
 #include "bridge_list.h"
 
-int get_mac_mapper(hmap_mac_conn **hmap, uint8_t mac_addr[ETH_ALEN],
+int get_mac_mapper(hmap_mac_conn **hmap, uint8_t mac_addr[ETHER_ADDR_LEN],
                    struct mac_conn_info *info) {
   hmap_mac_conn *s;
 
@@ -36,7 +36,7 @@ int get_mac_mapper(hmap_mac_conn **hmap, uint8_t mac_addr[ETH_ALEN],
     return -1;
   }
 
-  HASH_FIND(hh, *hmap, mac_addr, ETH_ALEN, s);
+  HASH_FIND(hh, *hmap, mac_addr, ETHER_ADDR_LEN, s);
 
   if (s != NULL) {
     *info = s->value;
@@ -54,7 +54,7 @@ bool put_mac_mapper(hmap_mac_conn **hmap, struct mac_conn conn) {
     return false;
   }
 
-  HASH_FIND(hh, *hmap, conn.mac_addr, ETH_ALEN,
+  HASH_FIND(hh, *hmap, conn.mac_addr, ETHER_ADDR_LEN,
             s); /* id already in the hash? */
 
   if (s == NULL) {
@@ -65,11 +65,11 @@ bool put_mac_mapper(hmap_mac_conn **hmap, struct mac_conn conn) {
     }
 
     // Copy the key and value
-    os_memcpy(s->key, conn.mac_addr, ETH_ALEN);
+    os_memcpy(s->key, conn.mac_addr, ETHER_ADDR_LEN);
     s->value = conn.info;
 
     // HASH_ADD_STR(hmap, key, s);
-    HASH_ADD(hh, *hmap, key[0], ETH_ALEN, s);
+    HASH_ADD(hh, *hmap, key[0], ETHER_ADDR_LEN, s);
   } else {
     // Copy the value
     s->value = conn.info;
@@ -99,7 +99,7 @@ int get_mac_list(hmap_mac_conn **hmap, struct mac_conn **list) {
       (struct mac_conn *)os_malloc(total_entries * sizeof(struct mac_conn));
 
   HASH_ITER(hh, *hmap, current, tmp) {
-    os_memcpy(ptr[count].mac_addr, current->key, ETH_ALEN);
+    os_memcpy(ptr[count].mac_addr, current->key, ETHER_ADDR_LEN);
     ptr[count].info = current->value;
     count++;
   }
@@ -146,12 +146,12 @@ int get_ip_mapper(hmap_mac_conn **hmap, char *ip, uint8_t *mac_addr) {
   HASH_ITER(hh, *hmap, current, tmp) {
     if (validate_ipv4_string(current->value.ip_addr) &&
         strcmp(ip, current->value.ip_addr) == 0) {
-      os_memcpy(mac_addr, current->key, ETH_ALEN);
+      os_memcpy(mac_addr, current->key, ETHER_ADDR_LEN);
       return 1;
     }
     if (validate_ipv4_string(current->value.ip_sec_addr) &&
         strcmp(ip, current->value.ip_sec_addr) == 0) {
-      os_memcpy(mac_addr, current->key, ETH_ALEN);
+      os_memcpy(mac_addr, current->key, ETHER_ADDR_LEN);
       return 1;
     }
   }

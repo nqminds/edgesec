@@ -7,7 +7,6 @@
  * SPDX-License-Identifier: LGPL-3.0-or-later
  * @brief File containing the implementation of the pcap service utilities.
  */
-#include <linux/if.h>
 #include <pcap.h>
 
 #include "pcap_service.h"
