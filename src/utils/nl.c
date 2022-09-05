@@ -389,9 +389,10 @@ static int nl_get_ll_addr_len(const char *ifname) {
   return len;
 }
 
-int iplink_parse(int argc, char **argv, struct iplink_req *req, char **type) {
-  char *name = NULL;
-  char *dev = NULL;
+int iplink_parse(int argc, const char *const *argv, struct iplink_req *req,
+                 const char **type) {
+  const char *name = NULL;
+  const char *dev = NULL;
   int ret, len;
   char abuf[32];
   int addr_len = 0;
@@ -507,8 +508,9 @@ int iplink_parse(int argc, char **argv, struct iplink_req *req, char **type) {
   return ret;
 }
 
-static int iplink_modify(int cmd, unsigned int flags, int argc, char **argv) {
-  char *type = NULL;
+static int iplink_modify(int cmd, unsigned int flags, int argc,
+                         const char *const *argv) {
+  const char *type = NULL;
   struct iplink_req req = {
       .n.nlmsg_len = NLMSG_LENGTH(sizeof(struct ifinfomsg)),
       .n.nlmsg_flags = NLM_F_REQUEST | flags,
@@ -548,7 +550,8 @@ static int default_scope(inet_prefix *lcl) {
   return 0;
 }
 
-static int ipaddr_modify(int cmd, int flags, int argc, char **argv) {
+static int ipaddr_modify(int cmd, int flags, int argc,
+                         const char *const *argv) {
   struct {
     struct nlmsghdr n;
     struct ifaddrmsg ifa;
@@ -559,7 +562,7 @@ static int ipaddr_modify(int cmd, int flags, int argc, char **argv) {
       .n.nlmsg_type = cmd,
       .ifa.ifa_family = /*preferred_family*/ 0,
   };
-  char *d = NULL;
+  const char *d = NULL;
   inet_prefix lcl;
   inet_prefix peer;
   int local_len = 0;
@@ -586,7 +589,11 @@ static int ipaddr_modify(int cmd, int flags, int argc, char **argv) {
     } else {
       if (local_len)
         duparg2("local", *argv);
-      get_prefix(&lcl, *argv, req.ifa.ifa_family);
+      // Get prefix temporarily modifies argv,
+      // which may cause problems for multi-threading
+      char argv_buf[256];
+      strncpy(argv_buf, *argv, 256);
+      get_prefix(&lcl, argv_buf, req.ifa.ifa_family);
       if (req.ifa.ifa_family == AF_UNSPEC)
         req.ifa.ifa_family = lcl.family;
       addattr_l(&req.n, sizeof(req), IFA_LOCAL, &lcl.data, lcl.bytelen);
@@ -652,8 +659,11 @@ static int ipaddr_modify(int cmd, int flags, int argc, char **argv) {
     req.ifa.ifa_scope = default_scope(&lcl);
 
   req.ifa.ifa_index = ll_name_to_index(d);
-  if (!req.ifa.ifa_index)
-    return nodev(d);
+  if (!req.ifa.ifa_index) {
+
+    log_error("ipaddr_modify error: could not find interface '%s'", d);
+    return -1;
+  }
 
   if (rtnl_talk(&rth, &req.n, NULL) < 0)
     return -2;
@@ -714,9 +724,9 @@ nl_get_interfaces_err:
   return NULL;
 }
 
-int nl_new_interface(char *if_name, char *type) {
+int nl_new_interface(const char *if_name, const char *type) {
   int ret;
-  char *argv[4] = {"name", if_name, "type", type};
+  const char *argv[4] = {"name", if_name, "type", type};
 
   log_debug("nl_new_interface for if_name=%s type=%s", if_name, type);
 
@@ -756,7 +766,7 @@ int nl_set_interface_ip(struct nlctx *context, const char *ifname,
   snprintf(longip, OS_INET_ADDRSTRLEN, "%s/%d", ip_addr,
            (int)get_short_subnet(subnet_mask));
 
-  char *argv[5] = {longip, "brd", brd_addr, "dev", ifname};
+  const char *argv[5] = {longip, "brd", brd_addr, "dev", ifname};
 
   log_debug("set_interface_ip for ifname=%s ip_addr=%s brd_addr=%s", ifname,
             longip, brd_addr);
@@ -771,7 +781,7 @@ int nl_set_interface_ip(struct nlctx *context, const char *ifname,
   int ret;
   ret = ipaddr_modify(RTM_NEWADDR, NLM_F_CREATE | NLM_F_EXCL, 5, argv);
   if (ret != 0) {
-    log_error("ipaddr_modify error %d", ret);
+    log_error("nl_set_interface_ip error: ipaddr_modify failed with %d", ret);
     goto nl_set_interface_ip_err;
   }
 
@@ -784,8 +794,8 @@ nl_set_interface_ip_err:
 }
 
 int nl_set_interface_state(const char *if_name, bool state) {
-  char *if_state = (state) ? "up" : "down";
-  char *argv[3] = {"dev", if_name, if_state};
+  const char *if_state = (state) ? "up" : "down";
+  const char *argv[3] = {"dev", if_name, if_state};
 
   log_debug("set_interface_state for if_name=%s if_state=%s", if_name,
             if_state);

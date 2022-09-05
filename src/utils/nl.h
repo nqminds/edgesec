@@ -15,6 +15,7 @@
 #include <netinet/if_ether.h>
 #include "linux/rtnetlink.h"
 #include <utarray.h>
+#include <stdbool.h>
 
 #ifdef DEBUG_LIBNL
 #define NL_CB_TYPE NL_CB_DEBUG
@@ -78,7 +79,7 @@ UT_array *nl_get_interfaces(int if_id);
  * @param type The interface string type (ex. "bridge")
  * @return 0 on success, -1 otherwise
  */
-int nl_new_interface(char *if_name, char *type);
+int nl_new_interface(const char *if_name, const char *type);
 
 /**
  * @brief Set the interface IP
@@ -87,7 +88,7 @@ int nl_new_interface(char *if_name, char *type);
  * @param ifname The interface name string
  * @param ip_addr The IP address string
  * @param brd_addr The broadcast IP address string
- * @param subnet_mask The subnet mask
+ * @param subnet_mask The subnet mask (e.g. `24` for `/24`)
  * @return 0 on success, -1 otherwise
  */
 int nl_set_interface_ip(struct nlctx *context, const char *ifname,
