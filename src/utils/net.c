@@ -8,7 +8,6 @@
  * @brief File containing the implementation of the network utilities.
  */
 
-#include <linux/if.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include <netinet/in.h>
@@ -128,7 +127,7 @@ const char *inaddr6_2_ip(struct in6_addr *addr, char *ip) {
   return inet_ntop(AF_INET6, addr, ip, OS_INET6_ADDRSTRLEN);
 }
 
-uint8_t get_short_subnet(char *subnet_mask) {
+uint8_t get_short_subnet(const char *subnet_mask) {
   in_addr_t addr;
   uint8_t short_mask = 0;
   uint32_t shift = 0x80000000U;

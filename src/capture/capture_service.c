@@ -19,7 +19,6 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <errno.h>
-#include <linux/if.h>
 #include <libgen.h>
 #include <pthread.h>
 

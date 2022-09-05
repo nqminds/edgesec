@@ -8,7 +8,6 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <errno.h>
-#include <net/if.h>
 #include <libgen.h>
 #include <setjmp.h>
 #include <cmocka.h>
