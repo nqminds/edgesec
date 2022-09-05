@@ -4,16 +4,19 @@ include_directories(
 
 add_executable(test_dnsmasq test_dnsmasq.c)
 target_link_libraries(test_dnsmasq PRIVATE dnsmasq log cmocka::cmocka)
-set_target_properties(test_dnsmasq
-  PROPERTIES
-  LINK_FLAGS  "-Wl,--wrap=kill_process -Wl,--wrap=run_process -Wl,--wrap=is_proc_running -Wl,--wrap=signal_process"
+target_link_options(test_dnsmasq
+  PRIVATE
+  "LINKER:--wrap=kill_process,--wrap=run_process,--wrap=is_proc_running,--wrap=signal_process"
 )
+if (USE_UCI_SERVICE)
+  target_link_libraries(test_dnsmasq PRIVATE __wrap_uwrt_init_context)
+endif()
 
 add_executable(test_dhcp_service test_dhcp_service.c)
 target_link_libraries(test_dhcp_service PRIVATE dhcp_service dnsmasq log cmocka::cmocka)
-set_target_properties(test_dhcp_service
-  PROPERTIES
-  LINK_FLAGS  "-Wl,--wrap=generate_dnsmasq_conf -Wl,--wrap=generate_dnsmasq_script -Wl,--wrap=run_dhcp_process -Wl,--wrap=kill_dhcp_process -Wl,--wrap=clear_dhcp_lease_entry"
+target_link_options(test_dhcp_service
+  PRIVATE
+  "LINKER:--wrap=generate_dnsmasq_conf,--wrap=generate_dnsmasq_script,--wrap=run_dhcp_process,--wrap=kill_dhcp_process,--wrap=clear_dhcp_lease_entry"
 )
 
 add_test(NAME test_dnsmasq COMMAND test_dnsmasq)

@@ -11,7 +11,6 @@
 #ifndef NET_H_
 #define NET_H_
 
-#include <linux/if.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include <netinet/in.h>

@@ -8,7 +8,6 @@
  * @brief File containing the implementation of the network utilities.
  */
 
-#include <linux/if.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include <netinet/in.h>
