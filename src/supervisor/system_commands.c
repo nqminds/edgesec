@@ -96,7 +96,7 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
   }
 
   os_memcpy(info.ifname, ifname, IFNAMSIZ);
-  os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
+  os_memcpy(conn.mac_addr, mac_addr, ETHER_ADDR_LEN);
   os_memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
 
   log_debug("SET_IP type=%d mac=" MACSTR " ip=%s if=%s", ip_type,
