@@ -11,6 +11,7 @@
 #include <inttypes.h>
 #include <unistd.h>
 #include <setjmp.h>
+#include <stdint.h>
 #include <cmocka.h>
 // used to delete directory recursively
 #include <ftw.h>

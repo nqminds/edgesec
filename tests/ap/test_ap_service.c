@@ -8,11 +8,11 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stddef.h>
-#include <stdint.h>
 #include <string.h>
 #include <inttypes.h>
 #include <unistd.h>
 #include <setjmp.h>
+#include <stdint.h>
 #include <cmocka.h>
 
 #include "supervisor/supervisor_config.h"
