@@ -11,7 +11,6 @@
 #ifndef NET_H_
 #define NET_H_
 
-#include <linux/if.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include <netinet/in.h>
@@ -109,9 +108,9 @@ const char *inaddr6_2_ip(struct in6_addr *addr, char *ip);
  * @brief Convert from a string subnet mask to a short integer version
  *
  * @param subnet_mask The subnet mask string
- * @return uint8_t The short integer version subnet mask
+ * @return The short integer version subnet mask
  */
-uint8_t get_short_subnet(char *subnet_mask);
+uint8_t get_short_subnet(const char *subnet_mask);
 
 /**
  * @brief Get the host identifier from an IP address string
@@ -142,7 +141,7 @@ int disable_pmtu_discovery(int sock);
  *
  * @param[in] txt MAC address as a string (e.g., 00:11:22:33:44:55 or
  * 0011.2233.4455)
- * @param[out] addr Buffer for the MAC address (ETH_ALEN = 6 bytes)
+ * @param[out] addr Buffer for the MAC address (ETHER_ADDR_LEN = 6 bytes)
  * @return int Characters used (> 0) on success, -1 on failure
  */
 int hwaddr_aton2(const char *txt, uint8_t *addr);

@@ -11,7 +11,6 @@
 #ifndef IFACE_H_
 #define IFACE_H_
 
-#include <linux/if.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include <netinet/in.h>

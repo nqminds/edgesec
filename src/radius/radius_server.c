@@ -20,7 +20,6 @@
 #include <stdbool.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <linux/if.h>
 
 #include "../utils/log.h"
 #include "../utils/allocs.h"
@@ -338,14 +337,14 @@ radius_server_get_new_session(struct radius_server_data *data,
 
   if (radius_msg_get_attr_ptr(msg, RADIUS_ATTR_CALLING_STATION_ID, &id, &id_len,
                               NULL) == 0) {
-    char buf[3 * ETH_ALEN];
+    char buf[3 * ETHER_ADDR_LEN];
 
     os_memset(buf, 0, sizeof(buf));
     if (id_len >= sizeof(buf))
       id_len = sizeof(buf) - 1;
     os_memcpy(buf, id, id_len);
     if (hwaddr_aton2(buf, sess->mac_addr) < 0)
-      os_memset(sess->mac_addr, 0, ETH_ALEN);
+      os_memset(sess->mac_addr, 0, ETHER_ADDR_LEN);
     else
       log_trace("Calling-Station-Id: " MACSTR, MAC2STR(sess->mac_addr));
   }

@@ -13,7 +13,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <linux/if.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -24,7 +23,6 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <ifaddrs.h>
-#include <linux/if_link.h>
 
 #include "allocs.h"
 #include "os.h"

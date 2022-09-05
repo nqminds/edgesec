@@ -176,7 +176,7 @@ int get_sqlite_macconn_entries(sqlite3 *db, UT_array *entries) {
   sqlite3_stmt *res;
   int rc;
   struct mac_conn el;
-  uint8_t mac_addr[ETH_ALEN];
+  uint8_t mac_addr[ETHER_ADDR_LEN];
   char *value;
 
   if (entries == NULL) {
@@ -199,7 +199,7 @@ int get_sqlite_macconn_entries(sqlite3 *db, UT_array *entries) {
       return -1;
     }
 
-    os_memcpy(el.mac_addr, mac_addr, ETH_ALEN);
+    os_memcpy(el.mac_addr, mac_addr, ETHER_ADDR_LEN);
 
     // id
     if ((value = (char *)sqlite3_column_text(res, 1)) != NULL) {

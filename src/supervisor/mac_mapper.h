@@ -55,8 +55,8 @@ struct mac_conn_info {
  *
  */
 struct mac_conn {
-  uint8_t mac_addr[ETH_ALEN]; /**< MAC address in byte format */
-  struct mac_conn_info info;  /**< MAC connection structure */
+  uint8_t mac_addr[ETHER_ADDR_LEN]; /**< MAC address in byte format */
+  struct mac_conn_info info;        /**< MAC connection structure */
 };
 
 /**
@@ -64,7 +64,7 @@ struct mac_conn {
  *
  */
 typedef struct hashmap_mac_conn { /**< hashmap key */
-  char key[ETH_ALEN];
+  char key[ETHER_ADDR_LEN];
   struct mac_conn_info value; /**< MAC connection structure */
   UT_hash_handle hh;          /**< hashmap handle */
 } hmap_mac_conn;
@@ -78,7 +78,7 @@ typedef struct hashmap_mac_conn { /**< hashmap key */
  * @return int @c 1 if MAC address found, @c -1 error and @c 0 if MAC address
  * not found
  */
-int get_mac_mapper(hmap_mac_conn **hmap, uint8_t mac_addr[ETH_ALEN],
+int get_mac_mapper(hmap_mac_conn **hmap, uint8_t mac_addr[ETHER_ADDR_LEN],
                    struct mac_conn_info *info);
 
 /**

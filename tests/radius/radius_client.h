@@ -15,7 +15,6 @@
 #include <asm/types.h>
 #include <arpa/inet.h>
 #include <stdbool.h>
-#include <net/if.h>
 
 #include "../../src/utils/eloop.h"
 #include "ip_addr.h"

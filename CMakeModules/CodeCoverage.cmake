@@ -137,10 +137,6 @@ find_program( GENHTML_PATH NAMES genhtml genhtml.perl genhtml.bat )
 find_program( GCOVR_PATH gcovr PATHS ${CMAKE_SOURCE_DIR}/scripts/test)
 find_program( CPPFILT_PATH NAMES c++filt )
 
-if(NOT GCOV_PATH)
-    message(FATAL_ERROR "gcov not found! Aborting...")
-endif() # NOT GCOV_PATH
-
 get_property(LANGUAGES GLOBAL PROPERTY ENABLED_LANGUAGES)
 list(GET LANGUAGES 0 LANG)
 
@@ -148,6 +144,20 @@ if("${CMAKE_${LANG}_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
     if("${CMAKE_${LANG}_COMPILER_VERSION}" VERSION_LESS 3)
         message(FATAL_ERROR "Clang version must be 3.0.0 or greater! Aborting...")
     endif()
+    cmake_minimum_required(VERSION 3.19.0)
+    # llvm-cov gcov is two args, so we need to create a single executable
+    # that calls llvm-gcov for lcov
+    find_program(LLVM_COV_PATH NAMES llvm-cov REQUIRED)
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/llvm-cov-gcov.sh"
+        "#!/usr/bin/env bash
+        \"${LLVM_COV_PATH}\" gcov \"$@\"
+        "
+    )
+    file(
+        CHMOD "${CMAKE_CURRENT_BINARY_DIR}/llvm-cov-gcov.sh"
+        FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+    )
+    set(GCOV_PATH ${CMAKE_CURRENT_BINARY_DIR}/llvm-cov-gcov.sh)
 elseif(NOT CMAKE_COMPILER_IS_GNUCXX)
     if("${CMAKE_Fortran_COMPILER_ID}" MATCHES "[Ff]lang")
         # Do nothing; exit conditional without error if true
@@ -156,6 +166,10 @@ elseif(NOT CMAKE_COMPILER_IS_GNUCXX)
     else()
         message(FATAL_ERROR "Compiler is not GNU gcc! Aborting...")
     endif()
+else()
+    if(NOT GCOV_PATH)
+        message(FATAL_ERROR "gcov not found! Aborting...")
+    endif() # NOT GCOV_PATH
 endif()
 
 set(COVERAGE_COMPILER_FLAGS "-g -fprofile-arcs -ftest-coverage"

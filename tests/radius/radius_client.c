@@ -12,7 +12,6 @@
 #include <asm/types.h>
 #include <arpa/inet.h>
 #include <stdbool.h>
-#include <net/if.h>
 #include <netinet/if_ether.h>
 #include <errno.h>
 
@@ -95,7 +94,7 @@ struct radius_msg_list {
    *
    * This is used to find RADIUS messages for the same STA.
    */
-  uint8_t addr[ETH_ALEN];
+  uint8_t addr[ETHER_ADDR_LEN];
 
   /**
    * msg - RADIUS message
@@ -656,7 +655,7 @@ static void radius_client_list_add(struct radius_client_data *radius,
   }
 
   if (addr)
-    os_memcpy(entry->addr, addr, ETH_ALEN);
+    os_memcpy(entry->addr, addr, ETHER_ADDR_LEN);
   entry->msg = msg;
   entry->msg_type = msg_type;
   entry->shared_secret = shared_secret;
@@ -1439,7 +1438,7 @@ void radius_client_flush_auth(struct radius_client_data *radius,
   entry = radius->msgs;
   while (entry) {
     if (entry->msg_type == RADIUS_AUTH &&
-        os_memcmp(entry->addr, addr, ETH_ALEN) == 0) {
+        os_memcmp(entry->addr, addr, ETHER_ADDR_LEN) == 0) {
       log_trace(
           "Removing pending RADIUS authentication message for removed client");
 
