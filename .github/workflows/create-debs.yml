@@ -63,6 +63,8 @@ jobs:
         # code coverage only works if ctest works
         if: steps.test.outputs.tested == 'true'
         run: |
+          # Should prevent `Failed to execute statement: disk I/O error` errors
+          sleep 5
           cmake --build --preset "${{ matrix.cmake-preset }}" --parallel "$(($(nproc) + 1))" --target coverage
           mv "build/${{ matrix.cmake-preset }}/coverage.info" "build/${{ matrix.cmake-preset }}/coverage-${{ matrix.cmake-preset }}.info"
         env:
