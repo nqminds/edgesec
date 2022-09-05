@@ -8,6 +8,7 @@ elseif(NOT BUILD_PCAP_LIB)
 else()
   FetchContent_Declare(
     libpcap
+    # warning, libpcap 1.9.1 is the latest on OpenWRT 19.07 and Ubuntu 20.04
     URL https://github.com/the-tcpdump-group/libpcap/archive/refs/tags/libpcap-1.10.1.tar.gz
     URL_HASH SHA3_256=9aedcbec09b7b3b01c78cc80822c505846d73928a72ae96eb907b1f467eee649
   )
