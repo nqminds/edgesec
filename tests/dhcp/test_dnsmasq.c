@@ -195,7 +195,7 @@ static void test_generate_dnsmasq_conf(void **state) {
 
   split_string_array(dns_server, ',', server_arr);
 
-  error_t ret = generate_dnsmasq_conf(&dconf, server_arr);
+  int ret = generate_dnsmasq_conf(&dconf, server_arr);
   assert_true(ret == 0);
 
 #ifdef WITH_UCI_SERVICE
@@ -241,8 +241,8 @@ static void test_generate_dnsmasq_conf(void **state) {
 static void test_generate_dnsmasq_script(void **state) {
   (void)state; /* unused */
 
-  error_t ret = generate_dnsmasq_script(test_dhcp_script_path,
-                                        test_supervisor_control_path);
+  int ret = generate_dnsmasq_script(test_dhcp_script_path,
+                                    test_supervisor_control_path);
   assert_true(ret == 0);
 
   FILE *fp = fopen(test_dhcp_script_path, "r");
