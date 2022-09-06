@@ -23,7 +23,7 @@
 #include "../utils/os.h"
 #include "../utils/log.h"
 #include "../utils/base64.h"
-#include "../utils/eloop.h"
+#include <eloop.h>
 
 int put_crypt_cmd(struct supervisor_context *context, char *key, char *value) {
   struct crypt_pair pair = {key, NULL, 0};

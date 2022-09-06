@@ -25,7 +25,7 @@ add_cmocka_test(test_reflection_list
 if (USE_MDNS_SERVICE AND USE_CAPTURE_SERVICE)
   add_cmocka_test(test_mdns_service
     SOURCES test_mdns_service.c
-    LINK_LIBRARIES mdns_service pcap_service log cmocka::cmocka
+    LINK_LIBRARIES eloop::eloop mdns_service pcap_service log cmocka::cmocka
   )
   target_link_options(test_mdns_service
     PRIVATE

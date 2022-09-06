@@ -51,4 +51,4 @@ target_link_libraries(protobuf_encoder PUBLIC protobufc::protobufc PRIVATE proto
 
 add_library(protobuf_middleware protobuf_middleware.c)
 target_include_directories(protobuf_middleware PRIVATE ${PROJECT_BINARY_DIR})
-target_link_libraries(protobuf_middleware PUBLIC SQLite::SQLite3 pcap_service eloop PRIVATE packet_queue protobuf_encoder allocs os log)
+target_link_libraries(protobuf_middleware PUBLIC SQLite::SQLite3 pcap_service eloop::eloop PRIVATE packet_queue protobuf_encoder allocs os log)

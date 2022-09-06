@@ -20,9 +20,9 @@
 #include <netinet/in.h>
 #include <threads.h>
 #include <utarray.h>
+#include <eloop.h>
 
 #include "utils/log.h"
-#include "utils/eloop.h"
 #include "utils/sockctl.h"
 
 struct test_state_t {

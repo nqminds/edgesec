@@ -19,7 +19,7 @@
 #include "../dns/dns_config.h"
 #include "../utils/iface_mapper.h"
 #include "../utils/iface.h"
-#include "../utils/eloop.h"
+#include <eloop.h>
 #include "../capture/capture_config.h"
 #include "../crypt/crypt_config.h"
 #include "../firewall/firewall_service.h"

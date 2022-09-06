@@ -25,7 +25,6 @@
 #include <inttypes.h>
 
 #include "../utils/log.h"
-#include "../utils/eloop.h"
 #include "../utils/sockctl.h"
 
 #include "mcast.h"

@@ -26,7 +26,7 @@
 #include <stdbool.h>
 
 #include "../utils/os.h"
-#include "../utils/eloop.h"
+#include <eloop.h>
 #include "radius_config.h"
 
 /**

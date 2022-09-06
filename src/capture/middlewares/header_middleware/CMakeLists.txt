@@ -22,4 +22,4 @@ target_link_libraries(sqlite_header PUBLIC PCAP::pcap SQLite::SQLite3 PRIVATE sq
 
 add_library(header_middleware header_middleware.c)
 target_include_directories(header_middleware PRIVATE ${PROJECT_BINARY_DIR})
-target_link_libraries(header_middleware PUBLIC PCAP::pcap SQLite::SQLite3 PRIVATE packet_queue sqlite_header eloop log os iface SQLite::SQLite3)
+target_link_libraries(header_middleware PUBLIC middleware PCAP::pcap SQLite::SQLite3 PRIVATE packet_queue sqlite_header eloop::eloop log os iface SQLite::SQLite3)

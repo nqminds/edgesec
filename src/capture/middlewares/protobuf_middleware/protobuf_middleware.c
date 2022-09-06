@@ -15,6 +15,7 @@
 #include <stdint.h>
 #include <libgen.h>
 #include <sqlite3.h>
+#include <eloop.h>
 
 #include "protobuf_encoder.h"
 #include "protobuf_middleware.h"
@@ -23,7 +24,6 @@
 #include "../../../utils/os.h"
 #include "../../../utils/log.h"
 #include "../../../utils/squeue.h"
-#include "../../../utils/eloop.h"
 
 #include "../../pcap_service.h"
 #include "../header_middleware/packet_decoder.h"

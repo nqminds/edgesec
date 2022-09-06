@@ -5,7 +5,9 @@ repos:
     rev: v4.2.0
     hooks:
     -   id: trailing-whitespace
+        exclude: 'lib/.*/patches/.*\.patch'
     -   id: end-of-file-fixer
+        exclude: 'lib/.*/patches/.*\.patch'
     -   id: check-yaml
     -   id: check-json
         exclude: .vscode/ # vscode .json files have comments

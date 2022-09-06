@@ -4,7 +4,7 @@ include_directories(
 
 add_cmocka_test(test_hostapd
   SOURCES test_hostapd.c
-  LINK_LIBRARIES hostapd iface os log cmocka::cmocka
+  LINK_LIBRARIES ap_config hostapd iface os log cmocka::cmocka
 )
 target_link_options(test_hostapd
   PRIVATE

@@ -27,7 +27,7 @@
 #include "../utils/ifaceu.h"
 #include "../utils/net.h"
 #include "../utils/log.h"
-#include "../utils/eloop.h"
+#include <eloop.h>
 #include "../utils/sockctl.h"
 #include "../utils/squeue.h"
 #include "../utils/hashmap.h"

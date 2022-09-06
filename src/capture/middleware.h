@@ -16,7 +16,7 @@
 #include <stdint.h>
 
 #include "./pcap_service.h"
-#include "../utils/eloop.h"
+#include <eloop.h>
 
 // params is a pointer to an already allocated string
 struct middleware_context {

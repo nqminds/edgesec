@@ -17,7 +17,7 @@
 #include <pcap.h>
 #include <utarray.h>
 #include "middleware.h"
-#include "../utils/eloop.h"
+#include <eloop.h>
 
 /**
  * @brief Generic middleware context and functions.

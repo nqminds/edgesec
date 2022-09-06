@@ -14,7 +14,7 @@
 #include <sqlite3.h>
 #include <pcap.h>
 
-#include "../utils/eloop.h"
+#include <eloop.h>
 
 #include "pcap_service.h"
 #include "capture_config.h"

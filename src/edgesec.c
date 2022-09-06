@@ -27,7 +27,7 @@
 #include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/iface.h"
-#include "utils/eloop.h"
+#include <eloop.h>
 #include "dhcp/dhcp_config.h"
 #include "runctl.h"
 #include "config.h"

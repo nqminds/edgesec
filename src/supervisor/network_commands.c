@@ -27,7 +27,7 @@
 #include "../utils/log.h"
 #include "../utils/net.h"
 #include "../utils/base64.h"
-#include "../utils/eloop.h"
+#include <eloop.h>
 #include "../firewall/firewall_service.h"
 
 #define ANALYSER_FILTER_FORMAT                                                 \

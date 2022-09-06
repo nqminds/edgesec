@@ -26,7 +26,7 @@
 #include "../utils/os.h"
 #include "../utils/log.h"
 #include "../utils/base64.h"
-#include "../utils/eloop.h"
+#include <eloop.h>
 #include "../utils/sockctl.h"
 #include "../utils/iface_mapper.h"
 

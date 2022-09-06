@@ -24,7 +24,7 @@
 #include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/net.h"
-#include "utils/eloop.h"
+#include <eloop.h>
 #include "utils/iface_mapper.h"
 #include "utils/ifaceu.h"
 #include "utils/iface.h"

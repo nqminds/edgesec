@@ -12,7 +12,7 @@
 #define RADIUS_SERVICE_H
 
 #include "../supervisor/supervisor.h"
-#include "../utils/eloop.h"
+#include <eloop.h>
 
 #include "radius_server.h"
 

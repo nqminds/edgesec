@@ -1,6 +1,6 @@
 add_cmocka_test(test_header_middleware
   SOURCES test_header_middleware.c
-  LINK_LIBRARIES PCAP::pcap SQLite::SQLite3 header_middleware sqliteu os log cmocka::cmocka
+  LINK_LIBRARIES PCAP::pcap header_middleware sqliteu os log cmocka::cmocka
 )
 target_link_options(test_header_middleware
   PRIVATE
@@ -16,7 +16,7 @@ endif()
 
 add_cmocka_test(test_sqlite_header
   SOURCES test_sqlite_header.c
-  LINK_LIBRARIES sqlite_header os log Threads::Threads cmocka::cmocka SQLite::SQLite3
+  LINK_LIBRARIES header_middleware sqlite_header os log Threads::Threads cmocka::cmocka SQLite::SQLite3
 )
 set_tests_properties(test_sqlite_header
   PROPERTIES
@@ -36,5 +36,5 @@ add_cmocka_test(test_pcap_queue
 
 add_cmocka_test(test_sqlite_pcap
   SOURCES test_sqlite_pcap.c
-  LINK_LIBRARIES sqlite_pcap sqliteu os log Threads::Threads cmocka::cmocka
+  LINK_LIBRARIES capture_service sqlite_pcap sqliteu os log Threads::Threads cmocka::cmocka
 )

@@ -10,4 +10,4 @@ target_link_libraries(sqlite_pcap PUBLIC PCAP::pcap PRIVATE sqliteu log os SQLit
 
 add_library(pcap_middleware pcap_middleware.c)
 target_include_directories(pcap_middleware PRIVATE ${PROJECT_BINARY_DIR})
-target_link_libraries(pcap_middleware PUBLIC PCAP::pcap PRIVATE pcap_service pcap_queue sqlite_pcap log os SQLite::SQLite3)
+target_link_libraries(pcap_middleware PUBLIC middleware PCAP::pcap PRIVATE pcap_service pcap_queue sqlite_pcap log os SQLite::SQLite3)

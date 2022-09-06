@@ -70,14 +70,17 @@ if (USE_CAPTURE_SERVICE)
   add_library(pcap_service pcap_service.c)
   target_link_libraries(pcap_service PUBLIC LibUTHash::LibUTHash PCAP::pcap PRIVATE net log os)
 
+  add_library(middleware INTERFACE)
+  target_link_libraries(middleware INTERFACE eloop::eloop SQLite::SQLite3 pcap_service)
+
   add_library(capture_service capture_service.c)
   target_include_directories(capture_service PRIVATE ${PROJECT_BINARY_DIR})
   target_link_libraries(
     capture_service
-    PUBLIC PCAP::pcap middlewares_list
+    PUBLIC PCAP::pcap middlewares_list eloop::eloop
     PRIVATE
       dns_decoder pcap_service pcap_queue packet_queue packet_decoder squeue
-      eloop iface log os hashmap SQLite::SQLite3 Threads::Threads)
+      iface log os hashmap SQLite::SQLite3 Threads::Threads)
 
   set(CAPTURE_MIDDLEWARES "")
 
@@ -114,7 +117,7 @@ if (USE_CAPTURE_SERVICE)
   _edgesec_buildMiddlewaresSource(CAPTURE_MIDDLEWARES "${CAPTURE_MIDDLEWARES}")
   add_library(middlewares_list "${CMAKE_CURRENT_BINARY_DIR}/middlewares_list.c")
   target_include_directories(middlewares_list PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
-  target_link_libraries(middlewares_list PUBLIC LibUTHash::LibUTHash SQLite::SQLite3 PCAP::pcap eloop)
+  target_link_libraries(middlewares_list PUBLIC LibUTHash::LibUTHash SQLite::SQLite3 PCAP::pcap eloop::eloop)
 
   function(edgesecAddCaptureMiddleware)
     set(oneValueArgs
@@ -130,6 +133,8 @@ if (USE_CAPTURE_SERVICE)
     elseif(NOT DEFINED arg_MIDDLEWARE_STRUCT)
       message(FATAL_ERROR "MIDDLEWARE_STRUCT is not defined for edgesecAddCaptureMiddleware")
     endif()
+
+    target_link_libraries("${arg_MIDDLEWARE_TARGET}" PUBLIC middleware)
 
     target_link_libraries(middlewares_list PRIVATE "${arg_MIDDLEWARE_TARGET}")
     list(APPEND CAPTURE_MIDDLEWARES "${arg_MIDDLEWARE_STRUCT}")

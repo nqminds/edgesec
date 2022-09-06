@@ -19,7 +19,7 @@
 #include "radius/radius.h"
 #include "radius/wpabuf.h"
 #include "radius_client.h"
-#include "utils/eloop.h"
+#include <eloop.h>
 #include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/net.h"
