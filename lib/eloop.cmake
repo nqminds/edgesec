@@ -28,7 +28,7 @@ if (NOT (BUILD_ONLY_DOCS))
         URL https://w1.fi/releases/hostapd-2.10.tar.gz
         URL_HASH SHA512=243baa82d621f859d2507d8d5beb0ebda15a75548a62451dc9bca42717dcc8607adac49b354919a41d8257d16d07ac7268203a79750db0cfb34b51f80ff1ce8f
         PATCH_COMMAND
-            patch -p1 --verbose --directory=<SOURCE_DIR> "--input=${CMAKE_CURRENT_BINARY_DIR}/eloop_patches_combined.patch"
+            patch -p1 -d "<SOURCE_DIR>" -i "${CMAKE_CURRENT_BINARY_DIR}/eloop_patches_combined.patch"
     )
     FetchContent_Populate(eloop_download)
 
