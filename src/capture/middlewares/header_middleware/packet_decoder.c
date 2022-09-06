@@ -127,14 +127,15 @@ bool decode_tcp_packet(struct capture_packet *cpac) {
 }
 
 bool decode_icmp4_packet(struct capture_packet *cpac) {
-  cpac->icmp4h = (struct icmphdr *)((void *)cpac->ip4h + sizeof(struct ip));
+  // don't use icmphdr, it's non-standard and not supported on FreeBSD
+  cpac->icmp4h = (struct icmp *)((void *)cpac->ip4h + sizeof(struct ip));
 
   strcpy(cpac->icmp4s.id, cpac->id);
 
-  cpac->icmp4s.type = cpac->icmp4h->type;
-  cpac->icmp4s.code = cpac->icmp4h->code;
-  cpac->icmp4s.checksum = ntohs(cpac->icmp4h->checksum);
-  cpac->icmp4s.gateway = ntohl(cpac->icmp4h->un.gateway);
+  cpac->icmp4s.type = cpac->icmp4h->icmp_type;
+  cpac->icmp4s.code = cpac->icmp4h->icmp_code;
+  cpac->icmp4s.checksum = ntohs(cpac->icmp4h->icmp_cksum);
+  cpac->icmp4s.gateway = ntohl(cpac->icmp4h->icmp_hun.ih_gwaddr.s_addr);
 
   // log_trace("ICMP4 type=%d code=%d", cpac->icmp4s.type, cpac->icmp4s.code);
 
