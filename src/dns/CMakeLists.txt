@@ -10,7 +10,7 @@ add_library(dns_config INTERFACE)
 target_link_libraries(dns_config INTERFACE LibUTHash::LibUTHash capture_config)
 
 add_library(mdns_list mdns_list.c)
-target_link_libraries(mdns_list PRIVATE os)
+target_link_libraries(mdns_list PUBLIC eloop::list PRIVATE os)
 
 add_library(mdns_mapper mdns_mapper.c)
 target_link_libraries(mdns_mapper PUBLIC mdns_decoder mdns_list os)
@@ -21,7 +21,7 @@ target_link_libraries(mcast PRIVATE os)
 target_compile_definitions(mcast PRIVATE _DEFAULT_SOURCE _BSD_SOURCE)
 
 add_library(reflection_list reflection_list.c)
-target_link_libraries(reflection_list PRIVATE os log)
+target_link_libraries(reflection_list PUBLIC eloop::list PRIVATE os log)
 
 add_library(mdns_service mdns_service.c)
 target_include_directories(mdns_service PRIVATE SQLite::SQLite3)

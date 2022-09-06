@@ -11,7 +11,6 @@
 #include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/log.h"
-#include "utils/list.h"
 
 #include "bridge_list.h"
 

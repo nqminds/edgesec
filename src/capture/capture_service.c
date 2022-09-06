@@ -30,7 +30,6 @@
 #include "../utils/squeue.h"
 #include "../utils/log.h"
 #include <eloop.h>
-#include "../utils/list.h"
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 

@@ -33,7 +33,7 @@ if (NOT (BUILD_ONLY_DOCS))
     FetchContent_Populate(eloop_download)
 
     add_library(eloop STATIC "${eloop_download_SOURCE_DIR}/src/utils/eloop.c")
-    target_link_libraries(eloop PUBLIC allocs os PRIVATE log)
+    target_link_libraries(eloop PUBLIC allocs os eloop::list PRIVATE log)
     # so that eloop.h will be included.
     target_include_directories(eloop
         PUBLIC "${eloop_download_SOURCE_DIR}/src/utils" "${CMAKE_SOURCE_DIR}"
@@ -54,4 +54,7 @@ if (NOT (BUILD_ONLY_DOCS))
     endif()
 
     add_library(eloop::eloop ALIAS eloop)
+
+    add_library(eloop::list INTERFACE IMPORTED)
+    target_include_directories(eloop::list INTERFACE "${eloop_download_SOURCE_DIR}/src/utils")
 endif()

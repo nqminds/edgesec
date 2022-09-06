@@ -16,7 +16,7 @@
 #include <sys/socket.h>
 #include <net/if.h>
 
-#include "../utils/list.h"
+#include <list.h>
 
 struct reflection_list {
   int recv_fd;
