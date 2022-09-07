@@ -18,7 +18,9 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include <unistd.h>
-// On FreeBSD, you must include `<netinet/in.h>` before `<netinet/if_ether.h>`
+// On FreeBSD, you must include `<sys/socket.h>` and `<netinet/in.h>` before
+// `<netinet/if_ether.h>`
+#include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
 #include <stdbool.h>
