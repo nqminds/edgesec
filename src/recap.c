@@ -8,6 +8,7 @@
  * @brief A tool to run the capture with an input pcap file
  */
 
+#include <sqlite3.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -22,9 +23,8 @@
 #include <pcap.h>
 
 #include "utils/os.h"
-#include "capture/middleware.h"
-#include "capture/middlewares/header_middleware/header_middleware.h"
-#include "capture/middlewares/header_middleware/packet_queue.h"
+#include "utils/eloop.h"
+#include "capture/middlewares/header_middleware/sqlite_header.h"
 
 #define RECAP_VERSION_MAJOR 0
 #define RECAP_VERSION_MINOR 0
@@ -32,6 +32,7 @@
 
 #define PCAP_READ_INTERVAL 10 // in ms
 #define PCAP_READ_SIZE 1024   // bytes
+#define IFNAME_VALUE "ifname"
 
 #define OPT_STRING ":p:f:mdvh"
 #define USAGE_STRING "\t%s [-p filename] [-f filename] [-d] [-h] [-v]\n"
@@ -243,8 +244,19 @@ int process_pkt_header_state(struct pcap_stream_context *pctx) {
   return 0;
 }
 
-int process_pkt_read_state(struct pcap_stream_context *pctx,
-                           struct middleware_context *mctx) {
+int save_packet(struct pcap_stream_context *pctx) {
+  const char *ltype = pcap_datalink_val_to_name(pctx->pcap_header.linktype);
+  char *ifname = IFNAME_VALUE;
+  struct pcap_pkthdr header;
+  header.ts.tv_sec = pctx->pkt_header.ts_sec;
+  header.ts.tv_usec = pctx->pkt_header.ts_usec;
+  header.caplen = pctx->pkt_header.caplen;
+  header.len = pctx->pkt_header.len;
+  uint8_t *packet = (uint8_t *)pctx->pcap_data;
+  return 0;
+}
+
+int process_pkt_read_state(struct pcap_stream_context *pctx) {
   ssize_t read_size = 0;
   size_t len = (pctx->pkt_header.caplen > pctx->data_size)
                    ? pctx->pkt_header.caplen - pctx->data_size
@@ -258,16 +270,8 @@ int process_pkt_read_state(struct pcap_stream_context *pctx,
   if (pctx->data_size >= pctx->pkt_header.caplen) {
     log_trace("Received pkt data");
 
-    struct pcap_pkthdr header;
-    header.ts.tv_sec = pctx->pkt_header.ts_sec;
-    header.ts.tv_usec = pctx->pkt_header.ts_usec;
-    header.caplen = pctx->pkt_header.caplen;
-    header.len = pctx->pkt_header.len;
-
-    if (header_middleware.process(
-            mctx, pcap_datalink_val_to_name(pctx->pcap_header.linktype),
-            &header, (uint8_t *)pctx->pcap_data, "pcap") < 0) {
-      log_error("process_header_middleware fail");
+    if (save_packet(pctx) < 0) {
+      log_error("process_packet fail");
       return -1;
     }
 
@@ -281,8 +285,7 @@ int process_pkt_read_state(struct pcap_stream_context *pctx,
   return 0;
 }
 
-int process_pcap_stream_state(struct pcap_stream_context *pctx,
-                              struct middleware_context *mctx) {
+int process_pcap_stream_state(struct pcap_stream_context *pctx) {
   log_trace("Processing pcap file stream %zu bytes", pctx->total_size);
 
   switch (pctx->state) {
@@ -308,15 +311,13 @@ int process_pcap_stream_state(struct pcap_stream_context *pctx,
       }
       return 1;
     case PCAP_STATE_READ_PACKET:
-      if (process_pkt_read_state(pctx, mctx) < 0) {
+      if (process_pkt_read_state(pctx) < 0) {
         log_error("process_pkt_read_state fail");
         return -1;
       }
       return 1;
     case PCAP_STATE_FIN:
-      return (is_packet_queue_empty((struct packet_queue *)mctx->mdata) == 1)
-                 ? 0
-                 : 1;
+      return 0;
     default:
       log_trace("Unknown state");
       return -1;
@@ -324,22 +325,22 @@ int process_pcap_stream_state(struct pcap_stream_context *pctx,
 }
 
 void eloop_tout_pcapfile_handler(void *eloop_ctx, void *user_ctx) {
-  struct pcap_stream_context *pctx = (struct pcap_stream_context *)eloop_ctx;
-  struct middleware_context *mctx = (struct middleware_context *)user_ctx;
+  struct eloop_data *eloop = (struct eloop_data *)eloop_ctx;
+  struct pcap_stream_context *pctx = (struct pcap_stream_context *)user_ctx;
 
-  int ret = process_pcap_stream_state(pctx, mctx);
+  int ret = process_pcap_stream_state(pctx);
 
   if (ret > 0) {
-    if (eloop_register_timeout(mctx->eloop, 0, PCAP_READ_INTERVAL,
-                               eloop_tout_pcapfile_handler, (void *)pctx,
-                               (void *)mctx) == -1) {
+    if (eloop_register_timeout(eloop, 0, PCAP_READ_INTERVAL,
+                               eloop_tout_pcapfile_handler, eloop_ctx,
+                               user_ctx) == -1) {
       log_error("eloop_register_timeout fail");
       if (pctx->pcap_data != NULL) {
         os_free(pctx->pcap_data);
         pctx->pcap_data = NULL;
       }
       pctx->exit_error = true;
-      eloop_terminate(mctx->eloop);
+      eloop_terminate(eloop);
     }
   } else if (ret == 0) {
     log_error("processing fin");
@@ -354,7 +355,7 @@ void eloop_tout_pcapfile_handler(void *eloop_ctx, void *user_ctx) {
       os_free(pctx->pcap_data);
       pctx->pcap_data = NULL;
     }
-    eloop_terminate(mctx->eloop);
+    eloop_terminate(eloop);
   }
 }
 
@@ -363,8 +364,6 @@ int main(int argc, char *argv[]) {
   uint8_t level = 0;
   char *pcap_path = NULL, *db_path = NULL;
   sqlite3 *db;
-  struct eloop_data *eloop;
-  struct middleware_context *mctx = NULL;
   struct pcap_stream_context pctx = {.pcap_fd = NULL,
                                      .state = PCAP_STATE_INIT,
                                      .exit_error = false,
@@ -403,20 +402,8 @@ int main(int argc, char *argv[]) {
 
   os_free(db_path);
 
-  fprintf(stdout, "Using %s\n", header_middleware.name);
-
-  if ((eloop = eloop_init()) == NULL) {
-    fprintf(stdout, "eloop_init fail\n");
-    if (pcap_path != NULL) {
-      os_free(pcap_path);
-    }
-    sqlite3_close(db);
-    return EXIT_FAILURE;
-  }
-
-  if ((mctx = header_middleware.init(db, NULL, eloop, NULL)) == NULL) {
-    fprintf(stdout, "init_header_middleware fail\n");
-    eloop_free(eloop);
+  if (init_sqlite_header_db(db) < 0) {
+    fprintf(stdout, "init_sqlite_header_db fail\n");
     if (pcap_path != NULL) {
       os_free(pcap_path);
     }
@@ -427,38 +414,42 @@ int main(int argc, char *argv[]) {
   if (pcap_path != NULL) {
     if ((pctx.pcap_fd = fopen(pcap_path, "rb")) == NULL) {
       perror("fopen");
-      eloop_free(eloop);
       os_free(pcap_path);
       sqlite3_close(db);
-      header_middleware.free(mctx);
+      return EXIT_FAILURE;
+    }
+    os_free(pcap_path);
+
+    while ((ret = process_pcap_stream_state(&pctx) > 0)) {
+    }
+    if (ret < 0) {
+      fprintf(stdout, "process_pcap_stream_state fail\n");
+      sqlite3_close(db);
+      fclose(pctx.pcap_fd);
+      return EXIT_FAILURE;
+    }
+    fclose(pctx.pcap_fd);
+  } else {
+    struct eloop_data *eloop;
+    if ((eloop = eloop_init()) == NULL) {
+      fprintf(stdout, "eloop_init fail\n");
+      sqlite3_close(db);
       return EXIT_FAILURE;
     }
 
     if (eloop_register_timeout(eloop, 0, PCAP_READ_INTERVAL,
-                               eloop_tout_pcapfile_handler, (void *)&pctx,
-                               (void *)mctx) == -1) {
+                               eloop_tout_pcapfile_handler, (void *)eloop,
+                               (void *)&pctx) == -1) {
       fprintf(stdout, "eloop_register_timeout fail\n");
       eloop_free(eloop);
-      os_free(pcap_path);
       sqlite3_close(db);
-      header_middleware.free(mctx);
-      fclose(pctx.pcap_fd);
       return EXIT_FAILURE;
     }
+    eloop_run(eloop);
+    eloop_free(eloop);
   }
 
-  eloop_run(eloop);
-
-  eloop_free(eloop);
-  if (pcap_path != NULL) {
-    os_free(pcap_path);
-  }
-
-  if (pctx.pcap_fd != NULL) {
-    fclose(pctx.pcap_fd);
-  }
   sqlite3_close(db);
-  header_middleware.free(mctx);
   if (pctx.exit_error) {
     return EXIT_FAILURE;
   } else {

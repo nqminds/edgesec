@@ -44,7 +44,7 @@ target_link_libraries(edgesec PRIVATE eloop config runctl minIni os hashmap)
 # link time optimization
 set_target_properties(edgesec PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
 
-if (USE_CAPTURE_SERVICE AND USE_HEADER_MIDDLEWARE)
+if (USE_CAPTURE_SERVICE)
   add_executable(recap recap.c)
-  target_link_libraries(recap PRIVATE packet_queue header_middleware eloop os log PCAP::pcap)
+  target_link_libraries(recap PRIVATE sqlite_header eloop os log PCAP::pcap SQLite::SQLite3)
 endif()
