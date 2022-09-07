@@ -309,7 +309,7 @@ struct capture_packet {
   struct ip6_hdr *ip6h;
   struct tcphdr *tcph;
   struct udphdr *udph;
-  struct icmphdr *icmp4h;
+  struct icmp *icmp4h;
   struct icmp6_hdr *icmp6h;
   struct dns_header *dnsh;
   struct mdns_header *mdnsh;
