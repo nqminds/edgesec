@@ -31,7 +31,7 @@
 #define RECAP_VERSION_PATCH 1
 
 #define PCAP_READ_INTERVAL 10 // in ms
-#define PCAP_READ_SIZE 100000 // bytes
+#define PCAP_READ_SIZE 1024   // bytes
 
 #define OPT_STRING ":p:f:mdvh"
 #define USAGE_STRING "\t%s [-p filename] [-f filename] [-d] [-h] [-v]\n"
@@ -139,21 +139,56 @@ void process_app_options(int argc, char *argv[], uint8_t *verbosity,
   }
 }
 
-ssize_t read_pcap_stream(struct pcap_stream_context *pctx, char **data) {
-  if ((*data = os_malloc(PCAP_READ_SIZE)) == NULL) {
+ssize_t read_pcap_stream_fd(struct pcap_stream_context *pctx, size_t len,
+                            char **data) {
+  if ((*data = os_malloc(len)) == NULL) {
     log_errno("os_malloc");
     return -1;
   }
 
-  return (ssize_t)fread(*data, sizeof(char), PCAP_READ_SIZE, pctx->pcap_fd);
+  return (ssize_t)fread(*data, sizeof(char), len, pctx->pcap_fd);
 }
 
-void process_pcap_header_state(struct pcap_stream_context *pctx,
-                               ssize_t read_size) {
-  ssize_t pcap_header_size = (ssize_t)sizeof(struct pcap_file_header);
-  ssize_t current_size = read_size + pctx->data_size;
+ssize_t read_pcap(struct pcap_stream_context *pctx, size_t len) {
+  char *data = NULL;
+  ssize_t read_size, current_size;
 
-  if (current_size >= pcap_header_size) {
+  if ((read_size = read_pcap_stream_fd(pctx, len, &data)) < 0) {
+    log_error("read_pcap_stream_fd fail");
+    return -1;
+  }
+  pctx->total_size += read_size;
+
+  current_size = read_size + pctx->data_size;
+
+  if (read_size > 0) {
+    if ((pctx->pcap_data = os_realloc(pctx->pcap_data, current_size)) == NULL) {
+      log_errno("os_realloc");
+      os_free(data);
+      return -1;
+    }
+    os_memcpy(&pctx->pcap_data[pctx->data_size], data, read_size);
+    pctx->data_size = current_size;
+  }
+  os_free(data);
+
+  return read_size;
+}
+
+int process_pcap_header_state(struct pcap_stream_context *pctx) {
+  ssize_t read_size = 0;
+  ssize_t pcap_header_size = (ssize_t)sizeof(struct pcap_file_header);
+
+  size_t len = (pcap_header_size > pctx->data_size)
+                   ? pcap_header_size - pctx->data_size
+                   : 0;
+
+  if ((read_size = read_pcap(pctx, len)) < 0) {
+    log_error("read_pcap fail");
+    return -1;
+  }
+
+  if (pctx->data_size >= pcap_header_size) {
     log_trace("Received pcap header:");
     os_memcpy(&pctx->pcap_header, pctx->pcap_data, pcap_header_size);
     log_trace("\tpcap_file_header version_major = %d",
@@ -162,24 +197,30 @@ void process_pcap_header_state(struct pcap_stream_context *pctx,
               pctx->pcap_header.version_minor);
     log_trace("\tpcap_file_header snaplen = %d", pctx->pcap_header.snaplen);
     log_trace("\tpcap_file_header linktype = %d", pctx->pcap_header.linktype);
-    pctx->data_size = current_size - pcap_header_size;
-    os_memcpy(pctx->pcap_data, &pctx->pcap_data[pcap_header_size],
-              pctx->data_size);
+    pctx->data_size = 0;
     pctx->state = PCAP_STATE_READ_PKT_HEADER;
-  } else if (current_size < pcap_header_size && read_size == 0) {
+  } else if (read_size == 0) {
     log_trace("No data received");
     pctx->state = PCAP_STATE_FIN;
-  } else {
-    pctx->data_size += read_size;
   }
+
+  return 0;
 }
 
-int process_pkt_header_state(struct pcap_stream_context *pctx,
-                             ssize_t read_size) {
+int process_pkt_header_state(struct pcap_stream_context *pctx) {
+  ssize_t read_size = 0;
   ssize_t pkt_header_size = (ssize_t)sizeof(struct pcap_pkthdr32);
-  ssize_t current_size = read_size + pctx->data_size;
 
-  if (current_size >= pkt_header_size) {
+  size_t len = (pkt_header_size > pctx->data_size)
+                   ? pkt_header_size - pctx->data_size
+                   : 0;
+
+  if ((read_size = read_pcap(pctx, len)) < 0) {
+    log_error("read_pcap fail");
+    return -1;
+  }
+
+  if (pctx->data_size >= pkt_header_size) {
     log_trace("Received pkt header:");
     os_memcpy(&pctx->pkt_header, pctx->pcap_data, pkt_header_size);
     log_trace("\tpcap_pkthdr ts_sec = %llu", pctx->pkt_header.ts_sec);
@@ -192,32 +233,30 @@ int process_pkt_header_state(struct pcap_stream_context *pctx,
       return -1;
     }
 
-    pctx->data_size = current_size - pkt_header_size;
-    os_memcpy(pctx->pcap_data, &pctx->pcap_data[pkt_header_size],
-              pctx->data_size);
+    pctx->data_size = 0;
     pctx->state = PCAP_STATE_READ_PACKET;
-  } else if (current_size < pkt_header_size && read_size == 0) {
+  } else if (read_size == 0) {
     log_trace("No data received");
     pctx->state = PCAP_STATE_FIN;
-  } else {
-    pctx->data_size += read_size;
   }
 
   return 0;
 }
 
 int process_pkt_read_state(struct pcap_stream_context *pctx,
-                           struct middleware_context *mctx, ssize_t read_size) {
-  char *data;
-  ssize_t current_size = read_size + pctx->data_size;
+                           struct middleware_context *mctx) {
+  ssize_t read_size = 0;
+  size_t len = (pctx->pkt_header.caplen > pctx->data_size)
+                   ? pctx->pkt_header.caplen - pctx->data_size
+                   : 0;
 
-  if (current_size >= pctx->pkt_header.caplen) {
+  if ((read_size = read_pcap(pctx, len)) < 0) {
+    log_error("read_pcap fail");
+    return -1;
+  }
+
+  if (pctx->data_size >= pctx->pkt_header.caplen) {
     log_trace("Received pkt data");
-    if ((data = os_malloc(pctx->pkt_header.caplen)) == NULL) {
-      log_errno("os_malloc");
-      return -1;
-    }
-    os_memcpy(data, pctx->pcap_data, pctx->pkt_header.caplen);
 
     struct pcap_pkthdr header;
     header.ts.tv_sec = pctx->pkt_header.ts_sec;
@@ -227,23 +266,16 @@ int process_pkt_read_state(struct pcap_stream_context *pctx,
 
     if (header_middleware.process(
             mctx, pcap_datalink_val_to_name(pctx->pcap_header.linktype),
-            &header, (uint8_t *)data, "pcap") < 0) {
+            &header, (uint8_t *)pctx->pcap_data, "pcap") < 0) {
       log_error("process_header_middleware fail");
-      os_free(data);
       return -1;
     }
 
-    os_free(data);
-
-    pctx->data_size = current_size - pctx->pkt_header.caplen;
-    os_memcpy(pctx->pcap_data, &pctx->pcap_data[pctx->pkt_header.caplen],
-              pctx->data_size);
+    pctx->data_size = 0;
     pctx->state = PCAP_STATE_READ_PKT_HEADER;
-  } else if (current_size < pctx->pkt_header.caplen && read_size == 0) {
+  } else if (read_size == 0) {
     log_trace("No data received");
     pctx->state = PCAP_STATE_FIN;
-  } else {
-    pctx->data_size += read_size;
   }
 
   return 0;
@@ -251,35 +283,7 @@ int process_pkt_read_state(struct pcap_stream_context *pctx,
 
 int process_pcap_stream_state(struct pcap_stream_context *pctx,
                               struct middleware_context *mctx) {
-  char *data = NULL;
-  ssize_t read_size, current_size;
-
   log_trace("Processing pcap file stream %zu bytes", pctx->total_size);
-
-  if (pctx->state != PCAP_STATE_INIT && pctx->state != PCAP_STATE_FIN) {
-    if ((read_size = read_pcap_stream(pctx, &data)) < 0) {
-      log_error("read_pcap_stream fail");
-      os_free(pctx->pcap_data);
-      pctx->pcap_data = NULL;
-      return -1;
-    }
-    pctx->total_size += read_size;
-
-    current_size = read_size + pctx->data_size;
-
-    if (read_size > 0) {
-      if ((pctx->pcap_data = os_realloc(pctx->pcap_data, current_size)) ==
-          NULL) {
-        log_errno("os_realloc");
-        os_free(data);
-        os_free(pctx->pcap_data);
-        pctx->pcap_data = NULL;
-        return -1;
-      }
-      os_memcpy(&pctx->pcap_data[pctx->data_size], data, read_size);
-    }
-    os_free(data);
-  }
 
   switch (pctx->state) {
     case PCAP_STATE_INIT:
@@ -292,75 +296,65 @@ int process_pcap_stream_state(struct pcap_stream_context *pctx,
       pctx->state = PCAP_STATE_READ_PCAP_HEADER;
       return 1;
     case PCAP_STATE_READ_PCAP_HEADER:
-      process_pcap_header_state(pctx, read_size);
+      if (process_pcap_header_state(pctx) < 0) {
+        log_error("process_pcap_header_state fail");
+        return -1;
+      }
       return 1;
     case PCAP_STATE_READ_PKT_HEADER:
-      if (process_pkt_header_state(pctx, read_size) < 0) {
+      if (process_pkt_header_state(pctx) < 0) {
         log_error("process_pkt_header_state fail");
-        os_free(pctx->pcap_data);
-        pctx->pcap_data = NULL;
         return -1;
       }
       return 1;
     case PCAP_STATE_READ_PACKET:
-      if (process_pkt_read_state(pctx, mctx, read_size) < 0) {
+      if (process_pkt_read_state(pctx, mctx) < 0) {
         log_error("process_pkt_read_state fail");
-        os_free(pctx->pcap_data);
-        pctx->pcap_data = NULL;
         return -1;
       }
       return 1;
     case PCAP_STATE_FIN:
-      os_free(pctx->pcap_data);
-      pctx->pcap_data = NULL;
       return (is_packet_queue_empty((struct packet_queue *)mctx->mdata) == 1)
                  ? 0
                  : 1;
     default:
       log_trace("Unknown state");
-      os_free(pctx->pcap_data);
-      pctx->pcap_data = NULL;
       return -1;
   }
-}
-
-int process_pcap(struct pcap_stream_context *pctx,
-                 struct middleware_context *mctx) {
-  int ret = process_pcap_stream_state(pctx, mctx);
-
-  switch (ret) {
-    case -1:
-      log_error("process_pcap_stream fail");
-      pctx->exit_error = true;
-      eloop_terminate(mctx->eloop);
-      return 0;
-    case 0:
-      log_trace("Processing fin");
-      pctx->exit_error = false;
-      eloop_terminate(mctx->eloop);
-      return 0;
-    case 1:
-      return 1;
-    default:
-      log_error("process_pcap_stream fail");
-      pctx->exit_error = true;
-      eloop_terminate(mctx->eloop);
-  }
-  return 0;
 }
 
 void eloop_tout_pcapfile_handler(void *eloop_ctx, void *user_ctx) {
   struct pcap_stream_context *pctx = (struct pcap_stream_context *)eloop_ctx;
   struct middleware_context *mctx = (struct middleware_context *)user_ctx;
 
-  if (process_pcap(pctx, mctx)) {
+  int ret = process_pcap_stream_state(pctx, mctx);
+
+  if (ret > 0) {
     if (eloop_register_timeout(mctx->eloop, 0, PCAP_READ_INTERVAL,
                                eloop_tout_pcapfile_handler, (void *)pctx,
                                (void *)mctx) == -1) {
       log_error("eloop_register_timeout fail");
+      if (pctx->pcap_data != NULL) {
+        os_free(pctx->pcap_data);
+        pctx->pcap_data = NULL;
+      }
       pctx->exit_error = true;
       eloop_terminate(mctx->eloop);
     }
+  } else if (ret == 0) {
+    log_error("processing fin");
+    pctx->exit_error = false;
+  } else {
+    log_error("process_pcap_stream_state fail");
+    pctx->exit_error = true;
+  }
+
+  if (ret < 1) {
+    if (pctx->pcap_data != NULL) {
+      os_free(pctx->pcap_data);
+      pctx->pcap_data = NULL;
+    }
+    eloop_terminate(mctx->eloop);
   }
 }
 
