@@ -35,10 +35,11 @@
 
 #define PCAP_READ_INTERVAL 10 // in ms
 #define PCAP_READ_SIZE 1024   // bytes
-#define IFNAME_VALUE "ifname"
+#define IFNAME_DEFAULT "ifname"
 
-#define OPT_STRING ":p:f:mdvh"
-#define USAGE_STRING "\t%s [-p filename] [-f filename] [-d] [-h] [-v]\n"
+#define OPT_STRING ":p:f:i:dhv"
+#define USAGE_STRING                                                           \
+  "\t%s [-p filename] [-f filename] [-i interface] [-d] [-h] [-v]\n"
 
 static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL,
                                    NULL};
@@ -66,6 +67,7 @@ struct pcap_stream_context {
   sqlite3 *db;
   FILE *pcap_fd;
   char *pcap_data;
+  char *ifname;
   ssize_t data_size;
   uint64_t total_size;
   uint64_t npackets;
@@ -91,6 +93,7 @@ void show_app_help(char *app_name) {
   fprintf(stdout, "\nOptions:\n");
   fprintf(stdout, "\t-p filename\t Path to the pcap file name\n");
   fprintf(stdout, "\t-f filename\t Path to the capture db\n");
+  fprintf(stdout, "\t-i interface\t Interface name to save to db\n");
   fprintf(stdout,
           "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n");
   fprintf(stdout, "\t-h\t\t Show help\n");
@@ -116,7 +119,7 @@ void log_cmdline_error(const char *format, ...) {
 }
 
 void process_app_options(int argc, char *argv[], uint8_t *verbosity,
-                         char **pcap_path, char **db_path) {
+                         char **pcap_path, char **db_path, char **ifname) {
   int opt;
 
   while ((opt = getopt(argc, argv, OPT_STRING)) != -1) {
@@ -133,6 +136,9 @@ void process_app_options(int argc, char *argv[], uint8_t *verbosity,
         break;
       case 'f':
         *db_path = os_strdup(optarg);
+        break;
+      case 'i':
+        *ifname = os_strdup(optarg);
         break;
       case 'd':
         (*verbosity)++;
@@ -167,6 +173,7 @@ ssize_t read_pcap(struct pcap_stream_context *pctx, size_t len) {
     log_error("read_pcap_stream_fd fail");
     return -1;
   }
+
   pctx->total_size += read_size;
 
   current_size = read_size + pctx->data_size;
@@ -282,7 +289,6 @@ int save_sqlite_packet(sqlite3 *db, UT_array *packets) {
 
 int save_packet(struct pcap_stream_context *pctx) {
   const char *ltype = pcap_datalink_val_to_name(pctx->pcap_header.linktype);
-  char *ifname = IFNAME_VALUE;
   struct pcap_pkthdr header;
   uint8_t *packet = (uint8_t *)pctx->pcap_data;
 
@@ -294,7 +300,7 @@ int save_packet(struct pcap_stream_context *pctx) {
   UT_array *packets = NULL;
   utarray_new(packets, &tp_list_icd);
 
-  if ((npackets = extract_packets(ltype, &header, packet, ifname, cap_id,
+  if ((npackets = extract_packets(ltype, &header, packet, pctx->ifname, cap_id,
                                   packets)) < 0) {
     log_error("extract_packets fail");
     utarray_free(packets);
@@ -427,12 +433,14 @@ int main(int argc, char *argv[]) {
   char *pcap_path = NULL, *db_path = NULL;
   struct pcap_stream_context pctx = {.db = NULL,
                                      .pcap_fd = NULL,
+                                     .ifname = NULL,
                                      .state = PCAP_STATE_INIT,
                                      .exit_error = false,
                                      .total_size = 0,
                                      .npackets = 0};
 
-  process_app_options(argc, argv, &verbosity, &pcap_path, &db_path);
+  process_app_options(argc, argv, &verbosity, &pcap_path, &db_path,
+                      &pctx.ifname);
 
   if (verbosity > MAX_LOG_LEVELS) {
     level = 0;
@@ -444,6 +452,10 @@ int main(int argc, char *argv[]) {
 
   if (optind <= 1) {
     show_app_help(argv[0]);
+  }
+
+  if (pctx.ifname == NULL) {
+    pctx.ifname = os_strdup(IFNAME_DEFAULT);
   }
 
   /* Set the log level */
@@ -459,6 +471,7 @@ int main(int argc, char *argv[]) {
       os_free(pcap_path);
     }
     os_free(db_path);
+    os_free(pctx.ifname);
     sqlite3_close(pctx.db);
     return EXIT_FAILURE;
   }
@@ -470,6 +483,7 @@ int main(int argc, char *argv[]) {
     if (pcap_path != NULL) {
       os_free(pcap_path);
     }
+    os_free(pctx.ifname);
     sqlite3_close(pctx.db);
     return EXIT_FAILURE;
   }
@@ -478,44 +492,38 @@ int main(int argc, char *argv[]) {
     if ((pctx.pcap_fd = fopen(pcap_path, "rb")) == NULL) {
       perror("fopen");
       os_free(pcap_path);
+      os_free(pctx.ifname);
       sqlite3_close(pctx.db);
       return EXIT_FAILURE;
     }
-    os_free(pcap_path);
-
-    while ((ret = process_pcap_stream_state(&pctx) > 0)) {
-    }
-    if (ret < 0) {
-      fprintf(stdout, "process_pcap_stream_state fail\n");
-      sqlite3_close(pctx.db);
-      fclose(pctx.pcap_fd);
-      return EXIT_FAILURE;
-    }
-    fclose(pctx.pcap_fd);
   } else {
-    struct eloop_data *eloop;
-    if ((eloop = eloop_init()) == NULL) {
-      fprintf(stdout, "eloop_init fail\n");
-      sqlite3_close(pctx.db);
-      return EXIT_FAILURE;
-    }
-
-    if (eloop_register_timeout(eloop, 0, PCAP_READ_INTERVAL,
-                               eloop_tout_pcapfile_handler, (void *)eloop,
-                               (void *)&pctx) == -1) {
-      fprintf(stdout, "eloop_register_timeout fail\n");
-      eloop_free(eloop);
-      sqlite3_close(pctx.db);
-      return EXIT_FAILURE;
-    }
-    eloop_run(eloop);
-    eloop_free(eloop);
+    pctx.pcap_fd = stdin;
   }
 
-  fprintf(stdout, "Processed pcap size = %" PRIu64 " bytes", pctx.total_size);
-  fprintf(stdout, "Processed packets = %" PRIu64, pctx.npackets);
+  while ((ret = process_pcap_stream_state(&pctx) > 0)) {
+  }
+
+  if (ret < 0) {
+    fprintf(stdout, "process_pcap_stream_state fail\n");
+    sqlite3_close(pctx.db);
+    if (pcap_path != NULL) {
+      os_free(pcap_path);
+      fclose(pctx.pcap_fd);
+    }
+    os_free(pctx.ifname);
+    return EXIT_FAILURE;
+  }
+
+  fprintf(stdout, "Processed pcap size = %" PRIu64 " bytes\n", pctx.total_size);
+  fprintf(stdout, "Processed packets = %" PRIu64 "\n", pctx.npackets);
+
+  if (pcap_path != NULL) {
+    os_free(pcap_path);
+    fclose(pctx.pcap_fd);
+  }
 
   sqlite3_close(pctx.db);
+  os_free(pctx.ifname);
   if (pctx.exit_error) {
     return EXIT_FAILURE;
   } else {
