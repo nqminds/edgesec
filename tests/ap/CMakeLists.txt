@@ -4,17 +4,21 @@ include_directories(
 
 add_executable(test_hostapd test_hostapd.c)
 target_link_libraries(test_hostapd PRIVATE hostapd iface os log cmocka::cmocka)
-set_target_properties(test_hostapd
-  PROPERTIES
-  LINK_FLAGS  "-Wl,--wrap=kill_process -Wl,--wrap=signal_process -Wl,--wrap=reset_interface -Wl,--wrap=run_process -Wl,--wrap=list_dir -Wl,--wrap=check_sock_file_exists"
+target_link_options(test_hostapd
+  PRIVATE
+  "LINKER:--wrap=kill_process,--wrap=signal_process,--wrap=reset_interface,--wrap=run_process,--wrap=list_dir,--wrap=check_sock_file_exists"
 )
+
+if (USE_UCI_SERVICE)
+  target_link_libraries(test_hostapd PRIVATE __wrap_uwrt_init_context)
+endif()
 
 add_executable(test_ap_service test_ap_service.c)
 target_link_libraries(test_ap_service PRIVATE ap_service hostapd iface os log cmocka::cmocka)
 # sqlite3.h required by src/supervisor/supervisor_config.h
-set_target_properties(test_ap_service
-  PROPERTIES
-  LINK_FLAGS  "-Wl,--wrap=close -Wl,--wrap=generate_vlan_conf -Wl,--wrap=run_ap_process -Wl,--wrap=generate_hostapd_conf -Wl,--wrap=signal_ap_process -Wl,--wrap=create_domain_client -Wl,--wrap=eloop_register_read_sock -Wl,--wrap=write_domain_data_s -Wl,--wrap=writeread_domain_data_str"
+target_link_options(test_ap_service
+  PRIVATE
+  "LINKER:--wrap=close,--wrap=generate_vlan_conf,--wrap=run_ap_process,--wrap=generate_hostapd_conf,--wrap=signal_ap_process,--wrap=create_domain_client,--wrap=eloop_register_read_sock,--wrap=write_domain_data_s,--wrap=writeread_domain_data_str"
 )
 
 add_test(NAME test_hostapd COMMAND test_hostapd)

@@ -11,13 +11,12 @@
 #ifndef PCAP_SERVICE_H
 #define PCAP_SERVICE_H
 
-#include <linux/if.h>
+#include <net/if.h>
 #include <sys/types.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <pcap.h>
-
-#include "../utils/utarray.h"
+#include <utarray.h>
 
 typedef void (*capture_callback_fn)(const void *ctx, const void *pcap_ctx,
                                     char *ltype, struct pcap_pkthdr *header,

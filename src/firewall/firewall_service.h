@@ -13,9 +13,9 @@
 
 #include <inttypes.h>
 #include <stdbool.h>
+#include <utarray.h>
 
 #include "../supervisor/supervisor_config.h"
-#include "../utils/utarray.h"
 #include "../utils/hashmap.h"
 #include "../utils/iface_mapper.h"
 

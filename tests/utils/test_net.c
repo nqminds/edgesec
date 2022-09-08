@@ -11,11 +11,11 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <setjmp.h>
+#include <stdint.h>
 #include <cmocka.h>
 
 #include "utils/log.h"
 #include "utils/net.h"
-#include "utils/utarray.h"
 
 static void test_ip_2_nbo(void **state) {
   (void)state; /* unused */

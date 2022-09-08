@@ -1,6 +1,5 @@
-cmake_minimum_required(VERSION 3.14.0) # required by lib/sqlite.cmake
-
-cmake_policy(SET CMP0048 NEW)
+cmake_minimum_required(VERSION 3.14.0) # required for FindSQLite3
+cmake_policy(VERSION 3.14.0...3.24.0)
 
 project(EDGESEC
   VERSION 0.0.8
@@ -69,9 +68,6 @@ option(USE_PCAP_MIDDLEWARE "Use the pcap middleware" OFF)
 
 cmake_dependent_option(BUILD_UCI_LIB "Build OpenWRT UCI library" ON USE_UCI_SERVICE OFF)
 option(USE_GENERIC_IP_SERVICE "Use generic ip service" OFF)
-if (USE_NETLINK_SERVICE AND USE_UCI_SERVICE AND USE_GENERIC_IP_SERVICE)
-  message(FATAL_ERROR "Only USE_NETLINK_SERVICE or USE_UCI_SERVICE allowed.")
-endif ()
 
 option(USE_CRYPTO_SERVICE "Use the crypto service" OFF)
 cmake_dependent_option(BUILD_OPENSSL_LIB "Build OpenSSL" ON USE_CRYPTO_SERVICE OFF)
@@ -80,6 +76,7 @@ if (USE_CRYPTO_SERVICE)
 endif ()
 
 option(USE_ZYMKEY4_HSM "Use the Zymkey4 HSM" OFF)
+option(CONFIGURE_COVERAGE "Configure for code coverage (requires lcov)" OFF)
 
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -95,7 +92,7 @@ function(get_autoconf_os system_name output_var)
   if (system_name STREQUAL "Linux")
     set(${output_var} "linux-gnu" PARENT_SCOPE)
   else (system_name STREQUAL "Linux")
-    message(FATAL_ERROR "'$system_name' could not be converted to an autoconf os specifier")
+    message(FATAL_ERROR "'${system_name}' could not be converted to an autoconf os specifier")
   endif(system_name STREQUAL "Linux")
 endfunction(get_autoconf_os)
 
@@ -121,21 +118,13 @@ set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Build shared libraries")
 # C compiler options
 set(CMAKE_C_STANDARD 11) # we use C11 raw-strings
 set(CMAKE_C_STANDARD_REQUIRED TRUE)
-set(CMAKE_C_EXTENSIONS ON) # We use GNU C specific features
+set(CMAKE_C_EXTENSIONS OFF) # We're aiming for Clang compatibility
 set(CMAKE_C_FLAGS "-Wunused-variable -Wall -Wextra")
-
-# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs")
-# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ftest-coverage")
-# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_LIBNL")
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # use -std=c++11 rather than -std=gnu++11
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-# hostapd and libnetlink relies on GNU specific features, like strncasecmp
-set(CMAKE_C_EXTENSIONS ON)
 
 # sqlhook is a shared library that links to static libs, so -fPIC is needed
 # todo: enable only for sqlhook dependencies
@@ -153,6 +142,11 @@ include(openssl)
 include(sqlite)
 include(zymkey4)
 include(uci)
+include(uthash)
+
+# On Linux, creates a Threads::Threads target that points to pthread
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+find_package(Threads REQUIRED)
 
 # configure a header file to pass some of the CMake settings
 # to the source code
@@ -172,10 +166,43 @@ configure_file(
 include(doxygen)
 
 if (NOT BUILD_ONLY_DOCS)
-  add_subdirectory(src)
+  if (USE_NETLINK_SERVICE AND USE_UCI_SERVICE AND USE_GENERIC_IP_SERVICE)
+    message(FATAL_ERROR "Only USE_NETLINK_SERVICE or USE_UCI_SERVICE allowed.")
+  endif ()
+  if (USE_NETLINK_SERVICE)
+    add_compile_definitions(WITH_NETLINK_SERVICE)
+  elseif(USE_UCI_SERVICE)
+    add_compile_definitions(WITH_UCI_SERVICE)
+  elseif(USE_GENERIC_IP_SERVICE)
+    add_compile_definitions(WITH_IP_GENERIC_SERVICE)
+  else()
+    message(FATAL_ERROR "You must define enable one of USE_NETLINK_SERVICE or USE_UCI_SERVICE or USE_GENERIC_IP_SERVICE.")
+  endif()
+
   if (NOT CMAKE_CROSSCOMPILING)
+    if (CONFIGURE_COVERAGE)
+      include(CodeCoverage)
+      # enable before the src() flag to enable code coverage
+      append_coverage_compiler_flags()
+
+      include(ProcessorCount)
+      ProcessorCount(PROCESSOR_COUNT)
+
+      setup_target_for_coverage_lcov(
+        NAME coverage
+        EXECUTABLE ctest
+        EXECUTABLE_ARGS --output-on-failure -j "${PROCESSOR_COUNT}"
+        EXCLUDE
+          "${PROJECT_SOURCE_DIR}/lib/*"
+          # this file is only in the build/ directory, but
+          # llvm-cov gcov doesn't seem to like it
+          "${PROJECT_SOURCE_DIR}/middlewares_list.c"
+      )
+    endif()
+
     add_subdirectory(tests)
   endif ()
+  add_subdirectory(src)
   include(install)
 endif ()
 

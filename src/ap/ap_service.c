@@ -181,7 +181,7 @@ int find_ap_status(char *ap_answer, uint8_t *mac_addr,
 }
 
 void ap_sock_handler(int sock, void *eloop_ctx, void *sock_ctx) {
-  uint8_t mac_addr[ETH_ALEN];
+  uint8_t mac_addr[ETHER_ADDR_LEN];
   enum AP_CONNECTION_STATUS status;
   uint32_t bytes_available;
   char *rec_data, *trimmed;

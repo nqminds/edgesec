@@ -18,11 +18,11 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <linux/types.h>
-#include <linux/posix_types.h>
+// On FreeBSD, you must include `<sys/socket.h>` and `<netinet/in.h>` before
+// `<netinet/if_ether.h>`
+#include <sys/socket.h>
+#include <netinet/in.h>
 #include <netinet/if_ether.h>
-#include <asm/types.h>
-#include <arpa/inet.h>
 #include <stdbool.h>
 
 #include "../utils/os.h"
@@ -61,7 +61,7 @@ struct radius_session {
   unsigned int sess_id;
   char *username; /* from User-Name attribute */
   char *nas_ip;
-  uint8_t mac_addr[ETH_ALEN]; /* from Calling-Station-Id attribute */
+  uint8_t mac_addr[ETHER_ADDR_LEN]; /* from Calling-Station-Id attribute */
 
   struct radius_msg *last_msg;
   char *last_from_addr;

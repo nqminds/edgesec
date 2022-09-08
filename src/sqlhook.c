@@ -8,9 +8,10 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sqlite3ext.h> /* Do not use <sqlite3.h>! */
+#include <utarray.h>
 
+#include "utils/allocs.h"
 #include "utils/os.h"
-#include "utils/utarray.h"
 #include "utils/sockctl.h"
 
 SQLITE_EXTENSION_INIT1

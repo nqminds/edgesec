@@ -10,12 +10,12 @@
 #ifndef DHCP_CONFIG_H
 #define DHCP_CONFIG_H
 
-#include <linux/if.h>
+#include <net/if.h>
+#include <utarray.h>
 
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/net.h"
-#include "../utils/utarray.h"
 
 #define DHCP_LEASE_TIME_SIZE 10
 

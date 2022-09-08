@@ -10,10 +10,10 @@
 #include <inttypes.h>
 #include <unistd.h>
 #include <setjmp.h>
+#include <stdint.h>
 #include <cmocka.h>
 
 #include "utils/log.h"
-#include "utils/utarray.h"
 #include "supervisor/mac_mapper.h"
 
 static const UT_icd mac_conn_icd = {sizeof(struct mac_conn), NULL, NULL, NULL};

@@ -10,12 +10,12 @@
 #include <inttypes.h>
 #include <unistd.h>
 #include <setjmp.h>
+#include <stdint.h>
 #include <cmocka.h>
 
 #include "system_checks.h"
 #include "utils/hashmap.h"
 #include "utils/log.h"
-#include "utils/utarray.h"
 #include "utils/iw.h"
 
 static void test_check_systems_commands(void **state) {

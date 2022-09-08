@@ -70,8 +70,8 @@
     },
     {
       "name": "linux-with-crypt",
-      "inherits": "default",
-      "displayName": "Linux",
+      "inherits": "linux",
+      "displayName": "Linux (with crypto service)",
       "description": "Build for Linux using encrypted crypto service",
       "cacheVariables": {
         "USE_CRYPTO_SERVICE": true,
@@ -90,11 +90,16 @@
       }
     },
     {
-      "name": "openwrt/default",
+      "name": "clang",
+      "inherits": "linux",
+      "displayName": "Clang",
+      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/clang.cmake"
+    },
+    {
+      "name": "openwrt",
       "inherits": "default",
-      "displayName": "OpenWRT ARM32",
-      "description": "Compile for arm-linux-musleabihf",
-      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/arm-linux.cmake",
+      "displayName": "OpenWRT",
+      "description": "Compile for an OpenWRT device",
       "cacheVariables": {
         "BUILD_MNL_LIB": false,
         "BUILD_NETLINK_LIB": false,
@@ -109,10 +114,10 @@
       }
     },
     {
-      "name": "openwrt/header",
-      "inherits": "openwrt/default",
-      "displayName": "OpenWRT ARM32 Header",
-      "description": "OpenWRT ARM32 (with header middlewares)",
+      "name": "openwrt-with-header",
+      "inherits": "openwrt",
+      "displayName": "OpenWRT (with header middleware)",
+      "description": "OpenWRT (with header middleware)",
       "cacheVariables": {
         "USE_CLEANER_MIDDLEWARE": false,
         "USE_HEADER_MIDDLEWARE": true,
@@ -120,11 +125,10 @@
       }
     },
     {
-      "name": "openwrt/mvebu/header",
-      "inherits": "openwrt/header",
-      "displayName": "OpenWRT mvebu/cortexa9/header",
-      "description": "OpenWRT mvebu/cortexa9/header (uses uci)",
-      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/openwrt-mvebu-cortexa9.cmake",
+      "name": "openwrt-sdk",
+      "inherits": "openwrt",
+      "hidden": true,
+      "displayName": "CMake config for cross-compiling OpenWRT with the SDK",
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
@@ -132,11 +136,11 @@
       }
     },
     {
-      "name": "openwrt/mvebu/default",
-      "inherits": "openwrt/default",
-      "displayName": "OpenWRT mvebu/cortexa9",
-      "description": "OpenWRT mvebu/cortexa9 (uses uci)",
-      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/openwrt-mvebu-cortexa9.cmake",
+      "name": "openwrt-19.07.10/mvebu/cortexa9-with-header",
+      "inherits": "openwrt-with-header",
+      "displayName": "OpenWRT 19.07.10 mvebu/cortexa9 (with header middleware)",
+      "description": "Cross-compile for OpenWRT 19.07.10 mvebu/cortexa9 (with header middleware)",
+      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/openwrt-19.07.10-mvebu-cortexa9.cmake",
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
@@ -144,23 +148,32 @@
       }
     },
     {
-      "name": "openwrt/ath79/generic",
-      "inherits": "openwrt/default",
-      "displayName": "OpenWRT ath79/generic",
-      "description": "OpenWRT ath79/generic (uses uci)",
-      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/openwrt-ath79-generic.cmake",
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Linux"
-      }
+      "name": "openwrt-19.07.10/mvebu/cortexa9",
+      "inherits": "openwrt-sdk",
+      "displayName": "OpenWRT 19.07.10 mvebu/cortexa9",
+      "description": "Cross-compile for OpenWRT 19.07.10 mvebu/cortexa9 (aka Turris Omnia)",
+      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/openwrt-19.07.10-mvebu-cortexa9.cmake"
     },
     {
-      "name": "openwrt-21/ath79/generic",
-      "inherits": "openwrt/ath79/generic",
-      "displayName": "OpenWRT ath79/generic OpenWRT 21",
-      "description": "OpenWRT ath79/generic OpenWRT 21 (uses uci)",
-      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/openwrt-21-ath79-generic.cmake"
+      "name": "openwrt-19.07.10/ath79/generic",
+      "inherits": "openwrt-sdk",
+      "displayName": "OpenWRT 19.07.10 ath79/generic",
+      "description": "Cross-compile for OpenWRT 19.07.10 ath79/generic",
+      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/openwrt-19.07.10-ath79-generic.cmake"
+    },
+    {
+      "name": "openwrt-21.02.3/ath79/generic",
+      "inherits": "openwrt-sdk",
+      "displayName": "OpenWRT 21.02.3 ath79/generic",
+      "description": "Cross-compile for OpenWRT 21.02.3 ath79/generic",
+      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/openwrt-21.02.3-ath79-generic.cmake"
+    },
+    {
+      "name": "openwrt-21.02.1/bcm27xx/bcm2710",
+      "inherits": "openwrt-sdk",
+      "displayName": "OpenWRT 21.02.1 bcm27xx/bcm2710",
+      "description": "Cross-compile for OpenWRT 21.02.1 bcm27xx/bcm2710 (aka Raspberry Pi 3)",
+      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/openwrt-21.02.1-bcm27xx-bcm2710.cmake"
     }
   ],
   "buildPresets": [
@@ -189,28 +202,36 @@
       "configurePreset": "linux-with-example-middlewares"
     },
     {
-      "name": "openwrt/default",
-      "configurePreset": "openwrt/default"
+      "name": "clang",
+      "configurePreset": "clang"
     },
     {
-      "name": "openwrt/header",
-      "configurePreset": "openwrt/header"
+      "name": "openwrt",
+      "configurePreset": "openwrt"
     },
     {
-      "name": "openwrt/mvebu/default",
-      "configurePreset": "openwrt/mvebu/default"
+      "name": "openwrt-with-header",
+      "configurePreset": "openwrt-with-header"
     },
     {
-      "name": "openwrt/mvebu/header",
-      "configurePreset": "openwrt/mvebu/header"
+      "name": "openwrt-19.07.10/mvebu/cortexa9",
+      "configurePreset": "openwrt-19.07.10/mvebu/cortexa9"
     },
     {
-      "name": "openwrt/ath79/generic",
-      "configurePreset": "openwrt/ath79/generic"
+      "name": "openwrt-19.07.10/mvebu/cortexa9-with-header",
+      "configurePreset": "openwrt-19.07.10/mvebu/cortexa9-with-header"
     },
     {
-      "name": "openwrt-21/ath79/generic",
-      "configurePreset": "openwrt-21/ath79/generic"
+      "name": "openwrt-19.07.10/ath79/generic",
+      "configurePreset": "openwrt-19.07.10/ath79/generic"
+    },
+    {
+      "name": "openwrt-21.02.3/ath79/generic",
+      "configurePreset": "openwrt-21.02.3/ath79/generic"
+    },
+    {
+      "name": "openwrt-21.02.1/bcm27xx/bcm2710",
+      "configurePreset": "openwrt-21.02.1/bcm27xx/bcm2710"
     }
   ],
   "testPresets": [
@@ -225,6 +246,26 @@
     {
       "name": "linux-with-example-middlewares",
       "configurePreset": "linux-with-example-middlewares"
+    },
+    {
+      "name": "linux-with-crypt",
+      "configurePreset": "linux-with-crypt"
+    },
+    {
+      "name": "openwrt",
+      "configurePreset": "openwrt",
+      "environment": {
+        "LD_LIBRARY_PATH": "${sourceDir}/build/${presetName}/lib/ubox/lib"
+      }
+    },
+    {
+      "name": "openwrt-with-header",
+      "configurePreset": "openwrt-with-header",
+      "inherits": "openwrt"
+    },
+    {
+      "name": "clang",
+      "configurePreset": "clang"
     }
   ]
 }

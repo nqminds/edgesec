@@ -32,5 +32,5 @@ int execute_sqlite_query(sqlite3 *db, const char *statement);
  * @param table_name The table name
  * @return int 0 if it doesn't exist, 1 if it excists and -1 on failure
  */
-int check_table_exists(sqlite3 *db, char *table_name);
+int check_table_exists(sqlite3 *db, const char *table_name);
 #endif

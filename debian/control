@@ -11,6 +11,8 @@ Build-Depends: debhelper-compat (= 12),
     libjson-c-dev,
     libssl-dev,
     libcmocka-dev (>=1.1.5),
+    libsqlite3-dev (>=3.31.1),
+    libpcap0.8-dev (>=1.9.1),
     libmnl-dev (>= 1.0.4)
 Standards-Version: 4.5.0
 Homepage: https://github.com/nqminds/EDGESec
@@ -23,7 +25,7 @@ Multi-Arch: foreign
 Depends:
     ${shlibs:Depends},
     ${misc:Depends},
-    dnsmasq, jq
+    dnsmasq
 Description: NquiringMinds EDGESec Network Security Router.
  This is NquiringMind's EDGESec Network Analyser.
  It usually creates a secure and paritioned Wifi access point, using vlans,

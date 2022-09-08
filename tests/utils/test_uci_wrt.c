@@ -11,13 +11,11 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <setjmp.h>
+#include <stdint.h>
 #include <cmocka.h>
-
-#include "uci.h"
 
 #include "utils/log.h"
 #include "utils/uci_wrt.h"
-#include "utils/utarray.h"
 #include "utils/iface_mapper.h"
 
 static void test_uwrt_init_context(void **state) {
@@ -105,6 +103,26 @@ static void test_uwrt_create_interface(void **state) {
 
   uwrt_free_context(context);
 }
+
+static void test_uwrt_firewall(void **state) {
+  (void)state;
+
+  struct uctx *context = uwrt_init_context(TEST_UCI_CONFIG_DIR);
+
+  assert_int_equal(uwrt_gen_firewall_zone(context, "br0"), 0);
+
+  assert_int_equal(uwrt_add_firewall_nat(context, "br0", "1.2.3.4", "wan"), 0);
+  assert_int_equal(uwrt_delete_firewall_nat(context, "1.2.3.4"), 0);
+
+  assert_int_equal(
+      uwrt_add_firewall_bridge(context, "1.2.3.4", "br0", "4.3.2.1", "br1"), 0);
+  assert_int_equal(uwrt_delete_firewall_bridge(context, "1.2.3.4", "4.3.2.1"),
+                   0);
+
+  assert_int_equal(uwrt_cleanup_firewall(context), 0);
+
+  uwrt_free_context(context);
+}
 #endif
 
 int main(int argc, char *argv[]) {
@@ -118,6 +136,7 @@ int main(int argc, char *argv[]) {
 #ifdef TEST_UCI_CONFIG_DIR
       cmocka_unit_test(test_uwrt_get_interfaces),
       cmocka_unit_test(test_uwrt_create_interface),
+      cmocka_unit_test(test_uwrt_firewall),
 #endif
   };
 

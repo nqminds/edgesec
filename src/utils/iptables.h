@@ -13,6 +13,7 @@
 
 #include <inttypes.h>
 #include <stdbool.h>
+#include <utarray.h>
 
 #include "allocs.h"
 #include "os.h"

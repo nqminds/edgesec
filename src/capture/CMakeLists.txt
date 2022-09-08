@@ -66,14 +66,16 @@ if (USE_CAPTURE_SERVICE)
   target_link_libraries(capture_config INTERFACE os)
 
   add_library(pcap_service pcap_service.c)
-  target_link_libraries(pcap_service PRIVATE net log os PCAP::pcap)
+  target_link_libraries(pcap_service PUBLIC LibUTHash::LibUTHash PRIVATE net log os PCAP::pcap)
 
   add_library(capture_service capture_service.c)
   target_include_directories(capture_service PRIVATE ${PROJECT_BINARY_DIR})
   target_link_libraries(
     capture_service
     PUBLIC PCAP::pcap middlewares_list
-    PRIVATE dns_decoder pcap_service pcap_queue packet_queue packet_decoder squeue eloop iface log os hashmap SQLite::SQLite3)
+    PRIVATE
+      dns_decoder pcap_service pcap_queue packet_queue packet_decoder squeue
+      eloop iface log os hashmap SQLite::SQLite3 Threads::Threads)
 
   set(CAPTURE_MIDDLEWARES "")
 
@@ -110,7 +112,7 @@ if (USE_CAPTURE_SERVICE)
   _edgesec_buildMiddlewaresSource(CAPTURE_MIDDLEWARES "${CAPTURE_MIDDLEWARES}")
   add_library(middlewares_list "${CMAKE_CURRENT_BINARY_DIR}/middlewares_list.c")
   target_include_directories(middlewares_list PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
-  target_link_libraries(middlewares_list PUBLIC SQLite::SQLite3 PCAP::pcap eloop)
+  target_link_libraries(middlewares_list PUBLIC LibUTHash::LibUTHash SQLite::SQLite3 PCAP::pcap eloop)
 
   function(edgesecAddCaptureMiddleware)
     set(oneValueArgs

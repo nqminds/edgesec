@@ -30,7 +30,6 @@
 #include "utils/log.h"
 #include "utils/net.h"
 #include "utils/base64.h"
-#include "utils/utarray.h"
 #include "utils/sockctl.h"
 
 bool process_domain_buffer(char *domain_buffer, size_t domain_buffer_len,
@@ -106,7 +105,7 @@ ssize_t process_accept_mac_cmd(int sock, struct client_address *client_addr,
                                struct supervisor_context *context,
                                UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
-  uint8_t addr[ETH_ALEN];
+  uint8_t addr[ETHER_ADDR_LEN];
   int vlanid;
 
   // MAC address
@@ -138,7 +137,7 @@ ssize_t process_deny_mac_cmd(int sock, struct client_address *client_addr,
                              struct supervisor_context *context,
                              UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
-  uint8_t addr[ETH_ALEN];
+  uint8_t addr[ETHER_ADDR_LEN];
 
   // MAC address
   ptr = (char **)utarray_next(cmd_arr, ptr);
@@ -161,7 +160,7 @@ ssize_t process_add_nat_cmd(int sock, struct client_address *client_addr,
                             struct supervisor_context *context,
                             UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
-  uint8_t addr[ETH_ALEN];
+  uint8_t addr[ETHER_ADDR_LEN];
 
   // MAC address
   ptr = (char **)utarray_next(cmd_arr, ptr);
@@ -184,7 +183,7 @@ ssize_t process_remove_nat_cmd(int sock, struct client_address *client_addr,
                                struct supervisor_context *context,
                                UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
-  uint8_t addr[ETH_ALEN];
+  uint8_t addr[ETHER_ADDR_LEN];
 
   // MAC address
   ptr = (char **)utarray_next(cmd_arr, ptr);
@@ -208,7 +207,7 @@ ssize_t process_assign_psk_cmd(int sock, struct client_address *client_addr,
                                UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
   int pass_len;
-  uint8_t addr[ETH_ALEN];
+  uint8_t addr[ETHER_ADDR_LEN];
 
   // MAC address
   ptr = (char **)utarray_next(cmd_arr, ptr);
@@ -240,7 +239,7 @@ ssize_t process_get_map_cmd(int sock, struct client_address *client_addr,
                             UT_array *cmd_arr) {
   char temp[255];
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
-  uint8_t addr[ETH_ALEN];
+  uint8_t addr[ETHER_ADDR_LEN];
   struct mac_conn_info info;
 
   init_default_mac_info(&info, context->default_open_vlanid,
@@ -323,7 +322,7 @@ ssize_t process_set_ip_cmd(int sock, struct client_address *client_addr,
                            struct supervisor_context *context,
                            UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
-  uint8_t addr[ETH_ALEN];
+  uint8_t addr[ETHER_ADDR_LEN];
   char dhcp_type[4];
   enum DHCP_IP_TYPE ip_type = DHCP_IP_NONE;
 
@@ -383,7 +382,7 @@ ssize_t process_add_bridge_cmd(int sock, struct client_address *client_addr,
                                struct supervisor_context *context,
                                UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
-  uint8_t left_addr[ETH_ALEN], right_addr[ETH_ALEN];
+  uint8_t left_addr[ETHER_ADDR_LEN], right_addr[ETHER_ADDR_LEN];
   char left_ip[OS_INET_ADDRSTRLEN], right_ip[OS_INET_ADDRSTRLEN];
 
   // MAC address source
@@ -431,8 +430,8 @@ ssize_t process_remove_bridge_cmd(int sock, struct client_address *client_addr,
                                   struct supervisor_context *context,
                                   UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
-  uint8_t left_addr[ETH_ALEN];
-  uint8_t right_addr[ETH_ALEN];
+  uint8_t left_addr[ETHER_ADDR_LEN];
+  uint8_t right_addr[ETHER_ADDR_LEN];
 
   // MAC address source
   ptr = (char **)utarray_next(cmd_arr, ptr);
@@ -461,7 +460,7 @@ ssize_t process_clear_bridges_cmd(int sock, struct client_address *client_addr,
                                   struct supervisor_context *context,
                                   UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
-  uint8_t left_addr[ETH_ALEN];
+  uint8_t left_addr[ETHER_ADDR_LEN];
 
   // MAC address source
   ptr = (char **)utarray_next(cmd_arr, ptr);
@@ -521,7 +520,7 @@ ssize_t process_register_ticket_cmd(int sock,
                                     struct supervisor_context *context,
                                     UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
-  uint8_t mac_addr[ETH_ALEN];
+  uint8_t mac_addr[ETHER_ADDR_LEN];
   int vlanid;
   char label[MAX_DEVICE_LABEL_SIZE];
   char *passphrase;
@@ -565,7 +564,7 @@ ssize_t process_clear_psk_cmd(int sock, struct client_address *client_addr,
                               struct supervisor_context *context,
                               UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
-  uint8_t mac_addr[ETH_ALEN];
+  uint8_t mac_addr[ETHER_ADDR_LEN];
 
   // MAC address of issuer
   ptr = (char **)utarray_next(cmd_arr, ptr);

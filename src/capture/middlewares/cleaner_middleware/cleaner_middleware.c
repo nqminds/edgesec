@@ -18,6 +18,7 @@
 
 #include <sqlite3.h>
 #include <libgen.h>
+#include <utarray.h>
 
 #include "../pcap_middleware/sqlite_pcap.h"
 #include "../../capture_service.h"
@@ -27,7 +28,6 @@
 #include "../../../utils/os.h"
 
 #include "../../../utils/eloop.h"
-#include "../../../utils/utarray.h"
 
 #define CLEANER_PROCESS_INTERVAL                                               \
   5 /* Frequency in sec to run the cleaner function*/

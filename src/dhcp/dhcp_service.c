@@ -14,7 +14,7 @@
 #include "../utils/log.h"
 #include "../utils/allocs.h"
 #include "../utils/os.h"
-#include "../utils/utarray.h"
+#include "dhcp_service.h"
 
 int run_dhcp(struct dhcp_conf *dconf, UT_array *dns_server_array,
              char *supervisor_control_path, bool exec_dhcp) {

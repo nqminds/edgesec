@@ -11,22 +11,10 @@
 #ifndef PACKET_DECODER_H
 #define PACKET_DECODER_H
 
-#include <netinet/in.h>
-#include <netinet/ip.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <linux/if.h>
-#include <netinet/if_ether.h>
-#include <netinet/ip6.h>
-#include <netinet/icmp6.h>
-#include <netinet/ip_icmp.h>
-#include <net/ethernet.h>
-#include <netinet/tcp.h>
-#include <netinet/udp.h>
-#include <arpa/inet.h>
+#include <net/if.h>
 #include <pcap.h>
 
-#include "../../../utils/utarray.h"
+#include <utarray.h>
 #include "../../../utils/allocs.h"
 #include "../../../utils/os.h"
 #include "../../../utils/net.h"
@@ -321,7 +309,7 @@ struct capture_packet {
   struct ip6_hdr *ip6h;
   struct tcphdr *tcph;
   struct udphdr *udph;
-  struct icmphdr *icmp4h;
+  struct icmp *icmp4h;
   struct icmp6_hdr *icmp6h;
   struct dns_header *dnsh;
   struct mdns_header *mdnsh;

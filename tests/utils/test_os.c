@@ -11,13 +11,14 @@
 #include <inttypes.h>
 #include <unistd.h>
 #include <setjmp.h>
+#include <stdint.h>
 #include <cmocka.h>
 // used to delete directory recursively
 #include <ftw.h>
 
 #include "utils/log.h"
 #include "utils/os.h"
-#include "utils/utarray.h"
+#include "utils/allocs.h"
 
 static void command_out_fn(void *ctx, void *buf, size_t count) {
   (void)ctx;
@@ -465,6 +466,12 @@ bool dir_fn(char *dirpath, void *args) {
   return true;
 }
 
+bool failing_dir_fn(char *dirpath, void *args) {
+  (void)dirpath;
+  (void)args;
+  return false;
+}
+
 static void test_list_dir(void **state) {
   (void)state;
 
@@ -472,6 +479,12 @@ static void test_list_dir(void **state) {
   int ret = list_dir("/bin", dir_fn, &is_uname);
   assert_int_equal(ret, 0);
   assert_int_equal(is_uname, 1);
+
+  // should fail for invalid folder
+  assert_int_equal(list_dir("/this-path-is-not-a-dir", dir_fn, &is_uname), -1);
+
+  // should fail if dir_fn fails
+  assert_int_equal(list_dir("/bin", failing_dir_fn, &is_uname), -1);
 }
 
 typedef struct {
@@ -557,6 +570,26 @@ static void test_make_dirs_to_path(void **state) {
   ret = make_dirs_to_path(path, 0755);
   // should return no error code
   assert_int_equal(ret, 0);
+
+  // should return an error on invalid input string
+  ret = make_dirs_to_path(NULL, 0755);
+  assert_int_equal(ret, -1);
+
+  // create a file in the directory
+  FILE *fp = fopen(path, "w");
+  assert_non_null(fp);
+  assert_int_not_equal(fputs("test file, should be deleted", fp), EOF);
+  assert_int_not_equal(fclose(fp), EOF);
+
+  // should throw a ENOTDIR (NOT A DIRECTORY) error when trying to create
+  // folder in `not_a_dir.txt`
+  const *enotdir_path = construct_path(directories_to_build,
+                                       "not_a_dir.txt/new_folder/new_file.txt");
+  assert_int_equal(make_dirs_to_path(enotdir_path, 0755), -1);
+  free(enotdir_path);
+
+  free(directories_to_build);
+  free(path);
 }
 
 static void test_string_append_char(void **state) {
@@ -564,6 +597,11 @@ static void test_string_append_char(void **state) {
   const char input_str[] = "Hello World";
   char *combined_str = string_append_char(input_str, '!');
   assert_string_equal(combined_str, "Hello World!");
+
+  // should return NULL if input str is NULL
+  assert_ptr_equal(string_append_char(NULL, '!'), NULL);
+
+  free(combined_str);
 }
 
 int main(int argc, char *argv[]) {

@@ -12,7 +12,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <linux/if.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -26,7 +25,6 @@
 #include "iface_mapper.h"
 #include "ifaceu.h"
 #include "net.h"
-#include "utarray.h"
 
 int get_if_mapper(hmap_if_conn **hmap, in_addr_t subnet, char *ifname) {
   hmap_if_conn *s;

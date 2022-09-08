@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 3.11.0) # required by FetchContent
 include(FetchContent)
 
 if (USE_CRYPTO_SERVICE)
@@ -54,6 +53,7 @@ if (USE_CRYPTO_SERVICE)
       URL_HASH SHA256=59eedfcb46c25214c9bd37ed6078297b4df01d012267fe9e9eee31f61bc70536
       INSTALL_DIR "${LIBOPENSSL_INSTALL_DIR}"
       CONFIGURE_COMMAND
+        ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" "CC=${CMAKE_C_COMPILER}" "CXX=${CMAKE_CXX_COMPILER}"
         <SOURCE_DIR>/Configure ${OpenSSL_Configure_Args}
       LIST_SEPARATOR " " # expand ${OpenSSL_Configure_Args} to space-separated list
       # only install software, don't install or build docs

@@ -18,7 +18,6 @@
 #include "supervisor_config.h"
 
 #include "../utils/sockctl.h"
-#include "../utils/utarray.h"
 
 enum SUBSCRIBER_EVENT {
   SUBSCRIBER_EVENT_NONE = 0,

@@ -16,7 +16,6 @@
 
 #include "../utils/allocs.h"
 #include "../utils/os.h"
-#include "../utils/utarray.h"
 
 /**
  * @brief Generates the dnsmasq configuration file

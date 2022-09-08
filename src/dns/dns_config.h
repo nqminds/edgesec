@@ -10,7 +10,8 @@
 #ifndef DNS_CONFIG_H
 #define DNS_CONFIG_H
 
-#include "../utils/utarray.h"
+#include <utarray.h>
+
 #include "../capture/capture_config.h"
 
 #define MDNS_MAX_OPT 26
