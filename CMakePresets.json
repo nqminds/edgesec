@@ -56,7 +56,7 @@
         "BUILD_NETLINK_LIB": false,
         "USE_NETLINK_SERVICE": false,
         "USE_UCI_SERVICE": false,
-        "USE_GENERIC_IP_SERVICE": false,
+        "USE_GENERIC_IP_SERVICE": true,
         "USE_RADIUS_SERVICE": false,
         "BUILD_HOSTAPD": false,
         "USE_CRYPTO_SERVICE": false,
