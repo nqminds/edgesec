@@ -24,7 +24,6 @@
 #include <pcap.h>
 
 #include "utils/os.h"
-#include "utils/eloop.h"
 #include "capture/middlewares/header_middleware/sqlite_header.h"
 #include "capture/middlewares/header_middleware/packet_decoder.h"
 #include "capture/middlewares/header_middleware/packet_queue.h"
@@ -72,7 +71,6 @@ struct pcap_stream_context {
   uint64_t total_size;
   uint64_t npackets;
   enum PCAP_STATE state;
-  bool exit_error;
   struct pcap_file_header pcap_header;
   struct pcap_pkthdr32 pkt_header;
 };
@@ -392,41 +390,6 @@ int process_pcap_stream_state(struct pcap_stream_context *pctx) {
   }
 }
 
-void eloop_tout_pcapfile_handler(void *eloop_ctx, void *user_ctx) {
-  struct eloop_data *eloop = (struct eloop_data *)eloop_ctx;
-  struct pcap_stream_context *pctx = (struct pcap_stream_context *)user_ctx;
-
-  int ret = process_pcap_stream_state(pctx);
-
-  if (ret > 0) {
-    if (eloop_register_timeout(eloop, 0, PCAP_READ_INTERVAL,
-                               eloop_tout_pcapfile_handler, eloop_ctx,
-                               user_ctx) == -1) {
-      log_error("eloop_register_timeout fail");
-      if (pctx->pcap_data != NULL) {
-        os_free(pctx->pcap_data);
-        pctx->pcap_data = NULL;
-      }
-      pctx->exit_error = true;
-      eloop_terminate(eloop);
-    }
-  } else if (ret == 0) {
-    log_error("processing fin");
-    pctx->exit_error = false;
-  } else {
-    log_error("process_pcap_stream_state fail");
-    pctx->exit_error = true;
-  }
-
-  if (ret < 1) {
-    if (pctx->pcap_data != NULL) {
-      os_free(pctx->pcap_data);
-      pctx->pcap_data = NULL;
-    }
-    eloop_terminate(eloop);
-  }
-}
-
 int main(int argc, char *argv[]) {
   uint8_t verbosity = 0;
   uint8_t level = 0;
@@ -435,7 +398,6 @@ int main(int argc, char *argv[]) {
                                      .pcap_fd = NULL,
                                      .ifname = NULL,
                                      .state = PCAP_STATE_INIT,
-                                     .exit_error = false,
                                      .total_size = 0,
                                      .npackets = 0};
 
@@ -524,9 +486,5 @@ int main(int argc, char *argv[]) {
 
   sqlite3_close(pctx.db);
   os_free(pctx.ifname);
-  if (pctx.exit_error) {
-    return EXIT_FAILURE;
-  } else {
-    return EXIT_SUCCESS;
-  }
+  return EXIT_SUCCESS;
 }

@@ -51,5 +51,5 @@ set_target_properties(edgesec PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 if (USE_CAPTURE_SERVICE)
   add_executable(recap recap.c)
-  target_link_libraries(recap PRIVATE packet_queue packet_decoder sqlite_header eloop os log PCAP::pcap SQLite::SQLite3)
+  target_link_libraries(recap PRIVATE packet_queue packet_decoder sqlite_header os log SQLite::SQLite3)
 endif()
