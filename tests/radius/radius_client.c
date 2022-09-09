@@ -11,6 +11,8 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <stdbool.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 #include <netinet/if_ether.h>
 #include <errno.h>
 
