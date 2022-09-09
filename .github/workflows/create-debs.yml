@@ -161,6 +161,9 @@ jobs:
           path: |
             /var/cache/pbuilder/base.tgz
           key: ${{ runner.os }}-${{ matrix.distribution }}-${{ matrix.architecture }}
+        # Sometimes the cache step just freezes forever
+        # so put a limit on it so that we can restart it earlier on failure
+        timeout-minutes: 10
       - name: Install dependencies
         run: |
           sudo apt-get update && sudo apt-get install pbuilder debhelper -y
