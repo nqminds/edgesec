@@ -583,8 +583,8 @@ static void test_make_dirs_to_path(void **state) {
 
   // should throw a ENOTDIR (NOT A DIRECTORY) error when trying to create
   // folder in `not_a_dir.txt`
-  const *enotdir_path = construct_path(directories_to_build,
-                                       "not_a_dir.txt/new_folder/new_file.txt");
+  char *enotdir_path = construct_path(directories_to_build,
+                                      "not_a_dir.txt/new_folder/new_file.txt");
   assert_int_equal(make_dirs_to_path(enotdir_path, 0755), -1);
   free(enotdir_path);
 
