@@ -69,4 +69,18 @@ int signal_dhcp_process(char *dhcp_bin_path);
  * @return int 0 on success, -1 on failure
  */
 int clear_dhcp_lease_entry(char *mac_addr, char *dhcp_leasefile_path);
+
+/**
+ * @brief Creates the DHCP interface name for the given vlan id.
+ *
+ * @param dconf The dhcp configuration structure.
+ * @param vlanid The vlan id.
+ * @param[out] ifname The DHCP interface name.
+ * @pre @p vlanid must be less than 4095 chars
+ * @pre @p ifname must point to at least #IFNAMSIZ bytes.
+ * @retval  0 Success
+ * @retval -1 Error (invalid args)
+ */
+int define_dhcp_interface_name(const struct dhcp_conf *dconf, uint16_t vlanid,
+                               char *ifname);
 #endif
