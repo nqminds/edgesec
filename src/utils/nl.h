@@ -93,7 +93,7 @@ int nl_new_interface(const char *if_name, const char *type);
  */
 int nl_set_interface_ip(struct nlctx *context, const char *ifname,
                         const char *ip_addr, const char *brd_addr,
-                        char *subnet_mask);
+                        const char *subnet_mask);
 
 /**
  * @brief Set the interface state
@@ -116,7 +116,7 @@ int nl_set_interface_state(const char *if_name, bool state);
  * @return int 0 on success, -1 on failure
  */
 int nl_create_interface(struct nlctx *context, char *ifname, char *type,
-                        char *ip_addr, char *brd_addr, char *subnet_mask);
+                        char *ip_addr, char *brd_addr, const char *subnet_mask);
 
 /**
  * @brief Resets the interface
