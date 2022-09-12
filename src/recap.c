@@ -161,16 +161,15 @@ ssize_t read_pcap_stream_fd(struct pcap_stream_context *pctx, size_t len,
 
 ssize_t read_pcap(struct pcap_stream_context *pctx, size_t len) {
   char *data = NULL;
-  ssize_t read_size, current_size;
-
-  if ((read_size = read_pcap_stream_fd(pctx, len, &data)) < 0) {
+  ssize_t read_size = read_pcap_stream_fd(pctx, len, &data);
+  if (read_size < 0) {
     log_error("read_pcap_stream_fd fail");
     return -1;
   }
 
   pctx->total_size += read_size;
 
-  current_size = read_size + pctx->data_size;
+  ssize_t current_size = read_size + pctx->data_size;
 
   if (read_size > 0) {
     if ((pctx->pcap_data = os_realloc(pctx->pcap_data, current_size)) == NULL) {
