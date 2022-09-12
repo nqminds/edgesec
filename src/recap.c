@@ -423,18 +423,17 @@ int main(int argc, char *argv[]) {
 
   fprintf(stdout, "Openning db at %s\n", db_path);
 
+  os_free(db_path);
+
   if (ret != SQLITE_OK) {
     fprintf(stdout, "Cannot open database: %s", sqlite3_errmsg(pctx.db));
     if (pcap_path != NULL) {
       os_free(pcap_path);
     }
-    os_free(db_path);
     os_free(pctx.ifname);
     sqlite3_close(pctx.db);
     return EXIT_FAILURE;
   }
-
-  os_free(db_path);
 
   if (init_sqlite_header_db(pctx.db) < 0) {
     fprintf(stdout, "init_sqlite_header_db fail\n");
