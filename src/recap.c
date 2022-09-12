@@ -75,11 +75,8 @@ struct pcap_stream_context {
 };
 
 void show_app_version(void) {
-  char buf[10];
-
-  snprintf(buf, ARRAY_SIZE(buf), "%d.%d.%d", RECAP_VERSION_MAJOR,
-           RECAP_VERSION_MINOR, RECAP_VERSION_PATCH);
-  fprintf(stdout, "recap app version %s\n", buf);
+  fprintf(stdout, "recap app version %d.%d.%d\n", EDGESEC_VERSION_MAJOR,
+          EDGESEC_VERSION_MINOR, EDGESEC_VERSION_PATCH);
 }
 
 void show_app_help(char *app_name) {
