@@ -23,6 +23,7 @@
 #include <inttypes.h>
 #include <pcap.h>
 
+#include "version.h"
 #include "utils/os.h"
 #include "capture/middlewares/header_middleware/sqlite_header.h"
 #include "capture/middlewares/header_middleware/packet_decoder.h"
@@ -42,9 +43,6 @@
 
 #define DESCRIPTION_STRING                                                     \
   "\nRun capture on an input pcap file and output to a capture db.\n"
-
-static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL,
-                                   NULL};
 
 enum PCAP_STATE {
   PCAP_STATE_INIT = 0,
@@ -261,13 +259,6 @@ void get_packet_header(struct pcap_stream_context *pctx,
   header->len = pctx->pkt_header.len;
 }
 
-void free_packets(UT_array *packets) {
-  struct tuple_packet *p = NULL;
-  while ((p = (struct tuple_packet *)utarray_next(packets, p)) != NULL) {
-    free_packet_tuple(p);
-  }
-}
-
 int save_sqlite_packet(sqlite3 *db, UT_array *packets) {
   struct tuple_packet *p = NULL;
   while ((p = (struct tuple_packet *)utarray_next(packets, p)) != NULL) {
@@ -280,21 +271,26 @@ int save_sqlite_packet(sqlite3 *db, UT_array *packets) {
   return 0;
 }
 
+void free_packet(void *elt) { free_packet_tuple((struct tuple_packet *)elt); }
+
+static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL,
+                                   free_packet};
+
 int save_packet(struct pcap_stream_context *pctx) {
   const char *ltype = pcap_datalink_val_to_name(pctx->pcap_header.linktype);
   uint8_t *packet = (uint8_t *)pctx->pcap_data;
 
   char cap_id[MAX_RANDOM_UUID_LEN];
   generate_radom_uuid(cap_id);
-  
+
   struct pcap_pkthdr header;
   get_packet_header(pctx, &header);
 
   UT_array *packets = NULL;
   utarray_new(packets, &tp_list_icd);
 
-  int npackets = extract_packets(ltype, &header, packet, pctx->ifname, cap_id,
-                                 packets);  
+  int npackets =
+      extract_packets(ltype, &header, packet, pctx->ifname, cap_id, packets);
   if (npackets < 0) {
     log_error("extract_packets fail");
     utarray_free(packets);
@@ -305,14 +301,12 @@ int save_packet(struct pcap_stream_context *pctx) {
 
   if (save_sqlite_packet(pctx->db, packets) < 0) {
     log_error("save_sqlite_packet fail");
-    free_packets(packets);
     utarray_free(packets);
     return -1;
   }
 
   pctx->npackets += npackets;
 
-  free_packets(packets);
   utarray_free(packets);
   return 0;
 }
