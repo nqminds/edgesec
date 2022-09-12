@@ -318,12 +318,12 @@ int save_packet(struct pcap_stream_context *pctx) {
 }
 
 int process_pkt_read_state(struct pcap_stream_context *pctx) {
-  ssize_t read_size = 0;
   size_t len = (pctx->pkt_header.caplen > pctx->data_size)
                    ? pctx->pkt_header.caplen - pctx->data_size
                    : 0;
 
-  if ((read_size = read_pcap(pctx, len)) < 0) {
+  ssize_t read_size = read_pcap(pctx, len);
+  if (read_size < 0) {
     log_error("read_pcap fail");
     return -1;
   }
