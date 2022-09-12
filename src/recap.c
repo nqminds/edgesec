@@ -43,9 +43,8 @@
 static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL,
                                    NULL};
 
-const char description_string[] = R"==(
-  Run capture on an input pcap file and output to a capture db.
-)==";
+const char description_string[] =
+    "Run capture on an input pcap file and output to a capture db.";
 
 enum PCAP_STATE {
   PCAP_STATE_INIT = 0,
@@ -87,7 +86,7 @@ void show_app_help(char *app_name) {
   show_app_version();
   fprintf(stdout, "Usage:\n");
   fprintf(stdout, USAGE_STRING, basename(app_name));
-  fprintf(stdout, "%s", description_string);
+  fprintf(stdout, "\n%s\n", description_string);
   fprintf(stdout, "\nOptions:\n");
   fprintf(stdout, "\t-p filename\t Path to the pcap file name\n");
   fprintf(stdout, "\t-f filename\t Path to the capture db\n");
