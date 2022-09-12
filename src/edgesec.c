@@ -73,7 +73,7 @@ void sighup_handler(int sig, void *ctx) {
 }
 
 void show_app_version(void) {
-  char buf[10];
+  char buf[32];
 
   snprintf(buf, ARRAY_SIZE(buf), "%d.%d.%d", EDGESEC_VERSION_MAJOR,
            EDGESEC_VERSION_MINOR, EDGESEC_VERSION_PATCH);
