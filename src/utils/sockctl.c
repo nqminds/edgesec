@@ -229,7 +229,8 @@ ssize_t read_domain_data_s(int sock, char *data, size_t data_len, char *addr,
   return num_bytes;
 }
 
-ssize_t write_domain_data_s(int sock, char *data, size_t data_len, char *addr) {
+ssize_t write_domain_data_s(int sock, const char *data, size_t data_len,
+                            char *addr) {
   struct client_address claddr;
 
   if (addr == NULL) {
@@ -244,7 +245,7 @@ ssize_t write_domain_data_s(int sock, char *data, size_t data_len, char *addr) {
   return write_socket_data(sock, data, data_len, &claddr);
 }
 
-ssize_t write_socket_domain(int sock, char *data, size_t data_len,
+ssize_t write_socket_domain(int sock, const char *data, size_t data_len,
                             struct client_address *addr) {
   ssize_t sent;
 
@@ -259,7 +260,7 @@ ssize_t write_socket_domain(int sock, char *data, size_t data_len,
   return sent;
 }
 
-ssize_t write_socket_udp(int sock, char *data, size_t data_len,
+ssize_t write_socket_udp(int sock, const char *data, size_t data_len,
                          struct client_address *addr) {
   ssize_t sent;
   char ip[OS_INET_ADDRSTRLEN];
@@ -279,7 +280,7 @@ ssize_t write_socket_udp(int sock, char *data, size_t data_len,
   return sent;
 }
 
-ssize_t write_socket_data(int sock, char *data, size_t data_len,
+ssize_t write_socket_data(int sock, const char *data, size_t data_len,
                           struct client_address *addr) {
   if (data == NULL) {
     log_error("data param is NULL");
@@ -302,7 +303,7 @@ ssize_t write_socket_data(int sock, char *data, size_t data_len,
   }
 }
 
-int writeread_domain_data_str(char *socket_path, char *write_str,
+int writeread_domain_data_str(char *socket_path, const char *write_str,
                               char **reply) {
   int sfd;
   uint32_t bytes_available;
