@@ -62,7 +62,11 @@
 static char dnsmasq_proc_name[MAX_OS_PATH_LEN];
 static bool dns_process_started = false;
 
-int define_dhcp_interface_name(const struct dhcp_conf *dconf, int vlanid,
+// The maximum length in chars of a VLAN ID when converted to a decimal string.
+// In IEEE 802.1Q, the max VLAN ID is 4094, so 4 characters long in decimal.
+static const int MAX_VLANID_CHARS = 4;
+
+int define_dhcp_interface_name(const struct dhcp_conf *dconf, uint16_t vlanid,
                                char *ifname) {
   if (dconf == NULL) {
     log_error("dconf param is NULL");
@@ -74,17 +78,26 @@ int define_dhcp_interface_name(const struct dhcp_conf *dconf, int vlanid,
     return -1;
   }
 
+#if IF_NAMESIZE < 16
+// Make sure that IFNAMSIZ - 2 - MAX_VLANID_CHARS is always a positive number
+#error "Expected IF_NAMESIZE to be at least 16 bytes large"
+#endif
+
 #ifdef WITH_UCI_SERVICE
-  snprintf(ifname, IFNAMSIZ, "%s%d", dconf->bridge_prefix, vlanid);
+  snprintf(ifname, IFNAMSIZ, "%.*s%d", IFNAMSIZ - 1 - MAX_VLANID_CHARS,
+           dconf->bridge_prefix, vlanid);
 #else
   if (strlen(dconf->wifi_interface)) {
     if (vlanid) {
-      snprintf(ifname, IFNAMSIZ, "%s.%d", dconf->wifi_interface, vlanid);
+      snprintf(ifname, IFNAMSIZ, "%.*s.%d", IFNAMSIZ - 2 - MAX_VLANID_CHARS,
+               dconf->wifi_interface, vlanid);
     } else {
       snprintf(ifname, IFNAMSIZ, "%s", dconf->wifi_interface);
     }
   } else {
-    snprintf(ifname, IFNAMSIZ, "%s%d", dconf->interface_prefix, vlanid);
+    // Max VLANID is 4094 = 4 digits
+    snprintf(ifname, IFNAMSIZ, "%.*s%d", IFNAMSIZ - 1 - MAX_VLANID_CHARS,
+             dconf->interface_prefix, vlanid);
   }
 #endif
   return 0;

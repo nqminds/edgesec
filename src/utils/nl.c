@@ -758,7 +758,7 @@ nl_new_interface_err:
 
 int nl_set_interface_ip(struct nlctx *context, const char *ifname,
                         const char *ip_addr, const char *brd_addr,
-                        char *subnet_mask) {
+                        const char *subnet_mask) {
   (void)context;
 
   char longip[OS_INET_ADDRSTRLEN];
@@ -846,7 +846,8 @@ void nl_free_context(struct nlctx *context) {
 }
 
 int nl_create_interface(struct nlctx *context, char *ifname, char *type,
-                        char *ip_addr, char *brd_addr, char *subnet_mask) {
+                        char *ip_addr, char *brd_addr,
+                        const char *subnet_mask) {
   (void)context;
 
   if (ifname == NULL) {
