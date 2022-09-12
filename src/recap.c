@@ -40,11 +40,11 @@
 #define USAGE_STRING                                                           \
   "\t%s [-p filename] [-f filename] [-i interface] [-d] [-h] [-v]\n"
 
+#define DESCRIPTION_STRING                                                     \
+  "\nRun capture on an input pcap file and output to a capture db.\n"
+
 static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL,
                                    NULL};
-
-const char description_string[] =
-    "Run capture on an input pcap file and output to a capture db.";
 
 enum PCAP_STATE {
   PCAP_STATE_INIT = 0,
@@ -86,7 +86,7 @@ void show_app_help(char *app_name) {
   show_app_version();
   fprintf(stdout, "Usage:\n");
   fprintf(stdout, USAGE_STRING, basename(app_name));
-  fprintf(stdout, "\n%s\n", description_string);
+  fprintf(stdout, DESCRIPTION_STRING);
   fprintf(stdout, "\nOptions:\n");
   fprintf(stdout, "\t-p filename\t Path to the pcap file name\n");
   fprintf(stdout, "\t-f filename\t Path to the capture db\n");
