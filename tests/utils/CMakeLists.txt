@@ -19,6 +19,9 @@ target_link_libraries(test_net PRIVATE net cmocka::cmocka)
 add_executable(test_os test_os.c)
 target_link_libraries(test_os PRIVATE os allocs hashmap cmocka::cmocka)
 
+add_executable(test_eloop test_eloop.c)
+target_link_libraries(test_eloop PRIVATE sockctl os allocs eloop cmocka::cmocka)
+
 add_executable(test_sqliteu test_sqliteu.c)
 target_link_libraries(test_sqliteu PRIVATE sqliteu cmocka::cmocka)
 
@@ -79,6 +82,11 @@ set_tests_properties(test_net
 
 add_test(NAME test_os COMMAND test_os)
 set_tests_properties(test_os
+  PROPERTIES
+  WILL_FAIL FALSE)
+
+add_test(NAME test_eloop COMMAND test_eloop)
+set_tests_properties(test_eloop
   PROPERTIES
   WILL_FAIL FALSE)
 
