@@ -186,14 +186,14 @@ ssize_t read_pcap(struct pcap_stream_context *pctx, size_t len) {
 }
 
 int process_pcap_header_state(struct pcap_stream_context *pctx) {
-  ssize_t read_size = 0;
   ssize_t pcap_header_size = (ssize_t)sizeof(struct pcap_file_header);
 
   size_t len = (pcap_header_size > pctx->data_size)
                    ? pcap_header_size - pctx->data_size
                    : 0;
 
-  if ((read_size = read_pcap(pctx, len)) < 0) {
+  ssize_t read_size = read_pcap(pctx, len);
+  if (read_size < 0) {
     log_error("read_pcap fail");
     return -1;
   }
