@@ -282,19 +282,20 @@ int save_sqlite_packet(sqlite3 *db, UT_array *packets) {
 
 int save_packet(struct pcap_stream_context *pctx) {
   const char *ltype = pcap_datalink_val_to_name(pctx->pcap_header.linktype);
-  struct pcap_pkthdr header;
   uint8_t *packet = (uint8_t *)pctx->pcap_data;
 
   char cap_id[MAX_RANDOM_UUID_LEN];
   generate_radom_uuid(cap_id);
+  
+  struct pcap_pkthdr header;
   get_packet_header(pctx, &header);
 
-  int npackets;
   UT_array *packets = NULL;
   utarray_new(packets, &tp_list_icd);
 
-  if ((npackets = extract_packets(ltype, &header, packet, pctx->ifname, cap_id,
-                                  packets)) < 0) {
+  int npackets = extract_packets(ltype, &header, packet, pctx->ifname, cap_id,
+                                 packets);  
+  if (npackets < 0) {
     log_error("extract_packets fail");
     utarray_free(packets);
     return -1;
