@@ -31,9 +31,9 @@ static void command_out_fn(void *ctx, void *buf, size_t count) {
 static void test_run_command(void **state) {
   (void)state; /* unused */
 
-  char *argv[3] = {"/bin/uname", "-s", NULL};
+  const char *argv[] = {"/usr/bin/env", "uname", "-s", NULL};
 
-  /* Testing run_command with /bin/uname -s */
+  /* Testing run_command with /usr/bin/env uname -s */
   int status = run_command(argv, NULL, NULL, NULL);
   assert_int_equal(status, 0);
 
@@ -52,7 +52,7 @@ static void test_run_command(void **state) {
   status = run_command(argv2, NULL, NULL, NULL);
   assert_int_not_equal(status, 0);
 
-  /* Testing run_command with /bin/uname -s and callback */
+  /* Testing run_command with /usr/bin/env uname -s and callback */
   status = run_command(argv, NULL, command_out_fn, NULL);
   assert_int_equal(status, 0);
 }
