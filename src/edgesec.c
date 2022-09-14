@@ -15,12 +15,12 @@
 #include <fcntl.h>
 #include <ctype.h>
 #include <unistd.h>
-#include <pthread.h>
 #include <stdbool.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <libgen.h>
+#include <pthread.h>
 
 #include "version.h"
 #include "utils/log.h"
@@ -51,8 +51,6 @@ const char description_string[] =
     "     credentials/MAC address.\n"
     "  6. State machine: Networking monitoring and management.\n";
 
-static __thread char version_buf[10];
-
 pthread_mutex_t log_lock;
 
 void log_lock_fun(bool lock) {
@@ -74,23 +72,14 @@ void sighup_handler(int sig, void *ctx) {
   }
 }
 
-char *get_static_version_string(uint8_t major, uint8_t minor, uint8_t patch) {
-  int ret = snprintf(version_buf, 10, "%d.%d.%d", major, minor, patch);
-
-  if (ret < 0) {
-    fprintf(stderr, "snprintf");
-    return NULL;
-  }
-
-  return version_buf;
-}
-
 void show_app_version(void) {
-  fprintf(stdout, "edgesec app version %s\n",
-          get_static_version_string(EDGESEC_VERSION_MAJOR,
-                                    EDGESEC_VERSION_MINOR,
-                                    EDGESEC_VERSION_PATCH));
+  char buf[32];
+
+  snprintf(buf, ARRAY_SIZE(buf), "%d.%d.%d", EDGESEC_VERSION_MAJOR,
+           EDGESEC_VERSION_MINOR, EDGESEC_VERSION_PATCH);
+  fprintf(stdout, "edgesec app version %s\n", buf);
 }
+
 void show_app_help(char *app_name) {
   show_app_version();
   fprintf(stdout, "Usage:\n");
