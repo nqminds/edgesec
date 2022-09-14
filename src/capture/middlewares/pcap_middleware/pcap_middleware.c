@@ -156,7 +156,10 @@ void free_pcap_middleware(struct middleware_context *context) {
 
 struct middleware_context *init_pcap_middleware(sqlite3 *db, char *db_path,
                                                 struct eloop_data *eloop,
-                                                struct pcap_context *pc) {
+                                                struct pcap_context *pc,
+                                                char *params) {
+  (void)params;
+
   struct middleware_context *context = NULL;
   struct pcap_middleware_context *pcap_context = NULL;
 
@@ -229,9 +232,9 @@ struct middleware_context *init_pcap_middleware(sqlite3 *db, char *db_path,
   return context;
 }
 
-int process_pcap_middleware(struct middleware_context *context, char *ltype,
-                            struct pcap_pkthdr *header, uint8_t *packet,
-                            char *ifname) {
+int process_pcap_middleware(struct middleware_context *context,
+                            const char *ltype, struct pcap_pkthdr *header,
+                            uint8_t *packet, char *ifname) {
   (void)ltype;
   (void)ifname;
 

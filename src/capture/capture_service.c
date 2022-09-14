@@ -71,6 +71,7 @@ int run_capture(struct capture_middleware_context *context) {
   log_info("Promiscuous mode=%d", context->config.promiscuous);
   log_info("Immediate mode=%d", context->config.immediate);
   log_info("Buffer timeout=%d", context->config.buffer_timeout);
+  log_info("Middleware params=%s", context->config.middleware_params);
 
   ret = sqlite3_open(context->config.capture_db_path, &db);
 
@@ -110,7 +111,7 @@ int run_capture(struct capture_middleware_context *context) {
   context->handlers = assign_middlewares();
 
   if (init_middlewares(context->handlers, db, context->config.capture_db_path,
-                       eloop, pc) < 0) {
+                       eloop, pc, context->config.middleware_params) < 0) {
     log_error("init_middlewares fail");
     goto capture_fail;
   }

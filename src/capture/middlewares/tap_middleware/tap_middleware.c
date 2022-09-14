@@ -34,7 +34,8 @@ void free_tap_middleware(struct middleware_context *context) {
 
 struct middleware_context *init_tap_middleware(sqlite3 *db, char *db_path,
                                                struct eloop_data *eloop,
-                                               struct pcap_context *pc) {
+                                               struct pcap_context *pc,
+                                               char *params) {
   (void)db_path;
   (void)eloop;
   struct middleware_context *context = NULL;

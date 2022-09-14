@@ -168,7 +168,10 @@ void free_cleaner_middleware(struct middleware_context *context) {
 
 struct middleware_context *init_cleaner_middleware(sqlite3 *db, char *db_path,
                                                    struct eloop_data *eloop,
-                                                   struct pcap_context *pc) {
+                                                   struct pcap_context *pc,
+                                                   char *params) {
+  (void)params;
+
   log_info("Init cleaner middleware...");
 
   if (db == NULL) {
@@ -231,9 +234,9 @@ struct middleware_context *init_cleaner_middleware(sqlite3 *db, char *db_path,
   return context;
 }
 
-int process_cleaner_middleware(struct middleware_context *context, char *ltype,
-                               struct pcap_pkthdr *header, uint8_t *packet,
-                               char *ifname) {
+int process_cleaner_middleware(struct middleware_context *context,
+                               const char *ltype, struct pcap_pkthdr *header,
+                               uint8_t *packet, char *ifname) {
   (void)context;
   (void)ltype;
   (void)header;

@@ -22,6 +22,9 @@
 #define MAX_FILTER_SIZE                                                        \
   4094 /* Maximum length of the filter string for libpcap */
 
+#define MAX_MIDDLEWARE_PARAMS_SIZE                                             \
+  4094 /* Maximum length of the middleware params string */
+
 /**
  * @brief The capture configuration structure
  *
@@ -43,6 +46,9 @@ struct capture_conf {
                                             dbs */
   char filter[MAX_FILTER_SIZE]; /**< Specifies the filter expression or pcap lib
                                  */
+  char middleware_params[MAX_MIDDLEWARE_PARAMS_SIZE]; /**< Specifies the
+                                                         middleware params
+                                                         string*/
 };
 
 #endif
