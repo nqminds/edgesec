@@ -61,7 +61,7 @@ struct capture_middleware {
    * @retval 0 on success
    * @retval -1 on failure
    */
-  int (*const process)(struct middleware_context *context, char *ltype,
+  int (*const process)(struct middleware_context *context, const char *ltype,
                        struct pcap_pkthdr *header, uint8_t *packet,
                        char *ifname);
 

@@ -1,15 +1,7 @@
-#define _GNU_SOURCE
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <inttypes.h>
-#include <unistd.h>
 #include <stdbool.h>
+
+#include <stdarg.h>
+#include <stddef.h>
 #include <setjmp.h>
 #include <stdint.h>
 #include <cmocka.h>
@@ -17,11 +9,18 @@
 #include "utils/log.h"
 #include "utils/ifaceu.h"
 
+#ifdef __FreeBSD__
+static const char LOCALHOST_INTERFACE[] = "lo0";
+#else
+static const char LOCALHOST_INTERFACE[] = "lo";
+#endif
+
 static void test_iface_exists(void **state) {
   (void)state; /* unused */
 
   /* Testing iface_exists for lo */
-  bool ret = iface_exists("lo");
+  log_debug("Checking whether interface %s exists", LOCALHOST_INTERFACE);
+  bool ret = iface_exists(LOCALHOST_INTERFACE);
   assert_true(ret);
 
   /* Testing iface_exists for chuppa123 */
