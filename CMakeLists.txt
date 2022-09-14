@@ -65,6 +65,7 @@ option(USE_CAPTURE_SERVICE "Use the capture service" ON)
 option(USE_CLEANER_MIDDLEWARE "Use the cleaner middleware" OFF)
 option(USE_HEADER_MIDDLEWARE "Use the header middleware" OFF)
 option(USE_PCAP_MIDDLEWARE "Use the pcap middleware" OFF)
+option(USE_TAP_MIDDLEWARE "Use the tap middleware" OFF)
 
 cmake_dependent_option(BUILD_UCI_LIB "Build OpenWRT UCI library" ON USE_UCI_SERVICE OFF)
 option(USE_GENERIC_IP_SERVICE "Use generic ip service" OFF)
