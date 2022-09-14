@@ -141,7 +141,14 @@ bool load_interface_list(const char *filename, struct app_config *config) {
     return false;
   }
 
+  // Load the tap interface
+  ret =
+      ini_gets("interfaces", "tapInterface", "", key, INI_BUFFERSIZE, filename);
+  os_strlcpy(config->tap_interface, key, IFNAMSIZ);
+  os_free(key);
+
   // Load the bridge prefix
+  key = os_malloc(INI_BUFFERSIZE);
   ret =
       ini_gets("interfaces", "bridgePrefix", "", key, INI_BUFFERSIZE, filename);
   if (!ret) {
