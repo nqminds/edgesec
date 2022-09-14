@@ -14,14 +14,12 @@
 #include <fcntl.h>
 #include <ctype.h>
 #include <unistd.h>
-#include <pthread.h>
 #include <stdbool.h>
 #include <errno.h>
 
 #include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/minIni.h"
-#include "utils/utarray.h"
 #include "config.h"
 
 #include "supervisor/cmd_processor.h"

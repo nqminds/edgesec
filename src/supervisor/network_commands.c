@@ -113,7 +113,7 @@ int accept_mac_cmd(struct supervisor_context *context, uint8_t *mac_addr,
     return -1;
   }
 
-  os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
+  os_memcpy(conn.mac_addr, mac_addr, ETHER_ADDR_LEN);
   info.allow_connection = true;
   info.vlanid = vlanid;
   os_memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
@@ -156,7 +156,7 @@ int deny_mac_cmd(struct supervisor_context *context, uint8_t *mac_addr) {
   log_debug("DENY_MAC mac=%s", mac_str);
 
   get_mac_mapper(&context->mac_mapper, mac_addr, &info);
-  os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
+  os_memcpy(conn.mac_addr, mac_addr, ETHER_ADDR_LEN);
   info.allow_connection = false;
   os_memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
   if (!save_mac_mapper(context, conn)) {
@@ -206,7 +206,7 @@ int add_nat_cmd(struct supervisor_context *context, uint8_t *mac_addr) {
     return -1;
   }
 
-  os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
+  os_memcpy(conn.mac_addr, mac_addr, ETHER_ADDR_LEN);
   info.nat = true;
   os_memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
 
@@ -240,7 +240,7 @@ int remove_nat_cmd(struct supervisor_context *context, uint8_t *mac_addr) {
     return -1;
   }
 
-  os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
+  os_memcpy(conn.mac_addr, mac_addr, ETHER_ADDR_LEN);
   info.nat = false;
   os_memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
 
@@ -275,7 +275,7 @@ int assign_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr,
   get_mac_mapper(&context->mac_mapper, mac_addr, &info);
   os_memcpy(info.pass, pass, pass_len);
   info.pass_len = pass_len;
-  os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
+  os_memcpy(conn.mac_addr, mac_addr, ETHER_ADDR_LEN);
   os_memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
 
   if (!save_mac_mapper(context, conn)) {
@@ -355,7 +355,7 @@ int add_bridge_mac_cmd(struct supervisor_context *context,
 int add_bridge_ip_cmd(struct supervisor_context *context, char *left_ip_addr,
                       char *right_ip_addr) {
   int ret;
-  uint8_t left_mac_addr[ETH_ALEN], right_mac_addr[ETH_ALEN];
+  uint8_t left_mac_addr[ETHER_ADDR_LEN], right_mac_addr[ETHER_ADDR_LEN];
 
   ret = get_ip_mapper(&context->mac_mapper, left_ip_addr, left_mac_addr);
   if (ret < 0) {
@@ -505,7 +505,7 @@ int clear_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr) {
   get_mac_mapper(&context->mac_mapper, mac_addr, &info);
   os_memset(info.pass, 0, AP_SECRET_LEN);
   info.pass_len = 0;
-  os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
+  os_memcpy(conn.mac_addr, mac_addr, ETHER_ADDR_LEN);
   os_memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
 
   if (!save_mac_mapper(context, conn)) {

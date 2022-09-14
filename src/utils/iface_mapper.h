@@ -11,14 +11,14 @@
 #ifndef IFACE_MAPPER_H_
 #define IFACE_MAPPER_H_
 
-#include <linux/if.h>
+#include <net/if.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include <netinet/in.h>
 #include <net/ethernet.h>
 
-#include "utarray.h"
-#include "uthash.h"
+#include <utarray.h>
+#include <uthash.h>
 #include "allocs.h"
 #include "os.h"
 #include "net.h"
@@ -51,7 +51,7 @@ typedef struct {
   char peer_addr[OS_INET_ADDRSTRLEN]; /**< Interface string peer IP address */
   char brd_addr[OS_INET_ADDRSTRLEN];  /**< Interface string IP broadcast address
                                        */
-  uint8_t mac_addr[ETH_ALEN];         /**< Interface byte MAC address */
+  uint8_t mac_addr[ETHER_ADDR_LEN];   /**< Interface byte MAC address */
 } netif_info_t;
 
 /**

@@ -13,7 +13,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <linux/if.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -24,7 +23,6 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <ifaddrs.h>
-#include <linux/if_link.h>
 
 #include "allocs.h"
 #include "os.h"
@@ -41,8 +39,6 @@
 #elif WITH_IP_GENERIC_SERVICE
 #include "ipgen.h"
 #endif
-
-#include "utarray.h"
 
 static const UT_icd netif_info_icd = {sizeof(netif_info_t), NULL, NULL, NULL};
 
@@ -95,6 +91,8 @@ struct iface_context *iface_init_context(void *params) {
     iface_free_context(ctx);
     return NULL;
   }
+#else
+#error You must enable an iface implementation
 #endif
 
   return ctx;

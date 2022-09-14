@@ -15,12 +15,10 @@
 #include <fcntl.h>
 #include <ctype.h>
 #include <unistd.h>
-#include <pthread.h>
 #include <stdbool.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <linux/if.h>
 #include <libgen.h>
 #include <pthread.h>
 
@@ -29,7 +27,6 @@
 #include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/minIni.h"
-#include "utils/utarray.h"
 #include "utils/iface.h"
 #include "utils/eloop.h"
 #include "dhcp/dhcp_config.h"
@@ -38,24 +35,21 @@
 
 #define OPT_STRING ":c:f:mdvh"
 #define USAGE_STRING "\t%s [-c filename] [-f filename] [-m] [-d] [-h] [-v]\n"
-const char description_string[] = R"==(
-  NquiringMinds EDGESec Network Security Router.
+const char description_string[] =
+    "NquiringMinds EDGESec Network Security Router.\n"
+    "\n"
+    "Creates a secure and paritioned Wifi access point, using vlans\n"
+    "and can analyse network traffic.\n"
 
-  Creates a secure and paritioned Wifi access point, using vlans,
-  and can analyse network traffic.
-
-  Contains multiple services controlled by the tool engine:
-    1. Supervisor: registers network joining and DHCP requests.
-       Exposes a command interface via a UNIX domain socket.
-    2. WiFi Access Point: Manages WiFi AP.
-    3. Subnet: Creates subnets, virtual LANs, and IP ranges.
-    4. DHCP: Assigns IP addresses to connected devices.
-    5. RADIUS: Access control for the WiFi AP using
-       credentials/MAC address.
-    6. State machine: Networking monitoring and management.
-)==";
-
-static __thread char version_buf[10];
+    "Contains multiple services controlled by the tool engine:\n"
+    "  1. Supervisor: registers network joining and DHCP requests.\n"
+    "     Exposes a command interface via a UNIX domain socket.\n"
+    "  2. WiFi Access Point: Manages WiFi AP.\n"
+    "  3. Subnet: Creates subnets, virtual LANs, and IP ranges.\n"
+    "  4. DHCP: Assigns IP addresses to connected devices.\n"
+    "  5. RADIUS: Access control for the WiFi AP using\n"
+    "     credentials/MAC address.\n"
+    "  6. State machine: Networking monitoring and management.\n";
 
 pthread_mutex_t log_lock;
 
@@ -78,23 +72,14 @@ void sighup_handler(int sig, void *ctx) {
   }
 }
 
-char *get_static_version_string(uint8_t major, uint8_t minor, uint8_t patch) {
-  int ret = snprintf(version_buf, 10, "%d.%d.%d", major, minor, patch);
-
-  if (ret < 0) {
-    fprintf(stderr, "snprintf");
-    return NULL;
-  }
-
-  return version_buf;
-}
-
 void show_app_version(void) {
-  fprintf(stdout, "edgesec app version %s\n",
-          get_static_version_string(EDGESEC_VERSION_MAJOR,
-                                    EDGESEC_VERSION_MINOR,
-                                    EDGESEC_VERSION_PATCH));
+  char buf[32];
+
+  snprintf(buf, ARRAY_SIZE(buf), "%d.%d.%d", EDGESEC_VERSION_MAJOR,
+           EDGESEC_VERSION_MINOR, EDGESEC_VERSION_PATCH);
+  fprintf(stdout, "edgesec app version %s\n", buf);
 }
+
 void show_app_help(char *app_name) {
   show_app_version();
   fprintf(stdout, "Usage:\n");

@@ -21,7 +21,6 @@
 #include <libgen.h>
 #include <fcntl.h>
 
-#include "../utils/utarray.h"
 #include "../utils/hashmap.h"
 #include "../utils/log.h"
 #include "../utils/allocs.h"

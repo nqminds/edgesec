@@ -11,11 +11,11 @@
 #ifndef NL_H_
 #define NL_H_
 
-#include <linux/if.h>
+#include <net/if.h>
 #include <netinet/if_ether.h>
 #include "linux/rtnetlink.h"
-
-#include "utarray.h"
+#include <utarray.h>
+#include <stdbool.h>
 
 #ifdef DEBUG_LIBNL
 #define NL_CB_TYPE NL_CB_DEBUG
@@ -37,11 +37,11 @@ struct nl80211_state {
  *
  */
 typedef struct {
-  char ifname[IFNAMSIZ];  /**< Interface string name */
-  uint32_t ifindex;       /**< Interface index */
-  uint64_t wdev;          /**< Physical interface wdev param */
-  uint8_t addr[ETH_ALEN]; /**< Interface byte MAC address */
-  uint32_t wiphy;         /**< Physical interface ID */
+  char ifname[IFNAMSIZ];        /**< Interface string name */
+  uint32_t ifindex;             /**< Interface index */
+  uint64_t wdev;                /**< Physical interface wdev param */
+  uint8_t addr[ETHER_ADDR_LEN]; /**< Interface byte MAC address */
+  uint32_t wiphy;               /**< Physical interface ID */
 } netiw_info_t;
 
 struct iplink_req {
@@ -79,7 +79,7 @@ UT_array *nl_get_interfaces(int if_id);
  * @param type The interface string type (ex. "bridge")
  * @return 0 on success, -1 otherwise
  */
-int nl_new_interface(char *if_name, char *type);
+int nl_new_interface(const char *if_name, const char *type);
 
 /**
  * @brief Set the interface IP
@@ -88,12 +88,12 @@ int nl_new_interface(char *if_name, char *type);
  * @param ifname The interface name string
  * @param ip_addr The IP address string
  * @param brd_addr The broadcast IP address string
- * @param subnet_mask The subnet mask
+ * @param subnet_mask The subnet mask (e.g. `24` for `/24`)
  * @return 0 on success, -1 otherwise
  */
 int nl_set_interface_ip(struct nlctx *context, const char *ifname,
                         const char *ip_addr, const char *brd_addr,
-                        char *subnet_mask);
+                        const char *subnet_mask);
 
 /**
  * @brief Set the interface state
@@ -116,7 +116,7 @@ int nl_set_interface_state(const char *if_name, bool state);
  * @return int 0 on success, -1 on failure
  */
 int nl_create_interface(struct nlctx *context, char *ifname, char *type,
-                        char *ip_addr, char *brd_addr, char *subnet_mask);
+                        char *ip_addr, char *brd_addr, const char *subnet_mask);
 
 /**
  * @brief Resets the interface

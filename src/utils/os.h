@@ -20,9 +20,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdarg.h>
+#include <utarray.h>
 
 #include "hashmap.h"
-#include "utarray.h"
 #include "log.h"
 
 /* Common costant definitions */
@@ -375,8 +375,10 @@ typedef bool (*list_dir_fn)(char *, void *args);
  *
  * @param dirpath The directory path
  * @param fun The callback function
+ *            If this function ever returns `false`, list_dir will return `-1`.
  * @param args The callback function arguments
- * @return int
+ * @retval  0 On success
+ * @retval -1 On error
  */
 int list_dir(char *dirpath, list_dir_fn fun, void *args);
 

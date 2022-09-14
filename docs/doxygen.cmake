@@ -23,6 +23,8 @@ if (DOXYGEN_FOUND)
     set(DOXYGEN_DOT_IMAGE_FORMAT svg)
     set(DOXYGEN_EXTRACT_ALL YES) # document even files missing `@file` command
 
+    set(DOXYGEN_OPTIMIZE_OUTPUT_FOR_C YES) # we only have C-code documentation
+
     # allows for more complitated include diagrams
     set(DOXYGEN_DOT_GRAPH_MAX_NODES 128)
     set(doxygen_input_files

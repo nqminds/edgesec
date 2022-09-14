@@ -4,10 +4,12 @@
 [![Build Debian Packages](https://github.com/nqminds/edgesec/actions/workflows/create-debs.yml/badge.svg)](https://github.com/nqminds/edgesec/actions/workflows/create-debs.yml)
 [![GitHub release (latest SemVer including pre-releases)](https://img.shields.io/github/v/release/nqminds/edgesec?include_prereleases&label=latest&logo=github&sort=semver)](https://github.com/nqminds/nqm-ssh-tunnel/releases)
 [![GitHub license](https://img.shields.io/github/license/nqminds/edgesec)](https://github.com/nqminds/edgesec/blob/main/LICENSE)
+[![Codecov Code Coverage](https://codecov.io/gh/nqminds/edgesec/branch/main/graph/badge.svg)](https://codecov.io/gh/nqminds/edgesec)
 [![Documented with Doxygen](https://img.shields.io/badge/docs-Doxygen-blue.svg?foo&bar)](https://edgesec.info/doxygen/)
 [![GitHub Pages](https://github.com/nqminds/edgesec/actions/workflows/pages.yml/badge.svg)](https://github.com/nqminds/edgesec/actions/workflows/pages.yml)
 ![CMake](https://img.shields.io/badge/CMake-%23008FBA.svg?logo=cmake&logoColor=white)
 ![C11](https://img.shields.io/badge/C11-informational.svg?logo=c)
+[![code style: llvm](https://img.shields.io/badge/code%20style-LLVM-green?logo=llvm&color=2b617a)](https://llvm.org/docs/CodingStandards.html)
 [![OpenWRT package feed](https://img.shields.io/badge/OpenWRT%20Package%20Feed-%23002B49.svg?logo=OpenWrt&logoColor=white)](https://github.com/nqminds/manysecured-openwrt-packages)
 
 edgesec defines a new architecture and toolset for edge based routers addressing

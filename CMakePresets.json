@@ -36,17 +36,41 @@
       }
     },
     {
-      "name": "coverage",
-      "displayName": "Code-Coverage",
-      "description": "Configure for code coverage",
+      "name": "linux/header",
       "inherits": "linux",
+      "displayName": "Linux Header",
+      "description": "Linux header (with header middlewares)",
       "cacheVariables": {
-        "CONFIGURE_COVERAGE": true
+        "USE_CLEANER_MIDDLEWARE": false,
+        "USE_HEADER_MIDDLEWARE": true,
+        "USE_PCAP_MIDDLEWARE": false
+      }
+    },
+    {
+      "name": "recap",
+      "inherits": "default",
+      "displayName": "recap tool",
+      "description": "recap tool",
+      "cacheVariables": {
+        "BUILD_MNL_LIB": false,
+        "BUILD_NETLINK_LIB": false,
+        "USE_NETLINK_SERVICE": false,
+        "USE_UCI_SERVICE": false,
+        "USE_GENERIC_IP_SERVICE": true,
+        "USE_RADIUS_SERVICE": false,
+        "BUILD_HOSTAPD": false,
+        "USE_CRYPTO_SERVICE": false,
+        "BUILD_OPENSSL_LIB": false,
+        "USE_HEADER_MIDDLEWARE": true,
+        "USE_CAPTURE_SERVICE": true,
+        "BUILD_SQLITE_LIB": true,
+        "BUILD_UUID_LIB": true,
+        "BUILD_PCAP_LIB": true
       }
     },
     {
       "name": "linux-with-crypt",
-      "inherits": "default",
+      "inherits": "linux",
       "displayName": "Linux (with crypto service)",
       "description": "Build for Linux using encrypted crypto service",
       "cacheVariables": {
@@ -64,6 +88,12 @@
         "USE_HEADER_MIDDLEWARE": true,
         "USE_PCAP_MIDDLEWARE": true
       }
+    },
+    {
+      "name": "clang",
+      "inherits": "linux",
+      "displayName": "Clang",
+      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/clang.cmake"
     },
     {
       "name": "openwrt",
@@ -156,12 +186,24 @@
       "configurePreset": "linux"
     },
     {
+      "name": "recap",
+      "configurePreset": "recap"
+    },
+    {
+      "name": "linux/header",
+      "configurePreset": "linux/header"
+    },
+    {
       "name": "linux-with-crypt",
       "configurePreset": "linux-with-crypt"
     },
     {
       "name": "linux-with-example-middlewares",
       "configurePreset": "linux-with-example-middlewares"
+    },
+    {
+      "name": "clang",
+      "configurePreset": "clang"
     },
     {
       "name": "openwrt",
@@ -190,14 +232,6 @@
     {
       "name": "openwrt-21.02.1/bcm27xx/bcm2710",
       "configurePreset": "openwrt-21.02.1/bcm27xx/bcm2710"
-    },
-    {
-      "name": "coverage",
-      "configurePreset": "coverage",
-      "targets": [
-        "all",
-        "coverage"
-      ]
     }
   ],
   "testPresets": [
@@ -212,6 +246,26 @@
     {
       "name": "linux-with-example-middlewares",
       "configurePreset": "linux-with-example-middlewares"
+    },
+    {
+      "name": "linux-with-crypt",
+      "configurePreset": "linux-with-crypt"
+    },
+    {
+      "name": "openwrt",
+      "configurePreset": "openwrt",
+      "environment": {
+        "LD_LIBRARY_PATH": "${sourceDir}/build/${presetName}/lib/ubox/lib"
+      }
+    },
+    {
+      "name": "openwrt-with-header",
+      "configurePreset": "openwrt-with-header",
+      "inherits": "openwrt"
+    },
+    {
+      "name": "clang",
+      "configurePreset": "clang"
     }
   ]
 }

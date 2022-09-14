@@ -6,12 +6,11 @@
 #include <fcntl.h>
 #include <ctype.h>
 #include <unistd.h>
-#include <pthread.h>
 #include <stdbool.h>
 #include <errno.h>
-#include <net/if.h>
 #include <libgen.h>
 #include <setjmp.h>
+#include <stdint.h>
 #include <cmocka.h>
 
 #include "utils/log.h"

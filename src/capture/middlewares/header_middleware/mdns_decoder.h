@@ -11,9 +11,9 @@
 #ifndef MDNS_DECODER_H
 #define MDNS_DECODER_H
 
+#include <utarray.h>
 #include "../../../utils/net.h"
 #include "../../../utils/os.h"
-#include "../../../utils/utarray.h"
 
 #include "packet_decoder.h"
 

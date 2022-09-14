@@ -14,18 +14,15 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
-#include <linux/if.h>
-#include <net/if_arp.h>
 #include <netinet/if_ether.h>
 #include <netinet/ip6.h>
 #include <netinet/icmp6.h>
-#include <net/ethernet.h>
+#include <netinet/ip_icmp.h>
 #include <netinet/tcp.h>
 #include <netinet/udp.h>
-#include <arpa/inet.h>
-
 #include <pcap.h>
 
 #include "../../../utils/log.h"
@@ -33,7 +30,6 @@
 #include "../../../utils/os.h"
 #include "../../../utils/net.h"
 #include "../../../utils/hash.h"
-#include "../../../utils/utarray.h"
 
 #include "packet_decoder.h"
 #include "dns_decoder.h"
@@ -90,10 +86,10 @@ bool decode_udp_packet(struct capture_packet *cpac) {
 
   strcpy(cpac->udps.id, cpac->id);
 
-  cpac->udps.source = ntohs(cpac->udph->source);
-  cpac->udps.dest = ntohs(cpac->udph->dest);
-  cpac->udps.len = ntohs(cpac->udph->len);
-  cpac->udps.check_p = ntohs(cpac->udph->check);
+  cpac->udps.source = ntohs(cpac->udph->uh_sport);
+  cpac->udps.dest = ntohs(cpac->udph->uh_dport);
+  cpac->udps.len = ntohs(cpac->udph->uh_ulen);
+  cpac->udps.check_p = ntohs(cpac->udph->uh_sum);
 
   // log_trace("UDP source=%d dest=%d", cpac->udps.source, cpac->udps.dest);
 
@@ -110,35 +106,36 @@ bool decode_tcp_packet(struct capture_packet *cpac) {
 
   strcpy(cpac->tcps.id, cpac->id);
 
-  cpac->tcps.source = ntohs(cpac->tcph->source);
-  cpac->tcps.dest = ntohs(cpac->tcph->dest);
-  cpac->tcps.seq = ntohl(cpac->tcph->seq);
-  cpac->tcps.ack_seq = ntohl(cpac->tcph->ack_seq);
-  cpac->tcps.res1 = ntohs(cpac->tcph->res1);
-  cpac->tcps.doff = ntohs(cpac->tcph->doff);
-  cpac->tcps.fin = ntohs(cpac->tcph->fin);
-  cpac->tcps.syn = ntohs(cpac->tcph->syn);
-  cpac->tcps.rst = ntohs(cpac->tcph->rst);
-  cpac->tcps.psh = ntohs(cpac->tcph->psh);
-  cpac->tcps.ack = ntohs(cpac->tcph->ack);
-  cpac->tcps.urg = ntohs(cpac->tcph->urg);
-  cpac->tcps.window = ntohs(cpac->tcph->window);
-  cpac->tcps.check_p = ntohs(cpac->tcph->check);
-  cpac->tcps.urg_ptr = ntohs(cpac->tcph->urg_ptr);
+  cpac->tcps.source = ntohs(cpac->tcph->th_sport);
+  cpac->tcps.dest = ntohs(cpac->tcph->th_dport);
+  cpac->tcps.seq = ntohl(cpac->tcph->th_seq);
+  cpac->tcps.ack_seq = ntohl(cpac->tcph->th_ack);
+  cpac->tcps.res1 = ntohs(cpac->tcph->th_x2);
+  cpac->tcps.doff = ntohs(cpac->tcph->th_off);
+  cpac->tcps.fin = (cpac->tcph->th_flags & TH_FIN) != 0;
+  cpac->tcps.syn = (cpac->tcph->th_flags & TH_SYN) != 0;
+  cpac->tcps.rst = (cpac->tcph->th_flags & TH_RST) != 0;
+  cpac->tcps.psh = (cpac->tcph->th_flags & TH_PUSH) != 0;
+  cpac->tcps.ack = (cpac->tcph->th_flags & TH_ACK) != 0;
+  cpac->tcps.urg = (cpac->tcph->th_flags & TH_URG) != 0;
+  cpac->tcps.window = ntohs(cpac->tcph->th_win);
+  cpac->tcps.check_p = ntohs(cpac->tcph->th_sum);
+  cpac->tcps.urg_ptr = ntohs(cpac->tcph->th_urp);
 
   // log_trace("TCP source=%d dest=%d", cpac->tcps.source, cpac->tcps.dest);
   return true;
 }
 
 bool decode_icmp4_packet(struct capture_packet *cpac) {
-  cpac->icmp4h = (struct icmphdr *)((void *)cpac->ip4h + sizeof(struct ip));
+  // don't use icmphdr, it's non-standard and not supported on FreeBSD
+  cpac->icmp4h = (struct icmp *)((void *)cpac->ip4h + sizeof(struct ip));
 
   strcpy(cpac->icmp4s.id, cpac->id);
 
-  cpac->icmp4s.type = cpac->icmp4h->type;
-  cpac->icmp4s.code = cpac->icmp4h->code;
-  cpac->icmp4s.checksum = ntohs(cpac->icmp4h->checksum);
-  cpac->icmp4s.gateway = ntohl(cpac->icmp4h->un.gateway);
+  cpac->icmp4s.type = cpac->icmp4h->icmp_type;
+  cpac->icmp4s.code = cpac->icmp4h->icmp_code;
+  cpac->icmp4s.checksum = ntohs(cpac->icmp4h->icmp_cksum);
+  cpac->icmp4s.gateway = ntohl(cpac->icmp4h->icmp_hun.ih_gwaddr.s_addr);
 
   // log_trace("ICMP4 type=%d code=%d", cpac->icmp4s.type, cpac->icmp4s.code);
 
@@ -349,7 +346,7 @@ int decode_packet(const struct pcap_pkthdr *header, const uint8_t *packet,
   return count;
 }
 
-int extract_packets(char *ltype, const struct pcap_pkthdr *header,
+int extract_packets(const char *ltype, const struct pcap_pkthdr *header,
                     const uint8_t *packet, char *interface, char *id,
                     UT_array *tp_array) {
   (void)ltype;

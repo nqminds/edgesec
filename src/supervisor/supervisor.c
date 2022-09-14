@@ -15,6 +15,7 @@
 #include <sys/ioctl.h>
 #include <libgen.h>
 #include <time.h>
+#include <utarray.h>
 
 #include "subscriber_events.h"
 
@@ -22,7 +23,6 @@
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/eloop.h"
-#include "../utils/utarray.h"
 #include "../utils/sockctl.h"
 
 #include "../capture/capture_service.h"
@@ -134,7 +134,7 @@ int save_device_vlan(struct supervisor_context *context, uint8_t mac_addr[],
 
   log_debug("ALLOWING mac=" MACSTR " on vlanid=%d", MAC2STR(mac_addr),
             info->vlanid);
-  os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
+  os_memcpy(conn.mac_addr, mac_addr, ETHER_ADDR_LEN);
   os_memcpy(&conn.info, info, sizeof(struct mac_conn_info));
   if (!save_mac_mapper(context, conn)) {
     log_trace("save_mac_mapper fail");
@@ -241,7 +241,7 @@ void ap_service_callback(struct supervisor_context *context, uint8_t mac_addr[],
             MAC2STR(mac_addr), status);
   if (get_mac_mapper(&context->mac_mapper, mac_addr, &info) > 0) {
     info.status = status;
-    os_memcpy(conn.mac_addr, mac_addr, ETH_ALEN);
+    os_memcpy(conn.mac_addr, mac_addr, ETHER_ADDR_LEN);
     conn.info = info;
 
     if (!save_mac_mapper(context, conn)) {

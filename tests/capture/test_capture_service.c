@@ -10,9 +10,9 @@
 #include <inttypes.h>
 #include <unistd.h>
 #include <setjmp.h>
+#include <stdint.h>
 #include <cmocka.h>
 
-#include "utils/utarray.h"
 #include "utils/log.h"
 #include "utils/eloop.h"
 #include "capture/capture_service.h"
@@ -139,9 +139,10 @@ void capture_config(struct capture_conf *config) {
   config->immediate = true;
   config->buffer_timeout = 100;
   strcpy(config->filter, "port 80");
-  int ret = mkdir("/tmp/edgesec", 0755);
+  const char *capture_db_path = "/tmp/edgesec/test_capture.sqlite";
+  int ret = make_dirs_to_path(capture_db_path, 0755);
   assert_int_equal(ret, 0);
-  strcpy(config->capture_db_path, "/tmp/edgesec/test_capture.sqlite");
+  strcpy(config->capture_db_path, capture_db_path);
 }
 
 static void test_run_capture(void **state) {

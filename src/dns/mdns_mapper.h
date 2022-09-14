@@ -11,11 +11,12 @@
 #ifndef MDNS_MAPPER_H
 #define MDNS_MAPPER_H
 
+#include <utarray.h>
+#include <uthash.h>
+
 #include "mdns_list.h"
 
 #include "../utils/os.h"
-#include "../utils/utarray.h"
-#include "../utils/uthash.h"
 #include "../capture/middlewares/header_middleware/mdns_decoder.h"
 
 /**

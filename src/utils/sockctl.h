@@ -93,7 +93,7 @@ ssize_t read_domain_data_s(int sock, char *data, size_t data_len, char *addr,
  * @param addr The recipient address structure
  * @return ssize_t Size of written data
  */
-ssize_t write_socket_data(int sock, char *data, size_t data_len,
+ssize_t write_socket_data(int sock, const char *data, size_t data_len,
                           struct client_address *addr);
 
 /**
@@ -105,7 +105,8 @@ ssize_t write_socket_data(int sock, char *data, size_t data_len,
  * @param addr Client address (string)
  * @return ssize_t Size of written data
  */
-ssize_t write_domain_data_s(int sock, char *data, size_t data_len, char *addr);
+ssize_t write_domain_data_s(int sock, const char *data, size_t data_len,
+                            char *addr);
 
 /**
  * @brief Write and read a domain data string
@@ -115,5 +116,6 @@ ssize_t write_domain_data_s(int sock, char *data, size_t data_len, char *addr);
  * @param reply The reply string
  * @return int 0 on success, -1 on failure
  */
-int writeread_domain_data_str(char *socket_path, char *write_str, char **reply);
+int writeread_domain_data_str(char *socket_path, const char *write_str,
+                              char **reply);
 #endif

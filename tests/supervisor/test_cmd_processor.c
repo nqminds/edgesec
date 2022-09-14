@@ -10,13 +10,13 @@
 #include <inttypes.h>
 #include <unistd.h>
 #include <setjmp.h>
+#include <stdint.h>
 #include <cmocka.h>
 
 #include "supervisor/cmd_processor.h"
 #include "supervisor/system_commands.h"
 
 #include "utils/hashmap.h"
-#include "utils/utarray.h"
 #include "utils/log.h"
 #include "utils/iptables.h"
 #include "runctl.h"
@@ -259,7 +259,8 @@ char *__wrap_sign_blob_cmd(struct supervisor_context *context, char *keyid,
 }
 #endif
 
-int __wrap_get_mac_mapper(hmap_mac_conn **hmap, uint8_t mac_addr[ETH_ALEN],
+int __wrap_get_mac_mapper(hmap_mac_conn **hmap,
+                          uint8_t mac_addr[ETHER_ADDR_LEN],
                           struct mac_conn_info *info) {
   (void)hmap;
 
@@ -323,7 +324,7 @@ static void test_process_subscribe_events_cmd(void **state) {
 
 static void test_process_accept_mac_cmd(void **state) {
   (void)state; /* unused */
-  uint8_t addr[ETH_ALEN] = {0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
+  uint8_t addr[ETHER_ADDR_LEN] = {0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
   UT_array *cmd_arr;
   struct client_address claddr;
 
@@ -331,7 +332,7 @@ static void test_process_accept_mac_cmd(void **state) {
   assert_int_not_equal(split_string_array("ACCEPT_MAC aa:bb:cc:dd:ee:ff 3",
                                           CMD_DELIMITER, cmd_arr),
                        -1);
-  expect_memory(__wrap_accept_mac_cmd, mac_addr, addr, ETH_ALEN);
+  expect_memory(__wrap_accept_mac_cmd, mac_addr, addr, ETHER_ADDR_LEN);
   expect_value(__wrap_accept_mac_cmd, vlanid, 3);
   assert_int_equal(process_accept_mac_cmd(0, &claddr, NULL, cmd_arr),
                    strlen(OK_REPLY));
@@ -356,7 +357,7 @@ static void test_process_accept_mac_cmd(void **state) {
 
 static void test_process_deny_mac_cmd(void **state) {
   (void)state; /* unused */
-  uint8_t addr[ETH_ALEN] = {0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
+  uint8_t addr[ETHER_ADDR_LEN] = {0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
   UT_array *cmd_arr;
   struct client_address claddr;
 
@@ -364,7 +365,7 @@ static void test_process_deny_mac_cmd(void **state) {
   assert_int_not_equal(
       split_string_array("DENY_MAC aa:bb:cc:dd:ee:ff", CMD_DELIMITER, cmd_arr),
       -1);
-  expect_memory(__wrap_deny_mac_cmd, mac_addr, addr, ETH_ALEN);
+  expect_memory(__wrap_deny_mac_cmd, mac_addr, addr, ETHER_ADDR_LEN);
   assert_int_equal(process_deny_mac_cmd(0, &claddr, NULL, cmd_arr),
                    strlen(OK_REPLY));
   utarray_free(cmd_arr);
@@ -380,7 +381,7 @@ static void test_process_deny_mac_cmd(void **state) {
 
 static void test_process_add_nat_cmd(void **state) {
   (void)state; /* unused */
-  uint8_t addr[ETH_ALEN] = {0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
+  uint8_t addr[ETHER_ADDR_LEN] = {0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
   UT_array *cmd_arr;
   struct client_address claddr;
 
@@ -388,7 +389,7 @@ static void test_process_add_nat_cmd(void **state) {
   assert_int_not_equal(
       split_string_array("ADD_NAT aa:bb:cc:dd:ee:ff", CMD_DELIMITER, cmd_arr),
       -1);
-  expect_memory(__wrap_add_nat_cmd, mac_addr, addr, ETH_ALEN);
+  expect_memory(__wrap_add_nat_cmd, mac_addr, addr, ETHER_ADDR_LEN);
   assert_int_equal(process_add_nat_cmd(0, &claddr, NULL, cmd_arr),
                    strlen(OK_REPLY));
   utarray_free(cmd_arr);
@@ -404,7 +405,7 @@ static void test_process_add_nat_cmd(void **state) {
 
 static void test_process_remove_nat_cmd(void **state) {
   (void)state; /* unused */
-  uint8_t addr[ETH_ALEN] = {0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
+  uint8_t addr[ETHER_ADDR_LEN] = {0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
   UT_array *cmd_arr;
   struct client_address claddr;
 
@@ -412,7 +413,7 @@ static void test_process_remove_nat_cmd(void **state) {
   assert_int_not_equal(split_string_array("REMOVE_NAT aa:bb:cc:dd:ee:ff",
                                           CMD_DELIMITER, cmd_arr),
                        -1);
-  expect_memory(__wrap_remove_nat_cmd, mac_addr, addr, ETH_ALEN);
+  expect_memory(__wrap_remove_nat_cmd, mac_addr, addr, ETHER_ADDR_LEN);
   assert_int_equal(process_remove_nat_cmd(0, &claddr, NULL, cmd_arr),
                    strlen(OK_REPLY));
   utarray_free(cmd_arr);
@@ -429,7 +430,7 @@ static void test_process_remove_nat_cmd(void **state) {
 static void test_process_assign_psk_cmd(void **state) {
   (void)state; /* unused */
 
-  uint8_t addr[ETH_ALEN] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
+  uint8_t addr[ETHER_ADDR_LEN] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
   uint8_t password[5] = {0x31, 0x32, 0x33, 0x34, 0x35};
   UT_array *cmd_arr;
   struct client_address claddr;
@@ -439,7 +440,7 @@ static void test_process_assign_psk_cmd(void **state) {
   assert_int_not_equal(split_string_array("ASSIGN_PSK 11:22:33:44:55:66 12345",
                                           CMD_DELIMITER, cmd_arr),
                        -1);
-  expect_memory(__wrap_assign_psk_cmd, mac_addr, addr, ETH_ALEN);
+  expect_memory(__wrap_assign_psk_cmd, mac_addr, addr, ETHER_ADDR_LEN);
   expect_memory(__wrap_assign_psk_cmd, pass, password, 5);
   expect_value(__wrap_assign_psk_cmd, pass_len, 5);
 
@@ -482,7 +483,7 @@ static void test_process_assign_psk_cmd(void **state) {
 
 static void test_process_get_map_cmd(void **state) {
   (void)state; /* unused */
-  uint8_t addr[ETH_ALEN] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
+  uint8_t addr[ETHER_ADDR_LEN] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
   UT_array *cmd_arr;
   struct client_address claddr;
   struct supervisor_context context;
@@ -493,7 +494,7 @@ static void test_process_get_map_cmd(void **state) {
   assert_int_not_equal(
       split_string_array("GET_MAP 11:22:33:44:55:66", CMD_DELIMITER, cmd_arr),
       -1);
-  expect_memory(__wrap_get_mac_mapper, mac_addr, addr, ETH_ALEN);
+  expect_memory(__wrap_get_mac_mapper, mac_addr, addr, ETHER_ADDR_LEN);
   expect_any(__wrap_get_mac_mapper, info);
 
   int ret = process_get_map_cmd(0, &claddr, &context, cmd_arr);
@@ -514,8 +515,8 @@ static void test_process_get_all_cmd(void **state) {
   (void)state; /* unused */
 
   struct supervisor_context ctx;
-  uint8_t addr1[ETH_ALEN] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
-  uint8_t addr2[ETH_ALEN] = {0x10, 0x20, 0x30, 0x40, 0x50, 0x60};
+  uint8_t addr1[ETHER_ADDR_LEN] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
+  uint8_t addr2[ETHER_ADDR_LEN] = {0x10, 0x20, 0x30, 0x40, 0x50, 0x60};
   struct mac_conn p;
   UT_array *cmd_arr;
   struct client_address claddr;
@@ -535,11 +536,11 @@ static void test_process_get_all_cmd(void **state) {
   assert_int_not_equal(split_string_array("GET_ALL", CMD_DELIMITER, cmd_arr),
                        -1);
   os_memset(&p, 0, sizeof(struct mac_conn));
-  os_memcpy(p.mac_addr, addr1, ETH_ALEN);
+  os_memcpy(p.mac_addr, addr1, ETHER_ADDR_LEN);
   put_mac_mapper(&(ctx.mac_mapper), p);
 
   os_memset(&p, 0, sizeof(struct mac_conn));
-  os_memcpy(p.mac_addr, addr2, ETH_ALEN);
+  os_memcpy(p.mac_addr, addr2, ETHER_ADDR_LEN);
   put_mac_mapper(&(ctx.mac_mapper), p);
 
   int ret = process_get_all_cmd(0, &claddr, &ctx, cmd_arr);
@@ -552,7 +553,7 @@ static void test_process_get_all_cmd(void **state) {
 static void test_process_set_ip_cmd(void **state) {
   (void)state; /* unused */
 
-  uint8_t addr[ETH_ALEN] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
+  uint8_t addr[ETHER_ADDR_LEN] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
   char *ip = "10.0.1.23";
   UT_array *cmd_arr;
   struct client_address claddr;
@@ -562,7 +563,7 @@ static void test_process_set_ip_cmd(void **state) {
       split_string_array("SET_IP add 11:22:33:44:55:66 10.0.1.23",
                          CMD_DELIMITER, cmd_arr),
       -1);
-  expect_memory(__wrap_set_ip_cmd, mac_addr, addr, ETH_ALEN);
+  expect_memory(__wrap_set_ip_cmd, mac_addr, addr, ETHER_ADDR_LEN);
   expect_string(__wrap_set_ip_cmd, ip_addr, ip);
   expect_value(__wrap_set_ip_cmd, ip_type, DHCP_IP_NEW);
   assert_int_equal(process_set_ip_cmd(0, &claddr, NULL, cmd_arr),
@@ -574,7 +575,7 @@ static void test_process_set_ip_cmd(void **state) {
       split_string_array("SET_IP old 11:22:33:44:55:66 10.0.1.23",
                          CMD_DELIMITER, cmd_arr),
       -1);
-  expect_memory(__wrap_set_ip_cmd, mac_addr, addr, ETH_ALEN);
+  expect_memory(__wrap_set_ip_cmd, mac_addr, addr, ETHER_ADDR_LEN);
   expect_string(__wrap_set_ip_cmd, ip_addr, ip);
   expect_value(__wrap_set_ip_cmd, ip_type, DHCP_IP_OLD);
   assert_int_equal(process_set_ip_cmd(0, &claddr, NULL, cmd_arr),
@@ -586,7 +587,7 @@ static void test_process_set_ip_cmd(void **state) {
       split_string_array("SET_IP del 11:22:33:44:55:66 10.0.1.23",
                          CMD_DELIMITER, cmd_arr),
       -1);
-  expect_memory(__wrap_set_ip_cmd, mac_addr, addr, ETH_ALEN);
+  expect_memory(__wrap_set_ip_cmd, mac_addr, addr, ETHER_ADDR_LEN);
   expect_string(__wrap_set_ip_cmd, ip_addr, ip);
   expect_value(__wrap_set_ip_cmd, ip_type, DHCP_IP_DEL);
   assert_int_equal(process_set_ip_cmd(0, &claddr, NULL, cmd_arr),
@@ -623,8 +624,8 @@ static void test_process_set_ip_cmd(void **state) {
 static void test_process_add_bridge_cmd(void **state) {
   (void)state; /* unused */
 
-  uint8_t addr1[ETH_ALEN] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
-  uint8_t addr2[ETH_ALEN] = {0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
+  uint8_t addr1[ETHER_ADDR_LEN] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
+  uint8_t addr2[ETHER_ADDR_LEN] = {0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
   UT_array *cmd_arr;
   struct client_address claddr;
 
@@ -633,8 +634,10 @@ static void test_process_add_bridge_cmd(void **state) {
       split_string_array("ADD_BRIDGE 11:22:33:44:55:66 aa:bb:cc:dd:ee:ff",
                          CMD_DELIMITER, cmd_arr),
       -1);
-  expect_memory(__wrap_add_bridge_mac_cmd, left_mac_addr, addr1, ETH_ALEN);
-  expect_memory(__wrap_add_bridge_mac_cmd, right_mac_addr, addr2, ETH_ALEN);
+  expect_memory(__wrap_add_bridge_mac_cmd, left_mac_addr, addr1,
+                ETHER_ADDR_LEN);
+  expect_memory(__wrap_add_bridge_mac_cmd, right_mac_addr, addr2,
+                ETHER_ADDR_LEN);
   assert_int_equal(process_add_bridge_cmd(0, &claddr, NULL, cmd_arr),
                    strlen(OK_REPLY));
   utarray_free(cmd_arr);
@@ -712,8 +715,8 @@ static void test_process_add_bridge_cmd(void **state) {
 static void test_process_remove_bridge_cmd(void **state) {
   (void)state; /* unused */
 
-  uint8_t addr1[ETH_ALEN] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
-  uint8_t addr2[ETH_ALEN] = {0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
+  uint8_t addr1[ETHER_ADDR_LEN] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
+  uint8_t addr2[ETHER_ADDR_LEN] = {0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
   UT_array *cmd_arr;
   struct client_address claddr;
 
@@ -722,8 +725,9 @@ static void test_process_remove_bridge_cmd(void **state) {
       split_string_array("REMOVE_BRIDGE 11:22:33:44:55:66 aa:bb:cc:dd:ee:ff",
                          CMD_DELIMITER, cmd_arr),
       -1);
-  expect_memory(__wrap_remove_bridge_cmd, left_mac_addr, addr1, ETH_ALEN);
-  expect_memory(__wrap_remove_bridge_cmd, right_mac_addr, addr2, ETH_ALEN);
+  expect_memory(__wrap_remove_bridge_cmd, left_mac_addr, addr1, ETHER_ADDR_LEN);
+  expect_memory(__wrap_remove_bridge_cmd, right_mac_addr, addr2,
+                ETHER_ADDR_LEN);
   assert_int_equal(process_remove_bridge_cmd(0, &claddr, NULL, cmd_arr),
                    strlen(OK_REPLY));
   utarray_free(cmd_arr);
@@ -757,7 +761,7 @@ static void test_process_remove_bridge_cmd(void **state) {
 static void test_process_clear_bridges_cmd(void **state) {
   (void)state; /* unused */
 
-  uint8_t addr1[ETH_ALEN] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
+  uint8_t addr1[ETHER_ADDR_LEN] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
   UT_array *cmd_arr;
   struct client_address claddr;
 
@@ -765,7 +769,7 @@ static void test_process_clear_bridges_cmd(void **state) {
   assert_int_not_equal(split_string_array("CLEAR_BRIDGES 11:22:33:44:55:66",
                                           CMD_DELIMITER, cmd_arr),
                        -1);
-  expect_memory(__wrap_clear_bridges_cmd, mac_addr, addr1, ETH_ALEN);
+  expect_memory(__wrap_clear_bridges_cmd, mac_addr, addr1, ETHER_ADDR_LEN);
   assert_int_equal(process_clear_bridges_cmd(0, &claddr, NULL, cmd_arr),
                    strlen(OK_REPLY));
   utarray_free(cmd_arr);
@@ -789,7 +793,7 @@ static void test_process_clear_bridges_cmd(void **state) {
 static void test_process_register_ticket_cmd(void **state) {
   (void)state; /* unused */
 
-  uint8_t addr[ETH_ALEN] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
+  uint8_t addr[ETHER_ADDR_LEN] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
   UT_array *cmd_arr;
   struct client_address claddr;
 
@@ -798,7 +802,7 @@ static void test_process_register_ticket_cmd(void **state) {
       split_string_array("REGISTER_TICKET 11:22:33:44:55:66 test 23",
                          CMD_DELIMITER, cmd_arr),
       -1);
-  expect_memory(__wrap_register_ticket_cmd, mac_addr, addr, ETH_ALEN);
+  expect_memory(__wrap_register_ticket_cmd, mac_addr, addr, ETHER_ADDR_LEN);
   expect_string(__wrap_register_ticket_cmd, label, "test");
   expect_value(__wrap_register_ticket_cmd, vlanid, 23);
   assert_int_equal(process_register_ticket_cmd(0, &claddr, NULL, cmd_arr),
@@ -836,7 +840,7 @@ static void test_process_register_ticket_cmd(void **state) {
 static void test_process_clear_psk_cmd(void **state) {
   (void)state; /* unused */
 
-  uint8_t addr[ETH_ALEN] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
+  uint8_t addr[ETHER_ADDR_LEN] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
   UT_array *cmd_arr;
   struct client_address claddr;
 
@@ -844,7 +848,7 @@ static void test_process_clear_psk_cmd(void **state) {
   assert_int_not_equal(
       split_string_array("CLEAR_PSK 11:22:33:44:55:66", CMD_DELIMITER, cmd_arr),
       -1);
-  expect_memory(__wrap_clear_psk_cmd, mac_addr, addr, ETH_ALEN);
+  expect_memory(__wrap_clear_psk_cmd, mac_addr, addr, ETHER_ADDR_LEN);
   assert_int_equal(process_clear_psk_cmd(0, &claddr, NULL, cmd_arr),
                    strlen(OK_REPLY));
   utarray_free(cmd_arr);

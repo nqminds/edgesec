@@ -15,7 +15,6 @@
 
 #include "../utils/allocs.h"
 #include "../utils/os.h"
-#include "../utils/utarray.h"
 
 /**
  * @brief Run the DHCP server

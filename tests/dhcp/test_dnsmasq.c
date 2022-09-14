@@ -6,12 +6,11 @@
 #include <fcntl.h>
 #include <ctype.h>
 #include <unistd.h>
-#include <pthread.h>
 #include <stdbool.h>
 #include <errno.h>
-#include <net/if.h>
 #include <libgen.h>
 #include <setjmp.h>
+#include <stdint.h>
 #include <cmocka.h>
 
 #include "utils/log.h"
@@ -29,6 +28,8 @@ static char *test_dhcp_conf_path = "/tmp/dnsmasq-test.conf";
 static char *test_dhcp_script_path = "/tmp/dnsmasq_exec-test.sh";
 static char *test_dhcp_leasefile_path = "/tmp/test_dnsmasq.leases";
 static char *test_supervisor_control_path = "/tmp/edgesec-control-server";
+
+#ifndef WITH_UCI_SERVICE
 static char *test_dhcp_conf_wifi_if =
     "no-resolv\n"
     "server=8.8.4.4\n"
@@ -50,6 +51,7 @@ static char *test_dhcp_conf_prefix_if =
     "dhcp-range=eth_if1,10.0.1.2,10.0.1.254,255.255.255.0,24h\n"
     "dhcp-range=eth_if2,10.0.2.2,10.0.2.254,255.255.255.0,24h\n"
     "dhcp-range=eth_if3,10.0.3.2,10.0.3.254,255.255.255.0,24h\n";
+#endif
 
 // why aren't we using amazing C++11 which has the R"(...) string literal??? 😭
 static char *test_dhcp_script_content =
@@ -100,6 +102,61 @@ int __wrap_run_process(char *argv[], pid_t *child_pid) {
   (void)child_pid;
 
   return 0;
+}
+
+static void test_define_dhcp_interface_name(void **state) {
+  (void)state; /* unused */
+
+  {
+    const struct dhcp_conf dconf = {
+        .bridge_prefix = "hello",
+        .interface_prefix = "hello",
+    };
+    const int vlanid = 512;
+    char ifname[IFNAMSIZ] = {0};
+    assert_return_code(define_dhcp_interface_name(&dconf, vlanid, ifname), 0);
+    assert_string_equal(ifname, "hello512");
+
+    // should return -1 if inputs are NULL
+    assert_int_equal(define_dhcp_interface_name(NULL, vlanid, ifname), -1);
+    assert_int_equal(define_dhcp_interface_name(&dconf, vlanid, NULL), -1);
+  }
+  { // should truncate prefix to just 11 chars
+    const struct dhcp_conf dconf = {
+        .bridge_prefix = "abcdefghijklmno",
+        .interface_prefix = "abcdefghijklmno",
+    };
+    const int vlanid = 512;
+    char ifname[IFNAMSIZ] = {0};
+    assert_return_code(define_dhcp_interface_name(&dconf, vlanid, ifname), 0);
+
+    assert_string_equal(ifname, "abcdefghijk512");
+  }
+
+#ifndef WITH_UCI_SERVICE
+  {
+    const struct dhcp_conf dconf = {
+        .wifi_interface = "hello",
+    };
+    int vlanid = 512;
+    char ifname[IFNAMSIZ] = {0};
+    assert_return_code(define_dhcp_interface_name(&dconf, vlanid, ifname), 0);
+    assert_string_equal(ifname, "hello.512");
+
+    vlanid = 0;
+    assert_return_code(define_dhcp_interface_name(&dconf, vlanid, ifname), 0);
+    assert_string_equal(ifname, "hello");
+  }
+  { // should truncate wifi interface to just 10 chars
+    const struct dhcp_conf dconf = {
+        .wifi_interface = "abcdefghijklmno",
+    };
+    int vlanid = 512;
+    char ifname[IFNAMSIZ] = {0};
+    assert_return_code(define_dhcp_interface_name(&dconf, vlanid, ifname), 0);
+    assert_string_equal(ifname, "abcdefghij.512");
+  }
+#endif
 }
 
 bool get_config_dhcpinfo(char *info, config_dhcpinfo_t *el) {
@@ -162,11 +219,14 @@ err:
 
 static void test_generate_dnsmasq_conf(void **state) {
   (void)state; /* unused */
-  struct dhcp_conf dconf;
-  UT_array *server_arr;
-  config_dhcpinfo_t el;
-
+  struct dhcp_conf dconf = {
+      // must manually set bridge_prefix, otherwise we'll be working with
+      // undefined memory
+      .bridge_prefix = "",
+  };
   utarray_new(dconf.config_dhcpinfo_array, &config_dhcpinfo_icd);
+
+  UT_array *server_arr;
   utarray_new(server_arr, &ut_str_icd);
 
   strcpy(dconf.dhcp_conf_path, test_dhcp_conf_path);
@@ -177,6 +237,7 @@ static void test_generate_dnsmasq_conf(void **state) {
   strncpy(dconf.wifi_interface, wifi_interface, WIFI_INTERFACE_STR_LEN);
   assert_null(dconf.wifi_interface[WIFI_INTERFACE_STR_LEN - 1]);
 
+  config_dhcpinfo_t el;
   assert_true(
       get_config_dhcpinfo("0,10.0.0.2,10.0.0.254,255.255.255.0,24h", &el));
   utarray_push_back(dconf.config_dhcpinfo_array, &el);
@@ -192,16 +253,21 @@ static void test_generate_dnsmasq_conf(void **state) {
 
   split_string_array(dns_server, ',', server_arr);
 
-  error_t ret = generate_dnsmasq_conf(&dconf, server_arr);
+  int ret = generate_dnsmasq_conf(&dconf, server_arr);
   assert_true(ret == 0);
 
-  char *fdata = NULL;
-  assert_int_equal(read_file_string(test_dhcp_conf_path, &fdata), 0);
+#ifdef WITH_UCI_SERVICE
+  // todo: add some tests for dnsmasq UCI conf
+#else
+  {
+    char *fdata = NULL;
+    assert_int_equal(read_file_string(test_dhcp_conf_path, &fdata), 0);
 
-  int cmp = strcmp(fdata, test_dhcp_conf_wifi_if);
-  assert_int_equal(cmp, 0);
+    assert_string_equal(fdata, test_dhcp_conf_wifi_if);
 
-  os_free(fdata);
+    os_free(fdata);
+  }
+#endif
 
   const size_t INTERFACE_PREFIX_STR_LEN = ARRAY_SIZE(dconf.interface_prefix);
 
@@ -211,13 +277,18 @@ static void test_generate_dnsmasq_conf(void **state) {
   ret = generate_dnsmasq_conf(&dconf, server_arr);
   assert_true(ret == 0);
 
-  assert_int_equal(read_file_string(test_dhcp_conf_path, &fdata), 0);
+#ifdef WITH_UCI_SERVICE
+  // todo: add some tests for dnsmasq UCI conf
+#else
+  {
+    char *fdata = NULL;
+    assert_int_equal(read_file_string(test_dhcp_conf_path, &fdata), 0);
 
-  printf("%s", fdata);
-  cmp = strcmp(fdata, test_dhcp_conf_prefix_if);
-  assert_int_equal(cmp, 0);
+    assert_string_equal(fdata, test_dhcp_conf_prefix_if);
 
-  os_free(fdata);
+    os_free(fdata);
+  }
+#endif
 
   utarray_free(server_arr);
   utarray_free(dconf.config_dhcpinfo_array);
@@ -226,8 +297,8 @@ static void test_generate_dnsmasq_conf(void **state) {
 static void test_generate_dnsmasq_script(void **state) {
   (void)state; /* unused */
 
-  error_t ret = generate_dnsmasq_script(test_dhcp_script_path,
-                                        test_supervisor_control_path);
+  int ret = generate_dnsmasq_script(test_dhcp_script_path,
+                                    test_supervisor_control_path);
   assert_true(ret == 0);
 
   FILE *fp = fopen(test_dhcp_script_path, "r");
@@ -293,7 +364,11 @@ static void test_clear_dhcp_lease_entry(void **state) {
 static void test_run_dhcp_process(void **state) {
   (void)state;
 
+#ifdef WITH_UCI_SERVICE
+  // todo: add some tests for dnsmasq UCI conf
+#else
   expect_string(__wrap_kill_process, proc_name, "dnsmasq");
+#endif
   expect_string(__wrap_is_proc_running, name, "dnsmasq");
   char *ret = run_dhcp_process("/tmp/sbin/dnsmasq", "/tmp/dnsmasq.conf");
   assert_non_null(ret);
@@ -310,8 +385,11 @@ static void test_kill_dhcp_process(void **state) {
 
 static void test_signal_dhcp_process(void **state) {
   (void)state;
-
+#ifdef WITH_UCI_SERVICE
+  // signal_dhcp_process does nothing in UCI mode
+#else
   expect_string(__wrap_signal_process, proc_name, "dnsmasq");
+#endif
   assert_int_equal(signal_dhcp_process("/tmp/sbin/dnsmasq"), 0);
 }
 
@@ -321,6 +399,7 @@ int main(int argc, char *argv[]) {
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
+      cmocka_unit_test(test_define_dhcp_interface_name),
       cmocka_unit_test(test_generate_dnsmasq_conf),
       cmocka_unit_test(test_generate_dnsmasq_script),
       cmocka_unit_test(test_run_dhcp_process),

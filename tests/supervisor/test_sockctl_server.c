@@ -10,6 +10,7 @@
 #include <inttypes.h>
 #include <unistd.h>
 #include <setjmp.h>
+#include <stdint.h>
 #include <cmocka.h>
 #include <sys/un.h>
 #include <sys/socket.h>
@@ -18,7 +19,6 @@
 
 #include "utils/sockctl.h"
 #include "utils/hashmap.h"
-#include "utils/utarray.h"
 #include "utils/log.h"
 #include "utils/allocs.h"
 #include "utils/os.h"

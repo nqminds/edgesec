@@ -18,8 +18,11 @@ jobs:
           - linux # Normal linux tests
           - linux-with-crypt # Tests whether crypto service works
           - linux-with-example-middlewares # tests whether example capture middlewares work
+          - clang
           - openwrt-with-header
           - openwrt-21.02.1/bcm27xx/bcm2710 # Raspberry Pi 3 for OpenWRT 21.02.1
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -28,23 +31,55 @@ jobs:
         shell: bash # we're using bash arrays here
         run: |
           sudo apt-get update
-          sudo apt-get install devscripts equivs -y # install mk-build-depends
+          sudo apt-get install devscripts equivs lcov -y # install mk-build-depends
           sudo mk-build-deps --install --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes'  debian/control
+      - name: Install llvm (if clang)
+        if: matrix.cmake-preset == 'clang'
+        run: |
+          sudo apt-get install llvm -y
+          llvm-cov gcov --version
+          clang --version
+          # Very annoyingly, the Ubuntu-20.04 image uses Clang 11 by default
+          # however, the default version of LLVM that is installed is v10,
+          # which is too old for Clang 11 compatibility
+          echo 'set(CMAKE_C_COMPILER clang-10)
+          set(CMAKE_CXX_COMPILER clang++-10)' > CMakeModules/CMakeToolchains/clang.cmake
       - name: Configure
         run: |
-          cmake -B build/ --preset "${{ matrix.cmake-preset }}"
+          cmake --preset "${{ matrix.cmake-preset }}" -DCONFIGURE_COVERAGE=BOOL:ON
       - name: Build
         run: |
-          # can't use --preset "${{ matrix.cmake-preset }}" since we want to specify a custom build dir
-          cmake --build build/ --parallel "$(($(nproc) + 1))"
-      - name: Test
+          cmake --build --preset "${{ matrix.cmake-preset }}" --parallel "$(($(nproc) + 1))"
+      - id: test
+        name: Test
         run: |
           if ctest --list-presets | grep -s "${{ matrix.cmake-preset }}"; then
-            ctest --test-dir build/ --preset "${{ matrix.cmake-preset }}"
+            ctest --preset "${{ matrix.cmake-preset }}" --output-on-failure
+            echo "::set-output name=tested::true"
+          else
+            echo "::set-output name=tested::false"
           fi
+      - name: Code Coverage
+        # code coverage only works if ctest works
+        if: steps.test.outputs.tested == 'true'
+        run: |
+          # Should prevent `Failed to execute statement: disk I/O error` errors
+          sleep 5
+          cmake --build --preset "${{ matrix.cmake-preset }}" --parallel "$(($(nproc) + 1))" --target coverage
+          mv "build/${{ matrix.cmake-preset }}/coverage.info" "build/${{ matrix.cmake-preset }}/coverage-${{ matrix.cmake-preset }}.info"
+        env:
+          # --target coverage runs CTest internally, but it doesn't load our
+          # custom LD_LIBRARY_PATH from our ctest's cmake-presets file
+          LD_LIBRARY_PATH: ${{ github.workspace }}/build/${{ matrix.cmake-preset }}/lib/ubox/lib
+      - name: Archive code coverage results
+        if: steps.test.outputs.tested == 'true'
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-coverage-lcov
+          path: build/${{ matrix.cmake-preset }}/coverage-${{ matrix.cmake-preset }}.info
       - name: Install to ${{ runner.temp }}/edgesec-${{ matrix.cmake-preset }}/
         run: |
-          cmake --install build/ --prefix "${{ runner.temp }}/edgesec-${{ matrix.cmake-preset }}"
+          cmake --install "build/${{ matrix.cmake-preset }}" --prefix "${{ runner.temp }}/edgesec-${{ matrix.cmake-preset }}"
       - name: Escape invalid chars in artifact name
         id: escape_preset
         run: |
@@ -63,29 +98,37 @@ jobs:
             ${{ runner.temp }}/edgesec-${{ matrix.cmake-preset }}/
   coverage:
     name: Code Coverage
-    needs:
-      - build
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      # we need to be able to write to a PR to make a comment
-      pull-requests: write
+      actions: read # to download artifact
+    needs:
+      - build
     steps:
       - name: Checkout code
+        # not sure if needed, maybe the codecov action uses it
         uses: actions/checkout@v3
-      - name: Install Dependencies
-        shell: bash # we're using bash arrays here
+      - name: Install Coverage Tools
         run: |
-          sudo apt-get update
-          # we need lcov to generate coverage reports
-          sudo apt-get install devscripts equivs lcov -y # install mk-build-depends
-          sudo mk-build-deps --install --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes'  debian/control
-      - run: cmake --preset coverage
-      - run: cmake --build --preset coverage
-      - name: Upload coverage to Codecov
+          sudo apt-get install lcov -y || ( sudo apt-get update && sudo apt-get install lcov -y )
+      - name: Download Coverage Results
+        uses: actions/download-artifact@v3
+        id: download
+        with:
+          name: 'code-coverage-lcov'
+      - name: 'Echo download path'
+        run: echo ${{steps.download.outputs.download-path}}
+      - name: 'Combine Coverage Results'
+        run: |
+          inputs=('lcov' '--output-file' 'coverage.info' '--rc' 'lcov_branch_coverage=1')
+          for input in coverage-*.info; do
+            inputs+=('--add-tracefile' "$input")
+          done
+          "${inputs[@]}"
+      - name: Upload combined coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
-          files: build/coverage/coverage.info
+          files: coverage.info
           fail_ci_if_error: true
 
   build-deb:
@@ -99,19 +142,28 @@ jobs:
           # focal and jammy are incompatible due to ABI incompatible libssl versions
           - focal # uses libssl1.1
           - jammy # uses libssl3
+    permissions:
+      contents: write # needed for publishing release artifact
     env:
       OTHER_MIRROR:
         deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${{ matrix.distribution }} main universe | deb [arch=amd64] http://archive.ubuntu.com/ubuntu ${{ matrix.distribution }} main universe
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Create pbuilder cache dir
+        # The actions/cache action does not have permissions to create the pbuilder
+        # cache folder if it doesn't exist
+        run: sudo mkdir -m777 -p /var/cache/pbuilder/
       - name: Cache pbuilder base
         id: cache-pbuilder-base
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             /var/cache/pbuilder/base.tgz
           key: ${{ runner.os }}-${{ matrix.distribution }}-${{ matrix.architecture }}
+        # Sometimes the cache step just freezes forever
+        # so put a limit on it so that we can restart it earlier on failure
+        timeout-minutes: 10
       - name: Install dependencies
         run: |
           sudo apt-get update && sudo apt-get install pbuilder debhelper -y

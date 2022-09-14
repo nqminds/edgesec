@@ -23,7 +23,7 @@
 #include <inttypes.h>
 #include <pthread.h>
 
-#include "../utils/uthash.h"
+#include <uthash.h>
 #include "../utils/ifaceu.h"
 #include "../utils/net.h"
 #include "../utils/log.h"

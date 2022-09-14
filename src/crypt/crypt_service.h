@@ -12,13 +12,12 @@
 #define CRYPT_SERVICE_H
 
 #include <sqlite3.h>
+#include <utarray.h>
 
 #include "crypt_config.h"
 
 #include "../utils/allocs.h"
 #include "../utils/os.h"
-#include "../utils/utarray.h"
-
 #define MAIN_CRYPT_KEY_ID "main"
 
 /**

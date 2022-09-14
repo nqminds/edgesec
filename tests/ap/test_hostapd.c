@@ -7,11 +7,11 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stddef.h>
-#include <stdint.h>
 #include <string.h>
 #include <inttypes.h>
 #include <unistd.h>
 #include <setjmp.h>
+#include <stdint.h>
 #include <cmocka.h>
 
 #include "utils/log.h"
@@ -20,6 +20,9 @@
 #include "utils/iface.h"
 #include "ap/ap_config.h"
 #include "ap/hostapd.h"
+
+// seems to be hard coded in hostapd.c
+#define WITH_HOSTAPD_UCI
 
 static char *test_hostapd_vlan_file = "/tmp/hostapd-test.vlan";
 static char *test_hostapd_conf_file = "/tmp/hostapd-test.conf";
@@ -98,6 +101,7 @@ static void test_generate_hostapd_conf(void **state) {
   struct apconf hconf;
   strcpy(hconf.ap_file_path, test_hostapd_conf_file);
   strcpy(hconf.interface, "wlan0");
+  strcpy(hconf.device, "wl0");
   strcpy(hconf.ssid, "IOTH_IMX7");
   strcpy(hconf.wpa_passphrase, "1234554321");
   strcpy(hconf.driver, "nl80211");
@@ -129,6 +133,10 @@ static void test_generate_hostapd_conf(void **state) {
   int ret = generate_hostapd_conf(&hconf, &rconf);
   assert_int_equal(ret, 0);
 
+#if (defined(WITH_UCI_SERVICE) && defined(WITH_HOSTAPD_UCI))
+  // no tests yet written
+#else
+  log_debug("Opening hostapd_conf_file at %s", test_hostapd_conf_file);
   FILE *fp = fopen(test_hostapd_conf_file, "r");
   assert_non_null(fp);
 
@@ -148,6 +156,7 @@ static void test_generate_hostapd_conf(void **state) {
 
   fclose(fp);
   free(buffer);
+#endif
 }
 
 static void test_generate_vlan_conf(void **state) {
@@ -190,7 +199,11 @@ static void test_run_ap_process(void **state) {
   strcpy(hconf.ap_file_path, test_hostapd_conf_file);
   strcpy(hconf.ap_log_path, test_ap_log_path);
 
+#if (defined(WITH_UCI_SERVICE) && defined(WITH_HOSTAPD_UCI))
+  // using hostapd uci doesn't kill hostapd
+#else
   expect_any(__wrap_kill_process, proc_name);
+#endif
   int ret = run_ap_process(&hconf);
   assert_int_equal(ret, 0);
 
@@ -209,7 +222,11 @@ static void test_kill_ap_process(void **state) {
   strcpy(hconf.ap_file_path, test_hostapd_conf_file);
   strcpy(hconf.ap_log_path, test_ap_log_path);
 
+#if (defined(WITH_UCI_SERVICE) && defined(WITH_HOSTAPD_UCI))
+  // using hostapd uci doesn't kill hostapd
+#else
   expect_any(__wrap_kill_process, proc_name);
+#endif
   int ret = run_ap_process(&hconf);
   assert_int_equal(ret, 0);
 
@@ -228,7 +245,11 @@ static void test_signal_ap_process(void **state) {
   strcpy(hconf.ap_file_path, test_hostapd_conf_file);
   strcpy(hconf.ap_log_path, test_ap_log_path);
 
+#if (defined(WITH_UCI_SERVICE) && defined(WITH_HOSTAPD_UCI))
+  // using hostapd uci doesn't kill hostapd
+#else
   expect_any(__wrap_kill_process, proc_name);
+#endif
   int ret = run_ap_process(&hconf);
   assert_int_equal(ret, 0);
 

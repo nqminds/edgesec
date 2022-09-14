@@ -11,14 +11,13 @@
 #ifndef IFACE_H_
 #define IFACE_H_
 
-#include <linux/if.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include <netinet/in.h>
 #include <net/ethernet.h>
 
-#include "utarray.h"
-#include "uthash.h"
+#include <utarray.h>
+#include <uthash.h>
 #include "allocs.h"
 #include "os.h"
 

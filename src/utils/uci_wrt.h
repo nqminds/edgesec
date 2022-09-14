@@ -11,9 +11,9 @@
 #ifndef UCI_H_
 #define UCI_H_
 
-#include "uci.h"
+#include <uci.h>
+#include <utarray.h>
 
-#include "utarray.h"
 #include "os.h"
 #include "squeue.h"
 

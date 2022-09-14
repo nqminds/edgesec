@@ -16,7 +16,7 @@
 
 #include "mac_mapper.h"
 
-#include "../utils/utarray.h"
+#include <utarray.h>
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "../utils/squeue.h"

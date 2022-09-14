@@ -12,14 +12,13 @@
 #include "utils/os.h"
 #include "utils/log.h"
 #include "utils/list.h"
-#include "utils/utarray.h"
 
 #include "bridge_list.h"
 
 static const UT_icd tuple_list_icd = {sizeof(struct bridge_mac_tuple), NULL,
                                       NULL, NULL};
-static const UT_icd mac_list_icd = {sizeof(uint8_t) * ETH_ALEN, NULL, NULL,
-                                    NULL};
+static const UT_icd mac_list_icd = {sizeof(uint8_t) * ETHER_ADDR_LEN, NULL,
+                                    NULL, NULL};
 
 struct bridge_mac_list *init_bridge_list(void) {
   struct bridge_mac_list *e;
@@ -59,8 +58,8 @@ void free_bridge_list(struct bridge_mac_list *ml) {
 
 bool compare_edge(struct bridge_mac_list *e, const uint8_t *mac_addr_left,
                   const uint8_t *mac_addr_right) {
-  if (memcmp(e->mac_tuple.src_addr, mac_addr_left, ETH_ALEN) == 0 &&
-      memcmp(e->mac_tuple.dst_addr, mac_addr_right, ETH_ALEN) == 0) {
+  if (memcmp(e->mac_tuple.src_addr, mac_addr_left, ETHER_ADDR_LEN) == 0 &&
+      memcmp(e->mac_tuple.dst_addr, mac_addr_right, ETHER_ADDR_LEN) == 0) {
     return true;
   }
 
@@ -133,7 +132,7 @@ int add_bridge_mac(struct bridge_mac_list *ml, const uint8_t *mac_addr_left,
     return -1;
   }
 
-  if (memcmp(mac_addr_left, mac_addr_right, ETH_ALEN) == 0) {
+  if (memcmp(mac_addr_left, mac_addr_right, ETHER_ADDR_LEN) == 0) {
     log_trace("Similar MAC addresses as params");
     return -1;
   }
@@ -156,12 +155,12 @@ int add_bridge_mac(struct bridge_mac_list *ml, const uint8_t *mac_addr_left,
     return -1;
   }
 
-  os_memcpy(src_el->mac_tuple.src_addr, mac_addr_left, ETH_ALEN);
-  os_memcpy(src_el->mac_tuple.dst_addr, mac_addr_right, ETH_ALEN);
+  os_memcpy(src_el->mac_tuple.src_addr, mac_addr_left, ETHER_ADDR_LEN);
+  os_memcpy(src_el->mac_tuple.dst_addr, mac_addr_right, ETHER_ADDR_LEN);
   dl_list_add(&ml->list, &src_el->list);
 
-  os_memcpy(dst_el->mac_tuple.src_addr, mac_addr_right, ETH_ALEN);
-  os_memcpy(dst_el->mac_tuple.dst_addr, mac_addr_left, ETH_ALEN);
+  os_memcpy(dst_el->mac_tuple.src_addr, mac_addr_right, ETHER_ADDR_LEN);
+  os_memcpy(dst_el->mac_tuple.dst_addr, mac_addr_left, ETHER_ADDR_LEN);
   dl_list_add(&ml->list, &dst_el->list);
 
   return 1;
@@ -208,7 +207,7 @@ int get_src_mac_list(struct bridge_mac_list *ml, const uint8_t *src_addr,
   struct dl_list *list = &ml->list;
   utarray_new(*mac_list_arr, &mac_list_icd);
   dl_list_for_each(e, list, struct bridge_mac_list, list) {
-    if (memcmp(src_addr, e->mac_tuple.src_addr, ETH_ALEN) == 0) {
+    if (memcmp(src_addr, e->mac_tuple.src_addr, ETHER_ADDR_LEN) == 0) {
       utarray_push_back(*mac_list_arr, e->mac_tuple.dst_addr);
     }
   }
