@@ -123,7 +123,8 @@ static void test_eloop_unregister_read_sock(void **state) {
 
 static void test_eloop_register_timeout(void **state) {
   (void)state; /* unused */
-  char buf[100];
+
+  char buf[100] = {0};
   struct eloop_data *eloop = eloop_init();
   int ret = eloop_register_timeout(eloop, 0, 0, test_eloop_timeout_handler,
                                    eloop, (void *)buf);
@@ -131,6 +132,23 @@ static void test_eloop_register_timeout(void **state) {
   assert_int_not_equal(ret, -1);
   eloop_run(eloop);
   assert_string_equal(buf, TEST_ELOOP_PARAM);
+  eloop_free(eloop);
+}
+
+static void test_eloop_cancel_timeout(void **state) {
+  (void)state; /* unused */
+
+  char buf[100] = {0};
+  struct eloop_data *eloop = eloop_init();
+  int ret = eloop_register_timeout(eloop, 0, 0, test_eloop_timeout_handler,
+                                   eloop, (void *)buf);
+
+  assert_int_not_equal(ret, -1);
+
+  ret = eloop_cancel_timeout(eloop, test_eloop_timeout_handler, eloop,
+                             (void *)buf);
+  eloop_run(eloop);
+  assert_string_equal(buf, "");
   eloop_free(eloop);
 }
 
@@ -144,7 +162,8 @@ int main(int argc, char *argv[]) {
       cmocka_unit_test(test_eloop_init),
       cmocka_unit_test(test_eloop_register_read_sock),
       cmocka_unit_test(test_eloop_unregister_read_sock),
-      cmocka_unit_test(test_eloop_register_timeout)};
+      cmocka_unit_test(test_eloop_register_timeout),
+      cmocka_unit_test(test_eloop_cancel_timeout)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }
