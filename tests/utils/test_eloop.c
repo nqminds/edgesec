@@ -250,6 +250,7 @@ static void test_eloop_register_read_sock(void **state) {
 
   close(ss);
   close(cs);
+  assert_return_code(remove(server_file_path), /** errno */ 0);
   os_free(server_file_path);
   eloop_free(eloop);
 }
