@@ -130,11 +130,7 @@ static void test_create_domain_client(void **state) {
 static void test_read_domain_data_s(void **state) {
   struct test_state *test_state = *state;
 
-  struct client_address addr;
-  struct sockaddr_un svaddr;
   char *send_buf = "domain";
-  char read_buf[100];
-  char client_addr[100];
 
   int server_sock = create_domain_server(test_state->server_file_path);
 
@@ -143,14 +139,17 @@ static void test_read_domain_data_s(void **state) {
   int client_sock = create_domain_client(test_state->client_file_path);
   assert_int_not_equal(client_sock, -1);
 
-  memset(&svaddr, 0, sizeof(struct sockaddr_un));
-  svaddr.sun_family = AF_UNIX;
+  struct sockaddr_un svaddr = {
+      .sun_family = AF_UNIX,
+  };
   strcpy(svaddr.sun_path, test_state->server_file_path);
   int buf_len = strlen(send_buf) + 1;
   ssize_t ret = sendto(client_sock, send_buf, buf_len, 0,
                        (struct sockaddr *)&svaddr, sizeof(struct sockaddr_un));
   assert_int_equal(ret, buf_len);
 
+  char read_buf[100];
+  char client_addr[108];
   ret = read_domain_data_s(server_sock, read_buf, 100, client_addr, 0);
 
   assert_int_equal(ret, buf_len);
@@ -164,21 +163,27 @@ static void test_read_domain_data_s(void **state) {
                sizeof(struct sockaddr_un));
   assert_int_equal(ret, buf_len);
 
-  os_memset(&addr, 0, sizeof(struct client_address));
-  addr.type = SOCKET_TYPE_DOMAIN;
-  ret = read_socket_data(server_sock, read_buf, 100, &addr, 0);
-  assert_int_equal(ret, buf_len);
-  assert_string_equal(send_buf, read_buf);
+  {
+    struct client_address addr = {
+        .type = SOCKET_TYPE_DOMAIN,
+    };
+    ret = read_socket_data(server_sock, read_buf, 100, &addr, 0);
+    assert_int_equal(ret, buf_len);
+    assert_string_equal(send_buf, read_buf);
 
-  ret = sendto(server_sock, send_buf, buf_len, 0,
-               (struct sockaddr *)&addr.caddr.addr_un, addr.len);
-  assert_int_equal(ret, buf_len);
+    ret = sendto(server_sock, send_buf, buf_len, 0,
+                 (struct sockaddr *)&addr.caddr.addr_un, addr.len);
+    assert_int_equal(ret, buf_len);
+  }
 
-  os_memset(&addr, 0, sizeof(struct client_address));
-  addr.type = SOCKET_TYPE_DOMAIN;
-  ret = read_socket_data(client_sock, read_buf, 100, &addr, 0);
-  assert_int_equal(ret, buf_len);
-  assert_string_equal(send_buf, read_buf);
+  {
+    struct client_address addr = {
+        .type = SOCKET_TYPE_DOMAIN,
+    };
+    ret = read_socket_data(client_sock, read_buf, 100, &addr, 0);
+    assert_int_equal(ret, buf_len);
+    assert_string_equal(send_buf, read_buf);
+  }
 
   close(client_sock);
   close(server_sock);
@@ -187,9 +192,6 @@ static void test_read_domain_data_s(void **state) {
 static void test_write_domain_data_s(void **state) {
   struct test_state *test_state = *state;
 
-  struct client_address addr;
-  struct sockaddr_un svaddr;
-  struct sockaddr_un claddr;
   char *send_buf = "domain";
   char read_buf[100];
 
@@ -205,7 +207,7 @@ static void test_write_domain_data_s(void **state) {
   assert_int_equal(ret, buf_len);
 
   socklen_t len = sizeof(struct sockaddr_un);
-  os_memset(&svaddr, 0, sizeof(struct sockaddr_un));
+  struct sockaddr_un svaddr = {0};
   ret =
       recvfrom(client_sock, read_buf, 100, 0, (struct sockaddr *)&svaddr, &len);
 
@@ -217,13 +219,16 @@ static void test_write_domain_data_s(void **state) {
   client_sock = create_domain_client(NULL);
   assert_int_not_equal(client_sock, -1);
 
-  os_memcpy(&addr.caddr.addr_un, &svaddr, sizeof(struct sockaddr_un));
-  addr.len = len;
-  addr.type = SOCKET_TYPE_DOMAIN;
+  struct client_address addr = {
+      .caddr.addr_un = svaddr,
+      .len = len,
+      .type = SOCKET_TYPE_DOMAIN,
+  };
   ret = write_socket_data(client_sock, send_buf, buf_len, &addr);
   assert_int_equal(ret, buf_len);
 
   len = sizeof(struct sockaddr_un);
+  struct sockaddr_un claddr = {0};
   ret =
       recvfrom(server_sock, read_buf, 100, 0, (struct sockaddr *)&claddr, &len);
   assert_int_equal(ret, buf_len);
@@ -246,10 +251,6 @@ static void test_create_udp_server(void **state) {
 static void test_write_socket_data(void **state) {
   (void)state; /* unused */
 
-  struct client_address caddr, saddr;
-  char *send_buf = "udp";
-  char read_buf[100];
-
   int sfd = create_udp_server(12346);
 
   assert_int_not_equal(sfd, -1);
@@ -257,17 +258,26 @@ static void test_write_socket_data(void **state) {
   int cfd = socket(AF_INET, SOCK_DGRAM, 0);
   assert_int_not_equal(cfd, -1);
 
-  os_memset(&caddr, 0, sizeof(struct client_address));
-  caddr.caddr.addr_in.sin_family = AF_INET;
-  caddr.caddr.addr_in.sin_port = htons(12346);
+  struct client_address caddr = {
+      .caddr.addr_in =
+          {
+              .sin_family = AF_INET,
+              .sin_port = htons(12346),
+          },
+      .len = sizeof(struct sockaddr_in),
+      .type = SOCKET_TYPE_UDP,
+  };
   assert_int_not_equal(
       inet_pton(AF_INET, "127.0.0.1", &caddr.caddr.addr_in.sin_addr), -1);
-  caddr.len = sizeof(struct sockaddr_in);
-  caddr.type = SOCKET_TYPE_UDP;
 
+  char send_buf[] = "udp";
   assert_int_not_equal(
-      write_socket_data(cfd, send_buf, strlen(send_buf) + 1, &caddr), -1);
-  saddr.type = SOCKET_TYPE_UDP;
+      write_socket_data(cfd, send_buf, sizeof(send_buf), &caddr), -1);
+
+  struct client_address saddr = {
+      .type = SOCKET_TYPE_UDP,
+  };
+  char read_buf[100];
   assert_int_not_equal(read_socket_data(sfd, read_buf, 100, &saddr, 0), -1);
   assert_int_equal(os_strnlen_s(read_buf, 100), strlen(send_buf));
   assert_int_equal(strncmp(send_buf, read_buf, 100), 0);
