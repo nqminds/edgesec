@@ -274,6 +274,7 @@ static void test_eloop_unregister_read_sock(void **state) {
 
   close(ss);
   eloop_free(eloop);
+  assert_return_code(remove(server_file_path), /** errno */ 0);
   os_free(server_file_path);
 }
 
