@@ -41,10 +41,10 @@
  * @brief Opens the sqlite macconn db
  *
  * @param db_path The sqlite db path
- * @param sql The returned sqlite db structure pointer
+ * @param[out] sql The returned sqlite db structure pointer
  * @return 0 on success, -1 on failure
  */
-int open_sqlite_macconn_db(char *db_path, sqlite3 **sql);
+int open_sqlite_macconn_db(const char *db_path, sqlite3 **sql);
 
 /**
  * @brief Closes the sqlite db

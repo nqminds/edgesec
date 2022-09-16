@@ -29,9 +29,14 @@ void free_sqlite_macconn_db(sqlite3 *db) {
   }
 }
 
-int open_sqlite_macconn_db(char *db_path, sqlite3 **sql) {
+int open_sqlite_macconn_db(const char *db_path, sqlite3 **sql) {
   sqlite3 *db = NULL;
   int rc;
+
+  if (make_dirs_to_path(db_path, 0755)) {
+    log_errno("Failed to create folders for sqlite macconn db: %s", db);
+    return -1;
+  }
 
   if ((rc = sqlite3_open(db_path, &db)) != SQLITE_OK) {
     log_debug("Cannot open database: %s", sqlite3_errmsg(db));
