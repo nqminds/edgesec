@@ -1,15 +1,13 @@
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <stdarg.h>
-#include <string.h>
-#include <inttypes.h>
-#include <unistd.h>
+#include <stddef.h>
 #include <setjmp.h>
 #include <stdint.h>
 #include <cmocka.h>
+
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "utils/log.h"
 #include "utils/eloop.h"
