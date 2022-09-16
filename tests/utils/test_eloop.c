@@ -42,6 +42,11 @@ void test_eloop_sock_handler_unreg(int sock, void *eloop_ctx, void *sock_ctx) {
   (void)sock_ctx;
 }
 
+/**
+ * @param eloop_ctx Pointer to struct eloop_data.
+ * @param[out] user_ctx Pointer to string buffer.
+ * @post @p user_ctx will be written with TEST_ELOOP_PARAM.
+ */
 void test_eloop_timeout_handler(void *eloop_ctx, void *user_ctx) {
   struct eloop_data *eloop = (struct eloop_data *)eloop_ctx;
   char *user_ctx_data = (char *)user_ctx;
