@@ -22,6 +22,9 @@ target_link_libraries(test_os PRIVATE os allocs hashmap cmocka::cmocka)
 add_executable(test_eloop test_eloop.c)
 target_link_libraries(test_eloop PRIVATE sockctl os allocs eloop cmocka::cmocka)
 
+add_executable(test_eloop_threaded test_eloop_threaded.c)
+target_link_libraries(test_eloop_threaded PRIVATE eloop cmocka::cmocka sockctl LibUTHash::LibUTHash Threads::Threads)
+
 add_executable(test_sqliteu test_sqliteu.c)
 target_link_libraries(test_sqliteu PRIVATE sqliteu cmocka::cmocka)
 
@@ -89,6 +92,13 @@ add_test(NAME test_eloop COMMAND test_eloop)
 set_tests_properties(test_eloop
   PROPERTIES
   WILL_FAIL FALSE)
+
+add_test(NAME test_eloop_threaded COMMAND test_eloop_threaded)
+set_tests_properties(test_eloop_threaded
+  PROPERTIES
+  WILL_FAIL FALSE
+  ENVIRONMENT CMOCKA_TEST_ABORT='1' # these tests uses threading
+)
 
 add_test(NAME test_sqliteu COMMAND test_sqliteu)
   set_tests_properties(test_sqliteu
