@@ -31,34 +31,6 @@ void init_domain_addr(struct sockaddr_un *unaddr, const char *addr) {
   os_strlcpy(unaddr->sun_path, addr, sizeof(unaddr->sun_path));
 }
 
-/**
- * @brief Generate _abstract_ socket name
- *
- * Generates a pseudo-random abstract socket name, **WITHOUT** the leading NULL
- * character.
- * Unlike _pathname_ sockets, abstract sockets are not bound to a filesystem
- * pathname.
- * This means there is no need to run unlink() to cleanup the socket after use.
- * However, _abstract_ UNIX sockets are Linux only.
- *
- * @see https://man7.org/linux/man-pages/man7/unix.7.html
- * @return A pseudo-random _abstract_ UNIX socket name **WITHOUT**
- * the leading NULL char, or `NULL` on error.
- * @post Please `free()` the returned string when finished.
- */
-char *generate_socket_name(void) {
-  unsigned char crypto_rand[4];
-  if (os_get_random(crypto_rand, 4) == -1) {
-    log_error("os_get_random fail");
-    return NULL;
-  }
-  char *buf =
-      os_zalloc(sizeof(crypto_rand) * 2 + ARRAY_SIZE(SOCK_EXTENSION) + 1);
-  sprintf(buf, "%x%x%x%x" SOCK_EXTENSION, crypto_rand[0], crypto_rand[1],
-          crypto_rand[2], crypto_rand[3]);
-  return buf;
-}
-
 int create_domain_client(const char *path) {
   socklen_t addrlen = 0;
   struct sockaddr_un claddr = {.sun_family = AF_UNIX};
@@ -69,18 +41,11 @@ int create_domain_client(const char *path) {
   }
 
   if (path == NULL) {
-    char *client_addr = generate_socket_name();
-    if (client_addr == NULL) {
-      log_error("generate_socket_name fail");
-      close(sock);
-      return -1;
-    }
-
-    // abstract UNIX domain socket paths **start** with a NUL/␀ character
-    claddr.sun_path[0] = '\0';
-    strcpy(&claddr.sun_path[1], client_addr);
-    addrlen = sizeof(sa_family_t) + strlen(client_addr) + 1;
-    os_free(client_addr);
+    // Setting addrlen to `sizeof(sa_family_t)` will autobind
+    // the Unix domain socket to a random 5-hex character long
+    // abstract address (2^20 autobind addresses)
+    // See https://manpages.ubuntu.com/manpages/jammy/en/man7/unix.7.html
+    addrlen = sizeof(sa_family_t);
   } else {
     os_strlcpy(claddr.sun_path, path, sizeof(claddr.sun_path));
     addrlen = sizeof(struct sockaddr_un);
