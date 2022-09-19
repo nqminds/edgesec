@@ -14,6 +14,8 @@
 #include <ctype.h>
 #include <errno.h>
 #include <sys/ioctl.h>
+#include <limits.h> // for PATH_MAX
+#include <libgen.h> // for dirname()
 
 #include "sockctl.h"
 
@@ -23,12 +25,74 @@
 #include "net.h"
 
 #define SOCK_EXTENSION ".sock"
-
+#define TMP_UNIX_SOCK_FOLDER_PREFIX "/tmp/edgesec."
+/** Template for mkdtemp() to create tmp folders for temporary unix domain
+ * sockets */
+#define TMP_UNIX_SOCK_FOLDER_TEMPLATE TMP_UNIX_SOCK_FOLDER_PREFIX "XXXXXX"
+/** Basename for temporary unix domain sockets */
+#define TMP_UNIX_SOCK_NAME "client-socket" SOCK_EXTENSION
 #define DOMAIN_REPLY_TIMEOUT 10
 
 void init_domain_addr(struct sockaddr_un *unaddr, const char *addr) {
   *unaddr = (struct sockaddr_un){.sun_family = AF_UNIX};
   os_strlcpy(unaddr->sun_path, addr, sizeof(unaddr->sun_path));
+}
+
+/**
+ * @brief Creates a path for a temporary domain socket.
+ *
+ * Creates a temporary folder using `mkdtemp()`, then returns a path
+ * within that folder.
+ *
+ * @return A path that can be used to create a temporary domain socket.
+ * @retval NULL on error (see @p errno).
+ */
+static const char *create_tmp_domain_socket_path() {
+  char socket_dir[] = TMP_UNIX_SOCK_FOLDER_TEMPLATE;
+  if (mkdtemp(socket_dir) == NULL) {
+    log_errno("Failed to mkdtemp %s", socket_dir);
+    return NULL;
+  }
+
+  // Can we make this `const`?
+  char socket_name[] = TMP_UNIX_SOCK_NAME;
+  return concat_paths(socket_dir, socket_name);
+}
+
+/**
+ * @brief Cleans up the given @p socket_path.
+ *
+ * Performs extra cleanup if the @p socket_path was created with
+ * create_tmp_domain_socket_path().
+ *
+ * @param socket_path The path to the socket to cleanup.
+ * @retval -1 On error.
+ * @retval  0 Success, cleaned up @p socket_path.
+ */
+static int cleanup_tmp_domain_socket_path(const char *socket_path) {
+  if (unlink(socket_path)) {
+    log_errno("Failed to unlink() %d", socket_path);
+    return -1;
+  }
+  if (strncmp(TMP_UNIX_SOCK_FOLDER_PREFIX, socket_path,
+              sizeof(TMP_UNIX_SOCK_FOLDER_PREFIX)) != 0) {
+    // **NOT** created create_tmp_domain_socket_path()
+    return 0;
+  }
+
+  // need to make a non-const copy of path since dirname() may change
+  // stirng contents
+  char path[PATH_MAX];
+  path[PATH_MAX - 1] = '\0'; // ensure string is always NUL terminated
+  strncpy(path, socket_path, PATH_MAX - 1);
+
+  char *socket_dir = dirname(path);
+
+  if (rmdir(socket_dir)) {
+    log_errno("Failed to rmdir() tmp unix socket folder %s", socket_dir);
+    return -1;
+  }
+  return 0;
 }
 
 int create_domain_client(const char *path) {
@@ -41,11 +105,21 @@ int create_domain_client(const char *path) {
   }
 
   if (path == NULL) {
+#ifdef USE_ABSTRACT_UNIX_DOMAIN_SOCKETS
     // Setting addrlen to `sizeof(sa_family_t)` will autobind
     // the Unix domain socket to a random 5-hex character long
     // abstract address (2^20 autobind addresses)
     // See https://manpages.ubuntu.com/manpages/jammy/en/man7/unix.7.html
     addrlen = sizeof(sa_family_t);
+#else // standard POSIX
+    const char *tmp_socket_path = create_tmp_domain_socket_path();
+    if (tmp_socket_path == NULL) {
+      log_errno("Failed to create temporary unix domain socket.");
+      return -1;
+    }
+    os_strlcpy(claddr.sun_path, tmp_socket_path, sizeof(claddr.sun_path));
+    addrlen = sizeof(struct sockaddr_un);
+#endif
   } else {
     os_strlcpy(claddr.sun_path, path, sizeof(claddr.sun_path));
     addrlen = sizeof(struct sockaddr_un);
@@ -114,7 +188,7 @@ int close_domain_socket(int unix_domain_socket_fd) {
       sockaddr.sun_path[0] != '\0' // _abstract_ unix domain socket (Linux only)
   ) {
     // Unix domain socket is type _pathname_
-    if (unlink(sockaddr.sun_path)) {
+    if (cleanup_tmp_domain_socket_path(sockaddr.sun_path)) {
       log_errno("Failed to cleanup unix domain socket at %s",
                 sockaddr.sun_path);
       return -1;

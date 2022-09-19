@@ -38,8 +38,12 @@ struct client_address {
  * @brief Create a unix domain client socket
  *
  * @param path The UNIX domain socket path.
- * If this is NULL, a randomly generated _abstract_ Unix domain socket
- * will be used instead.
+ * If this is NULL:
+ * - On Linux, a randomly generated _abstract_ Unix domain socket
+ *   will be used instead.
+ * - On other Unix platforms, a randomly generated _pathname_ Unix domain
+ *   socket will be used. Please call close_domain_socket() to unlink()
+ *   the `pathname` (and tmp folder) when finished.
  * @return File-descriptor for the client socket.
  * @retval -1 On error.
  */

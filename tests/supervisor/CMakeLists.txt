@@ -7,6 +7,11 @@ target_link_libraries(test_bridge_list PRIVATE bridge_list net log cmocka::cmock
 
 add_executable(test_sockctl_server test_sockctl_server.c)
 target_link_libraries(test_sockctl_server PRIVATE sockctl os log cmocka::cmocka)
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+  # Abstract Unix domain sockets are only supported on Linux, but save a bit of writing
+  # to the disk
+  target_compile_definitions(test_sockctl_server PRIVATE USE_ABSTRACT_UNIX_DOMAIN_SOCKETS)
+endif()
 
 add_executable(test_cmd_processor test_cmd_processor.c)
 target_link_libraries(test_cmd_processor PRIVATE cmd_processor iptables log cmocka::cmocka)
