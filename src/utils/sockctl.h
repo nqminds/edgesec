@@ -35,12 +35,15 @@ struct client_address {
 };
 
 /**
- * @brief Create a domain client object
+ * @brief Create a unix domain client socket
  *
- * @param addr The socket addr, if NULL is auto genereated and hidden
- * @return int Client socket
+ * @param path The UNIX domain socket path.
+ * If this is NULL, a randomly generated _abstract_ Unix domain socket
+ * will be used instead.
+ * @return File-descriptor for the client socket.
+ * @retval -1 On error.
  */
-int create_domain_client(char *addr);
+int create_domain_client(char *path);
 
 /**
  * @brief Create a domain server object

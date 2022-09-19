@@ -60,7 +60,7 @@ char *generate_socket_name(void) {
   return buf;
 }
 
-int create_domain_client(char *addr) {
+int create_domain_client(char *path) {
   struct sockaddr_un claddr;
   int sock;
   char *client_addr = NULL;
@@ -75,7 +75,7 @@ int create_domain_client(char *addr) {
     return -1;
   }
 
-  if (addr == NULL) {
+  if (path == NULL) {
     if ((client_addr = generate_socket_name()) == NULL) {
       log_error("generate_socket_name fail");
       close(sock);
@@ -86,7 +86,7 @@ int create_domain_client(char *addr) {
     addrlen = sizeof(sa_family_t) + strlen(client_addr) + 1;
     os_free(client_addr);
   } else {
-    os_strlcpy(claddr.sun_path, addr, sizeof(claddr.sun_path));
+    os_strlcpy(claddr.sun_path, path, sizeof(claddr.sun_path));
     addrlen = sizeof(struct sockaddr_un);
   }
 
