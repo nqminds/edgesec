@@ -535,11 +535,10 @@ static int test_make_dirs_to_path_teardown(void **state) {
     return 0;
   }
 
-  if (test_state->tmp_dir || false) {
-    int ret_val = rm_dir_recursive(test_state->tmp_dir);
-    assert_int_equal(ret_val, 0);
-    strcpy(test_state->tmp_dir, "");
-  }
+  assert_string_not_equal(test_state->tmp_dir, "");
+  int ret_val = rm_dir_recursive(test_state->tmp_dir);
+  assert_int_equal(ret_val, 0);
+  strcpy(test_state->tmp_dir, "");
 
   test_free(*state);
   *state = NULL;
