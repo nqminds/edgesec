@@ -1028,9 +1028,10 @@ static int process_phy_handler(struct nl_msg *msg, void *arg) {
   nla_parse(tb_msg, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0),
             genlmsg_attrlen(gnlh, 0), NULL);
 
-  if (tb_msg[NL80211_ATTR_WIPHY_NAME])
+  if (tb_msg[NL80211_ATTR_WIPHY_NAME]) {
     wiphy = nla_get_string(tb_msg[NL80211_ATTR_WIPHY_NAME]);
-  log_trace("Using Wiphy %s", wiphy);
+    log_trace("Using Wiphy %s", wiphy);
+  }
 
   if (tb_msg[NL80211_ATTR_SUPPORTED_IFTYPES]) {
     char modebuf[100];
