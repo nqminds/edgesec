@@ -27,8 +27,7 @@
 #define DOMAIN_REPLY_TIMEOUT 10
 
 void init_domain_addr(struct sockaddr_un *unaddr, const char *addr) {
-  os_memset(unaddr, 0, sizeof(struct sockaddr_un));
-  unaddr->sun_family = AF_UNIX;
+  *unaddr = (struct sockaddr_un){.sun_family = AF_UNIX};
   os_strlcpy(unaddr->sun_path, addr, sizeof(unaddr->sun_path));
 }
 
@@ -49,39 +48,36 @@ void init_domain_addr(struct sockaddr_un *unaddr, const char *addr) {
  */
 char *generate_socket_name(void) {
   unsigned char crypto_rand[4];
-  char *buf = NULL;
   if (os_get_random(crypto_rand, 4) == -1) {
     log_error("os_get_random fail");
     return NULL;
   }
-  buf = os_zalloc(sizeof(crypto_rand) * 2 + ARRAY_SIZE(SOCK_EXTENSION) + 1);
+  char *buf =
+      os_zalloc(sizeof(crypto_rand) * 2 + ARRAY_SIZE(SOCK_EXTENSION) + 1);
   sprintf(buf, "%x%x%x%x" SOCK_EXTENSION, crypto_rand[0], crypto_rand[1],
           crypto_rand[2], crypto_rand[3]);
   return buf;
 }
 
 int create_domain_client(const char *path) {
-  struct sockaddr_un claddr;
-  int sock;
-  char *client_addr = NULL;
   socklen_t addrlen = 0;
-
-  os_memset(&claddr, 0, sizeof(struct sockaddr_un));
-  claddr.sun_family = AF_UNIX;
-
-  sock = socket(AF_UNIX, SOCK_DGRAM, 0);
+  struct sockaddr_un claddr = {.sun_family = AF_UNIX};
+  int sock = socket(AF_UNIX, SOCK_DGRAM, 0);
   if (sock == -1) {
     log_errno("socket");
     return -1;
   }
 
   if (path == NULL) {
-    if ((client_addr = generate_socket_name()) == NULL) {
+    char *client_addr = generate_socket_name();
+    if (client_addr == NULL) {
       log_error("generate_socket_name fail");
       close(sock);
       return -1;
     }
 
+    // abstract UNIX domain socket paths **start** with a NUL/␀ character
+    claddr.sun_path[0] = '\0';
     strcpy(&claddr.sun_path[1], client_addr);
     addrlen = sizeof(sa_family_t) + strlen(client_addr) + 1;
     os_free(client_addr);
@@ -100,10 +96,7 @@ int create_domain_client(const char *path) {
 }
 
 int create_domain_server(const char *server_path) {
-  struct sockaddr_un svaddr;
-  int sfd;
-
-  sfd = socket(AF_UNIX, SOCK_DGRAM, 0); /* Create server socket */
+  int sfd = socket(AF_UNIX, SOCK_DGRAM, 0); /* Create server socket */
   if (sfd == -1) {
     log_errno("socket");
     return -1;
@@ -114,6 +107,7 @@ int create_domain_server(const char *server_path) {
   /* For an explanation of the following check, see the erratum note for
      page 1168 at http://www.man7.org/tlpi/errata/.
   */
+  struct sockaddr_un svaddr;
   if (strlen(server_path) > sizeof(svaddr.sun_path) - 1) {
     log_error("Server socket path too long: %s", server_path);
     close(sfd);
