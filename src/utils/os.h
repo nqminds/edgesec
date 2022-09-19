@@ -269,6 +269,27 @@ void *__hide_aliasing_typecast(void *foo);
 typedef void (*process_callback_fn)(void *ctx, void *buf, size_t count);
 
 /**
+ * @brief Makes a copy of argv
+ *
+ * When writing code, we normally define argv using `const char *` string
+ * literals, e.g.: `const char * args[] {"hello", "world", NULL};`
+ *
+ * However, the C functions (e.g. execve()) expect `char * const *`,
+ * aka the strings must be mallable (unsafe with string literals).
+ *
+ * This function makes a copy of argv so that we don't get undefined
+ * behaviour by modifing `const` data.
+ *
+ * The entire argv array (and strings) is allocated as a single malloc()
+ * so that you can use a single free() to release the memory when done.
+ *
+ * @param argv The NULL-terminated array of '\0'-terminated strings to copy.
+ * @return A modifiable copy of argv, or @p NULL if malloc() failed.
+ * @post Use `free()` when finished with the @p argv_copy.
+ */
+char **copy_argv(const char *const argv[]);
+
+/**
  * @brief Executes a command
  *
  * @param argv The command arguments including the process path

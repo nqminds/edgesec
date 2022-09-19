@@ -31,30 +31,41 @@ static void command_out_fn(void *ctx, void *buf, size_t count) {
 static void test_run_command(void **state) {
   (void)state; /* unused */
 
-  const char *argv[] = {"/usr/bin/env", "uname", "-s", NULL};
+  const char *const argv[] = {"/usr/bin/env", "uname", "-s", NULL};
+  // we need to make a copy of argv, since run_command might modify the data
+  char **argv_copy = copy_argv(argv);
+  assert_non_null(argv_copy);
 
   /* Testing run_command with /usr/bin/env uname -s */
-  int status = run_command(argv, NULL, NULL, NULL);
+  int status = run_command(argv_copy, NULL, NULL, NULL);
   assert_int_equal(status, 0);
 
-  char *argv1[3] = {"/bin/chuppauname", "-s", NULL};
+  {
+    const char *const argv1[] = {"/bin/chuppauname", "-s", NULL};
+    char **argv1_copy = copy_argv(argv1);
+    assert_non_null(argv1_copy);
 
-  /* Testing run_command with /bin/chuppauname -s */
-  status = run_command(argv1, NULL, NULL, NULL);
-  assert_int_not_equal(status, 0);
+    /* Testing run_command with /bin/chuppauname -s */
+    status = run_command(argv1_copy, NULL, NULL, NULL);
+    assert_int_not_equal(status, 0);
+
+    free(argv1_copy);
+  }
 
   /* Testing run_command with NULL */
   status = run_command(NULL, NULL, NULL, NULL);
   assert_int_not_equal(status, 0);
 
-  char *argv2[1] = {NULL};
+  char *argv2[] = {NULL};
   /* Testing run_command with {NULL} */
   status = run_command(argv2, NULL, NULL, NULL);
   assert_int_not_equal(status, 0);
 
   /* Testing run_command with /usr/bin/env uname -s and callback */
-  status = run_command(argv, NULL, command_out_fn, NULL);
+  status = run_command(argv_copy, NULL, command_out_fn, NULL);
   assert_int_equal(status, 0);
+
+  free(argv_copy);
 }
 
 int fn_split_string(const char *str, size_t len, void *data) {

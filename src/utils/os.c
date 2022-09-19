@@ -286,6 +286,40 @@ int read_command_output(int fd, process_callback_fn fn, void *ctx) {
   return count;
 }
 
+char **copy_argv(const char *const argv[]) {
+  // calculate the length of argv (without NULL terminator)
+  size_t argc = 0;
+  while (argv[argc] != NULL) {
+    argc++;
+  }
+
+  // calculate the new argv buffer size
+  size_t argv_array_size = (argc + 1) * sizeof(char *);
+  size_t strings_length = 0;
+  for (size_t i = 0; i < argc; i++) {
+    strings_length += (strlen(argv[i]) + 1);
+  }
+
+  // first part of malloc-d data holds argv, second part stores string data
+  char **const argv_copy = (char **)malloc(argv_array_size + strings_length);
+  if (argv_copy == NULL) {
+    log_errno("Failed to malloc %d bytes", argv_array_size + strings_length);
+    return NULL;
+  }
+  char *const argv_string_buffer = &((char *)argv_copy)[argv_array_size];
+
+  // copy old argv into new argv buffer
+  size_t string_bytes = 0;
+  for (size_t i = 0; i < argc; i++) {
+    argv_copy[i] = &(argv_string_buffer[string_bytes]);
+    strcpy(argv_copy[i], argv[i]);
+    string_bytes += (strlen(argv[i]) + 1);
+  }
+  // argv array must end with NULL terminator
+  argv_copy[argc] = NULL;
+  return argv_copy;
+}
+
 int run_command(char *const argv[], char *const envp[], process_callback_fn fn,
                 void *ctx) {
   pid_t childPid;
