@@ -457,10 +457,10 @@ static void test_get_secure_path(void **state) {
   utarray_free(arr);
 }
 
-bool dir_fn(char *dirpath, void *args) {
-  int *is_uname = args;
-  if (strcmp(dirpath, "/bin/uname") == 0) {
-    *is_uname = 1;
+bool check_if_bin_ls(char *dirpath, void *args) {
+  bool *found_ls = args;
+  if (strcmp(dirpath, "/bin/ls") == 0) {
+    *found_ls = true;
   }
 
   return true;
@@ -475,16 +475,16 @@ bool failing_dir_fn(char *dirpath, void *args) {
 static void test_list_dir(void **state) {
   (void)state;
 
-  int is_uname = 0;
-  int ret = list_dir("/bin", dir_fn, &is_uname);
-  assert_int_equal(ret, 0);
-  assert_int_equal(is_uname, 1);
+  bool found_ls = false;
+  assert_return_code(list_dir("/bin", check_if_bin_ls, &found_ls), errno);
+  assert_true(found_ls);
 
   // should fail for invalid folder
-  assert_int_equal(list_dir("/this-path-is-not-a-dir", dir_fn, &is_uname), -1);
+  assert_int_equal(
+      list_dir("/this-path-is-not-a-dir", check_if_bin_ls, &found_ls), -1);
 
   // should fail if dir_fn fails
-  assert_int_equal(list_dir("/bin", failing_dir_fn, &is_uname), -1);
+  assert_int_equal(list_dir("/bin", failing_dir_fn, &found_ls), -1);
 }
 
 typedef struct {
