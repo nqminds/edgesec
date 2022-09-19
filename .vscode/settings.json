@@ -110,6 +110,7 @@
         "crypt_service.h": "c",
         "header_middleware.h": "c",
         "*.c.in": "c",
+        "cmocka.h": "c"
         "pcap.h": "c",
         "pcap-inttypes.h": "c",
         "bpf.h": "c",
