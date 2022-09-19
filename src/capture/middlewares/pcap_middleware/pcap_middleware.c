@@ -196,6 +196,7 @@ struct middleware_context *init_pcap_middleware(sqlite3 *db, char *db_path,
   context->eloop = eloop;
   context->pc = pc;
   context->mdata = (void *)pcap_context;
+  context->params = params;
 
   if (get_pcap_folder_path(db_path, pcap_context->pcap_path) < 0) {
     log_error("get_pcap_folder_path fail");

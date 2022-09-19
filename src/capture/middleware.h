@@ -23,6 +23,7 @@ struct middleware_context {
   struct eloop_data *eloop;
   struct pcap_context *pc;
   void *mdata;
+  char *params;
 };
 
 /**

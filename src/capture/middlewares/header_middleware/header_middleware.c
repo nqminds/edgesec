@@ -115,6 +115,7 @@ struct middleware_context *init_header_middleware(sqlite3 *db, char *db_path,
   context->db = db;
   context->eloop = eloop;
   context->pc = pc;
+  context->params = params;
 
   if ((context->mdata = (void *)init_packet_queue()) == NULL) {
     log_error("init_packet_queue fail");

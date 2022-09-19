@@ -61,6 +61,7 @@ struct middleware_context *init_tap_middleware(sqlite3 *db, char *db_path,
   context->eloop = NULL;
   context->pc = pc;
   context->mdata = NULL;
+  context->params = params;
 
   return context;
 }
