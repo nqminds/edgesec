@@ -96,6 +96,33 @@ int create_domain_server(const char *server_path) {
   return sfd;
 }
 
+int close_domain_socket(int unix_domain_socket_fd) {
+  struct sockaddr_un sockaddr = {0};
+  socklen_t address_len = sizeof(sockaddr);
+  if (getsockname(unix_domain_socket_fd, &sockaddr, &address_len)) {
+    log_errno("Failed to getsockname for unix domain socket %d",
+              unix_domain_socket_fd);
+    return -1;
+  }
+  if (sockaddr.sun_family != AF_UNIX) {
+    log_error("Socket %d is not a unix domain socket, instead it's a %d",
+              unix_domain_socket_fd, sockaddr.sun_family);
+    return -1;
+  }
+  if (address_len >=
+          sizeof(sa_family_t) &&   // unbound/_unnamed_ unix domain socket
+      sockaddr.sun_path[0] != '\0' // _abstract_ unix domain socket (Linux only)
+  ) {
+    // Unix domain socket is type _pathname_
+    if (unlink(sockaddr.sun_path)) {
+      log_errno("Failed to cleanup unix domain socket at %s",
+                sockaddr.sun_path);
+      return -1;
+    }
+  }
+  return close(unix_domain_socket_fd);
+}
+
 int create_udp_server(unsigned int port) {
   struct sockaddr_in svaddr;
   int sfd;
@@ -304,13 +331,13 @@ int writeread_domain_data_str(char *socket_path, const char *write_str,
       write_domain_data_s(sfd, write_str, strlen(write_str), socket_path);
   if (send_count < 0) {
     log_errno("sendto");
-    close(sfd);
+    close_domain_socket(sfd);
     return -1;
   }
 
   if ((size_t)send_count != strlen(write_str)) {
     log_errno("write_domain_data_s fail");
-    close(sfd);
+    close_domain_socket(sfd);
     return -1;
   }
 
@@ -319,14 +346,14 @@ int writeread_domain_data_str(char *socket_path, const char *write_str,
   errno = 0;
   if (select(sfd + 1, &readfds, NULL, NULL, &timeout) < 0) {
     log_errno("select");
-    close(sfd);
+    close_domain_socket(sfd);
     return -1;
   }
 
   if (FD_ISSET(sfd, &readfds)) {
     if (ioctl(sfd, FIONREAD, &bytes_available) == -1) {
       log_errno("ioctl");
-      close(sfd);
+      close_domain_socket(sfd);
       return -1;
     }
 
@@ -334,7 +361,7 @@ int writeread_domain_data_str(char *socket_path, const char *write_str,
     rec_data = os_zalloc(bytes_available + 1);
     if (rec_data == NULL) {
       log_errno("os_zalloc");
-      close(sfd);
+      close_domain_socket(sfd);
       return -1;
     }
 
@@ -343,14 +370,14 @@ int writeread_domain_data_str(char *socket_path, const char *write_str,
 
     if (rec_count < 0) {
       log_error("read_domain_data_s fail");
-      close(sfd);
+      close_domain_socket(sfd);
       os_free(rec_data);
       return -1;
     }
 
     if ((trimmed = rtrim(rec_data, NULL)) == NULL) {
       log_error("rtrim fail");
-      close(sfd);
+      close_domain_socket(sfd);
       os_free(rec_data);
       return -1;
     }
@@ -358,11 +385,11 @@ int writeread_domain_data_str(char *socket_path, const char *write_str,
     *reply = os_strdup(trimmed);
   } else {
     log_error("Socket timeout");
-    close(sfd);
+    close_domain_socket(sfd);
     return -1;
   }
 
-  close(sfd);
+  close_domain_socket(sfd);
   os_free(rec_data);
 
   return 0;

@@ -285,6 +285,71 @@ static void test_write_socket_data(void **state) {
   close(cfd);
 }
 
+static void test_close_domain_socket(void **state) {
+  struct test_state *test_state = *state;
+
+  // close_domain_socket() should unlink the pathname in a pathname unix socket
+  {
+    int sock = create_domain_client(test_state->client_file_path);
+    assert_return_code(sock, errno);
+
+    assert_return_code(check_file_exists(test_state->client_file_path, NULL),
+                       errno);
+
+    assert_return_code(close_domain_socket(sock), errno);
+    // should close the file descriptor
+    assert_true(fcntl(sock, F_GETFD) == -1 && errno == EBADF);
+    assert_int_equal(check_file_exists(test_state->client_file_path, NULL), -1);
+  }
+
+  // should handle _unnamed_ unix sockets
+  {
+    int sock = socket(AF_UNIX, SOCK_DGRAM, 0);
+    assert_return_code(sock, errno);
+
+    assert_return_code(close_domain_socket(sock), errno);
+    // should close the file descriptor
+    assert_true(fcntl(sock, F_GETFD) == -1 && errno == EBADF);
+  }
+
+  // should handle _abstract_ unix sockets
+  {
+    int sock = create_domain_client(NULL);
+    assert_return_code(sock, errno);
+    assert_return_code(close_domain_socket(sock), errno);
+    // should close the file descriptor
+    assert_true(fcntl(sock, F_GETFD) == -1 && errno == EBADF);
+  }
+
+  // should report an error if the input file descriptor is not valid
+  assert_int_equal(close_domain_socket(-1), -1);
+
+  // should report an error if the given file descriptor is not an UNIX domain
+  // socket
+  {
+    int sock = create_udp_server(0);
+    assert_return_code(sock, errno);
+
+    assert_int_equal(close_domain_socket(sock), -1);
+    // cleanup
+    assert_return_code(close(sock), errno);
+  }
+
+  // should throw an error if the unlink() command fails
+  {
+    int sock = create_domain_client(test_state->client_file_path);
+    assert_return_code(sock, errno);
+
+    assert_return_code(check_file_exists(test_state->client_file_path, NULL),
+                       errno);
+    assert_return_code(unlink(test_state->client_file_path), errno);
+
+    // should fail, since unix domain socket path is already unlink()-ed
+    assert_int_equal(close_domain_socket(sock), -1);
+    assert_return_code(close(sock), errno);
+  }
+}
+
 int main(int argc, char *argv[]) {
   (void)argc;
   (void)argv;
@@ -295,6 +360,8 @@ int main(int argc, char *argv[]) {
       cmocka_unit_test_setup_teardown(test_create_domain_server, setup,
                                       teardown),
       cmocka_unit_test_setup_teardown(test_create_domain_client, setup,
+                                      teardown),
+      cmocka_unit_test_setup_teardown(test_close_domain_socket, setup,
                                       teardown),
       cmocka_unit_test_setup_teardown(test_read_domain_data_s, setup, teardown),
       cmocka_unit_test_setup_teardown(test_write_domain_data_s, setup,

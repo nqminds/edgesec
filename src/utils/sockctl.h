@@ -54,6 +54,20 @@ int create_domain_client(const char *path);
 int create_domain_server(const char *server_path);
 
 /**
+ * @brief Closes and cleans up a unix domain socket.
+ *
+ * Closes the given unix domain socket.
+ * If the given unix domain socket is a _pathname_ socket,
+ * this function also calls unlink() on the _pathname_.
+ *
+ * @param unix_domain_socket_fd The file descriptor of the unix domain socket to
+ * close.
+ * @retval  0 on success.
+ * @retval -1 on error (see `errno` for error details).
+ */
+int close_domain_socket(int unix_domain_socket_fd);
+
+/**
  * @brief Create a udp server object
  *
  * @param port Server port
