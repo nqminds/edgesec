@@ -319,7 +319,7 @@ static void test_close_domain_socket(void **state) {
 
     struct sockaddr_un sockaddr = {0};
     socklen_t address_len = sizeof(sockaddr);
-    getsockname(sock, &sockaddr, &address_len);
+    getsockname(sock, (struct sockaddr *)&sockaddr, &address_len);
 
 #ifdef USE_ABSTRACT_UNIX_DOMAIN_SOCKETS
     assert_int_equal(sockaddr.sun_path[0], '\0');

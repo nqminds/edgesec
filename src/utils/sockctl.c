@@ -106,6 +106,9 @@ int create_domain_client(const char *path) {
 
   if (path == NULL) {
 #ifdef USE_ABSTRACT_UNIX_DOMAIN_SOCKETS
+    (void)&create_tmp_domain_socket_path; // not used if
+                                          // USE_ABSTRACT_UNIX_DOMAIN_SOCKETS is
+                                          // set
     // Setting addrlen to `sizeof(sa_family_t)` will autobind
     // the Unix domain socket to a random 5-hex character long
     // abstract address (2^20 autobind addresses)
@@ -173,7 +176,8 @@ int create_domain_server(const char *server_path) {
 int close_domain_socket(int unix_domain_socket_fd) {
   struct sockaddr_un sockaddr = {0};
   socklen_t address_len = sizeof(sockaddr);
-  if (getsockname(unix_domain_socket_fd, &sockaddr, &address_len)) {
+  if (getsockname(unix_domain_socket_fd, (struct sockaddr *)&sockaddr,
+                  &address_len)) {
     log_errno("Failed to getsockname for unix domain socket %d",
               unix_domain_socket_fd);
     return -1;
