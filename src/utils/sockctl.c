@@ -26,7 +26,7 @@
 
 #define DOMAIN_REPLY_TIMEOUT 10
 
-void init_domain_addr(struct sockaddr_un *unaddr, char *addr) {
+void init_domain_addr(struct sockaddr_un *unaddr, const char *addr) {
   os_memset(unaddr, 0, sizeof(struct sockaddr_un));
   unaddr->sun_family = AF_UNIX;
   os_strlcpy(unaddr->sun_path, addr, sizeof(unaddr->sun_path));
@@ -60,7 +60,7 @@ char *generate_socket_name(void) {
   return buf;
 }
 
-int create_domain_client(char *path) {
+int create_domain_client(const char *path) {
   struct sockaddr_un claddr;
   int sock;
   char *client_addr = NULL;
@@ -99,7 +99,7 @@ int create_domain_client(char *path) {
   return sock;
 }
 
-int create_domain_server(char *server_path) {
+int create_domain_server(const char *server_path) {
   struct sockaddr_un svaddr;
   int sfd;
 

@@ -43,7 +43,7 @@ struct client_address {
  * @return File-descriptor for the client socket.
  * @retval -1 On error.
  */
-int create_domain_client(char *path);
+int create_domain_client(const char *path);
 
 /**
  * @brief Create a domain server object
@@ -51,7 +51,7 @@ int create_domain_client(char *path);
  * @param server_path Server UNIX domain socket path
  * @return int Domain server socket
  */
-int create_domain_server(char *server_path);
+int create_domain_server(const char *server_path);
 
 /**
  * @brief Create a udp server object
