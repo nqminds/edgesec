@@ -24,9 +24,7 @@ void test_eloop_sock_handler_read(int sock, void *eloop_ctx, void *sock_ctx) {
   assert_non_null(eloop);
   assert_string_equal(sock_ctx_data, TEST_ELOOP_PARAM);
 
-  struct client_address addr = {
-    .type = SOCKET_TYPE_DOMAIN
-  };
+  struct client_address addr = {.type = SOCKET_TYPE_DOMAIN};
   char read_buf[100];
   read_socket_data(sock, read_buf, sizeof(read_buf), &addr, 0);
   assert_string_equal(read_buf, TEST_SEND_BUF_DATA);
