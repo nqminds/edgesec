@@ -32,6 +32,21 @@ void init_domain_addr(struct sockaddr_un *unaddr, char *addr) {
   os_strlcpy(unaddr->sun_path, addr, sizeof(unaddr->sun_path));
 }
 
+/**
+ * @brief Generate _abstract_ socket name
+ *
+ * Generates a pseudo-random abstract socket name, **WITHOUT** the leading NULL
+ * character.
+ * Unlike _pathname_ sockets, abstract sockets are not bound to a filesystem
+ * pathname.
+ * This means there is no need to run unlink() to cleanup the socket after use.
+ * However, _abstract_ UNIX sockets are Linux only.
+ *
+ * @see https://man7.org/linux/man-pages/man7/unix.7.html
+ * @return A pseudo-random _abstract_ UNIX socket name **WITHOUT**
+ * the leading NULL char, or `NULL` on error.
+ * @post Please `free()` the returned string when finished.
+ */
 char *generate_socket_name(void) {
   unsigned char crypto_rand[4];
   char *buf = NULL;
