@@ -29,7 +29,7 @@ add_cmocka_test(test_os
 
 add_cmocka_test(test_eloop
   SOURCES test_eloop.c
-  LINK_LIBRARIES tmpdir sockctl os allocs eloop cmocka::cmocka)
+  LINK_LIBRARIES tmpdir sockctl allocs eloop cmocka::cmocka)
 # requires the POSIX.1-2008 to define PATH_MAX
 # (POSIX.1-2001 has some issues, see https://man7.org/linux/man-pages/man3/realpath.3.html)
 target_compile_definitions(test_eloop PRIVATE _POSIX_C_SOURCE=200809L)
