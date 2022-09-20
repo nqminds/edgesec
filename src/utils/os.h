@@ -266,6 +266,13 @@ int os_memcmp_const(const void *a, const void *b, size_t len);
 void *__hide_aliasing_typecast(void *foo);
 #define aliasing_hide_typecast(a, t) (t *)__hide_aliasing_typecast((a))
 
+/**
+ * @brief Callback function for run_command() and similar functions.
+ * @param ctx - Context, passed to run_command().
+ * @param buf - data from stdout. Warning, if this is a string, you may
+ * have to add your own NUL-terminator.
+ * @param count - Length of data from stdout.
+ */
 typedef void (*process_callback_fn)(void *ctx, void *buf, size_t count);
 
 /**
