@@ -88,6 +88,10 @@ static int cleanup_tmp_domain_socket_path(const char *socket_path) {
 
   char *socket_dir = dirname(path);
 
+  log_debug("Deleting folder %s, as it looks like it was created by "
+            "create_tmp_domain_socket_path()",
+            socket_dir);
+  // only deletes empty directories, not empty dirs set errno to ENOTEMPTY
   if (rmdir(socket_dir)) {
     log_errno("Failed to rmdir() tmp unix socket folder %s", socket_dir);
     return -1;
