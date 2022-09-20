@@ -18,7 +18,7 @@
 
 static void test_push_packet_queue(void **state) {
   (void)state; /* unused */
-  struct tuple_packet tp;
+  struct tuple_packet tp = {0};
   struct packet_queue *queue = init_packet_queue();
 
   assert_non_null(push_packet_queue(queue, tp));
