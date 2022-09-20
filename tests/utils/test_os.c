@@ -21,11 +21,18 @@
 #include "utils/allocs.h"
 
 static void command_out_fn(void *ctx, void *buf, size_t count) {
-  (void)ctx;
-
-  if (strncmp("Linux\n", buf, count) != 0) {
-    fail();
-  }
+  check_expected(ctx);
+  // check count first, so we don't do accidentally do malloc(-1) and get some
+  // weird errors
+  check_expected(count);
+  // the string data in buf is probably not null terminated, so
+  // we have to manually null terminate it outselves.
+  char *null_terminated_str = malloc(count + 1);
+  assert_non_null(null_terminated_str);
+  null_terminated_str[count] = '\0';
+  strncpy(null_terminated_str, buf, count);
+  check_expected(null_terminated_str);
+  free(null_terminated_str);
 }
 
 static void test_run_command(void **state) {
@@ -52,8 +59,14 @@ static void test_run_command(void **state) {
   status = run_command(argv2, NULL, NULL, NULL);
   assert_int_not_equal(status, 0);
 
-  /* Testing run_command with /usr/bin/env uname -s and callback */
-  status = run_command(argv, NULL, command_out_fn, NULL);
+  expect_string(command_out_fn, ctx, "Context");
+  expect_string(command_out_fn, null_terminated_str, "Hello World!\n");
+  expect_value(command_out_fn, count,
+               sizeof("Hello World!\n") - 1); // -1 due to no null terminator
+
+  const char *hello_world_argv[] = {"/usr/bin/env", "echo", "Hello World!",
+                                    NULL};
+  status = run_command(hello_world_argv, NULL, command_out_fn, "Context");
   assert_int_equal(status, 0);
 }
 
