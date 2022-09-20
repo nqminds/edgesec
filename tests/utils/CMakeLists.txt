@@ -2,6 +2,9 @@ include_directories(
   "${PROJECT_SOURCE_DIR}/src"
 )
 
+add_library(tmpdir OBJECT tmpdir.c)
+target_link_libraries(tmpdir PRIVATE log cmocka::cmocka)
+
 if (USE_UCI_SERVICE)
   add_executable(test_uci_wrt test_uci_wrt.c)
   target_link_libraries(test_uci_wrt PRIVATE uci_wrt cmocka::cmocka iface_mapper)
@@ -17,7 +20,7 @@ add_executable(test_net test_net.c)
 target_link_libraries(test_net PRIVATE net cmocka::cmocka)
 
 add_executable(test_os test_os.c)
-target_link_libraries(test_os PRIVATE os allocs hashmap cmocka::cmocka)
+target_link_libraries(test_os PRIVATE tmpdir os allocs hashmap cmocka::cmocka)
 
 add_executable(test_eloop test_eloop.c)
 target_link_libraries(test_eloop PRIVATE sockctl os allocs eloop cmocka::cmocka)
