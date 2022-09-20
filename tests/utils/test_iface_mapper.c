@@ -31,7 +31,7 @@ static void test_get_if_mapper(void **state) {
   bool ret = get_if_mapper(&hmap, 0x0A000100, ifname);
   assert_true(ret);
 
-  assert_int_equal(strcmp(ifname, "br2"), 0);
+  assert_string_equal(ifname, "br2");
 
   ret = get_if_mapper(&hmap, 0x0A000101, ifname);
   assert_false(ret);
@@ -50,7 +50,7 @@ static void test_put_if_mapper(void **state) {
   ret = get_if_mapper(&hmap, 0x0A000100, ifname);
   assert_true(ret);
 
-  assert_int_equal(strcmp(ifname, "br2"), 0);
+  assert_string_equal(ifname, "br2");
   free_if_mapper(&hmap);
 }
 
