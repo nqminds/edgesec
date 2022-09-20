@@ -1023,7 +1023,7 @@ static int process_phy_handler(struct nl_msg *msg, void *arg) {
   int rem_mode;
   bool *isvalid = (bool *)arg;
   char *capability;
-  char *wiphy;
+  char *wiphy = NULL;
 
   nla_parse(tb_msg, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0),
             genlmsg_attrlen(gnlh, 0), NULL);
