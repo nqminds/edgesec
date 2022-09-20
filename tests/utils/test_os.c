@@ -20,6 +20,45 @@
 #include "utils/os.h"
 #include "utils/allocs.h"
 
+static void test_copy_argv(void **state) {
+  (void)state; /* unused */
+
+  { // should return valid copy of argv
+    const char *const argv[] = {"/usr/bin/env", "uname", "-s", NULL};
+
+    char **argv_copy = copy_argv(argv);
+    assert_non_null(argv_copy);
+
+    assert_ptr_not_equal(argv, argv_copy);
+    for (size_t i = 0; i < sizeof(argv) - 1; i++) {
+      const char *arg = argv[0];
+      char *arg_copy = argv_copy[0];
+
+      // pointers should have the exact same bytes
+      // but point to different areas in memory
+      assert_non_null(arg_copy);
+      assert_ptr_not_equal(arg, arg_copy);
+      assert_string_equal(arg, arg_copy);
+
+      // string pointer and string data should be very close together
+      ptrdiff_t ptr_diff = (char *)arg_copy - (char *)argv_copy;
+      ptrdiff_t max_ptr_diff =
+          sizeof(char *) * ARRAY_SIZE(argv) + // size of string pointers
+          strlen(argv[0]) + strlen(argv[1]) +
+          strlen(argv[2]); // size of string buffer
+      assert_in_range(ptr_diff, sizeof(char *), max_ptr_diff);
+    }
+
+    // C-compiler shouldn't throw an errors/warnings about modifying argv_copy
+    argv_copy[0][0] = 'h';
+
+    free(argv_copy);
+  }
+
+  // should return NULL if input was invalid
+  assert_true(NULL == copy_argv(NULL));
+}
+
 static void command_out_fn(void *ctx, void *buf, size_t count) {
   (void)ctx;
 
@@ -622,6 +661,7 @@ int main(int argc, char *argv[]) {
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
+      cmocka_unit_test(test_copy_argv),
       cmocka_unit_test(test_run_command),
       cmocka_unit_test(test_split_string),
       cmocka_unit_test(test_split_string_array),
