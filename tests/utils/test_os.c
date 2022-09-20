@@ -20,6 +20,45 @@
 #include "utils/os.h"
 #include "utils/allocs.h"
 
+static void test_copy_argv(void **state) {
+  (void)state; /* unused */
+
+  { // should return valid copy of argv
+    const char *const argv[] = {"/usr/bin/env", "uname", "-s", NULL};
+
+    char **argv_copy = copy_argv(argv);
+    assert_non_null(argv_copy);
+
+    assert_ptr_not_equal(argv, argv_copy);
+    for (size_t i = 0; i < sizeof(argv) - 1; i++) {
+      const char *arg = argv[0];
+      char *arg_copy = argv_copy[0];
+
+      // pointers should have the exact same bytes
+      // but point to different areas in memory
+      assert_non_null(arg_copy);
+      assert_ptr_not_equal(arg, arg_copy);
+      assert_string_equal(arg, arg_copy);
+
+      // string pointer and string data should be very close together
+      ptrdiff_t ptr_diff = (char *)arg_copy - (char *)argv_copy;
+      ptrdiff_t max_ptr_diff =
+          sizeof(char *) * ARRAY_SIZE(argv) + // size of string pointers
+          strlen(argv[0]) + strlen(argv[1]) +
+          strlen(argv[2]); // size of string buffer
+      assert_in_range(ptr_diff, sizeof(char *), max_ptr_diff);
+    }
+
+    // C-compiler shouldn't throw an errors/warnings about modifying argv_copy
+    argv_copy[0][0] = 'h';
+
+    free(argv_copy);
+  }
+
+  // should return NULL if input was invalid
+  assert_true(NULL == copy_argv(NULL));
+}
+
 static void command_out_fn(void *ctx, void *buf, size_t count) {
   check_expected(ctx);
   // check count first, so we don't do accidentally do malloc(-1) and get some
@@ -38,23 +77,32 @@ static void command_out_fn(void *ctx, void *buf, size_t count) {
 static void test_run_command(void **state) {
   (void)state; /* unused */
 
-  const char *argv[] = {"/usr/bin/env", "uname", "-s", NULL};
+  const char *const argv[] = {"/usr/bin/env", "uname", "-s", NULL};
+  // we need to make a copy of argv, since run_command might modify the data
+  char **argv_copy = copy_argv(argv);
+  assert_non_null(argv_copy);
 
   /* Testing run_command with /usr/bin/env uname -s */
-  int status = run_command(argv, NULL, NULL, NULL);
+  int status = run_command(argv_copy, NULL, NULL, NULL);
   assert_int_equal(status, 0);
 
-  char *argv1[3] = {"/bin/chuppauname", "-s", NULL};
+  {
+    const char *const argv1[] = {"/bin/chuppauname", "-s", NULL};
+    char **argv1_copy = copy_argv(argv1);
+    assert_non_null(argv1_copy);
 
-  /* Testing run_command with /bin/chuppauname -s */
-  status = run_command(argv1, NULL, NULL, NULL);
-  assert_int_not_equal(status, 0);
+    /* Testing run_command with /bin/chuppauname -s */
+    status = run_command(argv1_copy, NULL, NULL, NULL);
+    assert_int_not_equal(status, 0);
+
+    free(argv1_copy);
+  }
 
   /* Testing run_command with NULL */
   status = run_command(NULL, NULL, NULL, NULL);
   assert_int_not_equal(status, 0);
 
-  char *argv2[1] = {NULL};
+  char *argv2[] = {NULL};
   /* Testing run_command with {NULL} */
   status = run_command(argv2, NULL, NULL, NULL);
   assert_int_not_equal(status, 0);
@@ -68,6 +116,8 @@ static void test_run_command(void **state) {
                                     NULL};
   status = run_command(hello_world_argv, NULL, command_out_fn, "Context");
   assert_int_equal(status, 0);
+
+  free(argv_copy);
 }
 
 int fn_split_string(const char *str, size_t len, void *data) {
@@ -623,6 +673,7 @@ int main(int argc, char *argv[]) {
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
+      cmocka_unit_test(test_copy_argv),
       cmocka_unit_test(test_run_command),
       cmocka_unit_test(test_split_string),
       cmocka_unit_test(test_split_string_array),
