@@ -20,41 +20,104 @@
 #include "utils/os.h"
 #include "utils/allocs.h"
 
-static void command_out_fn(void *ctx, void *buf, size_t count) {
-  (void)ctx;
+static void test_copy_argv(void **state) {
+  (void)state; /* unused */
 
-  if (strncmp("Linux\n", buf, count) != 0) {
-    fail();
+  { // should return valid copy of argv
+    const char *const argv[] = {"/usr/bin/env", "uname", "-s", NULL};
+
+    char **argv_copy = copy_argv(argv);
+    assert_non_null(argv_copy);
+
+    assert_ptr_not_equal(argv, argv_copy);
+    for (size_t i = 0; i < sizeof(argv) - 1; i++) {
+      const char *arg = argv[0];
+      char *arg_copy = argv_copy[0];
+
+      // pointers should have the exact same bytes
+      // but point to different areas in memory
+      assert_non_null(arg_copy);
+      assert_ptr_not_equal(arg, arg_copy);
+      assert_string_equal(arg, arg_copy);
+
+      // string pointer and string data should be very close together
+      ptrdiff_t ptr_diff = (char *)arg_copy - (char *)argv_copy;
+      ptrdiff_t max_ptr_diff =
+          sizeof(char *) * ARRAY_SIZE(argv) + // size of string pointers
+          strlen(argv[0]) + strlen(argv[1]) +
+          strlen(argv[2]); // size of string buffer
+      assert_in_range(ptr_diff, sizeof(char *), max_ptr_diff);
+    }
+
+    // C-compiler shouldn't throw an errors/warnings about modifying argv_copy
+    argv_copy[0][0] = 'h';
+
+    free(argv_copy);
   }
+
+  // should return NULL if input was invalid
+  assert_true(NULL == copy_argv(NULL));
+}
+
+static void command_out_fn(void *ctx, void *buf, size_t count) {
+  check_expected(ctx);
+  // check count first, so we don't do accidentally do malloc(-1) and get some
+  // weird errors
+  check_expected(count);
+  // the string data in buf is probably not null terminated, so
+  // we have to manually null terminate it outselves.
+  char *null_terminated_str = malloc(count + 1);
+  assert_non_null(null_terminated_str);
+  null_terminated_str[count] = '\0';
+  strncpy(null_terminated_str, buf, count);
+  check_expected(null_terminated_str);
+  free(null_terminated_str);
 }
 
 static void test_run_command(void **state) {
   (void)state; /* unused */
 
-  const char *argv[] = {"/usr/bin/env", "uname", "-s", NULL};
+  const char *const argv[] = {"/usr/bin/env", "uname", "-s", NULL};
+  // we need to make a copy of argv, since run_command might modify the data
+  char **argv_copy = copy_argv(argv);
+  assert_non_null(argv_copy);
 
   /* Testing run_command with /usr/bin/env uname -s */
-  int status = run_command(argv, NULL, NULL, NULL);
+  int status = run_command(argv_copy, NULL, NULL, NULL);
   assert_int_equal(status, 0);
 
-  char *argv1[3] = {"/bin/chuppauname", "-s", NULL};
+  {
+    const char *const argv1[] = {"/bin/chuppauname", "-s", NULL};
+    char **argv1_copy = copy_argv(argv1);
+    assert_non_null(argv1_copy);
 
-  /* Testing run_command with /bin/chuppauname -s */
-  status = run_command(argv1, NULL, NULL, NULL);
-  assert_int_not_equal(status, 0);
+    /* Testing run_command with /bin/chuppauname -s */
+    status = run_command(argv1_copy, NULL, NULL, NULL);
+    assert_int_not_equal(status, 0);
+
+    free(argv1_copy);
+  }
 
   /* Testing run_command with NULL */
   status = run_command(NULL, NULL, NULL, NULL);
   assert_int_not_equal(status, 0);
 
-  char *argv2[1] = {NULL};
+  char *argv2[] = {NULL};
   /* Testing run_command with {NULL} */
   status = run_command(argv2, NULL, NULL, NULL);
   assert_int_not_equal(status, 0);
 
-  /* Testing run_command with /usr/bin/env uname -s and callback */
-  status = run_command(argv, NULL, command_out_fn, NULL);
+  expect_string(command_out_fn, ctx, "Context");
+  expect_string(command_out_fn, null_terminated_str, "Hello World!\n");
+  expect_value(command_out_fn, count,
+               sizeof("Hello World!\n") - 1); // -1 due to no null terminator
+
+  const char *hello_world_argv[] = {"/usr/bin/env", "echo", "Hello World!",
+                                    NULL};
+  status = run_command(hello_world_argv, NULL, command_out_fn, "Context");
   assert_int_equal(status, 0);
+
+  free(argv_copy);
 }
 
 int fn_split_string(const char *str, size_t len, void *data) {
@@ -457,10 +520,10 @@ static void test_get_secure_path(void **state) {
   utarray_free(arr);
 }
 
-bool dir_fn(char *dirpath, void *args) {
-  int *is_uname = args;
-  if (strcmp(dirpath, "/bin/uname") == 0) {
-    *is_uname = 1;
+bool check_if_bin_ls(char *dirpath, void *args) {
+  bool *found_ls = args;
+  if (strcmp(dirpath, "/bin/ls") == 0) {
+    *found_ls = true;
   }
 
   return true;
@@ -475,16 +538,16 @@ bool failing_dir_fn(char *dirpath, void *args) {
 static void test_list_dir(void **state) {
   (void)state;
 
-  int is_uname = 0;
-  int ret = list_dir("/bin", dir_fn, &is_uname);
-  assert_int_equal(ret, 0);
-  assert_int_equal(is_uname, 1);
+  bool found_ls = false;
+  assert_return_code(list_dir("/bin", check_if_bin_ls, &found_ls), errno);
+  assert_true(found_ls);
 
   // should fail for invalid folder
-  assert_int_equal(list_dir("/this-path-is-not-a-dir", dir_fn, &is_uname), -1);
+  assert_int_equal(
+      list_dir("/this-path-is-not-a-dir", check_if_bin_ls, &found_ls), -1);
 
   // should fail if dir_fn fails
-  assert_int_equal(list_dir("/bin", failing_dir_fn, &is_uname), -1);
+  assert_int_equal(list_dir("/bin", failing_dir_fn, &found_ls), -1);
 }
 
 typedef struct {
@@ -535,11 +598,10 @@ static int test_make_dirs_to_path_teardown(void **state) {
     return 0;
   }
 
-  if (test_state->tmp_dir || false) {
-    int ret_val = rm_dir_recursive(test_state->tmp_dir);
-    assert_int_equal(ret_val, 0);
-    strcpy(test_state->tmp_dir, "");
-  }
+  assert_string_not_equal(test_state->tmp_dir, "");
+  int ret_val = rm_dir_recursive(test_state->tmp_dir);
+  assert_int_equal(ret_val, 0);
+  strcpy(test_state->tmp_dir, "");
 
   test_free(*state);
   *state = NULL;
@@ -611,6 +673,7 @@ int main(int argc, char *argv[]) {
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
+      cmocka_unit_test(test_copy_argv),
       cmocka_unit_test(test_run_command),
       cmocka_unit_test(test_split_string),
       cmocka_unit_test(test_split_string_array),
