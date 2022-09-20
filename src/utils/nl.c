@@ -592,7 +592,8 @@ static int ipaddr_modify(int cmd, int flags, int argc,
       // Get prefix temporarily modifies argv,
       // which may cause problems for multi-threading
       char argv_buf[256];
-      strncpy(argv_buf, *argv, 256);
+      argv_buf[255] = '\0'; // NUL terminate in case strncpy maxes out
+      strncpy(argv_buf, *argv, sizeof(argv_buf) - 1);
       get_prefix(&lcl, argv_buf, req.ifa.ifa_family);
       if (req.ifa.ifa_family == AF_UNSPEC)
         req.ifa.ifa_family = lcl.family;
