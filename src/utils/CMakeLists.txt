@@ -64,3 +64,8 @@ target_link_libraries(sqliteu PUBLIC SQLite::SQLite3 PRIVATE log os)
 
 add_library(sockctl sockctl.c)
 target_link_libraries(sockctl PRIVATE net log os)
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+  # Abstract Unix domain sockets are only supported on Linux, but save a bit of writing
+  # to the disk
+  target_compile_definitions(sockctl PRIVATE USE_ABSTRACT_UNIX_DOMAIN_SOCKETS)
+endif()

@@ -469,7 +469,7 @@ int close_mdns(struct mdns_context *context) {
     free_command_mapper(&context->command_mapper);
     context->command_mapper = NULL;
 
-    close(context->sfd);
+    close_domain_socket(context->sfd);
     context->sfd = 0;
   }
 
