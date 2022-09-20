@@ -287,11 +287,12 @@ int read_command_output(int fd, process_callback_fn fn, void *ctx) {
 }
 
 char **copy_argv(const char *const argv[]) {
-  // calculate the length of argv (without NULL terminator)
   if (argv == NULL) {
     log_error("argv param is NULL");
     return NULL;
   }
+
+  // argc is the length of argv (excluding the NULL terminator)
   size_t argc = 0;
   while (argv[argc] != NULL) {
     argc++;
@@ -304,18 +305,43 @@ char **copy_argv(const char *const argv[]) {
     strings_length += (strlen(argv[i]) + 1);
   }
 
-  // first part of malloc-d data holds argv, second part stores string data
+  /**
+   * @brief Array of strings.
+   *
+   * The first part of the malloc-d data hold argv, which is an array of `char
+   * *`. The second part of the malloc-d data is a buffer containing all the
+   * string data (e.g. `char`).
+   *
+   * E.g., for example, a copy of
+   * ```c
+   * const char* argv[] = {"Hello", "World!", NULL};
+   * ```
+   * will look something like the following (for 64-bit ptrs):
+   *
+   * | **Address** |   0-7 |  8-15 | 16-23 |   24-29 |    30-36 |
+   * | ----------- | ----: | ----: | ----: | ------- | -------- |
+   * |  **CType**  | char* | char* | char* |  char[] |   char[] |
+   * |  **Value**  |    24 |    30 |  NULL | "Hello" | "World!" |
+   */
   char **const argv_copy = (char **)malloc(argv_array_size + strings_length);
   if (argv_copy == NULL) {
     log_errno("Failed to malloc %d bytes", argv_array_size + strings_length);
     return NULL;
   }
+
+  /**
+   * Pointer to beginning of string buffer within argv_copy.
+   * This is a separate variable as it's a different type to `copy_argv[0]`
+   * (char vs char *), and therefore pointer arthmetic gets complicated.
+   */
   char *const argv_string_buffer = &((char *)argv_copy)[argv_array_size];
 
   // copy old argv into new argv buffer
   size_t string_bytes = 0;
   for (size_t i = 0; i < argc; i++) {
+    // Set pointer to string
     argv_copy[i] = &(argv_string_buffer[string_bytes]);
+    // Set string contents
     strcpy(argv_copy[i], argv[i]);
     string_bytes += (strlen(argv[i]) + 1);
   }
