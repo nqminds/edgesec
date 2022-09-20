@@ -9,6 +9,10 @@
  * utilities.
  */
 
+/* Create tunatp interface
+sudo ip tuntap add mode tap tap0
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,6 +32,10 @@
 
 void free_tap_middleware(struct middleware_context *context) {
   if (context != NULL) {
+    struct pcap_context *pctx = (struct pcap_context *)context->mdata;
+    if (pctx != NULL) {
+      close_pcap(pctx);
+    }
     os_free(context);
   }
 }
@@ -52,6 +60,11 @@ struct middleware_context *init_tap_middleware(sqlite3 *db, char *db_path,
     return NULL;
   }
 
+  if (params == NULL) {
+    log_error("params param is NULL");
+    return NULL;
+  }
+
   if ((context = os_zalloc(sizeof(struct middleware_context))) == NULL) {
     log_errno("zalloc");
     return NULL;
@@ -60,9 +73,17 @@ struct middleware_context *init_tap_middleware(sqlite3 *db, char *db_path,
   context->db = db;
   context->eloop = NULL;
   context->pc = pc;
-  context->mdata = NULL;
   context->params = params;
 
+  struct pcap_context *pctx = NULL;
+
+  if (run_pcap(params, false, false, 10, NULL, true, NULL, NULL, &pctx) < 0) {
+    log_error("run_pcap fail");
+    free_tap_middleware(context);
+    return NULL;
+  }
+
+  context->mdata = (void *)pctx;
   return context;
 }
 
@@ -77,6 +98,15 @@ int process_tap_middleware(struct middleware_context *context, char *ltype,
     return -1;
   }
 
+  struct pcap_context *pctx = (struct pcap_context *)context->mdata;
+
+  int size;
+  if ((size = inject_pcap(pctx, packet, header->caplen)) < 0) {
+    log_error("inject_pcap");
+    return -1;
+  } else {
+    log_trace("Injected %d bytes", size);
+  }
   return 0;
 }
 
@@ -84,5 +114,5 @@ struct capture_middleware tap_middleware = {
     .init = init_tap_middleware,
     .process = process_tap_middleware,
     .free = free_tap_middleware,
-    .name = "pcap middleware",
+    .name = "tap middleware",
 };
