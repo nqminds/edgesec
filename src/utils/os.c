@@ -288,6 +288,10 @@ int read_command_output(int fd, process_callback_fn fn, void *ctx) {
 
 char **copy_argv(const char *const argv[]) {
   // calculate the length of argv (without NULL terminator)
+  if (argv == NULL) {
+    log_error("argv param is NULL");
+    return NULL;
+  }
   size_t argc = 0;
   while (argv[argc] != NULL) {
     argc++;
