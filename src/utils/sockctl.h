@@ -35,12 +35,19 @@ struct client_address {
 };
 
 /**
- * @brief Create a domain client object
+ * @brief Create a unix domain client socket
  *
- * @param addr The socket addr, if NULL is auto genereated and hidden
- * @return int Client socket
+ * @param path The UNIX domain socket path.
+ * If this is NULL:
+ * - On Linux, a randomly generated _abstract_ Unix domain socket
+ *   will be used instead.
+ * - On other Unix platforms, a randomly generated _pathname_ Unix domain
+ *   socket will be used. Please call close_domain_socket() to unlink()
+ *   the `pathname` (and tmp folder) when finished.
+ * @return File-descriptor for the client socket.
+ * @retval -1 On error.
  */
-int create_domain_client(char *addr);
+int create_domain_client(const char *path);
 
 /**
  * @brief Create a domain server object
@@ -48,7 +55,21 @@ int create_domain_client(char *addr);
  * @param server_path Server UNIX domain socket path
  * @return int Domain server socket
  */
-int create_domain_server(char *server_path);
+int create_domain_server(const char *server_path);
+
+/**
+ * @brief Closes and cleans up a unix domain socket.
+ *
+ * Closes the given unix domain socket.
+ * If the given unix domain socket is a _pathname_ socket,
+ * this function also calls unlink() on the _pathname_.
+ *
+ * @param unix_domain_socket_fd The file descriptor of the unix domain socket to
+ * close.
+ * @retval  0 on success.
+ * @retval -1 on error (see `errno` for error details).
+ */
+int close_domain_socket(int unix_domain_socket_fd);
 
 /**
  * @brief Create a udp server object

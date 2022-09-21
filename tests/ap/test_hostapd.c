@@ -26,31 +26,6 @@
 
 static char *test_hostapd_vlan_file = "/tmp/hostapd-test.vlan";
 static char *test_hostapd_conf_file = "/tmp/hostapd-test.conf";
-static char *test_hostapd_conf_content = "interface=wlan0\n"
-                                         "driver=nl80211\n"
-                                         "ssid=IOTH_IMX7\n"
-                                         "hw_mode=g\n"
-                                         "channel=11\n"
-                                         "wmm_enabled=1\n"
-                                         "auth_algs=1\n"
-                                         "wpa=2\n"
-                                         "wpa_key_mgmt=WPA-PSK\n"
-                                         "rsn_pairwise=CCMP\n"
-                                         "ctrl_interface=/var/run/hostapd\n"
-                                         "own_ip_addr=192.168.1.2\n"
-                                         "auth_server_addr=192.168.1.1\n"
-                                         "auth_server_port=1812\n"
-                                         "auth_server_shared_secret=radius\n"
-                                         "macaddr_acl=2\n"
-                                         "dynamic_vlan=1\n"
-                                         "vlan_bridge=br\n"
-                                         "vlan_file=/tmp/hostapd-test.vlan\n"
-                                         "logger_stdout=-1\n"
-                                         "logger_stdout_level=0\n"
-                                         "logger_syslog=-1\n"
-                                         "logger_syslog_level=0\n"
-                                         "ignore_broadcast_ssid=0\n"
-                                         "wpa_psk_radius=2\n";
 
 static char *test_hostapd_vlan_content = "*\twlan0.#\n";
 
@@ -146,13 +121,52 @@ static void test_generate_hostapd_conf(void **state) {
   fseek(fp, 0, SEEK_END);
   lSize = ftell(fp);
   rewind(fp);
-  buffer = (char *)malloc(sizeof(char) * lSize);
+  buffer = (char *)malloc(sizeof(char) * lSize +
+                          1); // one more char for null terminator
   assert_non_null(buffer);
 
   size_t result = fread(buffer, 1, lSize, fp);
+  buffer[result] = '\0';
+  char test_hostapd_conf_content[] = "interface=wlan0\n"
+                                     "driver=nl80211\n"
+                                     "ssid=IOTH_IMX7\n"
+                                     "hw_mode=g\n"
+                                     "channel=11\n"
+                                     "wmm_enabled=1\n"
+                                     "auth_algs=1\n"
+                                     "wpa=2\n"
+                                     "wpa_key_mgmt=WPA-PSK\n"
+                                     "rsn_pairwise=CCMP\n"
+                                     "ctrl_interface=/var/run/hostapd\n"
+                                     "own_ip_addr=192.168.1.2\n"
+                                     "auth_server_addr=192.168.1.1\n"
+                                     "auth_server_port=1812\n"
+                                     "auth_server_shared_secret=radius\n"
+                                     "macaddr_acl=2\n"
+                                     "dynamic_vlan=1\n"
+                                     "vlan_bridge=br\n"
+                                     "vlan_file=/tmp/hostapd-test.vlan\n"
+                                     "logger_stdout=-1\n"
+                                     "logger_stdout_level=0\n"
+                                     "logger_syslog=-1\n"
+                                     "logger_syslog_level=0\n"
+                                     "ignore_broadcast_ssid=0\n"
+                                     "wpa_psk_radius=2\n";
   assert_int_equal(result, strlen(test_hostapd_conf_content));
-  int cmp = memcmp(buffer, test_hostapd_conf_content, result);
-  assert_int_equal(cmp, 0);
+
+  { // compares the two strings line by line to make it easier to spot errors
+    char *actual_state;
+    char *expected_state;
+    const char *line_actual = strtok_r(buffer, "\n", &actual_state);
+    const char *line_expected =
+        strtok_r(test_hostapd_conf_content, "\n", &expected_state);
+    while (line_actual != NULL) {
+      log_trace("Comparing lines %s and %s", line_actual, line_expected);
+      assert_string_equal(line_actual, line_expected);
+      line_actual = strtok_r(NULL, "\n", &actual_state);
+      line_expected = strtok_r(NULL, "\n", &expected_state);
+    }
+  }
 
   fclose(fp);
   free(buffer);
