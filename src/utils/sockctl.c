@@ -25,7 +25,7 @@
 #include "net.h"
 
 #define SOCK_EXTENSION ".sock"
-#define TMP_UNIX_SOCK_FOLDER_PREFIX "/tmp/edgesec."
+#define TMP_UNIX_SOCK_FOLDER_PREFIX "/tmp/edgesec/tmp-unix-socks."
 /** Template for mkdtemp() to create tmp folders for temporary unix domain
  * sockets */
 #define TMP_UNIX_SOCK_FOLDER_TEMPLATE TMP_UNIX_SOCK_FOLDER_PREFIX "XXXXXX"
@@ -46,9 +46,15 @@ void init_domain_addr(struct sockaddr_un *unaddr, const char *addr) {
  *
  * @return A path that can be used to create a temporary domain socket.
  * @retval NULL on error (see @p errno).
+ * @post Please free() the returned string.
+ * @post Please delete the temporary folder,
+ * e.g. by using cleanup_tmp_domain_socket_path()
  */
 static const char *create_tmp_domain_socket_path() {
   char socket_dir[] = TMP_UNIX_SOCK_FOLDER_TEMPLATE;
+  if (make_dirs_to_path(socket_dir, 0755)) {
+    log_errno("Failed to make_dirs_to_path(%s, 0755)", socket_dir);
+  }
   if (mkdtemp(socket_dir) == NULL) {
     log_errno("Failed to mkdtemp %s", socket_dir);
     return NULL;
