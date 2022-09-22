@@ -81,7 +81,7 @@ static int cleanup_tmp_domain_socket_path(const char *socket_path) {
     return -1;
   }
   if (strncmp(TMP_UNIX_SOCK_FOLDER_PREFIX, socket_path,
-              sizeof(TMP_UNIX_SOCK_FOLDER_PREFIX)) != 0) {
+              sizeof(TMP_UNIX_SOCK_FOLDER_PREFIX) - 1) != 0) {
     // **NOT** created create_tmp_domain_socket_path()
     return 0;
   }
