@@ -291,7 +291,7 @@ int run_ap(struct supervisor_context *context, bool exec_ap, bool generate_ssid,
 
 bool close_ap(struct supervisor_context *context) {
   if (context->ap_sock != -1) {
-    close(context->ap_sock);
+    close_domain_socket(context->ap_sock);
     context->ap_sock = -1;
   }
 

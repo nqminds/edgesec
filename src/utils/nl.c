@@ -592,7 +592,8 @@ static int ipaddr_modify(int cmd, int flags, int argc,
       // Get prefix temporarily modifies argv,
       // which may cause problems for multi-threading
       char argv_buf[256];
-      strncpy(argv_buf, *argv, 256);
+      argv_buf[255] = '\0'; // NUL terminate in case strncpy maxes out
+      strncpy(argv_buf, *argv, sizeof(argv_buf) - 1);
       get_prefix(&lcl, argv_buf, req.ifa.ifa_family);
       if (req.ifa.ifa_family == AF_UNSPEC)
         req.ifa.ifa_family = lcl.family;
@@ -1016,27 +1017,26 @@ out_handle_destroy:
 }
 
 static int process_phy_handler(struct nl_msg *msg, void *arg) {
+  bool *isvalid = (bool *)arg;
+
   struct nlattr *tb_msg[NL80211_ATTR_MAX + 1];
   struct genlmsghdr *gnlh = nlmsg_data(nlmsg_hdr(msg));
-
-  struct nlattr *nl_mode;
-  int rem_mode;
-  bool *isvalid = (bool *)arg;
-  char *capability;
-  char *wiphy;
-
   nla_parse(tb_msg, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0),
             genlmsg_attrlen(gnlh, 0), NULL);
 
-  if (tb_msg[NL80211_ATTR_WIPHY_NAME])
+  char *wiphy = NULL;
+  if (tb_msg[NL80211_ATTR_WIPHY_NAME]) {
     wiphy = nla_get_string(tb_msg[NL80211_ATTR_WIPHY_NAME]);
-  log_trace("Using Wiphy %s", wiphy);
+    log_trace("Using Wiphy %s", wiphy);
+  }
 
   if (tb_msg[NL80211_ATTR_SUPPORTED_IFTYPES]) {
     char modebuf[100];
+    struct nlattr *nl_mode;
+    int rem_mode;
     nla_for_each_nested(nl_mode, tb_msg[NL80211_ATTR_SUPPORTED_IFTYPES],
                         rem_mode) {
-      capability = (char *)iftype_name(nla_type(nl_mode), modebuf);
+      const char *capability = (char *)iftype_name(nla_type(nl_mode), modebuf);
       log_trace("%s -> %s", wiphy, capability);
       if (!strcmp(capability, "AP/VLAN")) {
         *isvalid = true;

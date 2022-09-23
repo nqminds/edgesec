@@ -149,6 +149,13 @@ include(uthash)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package(Threads REQUIRED)
 
+# Most C11 implementation support threads.h, but it's technically optional and not yet supported on MSVC
+include(CheckIncludeFile)
+check_include_file(threads.h C11_STD_THREADS)
+if (NOT C11_STD_THREADS)
+  message(FATAL_ERROR "Your C11 stdlib does not support #include <threads.h>, see https://en.cppreference.com/w/c/thread")
+endif()
+
 # configure a header file to pass some of the CMake settings
 # to the source code
 configure_file(

@@ -1,3 +1,6 @@
+# Error on all C/C++ warnings in the tests/ directory if making a Debug build
+add_compile_options($<$<CONFIG:Debug>:-Werror>)
+
 include_directories (
   "${PROJECT_SOURCE_DIR}/src"
 )

@@ -6,7 +6,7 @@ target_link_options(test_header_middleware
 )
 
 add_executable(test_sqlite_header test_sqlite_header.c)
-target_link_libraries(test_sqlite_header PRIVATE sqlite_header os log Threads::Threads cmocka::cmocka)
+target_link_libraries(test_sqlite_header PRIVATE sqlite_header os log Threads::Threads cmocka::cmocka SQLite::SQLite3)
 
 add_executable(test_packet_queue test_packet_queue.c)
 target_link_libraries(test_packet_queue PUBLIC PCAP::pcap SQLite::SQLite3 PRIVATE packet_queue os log cmocka::cmocka)
@@ -25,7 +25,9 @@ set_tests_properties(test_header_middleware
 add_test(NAME test_sqlite_header COMMAND test_sqlite_header)
 set_tests_properties(test_sqlite_header
   PROPERTIES
-  WILL_FAIL FALSE)
+  WILL_FAIL FALSE
+  ENVIRONMENT CMOCKA_TEST_ABORT='1' # these tests uses threading
+)
 
 add_test(NAME test_packet_queue COMMAND test_packet_queue)
 set_tests_properties(test_packet_queue

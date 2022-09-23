@@ -14,6 +14,8 @@
 #include <ctype.h>
 #include <errno.h>
 #include <sys/ioctl.h>
+#include <limits.h> // for PATH_MAX
+#include <libgen.h> // for dirname()
 
 #include "sockctl.h"
 
@@ -23,55 +25,116 @@
 #include "net.h"
 
 #define SOCK_EXTENSION ".sock"
-
+#define TMP_UNIX_SOCK_FOLDER_PREFIX "/tmp/edgesec/tmp-unix-socks."
+/** Template for mkdtemp() to create tmp folders for temporary unix domain
+ * sockets */
+#define TMP_UNIX_SOCK_FOLDER_TEMPLATE TMP_UNIX_SOCK_FOLDER_PREFIX "XXXXXX"
+/** Basename for temporary unix domain sockets */
+#define TMP_UNIX_SOCK_NAME "client-socket" SOCK_EXTENSION
 #define DOMAIN_REPLY_TIMEOUT 10
 
-void init_domain_addr(struct sockaddr_un *unaddr, char *addr) {
-  os_memset(unaddr, 0, sizeof(struct sockaddr_un));
-  unaddr->sun_family = AF_UNIX;
+void init_domain_addr(struct sockaddr_un *unaddr, const char *addr) {
+  *unaddr = (struct sockaddr_un){.sun_family = AF_UNIX};
   os_strlcpy(unaddr->sun_path, addr, sizeof(unaddr->sun_path));
 }
 
-char *generate_socket_name(void) {
-  unsigned char crypto_rand[4];
-  char *buf = NULL;
-  if (os_get_random(crypto_rand, 4) == -1) {
-    log_error("os_get_random fail");
+/**
+ * @brief Creates a path for a temporary domain socket.
+ *
+ * Creates a temporary folder using `mkdtemp()`, then returns a path
+ * within that folder.
+ *
+ * @return A path that can be used to create a temporary domain socket.
+ * @retval NULL on error (see @p errno).
+ * @post Please free() the returned string.
+ * @post Please delete the temporary folder,
+ * e.g. by using cleanup_tmp_domain_socket_path()
+ */
+static const char *create_tmp_domain_socket_path() {
+  char socket_dir[] = TMP_UNIX_SOCK_FOLDER_TEMPLATE;
+  if (make_dirs_to_path(socket_dir, 0755)) {
+    log_errno("Failed to make_dirs_to_path(%s, 0755)", socket_dir);
+  }
+  if (mkdtemp(socket_dir) == NULL) {
+    log_errno("Failed to mkdtemp %s", socket_dir);
     return NULL;
   }
-  buf = os_zalloc(sizeof(crypto_rand) * 2 + ARRAY_SIZE(SOCK_EXTENSION) + 1);
-  sprintf(buf, "%x%x%x%x" SOCK_EXTENSION, crypto_rand[0], crypto_rand[1],
-          crypto_rand[2], crypto_rand[3]);
-  return buf;
+
+  // Can we make this `const`?
+  char socket_name[] = TMP_UNIX_SOCK_NAME;
+  return concat_paths(socket_dir, socket_name);
 }
 
-int create_domain_client(char *addr) {
-  struct sockaddr_un claddr;
-  int sock;
-  char *client_addr = NULL;
+/**
+ * @brief Cleans up the given @p socket_path.
+ *
+ * Performs extra cleanup if the @p socket_path was created with
+ * create_tmp_domain_socket_path().
+ *
+ * @param socket_path The path to the socket to cleanup.
+ * @retval -1 On error.
+ * @retval  0 Success, cleaned up @p socket_path.
+ */
+static int cleanup_tmp_domain_socket_path(const char *socket_path) {
+  if (unlink(socket_path)) {
+    log_errno("Failed to unlink() %d", socket_path);
+    return -1;
+  }
+  if (strncmp(TMP_UNIX_SOCK_FOLDER_PREFIX, socket_path,
+              sizeof(TMP_UNIX_SOCK_FOLDER_PREFIX) - 1) != 0) {
+    // **NOT** created create_tmp_domain_socket_path()
+    return 0;
+  }
+
+  // need to make a non-const copy of path since dirname() may change
+  // stirng contents
+  char path[PATH_MAX];
+  path[PATH_MAX - 1] = '\0'; // ensure string is always NUL terminated
+  strncpy(path, socket_path, PATH_MAX - 1);
+
+  char *socket_dir = dirname(path);
+
+  log_debug("Deleting folder %s, as it looks like it was created by "
+            "create_tmp_domain_socket_path()",
+            socket_dir);
+  // only deletes empty directories, not empty dirs set errno to ENOTEMPTY
+  if (rmdir(socket_dir)) {
+    log_errno("Failed to rmdir() tmp unix socket folder %s", socket_dir);
+    return -1;
+  }
+  return 0;
+}
+
+int create_domain_client(const char *path) {
   socklen_t addrlen = 0;
-
-  os_memset(&claddr, 0, sizeof(struct sockaddr_un));
-  claddr.sun_family = AF_UNIX;
-
-  sock = socket(AF_UNIX, SOCK_DGRAM, 0);
+  struct sockaddr_un claddr = {.sun_family = AF_UNIX};
+  int sock = socket(AF_UNIX, SOCK_DGRAM, 0);
   if (sock == -1) {
     log_errno("socket");
     return -1;
   }
 
-  if (addr == NULL) {
-    if ((client_addr = generate_socket_name()) == NULL) {
-      log_error("generate_socket_name fail");
-      close(sock);
+  if (path == NULL) {
+#ifdef USE_ABSTRACT_UNIX_DOMAIN_SOCKETS
+    (void)&create_tmp_domain_socket_path; // not used if
+                                          // USE_ABSTRACT_UNIX_DOMAIN_SOCKETS is
+                                          // set
+    // Setting addrlen to `sizeof(sa_family_t)` will autobind
+    // the Unix domain socket to a random 5-hex character long
+    // abstract address (2^20 autobind addresses)
+    // See https://manpages.ubuntu.com/manpages/jammy/en/man7/unix.7.html
+    addrlen = sizeof(sa_family_t);
+#else // standard POSIX
+    const char *tmp_socket_path = create_tmp_domain_socket_path();
+    if (tmp_socket_path == NULL) {
+      log_errno("Failed to create temporary unix domain socket.");
       return -1;
     }
-
-    strcpy(&claddr.sun_path[1], client_addr);
-    addrlen = sizeof(sa_family_t) + strlen(client_addr) + 1;
-    os_free(client_addr);
+    os_strlcpy(claddr.sun_path, tmp_socket_path, sizeof(claddr.sun_path));
+    addrlen = sizeof(struct sockaddr_un);
+#endif
   } else {
-    os_strlcpy(claddr.sun_path, addr, sizeof(claddr.sun_path));
+    os_strlcpy(claddr.sun_path, path, sizeof(claddr.sun_path));
     addrlen = sizeof(struct sockaddr_un);
   }
 
@@ -84,11 +147,8 @@ int create_domain_client(char *addr) {
   return sock;
 }
 
-int create_domain_server(char *server_path) {
-  struct sockaddr_un svaddr;
-  int sfd;
-
-  sfd = socket(AF_UNIX, SOCK_DGRAM, 0); /* Create server socket */
+int create_domain_server(const char *server_path) {
+  int sfd = socket(AF_UNIX, SOCK_DGRAM, 0); /* Create server socket */
   if (sfd == -1) {
     log_errno("socket");
     return -1;
@@ -99,6 +159,7 @@ int create_domain_server(char *server_path) {
   /* For an explanation of the following check, see the erratum note for
      page 1168 at http://www.man7.org/tlpi/errata/.
   */
+  struct sockaddr_un svaddr;
   if (strlen(server_path) > sizeof(svaddr.sun_path) - 1) {
     log_error("Server socket path too long: %s", server_path);
     close(sfd);
@@ -120,6 +181,34 @@ int create_domain_server(char *server_path) {
   }
 
   return sfd;
+}
+
+int close_domain_socket(int unix_domain_socket_fd) {
+  struct sockaddr_un sockaddr = {0};
+  socklen_t address_len = sizeof(sockaddr);
+  if (getsockname(unix_domain_socket_fd, (struct sockaddr *)&sockaddr,
+                  &address_len)) {
+    log_errno("Failed to getsockname for unix domain socket %d",
+              unix_domain_socket_fd);
+    return -1;
+  }
+  if (sockaddr.sun_family != AF_UNIX) {
+    log_error("Socket %d is not a unix domain socket, instead it's a %d",
+              unix_domain_socket_fd, sockaddr.sun_family);
+    return -1;
+  }
+  if (address_len >=
+          sizeof(sa_family_t) &&   // unbound/_unnamed_ unix domain socket
+      sockaddr.sun_path[0] != '\0' // _abstract_ unix domain socket (Linux only)
+  ) {
+    // Unix domain socket is type _pathname_
+    if (cleanup_tmp_domain_socket_path(sockaddr.sun_path)) {
+      log_errno("Failed to cleanup unix domain socket at %s",
+                sockaddr.sun_path);
+      return -1;
+    }
+  }
+  return close(unix_domain_socket_fd);
 }
 
 int create_udp_server(unsigned int port) {
@@ -330,13 +419,13 @@ int writeread_domain_data_str(char *socket_path, const char *write_str,
       write_domain_data_s(sfd, write_str, strlen(write_str), socket_path);
   if (send_count < 0) {
     log_errno("sendto");
-    close(sfd);
+    close_domain_socket(sfd);
     return -1;
   }
 
   if ((size_t)send_count != strlen(write_str)) {
     log_errno("write_domain_data_s fail");
-    close(sfd);
+    close_domain_socket(sfd);
     return -1;
   }
 
@@ -345,14 +434,14 @@ int writeread_domain_data_str(char *socket_path, const char *write_str,
   errno = 0;
   if (select(sfd + 1, &readfds, NULL, NULL, &timeout) < 0) {
     log_errno("select");
-    close(sfd);
+    close_domain_socket(sfd);
     return -1;
   }
 
   if (FD_ISSET(sfd, &readfds)) {
     if (ioctl(sfd, FIONREAD, &bytes_available) == -1) {
       log_errno("ioctl");
-      close(sfd);
+      close_domain_socket(sfd);
       return -1;
     }
 
@@ -360,7 +449,7 @@ int writeread_domain_data_str(char *socket_path, const char *write_str,
     rec_data = os_zalloc(bytes_available + 1);
     if (rec_data == NULL) {
       log_errno("os_zalloc");
-      close(sfd);
+      close_domain_socket(sfd);
       return -1;
     }
 
@@ -369,14 +458,14 @@ int writeread_domain_data_str(char *socket_path, const char *write_str,
 
     if (rec_count < 0) {
       log_error("read_domain_data_s fail");
-      close(sfd);
+      close_domain_socket(sfd);
       os_free(rec_data);
       return -1;
     }
 
     if ((trimmed = rtrim(rec_data, NULL)) == NULL) {
       log_error("rtrim fail");
-      close(sfd);
+      close_domain_socket(sfd);
       os_free(rec_data);
       return -1;
     }
@@ -384,11 +473,11 @@ int writeread_domain_data_str(char *socket_path, const char *write_str,
     *reply = os_strdup(trimmed);
   } else {
     log_error("Socket timeout");
-    close(sfd);
+    close_domain_socket(sfd);
     return -1;
   }
 
-  close(sfd);
+  close_domain_socket(sfd);
   os_free(rec_data);
 
   return 0;
