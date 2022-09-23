@@ -143,10 +143,10 @@ find_program( GENHTML_PATH NAMES genhtml genhtml.perl genhtml.bat )
 find_program( GCOVR_PATH gcovr PATHS ${CMAKE_SOURCE_DIR}/scripts/test)
 find_program( CPPFILT_PATH NAMES c++filt )
 
+# Check supported compiler (Clang, GNU and Flang)
 get_property(LANGUAGES GLOBAL PROPERTY ENABLED_LANGUAGES)
-list(GET LANGUAGES 0 LANG)
-
-if("${CMAKE_${LANG}_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
+foreach(LANG ${LANGUAGES})
+  if("${CMAKE_${LANG}_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
     if("${CMAKE_${LANG}_COMPILER_VERSION}" VERSION_LESS 3)
         message(FATAL_ERROR "Clang version must be 3.0.0 or greater! Aborting...")
     endif()
@@ -164,19 +164,15 @@ if("${CMAKE_${LANG}_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
         FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
     )
     set(GCOV_PATH ${CMAKE_CURRENT_BINARY_DIR}/llvm-cov-gcov.sh)
-elseif(NOT CMAKE_COMPILER_IS_GNUCXX)
-    if("${CMAKE_Fortran_COMPILER_ID}" MATCHES "[Ff]lang")
-        # Do nothing; exit conditional without error if true
-    elseif("${CMAKE_Fortran_COMPILER_ID}" MATCHES "GNU")
-        # Do nothing; exit conditional without error if true
-    else()
-        message(FATAL_ERROR "Compiler is not GNU gcc! Aborting...")
-    endif()
-else()
+  elseif(NOT "${CMAKE_${LANG}_COMPILER_ID}" MATCHES "GNU"
+         AND NOT "${CMAKE_${LANG}_COMPILER_ID}" MATCHES "(LLVM)?[Ff]lang")
+    message(FATAL_ERROR "Compiler is not GNU or Flang! Aborting...")
+  else()
     if(NOT GCOV_PATH)
         message(FATAL_ERROR "gcov not found! Aborting...")
     endif() # NOT GCOV_PATH
-endif()
+  endif()
+endforeach()
 
 set(COVERAGE_COMPILER_FLAGS "-g -fprofile-arcs -ftest-coverage"
     CACHE INTERNAL "")
