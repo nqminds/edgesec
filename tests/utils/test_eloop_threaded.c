@@ -18,7 +18,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
-#include <pthread.h>
+#include <threads.h>
 #include <utarray.h>
 
 #include "utils/log.h"
@@ -120,43 +120,52 @@ static void eloop_sock_handler_function(int sock, void *eloop_ctx,
   }
 }
 
+struct eloop_sock_handler_args {
+  /** port to listen on */
+  const unsigned int udp_port;
+  /**
+   * string @p UT_array that has all the data recevied by the UDP server.
+   * Please remember to utarray_free() this array when done with it.
+   */
+  UT_array *sock_handler_recieved_data;
+};
+
 /**
  * @brief UDP server thread for testing eloop_sock_*
  *
- * @param thread_ctx Pointer to the port to listen on (unsigned int)
- * @return string @p UT_array that has all the data recevied by the UDP server.
- * Please remember to utarray_free() this array when done with it.
+ * @param[in, out] thread_ctx Pointer to struct eloop_sock_handler_args
+ * @retval 0 On success
+ * @retval -1 (Never), CMocka aborts on error.
  */
-static void *eloop_sock_handler_thread(void *thread_ctx) {
-  unsigned int *udp_port = thread_ctx;
+static int eloop_sock_handler_thread(void *thread_ctx) {
+  struct eloop_sock_handler_args *args = thread_ctx;
 
   struct eloop_data *eloop = eloop_init();
   assert_non_null(
       eloop); // might crash, since CMocka doesn't support multithreading
 
-  log_debug("Hosting server on localhost:%d", *udp_port);
+  log_debug("Hosting server on localhost:%d", args->udp_port);
 
-  UT_array *sock_handler_recieved_data;
-  utarray_new(sock_handler_recieved_data, &ut_str_icd);
+  utarray_new(args->sock_handler_recieved_data, &ut_str_icd);
   // CMocka doesn't do well with threading, so this might not throw an error
   // on failure.
-  assert_non_null(sock_handler_recieved_data);
+  assert_non_null(args->sock_handler_recieved_data);
 
-  int server_socket = create_udp_server(*udp_port);
+  int server_socket = create_udp_server(args->udp_port);
   assert_return_code(eloop_register_read_sock(
                          eloop, server_socket, eloop_sock_handler_function,
-                         eloop, sock_handler_recieved_data),
+                         eloop, args->sock_handler_recieved_data),
                      0);
 
   log_debug("Starting server UDP eloop");
   eloop_run(eloop);
   log_debug("Stopping server UDP eloop");
   log_debug("Recieved %d packets of data on port %d",
-            utarray_len(sock_handler_recieved_data), *udp_port);
+            utarray_len(args->sock_handler_recieved_data), args->udp_port);
 
   eloop_free(eloop);
   close(server_socket);
-  return sock_handler_recieved_data;
+  return 0;
 }
 
 /**
@@ -227,10 +236,14 @@ static void test_eloop_sock(void **state) {
                                             &stop_packet),
                      0);
 
-  pthread_t server_thread;
-  assert_return_code(pthread_create(&server_thread, NULL,
-                                    eloop_sock_handler_thread, &udp_port),
-                     0);
+  struct eloop_sock_handler_args eloop_sock_handler_args = {
+      .udp_port = udp_port,
+      .sock_handler_recieved_data = NULL,
+  };
+  thrd_t server_thread;
+  assert_int_equal(thrd_create(&server_thread, eloop_sock_handler_thread,
+                               &eloop_sock_handler_args),
+                   thrd_success);
 
   log_debug("Starting eloop");
   eloop_run(test_state->eloop);
@@ -239,23 +252,25 @@ static void test_eloop_sock(void **state) {
   assert_return_code(close(client_socket), 0);
 
   log_debug("Waiting for server to close");
-  UT_array *sock_handler_recieved_data;
-  assert_return_code(
-      pthread_join(server_thread, (void **)&sock_handler_recieved_data), 0);
+  int server_thread_return_code;
+  assert_int_equal(thrd_join(server_thread, &server_thread_return_code),
+                   thrd_success);
+  assert_return_code(server_thread_return_code, 0);
 
   log_debug("Server recieved %d packets",
-            utarray_len(sock_handler_recieved_data));
+            utarray_len(eloop_sock_handler_args.sock_handler_recieved_data));
   log_debug("Expected server to recieve %d packets", utarray_len(sent_data));
-  assert_int_equal(utarray_len(sock_handler_recieved_data),
-                   utarray_len(sent_data));
+  assert_int_equal(
+      utarray_len(eloop_sock_handler_args.sock_handler_recieved_data),
+      utarray_len(sent_data));
 
   for (uint32_t i = 0; i < utarray_len(sent_data); i++) {
-    char **actual_string =
-        (char **)utarray_eltptr(sock_handler_recieved_data, i);
+    char **actual_string = (char **)utarray_eltptr(
+        eloop_sock_handler_args.sock_handler_recieved_data, i);
     char **expected_string = (char **)utarray_eltptr(sent_data, i);
     assert_string_equal(*actual_string, *expected_string);
   }
-  utarray_free(sock_handler_recieved_data);
+  utarray_free(eloop_sock_handler_args.sock_handler_recieved_data);
   utarray_free(sent_data);
 }
 
