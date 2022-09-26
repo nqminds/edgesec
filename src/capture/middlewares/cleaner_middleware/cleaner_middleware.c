@@ -170,8 +170,6 @@ struct middleware_context *init_cleaner_middleware(sqlite3 *db, char *db_path,
                                                    struct eloop_data *eloop,
                                                    struct pcap_context *pc,
                                                    char *params) {
-  (void)params;
-
   log_info("Init cleaner middleware...");
 
   if (db == NULL) {
