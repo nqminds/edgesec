@@ -8,12 +8,14 @@
 #include <sys/un.h>
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 
 #include "utils/log.h"
 #include "utils/eloop.h"
 #include "utils/sockctl.h"
 
-#define TMP_PFX "tdoms"
+#include "tmpdir.h"
+
 #define TEST_ELOOP_PARAM "param"
 #define TEST_SEND_BUF_DATA "test"
 
@@ -219,11 +221,15 @@ static void test_eloop_timeout(void **state) {
 }
 
 static void test_eloop_register_read_sock(void **state) {
-  (void)state; /* unused */
+  struct tmpdir *tmpdir = *state;
   char *send_buf = TEST_SEND_BUF_DATA;
   char *eloop_param = TEST_ELOOP_PARAM;
   struct sockaddr_un svaddr;
-  char *server_file_path = tempnam(NULL, TMP_PFX);
+
+  char server_file_path[PATH_MAX];
+  server_file_path[PATH_MAX - 1] = '\0';
+  snprintf(server_file_path, PATH_MAX - 1, "%s/%s", tmpdir->tmpdir,
+           "test_eloop_register_read_sock.sock");
 
   struct eloop_data *eloop = eloop_init();
 
@@ -251,14 +257,16 @@ static void test_eloop_register_read_sock(void **state) {
   close(ss);
   close(cs);
   assert_return_code(remove(server_file_path), /** errno */ 0);
-  os_free(server_file_path);
   eloop_free(eloop);
 }
 
 static void test_eloop_unregister_read_sock(void **state) {
-  (void)state; /* unused */
+  struct tmpdir *tmpdir = *state;
+  char server_file_path[PATH_MAX];
+  server_file_path[PATH_MAX - 1] = '\0';
+  snprintf(server_file_path, PATH_MAX - 1, "%s/%s", tmpdir->tmpdir,
+           "test_eloop_unregister_read_sock.sock");
 
-  char *server_file_path = tempnam(NULL, TMP_PFX);
   struct eloop_data *eloop = eloop_init();
   int ss = create_domain_server(server_file_path);
 
@@ -275,7 +283,6 @@ static void test_eloop_unregister_read_sock(void **state) {
   close(ss);
   eloop_free(eloop);
   assert_return_code(remove(server_file_path), /** errno */ 0);
-  os_free(server_file_path);
 }
 
 static void test_eloop_register_timeout(void **state) {
@@ -317,8 +324,10 @@ int main(int argc, char *argv[]) {
 
   const struct CMUnitTest tests[] = {
       cmocka_unit_test(test_eloop_init),
-      cmocka_unit_test(test_eloop_register_read_sock),
-      cmocka_unit_test(test_eloop_unregister_read_sock),
+      cmocka_unit_test_setup_teardown(test_eloop_register_read_sock,
+                                      setup_tmpdir, teardown_tmpdir),
+      cmocka_unit_test_setup_teardown(test_eloop_unregister_read_sock,
+                                      setup_tmpdir, teardown_tmpdir),
       cmocka_unit_test(test_eloop_register_timeout),
       cmocka_unit_test(test_eloop_cancel_timeout),
       cmocka_unit_test_setup_teardown(test_eloop_timeout, setup, teardown)};
