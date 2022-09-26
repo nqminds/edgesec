@@ -365,9 +365,10 @@ ssize_t split_string_array(const char *str, char sep, UT_array *arr);
  *
  * @param path_left First string path
  * @param path_right Second string path
- * @return char* Concatenated paths
+ * @return Concatenated paths. Please `free()` the return value when done.
+ * @retval NULL on memory allocation error.
  */
-char *concat_paths(char *path_left, char *path_right);
+char *concat_paths(const char *path_left, const char *path_right);
 
 /**
  * @brief Get the valid path string
