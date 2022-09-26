@@ -28,11 +28,11 @@ echo
 echo "Mirroring traffic from $SRC_IFACE to $DST_IFACE"
 
 # ingress
-tc qdisc add dev $SRC_IFACE ingress
-tc filter add dev $SRC_IFACE parent ffff: \
+tc qdisc add dev "$SRC_IFACE" ingress
+tc filter add dev "$SRC_IFACE" parent ffff: \
           protocol all \
           u32 match u8 0 0 \
-          action mirred egress mirror dev $DST_IFACE
+          action mirred egress mirror dev "$DST_IFACE"
 
 # egress
 tc qdisc add dev $SRC_IFACE handle 1: root prio
