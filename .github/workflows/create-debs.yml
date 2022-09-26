@@ -130,7 +130,63 @@ jobs:
         with:
           files: coverage.info
           fail_ci_if_error: true
+  build-recap:
+    name: Building Recap
+    runs-on: [ubuntu-22.04]
+    permissions:
+      contents: write # needed for publishing release artifact
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install devscripts equivs -y # install mk-build-depends
+          sudo mk-build-deps --install --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes'  debian/control
+      - name: Configure
+        run: cmake --preset recap -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build --preset recap -j="$(($(nproc) + 1))"
+      - name: Archive built recap
+        uses: actions/upload-artifact@v3
+        with:
+          name: recap-linux-x86_64
+          path: build/recap/src/recap
+      - name: Upload recap as Release Assets
+        # only run action if this is being run from a GitHub Release
+        if: ${{ github.event_name == 'release' }}
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const fs = require('fs').promises;
+            const {basename} = require("path");
 
+            const filePath = "build/recap/src/recap";
+            console.log(`Uploading ${filePath}`);
+            const filePromise = fs.readFile(filePath);
+            // Determine content-length for header to upload asset
+            const {size: contentLength} = await fs.stat(filePath);
+            // Setup headers for API call, see Octokit Documentation:
+            // https://octokit.github.io/rest.js/#octokit-routes-repos-upload-release-asset for more information
+            const headers = {
+              'content-type': "application/x-pie-executable",
+              'content-length': contentLength,
+            };
+            // Upload a release asset
+            // API Documentation: https://developer.github.com/v3/repos/releases/#upload-a-release-asset
+            // Octokit Documentation: https://octokit.github.io/rest.js/v18#repos-upload-release-asset
+            try {
+              const uploadAssetResponse = await github.rest.repos.uploadReleaseAsset({
+                url: context.payload.release.upload_url,
+                headers,
+                name: `${basename(filePath)}-linux-x86_64`,
+                data: await filePromise,
+              });
+            } catch (error) {
+              // upload errors are usually since the file already exists
+              console.error(`[skipped] Uploading ${basename(filePath)} failed: ${error}`);
+            }
   build-deb:
     name: Build Debian Package
     # building a deb is super slow, but we're a public repo now, so it's free!!
