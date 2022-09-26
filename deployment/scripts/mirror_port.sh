@@ -35,11 +35,11 @@ tc filter add dev "$SRC_IFACE" parent ffff: \
           action mirred egress mirror dev "$DST_IFACE"
 
 # egress
-tc qdisc add dev $SRC_IFACE handle 1: root prio
-tc filter add dev $SRC_IFACE parent 1: \
+tc qdisc add dev "$SRC_IFACE" handle 1: root prio
+tc filter add dev "$SRC_IFACE" parent 1: \
           protocol all \
           u32 match u8 0 0 \
-          action mirred egress mirror dev $DST_IFACE
+          action mirred egress mirror dev "$DST_IFACE"
 
 echo "Hit Ctrl-C or kill this session to end port mirroring"
 sleep infinity
