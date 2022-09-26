@@ -13,12 +13,14 @@
 #include <setjmp.h>
 #include <stdint.h>
 #include <cmocka.h>
-// used to delete directory recursively
-#include <ftw.h>
+
+#include <limits.h>
 
 #include "utils/log.h"
 #include "utils/os.h"
 #include "utils/allocs.h"
+
+#include "tmpdir.h"
 
 static void test_copy_argv(void **state) {
   (void)state; /* unused */
@@ -555,68 +557,10 @@ static void test_list_dir(void **state) {
   assert_int_equal(list_dir("/bin", failing_dir_fn, &found_ls), -1);
 }
 
-typedef struct {
-  char tmp_dir[256];
-} make_dirs_to_path_t;
-
-static int test_make_dirs_to_path_setup(void **state) {
-  make_dirs_to_path_t *test_state = test_calloc(1, sizeof(make_dirs_to_path_t));
-  *state = test_state;
-
-  // ignore return value if directory creation failed
-  mkdir("/tmp/edgesec_tests", 0755);
-  char template[] = "/tmp/edgesec_tests/os_tests.XXXXXX";
-  char *tmp_dir = mkdtemp(template);
-
-  // check to see if tmp_dir was built correctly
-  assert_non_null(tmp_dir);
-
-  strcpy(test_state->tmp_dir, tmp_dir);
-  return 0;
-}
-
-// recursively delete folder using ftw
-static int rm_file(const char *pathname, const struct stat *sbuf, int type,
-                   struct FTW *ftwb) {
-  (void)sbuf;
-  (void)type;
-  (void)ftwb;
-
-  if (remove(pathname) < 0) {
-    perror("ERROR: remove");
-    return -1;
-  }
-  return 0;
-}
-static int rm_dir_recursive(const char *directory) {
-  int ret_val = nftw(directory, rm_file, 10, FTW_DEPTH | FTW_MOUNT | FTW_PHYS);
-  if (ret_val) {
-    printf("Error when trying to delete '%s'", directory);
-    perror("ERROR: rm_dir_recursive for directory");
-  }
-  return ret_val;
-}
-
-static int test_make_dirs_to_path_teardown(void **state) {
-  make_dirs_to_path_t *test_state = *state;
-  if (test_state == NULL) {
-    return 0;
-  }
-
-  assert_string_not_equal(test_state->tmp_dir, "");
-  int ret_val = rm_dir_recursive(test_state->tmp_dir);
-  assert_int_equal(ret_val, 0);
-  strcpy(test_state->tmp_dir, "");
-
-  test_free(*state);
-  *state = NULL;
-  return 0;
-}
-
 static void test_make_dirs_to_path(void **state) {
-  make_dirs_to_path_t *test_state = *state;
+  struct tmpdir *test_state = *state;
   char *directories_to_build =
-      construct_path(test_state->tmp_dir, "should/create/these/dirs");
+      construct_path(test_state->tmpdir, "should/create/these/dirs");
   char *path = construct_path(directories_to_build, "not_a_dir.txt");
 
   int ret = make_dirs_to_path(path, 0755);
@@ -689,9 +633,8 @@ int main(int argc, char *argv[]) {
       cmocka_unit_test(test_get_secure_path),
       cmocka_unit_test(test_list_dir),
       cmocka_unit_test(test_string_append_char),
-      cmocka_unit_test_setup_teardown(test_make_dirs_to_path,
-                                      test_make_dirs_to_path_setup,
-                                      test_make_dirs_to_path_teardown)};
+      cmocka_unit_test_setup_teardown(test_make_dirs_to_path, setup_tmpdir,
+                                      teardown_tmpdir)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }
