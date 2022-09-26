@@ -17,6 +17,6 @@ fi
 echo
 echo "Creating gre tunnel"
 
-ip tunnel add ${TAP_IFACE} mode gretap remote ${REMOTE_IP} local ${LOCAL_IP} dev ${INTERFACE}
-ip addr add ${TAP_IP} dev ${TAP_IFACE}
-ip link set ${TAP_IFACE} up
+ip tunnel add "$TAP_IFACE" mode gretap remote "$REMOTE_IP" local "$LOCAL_IP" dev "$INTERFACE"
+ip addr add "$TAP_IP" dev "$TAP_IFACE"
+ip link set "$TAP_IFACE" up
