@@ -113,8 +113,14 @@ int run_pcap(char *interface, bool immediate, bool promiscuous, int timeout,
   struct pcap_context *ctx = NULL;
 
   if (find_device(interface, &net, &mask) > 0) {
-    bit32_2_ip((uint32_t)net, ip_str);
-    bit32_2_ip((uint32_t)mask, mask_str);
+    if(bit32_2_ip((uint32_t)net, ip_str) == NULL) {
+      log_errno("Converting %d to IP failed", net);
+      return -1;
+    }
+    if(bit32_2_ip((uint32_t)mask, mask_str) == NULL) {
+      log_errno("Converting %d to IP mask failed", mask);
+      return -1;
+    }
     log_debug("Found device=%s IP=" IPSTR " netmask=" IPSTR, interface,
               IP2STR(ip_str), IP2STR(mask_str));
   }
