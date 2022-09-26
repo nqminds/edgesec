@@ -112,12 +112,13 @@ int run_pcap(char *interface, bool immediate, bool promiscuous, int timeout,
   struct bpf_program fp;
   struct pcap_context *ctx = NULL;
 
+  // The error is ignored if the interface is not valid
   if (find_device(interface, &net, &mask) > 0) {
-    if(bit32_2_ip((uint32_t)net, ip_str) == NULL) {
+    if (bit32_2_ip((uint32_t)net, ip_str) == NULL) {
       log_errno("Converting %d to IP failed", net);
       return -1;
     }
-    if(bit32_2_ip((uint32_t)mask, mask_str) == NULL) {
+    if (bit32_2_ip((uint32_t)mask, mask_str) == NULL) {
       log_errno("Converting %d to IP mask failed", mask);
       return -1;
     }
