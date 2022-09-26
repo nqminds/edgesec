@@ -109,15 +109,20 @@ static void test_run_command(void **state) {
   status = run_command(argv2, NULL, NULL, NULL);
   assert_int_not_equal(status, 0);
 
-  expect_string(command_out_fn, ctx, "Context");
-  expect_string(command_out_fn, null_terminated_str, "Hello World!\n");
-  expect_value(command_out_fn, count,
-               sizeof("Hello World!\n") - 1); // -1 due to no null terminator
+  { // test process_callback_fn
+    expect_string(command_out_fn, ctx, "Context");
+    expect_string(command_out_fn, null_terminated_str, "Hello World!\n");
+    expect_value(command_out_fn, count,
+                 sizeof("Hello World!\n") - 1); // -1 due to no null terminator
 
-  const char *hello_world_argv[] = {"/usr/bin/env", "echo", "Hello World!",
-                                    NULL};
-  status = run_command(hello_world_argv, NULL, command_out_fn, "Context");
-  assert_int_equal(status, 0);
+    const char *hello_world_argv[] = {"/usr/bin/env", "echo", "Hello World!",
+                                      NULL};
+    char **hello_world_argv_copy = copy_argv(hello_world_argv);
+    status =
+        run_command(hello_world_argv_copy, NULL, command_out_fn, "Context");
+    assert_int_equal(status, 0);
+    free(hello_world_argv_copy);
+  }
 
   free(argv_copy);
 }

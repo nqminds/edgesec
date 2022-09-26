@@ -14,6 +14,10 @@ if (DOXYGEN_FOUND)
           "dot is not installed, but is highly recommended to create directed graphs"
         )
     endif()
+
+    # Add external library tag files
+    include(./doxygen-tag-files)
+
     # Doxygen parameters
     # currently unused, set if we want to use the `@image` command
     # set(DOXYGEN_IMAGE_PATH "${PROJECT_SOURCE_DIR}/docs")
@@ -43,6 +47,7 @@ if (DOXYGEN_FOUND)
         COMMENT "Generating API documentation with Doxygen"
       )
     endif()
+    add_dependencies(doxydocs ${tag_file_dependencies})
 else ()
   message(WARNING "Doxygen need to be installed to generate the doxygen documentation")
 endif ()

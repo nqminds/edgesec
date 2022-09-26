@@ -1,3 +1,6 @@
+# Error on all C/C++ warnings in the src/ directory if making a Debug build
+add_compile_options($<$<CONFIG:Debug>:-Werror>)
+
 add_subdirectory(utils)
 add_subdirectory(supervisor)
 add_subdirectory(ap)
