@@ -317,7 +317,7 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn fn,
  * @param ctx The callback function context
  * @return int excve status code
  */
-int run_argv_command(char *path, char *argv[], process_callback_fn fn,
+int run_argv_command(char *path, char *const argv[], process_callback_fn fn,
                      void *ctx);
 
 /**
