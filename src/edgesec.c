@@ -73,11 +73,7 @@ void sighup_handler(int sig, void *ctx) {
 }
 
 void show_app_version(void) {
-  char buf[32];
-
-  snprintf(buf, ARRAY_SIZE(buf), "%d.%d.%d", EDGESEC_VERSION_MAJOR,
-           EDGESEC_VERSION_MINOR, EDGESEC_VERSION_PATCH);
-  fprintf(stdout, "edgesec app version %s\n", buf);
+  fprintf(stdout, "edgesec app version %s\n", EDGESEC_VERSION);
 }
 
 void show_app_help(char *app_name) {
