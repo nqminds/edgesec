@@ -50,7 +50,7 @@ void ipgen_free_context(struct ipgenctx *context) {
   }
 }
 
-int run_ip(char *path, char *argv[]) {
+int run_ip(char *path, char *const argv[]) {
   return run_argv_command(path, argv, NULL, NULL);
 }
 
@@ -59,8 +59,8 @@ int ipgen_new_interface(char *path, char *ifname, char *type) {
   return run_ip(path, argv);
 }
 
-int ipgen_set_interface_ip(struct ipgenctx *context, const char *ifname,
-                           const char *ip_addr, const char *brd_addr,
+int ipgen_set_interface_ip(struct ipgenctx *context, char *ifname,
+                           const char *ip_addr, char *brd_addr,
                            char *subnet_mask) {
   char longip[OS_INET_ADDRSTRLEN];
 
