@@ -554,11 +554,10 @@ bool load_capture_config(const char *filename, struct capture_conf *config) {
   os_free(value);
 
   // Load middleware params
-  value = os_zalloc(INI_BUFFERSIZE);
-  ini_gets("capture", "middlewareParams", "", value, INI_BUFFERSIZE, filename);
+  char ini_buffer[INI_BUFFERSIZE] = "";
+  ini_gets("capture", "middlewareParams", "", ini_buffer, INI_BUFFERSIZE, filename);
 
-  os_strlcpy(config->middleware_params, value, MAX_MIDDLEWARE_PARAMS_SIZE);
-  os_free(value);
+  os_strlcpy(config->middleware_params, ini_buffer, MAX_MIDDLEWARE_PARAMS_SIZE);
 
   // Load promiscuous param
   config->promiscuous = (int)ini_getbool("capture", "promiscuous", 0, filename);
