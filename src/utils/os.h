@@ -411,7 +411,7 @@ typedef bool (*list_dir_fn)(char *, void *args);
  * @retval  0 On success
  * @retval -1 On error
  */
-int list_dir(char *dirpath, list_dir_fn fun, void *args);
+int list_dir(const char *dirpath, list_dir_fn fun, void *args);
 
 /**
  * @brief Check if a process path from /proc folder contains the process name

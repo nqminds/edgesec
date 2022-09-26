@@ -730,14 +730,10 @@ int is_proc_running(char *name) {
   return dir_args.proc_running;
 }
 
-int list_dir(char *dirpath, list_dir_fn fun, void *args) {
-  DIR *dirp;
-  struct dirent *dp;
-  char *path;
-
+int list_dir(const char *dirpath, list_dir_fn fun, void *args) {
   /* Open the directory - on failure print an error and return */
   errno = 0;
-  dirp = opendir(dirpath);
+  DIR *dirp = opendir(dirpath);
   if (dirp == NULL) {
     log_errno("opendir");
     return -1;
@@ -748,7 +744,7 @@ int list_dir(char *dirpath, list_dir_fn fun, void *args) {
   /* Look at each of the entries in this directory */
   for (;;) {
     errno = 0; /* To distinguish error from end-of-directory */
-    dp = readdir(dirp);
+    struct dirent *dp = readdir(dirp);
     if (dp == NULL)
       break;
 
@@ -757,7 +753,7 @@ int list_dir(char *dirpath, list_dir_fn fun, void *args) {
       continue;
 
     /* Print directory + filename */
-    path = construct_path(dirpath, dp->d_name);
+    char *path = construct_path(dirpath, dp->d_name);
     if (fun != NULL) {
       if (!fun(path, args)) {
         log_trace("list_dir callback fail");
