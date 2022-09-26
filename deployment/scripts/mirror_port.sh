@@ -12,8 +12,8 @@ DST_IFACE="$2"
 
 function cleanup() {
     if [ $CLEANUP -eq 1 ]; then
-        tc qdisc del dev $SRC_IFACE ingress
-        tc qdisc del dev $SRC_IFACE root
+        tc qdisc del dev "$SRC_IFACE" ingress
+        tc qdisc del dev "$SRC_IFACE" root
     fi
     echo
 }
