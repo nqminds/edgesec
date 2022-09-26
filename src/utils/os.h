@@ -384,9 +384,10 @@ char *get_valid_path(const char *path);
  *
  * @param path_left First path
  * @param path_right Second path
- * @return char* output valid path
+ * @return The output valid path. Please free() this string when done with it.
+ * @retval NULL on memory allocation error.
  */
-char *construct_path(char *path_left, char *path_right);
+char *construct_path(const char *path_left, const char *path_right);
 
 /**
  * @brief Get the secure path string of a binary

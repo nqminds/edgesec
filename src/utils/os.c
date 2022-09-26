@@ -642,7 +642,7 @@ char *get_valid_path(const char *path) {
   return concat;
 }
 
-char *construct_path(char *path_left, char *path_right) {
+char *construct_path(const char *path_left, const char *path_right) {
   char *path = NULL;
   if (path_left == NULL || path_right == NULL)
     return NULL;
