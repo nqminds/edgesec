@@ -135,7 +135,8 @@ jobs:
           fail_ci_if_error: true
   build-recap:
     name: Building Recap
-    runs-on: [ubuntu-22.04]
+    # Build on older Ubuntu for better GLIBC compatibility
+    runs-on: [ubuntu-20.04]
     permissions:
       contents: write # needed for publishing release artifact
     steps:
