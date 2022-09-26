@@ -315,10 +315,11 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn fn,
  * @param argv The command arguments without the process path
  * @param fn Callback function
  * @param ctx The callback function context
- * @return int excve status code
+ * @retval -1 Returns -1 on error.
+ * @retval  0 Returns 0 on success.
  */
-int run_argv_command(char *path, char *const argv[], process_callback_fn fn,
-                     void *ctx);
+int run_argv_command(const char *path, const char *const argv[],
+                     process_callback_fn fn, void *ctx);
 
 /**
  * @brief Convert the string to upper case

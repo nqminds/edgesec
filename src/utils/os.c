@@ -464,7 +464,13 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn fn,
   return status;
 }
 
-void log_run_command(char *argv[], int arg_count) {
+/**
+ * @brief Logs the given command.
+ *
+ * @param argv Array of command parameters.
+ * @param arg_count Length of array (not including NULL terminator).
+ */
+void log_run_command(const char *const argv[], int arg_count) {
   char buf[255];
 
   os_memset(buf, 0, 255);
@@ -476,10 +482,8 @@ void log_run_command(char *argv[], int arg_count) {
   log_trace("Running %s", buf);
 }
 
-int run_argv_command(char *path, char *const argv[], process_callback_fn fn,
-                     void *ctx) {
-  char **full_arg;
-  int arg_count = 0, count = 0;
+int run_argv_command(const char *path, const char *const argv[],
+                     process_callback_fn fn, void *ctx) {
 
   if (path == NULL) {
     log_trace("path param is NULL");
@@ -491,23 +495,39 @@ int run_argv_command(char *path, char *const argv[], process_callback_fn fn,
     return -1;
   }
 
-  while (argv[arg_count++] != NULL)
-    ;
-
-  full_arg = (char **)os_malloc(sizeof(char *) * (arg_count + 1));
-
-  full_arg[0] = path;
-  while (count < arg_count - 1) {
-    full_arg[count + 1] = argv[count];
-    count++;
+  // number of entries in argv (not including NULL terminator)
+  size_t argc = 0;
+  while (argv[argc] != NULL) {
+    argc++;
   }
 
-  full_arg[count + 1] = NULL;
+  // prepends `path` to the array of argv
+  size_t full_argc = argc + 1;
+  const char **full_arg = os_malloc(sizeof(char *) * (full_argc + 1));
 
-  log_run_command(full_arg, arg_count);
+  if (full_arg == NULL) {
+    log_errno("Failed to malloc %d bytes", sizeof(char *) * (full_argc + 1));
+    return -1;
+  }
 
-  int status = run_command(full_arg, NULL, fn, (void *)ctx);
+  full_arg[0] = path;
+  // copy over entire argv (including NULL terminator)
+  for (size_t count = 0; count < (argc + 1); count++) {
+    full_arg[count + 1] = argv[count];
+  }
+
+  char **full_arg_copy = copy_argv(full_arg);
   os_free(full_arg);
+
+  if (full_arg_copy == NULL) {
+    log_errno("Failed to copy_argv");
+    return -1;
+  }
+
+  log_run_command((const char **)full_arg_copy, full_argc);
+
+  int status = run_command(full_arg_copy, NULL, fn, (void *)ctx);
+  os_free(full_arg_copy);
   return (!status ? 0 : -1);
 }
 
