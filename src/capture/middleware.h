@@ -18,6 +18,7 @@
 #include "./pcap_service.h"
 #include "../utils/eloop.h"
 
+// params is a pointer to an already allocated string
 struct middleware_context {
   sqlite3 *db;
   struct eloop_data *eloop;
