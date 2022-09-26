@@ -87,7 +87,7 @@ struct middleware_context *init_tap_middleware(sqlite3 *db, const char *db_path,
   return context;
 }
 
-int process_tap_middleware(struct middleware_context *context, char *ltype,
+int process_tap_middleware(struct middleware_context *context, const char *ltype,
                            struct pcap_pkthdr *header, uint8_t *packet,
                            char *ifname) {
   (void)ltype;
