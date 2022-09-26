@@ -7,8 +7,8 @@
 trap cleanup EXIT
 
 CLEANUP=1
-SRC_IFACE=$1
-DST_IFACE=$2
+SRC_IFACE="$1"
+DST_IFACE="$2"
 
 function cleanup() {
     if [ $CLEANUP -eq 1 ]; then
