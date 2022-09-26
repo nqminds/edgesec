@@ -227,9 +227,9 @@ int dump_file_pcap(struct pcap_context *ctx, char *file_path,
 }
 
 int inject_pcap(struct pcap_context *ctx, uint8_t *packet, size_t size) {
-  int sent;
+  int sent = pcap_inject(ctx->pd, packet, size);
 
-  if ((sent = pcap_inject(ctx->pd, packet, size)) < 0) {
+  if (sent < 0) {
     log_error("pcap_inject fail: %s", pcap_geterr(ctx->pd));
     return -1;
   }
