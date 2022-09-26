@@ -374,9 +374,10 @@ char *concat_paths(const char *path_left, const char *path_right);
  * @brief Get the valid path string
  *
  * @param path Input string path
- * @return char* output valid path
+ * @return Output valid path. Please free() this string when done with it.
+ * @retval NULL on memory allocation error.
  */
-char *get_valid_path(char *path);
+char *get_valid_path(const char *path);
 
 /**
  * @brief Construct a valid path from two paths

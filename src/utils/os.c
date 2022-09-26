@@ -605,7 +605,7 @@ char *concat_paths(const char *path_left, const char *path_right) {
   return concat;
 }
 
-char *get_valid_path(char *path) {
+char *get_valid_path(const char *path) {
   char *concat = NULL;
 
   if (path == NULL)
