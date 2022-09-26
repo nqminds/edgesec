@@ -17,7 +17,15 @@ set(
 if (NOT "${PROJECT_VERSION_PRERELEASE}" STREQUAL "")
   string(APPEND PROJECT_VERSION "-${PROJECT_VERSION_PRERELEASE}")
 endif()
-#
+
+if ("${PROJECT_VERSION_BUILD_IDENTIFIER}" STREQUAL "")
+  # try to load build ID from environment variables only if on a git branch
+  # (we assume git tags are static and therefore build ids are not needed)
+  if (NOT "$ENV{GITHUB_SHA}" STREQUAL "" AND "$ENV{GITHUB_REF_TYPE}" STREQUAL "branch")
+    set(PROJECT_VERSION_BUILD_IDENTIFIER "sha.$ENV{GITHUB_SHA}")
+  endif()
+endif()
+
 if (NOT "${PROJECT_VERSION_BUILD_IDENTIFIER}" STREQUAL "")
   string(APPEND PROJECT_VERSION "+${PROJECT_VERSION_BUILD_IDENTIFIER}")
 endif()
