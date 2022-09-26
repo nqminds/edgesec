@@ -158,8 +158,6 @@ struct middleware_context *init_pcap_middleware(sqlite3 *db, char *db_path,
                                                 struct eloop_data *eloop,
                                                 struct pcap_context *pc,
                                                 char *params) {
-  (void)params;
-
   struct middleware_context *context = NULL;
   struct pcap_middleware_context *pcap_context = NULL;
 
