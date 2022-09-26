@@ -33,6 +33,9 @@ if (USE_MDNS_SERVICE)
   add_subdirectory(dns)
 endif ()
 
+add_executable(test_config test_config.c)
+target_link_libraries(test_config PRIVATE cmocka::cmocka log config)
+
 add_executable(test_runctl test_runctl.c)
 target_link_libraries(test_runctl PUBLIC SQLite::SQLite3 LibUTHash::LibUTHash PRIVATE runctl log os supervisor_config mac_mapper cmocka::cmocka)
 
@@ -60,6 +63,11 @@ endif()
 if (USE_UCI_SERVICE)
   target_link_libraries(test_runctl PUBLIC __wrap_uwrt_init_context)
 endif()
+
+add_test(NAME test_config COMMAND test_config)
+set_tests_properties(test_config
+  PROPERTIES
+  WILL_FAIL FALSE)
 
 add_test(NAME test_runctl COMMAND test_runctl)
 set_tests_properties(test_runctl
