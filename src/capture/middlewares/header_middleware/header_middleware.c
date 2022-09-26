@@ -91,7 +91,6 @@ struct middleware_context *init_header_middleware(sqlite3 *db, char *db_path,
                                                   struct pcap_context *pc,
                                                   char *params) {
   (void)db_path;
-  (void)params;
 
   struct middleware_context *context = NULL;
 
