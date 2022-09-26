@@ -1,7 +1,7 @@
+#!/usr/bin/env bash
 #ubuntu@host-2:~$ sudo ip tunnel add tun0 mode gre remote 10.131.73.9 local 10.131.73.16 dev eth0
 #ubuntu@host-2:~$ sudo ip addr add 172.17.0.2/24 dev tun0
 #ubuntu@host-2:~$ sudo ip link set tun0 up
-#!/usr/bin/env bash
 
 TAP_IFACE=$1
 TAP_IP=$2
