@@ -73,7 +73,7 @@ struct pcap_stream_context {
 };
 
 void show_app_version(void) {
-  fprintf(stdout, "recap app version %s\n", EDGESEC_VERSION);
+  fprintf(stdout, "edgesec-recap app version %s\n", EDGESEC_VERSION);
 }
 
 void show_app_help(char *app_name) {

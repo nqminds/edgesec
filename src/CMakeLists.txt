@@ -53,7 +53,7 @@ target_link_libraries(edgesec PRIVATE eloop config runctl minIni os hashmap Thre
 set_target_properties(edgesec PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 if (USE_CAPTURE_SERVICE)
-  add_executable(recap recap.c)
-  target_link_libraries(recap PRIVATE packet_queue packet_decoder sqlite_header os log SQLite::SQLite3)
-  target_include_directories(recap PRIVATE ${PROJECT_BINARY_DIR})
+  add_executable(edgesec-recap edgesec-recap.c)
+  target_link_libraries(edgesec-recap PRIVATE packet_queue packet_decoder sqlite_header os log SQLite::SQLite3)
+  target_include_directories(edgesec-recap PRIVATE ${PROJECT_BINARY_DIR})
 endif()
