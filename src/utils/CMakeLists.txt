@@ -12,7 +12,7 @@ add_library(base64 base64.c)
 target_link_libraries(base64 PRIVATE os log)
 
 add_library(hashmap hashmap.c)
-target_link_libraries(hashmap PUBLIC LibUTHash::LibUTHash PRIVATE log os)
+target_link_libraries(hashmap PUBLIC LibUTHash::LibUTHash PRIVATE log)
 
 add_library(os os.c)
 set_property(TARGET os PROPERTY POSITION_INDEPENDENT_CODE ON)

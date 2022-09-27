@@ -9,11 +9,20 @@
  */
 
 #include <stdlib.h>
+
+#ifdef __STDC_LIB_EXT1__
+#define __STDC_WANT_LIB_EXT1__
+// strnlen_s() is available in our <string.h> library
+#else
+// declare strnlen_s() in terms of POSIX strnlen()
+#define _POSIX_C_SOURCE 200809L
+#define strnlen_s(_string, _maxlen)                                            \
+  ((_string) == NULL ? 0 : strnlen((_string), (_maxlen)))
+#endif
 #include <string.h>
+
 #include <stdbool.h>
 
-#include "allocs.h"
-#include "os.h"
 #include "log.h"
 #include "hashmap.h"
 
@@ -34,8 +43,6 @@ char *hmap_str_keychar_get(hmap_str_keychar **hmap, char *keyptr) {
 }
 
 bool hmap_str_keychar_put(hmap_str_keychar **hmap, char *keyptr, char *value) {
-  hmap_str_keychar *s;
-
   if (keyptr == NULL) {
     log_trace("keyptr is NULL");
     return false;
@@ -46,29 +53,36 @@ bool hmap_str_keychar_put(hmap_str_keychar **hmap, char *keyptr, char *value) {
     return false;
   }
 
-  if (os_strnlen_s(keyptr, HASH_KEY_CHAR_SIZE) > HASH_KEY_CHAR_SIZE - 1) {
+  if (strnlen_s(keyptr, HASH_KEY_CHAR_SIZE) > HASH_KEY_CHAR_SIZE - 1) {
     log_trace("strlen(keyptr) is greater than key char size");
     return false;
   }
 
+  hmap_str_keychar *s;
   HASH_FIND_STR(*hmap, keyptr, s); /* id already in the hash? */
 
   if (s == NULL) {
-    s = (hmap_str_keychar *)os_malloc(sizeof(hmap_str_keychar));
+    s = (hmap_str_keychar *)malloc(sizeof(hmap_str_keychar));
     if (s == NULL) {
-      log_errno("os_malloc");
+      log_errno("malloc");
       return false;
     }
 
     // Copy the key
     strcpy(s->key, keyptr);
-    s->value = os_strdup(value);
+    s->value = strdup(value);
+    if (s->value == NULL) {
+      log_errno("Failed to strdup(): %s", value);
+    }
 
     HASH_ADD_STR(*hmap, key, s);
   } else {
     // Copy the value
-    os_free(s->value);
-    s->value = os_strdup(value);
+    free(s->value);
+    s->value = strdup(value);
+    if (s->value == NULL) {
+      log_errno("Failed to strdup(): %s", value);
+    }
   }
 
   return true;
@@ -79,7 +93,7 @@ void hmap_str_keychar_free(hmap_str_keychar **hmap) {
 
   HASH_ITER(hh, *hmap, current, tmp) {
     HASH_DEL(*hmap, current); /* delete it (users advances to next) */
-    os_free(current->value);  /* free the value content */
-    os_free(current);         /* free it */
+    free(current->value);     /* free the value content */
+    free(current);            /* free it */
   }
 }
