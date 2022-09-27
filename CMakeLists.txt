@@ -2,13 +2,13 @@ cmake_minimum_required(VERSION 3.14.0) # required for FindSQLite3
 cmake_policy(VERSION 3.14.0...3.24.0)
 
 project(EDGESEC
-  VERSION 0.0.8
+  VERSION 0.1.0
   HOMEPAGE_URL "https://github.com/nqminds/edgesec"
   DESCRIPTION "Secure router - reference implementation"
   LANGUAGES C CXX
 )
 # CMake proposal for semver https://gitlab.kitware.com/cmake/cmake/-/issues/23649
-# set(PROJECT_VERSION_PRERELEASE alpha.0)
+set(PROJECT_VERSION_PRERELEASE alpha.0)
 
 set(
   PROJECT_VERSION
