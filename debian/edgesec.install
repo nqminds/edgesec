@@ -1,3 +1,4 @@
 usr/bin/edgesec
+usr/bin/edgesec-recap
 usr/libexec/edgesec/hostapd
 etc/edgesec/config.ini
