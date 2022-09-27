@@ -7,6 +7,28 @@ project(EDGESEC
   DESCRIPTION "Secure router - reference implementation"
   LANGUAGES C CXX
 )
+# CMake proposal for semver https://gitlab.kitware.com/cmake/cmake/-/issues/23649
+# set(PROJECT_VERSION_PRERELEASE alpha.0)
+
+set(
+  PROJECT_VERSION
+  "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}"
+)
+if (NOT "${PROJECT_VERSION_PRERELEASE}" STREQUAL "")
+  string(APPEND PROJECT_VERSION "-${PROJECT_VERSION_PRERELEASE}")
+endif()
+
+if ("${PROJECT_VERSION_BUILD_IDENTIFIER}" STREQUAL "")
+  # try to load build ID from environment variables only if on a git branch
+  # (we assume git tags are static and therefore build ids are not needed)
+  if (NOT "$ENV{GITHUB_SHA}" STREQUAL "" AND "$ENV{GITHUB_REF_TYPE}" STREQUAL "branch")
+    set(PROJECT_VERSION_BUILD_IDENTIFIER "sha.$ENV{GITHUB_SHA}")
+  endif()
+endif()
+
+if (NOT "${PROJECT_VERSION_BUILD_IDENTIFIER}" STREQUAL "")
+  string(APPEND PROJECT_VERSION "+${PROJECT_VERSION_BUILD_IDENTIFIER}")
+endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/lib")
@@ -214,4 +236,4 @@ if (NOT BUILD_ONLY_DOCS)
 endif ()
 
 add_custom_target(archive COMMAND
-    ${CMAKE_COMMAND} -E tar "cvz" "${_project_lower}-${_sys}-${EDGESEC_VERSION_MAJOR}.${EDGESEC_VERSION_MINOR}.${EDGESEC_VERSION_PATCH}.tar.gz" --format=gnutar "${CMAKE_INSTALL_PREFIX}")
+    ${CMAKE_COMMAND} -E tar "cvz" "${_project_lower}-${_sys}-${PROJECT_VERSION}.tar.gz" --format=gnutar "${CMAKE_INSTALL_PREFIX}")
