@@ -555,7 +555,8 @@ bool load_capture_config(const char *filename, struct capture_conf *config) {
 
   // Load middleware params
   char ini_buffer[INI_BUFFERSIZE] = "";
-  ini_gets("capture", "middlewareParams", "", ini_buffer, INI_BUFFERSIZE, filename);
+  ini_gets("capture", "middlewareParams", "", ini_buffer, INI_BUFFERSIZE,
+           filename);
 
   os_strlcpy(config->middleware_params, ini_buffer, MAX_MIDDLEWARE_PARAMS_SIZE);
 
