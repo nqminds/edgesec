@@ -476,7 +476,7 @@ void log_run_command(char *argv[], int arg_count) {
   log_trace("Running %s", buf);
 }
 
-int run_argv_command(char *path, char *argv[], process_callback_fn fn,
+int run_argv_command(char *path, char *const argv[], process_callback_fn fn,
                      void *ctx) {
   char **full_arg;
   int arg_count = 0, count = 0;
