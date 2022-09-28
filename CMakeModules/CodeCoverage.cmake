@@ -83,6 +83,10 @@
 #     - Change gcovr output from -o <filename> for --xml <filename> and --html <filename> output respectively.
 #       This will allow for Multiple Output Formats at the same time by making use of GCOVR_ADDITIONAL_ARGS, e.g. GCOVR_ADDITIONAL_ARGS "--txt".
 #
+# 2022-09-28, Sebastian Mueller
+#     - fix append_coverage_compiler_flags_to_target to correctly add flags
+#     - replace "-fprofile-arcs -ftest-coverage" with "--coverage" (equivalent)
+#
 # USAGE:
 #
 # 1. Copy this file into your cmake modules path.
@@ -174,7 +178,7 @@ foreach(LANG ${LANGUAGES})
   endif()
 endforeach()
 
-set(COVERAGE_COMPILER_FLAGS "-g -fprofile-arcs -ftest-coverage"
+set(COVERAGE_COMPILER_FLAGS "-g --coverage"
     CACHE INTERNAL "")
 if(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
     include(CheckCXXCompilerFlag)
@@ -745,6 +749,9 @@ endfunction() # append_coverage_compiler_flags
 
 # Setup coverage for specific library
 function(append_coverage_compiler_flags_to_target name)
-    target_compile_options(${name}
-        PRIVATE ${COVERAGE_COMPILER_FLAGS})
+    separate_arguments(_flag_list NATIVE_COMMAND "${COVERAGE_COMPILER_FLAGS}")
+    target_compile_options(${name} PRIVATE ${_flag_list})
+    if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+        target_link_libraries(${name} PRIVATE gcov)
+    endif()
 endfunction()
