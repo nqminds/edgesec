@@ -43,7 +43,8 @@
       "cacheVariables": {
         "USE_CLEANER_MIDDLEWARE": false,
         "USE_HEADER_MIDDLEWARE": true,
-        "USE_PCAP_MIDDLEWARE": false
+        "USE_PCAP_MIDDLEWARE": false,
+        "USE_TAP_MIDDLEWARE": false
       }
     },
     {
@@ -86,7 +87,20 @@
       "cacheVariables": {
         "USE_CLEANER_MIDDLEWARE": true,
         "USE_HEADER_MIDDLEWARE": true,
-        "USE_PCAP_MIDDLEWARE": true
+        "USE_PCAP_MIDDLEWARE": true,
+        "USE_TAP_MIDDLEWARE": true
+      }
+    },
+    {
+      "name": "linux-with-tap",
+      "inherits": "linux",
+      "displayName": "Linux (with tap middleware)",
+      "description": "Linux (with tap middleware)",
+      "cacheVariables": {
+        "USE_CLEANER_MIDDLEWARE": false,
+        "USE_HEADER_MIDDLEWARE": false,
+        "USE_PCAP_MIDDLEWARE": false,
+        "USE_TAP_MIDDLEWARE": true
       }
     },
     {
@@ -121,7 +135,8 @@
       "cacheVariables": {
         "USE_CLEANER_MIDDLEWARE": false,
         "USE_HEADER_MIDDLEWARE": true,
-        "USE_PCAP_MIDDLEWARE": false
+        "USE_PCAP_MIDDLEWARE": false,
+        "USE_TAP_MIDDLEWARE": false
       }
     },
     {
@@ -202,6 +217,10 @@
       "configurePreset": "linux-with-example-middlewares"
     },
     {
+      "name": "linux-with-tap",
+      "configurePreset": "linux-with-tap"
+    },
+    {
       "name": "clang",
       "configurePreset": "clang"
     },
@@ -246,6 +265,10 @@
     {
       "name": "linux-with-example-middlewares",
       "configurePreset": "linux-with-example-middlewares"
+    },
+    {
+      "name": "linux-with-tap",
+      "configurePreset": "linux-with-tap"
     },
     {
       "name": "linux-with-crypt",

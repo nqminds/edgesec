@@ -29,6 +29,7 @@ filter = ""
 promiscuous = false
 bufferTimeout = 10
 immediate = false
+middlewareParams = ""
 
 [supervisor]
 supervisorControlPort = 32001

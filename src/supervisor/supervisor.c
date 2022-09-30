@@ -67,7 +67,7 @@ int schedule_analyser(struct supervisor_context *context, int vlanid) {
   if (!vlan_conn.capture_pid) {
     os_memcpy(&config, &context->capture_config, sizeof(config));
 
-    log_trace("Starting analyser on if=%s", vlan_conn.ifname);
+    log_trace("Starting analyser on ifname=%s", vlan_conn.ifname);
     if (run_analyser(vlan_conn.ifname, &config, &pid) != 0) {
       log_error("run_analyser fail");
       return -1;
