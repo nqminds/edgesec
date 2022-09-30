@@ -88,7 +88,8 @@ void free_header_middleware(struct middleware_context *context) {
 
 struct middleware_context *init_header_middleware(sqlite3 *db, char *db_path,
                                                   struct eloop_data *eloop,
-                                                  struct pcap_context *pc) {
+                                                  struct pcap_context *pc,
+                                                  char *params) {
   (void)db_path;
 
   struct middleware_context *context = NULL;
@@ -113,6 +114,7 @@ struct middleware_context *init_header_middleware(sqlite3 *db, char *db_path,
   context->db = db;
   context->eloop = eloop;
   context->pc = pc;
+  context->params = params;
 
   if ((context->mdata = (void *)init_packet_queue()) == NULL) {
     log_error("init_packet_queue fail");

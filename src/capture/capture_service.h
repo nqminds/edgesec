@@ -57,6 +57,13 @@ int get_pcap_folder_path(char *capture_db_path, char *pcap_path);
 int run_capture(struct capture_middleware_context *context);
 
 /**
+ * @brief Frees the capture context
+ *
+ * @param context The middleware context
+ */
+void free_capture_context(struct capture_middleware_context *context);
+
+/**
  * @brief Runs the capture service thread
  *
  * @param ifname The capture interface name

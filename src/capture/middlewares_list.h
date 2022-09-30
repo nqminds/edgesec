@@ -58,18 +58,19 @@ UT_array *assign_middlewares(void);
  * @param[in] db_path The path to the SQLite database.
  * @param[in] eloop Global event loop data.
  * @param[in] pc The pcap context created by run_pcap()
+ * @param[in] params The middleware params
  * @retval 0 on success.
  * @retval -1 on error.
  */
 static inline int init_middlewares(UT_array *handlers, sqlite3 *db,
                                    char *db_path, struct eloop_data *eloop,
-                                   struct pcap_context *pc) {
+                                   struct pcap_context *pc, char *params) {
   struct middleware_handlers *handler = NULL;
 
   while ((handler =
               (struct middleware_handlers *)utarray_next(handlers, handler))) {
     log_trace("Initialising capture middleware: %s", handler->f.name);
-    handler->context = handler->f.init(db, db_path, eloop, pc);
+    handler->context = handler->f.init(db, db_path, eloop, pc, params);
     if (handler->context == NULL) {
       log_error("handle init error");
       return -1;
