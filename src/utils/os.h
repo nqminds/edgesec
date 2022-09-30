@@ -315,10 +315,11 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn fn,
  * @param argv The command arguments without the process path
  * @param fn Callback function
  * @param ctx The callback function context
- * @return int excve status code
+ * @retval -1 Returns -1 on error.
+ * @retval  0 Returns 0 on success.
  */
-int run_argv_command(char *path, char *const argv[], process_callback_fn fn,
-                     void *ctx);
+int run_argv_command(const char *path, const char *const argv[],
+                     process_callback_fn fn, void *ctx);
 
 /**
  * @brief Convert the string to upper case
@@ -365,26 +366,29 @@ ssize_t split_string_array(const char *str, char sep, UT_array *arr);
  *
  * @param path_left First string path
  * @param path_right Second string path
- * @return char* Concatenated paths
+ * @return Concatenated paths. Please `free()` the return value when done.
+ * @retval NULL on memory allocation error.
  */
-char *concat_paths(char *path_left, char *path_right);
+char *concat_paths(const char *path_left, const char *path_right);
 
 /**
  * @brief Get the valid path string
  *
  * @param path Input string path
- * @return char* output valid path
+ * @return Output valid path. Please free() this string when done with it.
+ * @retval NULL on memory allocation error.
  */
-char *get_valid_path(char *path);
+char *get_valid_path(const char *path);
 
 /**
  * @brief Construct a valid path from two paths
  *
  * @param path_left First path
  * @param path_right Second path
- * @return char* output valid path
+ * @return The output valid path. Please free() this string when done with it.
+ * @retval NULL on memory allocation error.
  */
-char *construct_path(char *path_left, char *path_right);
+char *construct_path(const char *path_left, const char *path_right);
 
 /**
  * @brief Get the secure path string of a binary
@@ -408,7 +412,7 @@ typedef bool (*list_dir_fn)(char *, void *args);
  * @retval  0 On success
  * @retval -1 On error
  */
-int list_dir(char *dirpath, list_dir_fn fun, void *args);
+int list_dir(const char *dirpath, list_dir_fn fun, void *args);
 
 /**
  * @brief Check if a process path from /proc folder contains the process name
