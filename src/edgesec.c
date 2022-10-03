@@ -26,7 +26,6 @@
 #include "utils/log.h"
 #include "utils/allocs.h"
 #include "utils/os.h"
-#include "utils/minIni.h"
 #include "utils/iface.h"
 #include "utils/eloop.h"
 #include "dhcp/dhcp_config.h"

@@ -48,7 +48,7 @@ if (USE_CRYPTO_SERVICE)
 else ()
   target_include_directories(edgesec PRIVATE ${PROJECT_BINARY_DIR})
 endif ()
-target_link_libraries(edgesec PRIVATE eloop config runctl minIni os hashmap Threads::Threads)
+target_link_libraries(edgesec PRIVATE eloop config runctl os hashmap Threads::Threads)
 # link time optimization
 set_target_properties(edgesec PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
 
