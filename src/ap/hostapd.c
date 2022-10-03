@@ -248,7 +248,9 @@ int run_ap_process(struct apconf *hconf) {
 
   log_trace("hostapd instance running");
 #else
-  os_strlcpy(hostapd_proc_name, basename(hconf->ap_bin_path), MAX_OS_PATH_LEN);
+  char ap_bin_path_copy[MAX_OS_PATH_LEN];
+  os_strlcpy(ap_bin_path_copy, hconf->ap_bin_path, MAX_OS_PATH_LEN);
+  os_strlcpy(hostapd_proc_name, basename(ap_bin_path_copy), MAX_OS_PATH_LEN);
 
   // Kill any running hostapd process
   if (!kill_process(hostapd_proc_name)) {
@@ -292,8 +294,10 @@ bool kill_ap_process(void) {
   return true;
 }
 
-int signal_ap_process(struct apconf *hconf) {
-  os_strlcpy(hostapd_proc_name, basename(hconf->ap_bin_path), MAX_OS_PATH_LEN);
+int signal_ap_process(const struct apconf *hconf) {
+  char ap_bin_path_copy[MAX_OS_PATH_LEN];
+  os_strlcpy(ap_bin_path_copy, hconf->ap_bin_path, MAX_OS_PATH_LEN);
+  os_strlcpy(hostapd_proc_name, basename(ap_bin_path_copy), MAX_OS_PATH_LEN);
 
   // Signal any running hostapd process to reload the config
   if (!signal_process(hostapd_proc_name, SIGHUP)) {
