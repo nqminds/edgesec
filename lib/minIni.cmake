@@ -29,5 +29,5 @@ elseif(BUILD_LIB_MININI)
   add_library(MinIni::minIni ALIAS minIni)
 else()
   # Ubuntu focal (20.04+) already contains libminini-dev package that has minIni
-  message(FATAL_ERROR "Using already installed lib minIni is not yet supported")
+  find_package(MinIni REQUIRED)
 endif()
