@@ -299,8 +299,8 @@ int get_nat_rules(struct iptables_context *ctx) {
   return utarray_len(ctx->rule_list) ? 0 : -1;
 }
 
-long find_rule(UT_array *rlist, char *sip, char *sif, char *dip, char *dif,
-               char *target) {
+long find_rule(UT_array *rlist, const char *sip, const char *sif,
+               const char *dip, const char *dif, const char *target) {
   struct iptables_columns *el = NULL;
   while ((el = (struct iptables_columns *)utarray_next(rlist, el)) != NULL) {
     if (!strcmp(el->in, sif) && !strcmp(el->out, dif) &&
@@ -312,8 +312,8 @@ long find_rule(UT_array *rlist, char *sip, char *sif, char *dip, char *dif,
   return 0;
 }
 
-int delete_bridge_rule(struct iptables_context *ctx, char *sip, char *sif,
-                       char *dip, char *dif) {
+int delete_bridge_rule(struct iptables_context *ctx, const char *sip,
+                       const char *sif, const char *dip, const char *dif) {
   char num_buf[10];
 
   const char *bridge_rule[16] = {"-D", "FORWARD", NULL, "-t", "filter", NULL};
@@ -341,8 +341,8 @@ int delete_bridge_rule(struct iptables_context *ctx, char *sip, char *sif,
   return 0;
 }
 
-int iptables_delete_bridge(struct iptables_context *ctx, char *sip, char *sif,
-                           char *dip, char *dif) {
+int iptables_delete_bridge(struct iptables_context *ctx, const char *sip,
+                           const char *sif, const char *dip, const char *dif) {
   if (delete_bridge_rule(ctx, sip, sif, dip, dif) < 0) {
     log_error("delete_bridge_rule fail");
     return -1;
@@ -356,7 +356,7 @@ int iptables_delete_bridge(struct iptables_context *ctx, char *sip, char *sif,
   return 0;
 }
 
-long find_baseif_rulenum(UT_array *rlist, char *ifname) {
+long find_baseif_rulenum(UT_array *rlist, const char *ifname) {
   struct iptables_columns *el = NULL;
   while ((el = (struct iptables_columns *)utarray_next(rlist, el)) != NULL) {
     if (!strcmp(el->in, ifname) && !strcmp(el->out, "*") &&
@@ -367,8 +367,8 @@ long find_baseif_rulenum(UT_array *rlist, char *ifname) {
   return 0;
 }
 
-int add_bridge_rule(struct iptables_context *ctx, char *sip, char *sif,
-                    char *dip, char *dif) {
+int add_bridge_rule(struct iptables_context *ctx, const char *sip,
+                    const char *sif, const char *dip, const char *dif) {
   char num_buf[10];
 
   const char *bridge_rule[16] = {
