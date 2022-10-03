@@ -325,9 +325,7 @@ int check_dhcp_running(char *name, int wait_time) {
   return running;
 }
 
-char *run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path) {
-  os_strlcpy(dnsmasq_proc_name, basename(dhcp_bin_path), MAX_OS_PATH_LEN);
-
+char *run_dhcp_process(const char *dhcp_bin_path, const char *dhcp_conf_path) {
   const char *process_argv[6] = {NULL};
   get_dnsmasq_args(dhcp_bin_path, dhcp_conf_path, process_argv);
 
@@ -337,6 +335,16 @@ char *run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path) {
   if (dhcp_argv_modifiable == NULL) {
     log_errno("Failed to copy_argv for %s", dhcp_bin_path);
     goto error;
+  }
+
+  // finds the basename of the dhcp_bin_path and stores it in dnsmasq_proc_name
+  {
+    // basename() might modify the input string, so make a copy first
+    char dnsmasq_proc_name_buffer[MAX_OS_PATH_LEN];
+    os_strlcpy(dnsmasq_proc_name_buffer, dhcp_bin_path, MAX_OS_PATH_LEN - 1);
+    dnsmasq_proc_name_buffer[MAX_OS_PATH_LEN - 1] = '\0';
+    os_strlcpy(dnsmasq_proc_name, basename(dnsmasq_proc_name_buffer),
+               MAX_OS_PATH_LEN - 1);
   }
 
   pid_t child_pid = 0;
