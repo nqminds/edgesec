@@ -40,7 +40,7 @@ target_link_libraries(runctl PRIVATE
 )
 
 add_library(config config.c)
-target_link_libraries(config PUBLIC supervisor_config LibUTHash::LibUTHash PRIVATE minIni os log)
+target_link_libraries(config PUBLIC supervisor_config LibUTHash::LibUTHash PRIVATE MinIni::minIni os log)
 
 add_executable(edgesec edgesec.c)
 if (USE_CRYPTO_SERVICE)

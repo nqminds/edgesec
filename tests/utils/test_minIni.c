@@ -12,9 +12,9 @@
 #include <setjmp.h>
 #include <stdint.h>
 #include <cmocka.h>
+#include <minIni.h>
 
 #include "utils/log.h"
-#include "utils/minIni.h"
 
 static const char *tmp_file = "/tmp/test_iniXXXXXX";
 

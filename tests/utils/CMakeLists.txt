@@ -38,7 +38,7 @@ add_executable(test_utarray test_utarray.c)
 target_link_libraries(test_utarray PRIVATE LibUTHash::LibUTHash cmocka::cmocka)
 
 add_executable(test_minIni test_minIni.c)
-target_link_libraries(test_minIni PRIVATE minIni cmocka::cmocka)
+target_link_libraries(test_minIni PRIVATE MinIni::minIni cmocka::cmocka)
 
 add_executable(test_squeue test_squeue.c)
 target_link_libraries(test_squeue PRIVATE squeue os cmocka::cmocka)

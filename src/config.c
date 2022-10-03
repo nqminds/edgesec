@@ -16,10 +16,10 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <errno.h>
+#include <minIni.h>
 
 #include "utils/allocs.h"
 #include "utils/os.h"
-#include "utils/minIni.h"
 #include "config.h"
 
 #include "supervisor/cmd_processor.h"
