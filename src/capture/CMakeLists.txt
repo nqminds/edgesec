@@ -67,7 +67,7 @@ if (USE_CAPTURE_SERVICE)
   target_link_libraries(capture_config INTERFACE os)
 
   add_library(pcap_service pcap_service.c)
-  target_link_libraries(pcap_service PUBLIC LibUTHash::LibUTHash PRIVATE net log os PCAP::pcap)
+  target_link_libraries(pcap_service PUBLIC LibUTHash::LibUTHash PCAP::pcap PRIVATE net log os)
 
   add_library(capture_service capture_service.c)
   target_include_directories(capture_service PRIVATE ${PROJECT_BINARY_DIR})
