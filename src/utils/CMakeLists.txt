@@ -47,8 +47,6 @@ elseif (USE_GENERIC_IP_SERVICE)
   target_link_libraries(iface PUBLIC ipgen)
 endif ()
 
-add_library(minIni minIni.c)
-
 add_library(eloop eloop.c)
 # todo, add list
 target_link_libraries(eloop PUBLIC allocs os PRIVATE log)

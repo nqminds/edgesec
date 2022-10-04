@@ -11,6 +11,7 @@ Build-Depends: debhelper-compat (= 12),
     libjson-c-dev,
     libssl-dev,
     libcmocka-dev (>=1.1.5),
+    libminini-dev (>=1.2),
     libsqlite3-dev (>=3.31.1),
     libpcap0.8-dev (>=1.9.1),
     libmnl-dev (>= 1.0.4)
