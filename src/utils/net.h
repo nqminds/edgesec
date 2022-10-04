@@ -56,7 +56,7 @@
  * @param ip The IP in fromat x.y.z.q
  * @return true if the string is an IP, false otherwise
  */
-bool validate_ipv4_string(char *ip);
+bool validate_ipv4_string(const char *ip);
 
 /**
  * @brief IP string to @c struct in_addr_t converter

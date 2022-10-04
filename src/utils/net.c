@@ -18,7 +18,7 @@
 #include "os.h"
 #include "net.h"
 
-bool validate_ipv4_string(char *ip) {
+bool validate_ipv4_string(const char *ip) {
   struct sockaddr_in sa;
   char proc_ip[OS_INET_ADDRSTRLEN];
   char *netmask_sep = strchr(ip, '/');
