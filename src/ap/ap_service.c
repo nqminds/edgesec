@@ -116,41 +116,45 @@ int disconnect_ap_command(struct apconf *hconf, char *mac_addr) {
 }
 
 int check_sta_ap_command(struct apconf *hconf, char *mac_addr) {
-  char *buffer;
+  char *buffer = NULL;
   char *reply = NULL;
+
+  int return_code = -1;
 
   if (mac_addr == NULL) {
     log_error("mac_addr is NULL");
-    return -1;
+    goto error_cleanup;
   }
 
   if ((buffer = os_zalloc(strlen(STA_AP_COMMAND) + strlen(mac_addr) + 1)) ==
       NULL) {
     log_errno("os_zalloc");
-    return -1;
+    goto error_cleanup;
   }
 
   sprintf(buffer, STA_AP_COMMAND " %s", mac_addr);
   if (writeread_domain_data_str(hconf->ctrl_interface_path, buffer, &reply) <
       0) {
     log_error("writeread_domain_data_str fail");
-    return -1;
+    goto error_cleanup;
   }
 
   if (strcmp(reply, GENERIC_AP_COMMAND_FAIL_REPLY) == 0) {
     log_error("no STA registered with mac=%s", mac_addr);
-    os_free(reply);
-    return -1;
+    goto error_cleanup;
   }
 
   if (!strlen(reply)) {
     log_error("no reply for mac=%s", mac_addr);
-    os_free(reply);
-    return -1;
+    goto error_cleanup;
   }
 
+  return_code = 0;
+error_cleanup:
+  // free(NULL ptr) is safe and does nothing
+  os_free(buffer);
   os_free(reply);
-  return 0;
+  return return_code;
 }
 
 int find_ap_status(char *ap_answer, uint8_t *mac_addr,
