@@ -56,7 +56,7 @@ int ping_ap_command(struct apconf *hconf) {
   return 0;
 }
 
-int denyacl_ap_command(struct apconf *hconf, char *cmd, char *mac_addr) {
+int denyacl_ap_command(struct apconf *hconf, const char *cmd, char *mac_addr) {
   char *buffer = NULL;
   char *reply = NULL;
 
