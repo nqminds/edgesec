@@ -319,14 +319,13 @@ ssize_t read_domain_data_s(int sock, char *data, size_t data_len, char *addr,
 }
 
 ssize_t write_domain_data_s(int sock, const char *data, size_t data_len,
-                            char *addr) {
-  struct client_address claddr;
-
+                            const char *addr) {
   if (addr == NULL) {
     log_error("addr param is NULL");
     return -1;
   }
 
+  struct client_address claddr;
   init_domain_addr(&claddr.caddr.addr_un, addr);
   claddr.len = sizeof(struct sockaddr_un);
   claddr.type = SOCKET_TYPE_DOMAIN;
@@ -335,7 +334,7 @@ ssize_t write_domain_data_s(int sock, const char *data, size_t data_len,
 }
 
 ssize_t write_socket_domain(int sock, const char *data, size_t data_len,
-                            struct client_address *addr) {
+                            const struct client_address *addr) {
   ssize_t sent;
 
   log_trace("Sending to domain socket on %.*s", addr->len,
@@ -350,7 +349,7 @@ ssize_t write_socket_domain(int sock, const char *data, size_t data_len,
 }
 
 ssize_t write_socket_udp(int sock, const char *data, size_t data_len,
-                         struct client_address *addr) {
+                         const struct client_address *addr) {
   ssize_t sent;
   char ip[OS_INET_ADDRSTRLEN];
 
@@ -361,7 +360,8 @@ ssize_t write_socket_udp(int sock, const char *data, size_t data_len,
 
   log_trace("Sending to udp socket on %s:%d", ip, addr->caddr.addr_in.sin_port);
   if ((sent = sendto(sock, data, data_len, 0,
-                     (struct sockaddr *)&addr->caddr.addr_in, addr->len)) < 0) {
+                     (const struct sockaddr *)&addr->caddr.addr_in,
+                     addr->len)) < 0) {
     log_errno("sendto");
     return -1;
   }
@@ -370,7 +370,7 @@ ssize_t write_socket_udp(int sock, const char *data, size_t data_len,
 }
 
 ssize_t write_socket_data(int sock, const char *data, size_t data_len,
-                          struct client_address *addr) {
+                          const struct client_address *addr) {
   if (data == NULL) {
     log_error("data param is NULL");
     return -1;

@@ -117,7 +117,7 @@ ssize_t read_domain_data_s(int sock, char *data, size_t data_len, char *addr,
  * @return ssize_t Size of written data
  */
 ssize_t write_socket_data(int sock, const char *data, size_t data_len,
-                          struct client_address *addr);
+                          const struct client_address *addr);
 
 /**
  * @brief Write data to the domain server socket with a string address
@@ -130,7 +130,7 @@ ssize_t write_socket_data(int sock, const char *data, size_t data_len,
  * @return ssize_t Size of written data
  */
 ssize_t write_domain_data_s(int sock, const char *data, size_t data_len,
-                            char *addr);
+                            const char *addr);
 
 /**
  * @brief Write and read a domain data string
