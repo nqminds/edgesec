@@ -175,34 +175,39 @@ int find_ap_status(const char *ap_answer,
                    uint8_t mac_addr[static ETHER_ADDR_LEN],
                    enum AP_CONNECTION_STATUS *status) {
   UT_array *str_arr;
-  char **ptr = NULL;
-
   utarray_new(str_arr, &ut_str_icd);
 
-  if (split_string_array(ap_answer, 0x20, str_arr) > 1) {
-    ptr = (char **)utarray_next(str_arr, ptr);
-    if (ptr != NULL && *ptr != NULL) {
-      if (strstr(*ptr, AP_STA_CONNECTED) != NULL) {
-        *status = AP_CONNECTED_STATUS;
-      } else if (strstr(ap_answer, AP_STA_DISCONNECTED) != NULL) {
-        *status = AP_DISCONNECTED_STATUS;
-      } else {
-        utarray_free(str_arr);
-        return -1;
-      }
+  int return_code = -1;
 
-      ptr = (char **)utarray_next(str_arr, ptr);
-      if (ptr != NULL && *ptr != NULL) {
-        if (hwaddr_aton2(*ptr, mac_addr) != -1) {
-          utarray_free(str_arr);
-          return 0;
-        }
-      }
-    }
+  if (split_string_array(ap_answer, 0x20, str_arr) <= 1) {
+    goto cleanup;
   }
 
+  char **status_string = (char **)utarray_front(str_arr);
+  if (status_string == NULL || *status_string == NULL) {
+    goto cleanup;
+  }
+
+  if (strstr(*status_string, AP_STA_CONNECTED) != NULL) {
+    *status = AP_CONNECTED_STATUS;
+  } else if (strstr(ap_answer, AP_STA_DISCONNECTED) != NULL) {
+    *status = AP_DISCONNECTED_STATUS;
+  } else {
+    goto cleanup;
+  }
+
+  char **mac_address_string = (char **)utarray_next(str_arr, status_string);
+  if (mac_address_string == NULL || *mac_address_string == NULL) {
+    goto cleanup;
+  }
+  if (hwaddr_aton2(*mac_address_string, mac_addr) < 0) {
+    goto cleanup;
+  }
+
+  return_code = 0;
+cleanup:
   utarray_free(str_arr);
-  return -1;
+  return return_code;
 }
 
 void ap_sock_handler(int sock, void *eloop_ctx, void *sock_ctx) {
