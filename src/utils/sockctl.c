@@ -464,6 +464,11 @@ int writeread_domain_data_str(char *socket_path, const char *write_str,
   (void)rtrim(rec_data, NULL);
 
   *reply = os_strdup(rec_data);
+  if (*reply == NULL) {
+    log_errno("os_strdup failed to copy string %s", rec_data);
+    goto cleanup_recdata;
+  }
+
   return_code = 0;
 
 cleanup_recdata:
