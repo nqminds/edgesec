@@ -37,7 +37,7 @@ struct iptables_context {
  * @return struct iptables_context*, pointer to newly created iptables context,
  * NULL on failure
  */
-struct iptables_context *iptables_init(char *path, UT_array *ifinfo_array,
+struct iptables_context *iptables_init(const char *path, UT_array *ifinfo_array,
                                        bool exec_iptables);
 
 /**
