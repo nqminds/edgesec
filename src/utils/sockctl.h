@@ -83,9 +83,9 @@ int create_udp_server(unsigned int port);
  * @brief Read data from the server socket
  *
  * @param sock Server socket
- * @param data Data buffer
+ * @param[out] data Data buffer to store read data.
  * @param data_len Data buffer length
- * @param addr The sender address structure
+ * @param[out] addr The sender address structure
  * @param flags The flags for recvfrom function
  * @return ssize_t Size of read data
  */
@@ -96,9 +96,11 @@ ssize_t read_socket_data(int sock, char *data, size_t data_len,
  * @brief Read data from the domain server socket with a string address
  *
  * @param sock Domain Server socket
- * @param data Data buffer
+ * @param[out] data Data buffer to store read data.
  * @param data_len Data buffer length
- * @param addr Sender address
+ * @param[out] addr Buffer to store sender address.
+ * Must be at least the same size as @p sun_path (usually 104 bytes on BSD, 108
+ * on Linux).
  * @param flags The flags for recvfrom function
  * @return ssize_t Size of read data
  */
@@ -106,10 +108,10 @@ ssize_t read_domain_data_s(int sock, char *data, size_t data_len, char *addr,
                            int flags);
 
 /**
- * @brief Write data to the erver socket
+ * @brief Write data to the server socket
  *
  * @param sock Server socket
- * @param data Data buffer
+ * @param data Data buffer to send.
  * @param data_len Data buffer length
  * @param addr The recipient address structure
  * @return ssize_t Size of written data
@@ -121,9 +123,10 @@ ssize_t write_socket_data(int sock, const char *data, size_t data_len,
  * @brief Write data to the domain server socket with a string address
  *
  * @param sock Domain server socket
- * @param data Data buffer
+ * @param data Data buffer to send.
  * @param data_len Data buffer length
- * @param addr Client address (string)
+ * @param addr Client address (string).
+ * This string will be truncated if it does not fit in @p sun_path.
  * @return ssize_t Size of written data
  */
 ssize_t write_domain_data_s(int sock, const char *data, size_t data_len,
@@ -132,9 +135,13 @@ ssize_t write_domain_data_s(int sock, const char *data, size_t data_len,
 /**
  * @brief Write and read a domain data string
  *
- * @param socket_path The domain socket path
- * @param write_str The write string
- * @param reply The reply string
+ * @param[in, out] socket_path The path to the domain server socket.
+ * This path will be overwritten with the socket path of the reply, so it
+ * must be at least the same size as @p sun_path (usually 104 bytes on BSD, 108
+ * on Linux).
+ * @param[in] write_str The data to write to the socket.
+ * @param[out] reply The pointer to the reply string.
+ * You must `free()` this reply string when done with it.
  * @return int 0 on success, -1 on failure
  */
 int writeread_domain_data_str(char *socket_path, const char *write_str,
