@@ -206,19 +206,16 @@ int find_ap_status(const char *ap_answer,
 }
 
 void ap_sock_handler(int sock, void *eloop_ctx, void *sock_ctx) {
-  uint8_t mac_addr[ETHER_ADDR_LEN];
-  enum AP_CONNECTION_STATUS status;
-  uint32_t bytes_available;
-  char *rec_data, *trimmed;
   struct supervisor_context *context = (struct supervisor_context *)sock_ctx;
   ap_service_fn fn = (ap_service_fn)eloop_ctx;
 
+  uint32_t bytes_available;
   if (ioctl(sock, FIONREAD, &bytes_available) == -1) {
     log_errno("ioctl");
     return;
   }
 
-  rec_data = os_zalloc(bytes_available + 1);
+  char *rec_data = os_zalloc(bytes_available + 1);
   if (rec_data == NULL) {
     log_errno("os_zalloc");
     return;
@@ -232,12 +229,15 @@ void ap_sock_handler(int sock, void *eloop_ctx, void *sock_ctx) {
     return;
   }
 
-  if ((trimmed = rtrim(rec_data, NULL)) == NULL) {
+  char *trimmed = rtrim(rec_data, NULL);
+  if (trimmed == NULL) {
     log_error("rtrim fail");
     os_free(rec_data);
     return;
   }
 
+  enum AP_CONNECTION_STATUS status;
+  uint8_t mac_addr[ETHER_ADDR_LEN];
   if (find_ap_status(trimmed, mac_addr, &status) > -1) {
     fn(context, mac_addr, status);
   }
@@ -274,8 +274,6 @@ int register_ap_event(struct supervisor_context *context,
 
 int run_ap(struct supervisor_context *context, bool exec_ap, bool generate_ssid,
            void *ap_callback_fn) {
-  char hostname[OS_HOST_NAME_MAX];
-  int res;
   if (generate_vlan_conf(context->hconfig.vlan_file,
                          context->hconfig.interface) < 0) {
     log_error("generate_vlan_conf fail");
@@ -283,6 +281,7 @@ int run_ap(struct supervisor_context *context, bool exec_ap, bool generate_ssid,
   }
 
   if (generate_ssid) {
+    char hostname[OS_HOST_NAME_MAX];
     if (get_hostname(hostname) < 0) {
       log_error("get_hostname fail");
       return -1;
@@ -297,6 +296,7 @@ int run_ap(struct supervisor_context *context, bool exec_ap, bool generate_ssid,
     return -1;
   }
 
+  int res;
   if (exec_ap) {
     res = run_ap_process(&context->hconfig);
   } else {
