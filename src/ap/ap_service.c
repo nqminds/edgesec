@@ -129,8 +129,9 @@ int check_sta_ap_command(struct apconf *hconf, char *mac_addr) {
     goto error_cleanup;
   }
 
-  if ((buffer = os_zalloc(strlen(STA_AP_COMMAND) + strlen(mac_addr) + 1)) ==
-      NULL) {
+  buffer = os_zalloc(strlen(STA_AP_COMMAND) + 1 /* space char */ +
+                     strlen(mac_addr) + 1 /* nul terminator */);
+  if (buffer == NULL) {
     log_errno("os_zalloc");
     goto error_cleanup;
   }
