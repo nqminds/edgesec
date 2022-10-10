@@ -167,18 +167,18 @@ int generate_hostapd_conf(struct apconf *hconf, struct radius_conf *rconf) {
 }
 #endif
 
+void get_hostapd_args(const char *hostapd_bin_path,
+                      const char *hostapd_file_path,
+                      const char *hostapd_log_path,
+                      const char *argv[static 5]) {
 #if (defined(WITH_UCI_SERVICE) && defined(WITH_HOSTAPD_UCI))
-void get_hostapd_args(char *hostapd_bin_path, char *hostapd_file_path,
-                      char *hostapd_log_path, char *argv[]) {
   (void)hostapd_file_path;
   (void)hostapd_log_path;
 
   argv[0] = hostapd_bin_path;
   argv[1] = HOSTAPD_SERVICE_RELOAD;
-}
+  argv[2] = NULL;
 #else
-void get_hostapd_args(char *hostapd_bin_path, char *hostapd_file_path,
-                      char *hostapd_log_path, char *argv[]) {
   // argv = {"hostapd", "-B", hostapd_file_path, NULL};
   // argv = {"hostapd", hostapd_file_path, NULL};
 
@@ -188,11 +188,13 @@ void get_hostapd_args(char *hostapd_bin_path, char *hostapd_file_path,
         HOSTAPD_LOG_FILE_OPTION; /* ./hostapd -f hostapd.log hostapd.conf */
     argv[2] = hostapd_log_path;
     argv[3] = hostapd_file_path;
+    argv[4] = NULL;
   } else {
     argv[1] = hostapd_file_path; /* ./hostapd hostapd.conf */
+    argv[2] = NULL;
   }
-}
 #endif
+}
 
 int check_ap_running(char *name, char *if_name, int wait_time) {
   int running = 0;
@@ -211,45 +213,44 @@ int check_ap_running(char *name, char *if_name, int wait_time) {
   return running;
 }
 
-#if (defined(WITH_UCI_SERVICE) && defined(WITH_HOSTAPD_UCI))
 int run_ap_process(struct apconf *hconf) {
   pid_t child_pid = 0;
-  int ret;
-  char *process_argv[3] = {NULL, NULL, NULL};
-
-  os_strlcpy(hostapd_proc_name, HOSTAPD_PROCESS_NAME, MAX_OS_PATH_LEN);
+  const char *process_argv[5] = {NULL};
   get_hostapd_args(hconf->ap_bin_path, hconf->ap_file_path, hconf->ap_log_path,
                    process_argv);
 
-  if ((ret = run_process(process_argv, &child_pid)) < 0) {
+  int return_code = -1;
+
+  char **argv_copy = copy_argv(process_argv);
+  if (argv_copy == NULL) {
+    log_errno("Failed to copy_argv for %s", hconf->ap_bin_path);
+    goto cleanup;
+  }
+
+#if (defined(WITH_UCI_SERVICE) && defined(WITH_HOSTAPD_UCI))
+  os_strlcpy(hostapd_proc_name, HOSTAPD_PROCESS_NAME, MAX_OS_PATH_LEN);
+
+  int ret = run_process(argv_copy, &child_pid);
+  if (ret < 0) {
     log_error("hostapd process exited with status=%d", ret);
-    return -1;
+    goto cleanup;
   }
 
   log_trace("Checking ap proc running...");
   ret = check_ap_running(hostapd_proc_name, hconf->ctrl_interface_path, 1);
   if (ret < 0) {
     log_error("check_ap_running fail");
-    return -1;
+    goto cleanup;
   } else if (ret == 0) {
     log_error("hostapd not running");
-    return -1;
+    goto cleanup;
   }
 
   log_trace("hostapd instance running");
-  ap_process_started = true;
-
-  return 0;
-}
 #else
-int run_ap_process(struct apconf *hconf) {
-  pid_t child_pid = 0;
-  int ret;
-  char *process_argv[5] = {NULL, NULL, NULL, NULL, NULL};
-
-  os_strlcpy(hostapd_proc_name, basename(hconf->ap_bin_path), MAX_OS_PATH_LEN);
-  get_hostapd_args(hconf->ap_bin_path, hconf->ap_file_path, hconf->ap_log_path,
-                   process_argv);
+  char ap_bin_path_copy[MAX_OS_PATH_LEN];
+  os_strlcpy(ap_bin_path_copy, hconf->ap_bin_path, MAX_OS_PATH_LEN);
+  os_strlcpy(hostapd_proc_name, basename(ap_bin_path_copy), MAX_OS_PATH_LEN);
 
   // Kill any running hostapd process
   if (!kill_process(hostapd_proc_name)) {
@@ -257,7 +258,8 @@ int run_ap_process(struct apconf *hconf) {
     return -1;
   }
 
-  while ((ret = run_process(process_argv, &child_pid)) < 0) {
+  int ret;
+  while ((ret = run_process(argv_copy, &child_pid)) < 0) {
     log_trace("Killing hostapd process");
     // Kill any running hostapd process
     if (!kill_process(hostapd_proc_name)) {
@@ -274,11 +276,13 @@ int run_ap_process(struct apconf *hconf) {
   }
 
   log_trace("hostapd instance running (pid=%d)", child_pid);
-  ap_process_started = true;
-
-  return 0;
-}
 #endif
+  ap_process_started = true;
+  return_code = 0;
+cleanup:
+  free(argv_copy);
+  return return_code;
+}
 
 bool kill_ap_process(void) {
   // Kill any running hostapd process
@@ -290,12 +294,10 @@ bool kill_ap_process(void) {
   return true;
 }
 
-int signal_ap_process(struct apconf *hconf) {
-  char *process_argv[5] = {NULL, NULL, NULL, NULL, NULL};
-  get_hostapd_args(hconf->ap_bin_path, hconf->ap_file_path, hconf->ap_log_path,
-                   process_argv);
-
-  os_strlcpy(hostapd_proc_name, basename(hconf->ap_bin_path), MAX_OS_PATH_LEN);
+int signal_ap_process(const struct apconf *hconf) {
+  char ap_bin_path_copy[MAX_OS_PATH_LEN];
+  os_strlcpy(ap_bin_path_copy, hconf->ap_bin_path, MAX_OS_PATH_LEN);
+  os_strlcpy(hostapd_proc_name, basename(ap_bin_path_copy), MAX_OS_PATH_LEN);
 
   // Signal any running hostapd process to reload the config
   if (!signal_process(hostapd_proc_name, SIGHUP)) {
