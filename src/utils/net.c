@@ -113,17 +113,20 @@ int ip4_2_buf(char *ip, uint8_t *buf) {
   return 0;
 }
 
-const char *bit32_2_ip(uint32_t addr, char *ip) {
-  struct in_addr in;
-  in.s_addr = addr;
+const char *bit32_2_ip(uint32_t addr, char ip[static OS_INET_ADDRSTRLEN]) {
+  struct in_addr in = {
+      .s_addr = addr,
+  };
   return inet_ntop(AF_INET, &in, ip, OS_INET_ADDRSTRLEN);
 }
 
-const char *inaddr4_2_ip(struct in_addr *addr, char *ip) {
+const char *inaddr4_2_ip(const struct in_addr *addr,
+                         char ip[static OS_INET_ADDRSTRLEN]) {
   return inet_ntop(AF_INET, addr, ip, OS_INET_ADDRSTRLEN);
 }
 
-const char *inaddr6_2_ip(struct in6_addr *addr, char *ip) {
+const char *inaddr6_2_ip(const struct in6_addr *addr,
+                         char ip[static OS_INET6_ADDRSTRLEN]) {
   return inet_ntop(AF_INET6, addr, ip, OS_INET6_ADDRSTRLEN);
 }
 
