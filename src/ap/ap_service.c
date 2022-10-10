@@ -56,7 +56,8 @@ int ping_ap_command(struct apconf *hconf) {
   return 0;
 }
 
-int denyacl_ap_command(struct apconf *hconf, const char *cmd, char *mac_addr) {
+int denyacl_ap_command(struct apconf *hconf, const char *cmd,
+                       const char *mac_addr) {
   char *buffer = NULL;
   char *reply = NULL;
 
@@ -96,15 +97,15 @@ error_cleanup:
   return return_code;
 }
 
-int denyacl_add_ap_command(struct apconf *hconf, char *mac_addr) {
+int denyacl_add_ap_command(struct apconf *hconf, const char *mac_addr) {
   return denyacl_ap_command(hconf, DENYACL_ADD_COMMAND, mac_addr);
 }
 
-int denyacl_del_ap_command(struct apconf *hconf, char *mac_addr) {
+int denyacl_del_ap_command(struct apconf *hconf, const char *mac_addr) {
   return denyacl_ap_command(hconf, DENYACL_DEL_COMMAND, mac_addr);
 }
 
-int disconnect_ap_command(struct apconf *hconf, char *mac_addr) {
+int disconnect_ap_command(struct apconf *hconf, const char *mac_addr) {
   if (denyacl_add_ap_command(hconf, mac_addr) < 0) {
     log_error("denyacl_add_ap_command fail");
     return -1;
@@ -118,7 +119,7 @@ int disconnect_ap_command(struct apconf *hconf, char *mac_addr) {
   return 0;
 }
 
-int check_sta_ap_command(struct apconf *hconf, char *mac_addr) {
+int check_sta_ap_command(struct apconf *hconf, const char *mac_addr) {
   char *buffer = NULL;
   char *reply = NULL;
 
@@ -161,7 +162,17 @@ error_cleanup:
   return return_code;
 }
 
-int find_ap_status(char *ap_answer, uint8_t *mac_addr,
+/**
+ * @brief Finds the stauts of the given access point
+ *
+ * @param ap_answer Response from ap socket.
+ * @param[out] mac_addr The MAC address of the AP.
+ * @param[out] status Outputs the the status of the AP to this variable.
+ * @retval  0 Sucess.
+ * @retval -1 Error. No valid AP status found in the @p ap_answer string.
+ */
+int find_ap_status(const char *ap_answer,
+                   uint8_t mac_addr[static ETHER_ADDR_LEN],
                    enum AP_CONNECTION_STATUS *status) {
   UT_array *str_arr;
   char **ptr = NULL;
