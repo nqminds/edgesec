@@ -57,34 +57,40 @@ int ping_ap_command(struct apconf *hconf) {
 }
 
 int denyacl_ap_command(struct apconf *hconf, char *cmd, char *mac_addr) {
-  char *buffer;
+  char *buffer = NULL;
   char *reply = NULL;
+
+  int return_code = -1;
 
   if (mac_addr == NULL) {
     log_error("mac_addr is NULL");
-    return -1;
+    goto error_cleanup;
   }
 
   if ((buffer = os_zalloc(strlen(cmd) + strlen(mac_addr) + 1)) == NULL) {
     log_errno("os_zalloc");
-    return -1;
+    goto error_cleanup;
   }
 
   sprintf(buffer, "%s %s", cmd, mac_addr);
   if (writeread_domain_data_str(hconf->ctrl_interface_path, buffer, &reply) <
       0) {
     log_error("writeread_domain_data_str fail");
-    return -1;
+    goto error_cleanup;
   }
 
   if (strcmp(reply, GENERIC_AP_COMMAND_OK_REPLY) != 0) {
     log_error(GENERIC_AP_COMMAND_OK_REPLY " reply doesn't match %s", reply);
-    os_free(reply);
-    return -1;
+    goto error_cleanup;
   }
 
+  return_code = 0;
+error_cleanup:
+  // free(null_ptr) is perfectly safe and does nothing
+  os_free(buffer);
   os_free(reply);
-  return 0;
+
+  return return_code;
 }
 
 int denyacl_add_ap_command(struct apconf *hconf, char *mac_addr) {
