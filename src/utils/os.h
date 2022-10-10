@@ -441,13 +441,17 @@ bool kill_process(char *proc_name);
 bool signal_process(char *proc_name, int sig);
 
 /**
- * @brief Executes a process with an array of strign arguments
+ * @brief Executes a background process with an array of string arguments.
  *
- * @param argv The array of string arguments terminated with NULL and the first
- * argument is the absolute path of the process.
- * @param child_pid The returned child pid
- * @return int 1 if process started, 0 if the child specified by pid exist, but
- * have not yet changed state, -1 on error
+ * @param[in] argv The array of string arguments terminated with NULL and the
+ * first argument is the absolute path of the process.
+ * @param[out] child_pid The returned child pid
+ * @retval     0 The child process has been created, and is either:
+ *   - still running, OR
+ *   - exited with exit code 0
+ * @retval    -1 Error, please see `errno` for more details.
+ * @retval 1-255 The child process has exited,
+ *   and the return value is this non-zero/error exit code.
  */
 int run_process(char *argv[], pid_t *child_pid);
 

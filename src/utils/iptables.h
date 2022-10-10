@@ -70,8 +70,8 @@ int iptables_add_bridge(struct iptables_context *ctx, char *sip, char *sif,
  * @param dif Destination interface name string
  * @return 0 on success, -1 on error
  */
-int iptables_delete_bridge(struct iptables_context *ctx, char *sip, char *sif,
-                           char *dip, char *dif);
+int iptables_delete_bridge(struct iptables_context *ctx, const char *sip,
+                           const char *sif, const char *dip, const char *dif);
 
 /**
  * @brief Add a NAT rule

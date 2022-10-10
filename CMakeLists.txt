@@ -156,6 +156,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # Include the libraries
 include(hostapd)
 include(cmocka)
+include(minIni)
 include(mnl)
 include(netlink)
 include(nl)
@@ -224,9 +225,10 @@ if (NOT BUILD_ONLY_DOCS)
         EXECUTABLE_ARGS --output-on-failure -j "${PROCESSOR_COUNT}"
         EXCLUDE
           "${PROJECT_SOURCE_DIR}/lib/*"
-          # this file is only in the build/ directory, but
+          # these file are only in the build/ directory, but
           # llvm-cov gcov doesn't seem to like it
           "${PROJECT_SOURCE_DIR}/middlewares_list.c"
+          "${PROJECT_SOURCE_DIR}/_deps/*"
       )
     endif()
 
