@@ -463,13 +463,16 @@ int writeread_domain_data_str(char *socket_path, const char *write_str,
   // rtrim modifies the input string.
   (void)rtrim(rec_data, NULL);
 
-  *reply = os_strdup(rec_data);
-  if (*reply == NULL) {
-    log_errno("os_strdup failed to copy string %s", rec_data);
+  char *trimmed_data = os_realloc(rec_data, strlen(rec_data) + 1);
+  if (trimmed_data == NULL) {
+    log_errno("os_realloc failed to rello string %s", rec_data);
     goto cleanup_recdata;
   }
+  // set to NULL so free(rec_data) does nothing
+  rec_data = NULL;
 
   return_code = 0;
+  *reply = trimmed_data;
 
 cleanup_recdata:
   os_free(rec_data);
