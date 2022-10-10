@@ -67,11 +67,11 @@ int denyacl_ap_command(struct apconf *hconf, char *cmd, char *mac_addr) {
     goto error_cleanup;
   }
 
-  buffer = os_zalloc(strlen(cmd) + 1 /* space char */ + strlen(mac_addr) +
-                     1 /* nul terminator */
+  buffer = malloc(strlen(cmd) + 1 /* space char */ + strlen(mac_addr) +
+                  1 /* nul terminator */
   );
   if (buffer == NULL) {
-    log_errno("os_zalloc");
+    log_errno("malloc");
     goto error_cleanup;
   }
 
@@ -90,7 +90,7 @@ int denyacl_ap_command(struct apconf *hconf, char *cmd, char *mac_addr) {
   return_code = 0;
 error_cleanup:
   // free(null_ptr) is perfectly safe and does nothing
-  os_free(buffer);
+  free(buffer);
   os_free(reply);
 
   return return_code;
@@ -129,10 +129,10 @@ int check_sta_ap_command(struct apconf *hconf, char *mac_addr) {
     goto error_cleanup;
   }
 
-  buffer = os_zalloc(strlen(STA_AP_COMMAND) + 1 /* space char */ +
-                     strlen(mac_addr) + 1 /* nul terminator */);
+  buffer = malloc(strlen(STA_AP_COMMAND) + 1 /* space char */ +
+                  strlen(mac_addr) + 1 /* nul terminator */);
   if (buffer == NULL) {
-    log_errno("os_zalloc");
+    log_errno("malloc");
     goto error_cleanup;
   }
 
@@ -156,7 +156,7 @@ int check_sta_ap_command(struct apconf *hconf, char *mac_addr) {
   return_code = 0;
 error_cleanup:
   // free(NULL ptr) is safe and does nothing
-  os_free(buffer);
+  free(buffer);
   os_free(reply);
   return return_code;
 }
