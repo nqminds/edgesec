@@ -58,7 +58,7 @@ bool validate_ipv4_string(const char *ip) {
   return ret > 0;
 }
 
-int ip_2_nbo(char *ip, char *subnet_mask, in_addr_t *addr) {
+int ip_2_nbo(const char *ip, const char *subnet_mask, in_addr_t *addr) {
   in_addr_t subnet;
 
   if (addr == NULL) {
@@ -81,7 +81,7 @@ int ip_2_nbo(char *ip, char *subnet_mask, in_addr_t *addr) {
   return 0;
 }
 
-int ip4_2_buf(char *ip, uint8_t *buf) {
+int ip4_2_buf(const char *ip, uint8_t buf[static IP_ALEN]) {
   struct in_addr addr;
 
   if (ip == NULL) {
@@ -151,7 +151,7 @@ uint8_t get_short_subnet(const char *subnet_mask) {
   return short_mask;
 }
 
-int get_ip_host(char *ip, char *subnet_mask, uint32_t *host) {
+int get_ip_host(const char *ip, const char *subnet_mask, uint32_t *host) {
   uint8_t ipbuf[4], mbuf[4];
 
   if (ip4_2_buf(ip, ipbuf) < 0) {
