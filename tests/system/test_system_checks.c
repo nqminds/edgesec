@@ -32,7 +32,7 @@ static void test_check_systems_commands(void **state) {
 
   assert_non_null(hmap);
 
-  char *value = hmap_str_keychar_get(&hmap, "ls");
+  const char *value = hmap_str_keychar_get(hmap, "ls");
 
   assert_string_equal(value, "/bin/ls");
 

@@ -26,15 +26,15 @@
 #include "log.h"
 #include "hashmap.h"
 
-char *hmap_str_keychar_get(hmap_str_keychar **hmap, char *keyptr) {
-  hmap_str_keychar *s;
-
+const char *hmap_str_keychar_get(const hmap_str_keychar *hmap,
+                                 const char *keyptr) {
   if (keyptr == NULL) {
     log_trace("keyptr is NULL");
     return NULL;
   }
 
-  HASH_FIND_STR(*hmap, keyptr, s);
+  const hmap_str_keychar *s;
+  HASH_FIND_STR(hmap, keyptr, s);
 
   if (s != NULL)
     return s->value;
