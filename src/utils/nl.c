@@ -1237,7 +1237,7 @@ int nl_is_iw_vlan(const char *ifname) {
   return -1;
 }
 
-char *nl_get_valid_iw(char buf[static IFNAMSIZ]) {
+char *nl_get_valid_iw(char buf[static IF_NAMESIZE]) {
   UT_array *netif_list = get_netiw_info();
 
   if (netif_list == NULL) {

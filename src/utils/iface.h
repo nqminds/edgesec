@@ -15,6 +15,7 @@
 #include <stdbool.h>
 #include <netinet/in.h>
 #include <net/ethernet.h>
+#include <net/if.h>
 
 #include <utarray.h>
 #include <uthash.h>
@@ -43,7 +44,7 @@ struct iface_context {
  * @brief Initialises the interface context
  *
  * @param params The parameters for interface context
- * @return struct iface_context* The interface context
+ * @return The interface context. Must be freed by iface_free_context().
  */
 struct iface_context *iface_init_context(void *params);
 
@@ -57,18 +58,19 @@ void iface_free_context(struct iface_context *context);
 /**
  * @brief Returns an exisiting WiFi interface name that supports VLAN
  *
- * @param if_buf Interface working buffer
- * @return char* WiFi interface name
+ * @param[out] if_buf Interface working buffer of at least size IF_NAMESIZE.
+ * @return WiFi interface name (pointer to @p if_buf param), or NULL on error.
  */
-char *iface_get_vlan(char *if_buf);
+char *iface_get_vlan(char if_buf[static IF_NAMESIZE]);
 
 /**
  * @brief Get the array of @c struct netif_info_t for each available interface
  *
  * @param[in] ifname The interface name, if NULL return all interfaces
- * @return UT_array* The returned array of @c struct netif_info_t
+ * @return UT_array* The returned array of @c struct netif_info_t.
+ * Must be freed with utarray_free() when done.
  */
-UT_array *iface_get(char *ifname);
+UT_array *iface_get(const char *ifname);
 
 /**
  * @brief Get the IP4 addresses for a given interface
@@ -76,10 +78,11 @@ UT_array *iface_get(char *ifname);
  * @param context The interface context
  * @param[in] brname The bridge name
  * @param[in] ifname The interface name
- * @return UT_array* The returned array of IP4 strings
+ * @return UT_array* The returned array of IP4 strings.
+ * Must be freed with utarray_free() when done.
  */
-UT_array *iface_get_ip4(struct iface_context *context, char *brname,
-                        char *ifname);
+UT_array *iface_get_ip4(const struct iface_context *context, const char *brname,
+                        const char *ifname);
 
 /**
  * @brief Creates and interface and assigns an IP
@@ -93,8 +96,9 @@ UT_array *iface_get_ip4(struct iface_context *context, char *brname,
  * @param subnet_mask The interface IP4 subnet mask
  * @return int 0 on success, -1 on failure
  */
-int iface_create(struct iface_context *context, char *brname, char *ifname,
-                 char *type, char *ip_addr, char *brd_addr, char *subnet_mask);
+int iface_create(const struct iface_context *context, const char *brname,
+                 const char *ifname, const char *type, const char *ip_addr,
+                 const char *brd_addr, const char *subnet_mask);
 
 /**
  * @brief Sets the IP4 for a given interface
@@ -107,8 +111,9 @@ int iface_create(struct iface_context *context, char *brname, char *ifname,
  * @param subnet_mask The interface IP4 subnet mask
  * @return int 0 on success, -1 on failure
  */
-int iface_set_ip4(struct iface_context *context, char *brname, char *ifname,
-                  char *ip_addr, char *brd_addr, char *subnet_mask);
+int iface_set_ip4(const struct iface_context *context, const char *brname,
+                  const char *ifname, const char *ip_addr, const char *brd_addr,
+                  const char *subnet_mask);
 
 /**
  * @brief Commits the interface changes
@@ -116,7 +121,7 @@ int iface_set_ip4(struct iface_context *context, char *brname, char *ifname,
  * @param context The interface context
  * @return int 0 on success, -1 on failure
  */
-int iface_commit(struct iface_context *context);
+int iface_commit(const struct iface_context *context);
 
 /**
  * @brief Resets an interface
@@ -125,5 +130,5 @@ int iface_commit(struct iface_context *context);
  * @param ifname The interface name
  * @return int 0 on success, -1 on failure
  */
-int reset_interface(struct iface_context *context, char *ifname);
+int reset_interface(const struct iface_context *context, const char *ifname);
 #endif
