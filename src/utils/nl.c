@@ -757,7 +757,7 @@ nl_new_interface_err:
   return -1;
 }
 
-int nl_set_interface_ip(struct nlctx *context, const char *ifname,
+int nl_set_interface_ip(const struct nlctx *context, const char *ifname,
                         const char *ip_addr, const char *brd_addr,
                         const char *subnet_mask) {
   (void)context;
@@ -846,11 +846,9 @@ void nl_free_context(struct nlctx *context) {
   }
 }
 
-int nl_create_interface(struct nlctx *context, char *ifname, char *type,
-                        char *ip_addr, char *brd_addr,
-                        const char *subnet_mask) {
-  (void)context;
-
+int nl_create_interface(const struct nlctx *context, const char *ifname,
+                        const char *type, const char *ip_addr,
+                        const char *brd_addr, const char *subnet_mask) {
   if (ifname == NULL) {
     log_error("ifname param is NULL");
     return -1;
@@ -895,7 +893,7 @@ int nl_create_interface(struct nlctx *context, char *ifname, char *type,
   return 0;
 }
 
-int nl_reset_interface(char *ifname) {
+int nl_reset_interface(const char *ifname) {
   if (nl_set_interface_state(ifname, false) < 0) {
     log_error("nl_set_interface_state fail");
     return -1;
@@ -1239,7 +1237,7 @@ int nl_is_iw_vlan(const char *ifname) {
   return -1;
 }
 
-char *nl_get_valid_iw(char *buf) {
+char *nl_get_valid_iw(char buf[static IFNAMSIZ]) {
   UT_array *netif_list = get_netiw_info();
 
   if (netif_list == NULL) {
