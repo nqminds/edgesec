@@ -697,7 +697,8 @@ char *construct_path(const char *path_left, const char *path_right) {
   return path;
 }
 
-char *get_secure_path(UT_array *bin_path_arr, char *filename, bool real) {
+char *get_secure_path(const UT_array *bin_path_arr, const char *filename,
+                      bool real) {
   char **p = NULL;
 
   if (bin_path_arr == NULL) {
@@ -1410,7 +1411,7 @@ int read_file_string(char *path, char **out) {
   return 0;
 }
 
-int get_commands_paths(char *commands[], UT_array *bin_path_arr,
+int get_commands_paths(const char *commands[], const UT_array *bin_path_arr,
                        hmap_str_keychar **hmap_bin_paths) {
   if (bin_path_arr == NULL) {
     log_error("bin_path_arr param NULL");
