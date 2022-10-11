@@ -266,7 +266,7 @@ int init_context(struct app_config *app_config,
     return -1;
   }
 
-  char *ipcmd_path = hmap_str_keychar_get(&ctx->hmap_bin_paths, "ip");
+  const char *ipcmd_path = hmap_str_keychar_get(ctx->hmap_bin_paths, "ip");
   if (ipcmd_path == NULL) {
     log_error("Couldn't find ip command");
     return -1;
