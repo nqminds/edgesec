@@ -171,7 +171,7 @@ static const char *radius_code_string(uint8_t code) {
 
 struct radius_attr_type {
   uint8_t type;
-  char *name;
+  const char *name;
   enum {
     RADIUS_ATTR_UNDIST,
     RADIUS_ATTR_TEXT,
