@@ -132,6 +132,8 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           files: coverage.info
+          # not officially needed for public repos, but we're getting a bunch of API issues
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
   build-recap:
     name: Building Recap
