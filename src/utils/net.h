@@ -81,28 +81,36 @@ int ip4_2_buf(char *ip, uint8_t *buf);
  * @brief Convert a 32 bit number IP to an IP string
  *
  * @param addr The IP in 32 bit format
- * @param ip The input buffer to store the IP
- * @return char* Pointer to the returned IP
+ * @param[out] ip The output buffer to store the IP.
+ * Must be at least OS_INET_ADDRSTRLEN chars long.
+ * @return Pointer to the returned IP (same as @p ip on success)
+ * @retval NULL on error (see errno).
  */
-const char *bit32_2_ip(uint32_t addr, char *ip);
+const char *bit32_2_ip(uint32_t addr, char ip[static OS_INET_ADDRSTRLEN]);
 
 /**
  * @brief Convert the in_addr encoded IP4 address to an IP string
  *
  * @param addr The in_addr encoded IP
- * @param ip The input buffer to store the IP
- * @return char* Pointer to the returned IP
+ * @param[out] ip The output buffer to store the IP.
+ * Must be at least OS_INET_ADDRSTRLEN chars long.
+ * @return Pointer to the returned IP (same as @p ip on success)
+ * @retval NULL on error (see errno).
  */
-const char *inaddr4_2_ip(struct in_addr *addr, char *ip);
+const char *inaddr4_2_ip(const struct in_addr *addr,
+                         char ip[static OS_INET_ADDRSTRLEN]);
 
 /**
  * @brief Convert the in6_addr encoded IP6 address to an IP string
  *
  * @param addr The in6_addr encoded IP
- * @param ip The input buffer to store the IP
- * @return char* Pointer to the returned IP
+ * @param[out] ip The output buffer to store the IP.
+ * Must be at least OS_INET6_ADDRSTRLEN chars long.
+ * @return Pointer to the returned IP (same as @p ip on success)
+ * @retval NULL on error (see errno).
  */
-const char *inaddr6_2_ip(struct in6_addr *addr, char *ip);
+const char *inaddr6_2_ip(const struct in6_addr *addr,
+                         char ip[static OS_INET6_ADDRSTRLEN]);
 
 /**
  * @brief Convert from a string subnet mask to a short integer version
