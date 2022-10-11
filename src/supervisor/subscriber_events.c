@@ -66,7 +66,7 @@ int add_events_subscriber(struct supervisor_context *context,
   return 0;
 }
 
-int send_events(struct supervisor_context *context, char *name,
+int send_events(struct supervisor_context *context, const char *name,
                 const char *format, va_list args) {
   struct client_address *p = NULL;
   char *send_buf = NULL;

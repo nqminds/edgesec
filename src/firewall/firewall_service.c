@@ -153,7 +153,7 @@ struct fwctx *fw_init_context(hmap_if_conn *if_mapper,
     return NULL;
   }
 #else
-  char *iptables_path = hmap_str_keychar_get(&hmap_bin_paths, "iptables");
+  const char *iptables_path = hmap_str_keychar_get(hmap_bin_paths, "iptables");
   if (iptables_path == NULL) {
     log_error("Couldn't find iptables binary");
     fw_free_context(fw_ctx);
