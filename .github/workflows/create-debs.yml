@@ -24,6 +24,7 @@ jobs:
           - clang
           - openwrt-with-header
           - openwrt-21.02.1/bcm27xx/bcm2710 # Raspberry Pi 3 for OpenWRT 21.02.1
+          - recap # Uses the generic IP service
     permissions:
       contents: read
     runs-on: ubuntu-latest
