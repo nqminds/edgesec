@@ -465,7 +465,7 @@ int writeread_domain_data_str(char *socket_path, const char *write_str,
 
   char *trimmed_data = os_realloc(rec_data, strlen(rec_data) + 1);
   if (trimmed_data == NULL) {
-    log_errno("os_realloc failed to rello string %s", rec_data);
+    log_errno("os_realloc failed to relloc string %s", rec_data);
     goto cleanup_recdata;
   }
   // set to NULL so free(rec_data) does nothing
