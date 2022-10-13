@@ -311,7 +311,7 @@ int save_packet(struct pcap_stream_context *pctx) {
 }
 
 int process_pkt_read_state(struct pcap_stream_context *pctx) {
-  size_t len = (pctx->pkt_header.caplen > pctx->data_size)
+  size_t len = ((ssize_t) pctx->pkt_header.caplen > pctx->data_size)
                    ? pctx->pkt_header.caplen - pctx->data_size
                    : 0;
 
@@ -321,7 +321,7 @@ int process_pkt_read_state(struct pcap_stream_context *pctx) {
     return -1;
   }
 
-  if (pctx->data_size >= pctx->pkt_header.caplen) {
+  if (pctx->data_size >= (ssize_t) pctx->pkt_header.caplen) {
     log_trace("Received pkt data");
 
     if (save_packet(pctx) < 0) {
