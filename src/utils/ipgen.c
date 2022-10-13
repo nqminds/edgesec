@@ -50,35 +50,38 @@ void ipgen_free_context(struct ipgenctx *context) {
   }
 }
 
-int run_ip(char *path, char *const argv[]) {
+int run_ip(const char *path, const char *const argv[]) {
   return run_argv_command(path, argv, NULL, NULL);
 }
 
-int ipgen_new_interface(char *path, char *ifname, char *type) {
-  char *argv[7] = {"link", "add", "name", ifname, "type", type, NULL};
+int ipgen_new_interface(const char *path, const char *ifname,
+                        const char *type) {
+  const char *argv[7] = {"link", "add", "name", ifname, "type", type, NULL};
   return run_ip(path, argv);
 }
 
-int ipgen_set_interface_ip(struct ipgenctx *context, char *ifname,
-                           const char *ip_addr, char *brd_addr,
-                           char *subnet_mask) {
+int ipgen_set_interface_ip(const struct ipgenctx *context, const char *ifname,
+                           const char *ip_addr, const char *brd_addr,
+                           const char *subnet_mask) {
   char longip[OS_INET_ADDRSTRLEN];
 
   snprintf(longip, OS_INET_ADDRSTRLEN, "%s/%d", ip_addr,
            (int)get_short_subnet(subnet_mask));
 
-  char *argv[8] = {"addr", "add", longip, "brd", brd_addr, "dev", ifname, NULL};
+  const char *argv[8] = {"addr",   "add", longip, "brd",
+                         brd_addr, "dev", ifname, NULL};
   return run_ip(context->ipcmd_path, argv);
 }
 
-int ipgen_set_interface_state(char *path, char *ifname, bool state) {
-  char *argv[5] = {"link", "set", ifname, NULL, NULL};
-  argv[3] = (state) ? "up" : "down";
+int ipgen_set_interface_state(const char *path, const char *ifname,
+                              bool state) {
+  const char *argv[5] = {"link", "set", ifname, (state) ? "up" : "down", NULL};
   return run_ip(path, argv);
 }
 
-int ipgen_create_interface(struct ipgenctx *context, char *ifname, char *type,
-                           char *ip_addr, char *brd_addr, char *subnet_mask) {
+int ipgen_create_interface(const struct ipgenctx *context, const char *ifname,
+                           const char *type, const char *ip_addr,
+                           const char *brd_addr, const char *subnet_mask) {
   if (ifname == NULL) {
     log_trace("ifname param is NULL");
     return -1;
@@ -123,7 +126,7 @@ int ipgen_create_interface(struct ipgenctx *context, char *ifname, char *type,
   return 0;
 }
 
-int ipgen_reset_interface(struct ipgenctx *context, char *ifname) {
+int ipgen_reset_interface(const struct ipgenctx *context, const char *ifname) {
   if (ipgen_set_interface_state(context->ipcmd_path, ifname, false) < 0) {
     log_trace("ipgen_set_interface_state fail");
     return -1;
