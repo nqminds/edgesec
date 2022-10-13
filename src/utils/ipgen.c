@@ -50,12 +50,12 @@ void ipgen_free_context(struct ipgenctx *context) {
   }
 }
 
-int run_ip(char *path, char *const argv[]) {
+int run_ip(char *path, const char *const argv[]) {
   return run_argv_command(path, argv, NULL, NULL);
 }
 
 int ipgen_new_interface(char *path, char *ifname, char *type) {
-  char *argv[7] = {"link", "add", "name", ifname, "type", type, NULL};
+  const char *argv[7] = {"link", "add", "name", ifname, "type", type, NULL};
   return run_ip(path, argv);
 }
 
@@ -67,12 +67,12 @@ int ipgen_set_interface_ip(struct ipgenctx *context, char *ifname,
   snprintf(longip, OS_INET_ADDRSTRLEN, "%s/%d", ip_addr,
            (int)get_short_subnet(subnet_mask));
 
-  char *argv[8] = {"addr", "add", longip, "brd", brd_addr, "dev", ifname, NULL};
+  const char *argv[8] = {"addr", "add", longip, "brd", brd_addr, "dev", ifname, NULL};
   return run_ip(context->ipcmd_path, argv);
 }
 
 int ipgen_set_interface_state(char *path, char *ifname, bool state) {
-  char *argv[5] = {"link", "set", ifname, NULL, NULL};
+  const char *argv[5] = {"link", "set", ifname, NULL, NULL};
   argv[3] = (state) ? "up" : "down";
   return run_ip(path, argv);
 }
