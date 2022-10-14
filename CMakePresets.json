@@ -271,6 +271,10 @@
       "configurePreset": "linux-with-tap"
     },
     {
+      "name": "recap",
+      "configurePreset": "recap"
+    },
+    {
       "name": "linux-with-crypt",
       "configurePreset": "linux-with-crypt"
     },
