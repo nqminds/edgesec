@@ -42,7 +42,8 @@ const char *hmap_str_keychar_get(const hmap_str_keychar *hmap,
   return NULL;
 }
 
-bool hmap_str_keychar_put(hmap_str_keychar **hmap, char *keyptr, char *value) {
+bool hmap_str_keychar_put(hmap_str_keychar **hmap, const char *keyptr,
+                          const char *value) {
   if (keyptr == NULL) {
     log_trace("keyptr is NULL");
     return false;

@@ -55,7 +55,8 @@ const char *hmap_str_keychar_get(const hmap_str_keychar *hmap,
  * @param value The hashmap string value
  * @return true on succes, false if there's an insertion error
  */
-bool hmap_str_keychar_put(hmap_str_keychar **hmap, char *keyptr, char *value);
+bool hmap_str_keychar_put(hmap_str_keychar **hmap, const char *keyptr,
+                          const char *value);
 
 /**
  * @brief Deletes the string hashmap object
