@@ -22,7 +22,7 @@
 void decode_dns_questions(uint8_t *payload, struct capture_packet *cpac) {
   uint16_t idx, i = 0, j = 0;
   for (idx = 0; idx < /*cpac->dnss.nqueries*/ 1; idx++) {
-    while ((uint32_t)(((void *)&payload[i] - (void *)cpac->ethh)) < cpac->length) {
+    while ((uint32_t)((&payload[i] - (uint8_t *)cpac->ethh)) < cpac->length) {
       if (payload[i] == '\0' || j + payload[i] >= MAX_QUESTION_LEN - 1)
         break;
       os_memcpy(&cpac->dnss.qname[j], &payload[i + 1], payload[i]);
