@@ -112,6 +112,7 @@
       "displayName": "Linux (with protobuf middleware)",
       "description": "Linux (with protobuf middleware)",
       "cacheVariables": {
+        "BUILD_PROTOBUFC_LIB": true,
         "USE_CLEANER_MIDDLEWARE": false,
         "USE_HEADER_MIDDLEWARE": false,
         "USE_PCAP_MIDDLEWARE": false,
