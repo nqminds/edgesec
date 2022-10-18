@@ -19,7 +19,7 @@ cd protobuf-c-1.4.1
 
 The compiled protobuf-c extension will be located at `protobuf-c/protoc-c/protoc-gen-c`.
 
-To compile the protobuf definitions in `protos` folder use:
+To compile the protobuf definitions in `protos` folder and generate the output files in `protobuf_middleware` folder use:
 ```bash
-protoc --plugin=protoc-gen-c=absolute_path_to_protoc-gen-c -I./protos --c_out=./protos ./protos/test.proto
+protoc --plugin=protoc-gen-c=absolute_path_to_protoc-gen-c -I./protos --c_out=./ ./protos/test.proto
 ```
