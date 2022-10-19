@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package ip6;
+
+message Ip6Schema {
+  // Packet id
+  string id = 1;
+
+  // Packet 4 bits version, 8 bits TC, 20 bits flow-ID
+  uint32 ip6_un1_flow = 2;
+
+  // Packet payload length
+  uint32 ip6_un1_plen = 3;
+
+  // Packet next header
+  uint32 ip6_un1_nxt = 4;
+  
+  // Packet hop limit
+  uint32 ip6_un1_hlim = 5;
+
+  // Packet 4 bits version, top 4 bits tclass
+  uint32 ip6_un2_vfc = 6;
+
+  // Packet source address
+  string ip6_src = 7;
+
+  // Packet destination address
+  string ip6_dst = 8;
+}

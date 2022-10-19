@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package tcp;
+
+message TcpSchema {
+  // Packet id
+  string id = 1;
+  
+  // Packet source port
+  uint32 source = 2;
+  
+  // Packet destination port
+  uint32 dest = 3;
+  
+  // Packet seq flag
+  uint32 seq = 4;
+  
+  // Packet ack_seq flag
+  uint32 ack_seq = 5;
+  
+  // Packet res1 flag
+  uint32 res1 = 6;
+  
+  // Packet doff flag
+  uint32 doff = 7;
+  
+  // Packet fin flag
+  uint32 fin = 8;
+  
+  // Packet syn flag
+  uint32 syn = 9;
+  
+  // Packet rst flag
+  uint32 rst = 10;
+  
+  // Packet psh flag
+  uint32 psh = 11;
+  
+  // Packet ack flag
+  uint32 ack = 12;
+  
+  // Packet urg flag
+  uint32 urg = 13;
+  
+  // Packet window
+  uint32 window = 14;
+  
+  // Packet check
+  uint32 check_p = 15;
+
+  // Packet urg_ptr
+  uint32 urg_ptr = 16;
+}

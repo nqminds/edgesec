@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package icmp4;
+
+message Icmp4Schema {
+  // Packet id
+  string id = 1;
+  
+  // Packet message type
+  uint32 type = 2;
+  
+  // Packet type sub-code
+  uint32 code = 3;
+  
+  // Packet checksum
+  uint32 checksum = 4;
+  
+  // Packet gateway address
+  uint32 gateway = 5;
+}

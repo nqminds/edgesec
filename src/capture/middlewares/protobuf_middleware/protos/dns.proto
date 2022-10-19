@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package dns;
+
+message DnsSchema {
+  // Packet id
+  string id = 1;
+  
+  // Packet Transaction ID
+  uint32 tid = 2;
+
+  // Packet Flags
+  uint32 flags = 3;
+
+  // Packet Questions
+  uint32 nqueries = 4;
+
+  // Packet Answers
+  uint32 nanswers = 5;
+
+  // Packet Authority PRs
+  uint32 nauth = 6;
+
+  // Packet Other PRs
+  uint32 nother = 7;
+  
+  // Packet question name
+  string qname = 8;
+}
