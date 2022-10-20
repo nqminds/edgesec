@@ -15,7 +15,7 @@
 
 #include "utils/log.h"
 #include "capture/middlewares/protobuf_middleware/eth.pb-c.h"
-#include "capture/middlewares/protobuf_middleware/protobuf_middleware.h"
+#include "capture/middlewares/protobuf_middleware/protobuf_encoder.h"
 
 static void test_protobuf_serialization(void **state) {
   (void)state; /* unused */
