@@ -26,18 +26,6 @@
 
 #include "../../pcap_service.h"
 
-#include "eth.pb-c.h"
-#include "arp.pb-c.h"
-#include "ip4.pb-c.h"
-#include "ip6.pb-c.h"
-#include "tcp.pb-c.h"
-#include "udp.pb-c.h"
-#include "icmp4.pb-c.h"
-#include "icmp6.pb-c.h"
-#include "dns.pb-c.h"
-#include "mdns.pb-c.h"
-#include "dhcp.pb-c.h"
-
 void free_protobuf_middleware(struct middleware_context *context) {
   (void) context;
 }
