@@ -32,7 +32,47 @@
 #include "dhcp.pb-c.h"
 
 ssize_t encode_protobuf_packet(struct tuple_packet *tp, uint8_t **buffer) {
-  (void)tp;
-  (void)buffer;
+  if (tp == NULL) {
+    log_error("tp param is NULL");
+    return -1;
+  }
+
+  if (tp->packet == NULL) {
+    log_error("tp->packet param is NULL");
+    return -1;
+  }
+
+  if (buffer == NULL) {
+    log_error("buffer param is NULL");
+    return -1
+  }
+
+  switch (tp->type) {
+    case PACKET_NONE:
+      return -1;
+    // case PACKET_ETHERNET:
+    //   return extract_eth_statement(db, (struct eth_schema *)tp->packet);
+    // case PACKET_ARP:
+    //   return extract_arp_statement(db, (struct arp_schema *)tp->packet);
+    // case PACKET_IP4:
+    //   return extract_ip4_statement(db, (struct ip4_schema *)tp->packet);
+    // case PACKET_IP6:
+    //   return extract_ip6_statement(db, (struct ip6_schema *)tp->packet);
+    // case PACKET_TCP:
+    //   return extract_tcp_statement(db, (struct tcp_schema *)tp->packet);
+    // case PACKET_UDP:
+    //   return extract_udp_statement(db, (struct udp_schema *)tp->packet);
+    // case PACKET_ICMP4:
+    //   return extract_icmp4_statement(db, (struct icmp4_schema *)tp->packet);
+    // case PACKET_ICMP6:
+    //   return extract_icmp6_statement(db, (struct icmp6_schema *)tp->packet);
+    // case PACKET_DNS:
+    //   return extract_dns_statement(db, (struct dns_schema *)tp->packet);
+    // case PACKET_MDNS:
+    //   return extract_mdsn_statement(db, (struct mdns_schema *)tp->packet);
+    // case PACKET_DHCP:
+    //   return extract_dhcp_statement(db, (struct dhcp_schema *)tp->packet);
+  }
+
   return -1;
 }
