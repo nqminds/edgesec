@@ -61,6 +61,7 @@ struct pcap_pkthdr32 {
 
 struct pcap_stream_context {
   sqlite3 *db;
+  FILE *pipe_fd;
   FILE *pcap_fd;
   char *pcap_data;
   char *ifname;
@@ -112,7 +113,7 @@ void log_cmdline_error(const char *format, ...) {
 }
 
 void process_app_options(int argc, char *argv[], uint8_t *verbosity,
-                         char **pcap_path, char **db_path, char **ifname,
+                         char **pcap_path, char **out_path, char **ifname,
                          int *pipe) {
   int opt;
 
@@ -129,7 +130,7 @@ void process_app_options(int argc, char *argv[], uint8_t *verbosity,
         *pcap_path = os_strdup(optarg);
         break;
       case 'f':
-        *db_path = os_strdup(optarg);
+        *out_path = os_strdup(optarg);
         break;
       case 'i':
         *ifname = os_strdup(optarg);
@@ -386,10 +387,12 @@ int process_pcap_stream_state(struct pcap_stream_context *pctx) {
 }
 
 int main(int argc, char *argv[]) {
+  int ret;
   uint8_t verbosity = 0;
   uint8_t level = 0;
-  char *pcap_path = NULL, *db_path = NULL;
+  char *pcap_path = NULL, *out_path = NULL;
   struct pcap_stream_context pctx = {.db = NULL,
+                                     .pipe_fd = NULL,
                                      .pcap_fd = NULL,
                                      .ifname = NULL,
                                      .state = PCAP_STATE_INIT,
@@ -397,7 +400,7 @@ int main(int argc, char *argv[]) {
                                      .npackets = 0,
                                      .pipe = 0};
 
-  process_app_options(argc, argv, &verbosity, &pcap_path, &db_path,
+  process_app_options(argc, argv, &verbosity, &pcap_path, &out_path,
                       &pctx.ifname, &pctx.pipe);
 
   if (verbosity > MAX_LOG_LEVELS) {
@@ -419,31 +422,35 @@ int main(int argc, char *argv[]) {
   /* Set the log level */
   log_set_level(level);
 
-  int ret = sqlite3_open(db_path, &pctx.db);
+  if (!pctx.pipe) {
+    ret = sqlite3_open(out_path, &pctx.db);
 
-  fprintf(stdout, "Openning db at %s\n", db_path);
+    fprintf(stdout, "Openning db at %s\n", out_path);
 
-  os_free(db_path);
-
-  if (ret != SQLITE_OK) {
-    fprintf(stdout, "Cannot open database: %s", sqlite3_errmsg(pctx.db));
-    if (pcap_path != NULL) {
-      os_free(pcap_path);
+    if (ret != SQLITE_OK) {
+      fprintf(stdout, "Cannot open database: %s", sqlite3_errmsg(pctx.db));
+      if (pcap_path != NULL) {
+        os_free(pcap_path);
+      }
+      os_free(pctx.ifname);
+      sqlite3_close(pctx.db);
+      os_free(out_path);
+      return EXIT_FAILURE;
     }
-    os_free(pctx.ifname);
-    sqlite3_close(pctx.db);
-    return EXIT_FAILURE;
+
+    if (init_sqlite_header_db(pctx.db) < 0) {
+      fprintf(stdout, "init_sqlite_header_db fail\n");
+      if (pcap_path != NULL) {
+        os_free(pcap_path);
+      }
+      os_free(pctx.ifname);
+      sqlite3_close(pctx.db);
+      os_free(out_path);
+      return EXIT_FAILURE;
+    }
   }
 
-  if (init_sqlite_header_db(pctx.db) < 0) {
-    fprintf(stdout, "init_sqlite_header_db fail\n");
-    if (pcap_path != NULL) {
-      os_free(pcap_path);
-    }
-    os_free(pctx.ifname);
-    sqlite3_close(pctx.db);
-    return EXIT_FAILURE;
-  }
+  os_free(out_path);
 
   if (pcap_path != NULL) {
     if ((pctx.pcap_fd = fopen(pcap_path, "rb")) == NULL) {
