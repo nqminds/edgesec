@@ -7,52 +7,52 @@
 #endif
 
 #include "icmp4.pb-c.h"
-void   icmp4__udp_schema__init
-                     (Icmp4__UdpSchema         *message)
+void   icmp4__icmp4_schema__init
+                     (Icmp4__Icmp4Schema         *message)
 {
-  static const Icmp4__UdpSchema init_value = ICMP4__UDP_SCHEMA__INIT;
+  static const Icmp4__Icmp4Schema init_value = ICMP4__ICMP4_SCHEMA__INIT;
   *message = init_value;
 }
-size_t icmp4__udp_schema__get_packed_size
-                     (const Icmp4__UdpSchema *message)
+size_t icmp4__icmp4_schema__get_packed_size
+                     (const Icmp4__Icmp4Schema *message)
 {
-  assert(message->base.descriptor == &icmp4__udp_schema__descriptor);
+  assert(message->base.descriptor == &icmp4__icmp4_schema__descriptor);
   return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
 }
-size_t icmp4__udp_schema__pack
-                     (const Icmp4__UdpSchema *message,
+size_t icmp4__icmp4_schema__pack
+                     (const Icmp4__Icmp4Schema *message,
                       uint8_t       *out)
 {
-  assert(message->base.descriptor == &icmp4__udp_schema__descriptor);
+  assert(message->base.descriptor == &icmp4__icmp4_schema__descriptor);
   return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
 }
-size_t icmp4__udp_schema__pack_to_buffer
-                     (const Icmp4__UdpSchema *message,
+size_t icmp4__icmp4_schema__pack_to_buffer
+                     (const Icmp4__Icmp4Schema *message,
                       ProtobufCBuffer *buffer)
 {
-  assert(message->base.descriptor == &icmp4__udp_schema__descriptor);
+  assert(message->base.descriptor == &icmp4__icmp4_schema__descriptor);
   return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
 }
-Icmp4__UdpSchema *
-       icmp4__udp_schema__unpack
+Icmp4__Icmp4Schema *
+       icmp4__icmp4_schema__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data)
 {
-  return (Icmp4__UdpSchema *)
-     protobuf_c_message_unpack (&icmp4__udp_schema__descriptor,
+  return (Icmp4__Icmp4Schema *)
+     protobuf_c_message_unpack (&icmp4__icmp4_schema__descriptor,
                                 allocator, len, data);
 }
-void   icmp4__udp_schema__free_unpacked
-                     (Icmp4__UdpSchema *message,
+void   icmp4__icmp4_schema__free_unpacked
+                     (Icmp4__Icmp4Schema *message,
                       ProtobufCAllocator *allocator)
 {
   if(!message)
     return;
-  assert(message->base.descriptor == &icmp4__udp_schema__descriptor);
+  assert(message->base.descriptor == &icmp4__icmp4_schema__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-static const ProtobufCFieldDescriptor icmp4__udp_schema__field_descriptors[5] =
+static const ProtobufCFieldDescriptor icmp4__icmp4_schema__field_descriptors[5] =
 {
   {
     "id",
@@ -60,7 +60,7 @@ static const ProtobufCFieldDescriptor icmp4__udp_schema__field_descriptors[5] =
     PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
-    offsetof(Icmp4__UdpSchema, id),
+    offsetof(Icmp4__Icmp4Schema, id),
     NULL,
     &protobuf_c_empty_string,
     0,             /* flags */
@@ -72,7 +72,7 @@ static const ProtobufCFieldDescriptor icmp4__udp_schema__field_descriptors[5] =
     PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_UINT32,
     0,   /* quantifier_offset */
-    offsetof(Icmp4__UdpSchema, type),
+    offsetof(Icmp4__Icmp4Schema, type),
     NULL,
     NULL,
     0,             /* flags */
@@ -84,7 +84,7 @@ static const ProtobufCFieldDescriptor icmp4__udp_schema__field_descriptors[5] =
     PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_UINT32,
     0,   /* quantifier_offset */
-    offsetof(Icmp4__UdpSchema, code),
+    offsetof(Icmp4__Icmp4Schema, code),
     NULL,
     NULL,
     0,             /* flags */
@@ -96,7 +96,7 @@ static const ProtobufCFieldDescriptor icmp4__udp_schema__field_descriptors[5] =
     PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_UINT32,
     0,   /* quantifier_offset */
-    offsetof(Icmp4__UdpSchema, checksum),
+    offsetof(Icmp4__Icmp4Schema, checksum),
     NULL,
     NULL,
     0,             /* flags */
@@ -108,37 +108,37 @@ static const ProtobufCFieldDescriptor icmp4__udp_schema__field_descriptors[5] =
     PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_UINT32,
     0,   /* quantifier_offset */
-    offsetof(Icmp4__UdpSchema, gateway),
+    offsetof(Icmp4__Icmp4Schema, gateway),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
-static const unsigned icmp4__udp_schema__field_indices_by_name[] = {
+static const unsigned icmp4__icmp4_schema__field_indices_by_name[] = {
   3,   /* field[3] = checksum */
   2,   /* field[2] = code */
   4,   /* field[4] = gateway */
   0,   /* field[0] = id */
   1,   /* field[1] = type */
 };
-static const ProtobufCIntRange icmp4__udp_schema__number_ranges[1 + 1] =
+static const ProtobufCIntRange icmp4__icmp4_schema__number_ranges[1 + 1] =
 {
   { 1, 0 },
   { 0, 5 }
 };
-const ProtobufCMessageDescriptor icmp4__udp_schema__descriptor =
+const ProtobufCMessageDescriptor icmp4__icmp4_schema__descriptor =
 {
   PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "icmp4.UdpSchema",
-  "UdpSchema",
-  "Icmp4__UdpSchema",
+  "icmp4.Icmp4Schema",
+  "Icmp4Schema",
+  "Icmp4__Icmp4Schema",
   "icmp4",
-  sizeof(Icmp4__UdpSchema),
+  sizeof(Icmp4__Icmp4Schema),
   5,
-  icmp4__udp_schema__field_descriptors,
-  icmp4__udp_schema__field_indices_by_name,
-  1,  icmp4__udp_schema__number_ranges,
-  (ProtobufCMessageInit) icmp4__udp_schema__init,
+  icmp4__icmp4_schema__field_descriptors,
+  icmp4__icmp4_schema__field_indices_by_name,
+  1,  icmp4__icmp4_schema__number_ranges,
+  (ProtobufCMessageInit) icmp4__icmp4_schema__init,
   NULL,NULL,NULL    /* reserved[123] */
 };

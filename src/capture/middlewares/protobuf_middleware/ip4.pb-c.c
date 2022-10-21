@@ -79,12 +79,12 @@ static const ProtobufCFieldDescriptor ip4__ip4_schema__field_descriptors[12] =
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "ip_dst3",
+    "ip_dst",
     3,
     PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
-    offsetof(Ip4__Ip4Schema, ip_dst3),
+    offsetof(Ip4__Ip4Schema, ip_dst),
     NULL,
     &protobuf_c_empty_string,
     0,             /* flags */
@@ -201,7 +201,7 @@ static const ProtobufCFieldDescriptor ip4__ip4_schema__field_descriptors[12] =
 };
 static const unsigned ip4__ip4_schema__field_indices_by_name[] = {
   0,   /* field[0] = id */
-  2,   /* field[2] = ip_dst3 */
+  2,   /* field[2] = ip_dst */
   3,   /* field[3] = ip_hl */
   7,   /* field[7] = ip_id */
   6,   /* field[6] = ip_len */

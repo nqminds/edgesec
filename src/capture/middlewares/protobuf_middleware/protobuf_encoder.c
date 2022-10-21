@@ -31,6 +31,259 @@
 #include "mdns.pb-c.h"
 #include "dhcp.pb-c.h"
 
+ssize_t encode_eth_packet(struct eth_schema *eths, uint8_t **buffer) {
+  Eth__EthSchema eth = ETH__ETH_SCHEMA__INIT;
+
+  eth.timestamp = eths->timestamp;
+  eth.id = eths->id;
+  eth.caplen = eths->caplen;
+  eth.length = eths->length;
+  eth.ifname = eths->ifname;
+  eth.ether_dhost = eths->ether_dhost;
+  eth.ether_shost = eths->ether_shost;
+  eth.ether_type = eths->ether_type;
+
+  size_t packed_size = eth__eth_schema__get_packed_size(&eth);
+
+  if ((*buffer = os_malloc(packed_size)) == NULL) {
+    log_errno("os_malloc");
+    return -1;
+  }
+
+  return (ssize_t)eth__eth_schema__pack(&eth, *buffer);
+}
+
+ssize_t extract_arp_packet(struct arp_schema *arps, uint8_t **buffer) {
+  Arp__ArpSchema arp = ARP__ARP_SCHEMA__INIT;
+
+  arp.id = arps->id;
+  arp.ar_hrd = arps->ar_hrd;
+  arp.ar_pro = arps->ar_pro;
+  arp.ar_hln = arps->ar_hln;
+  arp.ar_pln = arps->ar_pln;
+  arp.ar_op = arps->ar_op;
+  arp.arp_sha = arps->arp_sha;
+  arp.arp_spa = arps->arp_spa;
+  arp.arp_tha = arps->arp_tha;
+  arp.arp_tpa = arps->arp_tpa;
+
+
+  size_t packed_size = arp__arp_schema__get_packed_size(&arp);
+
+  if ((*buffer = os_malloc(packed_size)) == NULL) {
+    log_errno("os_malloc");
+    return -1;
+  }
+
+  return (ssize_t)arp__arp_schema__pack(&arp, *buffer);
+}
+
+ssize_t extract_ip4_pcaket(struct ip4_schema *ip4s, uint8_t **buffer) {
+  Ip4__Ip4Schema ip4 = IP4__IP4_SCHEMA__INIT;
+
+  ip4.id = ip4s->id;
+  ip4.ip_src = ip4s->ip_src;
+  ip4.ip_dst = ip4s->ip_dst;
+  ip4.ip_hl = ip4s->ip_hl;
+  ip4.ip_v = ip4s->ip_v;
+  ip4.ip_tos = ip4s->ip_tos;
+  ip4.ip_len = ip4s->ip_len;
+  ip4.ip_id = ip4s->ip_id;
+  ip4.ip_off = ip4s->ip_off;
+  ip4.ip_ttl = ip4s->ip_ttl;
+  ip4.ip_p = ip4s->ip_p;
+  ip4.ip_sum = ip4s->ip_sum;
+
+  size_t packed_size = ip4__ip4_schema__get_packed_size(&ip4);
+
+  if ((*buffer = os_malloc(packed_size)) == NULL) {
+    log_errno("os_malloc");
+    return -1;
+  }
+
+  return (ssize_t)ip4__ip4_schema__pack(&ip4, *buffer);
+}
+
+ssize_t extract_ip6_packet(struct ip6_schema *ip6s, uint8_t **buffer) {
+  Ip6__Ip6Schema ip6 = IP6__IP6_SCHEMA__INIT;
+
+  ip6.id = ip6s->id;
+  ip6.ip6_un1_flow = ip6s->ip6_un1_flow;
+  ip6.ip6_un1_plen = ip6s->ip6_un1_plen;
+  ip6.ip6_un1_nxt = ip6s->ip6_un1_nxt;
+  ip6.ip6_un1_hlim = ip6s->ip6_un1_hlim;
+  ip6.ip6_un2_vfc = ip6s->ip6_un2_vfc;
+  ip6.ip6_src = ip6s->ip6_src;
+  ip6.ip6_dst = ip6s->ip6_dst;
+
+  size_t packed_size = ip6__ip6_schema__get_packed_size(&ip6);
+
+  if ((*buffer = os_malloc(packed_size)) == NULL) {
+    log_errno("os_malloc");
+    return -1;
+  }
+
+  return (ssize_t)ip6__ip6_schema__pack(&ip6, *buffer);
+}
+
+ssize_t extract_tcp_packet(struct tcp_schema *tcps, uint8_t **buffer) {
+  Tcp__TcpSchema tcp = TCP__TCP_SCHEMA__INIT;
+
+  tcp.id = tcps->id;
+  tcp.source = tcps->source;
+  tcp.dest = tcps->dest;
+  tcp.seq = tcps->seq;
+  tcp.ack_seq = tcps->ack_seq;
+  tcp.res1 = tcps->res1;
+  tcp.doff = tcps->doff;
+  tcp.fin = tcps->fin;
+  tcp.syn = tcps->syn;
+  tcp.rst = tcps->rst;
+  tcp.psh = tcps->psh;
+  tcp.ack = tcps->ack;
+  tcp.urg = tcps->urg;
+  tcp.window = tcps->window;
+  tcp.check_p = tcps->check_p;
+  tcp.urg_ptr = tcps->urg_ptr;
+
+  size_t packed_size = tcp__tcp_schema__get_packed_size(&tcp);
+
+  if ((*buffer = os_malloc(packed_size)) == NULL) {
+    log_errno("os_malloc");
+    return -1;
+  }
+
+  return (ssize_t)tcp__tcp_schema__pack(&tcp, *buffer);
+}
+
+ssize_t extract_udp_packet(struct udp_schema *udps, uint8_t **buffer) {
+  Udp__UdpSchema udp = UDP__UDP_SCHEMA__INIT;
+
+  udp.id = udps->id;
+  udp.source = udps->source;
+  udp.dest = udps->dest;
+  udp.len = udps->len;
+  udp.check_p = udps->check_p;
+
+  size_t packed_size = udp__udp_schema__get_packed_size(&udp);
+
+  if ((*buffer = os_malloc(packed_size)) == NULL) {
+    log_errno("os_malloc");
+    return -1;
+  }
+
+  return (ssize_t)udp__udp_schema__pack(&udp, *buffer);
+}
+
+ssize_t extract_icmp4_packet(struct icmp4_schema *icmp4s, uint8_t **buffer) {
+  Icmp4__Icmp4Schema icmp4 = ICMP4__ICMP4_SCHEMA__INIT;
+
+  icmp4.id = icmp4s->id;
+  icmp4.type = icmp4s->type;
+  icmp4.code = icmp4s->code;
+  icmp4.checksum = icmp4s->checksum;
+  icmp4.gateway = icmp4s->gateway;
+
+  size_t packed_size = icmp4__icmp4_schema__get_packed_size(&icmp4);
+
+  if ((*buffer = os_malloc(packed_size)) == NULL) {
+    log_errno("os_malloc");
+    return -1;
+  }
+
+  return (ssize_t)icmp4__icmp4_schema__pack(&icmp4, *buffer);
+}
+
+ssize_t extract_icmp6_packet(struct icmp6_schema *icmp6s, uint8_t **buffer) {
+  Icmp6__Icmp6Schema icmp6 = ICMP6__ICMP6_SCHEMA__INIT;
+
+  icmp6.id = icmp6s->id;
+  icmp6.icmp6_type = icmp6s->icmp6_type;
+  icmp6.icmp6_code = icmp6s->icmp6_code;
+  icmp6.icmp6_cksum = icmp6s->icmp6_cksum;
+  icmp6.icmp6_un_data32 = icmp6s->icmp6_un_data32;
+
+  size_t packed_size = icmp6__icmp6_schema__get_packed_size(&icmp6);
+
+  if ((*buffer = os_malloc(packed_size)) == NULL) {
+    log_errno("os_malloc");
+    return -1;
+  }
+
+  return (ssize_t)icmp6__icmp6_schema__pack(&icmp6, *buffer);
+}
+
+ssize_t extract_dns_packet(struct dns_schema *dnss, uint8_t **buffer) {
+  Dns__DnsSchema dns = DNS__DNS_SCHEMA__INIT;
+
+  dns.id = dnss->id;
+  dns.tid = dnss->tid;
+  dns.flags = dnss->flags;
+  dns.nqueries = dnss->nqueries;
+  dns.nanswers = dnss->nanswers;
+  dns.nauth = dnss->nauth;
+  dns.nother = dnss->nother;
+  dns.qname = dnss->qname;
+
+  size_t packed_size = dns__dns_schema__get_packed_size(&dns);
+
+  if ((*buffer = os_malloc(packed_size)) == NULL) {
+    log_errno("os_malloc");
+    return -1;
+  }
+
+  return (ssize_t)dns__dns_schema__pack(&dns, *buffer);
+}
+
+ssize_t extract_mdsn_packet(struct mdns_schema *mdnss, uint8_t **buffer) {
+  Mdns__MdnsSchema mdns = MDNS__MDNS_SCHEMA__INIT;
+
+  mdns.id = mdnss->id;
+  mdns.tid = mdnss->tid;
+  mdns.flags = mdnss->flags;
+  mdns.nqueries = mdnss->nqueries;
+  mdns.nanswers = mdnss->nanswers;
+  mdns.nauth = mdnss->nauth;
+  mdns.nother = mdnss->nother;
+  mdns.qname = mdnss->qname;
+
+  size_t packed_size = mdns__mdns_schema__get_packed_size(&mdns);
+
+  if ((*buffer = os_malloc(packed_size)) == NULL) {
+    log_errno("os_malloc");
+    return -1;
+  }
+
+  return (ssize_t)mdns__mdns_schema__pack(&mdns, *buffer);
+}
+
+ssize_t extract_dhcp_packet(struct dhcp_schema *dhcps, uint8_t **buffer) {
+  Dhcp__DhcpSchema dhcp = DHCP__DHCP_SCHEMA__INIT;
+
+  dhcp.id = dhcps->id;
+  dhcp.op = dhcps->op;
+  dhcp.htype = dhcps->htype;
+  dhcp.hlen = dhcps->hlen;
+  dhcp.hops = dhcps->hops;
+  dhcp.xid = dhcps->xid;
+  dhcp.secs = dhcps->secs;
+  dhcp.flags = dhcps->flags;
+  dhcp.ciaddr = dhcps->ciaddr;
+  dhcp.yiaddr = dhcps->yiaddr;
+  dhcp.siaddr = dhcps->siaddr;
+  dhcp.giaddr = dhcps->giaddr;
+  dhcp.chaddr = dhcps->chaddr;
+
+  size_t packed_size = dhcp__dhcp_schema__get_packed_size(&dhcp);
+
+  if ((*buffer = os_malloc(packed_size)) == NULL) {
+    log_errno("os_malloc");
+    return -1;
+  }
+
+  return (ssize_t)dhcp__dhcp_schema__pack(&dhcp, *buffer);
+}
+
 ssize_t encode_protobuf_packet(struct tuple_packet *tp, uint8_t **buffer) {
   if (tp == NULL) {
     log_error("tp param is NULL");
@@ -44,34 +297,36 @@ ssize_t encode_protobuf_packet(struct tuple_packet *tp, uint8_t **buffer) {
 
   if (buffer == NULL) {
     log_error("buffer param is NULL");
-    return -1
+    return -1;
   }
+
+  *buffer = NULL;
 
   switch (tp->type) {
     case PACKET_NONE:
       return -1;
-    // case PACKET_ETHERNET:
-    //   return extract_eth_statement(db, (struct eth_schema *)tp->packet);
-    // case PACKET_ARP:
-    //   return extract_arp_statement(db, (struct arp_schema *)tp->packet);
-    // case PACKET_IP4:
-    //   return extract_ip4_statement(db, (struct ip4_schema *)tp->packet);
-    // case PACKET_IP6:
-    //   return extract_ip6_statement(db, (struct ip6_schema *)tp->packet);
-    // case PACKET_TCP:
-    //   return extract_tcp_statement(db, (struct tcp_schema *)tp->packet);
-    // case PACKET_UDP:
-    //   return extract_udp_statement(db, (struct udp_schema *)tp->packet);
-    // case PACKET_ICMP4:
-    //   return extract_icmp4_statement(db, (struct icmp4_schema *)tp->packet);
-    // case PACKET_ICMP6:
-    //   return extract_icmp6_statement(db, (struct icmp6_schema *)tp->packet);
-    // case PACKET_DNS:
-    //   return extract_dns_statement(db, (struct dns_schema *)tp->packet);
-    // case PACKET_MDNS:
-    //   return extract_mdsn_statement(db, (struct mdns_schema *)tp->packet);
-    // case PACKET_DHCP:
-    //   return extract_dhcp_statement(db, (struct dhcp_schema *)tp->packet);
+    case PACKET_ETHERNET:
+      return encode_eth_packet((struct eth_schema *)tp->packet, buffer);
+    case PACKET_ARP:
+      return extract_arp_packet((struct arp_schema *)tp->packet, buffer);
+    case PACKET_IP4:
+      return extract_ip4_pcaket((struct ip4_schema *)tp->packet, buffer);
+    case PACKET_IP6:
+      return extract_ip6_packet((struct ip6_schema *)tp->packet, buffer);
+    case PACKET_TCP:
+      return extract_tcp_packet((struct tcp_schema *)tp->packet, buffer);
+    case PACKET_UDP:
+      return extract_udp_packet((struct udp_schema *)tp->packet, buffer);
+    case PACKET_ICMP4:
+      return extract_icmp4_packet((struct icmp4_schema *)tp->packet, buffer);
+    case PACKET_ICMP6:
+      return extract_icmp6_packet((struct icmp6_schema *)tp->packet, buffer);
+    case PACKET_DNS:
+      return extract_dns_packet((struct dns_schema *)tp->packet, buffer);
+    case PACKET_MDNS:
+      return extract_mdsn_packet((struct mdns_schema *)tp->packet, buffer);
+    case PACKET_DHCP:
+      return extract_dhcp_packet((struct dhcp_schema *)tp->packet, buffer);
   }
 
   return -1;

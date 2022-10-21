@@ -37,7 +37,7 @@ struct  Ip4__Ip4Schema
   /*
    * Packet dest address
    */
-  char *ip_dst3;
+  char *ip_dst;
   /*
    * Packet header length
    */

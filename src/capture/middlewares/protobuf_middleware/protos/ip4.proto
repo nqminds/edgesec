@@ -10,7 +10,7 @@ message Ip4Schema {
   string ip_src = 2;
 
   // Packet dest address
-  string ip_dst3 = 3;
+  string ip_dst = 3;
 
   // Packet header length
   uint32 ip_hl = 4;

@@ -15,7 +15,7 @@ PROTOBUF_C__BEGIN_DECLS
 #endif
 
 
-typedef struct Icmp4__UdpSchema Icmp4__UdpSchema;
+typedef struct Icmp4__Icmp4Schema Icmp4__Icmp4Schema;
 
 
 /* --- enums --- */
@@ -23,7 +23,7 @@ typedef struct Icmp4__UdpSchema Icmp4__UdpSchema;
 
 /* --- messages --- */
 
-struct  Icmp4__UdpSchema
+struct  Icmp4__Icmp4Schema
 {
   ProtobufCMessage base;
   /*
@@ -47,34 +47,34 @@ struct  Icmp4__UdpSchema
    */
   uint32_t gateway;
 };
-#define ICMP4__UDP_SCHEMA__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&icmp4__udp_schema__descriptor) \
+#define ICMP4__ICMP4_SCHEMA__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&icmp4__icmp4_schema__descriptor) \
     , (char *)protobuf_c_empty_string, 0, 0, 0, 0 }
 
 
-/* Icmp4__UdpSchema methods */
-void   icmp4__udp_schema__init
-                     (Icmp4__UdpSchema         *message);
-size_t icmp4__udp_schema__get_packed_size
-                     (const Icmp4__UdpSchema   *message);
-size_t icmp4__udp_schema__pack
-                     (const Icmp4__UdpSchema   *message,
+/* Icmp4__Icmp4Schema methods */
+void   icmp4__icmp4_schema__init
+                     (Icmp4__Icmp4Schema         *message);
+size_t icmp4__icmp4_schema__get_packed_size
+                     (const Icmp4__Icmp4Schema   *message);
+size_t icmp4__icmp4_schema__pack
+                     (const Icmp4__Icmp4Schema   *message,
                       uint8_t             *out);
-size_t icmp4__udp_schema__pack_to_buffer
-                     (const Icmp4__UdpSchema   *message,
+size_t icmp4__icmp4_schema__pack_to_buffer
+                     (const Icmp4__Icmp4Schema   *message,
                       ProtobufCBuffer     *buffer);
-Icmp4__UdpSchema *
-       icmp4__udp_schema__unpack
+Icmp4__Icmp4Schema *
+       icmp4__icmp4_schema__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   icmp4__udp_schema__free_unpacked
-                     (Icmp4__UdpSchema *message,
+void   icmp4__icmp4_schema__free_unpacked
+                     (Icmp4__Icmp4Schema *message,
                       ProtobufCAllocator *allocator);
 /* --- per-message closures --- */
 
-typedef void (*Icmp4__UdpSchema_Closure)
-                 (const Icmp4__UdpSchema *message,
+typedef void (*Icmp4__Icmp4Schema_Closure)
+                 (const Icmp4__Icmp4Schema *message,
                   void *closure_data);
 
 /* --- services --- */
@@ -82,7 +82,7 @@ typedef void (*Icmp4__UdpSchema_Closure)
 
 /* --- descriptors --- */
 
-extern const ProtobufCMessageDescriptor icmp4__udp_schema__descriptor;
+extern const ProtobufCMessageDescriptor icmp4__icmp4_schema__descriptor;
 
 PROTOBUF_C__END_DECLS
 
