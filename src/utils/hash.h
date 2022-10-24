@@ -14,8 +14,6 @@
 #ifndef HASH_H
 #define HASH_H
 
-#include <sha-256.h>
-
 /**
  * @brief Computes the Merkle–Damgård construction hash for a message
  *
@@ -24,7 +22,5 @@
  * @return uint32_t The hash value
  */
 uint32_t md_hash(const char *msg, size_t length);
-
-#define sha256_hash(...) calc_sha_256(__VA_ARGS__)
 
 #endif
