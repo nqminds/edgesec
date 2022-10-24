@@ -51,8 +51,7 @@ add_library(eloop eloop.c)
 # todo, add list
 target_link_libraries(eloop PUBLIC allocs os PRIVATE log)
 
-add_library(hash hash.c)
-target_link_libraries(hash PRIVATE allocs)
+add_library(hash OBJECT hash.c)
 
 add_library(squeue squeue.c)
 target_link_libraries(squeue PRIVATE log os)
