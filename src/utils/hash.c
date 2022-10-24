@@ -13,7 +13,7 @@
 #include "hash.h"
 #include "allocs.h"
 
-uint32_t md_mix(uint32_t block, uint32_t state) {
+static uint32_t md_mix(uint32_t block, uint32_t state) {
   return (state * block) ^ ((state << 3) + (block >> 2));
 }
 
