@@ -2,24 +2,9 @@ syntax = "proto3";
 
 package wrapper;
 
-enum WrapperSchemaType {
-  WRAPPER_SCHEMA_UNSPECIFIED = 0;
-  WRAPPER_SCHEMA_ETH = 1;
-  WRAPPER_SCHEMA_ARP = 2;
-  WRAPPER_SCHEMA_IP4 = 3;
-  WRAPPER_SCHEMA_IP6 = 4;
-  WRAPPER_SCHEMA_ICMP4 = 5;
-  WRAPPER_SCHEMA_ICMP6 = 6;
-  WRAPPER_SCHEMA_TCP = 7;
-  WRAPPER_SCHEMA_UDP = 8;
-  WRAPPER_SCHEMA_DNS = 9;
-  WRAPPER_SCHEMA_MDNS = 10;
-  WRAPPER_SCHEMA_DHCP = 11;
-}
-
 message WrapperSchema {
-  // The wrapper schema type
-  WrapperSchemaType type = 1;
+  // The wrapper schema index ID
+  uint32 index_id = 1;
 
   // The attached message serialised
   bytes message = 2;
