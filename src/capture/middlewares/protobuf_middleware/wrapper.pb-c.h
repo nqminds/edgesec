@@ -20,21 +20,6 @@ typedef struct Wrapper__WrapperSchema Wrapper__WrapperSchema;
 
 /* --- enums --- */
 
-typedef enum _Wrapper__WrapperSchemaType {
-  WRAPPER__WRAPPER_SCHEMA_TYPE__WRAPPER_SCHEMA_UNSPECIFIED = 0,
-  WRAPPER__WRAPPER_SCHEMA_TYPE__WRAPPER_SCHEMA_ETH = 1,
-  WRAPPER__WRAPPER_SCHEMA_TYPE__WRAPPER_SCHEMA_ARP = 2,
-  WRAPPER__WRAPPER_SCHEMA_TYPE__WRAPPER_SCHEMA_IP4 = 3,
-  WRAPPER__WRAPPER_SCHEMA_TYPE__WRAPPER_SCHEMA_IP6 = 4,
-  WRAPPER__WRAPPER_SCHEMA_TYPE__WRAPPER_SCHEMA_ICMP4 = 5,
-  WRAPPER__WRAPPER_SCHEMA_TYPE__WRAPPER_SCHEMA_ICMP6 = 6,
-  WRAPPER__WRAPPER_SCHEMA_TYPE__WRAPPER_SCHEMA_TCP = 7,
-  WRAPPER__WRAPPER_SCHEMA_TYPE__WRAPPER_SCHEMA_UDP = 8,
-  WRAPPER__WRAPPER_SCHEMA_TYPE__WRAPPER_SCHEMA_DNS = 9,
-  WRAPPER__WRAPPER_SCHEMA_TYPE__WRAPPER_SCHEMA_MDNS = 10,
-  WRAPPER__WRAPPER_SCHEMA_TYPE__WRAPPER_SCHEMA_DHCP = 11
-    PROTOBUF_C__FORCE_ENUM_TO_BE_INT_SIZE(WRAPPER__WRAPPER_SCHEMA_TYPE)
-} Wrapper__WrapperSchemaType;
 
 /* --- messages --- */
 
@@ -42,9 +27,9 @@ struct  Wrapper__WrapperSchema
 {
   ProtobufCMessage base;
   /*
-   * The wrapper schema type
+   * The wrapper schema index ID
    */
-  Wrapper__WrapperSchemaType type;
+  uint32_t index_id;
   /*
    * The attached message serialised
    */
@@ -52,7 +37,7 @@ struct  Wrapper__WrapperSchema
 };
 #define WRAPPER__WRAPPER_SCHEMA__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&wrapper__wrapper_schema__descriptor) \
-    , WRAPPER__WRAPPER_SCHEMA_TYPE__WRAPPER_SCHEMA_UNSPECIFIED, {0,NULL} }
+    , 0, {0,NULL} }
 
 
 /* Wrapper__WrapperSchema methods */
@@ -85,7 +70,6 @@ typedef void (*Wrapper__WrapperSchema_Closure)
 
 /* --- descriptors --- */
 
-extern const ProtobufCEnumDescriptor    wrapper__wrapper_schema_type__descriptor;
 extern const ProtobufCMessageDescriptor wrapper__wrapper_schema__descriptor;
 
 PROTOBUF_C__END_DECLS

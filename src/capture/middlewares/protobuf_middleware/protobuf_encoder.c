@@ -30,6 +30,7 @@
 #include "dns.pb-c.h"
 #include "mdns.pb-c.h"
 #include "dhcp.pb-c.h"
+#include "wrapper.pb-c.h"
 
 ssize_t encode_eth_packet(struct eth_schema *eths, uint8_t **buffer) {
   Eth__EthSchema eth = ETH__ETH_SCHEMA__INIT;
@@ -330,4 +331,36 @@ ssize_t encode_protobuf_packet(struct tuple_packet *tp, uint8_t **buffer) {
   }
 
   return -1;
+}
+
+ssize_t encode_protobuf_wrapper(struct tuple_packet *tp, uint8_t **buffer) {
+  ssize_t packet_length;
+  uint8_t *packet_buffer = NULL;
+  if ((packet_length = encode_protobuf_packet(tp, &packet_buffer)) < 0) {
+    log_error("encode_protobuf_packet fail");
+    return -1;
+  }
+  
+  Wrapper__WrapperSchema wrapper = WRAPPER__WRAPPER_SCHEMA__INIT;
+  wrapper.index_id = tp->type;
+  wrapper.message.len = packet_length;
+  wrapper.message.data = packet_buffer;
+
+  size_t wrapper_length = wrapper__wrapper_schema__get_packed_size(&wrapper);
+  if ((*buffer = os_malloc(wrapper_length)) == NULL) {
+    log_errno("os_malloc");
+    os_free(packet_buffer);
+    return -1;
+  }
+  size_t length = wrapper__wrapper_schema__pack(&wrapper, *buffer);
+  os_free(packet_buffer);
+
+  if(length != (size_t) wrapper_length) {
+    log_error("wrapper__wrapper_schema__pack fail");
+    os_free(*buffer);
+    *buffer = NULL;
+    return -1;
+  }
+
+  return (ssize_t) length;
 }

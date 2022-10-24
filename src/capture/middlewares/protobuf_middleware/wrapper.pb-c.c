@@ -55,13 +55,13 @@ void   wrapper__wrapper_schema__free_unpacked
 static const ProtobufCFieldDescriptor wrapper__wrapper_schema__field_descriptors[2] =
 {
   {
-    "type",
+    "index_id",
     1,
     PROTOBUF_C_LABEL_NONE,
-    PROTOBUF_C_TYPE_ENUM,
+    PROTOBUF_C_TYPE_UINT32,
     0,   /* quantifier_offset */
-    offsetof(Wrapper__WrapperSchema, type),
-    &wrapper__wrapper_schema_type__descriptor,
+    offsetof(Wrapper__WrapperSchema, index_id),
+    NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
@@ -80,8 +80,8 @@ static const ProtobufCFieldDescriptor wrapper__wrapper_schema__field_descriptors
   },
 };
 static const unsigned wrapper__wrapper_schema__field_indices_by_name[] = {
+  0,   /* field[0] = index_id */
   1,   /* field[1] = message */
-  0,   /* field[0] = type */
 };
 static const ProtobufCIntRange wrapper__wrapper_schema__number_ranges[1 + 1] =
 {
@@ -102,52 +102,4 @@ const ProtobufCMessageDescriptor wrapper__wrapper_schema__descriptor =
   1,  wrapper__wrapper_schema__number_ranges,
   (ProtobufCMessageInit) wrapper__wrapper_schema__init,
   NULL,NULL,NULL    /* reserved[123] */
-};
-static const ProtobufCEnumValue wrapper__wrapper_schema_type__enum_values_by_number[12] =
-{
-  { "WRAPPER_SCHEMA_UNSPECIFIED", "WRAPPER__WRAPPER_SCHEMA_TYPE__WRAPPER_SCHEMA_UNSPECIFIED", 0 },
-  { "WRAPPER_SCHEMA_ETH", "WRAPPER__WRAPPER_SCHEMA_TYPE__WRAPPER_SCHEMA_ETH", 1 },
-  { "WRAPPER_SCHEMA_ARP", "WRAPPER__WRAPPER_SCHEMA_TYPE__WRAPPER_SCHEMA_ARP", 2 },
-  { "WRAPPER_SCHEMA_IP4", "WRAPPER__WRAPPER_SCHEMA_TYPE__WRAPPER_SCHEMA_IP4", 3 },
-  { "WRAPPER_SCHEMA_IP6", "WRAPPER__WRAPPER_SCHEMA_TYPE__WRAPPER_SCHEMA_IP6", 4 },
-  { "WRAPPER_SCHEMA_ICMP4", "WRAPPER__WRAPPER_SCHEMA_TYPE__WRAPPER_SCHEMA_ICMP4", 5 },
-  { "WRAPPER_SCHEMA_ICMP6", "WRAPPER__WRAPPER_SCHEMA_TYPE__WRAPPER_SCHEMA_ICMP6", 6 },
-  { "WRAPPER_SCHEMA_TCP", "WRAPPER__WRAPPER_SCHEMA_TYPE__WRAPPER_SCHEMA_TCP", 7 },
-  { "WRAPPER_SCHEMA_UDP", "WRAPPER__WRAPPER_SCHEMA_TYPE__WRAPPER_SCHEMA_UDP", 8 },
-  { "WRAPPER_SCHEMA_DNS", "WRAPPER__WRAPPER_SCHEMA_TYPE__WRAPPER_SCHEMA_DNS", 9 },
-  { "WRAPPER_SCHEMA_MDNS", "WRAPPER__WRAPPER_SCHEMA_TYPE__WRAPPER_SCHEMA_MDNS", 10 },
-  { "WRAPPER_SCHEMA_DHCP", "WRAPPER__WRAPPER_SCHEMA_TYPE__WRAPPER_SCHEMA_DHCP", 11 },
-};
-static const ProtobufCIntRange wrapper__wrapper_schema_type__value_ranges[] = {
-{0, 0},{0, 12}
-};
-static const ProtobufCEnumValueIndex wrapper__wrapper_schema_type__enum_values_by_name[12] =
-{
-  { "WRAPPER_SCHEMA_ARP", 2 },
-  { "WRAPPER_SCHEMA_DHCP", 11 },
-  { "WRAPPER_SCHEMA_DNS", 9 },
-  { "WRAPPER_SCHEMA_ETH", 1 },
-  { "WRAPPER_SCHEMA_ICMP4", 5 },
-  { "WRAPPER_SCHEMA_ICMP6", 6 },
-  { "WRAPPER_SCHEMA_IP4", 3 },
-  { "WRAPPER_SCHEMA_IP6", 4 },
-  { "WRAPPER_SCHEMA_MDNS", 10 },
-  { "WRAPPER_SCHEMA_TCP", 7 },
-  { "WRAPPER_SCHEMA_UDP", 8 },
-  { "WRAPPER_SCHEMA_UNSPECIFIED", 0 },
-};
-const ProtobufCEnumDescriptor wrapper__wrapper_schema_type__descriptor =
-{
-  PROTOBUF_C__ENUM_DESCRIPTOR_MAGIC,
-  "wrapper.WrapperSchemaType",
-  "WrapperSchemaType",
-  "Wrapper__WrapperSchemaType",
-  "wrapper",
-  12,
-  wrapper__wrapper_schema_type__enum_values_by_number,
-  12,
-  wrapper__wrapper_schema_type__enum_values_by_name,
-  1,
-  wrapper__wrapper_schema_type__value_ranges,
-  NULL,NULL,NULL,NULL   /* reserved[1234] */
 };
