@@ -35,12 +35,15 @@ struct crypt_pair {
  *
  * @param crypt_db_path The crypt db path
  * @param key_id The crypt secrets key id
- * @param user_secret The user secret
+ * @param[in,out] user_secret The user secret.
+ * If creating a new key, the user secret will be loaded from this variable.
+ * If loading an existing key, the existing key will be writen to the buffer.
  * @param user_secret_size The user secret size, if zero use the hardware secure
  * element
  * @return struct crypt_context* The crypt contex, NULL on failure
  */
-struct crypt_context *load_crypt_service(char *crypt_db_path, char *key_id,
+struct crypt_context *load_crypt_service(const char *crypt_db_path,
+                                         const char *key_id,
                                          uint8_t *user_secret,
                                          int user_secret_size);
 
