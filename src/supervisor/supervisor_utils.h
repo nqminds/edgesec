@@ -31,8 +31,7 @@ int allocate_vlan(struct supervisor_context *context, uint8_t *mac_addr);
  * @param context The supervisor context
  * @param conn The MAC connection structure
  *
- * @return true on success, false on failure
+ * @return 0 on success, -1 on failure
  */
-bool save_mac_mapper(struct supervisor_context *context, struct mac_conn conn);
-
+int save_mac_mapper(struct supervisor_context *context, struct mac_conn conn);
 #endif

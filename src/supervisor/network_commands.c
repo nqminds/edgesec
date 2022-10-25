@@ -79,7 +79,7 @@ int accept_mac_cmd(struct supervisor_context *context, uint8_t *mac_addr,
   }
 
   os_memcpy(conn.info.ifname, vlan_conn.ifname, IFNAMSIZ);
-  if (!save_mac_mapper(context, conn)) {
+  if (save_mac_mapper(context, conn) < 0) {
     log_error("save_mac_mapper fail");
     return -1;
   }
@@ -113,7 +113,7 @@ int deny_mac_cmd(struct supervisor_context *context, uint8_t *mac_addr) {
   os_memcpy(conn.mac_addr, mac_addr, ETHER_ADDR_LEN);
   info.allow_connection = false;
   os_memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
-  if (!save_mac_mapper(context, conn)) {
+  if (save_mac_mapper(context, conn) < 0) {
     log_error("save_mac_mapper fail");
     return -1;
   }
@@ -174,7 +174,7 @@ int add_nat_cmd(struct supervisor_context *context, uint8_t *mac_addr) {
     return -1;
   }
 
-  if (!save_mac_mapper(context, conn)) {
+  if (save_mac_mapper(context, conn) < 0) {
     log_error("save_mac_mapper fail");
     return -1;
   }
@@ -208,7 +208,7 @@ int remove_nat_cmd(struct supervisor_context *context, uint8_t *mac_addr) {
     return -1;
   }
 
-  if (!save_mac_mapper(context, conn)) {
+  if (save_mac_mapper(context, conn) < 0) {
     log_error("save_mac_mapper fail");
     return -1;
   }
@@ -232,7 +232,7 @@ int assign_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr,
   os_memcpy(conn.mac_addr, mac_addr, ETHER_ADDR_LEN);
   os_memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
 
-  if (!save_mac_mapper(context, conn)) {
+  if (save_mac_mapper(context, conn) < 0) {
     log_error("save_mac_mapper fail");
     return -1;
   }
@@ -462,7 +462,7 @@ int clear_psk_cmd(struct supervisor_context *context, uint8_t *mac_addr) {
   os_memcpy(conn.mac_addr, mac_addr, ETHER_ADDR_LEN);
   os_memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
 
-  if (!save_mac_mapper(context, conn)) {
+  if (save_mac_mapper(context, conn) < 0) {
     log_error("save_mac_mapper fail");
     return -1;
   }

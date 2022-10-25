@@ -106,7 +106,7 @@ int save_device_vlan(struct supervisor_context *context, uint8_t mac_addr[],
             info->vlanid);
   os_memcpy(conn.mac_addr, mac_addr, ETHER_ADDR_LEN);
   os_memcpy(&conn.info, info, sizeof(struct mac_conn_info));
-  if (!save_mac_mapper(context, conn)) {
+  if (save_mac_mapper(context, conn) < 0) {
     log_trace("save_mac_mapper fail");
     log_trace("REJECTING mac=" MACSTR, MAC2STR(mac_addr));
     return -1;
@@ -214,7 +214,7 @@ void ap_service_callback(struct supervisor_context *context, uint8_t mac_addr[],
     os_memcpy(conn.mac_addr, mac_addr, ETHER_ADDR_LEN);
     conn.info = info;
 
-    if (!save_mac_mapper(context, conn)) {
+    if (save_mac_mapper(context, conn) < 0) {
       log_error("save_mac_mapper fail");
     }
   }

@@ -68,20 +68,20 @@ int save_to_crypt(struct crypt_context *crypt_ctx, struct mac_conn_info *info) {
 }
 #endif
 
-bool save_mac_mapper(struct supervisor_context *context, struct mac_conn conn) {
+int save_mac_mapper(struct supervisor_context *context, struct mac_conn conn) {
   if (!strlen(conn.info.id)) {
     generate_radom_uuid(conn.info.id);
   }
 
   if (!put_mac_mapper(&context->mac_mapper, conn)) {
     log_error("put_mac_mapper fail");
-    return false;
+    return -1;
   }
 
 #ifdef WITH_CRYPTO_SERVICE
   if (save_to_crypt(context->crypt_ctx, &(conn.info)) < 0) {
     log_error("save_to_crypt failure");
-    return false;
+    return -1;
   }
 
   // Reset the plain password array so that it is not stored
@@ -92,8 +92,8 @@ bool save_mac_mapper(struct supervisor_context *context, struct mac_conn conn) {
 
   if (save_sqlite_macconn_entry(context->macconn_db, &conn) < 0) {
     log_error("upsert_sqlite_macconn_entry fail");
-    return false;
+    return -1;
   }
 
-  return true;
+  return 0;
 }
