@@ -2,17 +2,20 @@ include_directories (
   "${PROJECT_SOURCE_DIR}/src"
 )
 
+add_library(sqlite_macconn_writer sqlite_macconn_writer.c)
+target_link_libraries(sqlite_macconn_writer PUBLIC LibUTHash::LibUTHash PRIVATE sqliteu squeue log net os SQLite::SQLite3)
+
 add_library(bridge_list bridge_list.c)
 target_link_libraries(bridge_list PUBLIC LibUTHash::LibUTHash PRIVATE log os)
 
 add_library(mac_mapper mac_mapper.c)
 target_link_libraries(mac_mapper PUBLIC LibUTHash::LibUTHash PRIVATE bridge_list net log os)
 
+add_library(supervisor_utils supervisor_utils.c)
+target_link_libraries(supervisor_utils PUBLIC supervisor_config PRIVATE mac_mapper sqlite_macconn_writer log os)
+
 add_library(subscriber_events subscriber_events.c)
 target_link_libraries(subscriber_events PUBLIC supervisor_config PRIVATE LibUTHash::LibUTHash log os sockctl SQLite::SQLite3)
-
-add_library(sqlite_macconn_writer sqlite_macconn_writer.c)
-target_link_libraries(sqlite_macconn_writer PUBLIC LibUTHash::LibUTHash PRIVATE sqliteu squeue log net os SQLite::SQLite3)
 
 add_library(network_commands network_commands.c)
 target_link_libraries(network_commands
@@ -21,6 +24,7 @@ target_link_libraries(network_commands
 )
 if (USE_CRYPTO_SERVICE)
   target_link_libraries(network_commands PRIVATE crypt_service)
+  target_link_libraries(supervisor_utils PRIVATE crypt_service)
 endif()
 
 if (USE_CRYPTO_SERVICE)
@@ -37,6 +41,7 @@ target_link_libraries(system_commands
   PUBLIC sockctl supervisor_config
   PRIVATE
     LibUTHash::LibUTHash
+    supervisor_utils
     mac_mapper supervisor sqlite_macconn_writer network_commands subscriber_events
     ap_config ap_service #../ap/*
     capture_service #../capture/*
@@ -60,4 +65,4 @@ target_link_libraries(supervisor_config INTERFACE SQLite::SQLite3 iface dhcp_con
 
 add_library(supervisor supervisor.c)
 target_include_directories(supervisor PUBLIC $<TARGET_PROPERTY:iface,INCLUDE_DIRECTORIES>)
-target_link_libraries(supervisor PUBLIC supervisor_config PRIVATE LibUTHash::LibUTHash capture_service network_commands cmd_processor sockctl log firewall_service)
+target_link_libraries(supervisor PUBLIC supervisor_config PRIVATE LibUTHash::LibUTHash supervisor_utils capture_service network_commands cmd_processor sockctl log firewall_service)

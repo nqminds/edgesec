@@ -14,6 +14,7 @@
 #include "system_commands.h"
 #include "mac_mapper.h"
 #include "supervisor.h"
+#include "supervisor_utils.h"
 #include "sqlite_macconn_writer.h"
 #include "network_commands.h"
 #include "subscriber_events.h"
