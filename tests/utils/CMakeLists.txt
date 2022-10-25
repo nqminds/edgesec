@@ -25,6 +25,11 @@ target_link_libraries(test_os PRIVATE tmpdir os allocs hashmap cmocka::cmocka)
 add_executable(test_eloop test_eloop.c)
 target_link_libraries(test_eloop PRIVATE tmpdir sockctl os allocs eloop cmocka::cmocka)
 
+add_executable(test_eloop_handles_null test_eloop_handles_null.c)
+target_link_libraries(test_eloop_handles_null
+  PRIVATE eloop cmocka::cmocka wrap_log_error
+)
+
 add_executable(test_eloop_threaded test_eloop_threaded.c)
 target_link_libraries(test_eloop_threaded PRIVATE eloop cmocka::cmocka sockctl LibUTHash::LibUTHash Threads::Threads)
 
@@ -93,6 +98,11 @@ set_tests_properties(test_os
 
 add_test(NAME test_eloop COMMAND test_eloop)
 set_tests_properties(test_eloop
+  PROPERTIES
+  WILL_FAIL FALSE)
+
+add_test(NAME test_eloop_handles_null COMMAND test_eloop_handles_null)
+set_tests_properties(test_eloop_handles_null
   PROPERTIES
   WILL_FAIL FALSE)
 
