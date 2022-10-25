@@ -28,7 +28,7 @@
 #include "capture/middlewares/header_middleware/sqlite_header.h"
 #include "capture/middlewares/header_middleware/packet_decoder.h"
 #include "capture/middlewares/header_middleware/packet_queue.h"
-#include "capture/middlewares/protobuf_middleware/protobuf_encoder.h"
+#include "capture/middlewares/protobuf_middleware/protobuf_middleware.h"
 
 #define PCAP_READ_INTERVAL 10 // in ms
 #define PCAP_READ_SIZE 1024   // bytes
@@ -274,30 +274,6 @@ int save_sqlite_packet(sqlite3 *db, UT_array *packets) {
 
   return 0;
 }
-
-int pipe_protobuf_packets(const char *path, int *fd, UT_array *packets) {
-  struct tuple_packet *p = NULL;
-  while ((p = (struct tuple_packet *)utarray_next(packets, p)) != NULL) {
-    uint8_t *buffer = NULL;
-    ssize_t length;
-    if ((length = encode_protobuf_wrapper(p, &buffer)) < 0) {
-      log_error("encode_protobuf_packet fail");
-      return -1;
-    }
-
-    if (open_write_nonblock(path, fd, buffer, length) < 0) {
-      log_error("open_write_nonblock fail");
-      os_free(buffer);
-      return -1;
-    }
-
-    os_free(buffer);
-  }
-
-  return 0;
-}
-
-void free_packet(void *elt) { free_packet_tuple((struct tuple_packet *)elt); }
 
 static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL,
                                    free_packet};

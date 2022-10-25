@@ -13,6 +13,17 @@
 
 #include "../../middleware.h"
 
+
+/**
+ * @brief pipe the serialised protobuf packets
+ * 
+ * @param path[in] The pipe file path
+ * @param fd[in] The pipe file descriptor
+ * @param packets[in] The array of packets
+ * @authors Alexandru Mereacre
+ */
+int pipe_protobuf_packets(const char *path, int *fd, UT_array *packets);
+
 /**
  * @brief protobuf Capture Middleware.
  * The protobuf capture middleware generates protobuf

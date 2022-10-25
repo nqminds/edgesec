@@ -29,8 +29,6 @@
 #include "../header_middleware/packet_decoder.h"
 #include "../header_middleware/packet_queue.h"
 
-void free_packet(void *elt) { free_packet_tuple((struct tuple_packet *)elt); }
-
 static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL,
                                    free_packet};
 
