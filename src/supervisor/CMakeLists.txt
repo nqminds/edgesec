@@ -12,7 +12,7 @@ add_library(mac_mapper mac_mapper.c)
 target_link_libraries(mac_mapper PUBLIC LibUTHash::LibUTHash PRIVATE bridge_list net log os)
 
 add_library(supervisor_utils supervisor_utils.c)
-target_link_libraries(supervisor_utils PUBLIC supervisor_config PRIVATE mac_mapper sqlite_macconn_writer log os)
+target_link_libraries(supervisor_utils PUBLIC supervisor_config PRIVATE mac_mapper sqlite_macconn_writer hash log os)
 
 add_library(subscriber_events subscriber_events.c)
 target_link_libraries(subscriber_events PUBLIC supervisor_config PRIVATE LibUTHash::LibUTHash log os sockctl SQLite::SQLite3)

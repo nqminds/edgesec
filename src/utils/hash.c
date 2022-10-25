@@ -36,7 +36,7 @@ uint32_t md_hash(const char *msg, size_t length) {
 }
 
 // http://www.cse.yorku.ca/~oz/hash.html
-uint32_t sdbm_hash(const char *msg, size_t length) {
+uint32_t sdbm_hash(const uint8_t *msg, size_t length) {
   size_t idx;
   uint32_t hash = 0;
   for (idx = 0, idx = 0; idx < length; idx++) {

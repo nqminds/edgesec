@@ -31,12 +31,15 @@ static void test_allocate_vlan(void **state) {
   utarray_new(ctx.config_ifinfo_array, &config_ifinfo_icd);
 
   for (int idx = 0; idx <= 10; idx ++) {
-    el.vlanid = 0;
+    el.vlanid = idx;
     utarray_push_back(ctx.config_ifinfo_array, &el);
   }
 
-  int vlanid = allocate_vlan(&ctx, mac_addr);
+  int vlanid = allocate_vlan(&ctx, mac_addr, VLAN_ALLOCATE_RANDOM);
   assert_in_range(vlanid, 0, 10);
+
+  vlanid = allocate_vlan(&ctx, mac_addr, VLAN_ALLOCATE_HASH);
+  assert_int_equal(vlanid, 10);
 
   utarray_free(ctx.config_ifinfo_array);
 }

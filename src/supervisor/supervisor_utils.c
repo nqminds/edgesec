@@ -15,12 +15,16 @@
 #endif
 
 #include "../utils/os.h"
+#include "../utils/hash.h"
 
 #include "sqlite_macconn_writer.h"
 #include "supervisor_config.h"
+#include "supervisor_utils.h"
 
-int allocate_vlan(struct supervisor_context *context, uint8_t *mac_addr) {
+int allocate_vlan(struct supervisor_context *context,
+                  uint8_t *mac_addr, enum VLAN_ALLOCATION_TYPE type) {
   (void)mac_addr;
+  (void) type;
 
   UT_array *config_ifinfo_array = context->config_ifinfo_array;
 
@@ -42,9 +46,15 @@ int allocate_vlan(struct supervisor_context *context, uint8_t *mac_addr) {
     vlan_arr[idx++] = p->vlanid;
   }
 
-  int vlanid = vlan_arr[os_get_random_int_range(0, len)];
-  os_free(vlan_arr);
+  int vlanid = -1;
+  if (type == VLAN_ALLOCATE_RANDOM) {
+    vlanid = vlan_arr[os_get_random_int_range(0, len)];
+  } else if (type == VLAN_ALLOCATE_HASH) {
+    uint32_t hash = sdbm_hash(mac_addr, ETHER_ADDR_LEN);
+    vlanid = vlan_arr[hash % len];
+  }
 
+  os_free(vlan_arr);
   return vlanid;
 }
 
