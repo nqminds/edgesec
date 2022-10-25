@@ -6,7 +6,10 @@ add_executable(test_bridge_list test_bridge_list.c)
 target_link_libraries(test_bridge_list PRIVATE bridge_list net log cmocka::cmocka)
 
 add_executable(test_supervisor_utils test_supervisor_utils.c)
-target_link_libraries(test_supervisor_utils PRIVATE supervisor_utils bridge_list net log cmocka::cmocka)
+target_link_libraries(test_supervisor_utils PRIVATE supervisor_utils net log cmocka::cmocka)
+
+add_executable(test_supervisor test_supervisor.c)
+target_link_libraries(test_supervisor PRIVATE supervisor net log cmocka::cmocka)
 
 add_executable(test_sockctl_server test_sockctl_server.c)
 target_link_libraries(test_sockctl_server PRIVATE sockctl os log cmocka::cmocka)
@@ -47,6 +50,11 @@ target_link_options(test_sqlite_macconn_writer
 
 add_test(NAME test_supervisor_utils COMMAND test_supervisor_utils)
 set_tests_properties(test_supervisor_utils
+  PROPERTIES
+  WILL_FAIL FALSE)
+
+add_test(NAME test_supervisor COMMAND test_supervisor)
+set_tests_properties(test_supervisor
   PROPERTIES
   WILL_FAIL FALSE)
 
