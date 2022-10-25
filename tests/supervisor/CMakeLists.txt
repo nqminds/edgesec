@@ -5,6 +5,9 @@ include_directories(
 add_executable(test_bridge_list test_bridge_list.c)
 target_link_libraries(test_bridge_list PRIVATE bridge_list net log cmocka::cmocka)
 
+add_executable(test_supervisor_utils test_supervisor_utils.c)
+target_link_libraries(test_supervisor_utils PRIVATE supervisor_utils bridge_list net log cmocka::cmocka)
+
 add_executable(test_sockctl_server test_sockctl_server.c)
 target_link_libraries(test_sockctl_server PRIVATE sockctl os log cmocka::cmocka)
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
@@ -41,6 +44,11 @@ target_link_options(test_sqlite_macconn_writer
   PRIVATE
   "LINKER:--wrap=sqlite3_open"
 )
+
+add_test(NAME test_supervisor_utils COMMAND test_supervisor_utils)
+set_tests_properties(test_supervisor_utils
+  PROPERTIES
+  WILL_FAIL FALSE)
 
 add_test(NAME test_bridge_list COMMAND test_bridge_list)
 set_tests_properties(test_bridge_list

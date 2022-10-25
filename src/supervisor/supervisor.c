@@ -119,7 +119,10 @@ struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg) {
   struct supervisor_context *context =
       (struct supervisor_context *)mac_conn_arg;
   struct mac_conn_info info;
-  int alloc_vlanid = allocate_vlan(context, mac_addr);
+  int alloc_vlanid = (context->allocate_vlans) ?
+                      allocate_vlan(context, mac_addr) :
+                      context->default_open_vlanid;
+
   init_default_mac_info(&info, alloc_vlanid, context->allow_all_nat);
 
   log_debug("REQUESTING vlanid=%d for mac=" MACSTR, alloc_vlanid,

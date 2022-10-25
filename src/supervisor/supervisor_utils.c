@@ -21,31 +21,28 @@
 
 int allocate_vlan(struct supervisor_context *context, uint8_t *mac_addr) {
   (void)mac_addr;
-  int *vlan_arr = NULL;
-  int vlanid, idx = 0, len;
-  config_ifinfo_t *p = NULL;
+
   UT_array *config_ifinfo_array = context->config_ifinfo_array;
 
-  if (!context->allocate_vlans) {
-    return context->default_open_vlanid;
-  }
-
-  len = utarray_len(config_ifinfo_array);
+  int len = utarray_len(config_ifinfo_array);
   if (len <= 1) {
     return context->default_open_vlanid;
   }
 
+  int *vlan_arr = NULL;
   if ((vlan_arr = (int *)os_malloc(sizeof(int) * len)) == NULL) {
     log_errno("os_malloc");
     return -1;
   }
 
+  int idx = 0;
+  config_ifinfo_t *p = NULL;
   while ((p = (config_ifinfo_t *)utarray_next(config_ifinfo_array, p)) !=
          NULL) {
     vlan_arr[idx++] = p->vlanid;
   }
 
-  vlanid = vlan_arr[os_get_random_int_range(0, len)];
+  int vlanid = vlan_arr[os_get_random_int_range(0, len)];
   os_free(vlan_arr);
 
   return vlanid;
