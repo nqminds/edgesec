@@ -23,4 +23,13 @@
  */
 uint32_t md_hash(const char *msg, size_t length);
 
+/**
+ * @brief Computes the sdbm (a public-domain reimplementation of ndbm)
+ * http://www.cse.yorku.ca/~oz/hash.html
+ *
+ * @param msg The message pointer
+ * @param length The message length
+ * @return uint32_t The hash value
+ */
+uint32_t sdbm_hash(const char *msg, size_t length);
 #endif
