@@ -396,9 +396,10 @@ char *construct_path(const char *path_left, const char *path_right);
  * @param bin_path_arr The path string of binary
  * @param filename The binary name
  * @param real true to return the real link
- * @return char* the secure path
+ * @return The secure path, or NULL on error. Must be freed with os_free().
  */
-char *get_secure_path(UT_array *bin_path_arr, char *filename, bool real);
+char *get_secure_path(const UT_array *bin_path_arr, const char *filename,
+                      bool real);
 
 typedef bool (*list_dir_fn)(char *, void *args);
 
@@ -617,7 +618,7 @@ int read_file_string(char *path, char **out);
  * @param[out] hmap_bin_paths The created map of system binary to absolute path.
  * @return int 0 on success, -1 on failure
  */
-int get_commands_paths(char *commands[], UT_array *bin_path_arr,
+int get_commands_paths(const char *commands[], const UT_array *bin_path_arr,
                        hmap_str_keychar **hmap_bin_paths);
 
 /**

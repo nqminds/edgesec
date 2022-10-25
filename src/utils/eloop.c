@@ -640,19 +640,3 @@ int eloop_terminated(struct eloop_data *eloop) {
 
   return eloop->terminate;
 }
-
-void eloop_wait_for_read_sock(int sock) {
-  /*
-   * We can use epoll() here. But epoll() requres 4 system calls.
-   * epoll_create1(), epoll_ctl() for ADD, epoll_wait, and close() for
-   * epoll fd. So select() is better for performance here.
-   */
-  fd_set rfds;
-
-  if (sock < 0)
-    return;
-
-  FD_ZERO(&rfds);
-  FD_SET(sock, &rfds);
-  select(sock + 1, &rfds, NULL, NULL, NULL);
-}

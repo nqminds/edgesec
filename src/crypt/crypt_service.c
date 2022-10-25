@@ -28,9 +28,21 @@ void free_crypt_service(struct crypt_context *ctx) {
   }
 }
 
-int generate_user_key(uint8_t *user_secret, int user_secret_size,
+/**
+ * @brief Generates a the key for a user.
+ *
+ * @param user_secret Secret bytes.
+ * @param user_secret_size Size of @p user_secret.
+ * @param[out] user_key Output buffer for the generated key.
+ * @param user_key_size Size of @p user_key
+ * @param user_key_salt Salt bytes.
+ * @param user_key_salt_size Size of @p user_key_salt_size
+ * @retval  0 On success.
+ * @retval -1 On error.
+ */
+int generate_user_key(const uint8_t *user_secret, int user_secret_size,
                       uint8_t *user_key, int user_key_size,
-                      uint8_t *user_key_salt, int user_key_salt_size) {
+                      const uint8_t *user_key_salt, int user_key_salt_size) {
   if (crypto_buf2key(user_secret, user_secret_size, user_key_salt,
                      user_key_salt_size, user_key, user_key_size) < 0) {
     log_trace("crypto_buf2key fail");
@@ -40,9 +52,9 @@ int generate_user_key(uint8_t *user_secret, int user_secret_size,
   return 0;
 }
 
-struct secrets_row *prepare_secret_entry(char *key_id, uint8_t *key,
-                                         int key_size, uint8_t *salt,
-                                         int salt_size, uint8_t *iv,
+struct secrets_row *prepare_secret_entry(const char *key_id, const uint8_t *key,
+                                         int key_size, const uint8_t *salt,
+                                         int salt_size, const uint8_t *iv,
                                          int iv_size) {
   size_t out_len;
   struct secrets_row *row = os_zalloc(sizeof(struct secrets_row));
@@ -71,9 +83,22 @@ struct secrets_row *prepare_secret_entry(char *key_id, uint8_t *key,
   return row;
 }
 
-int extract_secret_entry(struct secrets_row *row, uint8_t *key, int *key_size,
-                         uint8_t *salt, int *salt_size, uint8_t *iv,
-                         int *iv_size) {
+/**
+ * @brief Extracts the secret key, salt, and IV from a secret entry.
+ *
+ * @param row The row to extract the data from.
+ * @param[out] key The output secret key buffer.
+ * @param key_size The size of @p key.
+ * @param[out] salt The output secret salt buffer.
+ * @param salt_size The size of @p salt.
+ * @param[out] iv The output IV buffer.
+ * @param iv_size The size of @p iv.
+ * @retval  0 On success.
+ * @retval -1 On error.
+ */
+int extract_secret_entry(const struct secrets_row *row, uint8_t *key,
+                         int *key_size, uint8_t *salt, int *salt_size,
+                         uint8_t *iv, int *iv_size) {
   size_t out_len;
   char *buf;
 
@@ -171,8 +196,8 @@ int extract_user_crypto_key_entry(struct secrets_row *row_secret,
   return crypto_key_size;
 }
 
-struct secrets_row *generate_user_crypto_key_entry(char *key_id,
-                                                   uint8_t *user_secret,
+struct secrets_row *generate_user_crypto_key_entry(const char *key_id,
+                                                   const uint8_t *user_secret,
                                                    int user_secret_size,
                                                    uint8_t *crypto_key) {
   uint8_t user_key[AES_KEY_SIZE];
@@ -208,7 +233,8 @@ struct secrets_row *generate_user_crypto_key_entry(char *key_id,
                               user_key_salt, SALT_SIZE, iv, IV_SIZE);
 }
 
-struct crypt_context *load_crypt_service(char *crypt_db_path, char *key_id,
+struct crypt_context *load_crypt_service(const char *crypt_db_path,
+                                         const char *key_id,
                                          uint8_t *user_secret,
                                          int user_secret_size) {
   sqlite3 *db = NULL;

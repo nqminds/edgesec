@@ -328,13 +328,4 @@ void eloop_terminate(struct eloop_data *eloop);
  */
 int eloop_terminated(struct eloop_data *eloop);
 
-/**
- * eloop_wait_for_read_sock - Wait for a single reader
- *
- * @sock: File descriptor number for the socket
- *
- * Do a blocking wait for a single read socket.
- */
-void eloop_wait_for_read_sock(int sock);
-
 #endif /* ELOOP_H */
