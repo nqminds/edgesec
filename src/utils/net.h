@@ -63,19 +63,19 @@ bool validate_ipv4_string(const char *ip);
  *
  * @param ip The IP address string
  * @param subnetMask The IP address subnet mask
- * @param addr The output @c struct in_addr_t value
+ * @param[out] addr The output @c struct in_addr_t value
  * @return 0 on success, -1 on failure
  */
-int ip_2_nbo(char *ip, char *subnetMask, in_addr_t *addr);
+int ip_2_nbo(const char *ip, const char *subnetMask, in_addr_t *addr);
 
 /**
  * @brief IP string to buffer
  *
  * @param ip The IP address string
- * @param buf The output buffer of size IP_ALEN
+ * @param[out] buf The output buffer of size IP_ALEN
  * @return 0 on success, -1 on failure
  */
-int ip4_2_buf(char *ip, uint8_t *buf);
+int ip4_2_buf(const char *ip, uint8_t buf[static IP_ALEN]);
 
 /**
  * @brief Convert a 32 bit number IP to an IP string
@@ -125,10 +125,10 @@ uint8_t get_short_subnet(const char *subnet_mask);
  *
  * @param ip The IP address string
  * @param subnet_mask The subnet mask string
- * @param host The returned host indentifier
+ * @param[out] host The returned host indentifier
  * @return 0 on success, -1 on failure
  */
-int get_ip_host(char *ip, char *subnet_mask, uint32_t *host);
+int get_ip_host(const char *ip, const char *subnet_mask, uint32_t *host);
 
 /**
  * @brief Disable the PMTU discovery for sockets
