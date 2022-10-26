@@ -343,7 +343,7 @@ ssize_t encode_protobuf_sync(PACKET_TYPES type, uint8_t *packet_buffer, size_t l
     case PACKET_NONE:
       return -1;
     case PACKET_ETHERNET:
-      os_strlcpy(header_id, "ethernet", 20);
+      os_strlcpy(header_id, "eth", 20);
       break;
     case PACKET_ARP:
       os_strlcpy(header_id, "arp", 20);
@@ -380,7 +380,8 @@ ssize_t encode_protobuf_sync(PACKET_TYPES type, uint8_t *packet_buffer, size_t l
   }
 
   Tdx__VoltApi__Sync__V1__ProtobufSyncWrapper sync = TDX__VOLT_API__SYNC__V1__PROTOBUF_SYNC_WRAPPER__INIT;
-  sync.header_index = type;
+
+  sync.header_lookup_case = TDX__VOLT_API__SYNC__V1__PROTOBUF_SYNC_WRAPPER__HEADER_LOOKUP_HEADER_ID;
   sync.header_id = header_id;
   sync.payload.len = length;
   sync.payload.data = packet_buffer;
@@ -438,6 +439,11 @@ ssize_t encode_protobuf_sync_wrapper(struct tuple_packet *tp, uint8_t **buffer) 
     os_free(sync_buffer);
     return -1;
   }
+  log_trace("%d %d", sync_length, wrapper_length);
+  char buf[1000];
+  printf_hex(buf, 1000, *buffer, wrapper_length,
+               1);
+  log_trace("%s", buf);
 
   os_free(sync_buffer);
 
