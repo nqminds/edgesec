@@ -30,5 +30,5 @@ ssize_t encode_protobuf_packet(struct tuple_packet *tp, uint8_t **buffer);
  * @param buffer[out] The encoded wrapper protobuf packet
  * @return the output buffer size, -1 on failure
  */
-ssize_t encode_protobuf_wrapper(struct tuple_packet *tp, uint8_t **buffer);
+ssize_t encode_protobuf_sync_wrapper(struct tuple_packet *tp, uint8_t **buffer);
 #endif

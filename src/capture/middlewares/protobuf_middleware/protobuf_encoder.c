@@ -30,7 +30,7 @@
 #include "dns.pb-c.h"
 #include "mdns.pb-c.h"
 #include "dhcp.pb-c.h"
-#include "wrapper.pb-c.h"
+#include "sync.pb-c.h"
 
 ssize_t encode_eth_packet(struct eth_schema *eths, uint8_t **buffer) {
   Eth__EthSchema eth = ETH__ETH_SCHEMA__INIT;
@@ -333,34 +333,113 @@ ssize_t encode_protobuf_packet(struct tuple_packet *tp, uint8_t **buffer) {
   return -1;
 }
 
-ssize_t encode_protobuf_wrapper(struct tuple_packet *tp, uint8_t **buffer) {
+
+ssize_t encode_protobuf_sync(PACKET_TYPES type, uint8_t *packet_buffer, size_t length, uint8_t **buffer) {
+  char header_id[20] = {0};
+
+  *buffer = NULL;
+
+  switch (type) {
+    case PACKET_NONE:
+      return -1;
+    case PACKET_ETHERNET:
+      os_strlcpy(header_id, "ethernet", 20);
+      break;
+    case PACKET_ARP:
+      os_strlcpy(header_id, "arp", 20);
+      break;
+    case PACKET_IP4:
+      os_strlcpy(header_id, "ip4", 20);
+      break;
+    case PACKET_IP6:
+      os_strlcpy(header_id, "ip6", 20);
+      break;
+    case PACKET_TCP:
+      os_strlcpy(header_id, "tcp", 20);
+      break;
+    case PACKET_UDP:
+      os_strlcpy(header_id, "udp", 20);
+      break;
+    case PACKET_ICMP4:
+      os_strlcpy(header_id, "icmp4", 20);
+      break;
+    case PACKET_ICMP6:
+      os_strlcpy(header_id, "icmp6", 20);
+      break;
+    case PACKET_DNS:
+      os_strlcpy(header_id, "dns", 20);
+      break;
+    case PACKET_MDNS:
+      os_strlcpy(header_id, "mdns", 20);
+      break;
+    case PACKET_DHCP:
+      os_strlcpy(header_id, "dhcp", 20);
+      break;
+    default:
+      return -1;
+  }
+
+  Tdx__VoltApi__Sync__V1__ProtobufSyncWrapper sync = TDX__VOLT_API__SYNC__V1__PROTOBUF_SYNC_WRAPPER__INIT;
+  sync.header_index = type;
+  sync.header_id = header_id;
+  sync.payload.len = length;
+  sync.payload.data = packet_buffer;
+
+  size_t sync_length = tdx__volt_api__sync__v1__protobuf_sync_wrapper__get_packed_size(&sync);
+
+  if ((*buffer = os_malloc(sync_length)) == NULL) {
+    log_errno("os_malloc");
+    return -1;
+  }
+
+  return tdx__volt_api__sync__v1__protobuf_sync_wrapper__pack(&sync, *buffer);
+}
+
+ssize_t encode_protobuf_wrapper(uint8_t *sync_buffer, size_t length, uint8_t **buffer) {
+  *buffer = NULL;
+
+  Tdx__VoltApi__Sync__V1__ProtobufLengthPrefixWrapper wrapper = TDX__VOLT_API__SYNC__V1__PROTOBUF_LENGTH_PREFIX_WRAPPER__INIT;
+  wrapper.payload.len = length;
+  wrapper.payload.data = sync_buffer;
+
+  size_t wrapper_length = tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__get_packed_size(&wrapper);
+
+  if ((*buffer = os_malloc(wrapper_length)) == NULL) {
+    log_errno("os_malloc");
+    return -1;
+  }
+
+  return tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__pack(&wrapper, *buffer);
+}
+
+ssize_t encode_protobuf_sync_wrapper(struct tuple_packet *tp, uint8_t **buffer) {
   ssize_t packet_length;
   uint8_t *packet_buffer = NULL;
   if ((packet_length = encode_protobuf_packet(tp, &packet_buffer)) < 0) {
     log_error("encode_protobuf_packet fail");
     return -1;
   }
-  
-  Wrapper__WrapperSchema wrapper = WRAPPER__WRAPPER_SCHEMA__INIT;
-  wrapper.index_id = tp->type;
-  wrapper.message.len = packet_length;
-  wrapper.message.data = packet_buffer;
 
-  size_t wrapper_length = wrapper__wrapper_schema__get_packed_size(&wrapper);
-  if ((*buffer = os_malloc(wrapper_length)) == NULL) {
-    log_errno("os_malloc");
+  ssize_t sync_length;
+  uint8_t *sync_buffer = NULL;
+
+  if ((sync_length = encode_protobuf_sync(tp->type, packet_buffer, packet_length, &sync_buffer)) < 0) {
+    log_error("encode_protobuf_sync fail");
     os_free(packet_buffer);
     return -1;
   }
-  size_t length = wrapper__wrapper_schema__pack(&wrapper, *buffer);
+
   os_free(packet_buffer);
 
-  if(length != (size_t) wrapper_length) {
-    log_error("wrapper__wrapper_schema__pack fail");
-    os_free(*buffer);
-    *buffer = NULL;
+  ssize_t wrapper_length;
+
+  if ((wrapper_length = encode_protobuf_wrapper(sync_buffer, sync_length, buffer)) < 0) {
+    log_error("encode_protobuf_wrapper fail");
+    os_free(sync_buffer);
     return -1;
   }
 
-  return (ssize_t) length;
+  os_free(sync_buffer);
+
+  return wrapper_length;
 }
