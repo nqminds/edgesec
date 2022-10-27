@@ -32,6 +32,8 @@
 #include "dhcp.pb-c.h"
 #include "sync.pb-c.h"
 
+#include "protobuf_utils.h"
+
 ssize_t encode_eth_packet(struct eth_schema *eths, uint8_t **buffer) {
   Eth__EthSchema eth = ETH__ETH_SCHEMA__INIT;
 
@@ -334,7 +336,7 @@ ssize_t encode_protobuf_packet(struct tuple_packet *tp, uint8_t **buffer) {
 }
 
 
-ssize_t encode_protobuf_sync(PACKET_TYPES type, uint8_t *packet_buffer, size_t length, uint8_t **buffer) {
+ssize_t encode_protobuf_sync_delimited(PACKET_TYPES type, uint8_t *packet_buffer, size_t length, uint8_t **buffer) {
   char header_id[20] = {0};
 
   *buffer = NULL;
@@ -386,14 +388,14 @@ ssize_t encode_protobuf_sync(PACKET_TYPES type, uint8_t *packet_buffer, size_t l
   sync.payload.len = length;
   sync.payload.data = packet_buffer;
 
-  size_t sync_length = tdx__volt_api__sync__v1__protobuf_sync_wrapper__get_packed_size(&sync);
+  size_t sync_length = protobuf_c_message_del_get_packed_size((const ProtobufCMessage*)&sync);
 
   if ((*buffer = os_malloc(sync_length)) == NULL) {
     log_errno("os_malloc");
     return -1;
   }
 
-  return tdx__volt_api__sync__v1__protobuf_sync_wrapper__pack(&sync, *buffer);
+  return protobuf_c_message_del_pack((const ProtobufCMessage*)&sync, *buffer);
 }
 
 ssize_t encode_protobuf_sync_wrapper(struct tuple_packet *tp, uint8_t **buffer) {
@@ -405,9 +407,8 @@ ssize_t encode_protobuf_sync_wrapper(struct tuple_packet *tp, uint8_t **buffer) 
   }
 
   ssize_t sync_length;
-  uint8_t *sync_buffer = NULL;
 
-  if ((sync_length = encode_protobuf_sync(tp->type, packet_buffer, packet_length, &sync_buffer)) < 0) {
+  if ((sync_length = encode_protobuf_sync_delimited(tp->type, packet_buffer, packet_length, buffer)) < 0) {
     log_error("encode_protobuf_sync fail");
     os_free(packet_buffer);
     return -1;
@@ -415,14 +416,5 @@ ssize_t encode_protobuf_sync_wrapper(struct tuple_packet *tp, uint8_t **buffer) 
 
   os_free(packet_buffer);
 
-  ssize_t wrapper_length;
-  if ((wrapper_length = encode_protobuf_wrapper(sync_buffer, sync_length, buffer)) < 0) {
-    log_error("encode_protobuf_wrapper fail");
-    os_free(sync_buffer);
-    return -1;
-  }
-
-  os_free(sync_buffer);
-
-  return wrapper_length;
+  return sync_length;
 }
