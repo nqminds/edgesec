@@ -2,10 +2,6 @@ syntax = "proto3";
 
 package tdx.volt_api.sync.v1;
 
-message ProtobufLengthPrefixWrapper {
-  bytes payload = 1;
-}
-
 // Wraps arbitrary protobuf messages, with an index into the `ProtobufSyncConfigurationHeader` to indicate the specific message type this message wraps.
 message ProtobufSyncWrapper {
   oneof header_lookup {

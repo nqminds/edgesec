@@ -15,7 +15,6 @@ PROTOBUF_C__BEGIN_DECLS
 #endif
 
 
-typedef struct Tdx__VoltApi__Sync__V1__ProtobufLengthPrefixWrapper Tdx__VoltApi__Sync__V1__ProtobufLengthPrefixWrapper;
 typedef struct Tdx__VoltApi__Sync__V1__ProtobufSyncWrapper Tdx__VoltApi__Sync__V1__ProtobufSyncWrapper;
 typedef struct Tdx__VoltApi__Sync__V1__ProtobufSyncConfiguration Tdx__VoltApi__Sync__V1__ProtobufSyncConfiguration;
 typedef struct Tdx__VoltApi__Sync__V1__ProtobufSyncConfigurationHeader Tdx__VoltApi__Sync__V1__ProtobufSyncConfigurationHeader;
@@ -25,16 +24,6 @@ typedef struct Tdx__VoltApi__Sync__V1__ProtobufSyncConfigurationHeader Tdx__Volt
 
 
 /* --- messages --- */
-
-struct  Tdx__VoltApi__Sync__V1__ProtobufLengthPrefixWrapper
-{
-  ProtobufCMessage base;
-  ProtobufCBinaryData payload;
-};
-#define TDX__VOLT_API__SYNC__V1__PROTOBUF_LENGTH_PREFIX_WRAPPER__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__descriptor) \
-    , {0,NULL} }
-
 
 typedef enum {
   TDX__VOLT_API__SYNC__V1__PROTOBUF_SYNC_WRAPPER__HEADER_LOOKUP__NOT_SET = 0,
@@ -136,25 +125,6 @@ struct  Tdx__VoltApi__Sync__V1__ProtobufSyncConfigurationHeader
     , (char *)protobuf_c_empty_string, 0,NULL, 0 }
 
 
-/* Tdx__VoltApi__Sync__V1__ProtobufLengthPrefixWrapper methods */
-void   tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__init
-                     (Tdx__VoltApi__Sync__V1__ProtobufLengthPrefixWrapper         *message);
-size_t tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__get_packed_size
-                     (const Tdx__VoltApi__Sync__V1__ProtobufLengthPrefixWrapper   *message);
-size_t tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__pack
-                     (const Tdx__VoltApi__Sync__V1__ProtobufLengthPrefixWrapper   *message,
-                      uint8_t             *out);
-size_t tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__pack_to_buffer
-                     (const Tdx__VoltApi__Sync__V1__ProtobufLengthPrefixWrapper   *message,
-                      ProtobufCBuffer     *buffer);
-Tdx__VoltApi__Sync__V1__ProtobufLengthPrefixWrapper *
-       tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__unpack
-                     (ProtobufCAllocator  *allocator,
-                      size_t               len,
-                      const uint8_t       *data);
-void   tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__free_unpacked
-                     (Tdx__VoltApi__Sync__V1__ProtobufLengthPrefixWrapper *message,
-                      ProtobufCAllocator *allocator);
 /* Tdx__VoltApi__Sync__V1__ProtobufSyncWrapper methods */
 void   tdx__volt_api__sync__v1__protobuf_sync_wrapper__init
                      (Tdx__VoltApi__Sync__V1__ProtobufSyncWrapper         *message);
@@ -214,9 +184,6 @@ void   tdx__volt_api__sync__v1__protobuf_sync_configuration_header__free_unpacke
                       ProtobufCAllocator *allocator);
 /* --- per-message closures --- */
 
-typedef void (*Tdx__VoltApi__Sync__V1__ProtobufLengthPrefixWrapper_Closure)
-                 (const Tdx__VoltApi__Sync__V1__ProtobufLengthPrefixWrapper *message,
-                  void *closure_data);
 typedef void (*Tdx__VoltApi__Sync__V1__ProtobufSyncWrapper_Closure)
                  (const Tdx__VoltApi__Sync__V1__ProtobufSyncWrapper *message,
                   void *closure_data);
@@ -232,7 +199,6 @@ typedef void (*Tdx__VoltApi__Sync__V1__ProtobufSyncConfigurationHeader_Closure)
 
 /* --- descriptors --- */
 
-extern const ProtobufCMessageDescriptor tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__descriptor;
 extern const ProtobufCMessageDescriptor tdx__volt_api__sync__v1__protobuf_sync_wrapper__descriptor;
 extern const ProtobufCMessageDescriptor tdx__volt_api__sync__v1__protobuf_sync_configuration__descriptor;
 extern const ProtobufCMessageDescriptor tdx__volt_api__sync__v1__protobuf_sync_configuration_header__descriptor;

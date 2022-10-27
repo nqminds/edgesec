@@ -15,36 +15,30 @@
 
 #include "utils/log.h"
 #include "capture/middlewares/protobuf_middleware/eth.pb-c.h"
+#include "capture/middlewares/protobuf_middleware/sync.pb-c.h"
 #include "capture/middlewares/protobuf_middleware/protobuf_encoder.h"
 
 static void test_protobuf_serialization(void **state) {
   (void)state; /* unused */
 
-  char *id = "test";
-  char *ifname = "wlan";
-  char *ether_dhost = "11:22:33:44:55:66";
-  char *ether_shost = "AA:BB:CC:DD:EE:FF";
+  char *id = "id";
+  char *ifname = "ifname";
+  char *ether_dhost = "ether_dhost";
+  char *ether_shost = "ether_shost";
 
   Eth__EthSchema eth = ETH__ETH_SCHEMA__INIT;
 
-  eth.timestamp = 12345;
+  eth.timestamp = 999;
   eth.id = id;
 
-  eth.caplen = 1024;
-  eth.length = 4096;
+  eth.caplen = 3;
+  eth.length = 4;
   eth.ifname = ifname;
   eth.ether_dhost = ether_dhost;
   eth.ether_shost = ether_shost;
-  eth.ether_type = 0x8000;
+  eth.ether_type = 8;
 
-  size_t estimated_size = sizeof(eth.timestamp) +
-                          strlen(eth.id) + sizeof(eth.caplen) +
-                          sizeof(eth.length) + strlen(eth.ifname) +
-                          strlen(eth.ether_dhost) + strlen(eth.ether_shost) +
-                          sizeof(eth.ether_type) + 1;
   size_t packed_size = eth__eth_schema__get_packed_size(&eth);
-
-  assert_int_equal(packed_size, estimated_size);
 
   uint8_t *out = os_malloc(packed_size);
   size_t out_size = eth__eth_schema__pack(&eth, out);
@@ -52,17 +46,17 @@ static void test_protobuf_serialization(void **state) {
   assert_int_equal(packed_size, out_size);
 
   Eth__EthSchema *eth_unpacked = eth__eth_schema__unpack(NULL, out_size, out);
+  os_free(out);
 
-  assert_int_equal(eth_unpacked->timestamp, 12345);
+  assert_int_equal(eth_unpacked->timestamp, 999);
   assert_string_equal(eth_unpacked->id, id);
-  assert_int_equal(eth_unpacked->caplen, 1024);
-  assert_int_equal(eth_unpacked->length, 4096);
+  assert_int_equal(eth_unpacked->caplen, 3);
+  assert_int_equal(eth_unpacked->length, 4);
   assert_string_equal(eth_unpacked->ether_dhost, ether_dhost);
   assert_string_equal(eth_unpacked->ether_shost, ether_shost);
-  assert_int_equal(eth_unpacked->ether_type, 0x8000);
+  assert_int_equal(eth_unpacked->ether_type, 8);
 
   eth__eth_schema__free_unpacked(eth_unpacked, NULL);
-  os_free(out);
 }
 
 int main(int argc, char *argv[]) {

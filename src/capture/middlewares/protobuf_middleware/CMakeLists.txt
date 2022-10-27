@@ -38,12 +38,15 @@ target_link_libraries(dhcp.pb-c PUBLIC protobufc::protobufc)
 add_library(sync.pb-c sync.pb-c.c)
 target_link_libraries(sync.pb-c PUBLIC protobufc::protobufc)
 
+add_library(protobuf_utils protobuf_utils.c)
+target_link_libraries(protobuf_utils PUBLIC protobufc::protobufc)
+
 add_library(protobuf_encoder protobuf_encoder.c)
 target_link_libraries(protobuf_encoder PRIVATE eth.pb-c arp.pb-c ip4.pb-c ip6.pb-c)
 target_link_libraries(protobuf_encoder PRIVATE tcp.pb-c udp.pb-c icmp4.pb-c)
 target_link_libraries(protobuf_encoder PRIVATE icmp6.pb-c dns.pb-c mdns.pb-c dhcp.pb-c)
 target_link_libraries(protobuf_encoder PRIVATE sync.pb-c)
-target_link_libraries(protobuf_encoder PUBLIC protobufc::protobufc PRIVATE allocs os log)
+target_link_libraries(protobuf_encoder PUBLIC protobufc::protobufc PRIVATE protobuf_utils allocs os log)
 
 add_library(protobuf_middleware protobuf_middleware.c)
 target_include_directories(protobuf_middleware PRIVATE ${PROJECT_BINARY_DIR})

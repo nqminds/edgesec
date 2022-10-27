@@ -7,51 +7,6 @@
 #endif
 
 #include "sync.pb-c.h"
-void   tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__init
-                     (Tdx__VoltApi__Sync__V1__ProtobufLengthPrefixWrapper         *message)
-{
-  static const Tdx__VoltApi__Sync__V1__ProtobufLengthPrefixWrapper init_value = TDX__VOLT_API__SYNC__V1__PROTOBUF_LENGTH_PREFIX_WRAPPER__INIT;
-  *message = init_value;
-}
-size_t tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__get_packed_size
-                     (const Tdx__VoltApi__Sync__V1__ProtobufLengthPrefixWrapper *message)
-{
-  assert(message->base.descriptor == &tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__descriptor);
-  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
-}
-size_t tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__pack
-                     (const Tdx__VoltApi__Sync__V1__ProtobufLengthPrefixWrapper *message,
-                      uint8_t       *out)
-{
-  assert(message->base.descriptor == &tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__descriptor);
-  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
-}
-size_t tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__pack_to_buffer
-                     (const Tdx__VoltApi__Sync__V1__ProtobufLengthPrefixWrapper *message,
-                      ProtobufCBuffer *buffer)
-{
-  assert(message->base.descriptor == &tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__descriptor);
-  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
-}
-Tdx__VoltApi__Sync__V1__ProtobufLengthPrefixWrapper *
-       tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__unpack
-                     (ProtobufCAllocator  *allocator,
-                      size_t               len,
-                      const uint8_t       *data)
-{
-  return (Tdx__VoltApi__Sync__V1__ProtobufLengthPrefixWrapper *)
-     protobuf_c_message_unpack (&tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__descriptor,
-                                allocator, len, data);
-}
-void   tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__free_unpacked
-                     (Tdx__VoltApi__Sync__V1__ProtobufLengthPrefixWrapper *message,
-                      ProtobufCAllocator *allocator)
-{
-  if(!message)
-    return;
-  assert(message->base.descriptor == &tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__descriptor);
-  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
-}
 void   tdx__volt_api__sync__v1__protobuf_sync_wrapper__init
                      (Tdx__VoltApi__Sync__V1__ProtobufSyncWrapper         *message)
 {
@@ -187,44 +142,6 @@ void   tdx__volt_api__sync__v1__protobuf_sync_configuration_header__free_unpacke
   assert(message->base.descriptor == &tdx__volt_api__sync__v1__protobuf_sync_configuration_header__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-static const ProtobufCFieldDescriptor tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__field_descriptors[1] =
-{
-  {
-    "payload",
-    1,
-    PROTOBUF_C_LABEL_NONE,
-    PROTOBUF_C_TYPE_BYTES,
-    0,   /* quantifier_offset */
-    offsetof(Tdx__VoltApi__Sync__V1__ProtobufLengthPrefixWrapper, payload),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-};
-static const unsigned tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__field_indices_by_name[] = {
-  0,   /* field[0] = payload */
-};
-static const ProtobufCIntRange tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__number_ranges[1 + 1] =
-{
-  { 1, 0 },
-  { 0, 1 }
-};
-const ProtobufCMessageDescriptor tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__descriptor =
-{
-  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "tdx.volt_api.sync.v1.ProtobufLengthPrefixWrapper",
-  "ProtobufLengthPrefixWrapper",
-  "Tdx__VoltApi__Sync__V1__ProtobufLengthPrefixWrapper",
-  "tdx.volt_api.sync.v1",
-  sizeof(Tdx__VoltApi__Sync__V1__ProtobufLengthPrefixWrapper),
-  1,
-  tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__field_descriptors,
-  tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__field_indices_by_name,
-  1,  tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__number_ranges,
-  (ProtobufCMessageInit) tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__init,
-  NULL,NULL,NULL    /* reserved[123] */
-};
 static const ProtobufCFieldDescriptor tdx__volt_api__sync__v1__protobuf_sync_wrapper__field_descriptors[3] =
 {
   {

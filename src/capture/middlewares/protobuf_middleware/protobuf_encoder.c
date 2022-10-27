@@ -396,23 +396,6 @@ ssize_t encode_protobuf_sync(PACKET_TYPES type, uint8_t *packet_buffer, size_t l
   return tdx__volt_api__sync__v1__protobuf_sync_wrapper__pack(&sync, *buffer);
 }
 
-ssize_t encode_protobuf_wrapper(uint8_t *sync_buffer, size_t length, uint8_t **buffer) {
-  *buffer = NULL;
-
-  Tdx__VoltApi__Sync__V1__ProtobufLengthPrefixWrapper wrapper = TDX__VOLT_API__SYNC__V1__PROTOBUF_LENGTH_PREFIX_WRAPPER__INIT;
-  wrapper.payload.len = length;
-  wrapper.payload.data = sync_buffer;
-
-  size_t wrapper_length = tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__get_packed_size(&wrapper);
-
-  if ((*buffer = os_malloc(wrapper_length)) == NULL) {
-    log_errno("os_malloc");
-    return -1;
-  }
-
-  return tdx__volt_api__sync__v1__protobuf_length_prefix_wrapper__pack(&wrapper, *buffer);
-}
-
 ssize_t encode_protobuf_sync_wrapper(struct tuple_packet *tp, uint8_t **buffer) {
   ssize_t packet_length;
   uint8_t *packet_buffer = NULL;
@@ -433,17 +416,11 @@ ssize_t encode_protobuf_sync_wrapper(struct tuple_packet *tp, uint8_t **buffer) 
   os_free(packet_buffer);
 
   ssize_t wrapper_length;
-
   if ((wrapper_length = encode_protobuf_wrapper(sync_buffer, sync_length, buffer)) < 0) {
     log_error("encode_protobuf_wrapper fail");
     os_free(sync_buffer);
     return -1;
   }
-  log_trace("%d %d", sync_length, wrapper_length);
-  char buf[1000];
-  printf_hex(buf, 1000, *buffer, wrapper_length,
-               1);
-  log_trace("%s", buf);
 
   os_free(sync_buffer);
 
