@@ -125,7 +125,7 @@ static void test_create_vlan_mapper(void **state) {
 
   utarray_new(arr, &config_ifinfo_icd);
 
-  assert_true(create_vlan_mapper(arr, &hmap));
+  assert_int_equal(create_vlan_mapper(arr, &hmap), 0);
   free_vlan_mapper(&hmap);
   utarray_free(arr);
 
@@ -146,7 +146,7 @@ static void test_create_vlan_mapper(void **state) {
   strcpy(el.subnet_mask, mask2);
   utarray_push_back(arr, &el);
 
-  assert_true(create_vlan_mapper(arr, &hmap));
+  assert_int_equal(create_vlan_mapper(arr, &hmap), 0);
 
   assert_int_equal(get_vlan_mapper(&hmap, 1, &conn), 1);
   assert_string_equal(conn.ifname, "br0");

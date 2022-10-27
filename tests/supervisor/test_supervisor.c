@@ -15,6 +15,7 @@
 
 #include "utils/log.h"
 #include "supervisor/supervisor.h"
+#include "supervisor/sqlite_macconn_writer.h"
 
 static const UT_icd config_ifinfo_icd = {sizeof(config_ifinfo_t), NULL, NULL,
                                          NULL};
@@ -40,8 +41,13 @@ static void test_get_mac_conn_cmd(void **state) {
     el.vlanid = idx;
     utarray_push_back(ctx.config_ifinfo_array, &el);
   }
-  // struct mac_conn_info info = 
-  get_mac_conn_cmd(mac_addr, (void *)&ctx);
+
+  create_vlan_mapper(ctx.config_ifinfo_array, &ctx.vlan_mapper);
+  open_sqlite_macconn_db(":memory:", &ctx.macconn_db);
+
+  struct mac_conn_info info = get_mac_conn_cmd(mac_addr, (void *)&ctx);
+
+  assert_int_equal(info.vlanid , 10);
   utarray_free(ctx.config_ifinfo_array);
 }
 

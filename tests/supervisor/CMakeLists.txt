@@ -9,7 +9,7 @@ add_executable(test_supervisor_utils test_supervisor_utils.c)
 target_link_libraries(test_supervisor_utils PRIVATE supervisor_utils net log cmocka::cmocka)
 
 add_executable(test_supervisor test_supervisor.c)
-target_link_libraries(test_supervisor PRIVATE supervisor net log cmocka::cmocka)
+target_link_libraries(test_supervisor PRIVATE sqlite_macconn_writer supervisor net log cmocka::cmocka)
 
 add_executable(test_sockctl_server test_sockctl_server.c)
 target_link_libraries(test_sockctl_server PRIVATE sockctl os log cmocka::cmocka)
