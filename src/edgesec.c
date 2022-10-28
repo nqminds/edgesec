@@ -201,7 +201,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  if (!load_app_config(config_filename, &config)) {
+  if (load_app_config(config_filename, &config) < 0) {
     fprintf(stderr, "load_app_config fail\n");
     return EXIT_FAILURE;
   }

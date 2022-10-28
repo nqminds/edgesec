@@ -36,10 +36,18 @@ if (USE_MDNS_SERVICE)
   add_subdirectory(dns)
 endif ()
 
+configure_file("${CMAKE_CURRENT_LIST_DIR}/test-config.ini.in" "${CMAKE_BINARY_DIR}/test-config.ini" @ONLY)
 add_cmocka_test(test_config
   SOURCES test_config.c
   LINK_LIBRARIES cmocka::cmocka log config
 )
+target_compile_definitions(test_config PRIVATE TEST_CONFIG_INI_PATH="${CMAKE_BINARY_DIR}/test-config.ini")
+
+add_cmocka_test(test_edgesec
+  SOURCES test_edgesec.c
+  LINK_LIBRARIES runctl cmocka::cmocka log config
+)
+target_compile_definitions(test_edgesec PRIVATE TEST_CONFIG_INI_PATH="${CMAKE_BINARY_DIR}/test-config.ini")
 
 add_cmocka_test(test_runctl
   SOURCES test_runctl.c

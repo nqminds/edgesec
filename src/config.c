@@ -730,12 +730,12 @@ bool load_firewall_config(const char *filename, struct firewall_conf *config) {
   return true;
 }
 
-bool load_app_config(const char *filename, struct app_config *config) {
+int load_app_config(const char *filename, struct app_config *config) {
   FILE *fp = fopen(filename, "rb");
 
   if (fp == NULL) {
     log_errno("Couldn't open %s config file.\n", filename);
-    return false;
+    return -1;
   }
   fclose(fp);
 
@@ -743,68 +743,68 @@ bool load_app_config(const char *filename, struct app_config *config) {
 
   if (!load_system_config(filename, config)) {
     log_debug("load_system_config fail");
-    return false;
+    return -1;
   }
 
   if (!load_supervisor_config(filename, config)) {
     log_debug("load_supervisor_config fail");
-    return false;
+    return -1;
   }
 
   if (!load_nat_config(filename, config)) {
     log_debug("load_nat_config fail");
-    return false;
+    return -1;
   }
 
   // Load ap radius config params
   if (!load_radius_conf(filename, config)) {
     log_debug("radius config parsing error.\n");
-    return false;
+    return -1;
   }
 
   // Load ap config params
   if (!load_ap_conf(filename, config)) {
     log_debug("ap config parsing error.\n");
-    return false;
+    return -1;
   }
 
   // Load the DNS server configuration
   if (!load_dns_conf(filename, config)) {
     log_debug("dns config parsing error.\n");
-    return false;
+    return -1;
   }
 
   // Load the mDNS server configuration
   if (!load_mdns_conf(filename, config)) {
     log_debug("dns config parsing error.\n");
-    return false;
+    return -1;
   }
 
   // Load the DHCP server configuration
   if (!load_dhcp_conf(filename, config)) {
     log_debug("dhcp config parsing error.\n");
-    return false;
+    return -1;
   }
 
   // Load the list of interfaces
   if (!load_interface_list(filename, config)) {
     log_debug("Interface list parsing error.\n");
-    return false;
+    return -1;
   }
 
   // Load the capture config
   if (!load_capture_config(filename, &config->capture_config)) {
     log_debug("Capture parsing error.\n");
-    return false;
+    return -1;
   }
 
   // Load the firewall config
   if (!load_firewall_config(filename, &config->firewall_config)) {
     log_debug("Firewall parsing error.\n");
-    return false;
+    return -1;
   }
 
-  return true;
+  return 0;
 }
 
 void free_app_config(struct app_config *config) {
