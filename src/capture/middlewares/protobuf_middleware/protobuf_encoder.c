@@ -107,17 +107,17 @@ ssize_t encode_ip4_pcaket(const struct ip4_schema *ip4s, uint8_t **buffer) {
   return (ssize_t)ip4__ip4_schema__pack(&ip4, *buffer);
 }
 
-ssize_t encode_ip6_packet(struct ip6_schema *ip6s, uint8_t **buffer) {
+ssize_t encode_ip6_packet(const struct ip6_schema *ip6s, uint8_t **buffer) {
   Ip6__Ip6Schema ip6 = IP6__IP6_SCHEMA__INIT;
 
-  ip6.id = ip6s->id;
+  ip6.id = (char *) ip6s->id;
   ip6.ip6_un1_flow = ip6s->ip6_un1_flow;
   ip6.ip6_un1_plen = ip6s->ip6_un1_plen;
   ip6.ip6_un1_nxt = ip6s->ip6_un1_nxt;
   ip6.ip6_un1_hlim = ip6s->ip6_un1_hlim;
   ip6.ip6_un2_vfc = ip6s->ip6_un2_vfc;
-  ip6.ip6_src = ip6s->ip6_src;
-  ip6.ip6_dst = ip6s->ip6_dst;
+  ip6.ip6_src = (char *) ip6s->ip6_src;
+  ip6.ip6_dst = (char *) ip6s->ip6_dst;
 
   size_t packed_size = ip6__ip6_schema__get_packed_size(&ip6);
 
@@ -129,10 +129,10 @@ ssize_t encode_ip6_packet(struct ip6_schema *ip6s, uint8_t **buffer) {
   return (ssize_t)ip6__ip6_schema__pack(&ip6, *buffer);
 }
 
-ssize_t encode_tcp_packet(struct tcp_schema *tcps, uint8_t **buffer) {
+ssize_t encode_tcp_packet(const struct tcp_schema *tcps, uint8_t **buffer) {
   Tcp__TcpSchema tcp = TCP__TCP_SCHEMA__INIT;
 
-  tcp.id = tcps->id;
+  tcp.id = (char *) tcps->id;
   tcp.source = tcps->source;
   tcp.dest = tcps->dest;
   tcp.seq = tcps->seq;
@@ -159,10 +159,10 @@ ssize_t encode_tcp_packet(struct tcp_schema *tcps, uint8_t **buffer) {
   return (ssize_t)tcp__tcp_schema__pack(&tcp, *buffer);
 }
 
-ssize_t encode_udp_packet(struct udp_schema *udps, uint8_t **buffer) {
+ssize_t encode_udp_packet(const struct udp_schema *udps, uint8_t **buffer) {
   Udp__UdpSchema udp = UDP__UDP_SCHEMA__INIT;
 
-  udp.id = udps->id;
+  udp.id = (char *) udps->id;
   udp.source = udps->source;
   udp.dest = udps->dest;
   udp.len = udps->len;
@@ -178,10 +178,10 @@ ssize_t encode_udp_packet(struct udp_schema *udps, uint8_t **buffer) {
   return (ssize_t)udp__udp_schema__pack(&udp, *buffer);
 }
 
-ssize_t encode_icmp4_packet(struct icmp4_schema *icmp4s, uint8_t **buffer) {
+ssize_t encode_icmp4_packet(const struct icmp4_schema *icmp4s, uint8_t **buffer) {
   Icmp4__Icmp4Schema icmp4 = ICMP4__ICMP4_SCHEMA__INIT;
 
-  icmp4.id = icmp4s->id;
+  icmp4.id = (char *) icmp4s->id;
   icmp4.type = icmp4s->type;
   icmp4.code = icmp4s->code;
   icmp4.checksum = icmp4s->checksum;
@@ -197,10 +197,10 @@ ssize_t encode_icmp4_packet(struct icmp4_schema *icmp4s, uint8_t **buffer) {
   return (ssize_t)icmp4__icmp4_schema__pack(&icmp4, *buffer);
 }
 
-ssize_t encode_icmp6_packet(struct icmp6_schema *icmp6s, uint8_t **buffer) {
+ssize_t encode_icmp6_packet(const struct icmp6_schema *icmp6s, uint8_t **buffer) {
   Icmp6__Icmp6Schema icmp6 = ICMP6__ICMP6_SCHEMA__INIT;
 
-  icmp6.id = icmp6s->id;
+  icmp6.id = (char *) icmp6s->id;
   icmp6.icmp6_type = icmp6s->icmp6_type;
   icmp6.icmp6_code = icmp6s->icmp6_code;
   icmp6.icmp6_cksum = icmp6s->icmp6_cksum;
@@ -216,17 +216,17 @@ ssize_t encode_icmp6_packet(struct icmp6_schema *icmp6s, uint8_t **buffer) {
   return (ssize_t)icmp6__icmp6_schema__pack(&icmp6, *buffer);
 }
 
-ssize_t encode_dns_packet(struct dns_schema *dnss, uint8_t **buffer) {
+ssize_t encode_dns_packet(const struct dns_schema *dnss, uint8_t **buffer) {
   Dns__DnsSchema dns = DNS__DNS_SCHEMA__INIT;
 
-  dns.id = dnss->id;
+  dns.id = (char *) dnss->id;
   dns.tid = dnss->tid;
   dns.flags = dnss->flags;
   dns.nqueries = dnss->nqueries;
   dns.nanswers = dnss->nanswers;
   dns.nauth = dnss->nauth;
   dns.nother = dnss->nother;
-  dns.qname = dnss->qname;
+  dns.qname = (char *) dnss->qname;
 
   size_t packed_size = dns__dns_schema__get_packed_size(&dns);
 
@@ -238,17 +238,17 @@ ssize_t encode_dns_packet(struct dns_schema *dnss, uint8_t **buffer) {
   return (ssize_t)dns__dns_schema__pack(&dns, *buffer);
 }
 
-ssize_t encode_mdsn_packet(struct mdns_schema *mdnss, uint8_t **buffer) {
+ssize_t encode_mdsn_packet(const struct mdns_schema *mdnss, uint8_t **buffer) {
   Mdns__MdnsSchema mdns = MDNS__MDNS_SCHEMA__INIT;
 
-  mdns.id = mdnss->id;
+  mdns.id = (char *) mdnss->id;
   mdns.tid = mdnss->tid;
   mdns.flags = mdnss->flags;
   mdns.nqueries = mdnss->nqueries;
   mdns.nanswers = mdnss->nanswers;
   mdns.nauth = mdnss->nauth;
   mdns.nother = mdnss->nother;
-  mdns.qname = mdnss->qname;
+  mdns.qname = (char *) mdnss->qname;
 
   size_t packed_size = mdns__mdns_schema__get_packed_size(&mdns);
 
