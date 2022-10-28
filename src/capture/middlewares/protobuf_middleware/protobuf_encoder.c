@@ -38,12 +38,12 @@ ssize_t encode_eth_packet(const struct eth_schema *eths, uint8_t **buffer) {
   Eth__EthSchema eth = ETH__ETH_SCHEMA__INIT;
 
   eth.timestamp = eths->timestamp;
-  eth.id = eths->id;
+  eth.id = (char *) eths->id;
   eth.caplen = eths->caplen;
   eth.length = eths->length;
-  eth.ifname = eths->ifname;
-  eth.ether_dhost = eths->ether_dhost;
-  eth.ether_shost = eths->ether_shost;
+  eth.ifname = (char *) eths->ifname;
+  eth.ether_dhost = (char *) eths->ether_dhost;
+  eth.ether_shost = (char *) eths->ether_shost;
   eth.ether_type = eths->ether_type;
 
   size_t packed_size = eth__eth_schema__get_packed_size(&eth);
@@ -56,19 +56,19 @@ ssize_t encode_eth_packet(const struct eth_schema *eths, uint8_t **buffer) {
   return (ssize_t)eth__eth_schema__pack(&eth, *buffer);
 }
 
-ssize_t extract_arp_packet(const struct arp_schema *arps, uint8_t **buffer) {
+ssize_t encode_arp_packet(const struct arp_schema *arps, uint8_t **buffer) {
   Arp__ArpSchema arp = ARP__ARP_SCHEMA__INIT;
 
-  arp.id = arps->id;
+  arp.id = (char *) arps->id;
   arp.ar_hrd = arps->ar_hrd;
   arp.ar_pro = arps->ar_pro;
   arp.ar_hln = arps->ar_hln;
   arp.ar_pln = arps->ar_pln;
   arp.ar_op = arps->ar_op;
-  arp.arp_sha = arps->arp_sha;
-  arp.arp_spa = arps->arp_spa;
-  arp.arp_tha = arps->arp_tha;
-  arp.arp_tpa = arps->arp_tpa;
+  arp.arp_sha = (char *) arps->arp_sha;
+  arp.arp_spa = (char *) arps->arp_spa;
+  arp.arp_tha = (char *) arps->arp_tha;
+  arp.arp_tpa = (char *) arps->arp_tpa;
 
 
   size_t packed_size = arp__arp_schema__get_packed_size(&arp);
@@ -81,12 +81,12 @@ ssize_t extract_arp_packet(const struct arp_schema *arps, uint8_t **buffer) {
   return (ssize_t)arp__arp_schema__pack(&arp, *buffer);
 }
 
-ssize_t extract_ip4_pcaket(const struct ip4_schema *ip4s, uint8_t **buffer) {
+ssize_t encode_ip4_pcaket(const struct ip4_schema *ip4s, uint8_t **buffer) {
   Ip4__Ip4Schema ip4 = IP4__IP4_SCHEMA__INIT;
 
-  ip4.id = ip4s->id;
-  ip4.ip_src = ip4s->ip_src;
-  ip4.ip_dst = ip4s->ip_dst;
+  ip4.id = (char *) ip4s->id;
+  ip4.ip_src = (char *) ip4s->ip_src;
+  ip4.ip_dst = (char *) ip4s->ip_dst;
   ip4.ip_hl = ip4s->ip_hl;
   ip4.ip_v = ip4s->ip_v;
   ip4.ip_tos = ip4s->ip_tos;
@@ -107,7 +107,7 @@ ssize_t extract_ip4_pcaket(const struct ip4_schema *ip4s, uint8_t **buffer) {
   return (ssize_t)ip4__ip4_schema__pack(&ip4, *buffer);
 }
 
-ssize_t extract_ip6_packet(struct ip6_schema *ip6s, uint8_t **buffer) {
+ssize_t encode_ip6_packet(struct ip6_schema *ip6s, uint8_t **buffer) {
   Ip6__Ip6Schema ip6 = IP6__IP6_SCHEMA__INIT;
 
   ip6.id = ip6s->id;
@@ -129,7 +129,7 @@ ssize_t extract_ip6_packet(struct ip6_schema *ip6s, uint8_t **buffer) {
   return (ssize_t)ip6__ip6_schema__pack(&ip6, *buffer);
 }
 
-ssize_t extract_tcp_packet(struct tcp_schema *tcps, uint8_t **buffer) {
+ssize_t encode_tcp_packet(struct tcp_schema *tcps, uint8_t **buffer) {
   Tcp__TcpSchema tcp = TCP__TCP_SCHEMA__INIT;
 
   tcp.id = tcps->id;
@@ -159,7 +159,7 @@ ssize_t extract_tcp_packet(struct tcp_schema *tcps, uint8_t **buffer) {
   return (ssize_t)tcp__tcp_schema__pack(&tcp, *buffer);
 }
 
-ssize_t extract_udp_packet(struct udp_schema *udps, uint8_t **buffer) {
+ssize_t encode_udp_packet(struct udp_schema *udps, uint8_t **buffer) {
   Udp__UdpSchema udp = UDP__UDP_SCHEMA__INIT;
 
   udp.id = udps->id;
@@ -178,7 +178,7 @@ ssize_t extract_udp_packet(struct udp_schema *udps, uint8_t **buffer) {
   return (ssize_t)udp__udp_schema__pack(&udp, *buffer);
 }
 
-ssize_t extract_icmp4_packet(struct icmp4_schema *icmp4s, uint8_t **buffer) {
+ssize_t encode_icmp4_packet(struct icmp4_schema *icmp4s, uint8_t **buffer) {
   Icmp4__Icmp4Schema icmp4 = ICMP4__ICMP4_SCHEMA__INIT;
 
   icmp4.id = icmp4s->id;
@@ -197,7 +197,7 @@ ssize_t extract_icmp4_packet(struct icmp4_schema *icmp4s, uint8_t **buffer) {
   return (ssize_t)icmp4__icmp4_schema__pack(&icmp4, *buffer);
 }
 
-ssize_t extract_icmp6_packet(struct icmp6_schema *icmp6s, uint8_t **buffer) {
+ssize_t encode_icmp6_packet(struct icmp6_schema *icmp6s, uint8_t **buffer) {
   Icmp6__Icmp6Schema icmp6 = ICMP6__ICMP6_SCHEMA__INIT;
 
   icmp6.id = icmp6s->id;
@@ -216,7 +216,7 @@ ssize_t extract_icmp6_packet(struct icmp6_schema *icmp6s, uint8_t **buffer) {
   return (ssize_t)icmp6__icmp6_schema__pack(&icmp6, *buffer);
 }
 
-ssize_t extract_dns_packet(struct dns_schema *dnss, uint8_t **buffer) {
+ssize_t encode_dns_packet(struct dns_schema *dnss, uint8_t **buffer) {
   Dns__DnsSchema dns = DNS__DNS_SCHEMA__INIT;
 
   dns.id = dnss->id;
@@ -238,7 +238,7 @@ ssize_t extract_dns_packet(struct dns_schema *dnss, uint8_t **buffer) {
   return (ssize_t)dns__dns_schema__pack(&dns, *buffer);
 }
 
-ssize_t extract_mdsn_packet(struct mdns_schema *mdnss, uint8_t **buffer) {
+ssize_t encode_mdsn_packet(struct mdns_schema *mdnss, uint8_t **buffer) {
   Mdns__MdnsSchema mdns = MDNS__MDNS_SCHEMA__INIT;
 
   mdns.id = mdnss->id;
@@ -260,7 +260,7 @@ ssize_t extract_mdsn_packet(struct mdns_schema *mdnss, uint8_t **buffer) {
   return (ssize_t)mdns__mdns_schema__pack(&mdns, *buffer);
 }
 
-ssize_t extract_dhcp_packet(struct dhcp_schema *dhcps, uint8_t **buffer) {
+ssize_t encode_dhcp_packet(struct dhcp_schema *dhcps, uint8_t **buffer) {
   Dhcp__DhcpSchema dhcp = DHCP__DHCP_SCHEMA__INIT;
 
   dhcp.id = dhcps->id;
@@ -311,25 +311,25 @@ ssize_t encode_protobuf_packet(struct tuple_packet *tp, uint8_t **buffer) {
     case PACKET_ETHERNET:
       return encode_eth_packet((struct eth_schema *)tp->packet, buffer);
     case PACKET_ARP:
-      return extract_arp_packet((struct arp_schema *)tp->packet, buffer);
+      return encode_arp_packet((struct arp_schema *)tp->packet, buffer);
     case PACKET_IP4:
-      return extract_ip4_pcaket((struct ip4_schema *)tp->packet, buffer);
+      return encode_ip4_pcaket((struct ip4_schema *)tp->packet, buffer);
     case PACKET_IP6:
-      return extract_ip6_packet((struct ip6_schema *)tp->packet, buffer);
+      return encode_ip6_packet((struct ip6_schema *)tp->packet, buffer);
     case PACKET_TCP:
-      return extract_tcp_packet((struct tcp_schema *)tp->packet, buffer);
+      return encode_tcp_packet((struct tcp_schema *)tp->packet, buffer);
     case PACKET_UDP:
-      return extract_udp_packet((struct udp_schema *)tp->packet, buffer);
+      return encode_udp_packet((struct udp_schema *)tp->packet, buffer);
     case PACKET_ICMP4:
-      return extract_icmp4_packet((struct icmp4_schema *)tp->packet, buffer);
+      return encode_icmp4_packet((struct icmp4_schema *)tp->packet, buffer);
     case PACKET_ICMP6:
-      return extract_icmp6_packet((struct icmp6_schema *)tp->packet, buffer);
+      return encode_icmp6_packet((struct icmp6_schema *)tp->packet, buffer);
     case PACKET_DNS:
-      return extract_dns_packet((struct dns_schema *)tp->packet, buffer);
+      return encode_dns_packet((struct dns_schema *)tp->packet, buffer);
     case PACKET_MDNS:
-      return extract_mdsn_packet((struct mdns_schema *)tp->packet, buffer);
+      return encode_mdsn_packet((struct mdns_schema *)tp->packet, buffer);
     case PACKET_DHCP:
-      return extract_dhcp_packet((struct dhcp_schema *)tp->packet, buffer);
+      return encode_dhcp_packet((struct dhcp_schema *)tp->packet, buffer);
   }
 
   return -1;
