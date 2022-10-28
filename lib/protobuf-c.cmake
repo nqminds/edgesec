@@ -13,13 +13,16 @@ else()
   set(LIBPROTOBUFC_INSTALL_ROOT "${CMAKE_CURRENT_BINARY_DIR}/lib")
   set(LIBPROTOBUFC_INSTALL_DIR "${LIBPROTOBUFC_INSTALL_ROOT}/protobuf-c")
 
-  if(BUILD_SHARED_LIBS)
-    set(configure_args "--enable-shared" "--disable-static" "--disable-protoc")
-  else()
-    set(configure_args "--enable-static" "--disable-shared" "--disable-protoc")
+  set(CMAKE_CROSSCOMPILING_ARGS "")
+  if(DEFINED CMAKE_TOOLCHAIN_FILE)
+    list(APPEND CMAKE_CROSSCOMPILING_ARGS "-DCMAKE_TOOLCHAIN_FILE:STRING=${CMAKE_TOOLCHAIN_FILE}")
+    if(DEFINED openwrt_toolchain_location)
+      list(APPEND CMAKE_CROSSCOMPILING_ARGS "-Dopenwrt_toolchain_location:STRING=${openwrt_toolchain_location}")
+    endif()
+    if(DEFINED CMAKE_STAGING_PREFIX)
+      list(APPEND CMAKE_CROSSCOMPILING_ARGS "-DCMAKE_STAGING_PREFIX:STRING=<INSTALL_DIR>")
+    endif()
   endif()
-  # let `./configure` know if we're cross-compiling
-  list(APPEND configure_args "--host=${CMAKE_LIBRARY_ARCHITECTURE}")
 
   message("Downloading and compiling our own libprotobuf-c library")
   ExternalProject_Add(
@@ -27,16 +30,12 @@ else()
     URL https://github.com/protobuf-c/protobuf-c/releases/download/v1.4.1/protobuf-c-1.4.1.tar.gz
     URL_HASH SHA256=4cc4facd508172f3e0a4d3a8736225d472418aee35b4ad053384b137b220339f
     INSTALL_DIR "${LIBPROTOBUFC_INSTALL_DIR}"
-    CONFIGURE_COMMAND
-        ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}"
-        <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> --with-pic=on ${configure_args}
-        "CC=${CMAKE_C_COMPILER}" "CXX=${CMAKE_CXX_COMPILER}"
-    BUILD_COMMAND
-        ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}"
-        $(MAKE)
-    INSTALL_COMMAND
-        ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}"
-        $(MAKE) install
+    SOURCE_SUBDIR ./build-cmake
+    CMAKE_ARGS
+      "-DCMAKE_INSTALL_PREFIX:STRING=<INSTALL_DIR>"
+      "-DBUILD_PROTOC:BOOL=OFF"
+      "-DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}"
+      ${CMAKE_CROSSCOMPILING_ARGS}
   )
   ExternalProject_Get_Property(libprotobuf-c INSTALL_DIR)
 
