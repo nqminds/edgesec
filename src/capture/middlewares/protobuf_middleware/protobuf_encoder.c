@@ -406,9 +406,8 @@ ssize_t encode_protobuf_sync_wrapper(struct tuple_packet *tp, uint8_t **buffer) 
     return -1;
   }
 
-  ssize_t sync_length;
-
-  if ((sync_length = encode_protobuf_sync_delimited(tp->type, packet_buffer, packet_length, buffer)) < 0) {
+  ssize_t sync_length = encode_protobuf_sync_delimited(tp->type, packet_buffer, packet_length, buffer);
+  if (sync_length < 0) {
     log_error("encode_protobuf_sync fail");
     os_free(packet_buffer);
     return -1;
