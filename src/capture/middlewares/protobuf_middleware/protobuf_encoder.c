@@ -287,7 +287,7 @@ ssize_t encode_dhcp_packet(struct dhcp_schema *dhcps, uint8_t **buffer) {
   return (ssize_t)dhcp__dhcp_schema__pack(&dhcp, *buffer);
 }
 
-ssize_t encode_protobuf_packet(struct tuple_packet *tp, uint8_t **buffer) {
+ssize_t encode_protobuf_packet(const struct tuple_packet *tp, uint8_t **buffer) {
   if (tp == NULL) {
     log_error("tp param is NULL");
     return -1;
