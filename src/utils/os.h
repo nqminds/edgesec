@@ -622,7 +622,11 @@ int read_file_string(char *path, char **out);
  * a buffer in nonblocking mode
  *
  * @param path[in] The file path
- * @param fd[out] The file descriptor
+ * @param fd[in, out] The file descriptor.
+ * If this is non-`0`, opens the file given by @p path,
+ * and sets @p fd to the new file descriptor.
+ * Otherwise, @p path is ignored, and @p fd is used.
+ * Please close the created @p fd when done with it.
  * @param buffer[in] The buffer to write
  * @param length[in] The size of the buffer
  * @return number of bytes written, -1 on failure
