@@ -460,12 +460,6 @@ int run_ctl(struct app_config *app_config) {
       log_error("create_subnet_interfaces fail");
       goto run_engine_fail;
     }
-  } else {
-    log_info("Assigning subnet IPs...");
-    if (set_subnet_ips(context->iface_ctx, context->config_ifinfo_array) < 0) {
-      log_error("set_subnet_ips fail");
-      goto run_engine_fail;
-    }
   }
 
   log_info("Creating supervisor on %s with port %d",
