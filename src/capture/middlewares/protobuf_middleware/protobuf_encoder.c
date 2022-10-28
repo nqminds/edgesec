@@ -399,9 +399,9 @@ ssize_t encode_protobuf_sync_delimited(const PACKET_TYPES type, uint8_t *packet_
 }
 
 ssize_t encode_protobuf_sync_wrapper(struct tuple_packet *tp, uint8_t **buffer) {
-  ssize_t packet_length;
   uint8_t *packet_buffer = NULL;
-  if ((packet_length = encode_protobuf_packet(tp, &packet_buffer)) < 0) {
+  ssize_t packet_length = encode_protobuf_packet(tp, &packet_buffer);
+  if (packet_length < 0) {
     log_error("encode_protobuf_packet fail");
     return -1;
   }
