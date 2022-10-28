@@ -29,6 +29,7 @@ size_t protobuf_c_message_del_get_packed_size(const ProtobufCMessage *message);
  *
  * @param message[in] The message object to serialise.
  * @param buffer[out] Buffer to store the bytes of the serialised message
+ * The buffer siza can be obtained with protobuf_c_message_del_get_packed_size
  * @return the output buffer size
  */
 size_t protobuf_c_message_del_pack(const ProtobufCMessage *message, uint8_t *out);
