@@ -70,11 +70,10 @@ struct middleware_context *init_protobuf_middleware(sqlite3 *db, char *db_path,
                                                char *params) {
   (void)db_path;
 
-  struct middleware_context *context = NULL;
-
   log_info("Init protobuf middleware...");
 
-  if ((context = os_zalloc(sizeof(struct middleware_context))) == NULL) {
+  struct middleware_context *context = os_zalloc(sizeof(struct middleware_context));
+  if (context == NULL) {
     log_errno("zalloc");
     return NULL;
   }
