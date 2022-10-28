@@ -34,7 +34,7 @@ static void test_get_mac_conn_cmd(void **state) {
   os_memcpy(ctx.wpa_passphrase, wpa_passphrase, 4);
   ctx.wpa_passphrase_len = 4;
 
-  config_ifinfo_t el;
+  config_ifinfo_t el = {0};
   utarray_new(ctx.config_ifinfo_array, &config_ifinfo_icd);
 
   for (int idx = 0; idx <= 10; idx ++) {
