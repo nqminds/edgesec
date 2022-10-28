@@ -56,7 +56,7 @@ ssize_t encode_eth_packet(const struct eth_schema *eths, uint8_t **buffer) {
   return (ssize_t)eth__eth_schema__pack(&eth, *buffer);
 }
 
-ssize_t extract_arp_packet(struct arp_schema *arps, uint8_t **buffer) {
+ssize_t extract_arp_packet(const struct arp_schema *arps, uint8_t **buffer) {
   Arp__ArpSchema arp = ARP__ARP_SCHEMA__INIT;
 
   arp.id = arps->id;
