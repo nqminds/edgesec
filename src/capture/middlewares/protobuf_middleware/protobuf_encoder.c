@@ -34,7 +34,7 @@
 
 #include "protobuf_utils.h"
 
-ssize_t encode_eth_packet(struct eth_schema *eths, uint8_t **buffer) {
+ssize_t encode_eth_packet(const struct eth_schema *eths, uint8_t **buffer) {
   Eth__EthSchema eth = ETH__ETH_SCHEMA__INIT;
 
   eth.timestamp = eths->timestamp;
