@@ -18,6 +18,8 @@ else()
   else()
     set(configure_args "--enable-static" "--disable-shared" "--disable-protoc")
   endif()
+  # let `./configure` know if we're cross-compiling
+  list(APPEND configure_args "--host=${CMAKE_LIBRARY_ARCHITECTURE}")
 
   message("Downloading and compiling our own libprotobuf-c library")
   ExternalProject_Add(
