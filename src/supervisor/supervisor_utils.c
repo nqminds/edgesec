@@ -21,10 +21,10 @@
 #include "supervisor_config.h"
 #include "supervisor_utils.h"
 
-int allocate_vlan(struct supervisor_context *context,
-                  uint8_t *mac_addr, enum VLAN_ALLOCATION_TYPE type) {
+int allocate_vlan(struct supervisor_context *context, uint8_t *mac_addr,
+                  enum VLAN_ALLOCATION_TYPE type) {
   (void)mac_addr;
-  (void) type;
+  (void)type;
 
   UT_array *config_ifinfo_array = context->config_ifinfo_array;
 

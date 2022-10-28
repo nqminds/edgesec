@@ -13,10 +13,9 @@
 
 #include "../../middleware.h"
 
-
 /**
  * @brief pipe the serialised protobuf packets
- * 
+ *
  * @param path[in] The pipe file path
  * @param fd[in] The pipe file descriptor
  * @param packets[in] The array of packets

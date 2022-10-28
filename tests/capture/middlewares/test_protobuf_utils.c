@@ -30,10 +30,12 @@ uint32_t length = 4;
 uint32_t ether_type = 8;
 char *header_id = "eth";
 
-uint8_t encoded[] = {0x36, 0x12, 0x03, 0x65, 0x74, 0x68, 0x1A, 0x2F, 0x08, 0xE7, 0x07, 0x12, 0x02, 0x69, 0x64, 0x18, 
-0x03, 0x20, 0x04, 0x2A, 0x06, 0x69, 0x66, 0x6E, 0x61, 0x6D, 0x65, 0x32, 0x0B, 0x65, 0x74, 0x68, 
-0x65, 0x72, 0x5F, 0x64, 0x68, 0x6F, 0x73, 0x74, 0x3A, 0x0B, 0x65, 0x74, 0x68, 0x65, 0x72, 0x5F, 
-0x73, 0x68, 0x6F, 0x73, 0x74, 0x40, 0x08};
+uint8_t encoded[] = {0x36, 0x12, 0x03, 0x65, 0x74, 0x68, 0x1A, 0x2F, 0x08, 0xE7,
+                     0x07, 0x12, 0x02, 0x69, 0x64, 0x18, 0x03, 0x20, 0x04, 0x2A,
+                     0x06, 0x69, 0x66, 0x6E, 0x61, 0x6D, 0x65, 0x32, 0x0B, 0x65,
+                     0x74, 0x68, 0x65, 0x72, 0x5F, 0x64, 0x68, 0x6F, 0x73, 0x74,
+                     0x3A, 0x0B, 0x65, 0x74, 0x68, 0x65, 0x72, 0x5F, 0x73, 0x68,
+                     0x6F, 0x73, 0x74, 0x40, 0x08};
 
 ssize_t serialize_protobuf(uint8_t **out) {
   Eth__EthSchema eth = ETH__ETH_SCHEMA__INIT;
@@ -80,21 +82,24 @@ static void test_protobuf_c_message_del_pack(void **state) {
   uint8_t *out_eth = NULL;
   ssize_t out_eth_size = serialize_protobuf(&out_eth);
 
-  Tdx__VoltApi__Sync__V1__ProtobufSyncWrapper sync = TDX__VOLT_API__SYNC__V1__PROTOBUF_SYNC_WRAPPER__INIT;
+  Tdx__VoltApi__Sync__V1__ProtobufSyncWrapper sync =
+      TDX__VOLT_API__SYNC__V1__PROTOBUF_SYNC_WRAPPER__INIT;
 
-  sync.header_lookup_case = TDX__VOLT_API__SYNC__V1__PROTOBUF_SYNC_WRAPPER__HEADER_LOOKUP_HEADER_ID;
+  sync.header_lookup_case =
+      TDX__VOLT_API__SYNC__V1__PROTOBUF_SYNC_WRAPPER__HEADER_LOOKUP_HEADER_ID;
   sync.header_id = header_id;
   sync.payload.len = out_eth_size;
   sync.payload.data = out_eth;
 
   uint8_t encoded_size = ARRAY_SIZE(encoded);
 
-  size_t sync_length = protobuf_c_message_del_get_packed_size((const ProtobufCMessage*)&sync);
+  size_t sync_length =
+      protobuf_c_message_del_get_packed_size((const ProtobufCMessage *)&sync);
   assert_int_equal(sync_length, encoded_size);
 
   uint8_t *sync_buffer = os_malloc(sync_length);
 
-  protobuf_c_message_del_pack((const ProtobufCMessage*)&sync, sync_buffer);
+  protobuf_c_message_del_pack((const ProtobufCMessage *)&sync, sync_buffer);
 
   assert_memory_equal(encoded, sync_buffer, sync_length);
 }
@@ -107,8 +112,7 @@ int main(int argc, char *argv[]) {
 
   const struct CMUnitTest tests[] = {
       cmocka_unit_test(test_protobuf_serialization),
-      cmocka_unit_test(test_protobuf_c_message_del_pack)
-  };
+      cmocka_unit_test(test_protobuf_c_message_del_pack)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

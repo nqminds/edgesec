@@ -14,7 +14,7 @@ message Ip6Schema {
 
   // Packet next header
   uint32 ip6_un1_nxt = 4;
-  
+
   // Packet hop limit
   uint32 ip6_un1_hlim = 5;
 

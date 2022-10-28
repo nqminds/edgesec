@@ -37,7 +37,7 @@ static void test_get_mac_conn_cmd(void **state) {
   config_ifinfo_t el = {0};
   utarray_new(ctx.config_ifinfo_array, &config_ifinfo_icd);
 
-  for (int idx = 0; idx <= 10; idx ++) {
+  for (int idx = 0; idx <= 10; idx++) {
     el.vlanid = idx;
     utarray_push_back(ctx.config_ifinfo_array, &el);
   }
@@ -47,7 +47,7 @@ static void test_get_mac_conn_cmd(void **state) {
 
   struct mac_conn_info info = get_mac_conn_cmd(mac_addr, (void *)&ctx);
 
-  assert_int_equal(info.vlanid , 10);
+  assert_int_equal(info.vlanid, 10);
   utarray_free(ctx.config_ifinfo_array);
 }
 
@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
-    cmocka_unit_test(test_get_mac_conn_cmd),
+      cmocka_unit_test(test_get_mac_conn_cmd),
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

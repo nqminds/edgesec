@@ -32,7 +32,6 @@
 static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL,
                                    free_packet};
 
-
 int pipe_protobuf_packets(const char *path, int *fd, UT_array *packets) {
   struct tuple_packet *p = NULL;
   while ((p = (struct tuple_packet *)utarray_next(packets, p)) != NULL) {
@@ -65,14 +64,15 @@ void free_protobuf_middleware(struct middleware_context *context) {
 }
 
 struct middleware_context *init_protobuf_middleware(sqlite3 *db, char *db_path,
-                                               struct eloop_data *eloop,
-                                               struct pcap_context *pc,
-                                               char *params) {
+                                                    struct eloop_data *eloop,
+                                                    struct pcap_context *pc,
+                                                    char *params) {
   (void)db_path;
 
   log_info("Init protobuf middleware...");
 
-  struct middleware_context *context = os_zalloc(sizeof(struct middleware_context));
+  struct middleware_context *context =
+      os_zalloc(sizeof(struct middleware_context));
   if (context == NULL) {
     log_errno("zalloc");
     return NULL;
@@ -90,14 +90,14 @@ struct middleware_context *init_protobuf_middleware(sqlite3 *db, char *db_path,
     return NULL;
   }
 
-  context->mdata = (void *) pipe_fd;
+  context->mdata = (void *)pipe_fd;
 
   return context;
 }
 
 int process_protobuf_middleware(struct middleware_context *context,
-                           const char *ltype, struct pcap_pkthdr *header,
-                           uint8_t *packet, char *ifname) {
+                                const char *ltype, struct pcap_pkthdr *header,
+                                uint8_t *packet, char *ifname) {
   char cap_id[MAX_RANDOM_UUID_LEN];
 
   if (context == NULL) {
@@ -122,7 +122,8 @@ int process_protobuf_middleware(struct middleware_context *context,
   utarray_new(packets, &tp_list_icd);
 
   generate_radom_uuid(cap_id);
-  int npackets = extract_packets(ltype, header, packet, ifname, cap_id, packets);
+  int npackets =
+      extract_packets(ltype, header, packet, ifname, cap_id, packets);
 
   if (npackets < 0) {
     log_error("extract_packets fail");

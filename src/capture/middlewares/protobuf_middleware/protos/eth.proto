@@ -14,7 +14,7 @@ message EthSchema {
 
   // Packet length
   uint32 length = 4;
-  
+
   // Packet interface name
   string ifname = 5;
 
@@ -23,7 +23,7 @@ message EthSchema {
 
   // Packet source ether addr
   string ether_shost = 7;
-  
+
   // Packet packet type ID field
   uint32 ether_type = 8;
 }

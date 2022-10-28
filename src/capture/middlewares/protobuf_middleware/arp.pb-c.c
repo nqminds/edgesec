@@ -7,203 +7,132 @@
 #endif
 
 #include "arp.pb-c.h"
-void   arp__arp_schema__init
-                     (Arp__ArpSchema         *message)
-{
+void arp__arp_schema__init(Arp__ArpSchema *message) {
   static const Arp__ArpSchema init_value = ARP__ARP_SCHEMA__INIT;
   *message = init_value;
 }
-size_t arp__arp_schema__get_packed_size
-                     (const Arp__ArpSchema *message)
-{
+size_t arp__arp_schema__get_packed_size(const Arp__ArpSchema *message) {
   assert(message->base.descriptor == &arp__arp_schema__descriptor);
-  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+  return protobuf_c_message_get_packed_size(
+      (const ProtobufCMessage *)(message));
 }
-size_t arp__arp_schema__pack
-                     (const Arp__ArpSchema *message,
-                      uint8_t       *out)
-{
+size_t arp__arp_schema__pack(const Arp__ArpSchema *message, uint8_t *out) {
   assert(message->base.descriptor == &arp__arp_schema__descriptor);
-  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+  return protobuf_c_message_pack((const ProtobufCMessage *)message, out);
 }
-size_t arp__arp_schema__pack_to_buffer
-                     (const Arp__ArpSchema *message,
-                      ProtobufCBuffer *buffer)
-{
+size_t arp__arp_schema__pack_to_buffer(const Arp__ArpSchema *message,
+                                       ProtobufCBuffer *buffer) {
   assert(message->base.descriptor == &arp__arp_schema__descriptor);
-  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+  return protobuf_c_message_pack_to_buffer((const ProtobufCMessage *)message,
+                                           buffer);
 }
-Arp__ArpSchema *
-       arp__arp_schema__unpack
-                     (ProtobufCAllocator  *allocator,
-                      size_t               len,
-                      const uint8_t       *data)
-{
-  return (Arp__ArpSchema *)
-     protobuf_c_message_unpack (&arp__arp_schema__descriptor,
-                                allocator, len, data);
+Arp__ArpSchema *arp__arp_schema__unpack(ProtobufCAllocator *allocator,
+                                        size_t len, const uint8_t *data) {
+  return (Arp__ArpSchema *)protobuf_c_message_unpack(
+      &arp__arp_schema__descriptor, allocator, len, data);
 }
-void   arp__arp_schema__free_unpacked
-                     (Arp__ArpSchema *message,
-                      ProtobufCAllocator *allocator)
-{
-  if(!message)
+void arp__arp_schema__free_unpacked(Arp__ArpSchema *message,
+                                    ProtobufCAllocator *allocator) {
+  if (!message)
     return;
   assert(message->base.descriptor == &arp__arp_schema__descriptor);
-  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+  protobuf_c_message_free_unpacked((ProtobufCMessage *)message, allocator);
 }
-static const ProtobufCFieldDescriptor arp__arp_schema__field_descriptors[10] =
-{
-  {
-    "id",
-    1,
-    PROTOBUF_C_LABEL_NONE,
-    PROTOBUF_C_TYPE_STRING,
-    0,   /* quantifier_offset */
-    offsetof(Arp__ArpSchema, id),
-    NULL,
-    &protobuf_c_empty_string,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "ar_hrd",
-    2,
-    PROTOBUF_C_LABEL_NONE,
-    PROTOBUF_C_TYPE_UINT32,
-    0,   /* quantifier_offset */
-    offsetof(Arp__ArpSchema, ar_hrd),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "ar_pro",
-    3,
-    PROTOBUF_C_LABEL_NONE,
-    PROTOBUF_C_TYPE_UINT32,
-    0,   /* quantifier_offset */
-    offsetof(Arp__ArpSchema, ar_pro),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "ar_hln",
-    4,
-    PROTOBUF_C_LABEL_NONE,
-    PROTOBUF_C_TYPE_UINT32,
-    0,   /* quantifier_offset */
-    offsetof(Arp__ArpSchema, ar_hln),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "ar_pln",
-    5,
-    PROTOBUF_C_LABEL_NONE,
-    PROTOBUF_C_TYPE_UINT32,
-    0,   /* quantifier_offset */
-    offsetof(Arp__ArpSchema, ar_pln),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "ar_op",
-    6,
-    PROTOBUF_C_LABEL_NONE,
-    PROTOBUF_C_TYPE_UINT32,
-    0,   /* quantifier_offset */
-    offsetof(Arp__ArpSchema, ar_op),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "arp_sha",
-    7,
-    PROTOBUF_C_LABEL_NONE,
-    PROTOBUF_C_TYPE_STRING,
-    0,   /* quantifier_offset */
-    offsetof(Arp__ArpSchema, arp_sha),
-    NULL,
-    &protobuf_c_empty_string,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "arp_spa",
-    8,
-    PROTOBUF_C_LABEL_NONE,
-    PROTOBUF_C_TYPE_STRING,
-    0,   /* quantifier_offset */
-    offsetof(Arp__ArpSchema, arp_spa),
-    NULL,
-    &protobuf_c_empty_string,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "arp_tha",
-    9,
-    PROTOBUF_C_LABEL_NONE,
-    PROTOBUF_C_TYPE_STRING,
-    0,   /* quantifier_offset */
-    offsetof(Arp__ArpSchema, arp_tha),
-    NULL,
-    &protobuf_c_empty_string,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "arp_tpa",
-    10,
-    PROTOBUF_C_LABEL_NONE,
-    PROTOBUF_C_TYPE_STRING,
-    0,   /* quantifier_offset */
-    offsetof(Arp__ArpSchema, arp_tpa),
-    NULL,
-    &protobuf_c_empty_string,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
+static const ProtobufCFieldDescriptor arp__arp_schema__field_descriptors[10] = {
+    {
+        "id", 1, PROTOBUF_C_LABEL_NONE, PROTOBUF_C_TYPE_STRING,
+        0, /* quantifier_offset */
+        offsetof(Arp__ArpSchema, id), NULL, &protobuf_c_empty_string,
+        0,            /* flags */
+        0, NULL, NULL /* reserved1,reserved2, etc */
+    },
+    {
+        "ar_hrd", 2, PROTOBUF_C_LABEL_NONE, PROTOBUF_C_TYPE_UINT32,
+        0,                                               /* quantifier_offset */
+        offsetof(Arp__ArpSchema, ar_hrd), NULL, NULL, 0, /* flags */
+        0, NULL, NULL /* reserved1,reserved2, etc */
+    },
+    {
+        "ar_pro", 3, PROTOBUF_C_LABEL_NONE, PROTOBUF_C_TYPE_UINT32,
+        0,                                               /* quantifier_offset */
+        offsetof(Arp__ArpSchema, ar_pro), NULL, NULL, 0, /* flags */
+        0, NULL, NULL /* reserved1,reserved2, etc */
+    },
+    {
+        "ar_hln", 4, PROTOBUF_C_LABEL_NONE, PROTOBUF_C_TYPE_UINT32,
+        0,                                               /* quantifier_offset */
+        offsetof(Arp__ArpSchema, ar_hln), NULL, NULL, 0, /* flags */
+        0, NULL, NULL /* reserved1,reserved2, etc */
+    },
+    {
+        "ar_pln", 5, PROTOBUF_C_LABEL_NONE, PROTOBUF_C_TYPE_UINT32,
+        0,                                               /* quantifier_offset */
+        offsetof(Arp__ArpSchema, ar_pln), NULL, NULL, 0, /* flags */
+        0, NULL, NULL /* reserved1,reserved2, etc */
+    },
+    {
+        "ar_op", 6, PROTOBUF_C_LABEL_NONE, PROTOBUF_C_TYPE_UINT32,
+        0,                                              /* quantifier_offset */
+        offsetof(Arp__ArpSchema, ar_op), NULL, NULL, 0, /* flags */
+        0, NULL, NULL /* reserved1,reserved2, etc */
+    },
+    {
+        "arp_sha", 7, PROTOBUF_C_LABEL_NONE, PROTOBUF_C_TYPE_STRING,
+        0, /* quantifier_offset */
+        offsetof(Arp__ArpSchema, arp_sha), NULL, &protobuf_c_empty_string,
+        0,            /* flags */
+        0, NULL, NULL /* reserved1,reserved2, etc */
+    },
+    {
+        "arp_spa", 8, PROTOBUF_C_LABEL_NONE, PROTOBUF_C_TYPE_STRING,
+        0, /* quantifier_offset */
+        offsetof(Arp__ArpSchema, arp_spa), NULL, &protobuf_c_empty_string,
+        0,            /* flags */
+        0, NULL, NULL /* reserved1,reserved2, etc */
+    },
+    {
+        "arp_tha", 9, PROTOBUF_C_LABEL_NONE, PROTOBUF_C_TYPE_STRING,
+        0, /* quantifier_offset */
+        offsetof(Arp__ArpSchema, arp_tha), NULL, &protobuf_c_empty_string,
+        0,            /* flags */
+        0, NULL, NULL /* reserved1,reserved2, etc */
+    },
+    {
+        "arp_tpa", 10, PROTOBUF_C_LABEL_NONE, PROTOBUF_C_TYPE_STRING,
+        0, /* quantifier_offset */
+        offsetof(Arp__ArpSchema, arp_tpa), NULL, &protobuf_c_empty_string,
+        0,            /* flags */
+        0, NULL, NULL /* reserved1,reserved2, etc */
+    },
 };
 static const unsigned arp__arp_schema__field_indices_by_name[] = {
-  3,   /* field[3] = ar_hln */
-  1,   /* field[1] = ar_hrd */
-  5,   /* field[5] = ar_op */
-  4,   /* field[4] = ar_pln */
-  2,   /* field[2] = ar_pro */
-  6,   /* field[6] = arp_sha */
-  7,   /* field[7] = arp_spa */
-  8,   /* field[8] = arp_tha */
-  9,   /* field[9] = arp_tpa */
-  0,   /* field[0] = id */
+    3, /* field[3] = ar_hln */
+    1, /* field[1] = ar_hrd */
+    5, /* field[5] = ar_op */
+    4, /* field[4] = ar_pln */
+    2, /* field[2] = ar_pro */
+    6, /* field[6] = arp_sha */
+    7, /* field[7] = arp_spa */
+    8, /* field[8] = arp_tha */
+    9, /* field[9] = arp_tpa */
+    0, /* field[0] = id */
 };
-static const ProtobufCIntRange arp__arp_schema__number_ranges[1 + 1] =
-{
-  { 1, 0 },
-  { 0, 10 }
-};
-const ProtobufCMessageDescriptor arp__arp_schema__descriptor =
-{
-  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "arp.ArpSchema",
-  "ArpSchema",
-  "Arp__ArpSchema",
-  "arp",
-  sizeof(Arp__ArpSchema),
-  10,
-  arp__arp_schema__field_descriptors,
-  arp__arp_schema__field_indices_by_name,
-  1,  arp__arp_schema__number_ranges,
-  (ProtobufCMessageInit) arp__arp_schema__init,
-  NULL,NULL,NULL    /* reserved[123] */
+static const ProtobufCIntRange arp__arp_schema__number_ranges[1 + 1] = {
+    {1, 0}, {0, 10}};
+const ProtobufCMessageDescriptor arp__arp_schema__descriptor = {
+    PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+    "arp.ArpSchema",
+    "ArpSchema",
+    "Arp__ArpSchema",
+    "arp",
+    sizeof(Arp__ArpSchema),
+    10,
+    arp__arp_schema__field_descriptors,
+    arp__arp_schema__field_indices_by_name,
+    1,
+    arp__arp_schema__number_ranges,
+    (ProtobufCMessageInit)arp__arp_schema__init,
+    NULL,
+    NULL,
+    NULL /* reserved[123] */
 };

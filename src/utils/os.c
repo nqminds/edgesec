@@ -1430,7 +1430,8 @@ int read_file_string(char *path, char **out) {
   return 0;
 }
 
-ssize_t open_write_nonblock(const char *path, int *fd, const uint8_t *buffer, size_t length) {
+ssize_t open_write_nonblock(const char *path, int *fd, const uint8_t *buffer,
+                            size_t length) {
   if (path == NULL) {
     log_error("path param is NULL");
     return -1;
@@ -1445,7 +1446,7 @@ ssize_t open_write_nonblock(const char *path, int *fd, const uint8_t *buffer, si
     log_error("buffer param is NULL");
     return -1;
   }
-  
+
   if (*fd <= 0) {
     errno = 0;
     if ((*fd = open(path, O_WRONLY | O_NONBLOCK)) < 0) {

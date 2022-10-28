@@ -11,34 +11,34 @@ message DhcpSchema {
 
   // Packet type of hardware address for this machine (Ethernet, etc)
   uint32 htype = 3;
-  
+
   // Packet length of hardware address (of this machine)
   uint32 hlen = 4;
-  
+
   // Packet hops
   uint32 hops = 5;
-  
+
   // Packet random transaction id number - chosen by this machine
   uint32 xid = 6;
-  
+
   // Packet seconds used in timing
   uint32 secs = 7;
-  
+
   // Packet flags
   uint32 flags = 8;
-  
+
   // Packet IP address of this machine (if we already have one)
   string ciaddr = 9;
-  
+
   // Packet IP address of this machine (offered by the DHCP server)
   string yiaddr = 10;
-  
+
   // Packet IP address of DHCP server
   string siaddr = 11;
-  
+
   // Packet IP address of DHCP relay
   string giaddr = 12;
-  
+
   // Packet client ether MAC addr
   string chaddr = 13;
 }

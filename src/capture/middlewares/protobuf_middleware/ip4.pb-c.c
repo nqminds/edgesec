@@ -7,229 +7,144 @@
 #endif
 
 #include "ip4.pb-c.h"
-void   ip4__ip4_schema__init
-                     (Ip4__Ip4Schema         *message)
-{
+void ip4__ip4_schema__init(Ip4__Ip4Schema *message) {
   static const Ip4__Ip4Schema init_value = IP4__IP4_SCHEMA__INIT;
   *message = init_value;
 }
-size_t ip4__ip4_schema__get_packed_size
-                     (const Ip4__Ip4Schema *message)
-{
+size_t ip4__ip4_schema__get_packed_size(const Ip4__Ip4Schema *message) {
   assert(message->base.descriptor == &ip4__ip4_schema__descriptor);
-  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+  return protobuf_c_message_get_packed_size(
+      (const ProtobufCMessage *)(message));
 }
-size_t ip4__ip4_schema__pack
-                     (const Ip4__Ip4Schema *message,
-                      uint8_t       *out)
-{
+size_t ip4__ip4_schema__pack(const Ip4__Ip4Schema *message, uint8_t *out) {
   assert(message->base.descriptor == &ip4__ip4_schema__descriptor);
-  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+  return protobuf_c_message_pack((const ProtobufCMessage *)message, out);
 }
-size_t ip4__ip4_schema__pack_to_buffer
-                     (const Ip4__Ip4Schema *message,
-                      ProtobufCBuffer *buffer)
-{
+size_t ip4__ip4_schema__pack_to_buffer(const Ip4__Ip4Schema *message,
+                                       ProtobufCBuffer *buffer) {
   assert(message->base.descriptor == &ip4__ip4_schema__descriptor);
-  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+  return protobuf_c_message_pack_to_buffer((const ProtobufCMessage *)message,
+                                           buffer);
 }
-Ip4__Ip4Schema *
-       ip4__ip4_schema__unpack
-                     (ProtobufCAllocator  *allocator,
-                      size_t               len,
-                      const uint8_t       *data)
-{
-  return (Ip4__Ip4Schema *)
-     protobuf_c_message_unpack (&ip4__ip4_schema__descriptor,
-                                allocator, len, data);
+Ip4__Ip4Schema *ip4__ip4_schema__unpack(ProtobufCAllocator *allocator,
+                                        size_t len, const uint8_t *data) {
+  return (Ip4__Ip4Schema *)protobuf_c_message_unpack(
+      &ip4__ip4_schema__descriptor, allocator, len, data);
 }
-void   ip4__ip4_schema__free_unpacked
-                     (Ip4__Ip4Schema *message,
-                      ProtobufCAllocator *allocator)
-{
-  if(!message)
+void ip4__ip4_schema__free_unpacked(Ip4__Ip4Schema *message,
+                                    ProtobufCAllocator *allocator) {
+  if (!message)
     return;
   assert(message->base.descriptor == &ip4__ip4_schema__descriptor);
-  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+  protobuf_c_message_free_unpacked((ProtobufCMessage *)message, allocator);
 }
-static const ProtobufCFieldDescriptor ip4__ip4_schema__field_descriptors[12] =
-{
-  {
-    "id",
-    1,
-    PROTOBUF_C_LABEL_NONE,
-    PROTOBUF_C_TYPE_STRING,
-    0,   /* quantifier_offset */
-    offsetof(Ip4__Ip4Schema, id),
-    NULL,
-    &protobuf_c_empty_string,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "ip_src",
-    2,
-    PROTOBUF_C_LABEL_NONE,
-    PROTOBUF_C_TYPE_STRING,
-    0,   /* quantifier_offset */
-    offsetof(Ip4__Ip4Schema, ip_src),
-    NULL,
-    &protobuf_c_empty_string,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "ip_dst",
-    3,
-    PROTOBUF_C_LABEL_NONE,
-    PROTOBUF_C_TYPE_STRING,
-    0,   /* quantifier_offset */
-    offsetof(Ip4__Ip4Schema, ip_dst),
-    NULL,
-    &protobuf_c_empty_string,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "ip_hl",
-    4,
-    PROTOBUF_C_LABEL_NONE,
-    PROTOBUF_C_TYPE_UINT32,
-    0,   /* quantifier_offset */
-    offsetof(Ip4__Ip4Schema, ip_hl),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "ip_v",
-    5,
-    PROTOBUF_C_LABEL_NONE,
-    PROTOBUF_C_TYPE_UINT32,
-    0,   /* quantifier_offset */
-    offsetof(Ip4__Ip4Schema, ip_v),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "ip_tos",
-    6,
-    PROTOBUF_C_LABEL_NONE,
-    PROTOBUF_C_TYPE_UINT32,
-    0,   /* quantifier_offset */
-    offsetof(Ip4__Ip4Schema, ip_tos),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "ip_len",
-    7,
-    PROTOBUF_C_LABEL_NONE,
-    PROTOBUF_C_TYPE_UINT32,
-    0,   /* quantifier_offset */
-    offsetof(Ip4__Ip4Schema, ip_len),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "ip_id",
-    8,
-    PROTOBUF_C_LABEL_NONE,
-    PROTOBUF_C_TYPE_UINT32,
-    0,   /* quantifier_offset */
-    offsetof(Ip4__Ip4Schema, ip_id),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "ip_off",
-    9,
-    PROTOBUF_C_LABEL_NONE,
-    PROTOBUF_C_TYPE_UINT32,
-    0,   /* quantifier_offset */
-    offsetof(Ip4__Ip4Schema, ip_off),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "ip_ttl",
-    10,
-    PROTOBUF_C_LABEL_NONE,
-    PROTOBUF_C_TYPE_UINT32,
-    0,   /* quantifier_offset */
-    offsetof(Ip4__Ip4Schema, ip_ttl),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "ip_p",
-    11,
-    PROTOBUF_C_LABEL_NONE,
-    PROTOBUF_C_TYPE_UINT32,
-    0,   /* quantifier_offset */
-    offsetof(Ip4__Ip4Schema, ip_p),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "ip_sum",
-    12,
-    PROTOBUF_C_LABEL_NONE,
-    PROTOBUF_C_TYPE_UINT32,
-    0,   /* quantifier_offset */
-    offsetof(Ip4__Ip4Schema, ip_sum),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
+static const ProtobufCFieldDescriptor ip4__ip4_schema__field_descriptors[12] = {
+    {
+        "id", 1, PROTOBUF_C_LABEL_NONE, PROTOBUF_C_TYPE_STRING,
+        0, /* quantifier_offset */
+        offsetof(Ip4__Ip4Schema, id), NULL, &protobuf_c_empty_string,
+        0,            /* flags */
+        0, NULL, NULL /* reserved1,reserved2, etc */
+    },
+    {
+        "ip_src", 2, PROTOBUF_C_LABEL_NONE, PROTOBUF_C_TYPE_STRING,
+        0, /* quantifier_offset */
+        offsetof(Ip4__Ip4Schema, ip_src), NULL, &protobuf_c_empty_string,
+        0,            /* flags */
+        0, NULL, NULL /* reserved1,reserved2, etc */
+    },
+    {
+        "ip_dst", 3, PROTOBUF_C_LABEL_NONE, PROTOBUF_C_TYPE_STRING,
+        0, /* quantifier_offset */
+        offsetof(Ip4__Ip4Schema, ip_dst), NULL, &protobuf_c_empty_string,
+        0,            /* flags */
+        0, NULL, NULL /* reserved1,reserved2, etc */
+    },
+    {
+        "ip_hl", 4, PROTOBUF_C_LABEL_NONE, PROTOBUF_C_TYPE_UINT32,
+        0,                                              /* quantifier_offset */
+        offsetof(Ip4__Ip4Schema, ip_hl), NULL, NULL, 0, /* flags */
+        0, NULL, NULL /* reserved1,reserved2, etc */
+    },
+    {
+        "ip_v", 5, PROTOBUF_C_LABEL_NONE, PROTOBUF_C_TYPE_UINT32,
+        0,                                             /* quantifier_offset */
+        offsetof(Ip4__Ip4Schema, ip_v), NULL, NULL, 0, /* flags */
+        0, NULL, NULL /* reserved1,reserved2, etc */
+    },
+    {
+        "ip_tos", 6, PROTOBUF_C_LABEL_NONE, PROTOBUF_C_TYPE_UINT32,
+        0,                                               /* quantifier_offset */
+        offsetof(Ip4__Ip4Schema, ip_tos), NULL, NULL, 0, /* flags */
+        0, NULL, NULL /* reserved1,reserved2, etc */
+    },
+    {
+        "ip_len", 7, PROTOBUF_C_LABEL_NONE, PROTOBUF_C_TYPE_UINT32,
+        0,                                               /* quantifier_offset */
+        offsetof(Ip4__Ip4Schema, ip_len), NULL, NULL, 0, /* flags */
+        0, NULL, NULL /* reserved1,reserved2, etc */
+    },
+    {
+        "ip_id", 8, PROTOBUF_C_LABEL_NONE, PROTOBUF_C_TYPE_UINT32,
+        0,                                              /* quantifier_offset */
+        offsetof(Ip4__Ip4Schema, ip_id), NULL, NULL, 0, /* flags */
+        0, NULL, NULL /* reserved1,reserved2, etc */
+    },
+    {
+        "ip_off", 9, PROTOBUF_C_LABEL_NONE, PROTOBUF_C_TYPE_UINT32,
+        0,                                               /* quantifier_offset */
+        offsetof(Ip4__Ip4Schema, ip_off), NULL, NULL, 0, /* flags */
+        0, NULL, NULL /* reserved1,reserved2, etc */
+    },
+    {
+        "ip_ttl", 10, PROTOBUF_C_LABEL_NONE, PROTOBUF_C_TYPE_UINT32,
+        0,                                               /* quantifier_offset */
+        offsetof(Ip4__Ip4Schema, ip_ttl), NULL, NULL, 0, /* flags */
+        0, NULL, NULL /* reserved1,reserved2, etc */
+    },
+    {
+        "ip_p", 11, PROTOBUF_C_LABEL_NONE, PROTOBUF_C_TYPE_UINT32,
+        0,                                             /* quantifier_offset */
+        offsetof(Ip4__Ip4Schema, ip_p), NULL, NULL, 0, /* flags */
+        0, NULL, NULL /* reserved1,reserved2, etc */
+    },
+    {
+        "ip_sum", 12, PROTOBUF_C_LABEL_NONE, PROTOBUF_C_TYPE_UINT32,
+        0,                                               /* quantifier_offset */
+        offsetof(Ip4__Ip4Schema, ip_sum), NULL, NULL, 0, /* flags */
+        0, NULL, NULL /* reserved1,reserved2, etc */
+    },
 };
 static const unsigned ip4__ip4_schema__field_indices_by_name[] = {
-  0,   /* field[0] = id */
-  2,   /* field[2] = ip_dst */
-  3,   /* field[3] = ip_hl */
-  7,   /* field[7] = ip_id */
-  6,   /* field[6] = ip_len */
-  8,   /* field[8] = ip_off */
-  10,   /* field[10] = ip_p */
-  1,   /* field[1] = ip_src */
-  11,   /* field[11] = ip_sum */
-  5,   /* field[5] = ip_tos */
-  9,   /* field[9] = ip_ttl */
-  4,   /* field[4] = ip_v */
+    0,  /* field[0] = id */
+    2,  /* field[2] = ip_dst */
+    3,  /* field[3] = ip_hl */
+    7,  /* field[7] = ip_id */
+    6,  /* field[6] = ip_len */
+    8,  /* field[8] = ip_off */
+    10, /* field[10] = ip_p */
+    1,  /* field[1] = ip_src */
+    11, /* field[11] = ip_sum */
+    5,  /* field[5] = ip_tos */
+    9,  /* field[9] = ip_ttl */
+    4,  /* field[4] = ip_v */
 };
-static const ProtobufCIntRange ip4__ip4_schema__number_ranges[1 + 1] =
-{
-  { 1, 0 },
-  { 0, 12 }
-};
-const ProtobufCMessageDescriptor ip4__ip4_schema__descriptor =
-{
-  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "ip4.Ip4Schema",
-  "Ip4Schema",
-  "Ip4__Ip4Schema",
-  "ip4",
-  sizeof(Ip4__Ip4Schema),
-  12,
-  ip4__ip4_schema__field_descriptors,
-  ip4__ip4_schema__field_indices_by_name,
-  1,  ip4__ip4_schema__number_ranges,
-  (ProtobufCMessageInit) ip4__ip4_schema__init,
-  NULL,NULL,NULL    /* reserved[123] */
+static const ProtobufCIntRange ip4__ip4_schema__number_ranges[1 + 1] = {
+    {1, 0}, {0, 12}};
+const ProtobufCMessageDescriptor ip4__ip4_schema__descriptor = {
+    PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+    "ip4.Ip4Schema",
+    "Ip4Schema",
+    "Ip4__Ip4Schema",
+    "ip4",
+    sizeof(Ip4__Ip4Schema),
+    12,
+    ip4__ip4_schema__field_descriptors,
+    ip4__ip4_schema__field_indices_by_name,
+    1,
+    ip4__ip4_schema__number_ranges,
+    (ProtobufCMessageInit)ip4__ip4_schema__init,
+    NULL,
+    NULL,
+    NULL /* reserved[123] */
 };

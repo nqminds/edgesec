@@ -13,7 +13,6 @@
 
 #include "../header_middleware/packet_decoder.h"
 
-
 /**
  * @brief Encodes the packet into a protobuf message
  *

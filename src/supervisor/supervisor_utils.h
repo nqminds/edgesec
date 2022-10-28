@@ -15,10 +15,7 @@
 
 #include "supervisor_config.h"
 
-enum VLAN_ALLOCATION_TYPE {
-    VLAN_ALLOCATE_RANDOM = 0,
-    VLAN_ALLOCATE_HASH
-};
+enum VLAN_ALLOCATION_TYPE { VLAN_ALLOCATE_RANDOM = 0, VLAN_ALLOCATE_HASH };
 
 /**
  * @brief Allocates a VLAN ID for a given MAC address
@@ -29,8 +26,8 @@ enum VLAN_ALLOCATION_TYPE {
  *
  * @return VLAN ID, -1 on failure
  */
-int allocate_vlan(struct supervisor_context *context,
-                  uint8_t *mac_addr, enum VLAN_ALLOCATION_TYPE type);
+int allocate_vlan(struct supervisor_context *context, uint8_t *mac_addr,
+                  enum VLAN_ALLOCATION_TYPE type);
 
 /**
  * @brief Save a MAC entry into the mapper

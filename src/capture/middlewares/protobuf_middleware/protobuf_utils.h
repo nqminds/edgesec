@@ -13,7 +13,6 @@
 
 #include <protobuf-c/protobuf-c.h>
 
-
 /**
  * @brief Determine the number of bytes required to store the
  * length delimited serialised message.
@@ -32,6 +31,7 @@ size_t protobuf_c_message_del_get_packed_size(const ProtobufCMessage *message);
  * The buffer siza can be obtained with protobuf_c_message_del_get_packed_size
  * @return the output buffer size
  */
-size_t protobuf_c_message_del_pack(const ProtobufCMessage *message, uint8_t *out);
+size_t protobuf_c_message_del_pack(const ProtobufCMessage *message,
+                                   uint8_t *out);
 
 #endif

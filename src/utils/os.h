@@ -631,7 +631,8 @@ int read_file_string(char *path, char **out);
  * @param length[in] The size of the buffer
  * @return number of bytes written, -1 on failure
  */
-ssize_t open_write_nonblock(const char *path, int *fd, const uint8_t *buffer, size_t length);
+ssize_t open_write_nonblock(const char *path, int *fd, const uint8_t *buffer,
+                            size_t length);
 
 /**
  * @brief Returns the absolute path of system binaries

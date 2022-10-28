@@ -30,7 +30,7 @@ static void test_allocate_vlan(void **state) {
   config_ifinfo_t el = {0};
   utarray_new(ctx.config_ifinfo_array, &config_ifinfo_icd);
 
-  for (int idx = 0; idx <= 10; idx ++) {
+  for (int idx = 0; idx <= 10; idx++) {
     el.vlanid = idx;
     utarray_push_back(ctx.config_ifinfo_array, &el);
   }
@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
-    cmocka_unit_test(test_allocate_vlan),
+      cmocka_unit_test(test_allocate_vlan),
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

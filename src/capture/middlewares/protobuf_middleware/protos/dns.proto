@@ -5,7 +5,7 @@ package dns;
 message DnsSchema {
   // Packet id
   string id = 1;
-  
+
   // Packet Transaction ID
   uint32 tid = 2;
 
@@ -23,7 +23,7 @@ message DnsSchema {
 
   // Packet Other PRs
   uint32 nother = 7;
-  
+
   // Packet question name
   string qname = 8;
 }
