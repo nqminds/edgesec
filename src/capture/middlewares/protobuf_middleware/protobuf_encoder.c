@@ -336,7 +336,7 @@ ssize_t encode_protobuf_packet(const struct tuple_packet *tp, uint8_t **buffer) 
 }
 
 
-ssize_t encode_protobuf_sync_delimited(PACKET_TYPES type, uint8_t *packet_buffer, size_t length, uint8_t **buffer) {
+ssize_t encode_protobuf_sync_delimited(const PACKET_TYPES type, uint8_t *packet_buffer, size_t length, uint8_t **buffer) {
   char header_id[20] = {0};
 
   *buffer = NULL;
