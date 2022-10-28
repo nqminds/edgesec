@@ -14,7 +14,7 @@ add_cmocka_test(test_supervisor_utils
 
 add_cmocka_test(test_supervisor
   SOURCES test_supervisor.c
-  LINK_LIBRARIES sqlite_macconn_writer supervisor net log cmocka::cmocka
+  LINK_LIBRARIES supervisor_utils sqlite_macconn_writer supervisor net log cmocka::cmocka
 )
 
 add_cmocka_test(test_sockctl_server
