@@ -23,7 +23,7 @@ static void test_allocate_vlan(void **state) {
   (void)state; /* unused */
   uint8_t mac_addr[6] = {0x04, 0xf0, 0x21, 0x5a, 0xf4, 0xc4};
 
-  struct supervisor_context ctx = {};
+  struct supervisor_context ctx = {0};
   ctx.allocate_vlans = true;
   ctx.default_open_vlanid = 0;
 
