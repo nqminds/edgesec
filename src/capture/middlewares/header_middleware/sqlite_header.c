@@ -555,12 +555,12 @@ int save_packet_statement(sqlite3 *db, struct tuple_packet *tp) {
   }
 
   if (tp == NULL) {
-    log_trace("tp param is NULL");
+    log_error("tp param is NULL");
     return -1;
   }
 
   if (tp->packet == NULL) {
-    log_trace("tp->packet param is NULL");
+    log_error("tp->packet param is NULL");
     return -1;
   }
 

@@ -73,6 +73,7 @@ option(BUILD_SQLITE_LIB "Build sqlite3 library" ON)
 option(BUILD_CMOCKA_LIB "Build cmocka library" OFF)
 option(BUILD_UUID_LIB "Build uuid library" ON)
 option(BUILD_PCAP_LIB "Build pcap library" ON)
+option(BUILD_PROTOBUFC_LIB "Build protobuf-c library" ON)
 
 option(USE_NETLINK_SERVICE "Use netlink service" OFF)
 cmake_dependent_option(BUILD_MNL_LIB "Build mnl library" ON USE_NETLINK_SERVICE OFF)
@@ -88,6 +89,7 @@ option(USE_CLEANER_MIDDLEWARE "Use the cleaner middleware" OFF)
 option(USE_HEADER_MIDDLEWARE "Use the header middleware" OFF)
 option(USE_PCAP_MIDDLEWARE "Use the pcap middleware" OFF)
 option(USE_TAP_MIDDLEWARE "Use the tap middleware" OFF)
+option(USE_PROTOBUF_MIDDLEWARE "Use the protobuf middleware" OFF)
 
 cmake_dependent_option(BUILD_UCI_LIB "Build OpenWRT UCI library" ON USE_UCI_SERVICE OFF)
 option(USE_GENERIC_IP_SERVICE "Use generic ip service" OFF)
@@ -167,6 +169,7 @@ include(sqlite)
 include(zymkey4)
 include(uci)
 include(uthash)
+include(protobuf-c)
 
 # On Linux, creates a Threads::Threads target that points to pthread
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)

@@ -29,6 +29,7 @@
 
 #include "cmd_processor.h"
 #include "network_commands.h"
+#include "supervisor_utils.h"
 
 static const UT_icd client_address_icd = {sizeof(struct client_address), NULL,
                                           NULL, NULL};
@@ -83,37 +84,6 @@ int schedule_analyser(struct supervisor_context *context, int vlanid) {
   return 0;
 }
 
-int allocate_vlan(struct supervisor_context *context) {
-  int *vlan_arr = NULL;
-  int vlanid, idx = 0, len;
-  config_ifinfo_t *p = NULL;
-  UT_array *config_ifinfo_array = context->config_ifinfo_array;
-
-  if (!context->allocate_vlans) {
-    return context->default_open_vlanid;
-  }
-
-  len = utarray_len(config_ifinfo_array);
-  if (len <= 1) {
-    return context->default_open_vlanid;
-  }
-
-  if ((vlan_arr = (int *)os_malloc(sizeof(int) * len)) == NULL) {
-    log_errno("os_malloc");
-    return -1;
-  }
-
-  while ((p = (config_ifinfo_t *)utarray_next(config_ifinfo_array, p)) !=
-         NULL) {
-    vlan_arr[idx++] = p->vlanid;
-  }
-
-  vlanid = vlan_arr[os_get_random_int_range(0, len)];
-  os_free(vlan_arr);
-
-  return vlanid;
-}
-
 int save_device_vlan(struct supervisor_context *context, uint8_t mac_addr[],
                      struct mac_conn_info *info) {
   struct mac_conn conn;
@@ -136,7 +106,7 @@ int save_device_vlan(struct supervisor_context *context, uint8_t mac_addr[],
             info->vlanid);
   os_memcpy(conn.mac_addr, mac_addr, ETHER_ADDR_LEN);
   os_memcpy(&conn.info, info, sizeof(struct mac_conn_info));
-  if (!save_mac_mapper(context, conn)) {
+  if (save_mac_mapper(context, conn) < 0) {
     log_trace("save_mac_mapper fail");
     log_trace("REJECTING mac=" MACSTR, MAC2STR(mac_addr));
     return -1;
@@ -149,7 +119,10 @@ struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg) {
   struct supervisor_context *context =
       (struct supervisor_context *)mac_conn_arg;
   struct mac_conn_info info;
-  int alloc_vlanid = allocate_vlan(context);
+  int alloc_vlanid = (context->allocate_vlans)
+                         ? allocate_vlan(context, mac_addr, VLAN_ALLOCATE_HASH)
+                         : context->default_open_vlanid;
+
   init_default_mac_info(&info, alloc_vlanid, context->allow_all_nat);
 
   log_debug("REQUESTING vlanid=%d for mac=" MACSTR, alloc_vlanid,
@@ -244,7 +217,7 @@ void ap_service_callback(struct supervisor_context *context, uint8_t mac_addr[],
     os_memcpy(conn.mac_addr, mac_addr, ETHER_ADDR_LEN);
     conn.info = info;
 
-    if (!save_mac_mapper(context, conn)) {
+    if (save_mac_mapper(context, conn) < 0) {
       log_error("save_mac_mapper fail");
     }
   }

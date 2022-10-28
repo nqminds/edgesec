@@ -199,9 +199,9 @@ bool create_if_mapper(UT_array *config_ifinfo_array, hmap_if_conn **hmap);
  *
  * @param config_ifinfo_array The connection info array
  * @param hmap The VLAN ID to interface mapper
- * @return true on success, false otherwise
+ * @return 0 on success, -1 otherwise
  */
-bool create_vlan_mapper(UT_array *config_ifinfo_array, hmap_vlan_conn **hmap);
+int create_vlan_mapper(UT_array *config_ifinfo_array, hmap_vlan_conn **hmap);
 
 /**
  * @brief Initialise the interface names
