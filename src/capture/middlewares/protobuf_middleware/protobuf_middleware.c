@@ -37,8 +37,8 @@ int pipe_protobuf_packets(const char *path, int *fd, UT_array *packets) {
   struct tuple_packet *p = NULL;
   while ((p = (struct tuple_packet *)utarray_next(packets, p)) != NULL) {
     uint8_t *buffer = NULL;
-    ssize_t length;
-    if ((length = encode_protobuf_sync_wrapper(p, &buffer)) < 0) {
+    ssize_t length = encode_protobuf_sync_wrapper(p, &buffer);
+    if (length < 0) {
       log_error("encode_protobuf_packet fail");
       return -1;
     }
