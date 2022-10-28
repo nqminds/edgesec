@@ -46,7 +46,7 @@ add_cmocka_test(test_eloop_handles_null
 
 add_cmocka_test(test_eloop_threaded
   SOURCES test_eloop_threaded.c
-  LINK_LIBRARIES eloop::eloop cmocka::cmocka sockctl LibUTHash::LibUTHash Threads::Threads
+  LINK_LIBRARIES eloop::eloop cmocka::cmocka sockctl LibUTHash::LibUTHash Threads::C11Threads
 )
 set_tests_properties(test_eloop_threaded
   PROPERTIES

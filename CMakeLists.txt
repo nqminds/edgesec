@@ -189,6 +189,14 @@ if (NOT C11_STD_THREADS)
   message(FATAL_ERROR "Your C11 stdlib does not support #include <threads.h>, see https://en.cppreference.com/w/c/thread")
 endif()
 
+add_library(Threads::C11Threads INTERFACE IMPORTED)
+if("${CMAKE_SYSTEM_NAME}" STREQUAL "FreeBSD")
+  # FreeBSD has a seperate C11 threads library we need to link to
+  set_target_properties(Threads::C11Threads PROPERTIES INTERFACE_LINK_LIBRARIES "stdthreads")
+else()
+  set_target_properties(Threads::C11Threads PROPERTIES INTERFACE_LINK_LIBRARIES Threads::Threads)
+endif()
+
 # configure a header file to pass some of the CMake settings
 # to the source code
 configure_file(
