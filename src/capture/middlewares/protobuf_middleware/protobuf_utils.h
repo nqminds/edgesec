@@ -15,14 +15,6 @@
 
 
 /**
- * Determine the number of bytes required to store the serialised message.
- *
- * \param message
- *      The message object to serialise.
- * \return
- *      Number of bytes.
- */
-/**
  * @brief Determine the number of bytes required to store the
  * length delimited serialised message.
  *
