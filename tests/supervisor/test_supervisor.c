@@ -17,6 +17,10 @@
 #include "supervisor/supervisor.h"
 #include "supervisor/sqlite_macconn_writer.h"
 
+#ifdef WITH_CRYPTO_SERVICE
+#include "crypt/crypt_service.h"
+#endif
+
 static const UT_icd config_ifinfo_icd = {sizeof(config_ifinfo_t), NULL, NULL,
                                          NULL};
 
@@ -25,14 +29,21 @@ static void test_get_mac_conn_cmd(void **state) {
   uint8_t mac_addr[6] = {0x04, 0xf0, 0x21, 0x5a, 0xf4, 0xc4};
   uint8_t wpa_passphrase[4] = {0x1, 0x2, 0x3, 0x0};
 
-  struct supervisor_context ctx = {0};
-  ctx.exec_capture = false;
-  ctx.allow_all_nat = true;
-  ctx.allow_all_connections = true;
-  ctx.allocate_vlans = true;
-  ctx.default_open_vlanid = 0;
-  os_memcpy(ctx.wpa_passphrase, wpa_passphrase, 4);
-  ctx.wpa_passphrase_len = 4;
+  struct supervisor_context ctx = {
+      .exec_capture = false,
+      .allow_all_nat = true,
+      .allow_all_connections = true,
+      .allocate_vlans = true,
+      .default_open_vlanid = 0,
+  };
+  os_memcpy(ctx.wpa_passphrase, wpa_passphrase, ARRAY_SIZE(wpa_passphrase));
+  ctx.wpa_passphrase_len = ARRAY_SIZE(wpa_passphrase);
+
+#ifdef WITH_CRYPTO_SERVICE
+  uint8_t secret[4] = {'s', 's', 'e', 'r'};
+  ctx.crypt_ctx = load_crypt_service("", "key", secret, ARRAY_SIZE(secret));
+  assert_non_null(ctx.crypt_ctx);
+#endif
 
   config_ifinfo_t el = {0};
   utarray_new(ctx.config_ifinfo_array, &config_ifinfo_icd);
@@ -49,6 +60,7 @@ static void test_get_mac_conn_cmd(void **state) {
 
   assert_int_equal(info.vlanid, 10);
   utarray_free(ctx.config_ifinfo_array);
+  free(ctx.crypt_ctx); // only needed if WITH_CRYPTO_SERVICE
 }
 
 int main(int argc, char *argv[]) {
