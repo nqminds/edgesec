@@ -57,6 +57,8 @@ int pipe_protobuf_packets(const char *path, int *fd, UT_array *packets) {
 void free_protobuf_middleware(struct middleware_context *context) {
   if (context != NULL) {
     if (context->mdata != NULL) {
+      int *fd = (int *) context->mdata;
+      close(*fd);
       os_free(context->mdata);
     }
     os_free(context);
