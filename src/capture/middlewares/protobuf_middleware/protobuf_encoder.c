@@ -81,7 +81,7 @@ ssize_t extract_arp_packet(const struct arp_schema *arps, uint8_t **buffer) {
   return (ssize_t)arp__arp_schema__pack(&arp, *buffer);
 }
 
-ssize_t extract_ip4_pcaket(struct ip4_schema *ip4s, uint8_t **buffer) {
+ssize_t extract_ip4_pcaket(const struct ip4_schema *ip4s, uint8_t **buffer) {
   Ip4__Ip4Schema ip4 = IP4__IP4_SCHEMA__INIT;
 
   ip4.id = ip4s->id;
