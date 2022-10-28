@@ -83,8 +83,8 @@ struct middleware_context *init_protobuf_middleware(sqlite3 *db, char *db_path,
   context->pc = pc;
   context->params = params;
 
-  int *pipe_fd = NULL;
-  if ((pipe_fd = os_zalloc(sizeof(int))) == NULL) {
+  int *pipe_fd = os_zalloc(sizeof(int));
+  if (pipe_fd == NULL) {
     log_errno("os_zalloc");
     free_protobuf_middleware(context);
     return NULL;
