@@ -27,7 +27,7 @@ static void test_allocate_vlan(void **state) {
   ctx.allocate_vlans = true;
   ctx.default_open_vlanid = 0;
 
-  config_ifinfo_t el;
+  config_ifinfo_t el = {0};
   utarray_new(ctx.config_ifinfo_array, &config_ifinfo_icd);
 
   for (int idx = 0; idx <= 10; idx ++) {
