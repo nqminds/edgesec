@@ -5,8 +5,8 @@ include(ExternalProject)
 if(BUILD_ONLY_DOCS)
   # skip
 elseif(NOT BUILD_PROTOBUFC_LIB)
-  find_package(protobuf-c MODULE REQUIRED)
-  message("Found protobuf-c library: ${protobuf-c_LIBRARIES}")
+  find_package(ProtobufC 1.3.3...2.0.0 MODULE REQUIRED)
+  message("Found protobuf-c library: ${ProtobufC_LIBRARIES}")
 else()
   # Download and Compile protobuf-c library at compile time using ExternalProject
   # (e.g. when running `cmake --build` or `make`)
