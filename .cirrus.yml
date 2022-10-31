@@ -1,0 +1,22 @@
+task:
+  name: FreeBSD
+  freebsd_instance:
+    matrix:
+      - image_family: freebsd-14-0-snap
+      - image_family: freebsd-13-1
+  install_script: |
+    # autoconf/automake is required by sqlite
+    pkg install -y cmake llvm git lcov autoconf automake
+  install_check_version_script: |
+    llvm-cov gcov --version
+    clang --version
+  configure_script: |
+    cmake --preset freebsd -DCONFIGURE_COVERAGE=BOOL:ON
+  build_script: |
+    cmake --build --preset freebsd --parallel "$(($(nproc) + 1))"
+  test_sciprt: |
+    ctest --preset freebsd --output-on-failure
+  test_with_coverage_script: |
+    cmake --build --preset freebsd --parallel "$(($(nproc) + 1))" --target coverage
+  # uploading coverage is currently a bit difficult
+  # since the codecoverage uploader doesn't yet support FreeBSD
