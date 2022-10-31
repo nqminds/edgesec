@@ -5,8 +5,15 @@ target_link_options(test_header_middleware
   "LINKER:--wrap=sqlite3_open"
 )
 
-add_executable(test_protobuf_utils test_protobuf_utils.c)
-target_link_libraries(test_protobuf_utils PUBLIC PCAP::pcap PRIVATE protobuf_utils sync.pb-c eth.pb-c os log cmocka::cmocka)
+if (USE_PROTOBUF_MIDDLEWARE)
+  add_executable(test_protobuf_utils test_protobuf_utils.c)
+  target_link_libraries(test_protobuf_utils PUBLIC PCAP::pcap PRIVATE protobuf_utils sync.pb-c eth.pb-c os log cmocka::cmocka)
+
+  add_test(NAME test_protobuf_utils COMMAND test_protobuf_utils)
+  set_tests_properties(test_protobuf_utils
+    PROPERTIES
+    WILL_FAIL FALSE)
+endif (USE_PROTOBUF_MIDDLEWARE)
 
 add_executable(test_sqlite_header test_sqlite_header.c)
 target_link_libraries(test_sqlite_header PRIVATE sqlite_header os log Threads::Threads cmocka::cmocka SQLite::SQLite3)
@@ -22,11 +29,6 @@ target_link_libraries(test_sqlite_pcap PRIVATE sqlite_pcap sqliteu os log Thread
 
 add_test(NAME test_header_middleware COMMAND test_header_middleware)
 set_tests_properties(test_header_middleware
-  PROPERTIES
-  WILL_FAIL FALSE)
-
-add_test(NAME test_protobuf_utils COMMAND test_protobuf_utils)
-set_tests_properties(test_protobuf_utils
   PROPERTIES
   WILL_FAIL FALSE)
 
