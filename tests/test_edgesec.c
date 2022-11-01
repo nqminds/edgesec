@@ -56,9 +56,8 @@ void hostapd_eloop(int sock, void *eloop_ctx, void *sock_ctx) {
   os_free(buf);
 }
 
-void *hostapd_server_thread(void *arg) {
-  (void)arg;
-  struct eloop_data *eloop = eloop_init();
+void *ap_server_thread(void *arg) {
+  struct eloop_data *eloop = (struct eloop_data *)arg;
 
   int fd = create_domain_server(AP_CTRL_IFACE_PATH);
 
@@ -70,8 +69,6 @@ void *hostapd_server_thread(void *arg) {
 
   eloop_run(eloop);
   assert_int_equal(close_domain_socket(fd), 0);
-
-  eloop_free(eloop);
   return NULL;
 }
 
@@ -90,15 +87,16 @@ static void test_edgesec(void **state) {
 
   os_init_random_seed();
 
-  pthread_t hostapd_id = 0;
+  pthread_t ap_id = 0;
+  struct eloop_data *ap_eloop = eloop_init();
   assert_int_equal(
-      pthread_create(&hostapd_id, NULL, hostapd_server_thread, (void *)&config),
-      0);
+      pthread_create(&ap_id, NULL, ap_server_thread, (void *)ap_eloop), 0);
 
   assert_int_equal(run_ctl(&config), 0);
 
-  assert_int_equal(pthread_join(hostapd_id, NULL), 0);
+  assert_int_equal(pthread_join(ap_id, NULL), 0);
 
+  eloop_free(ap_eloop);
   free_app_config(&config);
   pthread_mutex_destroy(&log_lock);
 }
