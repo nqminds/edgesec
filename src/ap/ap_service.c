@@ -28,8 +28,6 @@
 #include "../utils/log.h"
 #include "../utils/sockctl.h"
 
-#define ATTACH_AP_COMMAND "ATTACH"
-
 #define AP_STA_DISCONNECTED "AP-STA-DISCONNECTED"
 #define AP_STA_CONNECTED "AP-STA-CONNECTED"
 

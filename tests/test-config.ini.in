@@ -17,12 +17,12 @@ execCapture = false
 execMdnsForward = false
 execFirewall = false
 setIpForward = false
-connectionDbPath = "/tmp/connection.sqlite"
-cryptDbPath = "/tmp/crypt.sqlite"
-pidFilePath = "/var/run/edgesec.pid"
+connectionDbPath = ":memory:"
+cryptDbPath = ":memory:"
+pidFilePath = "/tmp/edgesec.pid"
 
 [capture]
-captureDbPath = "/tmp/capture.sqlite"
+captureDbPath = ":memory:"
 filter = ""
 promiscuous = false
 bufferTimeout = 10
@@ -50,7 +50,7 @@ authAlgs = 1
 wpa = 2
 wpaKeyMgmt = "WPA-PSK"
 rsnPairwise = "CCMP"
-ctrlInterface = "/var/run/hostapd"
+ctrlInterface = "/tmp"
 macaddrAcl = 2
 dynamicVlan = 2
 vlanFile = "/tmp/hostapd.vlan"

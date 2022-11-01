@@ -45,7 +45,7 @@ target_compile_definitions(test_config PRIVATE TEST_CONFIG_INI_PATH="${CMAKE_BIN
 
 add_cmocka_test(test_edgesec
   SOURCES test_edgesec.c
-  LINK_LIBRARIES runctl cmocka::cmocka log config
+  LINK_LIBRARIES sockctl runctl cmocka::cmocka log config
 )
 target_compile_definitions(test_edgesec PRIVATE TEST_CONFIG_INI_PATH="${CMAKE_BINARY_DIR}/test-config.ini")
 
