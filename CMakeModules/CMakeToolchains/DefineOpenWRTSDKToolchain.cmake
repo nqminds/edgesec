@@ -97,9 +97,12 @@ function(defineOpenwrtSDKToolchain)
     endif()
 
     set(CMAKE_SYSROOT "${target_dir}" PARENT_SCOPE)
-    set(CMAKE_STAGING_PREFIX "${target_dir}" PARENT_SCOPE)
-    set(ENV{STAGING_DIR} "${target_dir}")
-    # need to add staging prefix to path, as dependencies use autoconf ./configure to find compilers
+    if (NOT DEFINED CMAKE_STAGING_PREFIX)
+        # let ExternalProject override this
+        set(CMAKE_STAGING_PREFIX "${target_dir}" PARENT_SCOPE)
+    endif()
+    set(ENV{STAGING_DIR} "${CMAKE_STAGING_PREFIX}")
+    # need to add toolchain prefix to path, as dependencies use autoconf ./configure to find compilers
     set(ENV{PATH} "$ENV{PATH}:${tools}/bin")
 
     set(CMAKE_SYSTEM_NAME Linux PARENT_SCOPE) # OpenWRT

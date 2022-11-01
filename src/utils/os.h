@@ -551,6 +551,14 @@ int make_dirs_to_path(const char *file_path, mode_t mode);
 int create_dir(const char *dirpath, mode_t mode);
 
 /**
+ * @brief Creates a FIFO pipe file.
+ *
+ * @param[in] path The path to the pipe file
+ * @return 0 on success, -1 on failure
+ */
+int create_pipe_file(const char *path);
+
+/**
  * @brief Check if a file exists
  *
  * @param path The path to the file
@@ -608,6 +616,23 @@ ssize_t read_file(char *path, uint8_t **out);
  * @return 0 on success, -1 on failure
  */
 int read_file_string(char *path, char **out);
+
+/**
+ * @brief Opens a file for writing and write a
+ * a buffer in nonblocking mode
+ *
+ * @param path[in] The file path
+ * @param fd[in, out] The file descriptor.
+ * If this is non-`0`, opens the file given by @p path,
+ * and sets @p fd to the new file descriptor.
+ * Otherwise, @p path is ignored, and @p fd is used.
+ * Please close the created @p fd when done with it.
+ * @param buffer[in] The buffer to write
+ * @param length[in] The size of the buffer
+ * @return number of bytes written, -1 on failure
+ */
+ssize_t open_write_nonblock(const char *path, int *fd, const uint8_t *buffer,
+                            size_t length);
 
 /**
  * @brief Returns the absolute path of system binaries

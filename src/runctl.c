@@ -339,7 +339,7 @@ int init_context(struct app_config *app_config,
   }
 
   log_debug("Creating VLAN ID to interface mapper...");
-  if (!create_vlan_mapper(ctx->config_ifinfo_array, &ctx->vlan_mapper)) {
+  if (create_vlan_mapper(ctx->config_ifinfo_array, &ctx->vlan_mapper) < 0) {
     log_error("create_if_mapper fail");
     return -1;
   }

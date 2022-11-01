@@ -39,7 +39,7 @@
 #define DNSMASQ_BIND_DYNAMIC_OPTION "--bind-dynamic"
 #define DNSMASQ_NO_DAEMON_OPTION "--no-daemon"
 #define DNSMASQ_LOG_QUERIES_OPTION "--log-queries"
-#define DNSMASQ_CONF_FILE_OPTION "--conf-file"
+#define DNSMASQ_CONF_FILE_OPTION "-C"
 
 #define DNSMASQ_SCRIPT_STR                                                     \
   "#!/bin/sh\n"                                                                \
@@ -294,12 +294,12 @@ void get_dnsmasq_args(const char *dnsmasq_bin_path,
 }
 #else
   // sudo dnsmasq --bind-dynamic --no-daemon --log-queries
-  // --conf-file /tmp/dnsmasq.conf
+  // -C /tmp/dnsmasq.conf
 
   // argv = {"dnsmasq", "--bind-interfaces",
-  // "--no-daemon", "--log-queries", "--conf-file", "/tmp/dnsmasq.conf", NULL};
+  // "--no-daemon", "--log-queries", "-C", "/tmp/dnsmasq.conf", NULL};
   // argv = {"dnsmasq", "--bind-interfaces", "--no-daemon",
-  // "--conf-file", "/tmp/dnsmasq.conf", NULL};
+  // "-C", "/tmp/dnsmasq.conf", NULL};
   argv[0] = dnsmasq_bin_path;
   argv[1] = DNSMASQ_BIND_DYNAMIC_OPTION;
   argv[2] = DNSMASQ_NO_DAEMON_OPTION;

@@ -44,7 +44,8 @@
         "USE_CLEANER_MIDDLEWARE": false,
         "USE_HEADER_MIDDLEWARE": true,
         "USE_PCAP_MIDDLEWARE": false,
-        "USE_TAP_MIDDLEWARE": false
+        "USE_TAP_MIDDLEWARE": false,
+        "USE_PROTOBUF_MIDDLEWARE": false
       }
     },
     {
@@ -88,7 +89,8 @@
         "USE_CLEANER_MIDDLEWARE": true,
         "USE_HEADER_MIDDLEWARE": true,
         "USE_PCAP_MIDDLEWARE": true,
-        "USE_TAP_MIDDLEWARE": true
+        "USE_TAP_MIDDLEWARE": true,
+        "USE_PROTOBUF_MIDDLEWARE": true
       }
     },
     {
@@ -100,7 +102,22 @@
         "USE_CLEANER_MIDDLEWARE": false,
         "USE_HEADER_MIDDLEWARE": false,
         "USE_PCAP_MIDDLEWARE": false,
-        "USE_TAP_MIDDLEWARE": true
+        "USE_TAP_MIDDLEWARE": true,
+        "USE_PROTOBUF_MIDDLEWARE": false
+      }
+    },
+    {
+      "name": "linux-with-protobuf",
+      "inherits": "linux",
+      "displayName": "Linux (with protobuf middleware)",
+      "description": "Linux (with protobuf middleware)",
+      "cacheVariables": {
+        "BUILD_PROTOBUFC_LIB": true,
+        "USE_CLEANER_MIDDLEWARE": false,
+        "USE_HEADER_MIDDLEWARE": false,
+        "USE_PCAP_MIDDLEWARE": false,
+        "USE_TAP_MIDDLEWARE": false,
+        "USE_PROTOBUF_MIDDLEWARE": true
       }
     },
     {
@@ -140,7 +157,8 @@
         "USE_CLEANER_MIDDLEWARE": false,
         "USE_HEADER_MIDDLEWARE": true,
         "USE_PCAP_MIDDLEWARE": false,
-        "USE_TAP_MIDDLEWARE": false
+        "USE_TAP_MIDDLEWARE": false,
+        "USE_PROTOBUF_MIDDLEWARE": false
       }
     },
     {
@@ -225,6 +243,10 @@
       "configurePreset": "linux-with-tap"
     },
     {
+      "name": "linux-with-protobuf",
+      "configurePreset": "linux-with-protobuf"
+    },
+    {
       "name": "clang",
       "configurePreset": "clang"
     },
@@ -273,6 +295,10 @@
     {
       "name": "linux-with-tap",
       "configurePreset": "linux-with-tap"
+    },
+    {
+      "name": "linux-with-protobuf",
+      "configurePreset": "linux-with-protobuf"
     },
     {
       "name": "recap",

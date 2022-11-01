@@ -21,16 +21,6 @@
 #include "../ap/ap_config.h"
 
 /**
- * @brief Save a MAC entry into the mapper
- *
- * @param context The supervisor context
- * @param conn The MAc connection structure
- *
- * @return true on success, false on failure
- */
-bool save_mac_mapper(struct supervisor_context *context, struct mac_conn conn);
-
-/**
  * @brief Frees an allocated ticket
  *
  * @param context The supervisor context

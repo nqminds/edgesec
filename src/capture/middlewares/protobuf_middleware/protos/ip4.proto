@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package ip4;
+
+message Ip4Schema {
+  // Packet id
+  string id = 1;
+
+  // Packet source address
+  string ip_src = 2;
+
+  // Packet dest address
+  string ip_dst = 3;
+
+  // Packet header length
+  uint32 ip_hl = 4;
+
+  // Packet version
+  uint32 ip_v = 5;
+
+  // Packet type of service
+  uint32 ip_tos = 6;
+
+  // Packet total length
+  uint32 ip_len = 7;
+
+  // Packet identification
+  uint32 ip_id = 8;
+
+  // Packet fragment offset field
+  uint32 ip_off = 9;
+
+  // Packet time to live
+  uint32 ip_ttl = 10;
+
+  // Packet protocol
+  uint32 ip_p = 11;
+
+  // Packet checksum
+  uint32 ip_sum = 12;
+}
