@@ -26,6 +26,14 @@ else()
     set(MAKE_COMMAND "make")
   endif ()
 
+  if(BUILD_SHARED_LIBS)
+    set(LIBSQLITE_LIB "${LIBSQLITE_INSTALL_DIR}/lib/libsqlite3.so")
+    add_library(SQLite::SQLite3 SHARED IMPORTED)
+  else()
+    set(LIBSQLITE_LIB "${LIBSQLITE_INSTALL_DIR}/lib/libsqlite3.a")
+    add_library(SQLite::SQLite3 STATIC IMPORTED)
+  endif()
+
   message("Downloading and compiling our own libsqlite library")
   ExternalProject_Add(
     libsqlite
@@ -44,6 +52,8 @@ else()
     # need to manually specify PATH, so that make knows where to find cross-compiling GCC
     BUILD_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" "${MAKE_COMMAND}"
     INSTALL_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" "${MAKE_COMMAND}" install
+    # technically this is an INSTALL_BYPRODUCT, but we only ever need this to make Ninja happy
+    BUILD_BYPRODUCTS "${LIBSQLITE_LIB}"
   )
   ExternalProject_Get_Property(libsqlite INSTALL_DIR)
 

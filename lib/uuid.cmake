@@ -37,6 +37,8 @@ if (BUILD_UUID_LIB AND NOT (BUILD_ONLY_DOCS))
     # need to manually specify PATH, so that make knows where to find GCC
     BUILD_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" "${MAKE_COMMAND}"
     INSTALL_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" "${MAKE_COMMAND}" install
+    # technically this is an INSTALL_BYPRODUCT, but we only ever need this to make Ninja happy
+    BUILD_BYPRODUCTS "<INSTALL_DIR>/lib/libuuid.a"
   )
   ExternalProject_Get_Property(util_linux INSTALL_DIR)
 
