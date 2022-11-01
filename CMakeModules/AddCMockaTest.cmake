@@ -1,10 +1,14 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# SPDX-FileCopyrightText: Copyright (c) 2007      Daniel Gollub <dgollub@suse.de>
+# SPDX-FileCopyrightText: Copyright (c) 2007-2018 Andreas Schneider <asn@cryptomilk.org>
+# SPDX-FileCopyrightText: Copyright (c) 2018      Anderson Toshiyuki Sasaki <ansasaki@redhat.com>
 #
-# Copyright (c) 2007      Daniel Gollub <dgollub@suse.de>
-# Copyright (c) 2007-2018 Andreas Schneider <asn@cryptomilk.org>
-# Copyright (c) 2018      Anderson Toshiyuki Sasaki <ansasaki@redhat.com>
+# Redistribution and use is allowed according to the terms of the BSD 3-Clause license.
+# For details see the
+# https://gitlab.com/cmocka/cmocka/-/blob/a7a1ae83d567ccd6b469e157fc0a3db872039a49/cmake/Modules/COPYING-CMAKE-SCRIPTS
+# file.
 #
-# Redistribution and use is allowed according to the terms of the BSD license.
-# For details see the accompanying COPYING-CMAKE-SCRIPTS file.
+# File originally taken from https://gitlab.com/cmocka/cmocka/-/blob/a7a1ae83d567ccd6b469e157fc0a3db872039a49/cmake/Modules/AddCMockaTest.cmake
 
 #.rst:
 # AddCMockaTest
