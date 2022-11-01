@@ -22,7 +22,8 @@ override_dh_auto_configure:
 		 -DBUILD_SQLITE_LIB=OFF\
 		 -DBUILD_PCAP_LIB=OFF\
 		 -DBUILD_LIB_MININI=OFF\
-		 -DBUILD_HOSTAPD=ON
+		 -DBUILD_HOSTAPD=ON\
+		 -DBUILD_PROTOBUFC_LIB=OFF
 
 # make sure to always install into `debian/tmp` and use
 # *.install files, even if we only have one package

@@ -42,6 +42,7 @@ add_library(protobuf_utils protobuf_utils.c)
 target_link_libraries(protobuf_utils PUBLIC protobufc::protobufc)
 
 add_library(protobuf_encoder protobuf_encoder.c)
+target_link_libraries(protobuf_encoder PUBLIC packet_decoder)
 target_link_libraries(protobuf_encoder PRIVATE eth.pb-c arp.pb-c ip4.pb-c ip6.pb-c)
 target_link_libraries(protobuf_encoder PRIVATE tcp.pb-c udp.pb-c icmp4.pb-c)
 target_link_libraries(protobuf_encoder PRIVATE icmp6.pb-c dns.pb-c mdns.pb-c dhcp.pb-c)

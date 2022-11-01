@@ -5,8 +5,8 @@ include(ExternalProject)
 if(BUILD_ONLY_DOCS)
   # skip
 elseif(NOT BUILD_PROTOBUFC_LIB)
-  find_package(protobuf-c MODULE REQUIRED)
-  message("Found protobuf-c library: ${protobuf-c_LIBRARIES}")
+  find_package(ProtobufC 1.3.3...2.0.0 MODULE REQUIRED)
+  message("Found protobuf-c library: ${ProtobufC_LIBRARIES}")
 else()
   # Download and Compile protobuf-c library at compile time using ExternalProject
   # (e.g. when running `cmake --build` or `make`)
@@ -24,6 +24,7 @@ else()
   message("Downloading and compiling our own libprotobuf-c library")
   ExternalProject_Add(
     libprotobuf-c
+    EXCLUDE_FROM_ALL TRUE # only build this if recap/USE_PROTOBUF_MIDDLEWARE is enabled
     URL https://github.com/protobuf-c/protobuf-c/releases/download/v1.4.1/protobuf-c-1.4.1.tar.gz
     URL_HASH SHA256=4cc4facd508172f3e0a4d3a8736225d472418aee35b4ad053384b137b220339f
     INSTALL_DIR "${LIBPROTOBUFC_INSTALL_DIR}"
@@ -57,6 +58,7 @@ else()
   set_target_properties(protobufc::protobufc PROPERTIES
     IMPORTED_LOCATION "${LIBPROTOBUFC_LIB}"
     INTERFACE_INCLUDE_DIRECTORIES "${LIBPROTOBUFC_INCLUDE_DIR}"
+    EXCLUDE_FROM_ALL TRUE # only build this if recap/USE_PROTOBUF_MIDDLEWARE is enabled
   )
 
   # tell cmake that we can only use protobufc::protobufc after we compile it

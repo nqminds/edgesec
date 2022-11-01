@@ -62,7 +62,7 @@ if (USE_CAPTURE_SERVICE)
   add_subdirectory(./middlewares/header_middleware)
   add_subdirectory(./middlewares/pcap_middleware)
   add_subdirectory(./middlewares/tap_middleware)
-  add_subdirectory(./middlewares/protobuf_middleware)
+  add_subdirectory(./middlewares/protobuf_middleware EXCLUDE_FROM_ALL)
 
   add_library(capture_config INTERFACE) # header only library
   target_link_libraries(capture_config INTERFACE os)
