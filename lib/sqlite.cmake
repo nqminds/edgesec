@@ -19,6 +19,13 @@ else()
     set(configure_args "--enable-static" "--disable-shared")
   endif()
 
+  if ("${CMAKE_GENERATOR}" MATCHES "Makefiles")
+    set(MAKE_COMMAND "$(MAKE)") # recursive make (uses the same make as the main project)
+  else()
+    # just run make in a subprocess. We use single-process, but libmnl is a small project
+    set(MAKE_COMMAND "make")
+  endif ()
+
   message("Downloading and compiling our own libsqlite library")
   ExternalProject_Add(
     libsqlite
@@ -35,19 +42,10 @@ else()
       --with-pic=on ${configure_args}
       "CC=${CMAKE_C_COMPILER}" "CXX=${CMAKE_CXX_COMPILER}"
     # need to manually specify PATH, so that make knows where to find cross-compiling GCC
-    BUILD_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" $(MAKE)
-    INSTALL_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" $(MAKE) install
+    BUILD_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" "${MAKE_COMMAND}"
+    INSTALL_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" "${MAKE_COMMAND}" install
   )
   ExternalProject_Get_Property(libsqlite INSTALL_DIR)
-
-  set(LIBSQLITE_INSTALL_DIR "${INSTALL_DIR}")
-  if(BUILD_SHARED_LIBS)
-    set(LIBSQLITE_LIB "${LIBSQLITE_INSTALL_DIR}/lib/libsqlite3.so")
-    add_library(SQLite::SQLite3 SHARED IMPORTED)
-  else()
-    set(LIBSQLITE_LIB "${LIBSQLITE_INSTALL_DIR}/lib/libsqlite3.a")
-    add_library(SQLite::SQLite3 STATIC IMPORTED)
-  endif()
 
   set(sqlite_link_libs "pthread" "dl")
 

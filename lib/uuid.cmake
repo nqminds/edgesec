@@ -12,6 +12,13 @@ if (BUILD_UUID_LIB AND NOT (BUILD_ONLY_DOCS))
 
   message("Will install libuuid into ${LIBUUID_INSTALL_DIR}")
 
+  if ("${CMAKE_GENERATOR}" MATCHES "Makefiles")
+    set(MAKE_COMMAND "$(MAKE)") # recursive make (uses the same make as the main project)
+  else()
+    # just run make in a subprocess. We use single-process, but libmnl is a small project
+    set(MAKE_COMMAND "make")
+  endif ()
+
   # ExternalProject downloads/builds/installs at **build** time
   # (e.g. during the `cmake --build` step)
   ExternalProject_Add(
@@ -28,8 +35,8 @@ if (BUILD_UUID_LIB AND NOT (BUILD_ONLY_DOCS))
       "CC=${CMAKE_C_COMPILER}" "CXX=${CMAKE_CXX_COMPILER}"
     INSTALL_DIR "${LIBUUID_INSTALL_DIR}"
     # need to manually specify PATH, so that make knows where to find GCC
-    BUILD_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" $(MAKE)
-    INSTALL_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" $(MAKE) install
+    BUILD_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" "${MAKE_COMMAND}"
+    INSTALL_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" "${MAKE_COMMAND}" install
   )
   ExternalProject_Get_Property(util_linux INSTALL_DIR)
 
