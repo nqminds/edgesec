@@ -124,7 +124,11 @@
       "name": "clang",
       "inherits": "linux",
       "displayName": "Clang",
-      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/clang.cmake"
+      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/clang.cmake",
+      "cacheVariables": {
+        "//": "We need to test CMocka builds somewhere, might as well be here",
+        "BUILD_CMOCKA_LIB": true
+      }
     },
     {
       "name": "openwrt",
