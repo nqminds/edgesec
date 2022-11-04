@@ -148,10 +148,13 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install devscripts equivs -y # install mk-build-depends
+          sudo apt-get install devscripts equivs ninja-build -y # install mk-build-depends
           sudo mk-build-deps --install --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes'  debian/control
-      - name: Configure
-        run: cmake --preset recap -DCMAKE_BUILD_TYPE=Release
+      - name: Configure using Ninja
+        # Ninja is actually slightly slower than using Make, since then
+        # the ExternalProjects have to run in invidividual GNU Make sessions
+        # It's mainly here just to confirm that a Ninja build works.
+        run: cmake --preset recap -DCMAKE_BUILD_TYPE=Release -G Ninja
       - name: Build
         run: cmake --build --preset recap -j="$(($(nproc) + 1))"
       - name: Archive built recap

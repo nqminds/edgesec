@@ -20,6 +20,12 @@ Copyright: 2000-2022 Kitware, Inc. and Contributors
 License: BSD-3-clause
 Source: https://gitlab.kitware.com/cmake/cmake/-/blob/master/Source/Modules/FindLibUUID.cmake
 
+Files: CMakeModules/AddCMockaTest.cmake
+Copyright: 2007, Daniel Gollub <dgollub@suse.de>
+           2007-2018, Andreas Schneider <asn@cryptomilk.org>
+           2018, Anderson Toshiyuki Sasaki <ansasaki@redhat.com>
+License: BSD-3-clause
+
 Files: lib/netlink/*
 Copyright: 2010, see individual files for details
 License: GPL-2+
