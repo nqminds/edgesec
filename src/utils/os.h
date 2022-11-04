@@ -315,10 +315,11 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn fn,
  * @param argv The command arguments without the process path
  * @param fn Callback function
  * @param ctx The callback function context
- * @return int excve status code
+ * @retval -1 Returns -1 on error.
+ * @retval  0 Returns 0 on success.
  */
-int run_argv_command(char *path, char *const argv[], process_callback_fn fn,
-                     void *ctx);
+int run_argv_command(const char *path, const char *const argv[],
+                     process_callback_fn fn, void *ctx);
 
 /**
  * @brief Convert the string to upper case
@@ -365,26 +366,29 @@ ssize_t split_string_array(const char *str, char sep, UT_array *arr);
  *
  * @param path_left First string path
  * @param path_right Second string path
- * @return char* Concatenated paths
+ * @return Concatenated paths. Please `free()` the return value when done.
+ * @retval NULL on memory allocation error.
  */
-char *concat_paths(char *path_left, char *path_right);
+char *concat_paths(const char *path_left, const char *path_right);
 
 /**
  * @brief Get the valid path string
  *
  * @param path Input string path
- * @return char* output valid path
+ * @return Output valid path. Please free() this string when done with it.
+ * @retval NULL on memory allocation error.
  */
-char *get_valid_path(char *path);
+char *get_valid_path(const char *path);
 
 /**
  * @brief Construct a valid path from two paths
  *
  * @param path_left First path
  * @param path_right Second path
- * @return char* output valid path
+ * @return The output valid path. Please free() this string when done with it.
+ * @retval NULL on memory allocation error.
  */
-char *construct_path(char *path_left, char *path_right);
+char *construct_path(const char *path_left, const char *path_right);
 
 /**
  * @brief Get the secure path string of a binary
@@ -392,9 +396,10 @@ char *construct_path(char *path_left, char *path_right);
  * @param bin_path_arr The path string of binary
  * @param filename The binary name
  * @param real true to return the real link
- * @return char* the secure path
+ * @return The secure path, or NULL on error. Must be freed with os_free().
  */
-char *get_secure_path(UT_array *bin_path_arr, char *filename, bool real);
+char *get_secure_path(const UT_array *bin_path_arr, const char *filename,
+                      bool real);
 
 typedef bool (*list_dir_fn)(char *, void *args);
 
@@ -408,7 +413,7 @@ typedef bool (*list_dir_fn)(char *, void *args);
  * @retval  0 On success
  * @retval -1 On error
  */
-int list_dir(char *dirpath, list_dir_fn fun, void *args);
+int list_dir(const char *dirpath, list_dir_fn fun, void *args);
 
 /**
  * @brief Check if a process path from /proc folder contains the process name
@@ -437,13 +442,17 @@ bool kill_process(char *proc_name);
 bool signal_process(char *proc_name, int sig);
 
 /**
- * @brief Executes a process with an array of strign arguments
+ * @brief Executes a background process with an array of string arguments.
  *
- * @param argv The array of string arguments terminated with NULL and the first
- * argument is the absolute path of the process.
- * @param child_pid The returned child pid
- * @return int 1 if process started, 0 if the child specified by pid exist, but
- * have not yet changed state, -1 on error
+ * @param[in] argv The array of string arguments terminated with NULL and the
+ * first argument is the absolute path of the process.
+ * @param[out] child_pid The returned child pid
+ * @retval     0 The child process has been created, and is either:
+ *   - still running, OR
+ *   - exited with exit code 0
+ * @retval    -1 Error, please see `errno` for more details.
+ * @retval 1-255 The child process has exited,
+ *   and the return value is this non-zero/error exit code.
  */
 int run_process(char *argv[], pid_t *child_pid);
 
@@ -542,6 +551,14 @@ int make_dirs_to_path(const char *file_path, mode_t mode);
 int create_dir(const char *dirpath, mode_t mode);
 
 /**
+ * @brief Creates a FIFO pipe file.
+ *
+ * @param[in] path The path to the pipe file
+ * @return 0 on success, -1 on failure
+ */
+int create_pipe_file(const char *path);
+
+/**
  * @brief Check if a file exists
  *
  * @param path The path to the file
@@ -601,6 +618,23 @@ ssize_t read_file(char *path, uint8_t **out);
 int read_file_string(char *path, char **out);
 
 /**
+ * @brief Opens a file for writing and write a
+ * a buffer in nonblocking mode
+ *
+ * @param path[in] The file path
+ * @param fd[in, out] The file descriptor.
+ * If this is non-`0`, opens the file given by @p path,
+ * and sets @p fd to the new file descriptor.
+ * Otherwise, @p path is ignored, and @p fd is used.
+ * Please close the created @p fd when done with it.
+ * @param buffer[in] The buffer to write
+ * @param length[in] The size of the buffer
+ * @return number of bytes written, -1 on failure
+ */
+ssize_t open_write_nonblock(const char *path, int *fd, const uint8_t *buffer,
+                            size_t length);
+
+/**
  * @brief Returns the absolute path of system binaries
  *
  * @param[in] commands Array of system binaries name strings. The last entry
@@ -609,7 +643,7 @@ int read_file_string(char *path, char **out);
  * @param[out] hmap_bin_paths The created map of system binary to absolute path.
  * @return int 0 on success, -1 on failure
  */
-int get_commands_paths(char *commands[], UT_array *bin_path_arr,
+int get_commands_paths(const char *commands[], const UT_array *bin_path_arr,
                        hmap_str_keychar **hmap_bin_paths);
 
 /**

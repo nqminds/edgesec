@@ -22,18 +22,18 @@
 static const UT_icd pcap_list_icd = {sizeof(struct pcap_context *), NULL, NULL,
                                      NULL};
 
-bool find_device(char *ifname, bpf_u_int32 *net, bpf_u_int32 *mask) {
+int find_device(char *ifname, bpf_u_int32 *net, bpf_u_int32 *mask) {
   pcap_if_t *temp = NULL, *ifs = NULL;
   char err[PCAP_ERRBUF_SIZE];
 
   if (ifname == NULL) {
     log_error("ifname is NULL");
-    return false;
+    return -1;
   }
 
   if (pcap_findalldevs(&ifs, err) == -1) {
     log_error("pcap_findalldevs fail with error %s", err);
-    return false;
+    return -1;
   }
 
   for (temp = ifs; temp; temp = temp->next) {
@@ -41,16 +41,16 @@ bool find_device(char *ifname, bpf_u_int32 *net, bpf_u_int32 *mask) {
     if (strcmp(temp->name, ifname) == 0) {
       if (pcap_lookupnet(ifname, net, mask, err) == -1) {
         log_error("Can't get netmask for device %s\n", ifname);
-        return false;
+        return -1;
       }
 
       pcap_freealldevs(ifs);
-      return true;
+      return 1;
     }
   }
 
   pcap_freealldevs(ifs);
-  return false;
+  return 0;
 }
 
 void receive_pcap_packet(u_char *args, const struct pcap_pkthdr *header,
@@ -112,15 +112,19 @@ int run_pcap(char *interface, bool immediate, bool promiscuous, int timeout,
   struct bpf_program fp;
   struct pcap_context *ctx = NULL;
 
-  if (!find_device(interface, &net, &mask)) {
-    log_error("find_interfaces fail");
-    return -1;
+  // The error is ignored if the interface is not valid
+  if (find_device(interface, &net, &mask) > 0) {
+    if (bit32_2_ip((uint32_t)net, ip_str) == NULL) {
+      log_errno("Converting %d to IP failed", net);
+      return -1;
+    }
+    if (bit32_2_ip((uint32_t)mask, mask_str) == NULL) {
+      log_errno("Converting %d to IP mask failed", mask);
+      return -1;
+    }
+    log_debug("Found device=%s IP=" IPSTR " netmask=" IPSTR, interface,
+              IP2STR(ip_str), IP2STR(mask_str));
   }
-
-  bit32_2_ip((uint32_t)net, ip_str);
-  bit32_2_ip((uint32_t)mask, mask_str);
-  log_debug("Found device=%s IP=" IPSTR " netmask=" IPSTR, interface,
-            IP2STR(ip_str), IP2STR(mask_str));
 
   ctx = os_zalloc(sizeof(struct pcap_context));
   *pctx = ctx;
@@ -221,6 +225,17 @@ int dump_file_pcap(struct pcap_context *ctx, char *file_path,
   pcap_dump((u_char *)dumper, header, packet);
   pcap_dump_close(dumper);
   return 0;
+}
+
+int inject_pcap(struct pcap_context *ctx, uint8_t *packet, size_t size) {
+  int sent = pcap_inject(ctx->pd, packet, size);
+
+  if (sent < 0) {
+    log_error("pcap_inject fail: %s", pcap_geterr(ctx->pd));
+    return -1;
+  }
+
+  return sent;
 }
 
 void free_pcap_list(UT_array *ctx_list) {

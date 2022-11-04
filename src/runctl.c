@@ -243,7 +243,7 @@ int construct_ap_ctrlif(char *ctrl_interface, char *interface,
 
 int init_context(struct app_config *app_config,
                  struct supervisor_context *ctx) {
-  char *commands[] = {"ip", "iw", "iptables", "sysctl", NULL};
+  const char *commands[] = {"ip", "iw", "iptables", "sysctl", NULL};
 
   ctx->config_ifinfo_array = NULL;
   ctx->hmap_bin_paths = NULL;
@@ -266,7 +266,7 @@ int init_context(struct app_config *app_config,
     return -1;
   }
 
-  char *ipcmd_path = hmap_str_keychar_get(&ctx->hmap_bin_paths, "ip");
+  const char *ipcmd_path = hmap_str_keychar_get(ctx->hmap_bin_paths, "ip");
   if (ipcmd_path == NULL) {
     log_error("Couldn't find ip command");
     return -1;
@@ -339,7 +339,7 @@ int init_context(struct app_config *app_config,
   }
 
   log_debug("Creating VLAN ID to interface mapper...");
-  if (!create_vlan_mapper(ctx->config_ifinfo_array, &ctx->vlan_mapper)) {
+  if (create_vlan_mapper(ctx->config_ifinfo_array, &ctx->vlan_mapper) < 0) {
     log_error("create_if_mapper fail");
     return -1;
   }
@@ -355,30 +355,36 @@ int init_context(struct app_config *app_config,
   return 0;
 }
 
-int run_mdns_forwarder(char *mdns_bin_path, char *config_ini_path) {
-  int ret;
+int run_mdns_forwarder(const char *mdns_bin_path, const char *config_ini_path) {
+  int ret = -1;
+  const char *process_argv[5] = {mdns_bin_path, MDNS_OPT_CONFIG,
+                                 config_ini_path, NULL};
+  char *proc_name = NULL;
+  char **process_argv_copy = copy_argv(process_argv);
+  if (process_argv_copy == NULL) {
+    log_errno("Failed to copy_argv for %s", mdns_bin_path);
+    goto cleanup;
+  }
+
   pid_t child_pid;
-  char *proc_name;
-  char *process_argv[5] = {NULL, NULL, NULL, NULL};
-  process_argv[0] = mdns_bin_path;
-  process_argv[1] = MDNS_OPT_CONFIG;
-  process_argv[2] = config_ini_path;
+  int run_process_return_code = run_process(process_argv_copy, &child_pid);
 
-  ret = run_process(process_argv, &child_pid);
-
-  if ((proc_name = os_strdup(basename(process_argv[0]))) == NULL) {
+  if ((proc_name = os_strdup(basename(process_argv_copy[0]))) == NULL) {
     log_errno("os_strdup");
-    return -1;
+    goto cleanup;
   }
 
   if (is_proc_running(proc_name) <= 0) {
     log_error("is_proc_running fail (%s)", proc_name);
-    os_free(proc_name);
-    return -1;
+    goto cleanup;
   }
 
   log_debug("Found mdns process running with pid=%d (%s)", child_pid,
             proc_name);
+  ret = run_process_return_code;
+
+cleanup:
+  free(process_argv_copy);
   os_free(proc_name);
 
   return ret;

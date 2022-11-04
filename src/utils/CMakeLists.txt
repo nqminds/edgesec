@@ -12,7 +12,7 @@ add_library(base64 base64.c)
 target_link_libraries(base64 PRIVATE os log)
 
 add_library(hashmap hashmap.c)
-target_link_libraries(hashmap PUBLIC LibUTHash::LibUTHash PRIVATE log os)
+target_link_libraries(hashmap PUBLIC LibUTHash::LibUTHash PRIVATE log)
 
 add_library(os os.c)
 set_property(TARGET os PROPERTY POSITION_INDEPENDENT_CODE ON)
@@ -47,14 +47,11 @@ elseif (USE_GENERIC_IP_SERVICE)
   target_link_libraries(iface PUBLIC ipgen)
 endif ()
 
-add_library(minIni minIni.c)
-
 add_library(eloop eloop.c)
 # todo, add list
 target_link_libraries(eloop PUBLIC allocs os PRIVATE log)
 
-add_library(hash hash.c)
-target_link_libraries(hash PRIVATE os)
+add_library(hash OBJECT hash.c)
 
 add_library(squeue squeue.c)
 target_link_libraries(squeue PRIVATE log os)

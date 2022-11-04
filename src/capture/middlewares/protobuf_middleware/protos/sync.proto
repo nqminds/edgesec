@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package tdx.volt_api.sync.v1;
+
+// Wraps arbitrary protobuf messages, with an index into the `ProtobufSyncConfigurationHeader` to indicate the specific message type this message wraps.
+message ProtobufSyncWrapper {
+  oneof header_lookup {
+    // The index number of the header for this message type in the Volt logger configuration file.
+    uint32 header_index = 1;
+
+    // The name of the header for this message type, will be used to lookup against the `id` field in `ProtobufSyncConfiguration`.
+    // This will incur an overhead in terms of the packet size, but might be preferrable if volume is low or managing the header index is difficult.
+    string header_id = 2;
+  }
+
+  // The message payload, in serialised protobuf binary format.
+  // n.b. the serialisation should **not** be length-prefixed.
+  bytes payload = 3;
+}
+
+// Describes a single message type.
+// A set of one or more of these messages is specified in `ProtobufSyncConfigurationHeader`.
+message ProtobufSyncConfiguration {
+  // Optional id to associate with this configuration.
+  // This can be used in the `header_id` field of `ProtobufSyncWrapper` above to reference the configuration.
+  // If omitted the numerical index of the configuration in `ProtobufSyncConfigurationHeader` will be used instead (recommended).
+  string id = 1;
+
+  // The actual protobuf definition text.
+  // Copy and paste the source protobuf definition from the `.proto` file.
+  // Only simple protobuf structures are currently supported, e.g. no imports from other packages etc.
+  string message_proto = 2;
+
+  // The name of the message within `message_proto` above that represents the data to be sync'd, e.g. `TCPDumpPacket`.
+  string message_name = 3;
+
+  // The name of the table within the target database into which the message data for this type should be written.
+  string table_name = 4;
+}
+
+// This message is written at the beginning of every file to be ingested using the `protoDbSync` utility.
+// It contains a `header` entry for each message type that may appear in the file.
+// If the `volt logger` command is used, it will create this header automatically based on the configuration it's given.
+message ProtobufSyncConfigurationHeader {
+  // This should ideally be a persistent UUID, at minimum it must be unique within the set of types of file any given instance of `protoDbSync` is processing in a given folder.
+  // It is used to match up orphaned or split packets that might occur when receiving data from a wire, for example, if a log file is rotated midway through a packet arriving on the wire.
+  // This id should persist for the life time of the set of data it describes, i.e. if a wire publication is stopped and restarted at some later point, the same id should be used if possible.
+  string id = 1;
+
+  // The set of possible configurations that can appear in any given protobuf sync data file.
+  // A serialised instance of this message must appear at the top of each data file.
+  // Each subsequent serialised message in the data file must be an instance of `ProtobufSyncWrapper`, and the `header_lookup` field refers to an entry in this list.
+  repeated ProtobufSyncConfiguration configuration = 2;
+
+  // Optional maximum size of the serialised messages, this doesn't need to be exact and the default is 64K if omitted.
+  int32 maximum_message_size = 3;
+}

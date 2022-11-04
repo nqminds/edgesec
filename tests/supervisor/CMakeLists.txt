@@ -2,19 +2,35 @@ include_directories(
   "${PROJECT_SOURCE_DIR}/src"
 )
 
-add_executable(test_bridge_list test_bridge_list.c)
-target_link_libraries(test_bridge_list PRIVATE bridge_list net log cmocka::cmocka)
+add_cmocka_test(test_bridge_list
+  SOURCES test_bridge_list.c
+  LINK_LIBRARIES bridge_list net log cmocka::cmocka
+)
 
-add_executable(test_sockctl_server test_sockctl_server.c)
-target_link_libraries(test_sockctl_server PRIVATE sockctl os log cmocka::cmocka)
+add_cmocka_test(test_supervisor_utils
+  SOURCES test_supervisor_utils.c
+  LINK_LIBRARIES supervisor_utils net log cmocka::cmocka
+)
+
+add_cmocka_test(test_supervisor
+  SOURCES test_supervisor.c
+  LINK_LIBRARIES sqlite_macconn_writer supervisor net log cmocka::cmocka
+)
+
+add_cmocka_test(test_sockctl_server
+  SOURCES test_sockctl_server.c
+  LINK_LIBRARIES sockctl os log cmocka::cmocka
+)
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
   # Abstract Unix domain sockets are only supported on Linux, but save a bit of writing
   # to the disk
   target_compile_definitions(test_sockctl_server PRIVATE USE_ABSTRACT_UNIX_DOMAIN_SOCKETS)
 endif()
 
-add_executable(test_cmd_processor test_cmd_processor.c)
-target_link_libraries(test_cmd_processor PRIVATE cmd_processor iptables log cmocka::cmocka)
+add_cmocka_test(test_cmd_processor
+  SOURCES test_cmd_processor.c
+  LINK_LIBRARIES cmd_processor iptables log cmocka::cmocka
+)
 target_link_options(test_cmd_processor PRIVATE
   "LINKER:--wrap=write_socket_data,--wrap=accept_mac_cmd,--wrap=deny_mac_cmd"
   "LINKER:--wrap=add_nat_cmd,--wrap=remove_nat_cmd,--wrap=assign_psk_cmd"
@@ -23,7 +39,6 @@ target_link_options(test_cmd_processor PRIVATE
   "LINKER:--wrap=clear_psk_cmd,--wrap=get_mac_mapper,--wrap=remove_bridge_cmd"
   "LINKER:--wrap=clear_bridges_cmd,--wrap=subscribe_events_cmd,--wrap=register_ticket_cmd"
 )
-
 if (USE_CRYPTO_SERVICE)
   target_link_options(test_cmd_processor PRIVATE
     "LINKER:--wrap=gen_randkey_cmd,--wrap=gen_privkey_cmd,--wrap=gen_pubkey_cmd"
@@ -32,37 +47,16 @@ if (USE_CRYPTO_SERVICE)
   )
 endif ()
 
-add_executable(test_mac_mapper test_mac_mapper.c)
-target_link_libraries(test_mac_mapper PRIVATE log os mac_mapper cmocka::cmocka)
+add_cmocka_test(test_mac_mapper
+  SOURCES test_mac_mapper.c
+  LINK_LIBRARIES log os mac_mapper cmocka::cmocka
+)
 
-add_executable(test_sqlite_macconn_writer test_sqlite_macconn_writer.c)
-target_link_libraries(test_sqlite_macconn_writer PRIVATE sqlite_macconn_writer sqliteu os log cmocka::cmocka)
+add_cmocka_test(test_sqlite_macconn_writer
+  SOURCES test_sqlite_macconn_writer.c
+  LINK_LIBRARIES sqlite_macconn_writer sqliteu os log cmocka::cmocka
+)
 target_link_options(test_sqlite_macconn_writer
   PRIVATE
   "LINKER:--wrap=sqlite3_open"
 )
-
-add_test(NAME test_bridge_list COMMAND test_bridge_list)
-set_tests_properties(test_bridge_list
-  PROPERTIES
-  WILL_FAIL FALSE)
-
-add_test(NAME test_sockctl_server COMMAND test_sockctl_server)
-set_tests_properties(test_sockctl_server
-  PROPERTIES
-  WILL_FAIL FALSE)
-
-add_test(NAME test_cmd_processor COMMAND test_cmd_processor)
-set_tests_properties(test_cmd_processor
-  PROPERTIES
-  WILL_FAIL FALSE)
-
-add_test(NAME test_mac_mapper COMMAND test_mac_mapper)
-set_tests_properties(test_mac_mapper
-  PROPERTIES
-  WILL_FAIL FALSE)
-
-add_test(NAME test_sqlite_macconn_writer COMMAND test_sqlite_macconn_writer)
-set_tests_properties(test_sqlite_macconn_writer
-  PROPERTIES
-  WILL_FAIL FALSE)

@@ -39,7 +39,7 @@
 #define DNSMASQ_BIND_DYNAMIC_OPTION "--bind-dynamic"
 #define DNSMASQ_NO_DAEMON_OPTION "--no-daemon"
 #define DNSMASQ_LOG_QUERIES_OPTION "--log-queries"
-#define DNSMASQ_CONF_FILE_OPTION "--conf-file="
+#define DNSMASQ_CONF_FILE_OPTION "-C"
 
 #define DNSMASQ_SCRIPT_STR                                                     \
   "#!/bin/sh\n"                                                                \
@@ -275,46 +275,38 @@ int generate_dnsmasq_script(char *dhcp_script_path,
   return 0;
 }
 
+/**
+ * @brief Builds the `argv` for calling dnsmasq
+ *
+ * @param dnsmasq_bin_path The path to the dnsmasq binary.
+ * @param dnsmasq_conf_path The path to the dnsmasq config file.
+ * @param[in,out] argv The array to store the args warning.
+ * @pre @p argv must have space for at least 6 pointers.
+ */
+void get_dnsmasq_args(const char *dnsmasq_bin_path,
+                      const char *dnsmasq_conf_path,
+                      const char *argv[static 6]) {
 #ifdef WITH_UCI_SERVICE
-char *get_dnsmasq_args(char *dnsmasq_bin_path, char *dnsmasq_conf_path,
-                       char *argv[]) {
   (void)dnsmasq_conf_path;
   argv[0] = dnsmasq_bin_path;
   argv[1] = DNSMASQ_SERVICE_RESTART;
-  return NULL;
+  argv[2] = NULL;
 }
 #else
-char *get_dnsmasq_args(char *dnsmasq_bin_path, char *dnsmasq_conf_path,
-                       char *argv[]) {
   // sudo dnsmasq --bind-dynamic --no-daemon --log-queries
-  // --conf-file=/tmp/dnsmasq.conf argv = {"dnsmasq", "--bind-interfaces",
-  // "--no-daemon", "--log-queries", "--conf-file=/tmp/dnsmasq.conf", NULL};
+  // -C /tmp/dnsmasq.conf
+
+  // argv = {"dnsmasq", "--bind-interfaces",
+  // "--no-daemon", "--log-queries", "-C", "/tmp/dnsmasq.conf", NULL};
   // argv = {"dnsmasq", "--bind-interfaces", "--no-daemon",
-  // "--conf-file=/tmp/dnsmasq.conf", NULL};
-
-  if (os_strnlen_s(dnsmasq_conf_path, MAX_OS_PATH_LEN) >= MAX_OS_PATH_LEN) {
-    log_error("dnsmasq_conf_path exceeds/is MAX length");
-    return NULL;
-  }
-
-  char *conf_arg = os_malloc(
-      sizeof(char) * (MAX_OS_PATH_LEN + strlen(DNSMASQ_CONF_FILE_OPTION) + 1));
-
-  if (conf_arg == NULL) {
-    log_errno("os_malloc");
-    return NULL;
-  }
-
-  conf_arg[0] = '\0';
-  strcat(conf_arg, DNSMASQ_CONF_FILE_OPTION);
-  strcat(conf_arg, dnsmasq_conf_path);
-
+  // "-C", "/tmp/dnsmasq.conf", NULL};
   argv[0] = dnsmasq_bin_path;
   argv[1] = DNSMASQ_BIND_DYNAMIC_OPTION;
   argv[2] = DNSMASQ_NO_DAEMON_OPTION;
-  argv[3] = conf_arg;
-
-  return conf_arg;
+  argv[3] = DNSMASQ_CONF_FILE_OPTION;
+  argv[4] = dnsmasq_conf_path;
+  // should already be NULL
+  argv[5] = NULL;
 }
 #endif
 
@@ -333,85 +325,83 @@ int check_dhcp_running(char *name, int wait_time) {
   return running;
 }
 
-#ifdef WITH_UCI_SERVICE
-char *run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path) {
-  pid_t child_pid = 0;
-  int ret = 0;
-  char *process_argv[3] = {NULL, NULL, NULL};
-
-  os_strlcpy(dnsmasq_proc_name, basename(dhcp_bin_path), MAX_OS_PATH_LEN);
-
+char *run_dhcp_process(const char *dhcp_bin_path, const char *dhcp_conf_path) {
+  const char *process_argv[6] = {NULL};
   get_dnsmasq_args(dhcp_bin_path, dhcp_conf_path, process_argv);
 
-  if ((ret = run_process(process_argv, &child_pid)) > 0) {
-    log_error("dnsmasq process exited with status=%d", ret);
-    return NULL;
+  char *return_val = NULL;
+
+  char **dhcp_argv_modifiable = copy_argv(process_argv);
+  if (dhcp_argv_modifiable == NULL) {
+    log_errno("Failed to copy_argv for %s", dhcp_bin_path);
+    goto error;
   }
 
-  log_trace("Checking dnsmasq proc running...");
-  if (check_dhcp_running(basename(process_argv[0]), 1) <= 0) {
-    log_error("check_dhcp_running or process not running");
-    return NULL;
+  // finds the basename of the dhcp_bin_path and stores it in dnsmasq_proc_name
+  {
+    // basename() might modify the input string, so make a copy first
+    char dnsmasq_proc_name_buffer[MAX_OS_PATH_LEN];
+    os_strlcpy(dnsmasq_proc_name_buffer, dhcp_bin_path, MAX_OS_PATH_LEN - 1);
+    dnsmasq_proc_name_buffer[MAX_OS_PATH_LEN - 1] = '\0';
+    os_strlcpy(dnsmasq_proc_name, basename(dnsmasq_proc_name_buffer),
+               MAX_OS_PATH_LEN - 1);
   }
 
-  log_trace("dnsmasq running with pid=%d", child_pid);
-
-  dns_process_started = true;
-  return dnsmasq_proc_name;
-}
-#else
-char *run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path) {
   pid_t child_pid = 0;
-  int ret;
-  char *process_argv[5] = {NULL, NULL, NULL, NULL, NULL};
+#ifdef WITH_UCI_SERVICE
+  // On OpenWRT with UCI, we just run a `/etc/init.d/dnsmasq restart` command
+  int ret = run_process(dhcp_argv_modifiable, &child_pid);
+  if (ret > 0) {
+    log_error("dnsmasq process exited with status=%d", ret);
+    goto error;
+  }
+#else
+  // Otherwise, we create a new `dnsmasq` instance in a background process
+  // and kill old dnsmasq process
 
-  os_strlcpy(dnsmasq_proc_name, basename(dhcp_bin_path), MAX_OS_PATH_LEN);
-
-  // Kill any running hostapd process
+  // Kill any running dnsmasq process
   if (!kill_process(dnsmasq_proc_name)) {
     log_error("kill_process fail");
-    return NULL;
+    goto error;
   }
 
-  char *conf_arg =
-      get_dnsmasq_args(dhcp_bin_path, dhcp_conf_path, process_argv);
+  while (true) {
+    int ret = run_process(dhcp_argv_modifiable, &child_pid);
+    if (ret > 0) {
+      log_error("dnsmasq process exited with status=%d", ret);
+      goto error;
+    }
+    if (ret == 0) {
+      // success, break out of loop
+      break;
+    }
+    // else (ret < 0)
+    log_errno("Error when trying to run dnsmasq process");
 
-  if (conf_arg == NULL) {
-    log_error("get_dnsmasq_args fail");
-    return NULL;
-  }
-
-  while ((ret = run_process(process_argv, &child_pid)) < 0) {
     log_trace("Killing dhcp process");
-    // Kill any running hostapd process
+    // Kill any running dnsmasq process
     if (!kill_process(dnsmasq_proc_name)) {
       log_error("kill_process fail");
-      os_free(conf_arg);
-      return NULL;
+      goto error;
     }
     log_trace("Restarting process in %d seconds", PROCESS_RESTART_TIME);
     sleep(PROCESS_RESTART_TIME);
   }
-
-  if (ret > 0) {
-    log_error("dnsmasq process exited with status=%d", ret);
-    os_free(conf_arg);
-    return NULL;
-  }
-
+#endif
   log_debug("Checking dnsmasq proc running...");
-  if (check_dhcp_running(basename(process_argv[0]), 1) <= 0) {
+  if (check_dhcp_running(basename(dhcp_argv_modifiable[0]), 1) <= 0) {
     log_error("check_dhcp_running or process not running");
-    return NULL;
+    goto error;
   }
 
   log_trace("dnsmasq running with pid=%d", child_pid);
-
   dns_process_started = true;
-  os_free(conf_arg);
-  return dnsmasq_proc_name;
+  return_val = dnsmasq_proc_name;
+
+error:
+  free(dhcp_argv_modifiable);
+  return return_val;
 }
-#endif
 
 bool kill_dhcp_process(void) {
   if (dns_process_started) {

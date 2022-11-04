@@ -192,13 +192,13 @@ void list_rule_cb(void *ctx, void *buf, size_t count) {
   os_free(out_str);
 }
 
-int run_iptables(struct iptables_context *ctx, char *argv[],
+int run_iptables(struct iptables_context *ctx, const char *const argv[],
                  process_callback_fn fn) {
   return run_argv_command(ctx->iptables_path, argv, fn, (void *)ctx);
 }
 
 int flush_iptables(struct iptables_context *ctx) {
-  char *basic_flush_rules[][11] = BASIC_FLUSH_COMMANDS;
+  const char *basic_flush_rules[][11] = BASIC_FLUSH_COMMANDS;
   int rule_count = 0;
 
   while (basic_flush_rules[rule_count][0] != NULL) {
@@ -214,8 +214,8 @@ int flush_iptables(struct iptables_context *ctx) {
 }
 
 int add_baseif_rules(struct iptables_context *ctx, UT_array *ifinfo_array) {
-  char *reject_rule[9] = {"-A", "FORWARD", "-t",     "filter", "-i",
-                          NULL, "-j",      "REJECT", NULL};
+  const char *reject_rule[9] = {"-A", "FORWARD", "-t",     "filter", "-i",
+                                NULL, "-j",      "REJECT", NULL};
 
   config_ifinfo_t *p = NULL;
   if (ifinfo_array == NULL)
@@ -239,7 +239,7 @@ void iptables_free(struct iptables_context *ctx) {
   }
 }
 
-struct iptables_context *iptables_init(char *path, UT_array *ifinfo_array,
+struct iptables_context *iptables_init(const char *path, UT_array *ifinfo_array,
                                        bool exec_iptables) {
   struct iptables_context *ctx = NULL;
 
@@ -276,8 +276,8 @@ struct iptables_context *iptables_init(char *path, UT_array *ifinfo_array,
 }
 
 int get_filter_rules(struct iptables_context *ctx) {
-  char *list_rule[8] = {"-L", "FORWARD", "-t", "filter", "--line-numbers",
-                        "-n", "-v",      NULL};
+  const char *list_rule[8] = {"-L", "FORWARD", "-t", "filter", "--line-numbers",
+                              "-n", "-v",      NULL};
 
   if (run_iptables(ctx, list_rule, list_rule_cb) < 0) {
     log_error("run_iptables fail");
@@ -288,8 +288,8 @@ int get_filter_rules(struct iptables_context *ctx) {
 }
 
 int get_nat_rules(struct iptables_context *ctx) {
-  char *list_rule[8] = {"-L", "POSTROUTING", "-t", "nat", "--line-numbers",
-                        "-n", "-v",          NULL};
+  const char *list_rule[8] = {
+      "-L", "POSTROUTING", "-t", "nat", "--line-numbers", "-n", "-v", NULL};
 
   if (run_iptables(ctx, list_rule, list_rule_cb) < 0) {
     log_trace("run_iptables fail");
@@ -299,8 +299,8 @@ int get_nat_rules(struct iptables_context *ctx) {
   return utarray_len(ctx->rule_list) ? 0 : -1;
 }
 
-long find_rule(UT_array *rlist, char *sip, char *sif, char *dip, char *dif,
-               char *target) {
+long find_rule(UT_array *rlist, const char *sip, const char *sif,
+               const char *dip, const char *dif, const char *target) {
   struct iptables_columns *el = NULL;
   while ((el = (struct iptables_columns *)utarray_next(rlist, el)) != NULL) {
     if (!strcmp(el->in, sif) && !strcmp(el->out, dif) &&
@@ -312,11 +312,11 @@ long find_rule(UT_array *rlist, char *sip, char *sif, char *dip, char *dif,
   return 0;
 }
 
-int delete_bridge_rule(struct iptables_context *ctx, char *sip, char *sif,
-                       char *dip, char *dif) {
+int delete_bridge_rule(struct iptables_context *ctx, const char *sip,
+                       const char *sif, const char *dip, const char *dif) {
   char num_buf[10];
 
-  char *bridge_rule[16] = {"-D", "FORWARD", NULL, "-t", "filter", NULL};
+  const char *bridge_rule[16] = {"-D", "FORWARD", NULL, "-t", "filter", NULL};
 
   if (get_filter_rules(ctx) < 0 && ctx->exec_iptables) {
     log_error("iptables rules empty");
@@ -341,8 +341,8 @@ int delete_bridge_rule(struct iptables_context *ctx, char *sip, char *sif,
   return 0;
 }
 
-int iptables_delete_bridge(struct iptables_context *ctx, char *sip, char *sif,
-                           char *dip, char *dif) {
+int iptables_delete_bridge(struct iptables_context *ctx, const char *sip,
+                           const char *sif, const char *dip, const char *dif) {
   if (delete_bridge_rule(ctx, sip, sif, dip, dif) < 0) {
     log_error("delete_bridge_rule fail");
     return -1;
@@ -356,7 +356,7 @@ int iptables_delete_bridge(struct iptables_context *ctx, char *sip, char *sif,
   return 0;
 }
 
-long find_baseif_rulenum(UT_array *rlist, char *ifname) {
+long find_baseif_rulenum(UT_array *rlist, const char *ifname) {
   struct iptables_columns *el = NULL;
   while ((el = (struct iptables_columns *)utarray_next(rlist, el)) != NULL) {
     if (!strcmp(el->in, ifname) && !strcmp(el->out, "*") &&
@@ -367,13 +367,13 @@ long find_baseif_rulenum(UT_array *rlist, char *ifname) {
   return 0;
 }
 
-int add_bridge_rule(struct iptables_context *ctx, char *sip, char *sif,
-                    char *dip, char *dif) {
+int add_bridge_rule(struct iptables_context *ctx, const char *sip,
+                    const char *sif, const char *dip, const char *dif) {
   char num_buf[10];
 
-  char *bridge_rule[16] = {"-I", "FORWARD", NULL,     "-t", "filter", "--src",
-                           NULL, "--dst",   NULL,     "-i", NULL,     "-o",
-                           NULL, "-j",      "ACCEPT", NULL};
+  const char *bridge_rule[16] = {
+      "-I", "FORWARD", NULL, "-t", "filter", "--src", NULL,     "--dst",
+      NULL, "-i",      NULL, "-o", NULL,     "-j",    "ACCEPT", NULL};
 
   if (ctx == NULL) {
     log_error("ctx param is NULL");
@@ -443,7 +443,7 @@ int iptables_add_bridge(struct iptables_context *ctx, char *sip, char *sif,
 
 int iptables_delete_nat(struct iptables_context *ctx, char *sip, char *sif,
                         char *nif) {
-  char *nat_rule[6] = {"-D", "POSTROUTING", NULL, "-t", "nat", NULL};
+  const char *nat_rule[6] = {"-D", "POSTROUTING", NULL, "-t", "nat", NULL};
   char num_buf[10];
 
   if (ctx == NULL) {
@@ -483,10 +483,10 @@ int iptables_delete_nat(struct iptables_context *ctx, char *sip, char *sif,
 
 int iptables_add_nat(struct iptables_context *ctx, char *sip, char *sif,
                      char *nif) {
-  char *nat_rule[14] = {
+  const char *nat_rule[14] = {
       "-I",    "POSTROUTING", "1",  "-t", "nat", "--src",      NULL,
       "--dst", "0.0.0.0/0",   "-o", NULL, "-j",  "MASQUERADE", NULL};
-  char *bridge_rule[16] = {
+  const char *bridge_rule[16] = {
       "-I", "FORWARD", "1",  "-t", "filter", "--src", "0.0.0.0/0", "--dst",
       NULL, "-i",      NULL, "-o", NULL,     "-j",    "ACCEPT",    NULL};
 

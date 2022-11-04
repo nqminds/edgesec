@@ -180,7 +180,7 @@ struct dns_schema {
   uint16_t nanswers;            /**< Packet Answers */
   uint16_t nauth;               /**< Packet Authority PRs */
   uint16_t nother;              /**< Packet Other PRs */
-  char qname[MAX_QUESTION_LEN]; /**< Packet question name*/
+  char qname[MAX_QUESTION_LEN]; /**< Packet question name */
 };
 
 /**

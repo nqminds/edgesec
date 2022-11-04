@@ -16,10 +16,10 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <errno.h>
+#include <minIni.h>
 
 #include "utils/allocs.h"
 #include "utils/os.h"
-#include "utils/minIni.h"
 #include "config.h"
 
 #include "supervisor/cmd_processor.h"
@@ -141,7 +141,6 @@ bool load_interface_list(const char *filename, struct app_config *config) {
     return false;
   }
 
-  // Load the bridge prefix
   ret =
       ini_gets("interfaces", "bridgePrefix", "", key, INI_BUFFERSIZE, filename);
   if (!ret) {
@@ -553,6 +552,13 @@ bool load_capture_config(const char *filename, struct capture_conf *config) {
 
   os_strlcpy(config->filter, value, MAX_FILTER_SIZE);
   os_free(value);
+
+  // Load middleware params
+  char ini_buffer[INI_BUFFERSIZE] = "";
+  ini_gets("capture", "middlewareParams", "", ini_buffer, INI_BUFFERSIZE,
+           filename);
+
+  os_strlcpy(config->middleware_params, ini_buffer, MAX_MIDDLEWARE_PARAMS_SIZE);
 
   // Load promiscuous param
   config->promiscuous = (int)ini_getbool("capture", "promiscuous", 0, filename);

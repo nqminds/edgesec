@@ -40,7 +40,7 @@ target_link_libraries(runctl PRIVATE
 )
 
 add_library(config config.c)
-target_link_libraries(config PUBLIC supervisor_config LibUTHash::LibUTHash PRIVATE minIni os log)
+target_link_libraries(config PUBLIC supervisor_config LibUTHash::LibUTHash PRIVATE MinIni::minIni os log)
 
 add_executable(edgesec edgesec.c)
 if (USE_CRYPTO_SERVICE)
@@ -48,12 +48,12 @@ if (USE_CRYPTO_SERVICE)
 else ()
   target_include_directories(edgesec PRIVATE ${PROJECT_BINARY_DIR})
 endif ()
-target_link_libraries(edgesec PRIVATE eloop config runctl minIni os hashmap Threads::Threads)
+target_link_libraries(edgesec PRIVATE eloop config runctl os hashmap Threads::Threads)
 # link time optimization
 set_target_properties(edgesec PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 if (USE_CAPTURE_SERVICE)
   add_executable(recap recap.c)
-  target_link_libraries(recap PRIVATE packet_queue packet_decoder sqlite_header os log SQLite::SQLite3)
+  target_link_libraries(recap PRIVATE protobuf_middleware packet_queue packet_decoder sqlite_header os log SQLite::SQLite3)
   target_include_directories(recap PRIVATE ${PROJECT_BINARY_DIR})
 endif()

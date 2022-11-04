@@ -34,7 +34,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/docs")
 
-include(CTest)
+include(AddCMockaTest)
 include(FetchContent)
 include(ExternalProject)
 include(CMakeDependentOption)
@@ -73,6 +73,7 @@ option(BUILD_SQLITE_LIB "Build sqlite3 library" ON)
 option(BUILD_CMOCKA_LIB "Build cmocka library" OFF)
 option(BUILD_UUID_LIB "Build uuid library" ON)
 option(BUILD_PCAP_LIB "Build pcap library" ON)
+option(BUILD_PROTOBUFC_LIB "Build protobuf-c library" ON)
 
 option(USE_NETLINK_SERVICE "Use netlink service" OFF)
 cmake_dependent_option(BUILD_MNL_LIB "Build mnl library" ON USE_NETLINK_SERVICE OFF)
@@ -87,6 +88,8 @@ option(USE_CAPTURE_SERVICE "Use the capture service" ON)
 option(USE_CLEANER_MIDDLEWARE "Use the cleaner middleware" OFF)
 option(USE_HEADER_MIDDLEWARE "Use the header middleware" OFF)
 option(USE_PCAP_MIDDLEWARE "Use the pcap middleware" OFF)
+option(USE_TAP_MIDDLEWARE "Use the tap middleware" OFF)
+option(USE_PROTOBUF_MIDDLEWARE "Use the protobuf middleware" OFF)
 
 cmake_dependent_option(BUILD_UCI_LIB "Build OpenWRT UCI library" ON USE_UCI_SERVICE OFF)
 option(USE_GENERIC_IP_SERVICE "Use generic ip service" OFF)
@@ -162,6 +165,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # Include the libraries
 include(hostapd)
 include(cmocka)
+include(minIni)
 include(mnl)
 include(netlink)
 include(nl)
@@ -172,6 +176,7 @@ include(sqlite)
 include(zymkey4)
 include(uci)
 include(uthash)
+include(protobuf-c)
 
 # On Linux, creates a Threads::Threads target that points to pthread
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
@@ -230,9 +235,10 @@ if (NOT BUILD_ONLY_DOCS)
         EXECUTABLE_ARGS --output-on-failure -j "${PROCESSOR_COUNT}"
         EXCLUDE
           "${PROJECT_SOURCE_DIR}/lib/*"
-          # this file is only in the build/ directory, but
+          # these file are only in the build/ directory, but
           # llvm-cov gcov doesn't seem to like it
           "${PROJECT_SOURCE_DIR}/middlewares_list.c"
+          "${PROJECT_SOURCE_DIR}/_deps/*"
       )
     endif()
 

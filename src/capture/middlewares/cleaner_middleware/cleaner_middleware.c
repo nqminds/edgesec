@@ -168,7 +168,8 @@ void free_cleaner_middleware(struct middleware_context *context) {
 
 struct middleware_context *init_cleaner_middleware(sqlite3 *db, char *db_path,
                                                    struct eloop_data *eloop,
-                                                   struct pcap_context *pc) {
+                                                   struct pcap_context *pc,
+                                                   char *params) {
   log_info("Init cleaner middleware...");
 
   if (db == NULL) {
@@ -206,6 +207,7 @@ struct middleware_context *init_cleaner_middleware(sqlite3 *db, char *db_path,
   context->eloop = eloop;
   context->pc = pc;
   context->mdata = (void *)cleaner_context;
+  context->params = params;
 
   if (get_pcap_folder_path(db_path, cleaner_context->pcap_path) < 0) {
     log_error("get_pcap_folder_path fail");
