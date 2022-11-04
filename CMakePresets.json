@@ -15,6 +15,10 @@
         "CMAKE_BUILD_TYPE": {
           "type": "STRING",
           "value": "Debug"
+        },
+        "EP_DOWNLOAD_DIR": {
+          "type": "PATH",
+          "value": "${sourceDir}/build/dl"
         }
       }
     },

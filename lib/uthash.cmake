@@ -9,6 +9,7 @@ else ()
         URL "https://github.com/troydhanson/uthash/archive/refs/tags/v${UTHASH_VERSION}.tar.gz"
         URL_HASH SHA512=c8005113a48ec7636715ecec0286a5d9086971a7267947aba9e0ad031b6113a4f38a1fb512d33d6fefb5891635fdd31169ce4d6ab04b938bda612ebbccb3eda0
         DOWNLOAD_NAME "uthash-${UTHASH_VERSION}.tar.gz"
+        DOWNLOAD_DIR "${EP_DOWNLOAD_DIR}" # if empty string, uses default download dir
     )
     FetchContent_MakeAvailable(uthash)
     set(UTHASH_INCLUDE_DIR "${uthash_SOURCE_DIR}/include")

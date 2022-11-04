@@ -100,6 +100,13 @@ endif ()
 option(USE_ZYMKEY4_HSM "Use the Zymkey4 HSM" OFF)
 option(CONFIGURE_COVERAGE "Configure for code coverage (requires lcov)" OFF)
 
+# Default ExternalProject download directory.
+# Useful for two reasons:
+#   - A single download directory can be shared for all build presets
+#   - Allows building/configuring when there is no internet connection
+#     (e.g. OpenWRT SDK or default `pdebuild` environment)
+set(EP_DOWNLOAD_DIR "" CACHE PATH "ExternalProject default DOWNLOAD_DIR")
+
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to 'Debug' as none was specified.")

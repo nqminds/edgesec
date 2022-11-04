@@ -51,6 +51,7 @@ if (USE_CRYPTO_SERVICE)
       openssl_src
       URL https://www.openssl.org/source/openssl-3.0.0.tar.gz
       URL_HASH SHA256=59eedfcb46c25214c9bd37ed6078297b4df01d012267fe9e9eee31f61bc70536
+      DOWNLOAD_DIR "${EP_DOWNLOAD_DIR}" # if empty string, uses default download dir
       INSTALL_DIR "${LIBOPENSSL_INSTALL_DIR}"
       CONFIGURE_COMMAND
         ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" "CC=${CMAKE_C_COMPILER}" "CXX=${CMAKE_CXX_COMPILER}"

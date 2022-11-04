@@ -31,6 +31,7 @@ if (BUILD_CMOCKA_LIB AND NOT (BUILD_ONLY_DOCS) AND NOT (CMAKE_CROSSCOMPILING))
     GIT_REPOSITORY https://gitlab.com/cmocka/cmocka.git
     # latest master commit as of 2022-08-10
     GIT_TAG 59dc0013f9f29fcf212fe4911c78e734263ce24c
+    DOWNLOAD_DIR "${EP_DOWNLOAD_DIR}" # if empty string, uses default
   )
 
   set(WITH_STATIC_LIB ON CACHE BOOL "CMocka: Build with a static library" FORCE)
