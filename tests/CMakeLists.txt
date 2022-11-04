@@ -8,8 +8,7 @@ include_directories (
 if (USE_UCI_SERVICE)
   # tests may modify these files, so we only run on a copy
   file(COPY "${CMAKE_SOURCE_DIR}/tests/data/uci" DESTINATION "${CMAKE_BINARY_DIR}/tests/data")
-  set(TEST_UCI_CONFIG_DIR "${CMAKE_BINARY_DIR}/tests/data/uci")
-  add_compile_definitions(TEST_UCI_CONFIG_DIR="${TEST_UCI_CONFIG_DIR}")
+  add_compile_definitions(UCI_CONFIG_DIR="${CMAKE_BINARY_DIR}/tests/data/uci")
   add_library(
     __wrap_uwrt_init_context OBJECT ./utils/__wrap_uwrt_init_context.c
   )
