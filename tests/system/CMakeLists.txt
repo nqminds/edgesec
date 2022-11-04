@@ -2,10 +2,7 @@ include_directories (
   "${PROJECT_SOURCE_DIR}/src"
 )
 
-add_executable(test_system_checks test_system_checks.c)
-target_link_libraries(test_system_checks PRIVATE log system_checks os hashmap cmocka::cmocka)
-
-add_test(NAME test_system_checks COMMAND test_system_checks)
-set_tests_properties(test_system_checks
-  PROPERTIES
-  WILL_FAIL FALSE)
+add_cmocka_test(test_system_checks
+  SOURCES test_system_checks.c
+  LINK_LIBRARIES log system_checks os hashmap cmocka::cmocka
+)
