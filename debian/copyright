@@ -30,6 +30,11 @@ Files: lib/netlink/*
 Copyright: 2010, see individual files for details
 License: GPL-2+
 
+Files: lib/cmocka.cmake
+Copyright: 2020, OLIVIER LE DOEUFF
+License: Expat
+Comment: Taken from https://github.com/OlivierLDff/cmocka-cmake-example/blob/f11cb0eb5ab4b0bde5df400888c5d17b6882bd97/cmake/FetchCMocka.cmake
+
 Files: src/radius/md5.* src/radius/md5_internal.*
 Copyright: 2003-2005, Jouni Malinen <j@w1.fi>
 License: BSD-3-clause
