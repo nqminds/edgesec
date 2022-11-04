@@ -51,18 +51,20 @@ void fw_free_context(struct fwctx *context) {
 }
 
 #ifdef WITH_UCI_SERVICE
-int run_firewall(char *path) {
-  const char *argv[2] = {FIREWALL_SERVICE_RELOAD, NULL};
+int run_firewall(struct fwctx *context) {
+  if (context->exec_firewall) {
+    const char *argv[2] = {FIREWALL_SERVICE_RELOAD, NULL};
 
-  if (path != NULL) {
-    return run_argv_command(path, argv, NULL, NULL);
+    if (context->firewall_bin_path != NULL) {
+      return run_argv_command(context->firewall_bin_path, argv, NULL, NULL);
+    }
   }
 
   return 0;
 }
 #else
-int run_firewall(char *path) {
-  (void)path;
+int run_firewall(struct fwctx *context) {
+  (void)context;
 
   return 0;
 }
@@ -125,32 +127,34 @@ struct fwctx *fw_init_context(hmap_if_conn *if_mapper,
   fw_ctx->exec_firewall = exec_firewall;
   fw_ctx->firewall_bin_path = path;
 #ifdef WITH_UCI_SERVICE
-  config_ifinfo_t *p = NULL;
-  if ((fw_ctx->ctx = uwrt_init_context(NULL)) == NULL) {
-    log_error("uwrt_init_context fail");
-    fw_free_context(fw_ctx);
-    return NULL;
-  }
-
-  if (uwrt_cleanup_firewall(fw_ctx->ctx) < 0) {
-    log_error("uwrt_cleanup_firewall fail");
-    fw_free_context(fw_ctx);
-    return NULL;
-  }
-
-  while ((p = (config_ifinfo_t *)utarray_next(config_ifinfo_array, p)) !=
-         NULL) {
-    if (uwrt_gen_firewall_zone(fw_ctx->ctx, p->brname) < 0) {
+  if (exec_firewall) {
+    config_ifinfo_t *p = NULL;
+    if ((fw_ctx->ctx = uwrt_init_context(NULL)) == NULL) {
       log_error("uwrt_init_context fail");
       fw_free_context(fw_ctx);
       return NULL;
     }
-  }
 
-  if (uwrt_commit_section(fw_ctx->ctx, "firewall") < 0) {
-    log_error("uwrt_commit_section fail");
-    fw_free_context(fw_ctx);
-    return NULL;
+    if (uwrt_cleanup_firewall(fw_ctx->ctx) < 0) {
+      log_error("uwrt_cleanup_firewall fail");
+      fw_free_context(fw_ctx);
+      return NULL;
+    }
+
+    while ((p = (config_ifinfo_t *)utarray_next(config_ifinfo_array, p)) !=
+           NULL) {
+      if (uwrt_gen_firewall_zone(fw_ctx->ctx, p->brname) < 0) {
+        log_error("uwrt_init_context fail");
+        fw_free_context(fw_ctx);
+        return NULL;
+      }
+    }
+
+    if (uwrt_commit_section(fw_ctx->ctx, "firewall") < 0) {
+      log_error("uwrt_commit_section fail");
+      fw_free_context(fw_ctx);
+      return NULL;
+    }
   }
 #else
   const char *iptables_path = hmap_str_keychar_get(hmap_bin_paths, "iptables");
@@ -168,7 +172,7 @@ struct fwctx *fw_init_context(hmap_if_conn *if_mapper,
   }
 #endif
 
-  if (run_firewall(fw_ctx->firewall_bin_path) < 0) {
+  if (run_firewall(fw_ctx) < 0) {
     log_error("run_firewall fail");
     fw_free_context(fw_ctx);
     return NULL;
@@ -213,7 +217,7 @@ int fw_add_nat(struct fwctx *context, char *ip_addr) {
   }
 #endif
 
-  if (run_firewall(context->firewall_bin_path) < 0) {
+  if (run_firewall(context) < 0) {
     log_error("run_firewall fail");
     return -1;
   }
@@ -249,7 +253,7 @@ int fw_remove_nat(struct fwctx *context, char *ip_addr) {
   }
 #endif
 
-  if (run_firewall(context->firewall_bin_path) < 0) {
+  if (run_firewall(context) < 0) {
     log_error("run_firewall fail");
     return -1;
   }
@@ -310,7 +314,7 @@ int fw_add_bridge(struct fwctx *context, char *ip_addr_left,
   }
 #endif
 
-  if (run_firewall(context->firewall_bin_path) < 0) {
+  if (run_firewall(context) < 0) {
     log_error("run_firewall fail");
     return -1;
   }
@@ -356,7 +360,7 @@ int fw_remove_bridge(struct fwctx *context, char *ip_addr_left,
   }
 #endif
 
-  if (run_firewall(context->firewall_bin_path) < 0) {
+  if (run_firewall(context) < 0) {
     log_error("run_firewall fail");
     return -1;
   }
