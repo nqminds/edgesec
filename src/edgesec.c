@@ -213,7 +213,7 @@ int main(int argc, char *argv[]) {
 
   os_init_random_seed();
 
-  if (run_ctl(&config) < 0) {
+  if (run_ctl(&config, NULL) < 0) {
     fprintf(stderr, "Failed to start edgesec engine.\n");
     return EXIT_FAILURE;
   } else

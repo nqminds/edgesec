@@ -8,7 +8,7 @@ target_link_libraries(ip_addr PRIVATE os allocs)
 target_compile_definitions(ip_addr PRIVATE _DEFAULT_SOURCE _BSD_SOURCE)
 
 add_library(radius_client radius_client.c)
-target_link_libraries(radius_client ip_addr radius md5 wpabuf log os eloop)
+target_link_libraries(radius_client PRIVATE ip_addr radius md5 wpabuf log os eloop)
 
 add_cmocka_test(test_radius_server
   SOURCES test_radius_server.c

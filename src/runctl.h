@@ -30,9 +30,10 @@ int init_context(struct app_config *app_config, struct supervisor_context *ctx);
  * starts the supervisor, radius servers and hostapd service.
  *
  * @param app_config The app configuration structures, setting WiFi network
+ * @param eloop The eloop structure, if NULL initialises a new one
  * config params.
  * @return @c 0 if succes, @c -1 if a service fails to start.
  */
-int run_ctl(struct app_config *app_config);
+int run_ctl(struct app_config *app_config, struct eloop_data *eloop);
 
 #endif

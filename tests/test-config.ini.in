@@ -62,7 +62,7 @@ ignoreBroadcastSsid = 0
 wpaPskRadius = 2
 
 [radius]
-port = 1812
+port = 54321
 clientIP = "127.0.0.1"
 clientMask = 32
 serverIP = "127.0.0.1"
