@@ -20,9 +20,11 @@
 
 #include "utils/sockctl.h"
 #include "supervisor/cmd_processor.h"
+#include "supervisor/system_commands.h"
 #include "ap/ap_service.h"
 
 #define AP_CTRL_IFACE_PATH "/tmp/wifi0"
+#define SUPERVISOR_CONTROL_PATH "/tmp/edgesec-control-server"
 
 pthread_mutex_t log_lock;
 
@@ -34,7 +36,7 @@ void log_lock_fun(bool lock) {
   }
 }
 
-void hostapd_eloop(int sock, void *eloop_ctx, void *sock_ctx) {
+void ap_eloop(int sock, void *eloop_ctx, void *sock_ctx) {
   (void)eloop_ctx;
   (void)sock_ctx;
 
@@ -52,6 +54,8 @@ void hostapd_eloop(int sock, void *eloop_ctx, void *sock_ctx) {
                       ARRAY_SIZE(PING_AP_COMMAND_REPLY), &addr);
   } else if (strcmp(buf, ATTACH_AP_COMMAND) == 0) {
     log_trace("RECEIVED ATTACH");
+  } else {
+    fail_msg("Uknown AP command received %s", buf);
   }
   os_free(buf);
 }
@@ -64,11 +68,40 @@ void *ap_server_thread(void *arg) {
   assert_int_not_equal(fd, -1);
 
   assert_int_not_equal(
-      eloop_register_read_sock(eloop, fd, hostapd_eloop, (void *)eloop, NULL),
-      -1);
+      eloop_register_read_sock(eloop, fd, ap_eloop, (void *)eloop, NULL), -1);
 
   eloop_run(eloop);
   assert_int_equal(close_domain_socket(fd), 0);
+  return NULL;
+}
+
+void *supervisor_client_thread(void *arg) {
+  (void)arg;
+  char socket_path[MAX_OS_PATH_LEN];
+  char ping_reply[ARRAY_SIZE(PING_REPLY) + 1];
+  strcpy(ping_reply, PING_REPLY);
+  rtrim(ping_reply, NULL);
+  strcpy(socket_path, SUPERVISOR_CONTROL_PATH);
+  // struct eloop_data *eloop = (struct eloop_data *)arg;
+
+  int count = 10;
+  while (count--) {
+    char *reply = NULL;
+    writeread_domain_data_str(socket_path, CMD_PING, &reply);
+    if (reply != NULL) {
+      if (strcmp(reply, ping_reply) == 0) {
+        os_free(reply);
+        break;
+      }
+    }
+    sleep(1);
+  }
+
+  if (!count) {
+    fail_msg("Couldn't ping supervisor");
+  }
+
+  // eloop_run(eloop);
   return NULL;
 }
 
@@ -92,9 +125,17 @@ static void test_edgesec(void **state) {
   assert_int_equal(
       pthread_create(&ap_id, NULL, ap_server_thread, (void *)ap_eloop), 0);
 
+  pthread_t supervisor_id = 0;
+  struct eloop_data *supervisor_eloop = eloop_init();
+  assert_int_equal(pthread_create(&supervisor_id, NULL,
+                                  supervisor_client_thread,
+                                  (void *)supervisor_eloop),
+                   0);
+
   assert_int_equal(run_ctl(&config), 0);
 
   assert_int_equal(pthread_join(ap_id, NULL), 0);
+  assert_int_equal(pthread_join(supervisor_id, NULL), 0);
 
   eloop_free(ap_eloop);
   free_app_config(&config);
