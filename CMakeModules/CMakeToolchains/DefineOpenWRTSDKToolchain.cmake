@@ -70,6 +70,7 @@ function(defineOpenwrtSDKToolchain)
             openwrt_sdk_download
             URL "${OpenWRT_SDK_URL}"
             URL_HASH "${OpenWRT_SDK_URL_HASH}"
+            DOWNLOAD_DIR "${EP_DOWNLOAD_DIR}" # if empty string, uses default download dir
         )
         FetchContent_Populate(openwrt_sdk_download)
         set(

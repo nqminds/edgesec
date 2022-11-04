@@ -20,6 +20,7 @@ elseif(BUILD_MNL_LIB)
     libmnl_src
     URL https://www.netfilter.org/pub/libmnl/libmnl-1.0.4.tar.bz2
     URL_HASH SHA256=171f89699f286a5854b72b91d06e8f8e3683064c5901fb09d954a9ab6f551f81
+    DOWNLOAD_DIR "${EP_DOWNLOAD_DIR}" # if empty string, uses default download dir
     INSTALL_DIR "${LIBMNLINSTALL_DIR}"
     CONFIGURE_COMMAND autoreconf -f -i <SOURCE_DIR>
     COMMAND
