@@ -33,6 +33,10 @@ Copyright: 2002-2019, Jouni Malinen <j@w1.fi>
            2021-2022, NquiringMinds Ltd.
 License: BSD-3-clause
 
+Files: tests/radius/radius_client.*
+Copyright: 2002-2015, Jouni Malinen <j@w1.fi>
+License: BSD-3-clause
+
 Files: src/utils/eloop.*
 Copyright: 2002-2006, Jouni Malinen <j@w1.fi>
            2022, NquiringMinds Ltd.
