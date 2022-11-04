@@ -24,6 +24,14 @@ else()
     endif()
   endif()
 
+  if(BUILD_SHARED_LIBS)
+    set(LIBPROTOBUFC_LIB "${LIBPROTOBUFC_INSTALL_DIR}/lib/libprotobuf-c.so")
+    add_library(protobufc::protobufc SHARED IMPORTED)
+  else()
+    set(LIBPROTOBUFC_LIB "${LIBPROTOBUFC_INSTALL_DIR}/lib/libprotobuf-c.a")
+    add_library(protobufc::protobufc STATIC IMPORTED)
+  endif()
+
   message("Downloading and compiling our own libprotobuf-c library")
   ExternalProject_Add(
     libprotobuf-c
@@ -43,17 +51,9 @@ else()
       "-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}"
       # CMAKE_TOOLCHAIN_FILE, if it exists
       ${CMAKE_CROSSCOMPILING_ARGS}
+    # technically this is an INSTALL_BYPRODUCT, but we only ever need this to make Ninja happy
+    BUILD_BYPRODUCTS "${LIBPROTOBUFC_LIB}"
   )
-  ExternalProject_Get_Property(libprotobuf-c INSTALL_DIR)
-
-  set(LIBPROTOBUFC_INSTALL_DIR "${INSTALL_DIR}")
-  if(BUILD_SHARED_LIBS)
-    set(LIBPROTOBUFC_LIB "${LIBPROTOBUFC_INSTALL_DIR}/lib/libprotobuf-c.so")
-    add_library(protobufc::protobufc SHARED IMPORTED)
-  else()
-    set(LIBPROTOBUFC_LIB "${LIBPROTOBUFC_INSTALL_DIR}/lib/libprotobuf-c.a")
-    add_library(protobufc::protobufc STATIC IMPORTED)
-  endif()
 
   # folder might not yet exist if using ExternalProject_Add
   set(LIBPROTOBUFC_INCLUDE_DIR "${LIBPROTOBUFC_INSTALL_DIR}/include")
