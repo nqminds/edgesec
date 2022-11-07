@@ -54,7 +54,7 @@ target_link_libraries(eloop PUBLIC allocs os PRIVATE log)
 add_library(hash OBJECT hash.c)
 
 add_library(squeue squeue.c)
-target_link_libraries(squeue PRIVATE log os)
+target_link_libraries(squeue PRIVATE allocs os log)
 
 add_library(sqliteu sqliteu.c)
 target_link_libraries(sqliteu PUBLIC SQLite::SQLite3 PRIVATE log os)
