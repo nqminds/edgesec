@@ -12,6 +12,8 @@ endif()
 # libmnl0 linking doesn't work properly, unless we setup RPATHs
 SET(CMAKE_INSTALL_RPATH "$ORIGIN" "$<TARGET_LINKER_FILE_DIR:MNL::mnl>")
 
+set(CMAKE_C_EXTENSIONS ON) # libnetlink uses a lot of GNU/Linux C extensions
+
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to 'Debug' as none was specified.")
