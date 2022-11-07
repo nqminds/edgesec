@@ -14,6 +14,7 @@
 #include <net/if.h>
 #include <inttypes.h>
 #include <stdbool.h>
+#include <pthread.h>
 #include <netinet/in.h>
 #include <net/ethernet.h>
 
