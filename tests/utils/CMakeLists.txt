@@ -24,6 +24,9 @@ target_link_libraries(test_os PRIVATE tmpdir os allocs hashmap cmocka::cmocka)
 
 add_executable(test_eloop test_eloop.c)
 target_link_libraries(test_eloop PRIVATE tmpdir sockctl os allocs eloop cmocka::cmocka)
+# requires the POSIX.1-2008 to define PATH_MAX
+# (POSIX.1-2001 has some issues, see https://man7.org/linux/man-pages/man3/realpath.3.html)
+target_compile_definitions(test_eloop PRIVATE _POSIX_C_SOURCE=200809L)
 
 add_executable(test_eloop_threaded test_eloop_threaded.c)
 target_link_libraries(test_eloop_threaded PRIVATE eloop cmocka::cmocka sockctl LibUTHash::LibUTHash Threads::Threads)
