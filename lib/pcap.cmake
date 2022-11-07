@@ -36,4 +36,11 @@ else()
   add_library(PCAP::pcap INTERFACE IMPORTED)
   target_link_libraries(PCAP::pcap INTERFACE pcap_static)
   target_include_directories(PCAP::pcap INTERFACE "${libpcap_SOURCE_DIR}")
+  target_compile_definitions(
+    # pcap requires BSD types to be defined, e.g. u_int/u_short/u_char
+    # the following syntax works for uClibc, glibc, musl libc
+    PCAP::pcap INTERFACE
+      "_BSD_SOURCE" # deprecated in glibc >2.20
+      "_DEFAULT_SOURCE" # only added in glibc >2.19, musl >=1.1.5
+  )
 endif ()
