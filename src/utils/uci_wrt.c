@@ -34,7 +34,7 @@ struct uci_type_list {
 
 static const UT_icd netif_info_icd = {sizeof(netif_info_t), NULL, NULL, NULL};
 
-void uwrt_print_error(struct uci_context *ctx, char *name) {
+void uwrt_print_error(struct uci_context *ctx, const char *name) {
   char *error = NULL;
 
   uci_get_errorstr(ctx, &error, NULL);
@@ -288,10 +288,10 @@ uwrt_lookup_fail:
   return ret;
 }
 
-char *uwrt_extract_value(char *str, char *key) {
-  char *value = NULL;
-
-  if ((value = strstr(str, key)) == NULL) {
+const char *uwrt_extract_value(const char *str, const char *key) {
+  // substr returns a non-const str, but it really should be a const char *
+  const char *value = strstr(str, key);
+  if (value == NULL) {
     return NULL;
   }
 
@@ -306,18 +306,19 @@ char *uwrt_extract_value(char *str, char *key) {
 
 int uwrt_get_net_if(UT_array *kv, netif_info_t *nif) {
   char **ptr = NULL;
-  char *value = NULL;
 
   os_memset(nif, 0, sizeof(netif_info_t));
 
   while ((ptr = (char **)utarray_next(kv, ptr))) {
-    if ((value = uwrt_extract_value(*ptr, IFNAME_EXPR)) != NULL) {
-      strcpy(nif->ifname, value);
+    const char *ifname_value = uwrt_extract_value(*ptr, IFNAME_EXPR);
+    if (ifname_value != NULL) {
+      strcpy(nif->ifname, ifname_value);
     }
 
-    if ((value = uwrt_extract_value(*ptr, IPADDR_EXPR)) != NULL) {
+    const char *ip_addr_value = uwrt_extract_value(*ptr, IPADDR_EXPR);
+    if (ip_addr_value != NULL) {
       nif->ifa_family = AF_INET;
-      strcpy(nif->ip_addr, value);
+      strcpy(nif->ip_addr, ip_addr_value);
     }
   }
 

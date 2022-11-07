@@ -14,7 +14,7 @@ add_library(base64 base64.c)
 target_link_libraries(base64 PRIVATE os log)
 
 add_library(hashmap hashmap.c)
-target_link_libraries(hashmap PUBLIC LibUTHash::LibUTHash PRIVATE log os)
+target_link_libraries(hashmap PUBLIC LibUTHash::LibUTHash PRIVATE log)
 
 add_library(os os.c)
 set_property(TARGET os PROPERTY POSITION_INDEPENDENT_CODE ON)
@@ -51,21 +51,14 @@ elseif (USE_GENERIC_IP_SERVICE)
   target_link_libraries(iface PUBLIC ipgen)
 endif ()
 
-add_library(minIni minIni.c)
-# minIni.c tries to use strncasecmp, which is in the POSIX.1-2001 spec
-# However, it only includes C's `<string.h>`, not POSIX `<strings.h>`.
-# glibc exports strncasecmp in `<string.h>` only if _DEFAULT_SOURCE is defined.
-target_compile_definitions(minIni PRIVATE _DEFAULT_SOURCE _BSD_SOURCE)
-
 add_library(eloop eloop.c)
 # todo, add list
 target_link_libraries(eloop PUBLIC allocs os PRIVATE log)
 
-add_library(hash hash.c)
-target_link_libraries(hash PRIVATE os)
+add_library(hash OBJECT hash.c)
 
 add_library(squeue squeue.c)
-target_link_libraries(squeue PRIVATE log os)
+target_link_libraries(squeue PRIVATE allocs os log)
 
 add_library(sqliteu sqliteu.c)
 target_link_libraries(sqliteu PUBLIC SQLite::SQLite3 PRIVATE log os)

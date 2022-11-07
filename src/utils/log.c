@@ -37,10 +37,10 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <syslog.h>
+#include <string.h>
 
 #include "log.h"
 #include "time.h"
-#include "ename.h"
 
 #define PRINT_COLOR(stream, time, color, name, err, file, line)                \
   fprintf(stream, "%s %s%-5s\x1b[0m%s\x1b[0m \x1b[90m%s:%d:\x1b[0m ", time,    \
@@ -170,10 +170,21 @@ bool log_check_level(uint8_t level, bool ignore_level) {
     return false;
 }
 
+/**
+ * @brief Get the error text object
+ *
+ * @param[out] buf String buffer of at least 30 chars
+ * @param err `errno` value passed to strerror()
+ * @return The number of bytes written to @p buf, or 0 if buf is empty.
+ *
+ * **Warning**, this function is non-threadsafe, as stderror() is not
+ * guaranteed to be threadsafe. Please make sure to uses mutxes/locks
+ * before calling this function.
+ */
 int16_t get_error_text(char *buf, uint8_t err) {
   int16_t ret = 0;
-  if (err > 0 && err <= MAX_ENAME) {
-    ret = snprintf(buf, 30, "[%s(%d)]", ename[err], err);
+  if (err > 0) {
+    ret = snprintf(buf, 30, "[%s(%d)]", strerror(err), err);
   } else {
     buf[0] = '\0';
   }
@@ -197,7 +208,7 @@ void print_to(uint8_t level, const char *file, uint32_t line, uint8_t err,
     }
   }
 
-  if (err > 0 && err <= MAX_ENAME)
+  if (err > 0)
     fprintf(stream, "[%s] ", strerror(err));
 
   vfprintf(stream, format, args);

@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package arp;
+
+message ArpSchema {
+  // Packet id
+  string id = 1;
+
+  // Packet Format of hardware address
+  uint32 ar_hrd = 2;
+
+  // Packet Format of protocol address
+  uint32 ar_pro = 3;
+
+  // Packet Length of hardware address
+  uint32 ar_hln = 4;
+
+  // Packet Length of protocol address
+  uint32 ar_pln = 5;
+
+  // Packet ARP opcode (command)
+  uint32 ar_op = 6;
+
+  // Packet sender hardware address
+  string arp_sha = 7;
+
+  // Packet sender protocol address
+  string arp_spa = 8;
+
+  // Packet target hardware address
+  string arp_tha = 9;
+
+  // Packet target protocol address */
+  string arp_tpa = 10;
+}

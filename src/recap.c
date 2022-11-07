@@ -28,21 +28,18 @@
 #include "capture/middlewares/header_middleware/sqlite_header.h"
 #include "capture/middlewares/header_middleware/packet_decoder.h"
 #include "capture/middlewares/header_middleware/packet_queue.h"
-
-#define RECAP_VERSION_MAJOR 0
-#define RECAP_VERSION_MINOR 0
-#define RECAP_VERSION_PATCH 1
+#include "capture/middlewares/protobuf_middleware/protobuf_middleware.h"
 
 #define PCAP_READ_INTERVAL 10 // in ms
 #define PCAP_READ_SIZE 1024   // bytes
 #define IFNAME_DEFAULT "ifname"
 
-#define OPT_STRING ":p:f:i:dhv"
+#define OPT_STRING ":p:f:i:kdhv"
 #define USAGE_STRING                                                           \
-  "\t%s [-p filename] [-f filename] [-i interface] [-d] [-h] [-v]\n"
+  "\t%s [-p filename] [-f filename] [-i interface] [-k] [-d] [-h] [-v]\n"
 
 #define DESCRIPTION_STRING                                                     \
-  "\nRun capture on an input pcap file and output to a capture db.\n"
+  "\nRun capture on an input pcap file and output to a capture db or pipe.\n"
 
 enum PCAP_STATE {
   PCAP_STATE_INIT = 0,
@@ -61,15 +58,18 @@ struct pcap_pkthdr32 {
 
 struct pcap_stream_context {
   sqlite3 *db;
+  int pipe_fd;
   FILE *pcap_fd;
   char *pcap_data;
   char *ifname;
+  char *out_path;
   ssize_t data_size;
   uint64_t total_size;
   uint64_t npackets;
   enum PCAP_STATE state;
   struct pcap_file_header pcap_header;
   struct pcap_pkthdr32 pkt_header;
+  int pipe;
 };
 
 void show_app_version(void) {
@@ -83,8 +83,9 @@ void show_app_help(char *app_name) {
   fprintf(stdout, DESCRIPTION_STRING);
   fprintf(stdout, "\nOptions:\n");
   fprintf(stdout, "\t-p filename\t Path to the pcap file name\n");
-  fprintf(stdout, "\t-f filename\t Path to the capture db\n");
+  fprintf(stdout, "\t-f filename\t Path to the capture db or pipe\n");
   fprintf(stdout, "\t-i interface\t Interface name to save to db\n");
+  fprintf(stdout, "\t-k\t\t Pipe to file\n");
   fprintf(stdout,
           "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n");
   fprintf(stdout, "\t-h\t\t Show help\n");
@@ -110,7 +111,8 @@ void log_cmdline_error(const char *format, ...) {
 }
 
 void process_app_options(int argc, char *argv[], uint8_t *verbosity,
-                         char **pcap_path, char **db_path, char **ifname) {
+                         char **pcap_path, char **out_path, char **ifname,
+                         int *pipe) {
   int opt;
 
   while ((opt = getopt(argc, argv, OPT_STRING)) != -1) {
@@ -126,10 +128,13 @@ void process_app_options(int argc, char *argv[], uint8_t *verbosity,
         *pcap_path = os_strdup(optarg);
         break;
       case 'f':
-        *db_path = os_strdup(optarg);
+        *out_path = os_strdup(optarg);
         break;
       case 'i':
         *ifname = os_strdup(optarg);
+        break;
+      case 'k':
+        *pipe = 1;
         break;
       case 'd':
         (*verbosity)++;
@@ -270,8 +275,6 @@ int save_sqlite_packet(sqlite3 *db, UT_array *packets) {
   return 0;
 }
 
-void free_packet(void *elt) { free_packet_tuple((struct tuple_packet *)elt); }
-
 static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL,
                                    free_packet};
 
@@ -298,10 +301,18 @@ int save_packet(struct pcap_stream_context *pctx) {
 
   log_trace("Decoded %d packets", npackets);
 
-  if (save_sqlite_packet(pctx->db, packets) < 0) {
-    log_error("save_sqlite_packet fail");
-    utarray_free(packets);
-    return -1;
+  if (pctx->pipe) {
+    if (pipe_protobuf_packets(pctx->out_path, &pctx->pipe_fd, packets) < 0) {
+      log_error("pipe_protobuf_packets fail");
+      utarray_free(packets);
+      return -1;
+    }
+  } else {
+    if (save_sqlite_packet(pctx->db, packets) < 0) {
+      log_error("save_sqlite_packet fail");
+      utarray_free(packets);
+      return -1;
+    }
   }
 
   pctx->npackets += npackets;
@@ -311,7 +322,7 @@ int save_packet(struct pcap_stream_context *pctx) {
 }
 
 int process_pkt_read_state(struct pcap_stream_context *pctx) {
-  size_t len = (pctx->pkt_header.caplen > pctx->data_size)
+  size_t len = ((ssize_t)pctx->pkt_header.caplen > pctx->data_size)
                    ? pctx->pkt_header.caplen - pctx->data_size
                    : 0;
 
@@ -321,7 +332,7 @@ int process_pkt_read_state(struct pcap_stream_context *pctx) {
     return -1;
   }
 
-  if (pctx->data_size >= pctx->pkt_header.caplen) {
+  if (pctx->data_size >= (ssize_t)pctx->pkt_header.caplen) {
     log_trace("Received pkt data");
 
     if (save_packet(pctx) < 0) {
@@ -380,18 +391,22 @@ int process_pcap_stream_state(struct pcap_stream_context *pctx) {
 }
 
 int main(int argc, char *argv[]) {
+  int ret;
   uint8_t verbosity = 0;
   uint8_t level = 0;
-  char *pcap_path = NULL, *db_path = NULL;
+  char *pcap_path = NULL;
   struct pcap_stream_context pctx = {.db = NULL,
+                                     .pipe_fd = -1,
                                      .pcap_fd = NULL,
                                      .ifname = NULL,
+                                     .out_path = NULL,
                                      .state = PCAP_STATE_INIT,
                                      .total_size = 0,
-                                     .npackets = 0};
+                                     .npackets = 0,
+                                     .pipe = 0};
 
-  process_app_options(argc, argv, &verbosity, &pcap_path, &db_path,
-                      &pctx.ifname);
+  process_app_options(argc, argv, &verbosity, &pcap_path, &pctx.out_path,
+                      &pctx.ifname, &pctx.pipe);
 
   if (verbosity > MAX_LOG_LEVELS) {
     level = 0;
@@ -412,35 +427,47 @@ int main(int argc, char *argv[]) {
   /* Set the log level */
   log_set_level(level);
 
-  int ret = sqlite3_open(db_path, &pctx.db);
+  if (!pctx.pipe) {
+    ret = sqlite3_open(pctx.out_path, &pctx.db);
 
-  fprintf(stdout, "Openning db at %s\n", db_path);
+    fprintf(stdout, "Opened db at %s\n", pctx.out_path);
 
-  os_free(db_path);
-
-  if (ret != SQLITE_OK) {
-    fprintf(stdout, "Cannot open database: %s", sqlite3_errmsg(pctx.db));
-    if (pcap_path != NULL) {
-      os_free(pcap_path);
+    if (ret != SQLITE_OK) {
+      fprintf(stdout, "Cannot open database: %s", sqlite3_errmsg(pctx.db));
+      if (pcap_path != NULL) {
+        os_free(pcap_path);
+      }
+      os_free(pctx.ifname);
+      sqlite3_close(pctx.db);
+      os_free(pctx.out_path);
+      return EXIT_FAILURE;
     }
-    os_free(pctx.ifname);
-    sqlite3_close(pctx.db);
-    return EXIT_FAILURE;
-  }
 
-  if (init_sqlite_header_db(pctx.db) < 0) {
-    fprintf(stdout, "init_sqlite_header_db fail\n");
-    if (pcap_path != NULL) {
-      os_free(pcap_path);
+    if (init_sqlite_header_db(pctx.db) < 0) {
+      fprintf(stdout, "init_sqlite_header_db fail\n");
+      if (pcap_path != NULL) {
+        os_free(pcap_path);
+      }
+      os_free(pctx.ifname);
+      sqlite3_close(pctx.db);
+      os_free(pctx.out_path);
+      return EXIT_FAILURE;
     }
-    os_free(pctx.ifname);
-    sqlite3_close(pctx.db);
-    return EXIT_FAILURE;
+  } else {
+    if (create_pipe_file(pctx.out_path) < 0) {
+      log_error("create_pipe_file fail");
+      os_free(pctx.ifname);
+      os_free(pctx.out_path);
+      return EXIT_FAILURE;
+    }
+
+    fprintf(stdout, "Created pipe file at %s\n", pctx.out_path);
   }
 
   if (pcap_path != NULL) {
     if ((pctx.pcap_fd = fopen(pcap_path, "rb")) == NULL) {
       perror("fopen");
+      os_free(pctx.out_path);
       os_free(pcap_path);
       os_free(pctx.ifname);
       sqlite3_close(pctx.db);
@@ -460,6 +487,7 @@ int main(int argc, char *argv[]) {
       os_free(pcap_path);
       fclose(pctx.pcap_fd);
     }
+    os_free(pctx.out_path);
     os_free(pctx.ifname);
     return EXIT_FAILURE;
   }
@@ -472,6 +500,7 @@ int main(int argc, char *argv[]) {
     fclose(pctx.pcap_fd);
   }
 
+  os_free(pctx.out_path);
   sqlite3_close(pctx.db);
   os_free(pctx.ifname);
   return EXIT_SUCCESS;

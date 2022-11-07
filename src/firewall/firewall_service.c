@@ -52,7 +52,7 @@ void fw_free_context(struct fwctx *context) {
 
 #ifdef WITH_UCI_SERVICE
 int run_firewall(char *path) {
-  char *argv[2] = {FIREWALL_SERVICE_RELOAD, NULL};
+  const char *argv[2] = {FIREWALL_SERVICE_RELOAD, NULL};
 
   if (path != NULL) {
     return run_argv_command(path, argv, NULL, NULL);
@@ -153,7 +153,7 @@ struct fwctx *fw_init_context(hmap_if_conn *if_mapper,
     return NULL;
   }
 #else
-  char *iptables_path = hmap_str_keychar_get(&hmap_bin_paths, "iptables");
+  const char *iptables_path = hmap_str_keychar_get(hmap_bin_paths, "iptables");
   if (iptables_path == NULL) {
     log_error("Couldn't find iptables binary");
     fw_free_context(fw_ctx);

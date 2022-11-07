@@ -56,53 +56,61 @@
  * @param ip The IP in fromat x.y.z.q
  * @return true if the string is an IP, false otherwise
  */
-bool validate_ipv4_string(char *ip);
+bool validate_ipv4_string(const char *ip);
 
 /**
  * @brief IP string to @c struct in_addr_t converter
  *
  * @param ip The IP address string
  * @param subnetMask The IP address subnet mask
- * @param addr The output @c struct in_addr_t value
+ * @param[out] addr The output @c struct in_addr_t value
  * @return 0 on success, -1 on failure
  */
-int ip_2_nbo(char *ip, char *subnetMask, in_addr_t *addr);
+int ip_2_nbo(const char *ip, const char *subnetMask, in_addr_t *addr);
 
 /**
  * @brief IP string to buffer
  *
  * @param ip The IP address string
- * @param buf The output buffer of size IP_ALEN
+ * @param[out] buf The output buffer of size IP_ALEN
  * @return 0 on success, -1 on failure
  */
-int ip4_2_buf(char *ip, uint8_t *buf);
+int ip4_2_buf(const char *ip, uint8_t buf[static IP_ALEN]);
 
 /**
  * @brief Convert a 32 bit number IP to an IP string
  *
  * @param addr The IP in 32 bit format
- * @param ip The input buffer to store the IP
- * @return char* Pointer to the returned IP
+ * @param[out] ip The output buffer to store the IP.
+ * Must be at least OS_INET_ADDRSTRLEN chars long.
+ * @return Pointer to the returned IP (same as @p ip on success)
+ * @retval NULL on error (see errno).
  */
-const char *bit32_2_ip(uint32_t addr, char *ip);
+const char *bit32_2_ip(uint32_t addr, char ip[static OS_INET_ADDRSTRLEN]);
 
 /**
  * @brief Convert the in_addr encoded IP4 address to an IP string
  *
  * @param addr The in_addr encoded IP
- * @param ip The input buffer to store the IP
- * @return char* Pointer to the returned IP
+ * @param[out] ip The output buffer to store the IP.
+ * Must be at least OS_INET_ADDRSTRLEN chars long.
+ * @return Pointer to the returned IP (same as @p ip on success)
+ * @retval NULL on error (see errno).
  */
-const char *inaddr4_2_ip(struct in_addr *addr, char *ip);
+const char *inaddr4_2_ip(const struct in_addr *addr,
+                         char ip[static OS_INET_ADDRSTRLEN]);
 
 /**
  * @brief Convert the in6_addr encoded IP6 address to an IP string
  *
  * @param addr The in6_addr encoded IP
- * @param ip The input buffer to store the IP
- * @return char* Pointer to the returned IP
+ * @param[out] ip The output buffer to store the IP.
+ * Must be at least OS_INET6_ADDRSTRLEN chars long.
+ * @return Pointer to the returned IP (same as @p ip on success)
+ * @retval NULL on error (see errno).
  */
-const char *inaddr6_2_ip(struct in6_addr *addr, char *ip);
+const char *inaddr6_2_ip(const struct in6_addr *addr,
+                         char ip[static OS_INET6_ADDRSTRLEN]);
 
 /**
  * @brief Convert from a string subnet mask to a short integer version
@@ -117,10 +125,10 @@ uint8_t get_short_subnet(const char *subnet_mask);
  *
  * @param ip The IP address string
  * @param subnet_mask The subnet mask string
- * @param host The returned host indentifier
+ * @param[out] host The returned host indentifier
  * @return 0 on success, -1 on failure
  */
-int get_ip_host(char *ip, char *subnet_mask, uint32_t *host);
+int get_ip_host(const char *ip, const char *subnet_mask, uint32_t *host);
 
 /**
  * @brief Disable the PMTU discovery for sockets

@@ -7,12 +7,10 @@
  * SPDX-License-Identifier: LGPL-3.0-or-later
  * @brief File containing the implementation of the string queue utilities.
  */
-
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "squeue.h"
+
 #include "allocs.h"
 #include "os.h"
 #include "log.h"
