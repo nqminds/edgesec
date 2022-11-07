@@ -50,6 +50,10 @@ elseif (USE_GENERIC_IP_SERVICE)
 endif ()
 
 add_library(minIni minIni.c)
+# minIni.c tries to use strncasecmp, which is in the POSIX.1-2001 spec
+# However, it only includes C's `<string.h>`, not POSIX `<strings.h>`.
+# glibc exports strncasecmp in `<string.h>` only if _DEFAULT_SOURCE is defined.
+target_compile_definitions(minIni PRIVATE _DEFAULT_SOURCE)
 
 add_library(eloop eloop.c)
 # todo, add list
