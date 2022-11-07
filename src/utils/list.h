@@ -56,9 +56,9 @@ static inline int dl_list_empty(struct dl_list *list) {
   return list->next == list;
 }
 
-static inline ssize_t dl_list_len(struct dl_list *list) {
+static inline unsigned int dl_list_len(struct dl_list *list) {
   struct dl_list *item;
-  ssize_t count = 0;
+  int count = 0;
   for (item = list->next; item != list; item = item->next)
     count++;
   return count;
