@@ -37,6 +37,8 @@ target_link_libraries(iface PUBLIC os LibUTHash::LibUTHash PRIVATE ifaceu net lo
 if (USE_NETLINK_SERVICE)
   add_library(nl nl.c)
   target_link_libraries(nl PUBLIC LibUTHash::LibUTHash PRIVATE ifaceu NL::core NL::genl libnetlink MNL::mnl ll_map utils rt_names log os net)
+  # IFF_UP is a BSD definition, strnlen is a POSIX.1-2008 function
+  target_compile_definitions(nl PRIVATE _DEFAULT_SOURCE)
 
   target_link_libraries(iface PUBLIC nl)
 elseif (USE_UCI_SERVICE)
