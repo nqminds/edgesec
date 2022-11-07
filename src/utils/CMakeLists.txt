@@ -38,7 +38,7 @@ if (USE_NETLINK_SERVICE)
   add_library(nl nl.c)
   target_link_libraries(nl PUBLIC LibUTHash::LibUTHash PRIVATE ifaceu NL::core NL::genl libnetlink MNL::mnl ll_map utils rt_names log os net)
   # IFF_UP is a BSD definition, strnlen is a POSIX.1-2008 function
-  target_compile_definitions(nl PRIVATE _DEFAULT_SOURCE)
+  target_compile_definitions(nl PRIVATE _DEFAULT_SOURCE _BSD_SOURCE)
 
   target_link_libraries(iface PUBLIC nl)
 elseif (USE_UCI_SERVICE)
@@ -55,7 +55,7 @@ add_library(minIni minIni.c)
 # minIni.c tries to use strncasecmp, which is in the POSIX.1-2001 spec
 # However, it only includes C's `<string.h>`, not POSIX `<strings.h>`.
 # glibc exports strncasecmp in `<string.h>` only if _DEFAULT_SOURCE is defined.
-target_compile_definitions(minIni PRIVATE _DEFAULT_SOURCE)
+target_compile_definitions(minIni PRIVATE _DEFAULT_SOURCE _BSD_SOURCE)
 
 add_library(eloop eloop.c)
 # todo, add list
