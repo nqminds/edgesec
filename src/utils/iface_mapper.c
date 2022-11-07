@@ -285,7 +285,7 @@ bool create_if_mapper(UT_array *config_ifinfo_array, hmap_if_conn **hmap) {
   return true;
 }
 
-bool create_vlan_mapper(UT_array *config_ifinfo_array, hmap_vlan_conn **hmap) {
+int create_vlan_mapper(UT_array *config_ifinfo_array, hmap_vlan_conn **hmap) {
   config_ifinfo_t *p = NULL;
   struct vlan_conn vlan_conn;
   if (config_ifinfo_array != NULL) {
@@ -299,11 +299,11 @@ bool create_vlan_mapper(UT_array *config_ifinfo_array, hmap_vlan_conn **hmap) {
       if (!put_vlan_mapper(hmap, &vlan_conn)) {
         log_trace("put_if_mapper fail");
         free_vlan_mapper(hmap);
-        return false;
+        return -1;
       }
     }
   }
-  return true;
+  return 0;
 }
 
 int init_ifbridge_names(UT_array *config_ifinfo_array, char *ifname,

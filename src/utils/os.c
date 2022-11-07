@@ -1206,6 +1206,25 @@ int create_dir(const char *dirpath, mode_t mode) {
   return 0;
 }
 
+int create_pipe_file(const char *path) {
+  if (path == NULL) {
+    log_error("path param is NULL");
+    return -1;
+  }
+
+  mode_t prev = umask(0);
+  errno = 0;
+  if (mkfifo(path, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP) == -1 &&
+      errno != EEXIST) {
+    log_errno("mkfifo");
+    umask(prev);
+    return -1;
+  }
+
+  umask(prev);
+  return 0;
+}
+
 int check_file_exists(char *path, struct stat *sb) {
   struct stat sb_in;
   int res;
@@ -1409,6 +1428,34 @@ int read_file_string(char *path, char **out) {
 
   os_free(data);
   return 0;
+}
+
+ssize_t open_write_nonblock(const char *path, int *fd, const uint8_t *buffer,
+                            size_t length) {
+  if (path == NULL) {
+    log_error("path param is NULL");
+    return -1;
+  }
+
+  if (fd == NULL) {
+    log_error("fd param is NULL");
+    return -1;
+  }
+
+  if (buffer == NULL) {
+    log_error("buffer param is NULL");
+    return -1;
+  }
+
+  if (*fd <= 0) {
+    errno = 0;
+    if ((*fd = open(path, O_WRONLY | O_NONBLOCK)) < 0) {
+      log_errno("open");
+      return -1;
+    }
+  }
+
+  return write(*fd, buffer, length);
 }
 
 int get_commands_paths(const char *commands[], const UT_array *bin_path_arr,

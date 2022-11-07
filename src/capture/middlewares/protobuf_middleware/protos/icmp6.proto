@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package icmp6;
+
+message Icmp6Schema {
+  // Packet id
+  string id = 1;
+
+  // Packet type field
+  uint32 icmp6_type = 2;
+
+  // Packet code field
+  uint32 icmp6_code = 3;
+
+  // Packet checksum field
+  uint32 icmp6_cksum = 4;
+
+  // Packet type-specific field
+  uint32 icmp6_un_data32 = 5;
+}
