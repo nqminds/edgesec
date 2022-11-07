@@ -204,14 +204,6 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array) {
     return -1;
   }
 
-  // // Delete the config file if present
-  // int stat = unlink(dconf->dhcp_conf_path);
-
-  // if (stat == -1 && errno != ENOENT) {
-  //   log_errno("unlink");
-  //   return -1;
-  // }
-
   fp = freopen(dconf->dhcp_conf_path, "a+", fp);
 
   if (fp == NULL) {
@@ -253,14 +245,6 @@ int generate_dnsmasq_script(char *dhcp_script_path,
     log_errno("fopen");
     return -1;
   }
-
-  // Delete the vlan config file if present
-  // int stat = unlink(dhcp_script_path);
-
-  // if (stat == -1 && errno != ENOENT) {
-  //   log_errno("unlink");
-  //   return -1;
-  // }
 
   fp = freopen(dhcp_script_path, "a+", fp);
 
