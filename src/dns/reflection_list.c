@@ -25,9 +25,9 @@ void setup_reflection_if_el(struct reflection_list *el, unsigned int ifindex,
   el->send_fd = -1;
   el->ifindex = ifindex;
   if (ifname == NULL) {
-    os_memset(el->ifname, 0, IFNAMSIZ);
+    os_memset(el->ifname, 0, IF_NAMESIZE);
   } else {
-    snprintf(el->ifname, IFNAMSIZ, "%s", ifname);
+    snprintf(el->ifname, IF_NAMESIZE, "%s", ifname);
   }
 }
 

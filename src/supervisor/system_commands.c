@@ -35,7 +35,7 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
                char *ip_addr, enum DHCP_IP_TYPE ip_type) {
   UT_array *mac_list_arr;
   uint8_t *p = NULL;
-  char ifname[IFNAMSIZ];
+  char ifname[IF_NAMESIZE];
   struct mac_conn conn;
   struct mac_conn_info right_info, info;
   int ret;
@@ -95,7 +95,7 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
       return -1;
   }
 
-  os_memcpy(info.ifname, ifname, IFNAMSIZ);
+  os_memcpy(info.ifname, ifname, IF_NAMESIZE);
   os_memcpy(conn.mac_addr, mac_addr, ETHER_ADDR_LEN);
   os_memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
 

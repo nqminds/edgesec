@@ -50,7 +50,7 @@ struct eth_schema {
   char id[MAX_RANDOM_UUID_LEN]; /**< Packet id */
   uint32_t caplen;              /**< Packet caplen */
   uint32_t length;              /**< Packet length */
-  char ifname[IFNAMSIZ];        /**< Packet interface name */
+  char ifname[IF_NAMESIZE];     /**< Packet interface name */
   char ether_dhost[MACSTR_LEN]; /**< Packet destination eth addr */
   char ether_shost[MACSTR_LEN]; /**< Packet source ether addr */
   uint16_t ether_type;          /**< Packet packet type ID field */
@@ -328,7 +328,7 @@ struct capture_packet {
   uint64_t timestamp;
   uint32_t caplen;
   uint32_t length;
-  char ifname[IFNAMSIZ];
+  char ifname[IF_NAMESIZE];
   char id[MAX_RANDOM_UUID_LEN];
 };
 

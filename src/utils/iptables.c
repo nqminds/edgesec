@@ -24,8 +24,8 @@
 struct iptables_columns {
   long num;
   char target[20];
-  char in[IFNAMSIZ];
-  char out[IFNAMSIZ];
+  char in[IF_NAMESIZE];
+  char out[IF_NAMESIZE];
   char source[OS_INET_ADDRSTRLEN];
   char destination[OS_INET_ADDRSTRLEN];
 };
@@ -109,12 +109,12 @@ struct iptables_columns process_rule_column(char *column) {
           break;
         case 6:
           // in column
-          os_strlcpy(row.in, *p, IFNAMSIZ);
+          os_strlcpy(row.in, *p, IF_NAMESIZE);
           state = 7;
           break;
         case 7:
           // out column
-          os_strlcpy(row.out, *p, IFNAMSIZ);
+          os_strlcpy(row.out, *p, IF_NAMESIZE);
           state = 8;
           break;
         case 8:

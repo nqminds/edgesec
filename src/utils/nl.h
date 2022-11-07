@@ -37,7 +37,7 @@ struct nl80211_state {
  *
  */
 typedef struct {
-  char ifname[IFNAMSIZ];        /**< Interface string name */
+  char ifname[IF_NAMESIZE];     /**< Interface string name */
   uint32_t ifindex;             /**< Interface index */
   uint64_t wdev;                /**< Physical interface wdev param */
   uint8_t addr[ETHER_ADDR_LEN]; /**< Interface byte MAC address */

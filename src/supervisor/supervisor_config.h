@@ -54,9 +54,10 @@ struct supervisor_context {
   uint8_t wpa_passphrase[AP_SECRET_LEN]; /**< @c wpa_passphrase from @c struct
                                             hostapd_conf */
   ssize_t wpa_passphrase_len;            /**< the length of @c wpa_passphrase*/
-  char nat_bridge[IFNAMSIZ]; /**< @c nat_bridge param from @c struct app_config
-                              */
-  char nat_interface[IFNAMSIZ]; /**< @c nat_interface param from @c struct
+  char nat_bridge[IF_NAMESIZE];          /**< @c nat_bridge param from @c struct
+                                          * app_config
+                                          */
+  char nat_interface[IF_NAMESIZE]; /**< @c nat_interface param from @c struct
                                    app_config */
   bool allocate_vlans;     /**< @c allocate_vlans from @c struct app_config */
   int default_open_vlanid; /**< @c default_open_vlanid from @c struct app_config

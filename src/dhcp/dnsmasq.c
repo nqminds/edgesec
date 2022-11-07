@@ -79,24 +79,25 @@ int define_dhcp_interface_name(const struct dhcp_conf *dconf, uint16_t vlanid,
   }
 
 #if IF_NAMESIZE < 16
-// Make sure that IFNAMSIZ - 2 - MAX_VLANID_CHARS is always a positive number
+// Make sure that IF_NAMESIZE - 2 - MAX_VLANID_CHARS is always a positive number
 #error "Expected IF_NAMESIZE to be at least 16 bytes large"
 #endif
 
 #ifdef WITH_UCI_SERVICE
-  snprintf(ifname, IFNAMSIZ, "%.*s%d", IFNAMSIZ - 1 - MAX_VLANID_CHARS,
+  snprintf(ifname, IF_NAMESIZE, "%.*s%d", IF_NAMESIZE - 1 - MAX_VLANID_CHARS,
            dconf->bridge_prefix, vlanid);
 #else
   if (strlen(dconf->wifi_interface)) {
     if (vlanid) {
-      snprintf(ifname, IFNAMSIZ, "%.*s.%d", IFNAMSIZ - 2 - MAX_VLANID_CHARS,
-               dconf->wifi_interface, vlanid);
+      snprintf(ifname, IF_NAMESIZE, "%.*s.%d",
+               IF_NAMESIZE - 2 - MAX_VLANID_CHARS, dconf->wifi_interface,
+               vlanid);
     } else {
-      snprintf(ifname, IFNAMSIZ, "%s", dconf->wifi_interface);
+      snprintf(ifname, IF_NAMESIZE, "%s", dconf->wifi_interface);
     }
   } else {
     // Max VLANID is 4094 = 4 digits
-    snprintf(ifname, IFNAMSIZ, "%.*s%d", IFNAMSIZ - 1 - MAX_VLANID_CHARS,
+    snprintf(ifname, IF_NAMESIZE, "%.*s%d", IF_NAMESIZE - 1 - MAX_VLANID_CHARS,
              dconf->interface_prefix, vlanid);
   }
 #endif
@@ -107,7 +108,7 @@ int define_dhcp_interface_name(const struct dhcp_conf *dconf, uint16_t vlanid,
 struct string_queue *make_interface_list(struct dhcp_conf *dconf) {
   config_dhcpinfo_t *el = NULL;
   struct string_queue *squeue = init_string_queue(-1);
-  char ifname[IFNAMSIZ];
+  char ifname[IF_NAMESIZE];
 
   if (squeue == NULL) {
     log_error("init_string_queue fail");
@@ -137,7 +138,7 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array) {
   struct string_queue *squeue;
   config_dhcpinfo_t *el = NULL;
   struct uctx *context = uwrt_init_context(NULL);
-  char ifname[IFNAMSIZ];
+  char ifname[IF_NAMESIZE];
 
   if (context == NULL) {
     log_error("uwrt_init_context fail");
@@ -194,7 +195,7 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array) {
 int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array) {
   char **p = NULL;
   config_dhcpinfo_t *el = NULL;
-  char ifname[IFNAMSIZ];
+  char ifname[IF_NAMESIZE];
 
   // Delete the config file if present
   int stat = unlink(dconf->dhcp_conf_path);
