@@ -1,5 +1,7 @@
 add_library(log log.c)
 set_property(TARGET log PROPERTY POSITION_INDEPENDENT_CODE ON)
+# requires POSIX mode_t/umask functions
+target_compile_definitions(log PRIVATE _POSIX_C_SOURCE=200112L)
 
 add_library(allocs allocs.c)
 
