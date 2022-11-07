@@ -20,4 +20,7 @@ else ()
     add_library(LibUTHash::LibUTHash INTERFACE IMPORTED)
     target_include_directories(LibUTHash::LibUTHash INTERFACE "${UTHASH_INCLUDE_DIR}")
     add_dependencies(LibUTHash::LibUTHash uthash)
+    # utarray.h requires strdup, which is a POSIX.1-2008 function
+    # (it may also be in C23)
+    target_compile_definitions(LibUTHash::LibUTHash INTERFACE _POSIX_C_SOURCE=200809L)
 endif ()
