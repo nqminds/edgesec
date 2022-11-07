@@ -70,6 +70,8 @@ target_link_libraries(sqliteu PUBLIC SQLite::SQLite3 PRIVATE log os)
 
 add_library(sockctl sockctl.c)
 target_link_libraries(sockctl PRIVATE net log os)
+# required for mkdtemp() support
+target_compile_definitions(sockctl PRIVATE _POSIX_C_SOURCE=200809L)
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
   # Abstract Unix domain sockets are only supported on Linux, but save a bit of writing
   # to the disk
