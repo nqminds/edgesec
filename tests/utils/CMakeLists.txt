@@ -6,6 +6,10 @@ add_library(tmpdir OBJECT tmpdir.c)
 target_link_libraries(tmpdir PRIVATE log cmocka::cmocka)
 
 if (USE_UCI_SERVICE)
+  add_compile_definitions(UCI_CONFIG_DIR="${UCI_CONFIG_DIR}")
+  add_library(__wrap_uwrt_init_context OBJECT __wrap_uwrt_init_context.c)
+  target_link_libraries(__wrap_uwrt_init_context PRIVATE uci_wrt)
+  target_link_options(__wrap_uwrt_init_context PUBLIC "-Wl,--wrap=uwrt_init_context")
   add_cmocka_test(test_uci_wrt
     SOURCES test_uci_wrt.c
     LINK_LIBRARIES uci_wrt cmocka::cmocka iface_mapper)

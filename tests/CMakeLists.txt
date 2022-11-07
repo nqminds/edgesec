@@ -8,12 +8,8 @@ include_directories (
 if (USE_UCI_SERVICE)
   # tests may modify these files, so we only run on a copy
   file(COPY "${CMAKE_SOURCE_DIR}/tests/data/uci" DESTINATION "${CMAKE_BINARY_DIR}/tests/data")
-  add_compile_definitions(UCI_CONFIG_DIR="${CMAKE_BINARY_DIR}/tests/data/uci")
-  add_library(
-    __wrap_uwrt_init_context OBJECT ./utils/__wrap_uwrt_init_context.c
-  )
-  target_link_libraries(__wrap_uwrt_init_context PRIVATE uci_wrt)
-  target_link_options(__wrap_uwrt_init_context PUBLIC "-Wl,--wrap=uwrt_init_context")
+  set(UCI_CONFIG_DIR "${CMAKE_BINARY_DIR}/tests/data/uci")
+  add_compile_definitions(UCI_CONFIG_DIR="${UCI_CONFIG_DIR}")
 endif ()
 
 if (USE_CAPTURE_SERVICE)
@@ -77,5 +73,6 @@ if (USE_MDNS_SERVICE)
   target_link_options(test_runctl PRIVATE "LINKER:--wrap=run_mdns_thread")
 endif()
 if (USE_UCI_SERVICE)
-  target_link_libraries(test_runctl PUBLIC __wrap_uwrt_init_context)
+  target_link_libraries(test_runctl PRIVATE __wrap_uwrt_init_context)
+  target_link_libraries(test_edgesec PRIVATE __wrap_uwrt_init_context)
 endif()

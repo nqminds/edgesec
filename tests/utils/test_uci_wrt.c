@@ -32,7 +32,7 @@ static void test_uwrt_init_context(void **state) {
 static void test_uwrt_get_interfaces(void **state) {
   (void)state;
 
-  struct uctx *context = uwrt_init_context(NULL);
+  struct uctx *context = uwrt_init_context(UCI_CONFIG_DIR);
   netif_info_t *ptr = NULL;
   UT_array *interfaces = uwrt_get_interfaces(context, NULL);
   assert_non_null(interfaces);
@@ -80,7 +80,7 @@ static void test_uwrt_create_interface(void **state) {
 
   struct uci_ptr p;
   netif_info_t *ptr = NULL;
-  struct uctx *context = uwrt_init_context(NULL);
+  struct uctx *context = uwrt_init_context(UCI_CONFIG_DIR);
   assert_int_equal(uwrt_create_interface(context, "br0", "bridge", "10.0.0.1",
                                          "10.0.0.255", "255.255.255.0"),
                    0);
@@ -104,7 +104,7 @@ static void test_uwrt_create_interface(void **state) {
 static void test_uwrt_firewall(void **state) {
   (void)state;
 
-  struct uctx *context = uwrt_init_context(NULL);
+  struct uctx *context = uwrt_init_context(UCI_CONFIG_DIR);
 
   assert_int_equal(uwrt_gen_firewall_zone(context, "br0"), 0);
 

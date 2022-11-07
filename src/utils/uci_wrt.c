@@ -482,16 +482,8 @@ struct uctx *uwrt_init_context(char *path) {
       uwrt_free_context(context);
       return NULL;
     }
-  } else {
-#ifdef UCI_CONFIG_DIR
-    strcpy(context->path, UCI_CONFIG_DIR);
-    if (uci_set_confdir(context->uctx, context->path) != UCI_OK) {
-      uwrt_print_error(context->uctx, "uci_set_confdir");
-      uwrt_free_context(context);
-      return NULL;
-    }
-#endif
   }
+
   return context;
 }
 
