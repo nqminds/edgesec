@@ -21,9 +21,13 @@ else()
   # create static lib using -fPIC, so we can make it into a sharedobject later
   set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+  set(__tmp_cmake_c_extension "${CMAKE_C_EXTENSIONS}")
   set(CMAKE_C_EXTENSIONS ON) # libpcap uses non-POSIX C (e.g. BSD u_int)
+
   # declares the `pcap_static` target
   FetchContent_MakeAvailable(libpcap)
+
+  set(CMAKE_C_EXTENSIONS "${__tmp_cmake_c_extension}")
 
   # skip installing `libpcap` when running `make install`
   # we're compiling `libpcap` statically, so it's not needed
