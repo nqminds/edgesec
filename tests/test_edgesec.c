@@ -156,7 +156,7 @@ void *supervisor_client_thread(void *arg) {
   assert_int_equal(ret, 0);
 
   char buf[20];
-  static uint8_t addr[6] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05};
+  uint8_t addr[6] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05};
   log_trace("Sending a RADIUS authentication message");
 
   uint8_t radius_identifier = radius_client_get_id(radius);
