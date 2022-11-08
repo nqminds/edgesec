@@ -66,7 +66,6 @@ static void test_get_mac_conn_cmd(void **state) {
 
   assert_int_equal(info1.vlanid, 10);
 
-  struct mac_conn *p = NULL;
   UT_array *rows;
 
   utarray_new(rows, &mac_conn_icd);
