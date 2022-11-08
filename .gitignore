@@ -61,6 +61,7 @@ dkms.conf
 /lib/libmicrohttpd-0.9.72
 
 compile_commands.json
+Testing/**
 
 apps/**/node_modules
 docs/**/node_modules
