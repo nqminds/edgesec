@@ -149,7 +149,15 @@ set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Build shared libraries")
 # C compiler options
 set(CMAKE_C_STANDARD 11) # we use C11 raw-strings
 set(CMAKE_C_STANDARD_REQUIRED TRUE)
-set(CMAKE_C_EXTENSIONS OFF) # We're aiming for Clang compatibility
+if("${CMAKE_SYSTEM_NAME}" STREQUAL "FreeBSD")
+  # we use some BSD exclusive functions, and there is no easy way to opt-in
+  # to this on FreeBSD
+  # __BSD_VISIBLE might work, but is non-official
+  set(CMAKE_C_EXTENSIONS ON)
+else()
+  # only use standard C and opt-in to non-standard includes
+  set(CMAKE_C_EXTENSIONS OFF)
+endif()
 set(CMAKE_C_FLAGS "-Wunused-variable -Wall -Wextra")
 
 set(CMAKE_CXX_STANDARD 11)
