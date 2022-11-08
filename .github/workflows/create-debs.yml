@@ -48,6 +48,14 @@ jobs:
           # which is too old for Clang 11 compatibility
           echo 'set(CMAKE_C_COMPILER clang-10)
           set(CMAKE_CXX_COMPILER clang++-10)' > CMakeModules/CMakeToolchains/clang.cmake
+      - name: Cache CMake build/dl folder
+        uses: actions/cache@v3
+        with:
+          path: ./build/dl
+          key: ${{ runner.os }}-${{ matrix.cmake-preset }}-${{ hashFiles( 'lib/*' ) }}
+        # Sometimes the cache step just freezes forever
+        # so put a limit on it so that we can restart it earlier on failure
+        timeout-minutes: 10
       - name: Configure
         run: |
           cmake --preset "${{ matrix.cmake-preset }}" -DCONFIGURE_COVERAGE=BOOL:ON
