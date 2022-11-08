@@ -72,7 +72,7 @@ static void test_get_mac_conn_cmd(void **state) {
   utarray_new(rows, &mac_conn_icd);
 
   get_sqlite_macconn_entries(ctx.macconn_db, rows);
-  p = (struct mac_conn *)utarray_next(rows, p);
+  const struct mac_conn * p = (const struct mac_conn *)utarray_front(rows);
   assert_non_null(p);
   assert_memory_equal(p->mac_addr, mac_addr, ETHER_ADDR_LEN);
   assert_int_equal(p->info.vlanid, 10);
