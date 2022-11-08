@@ -102,8 +102,7 @@ static RadiusRxResult receive_auth(struct radius_msg *msg,
 void *supervisor_client_thread(void *arg) {
   (void)arg;
   char socket_path[MAX_OS_PATH_LEN];
-  char ping_reply[ARRAY_SIZE(PING_REPLY) + 1];
-  strcpy(ping_reply, PING_REPLY);
+  char ping_reply[] = PING_REPLY;
   rtrim(ping_reply, NULL);
   strcpy(socket_path, SUPERVISOR_CONTROL_PATH);
   struct eloop_data *main_eloop = (struct eloop_data *)arg;
