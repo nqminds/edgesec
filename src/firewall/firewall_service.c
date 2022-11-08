@@ -128,7 +128,6 @@ struct fwctx *fw_init_context(hmap_if_conn *if_mapper,
   fw_ctx->firewall_bin_path = path;
 #ifdef WITH_UCI_SERVICE
   if (exec_firewall) {
-    config_ifinfo_t *p = NULL;
     if ((fw_ctx->ctx = uwrt_init_context(NULL)) == NULL) {
       log_error("uwrt_init_context fail");
       fw_free_context(fw_ctx);
@@ -141,6 +140,7 @@ struct fwctx *fw_init_context(hmap_if_conn *if_mapper,
       return NULL;
     }
 
+    config_ifinfo_t *p = NULL;
     while ((p = (config_ifinfo_t *)utarray_next(config_ifinfo_array, p)) !=
            NULL) {
       if (uwrt_gen_firewall_zone(fw_ctx->ctx, p->brname) < 0) {
