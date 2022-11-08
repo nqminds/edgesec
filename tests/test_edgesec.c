@@ -213,10 +213,7 @@ void *supervisor_client_thread(void *arg) {
 static void test_edgesec(void **state) {
   (void)state; /* unused */
 
-  struct app_config config;
-
-  // Init the app config struct
-  memset(&config, 0, sizeof(struct app_config));
+  struct app_config config = {0};
 
   assert_int_equal(load_app_config(TEST_CONFIG_INI_PATH, &config), 0);
 
