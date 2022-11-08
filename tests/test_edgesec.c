@@ -124,26 +124,27 @@ void *supervisor_client_thread(void *arg) {
     fail_msg("Couldn't ping supervisor");
   }
 
+  struct radius_conf conf = {
+      .radius_client_mask = 32,
+      .radius_client_ip = "127.0.0.1",
+      .radius_secret = "radius",
+  };
+  
   struct in_addr own_ip_addr;
-  struct radius_conf conf;
-  struct hostapd_radius_servers servers;
-  struct hostapd_radius_server server;
-  strcpy(conf.radius_client_ip, "127.0.0.1");
-  conf.radius_client_mask = 32;
-  strcpy(conf.radius_secret, "radius");
   inet_aton(conf.radius_client_ip, &own_ip_addr);
 
-  server.addr.af = AF_INET;
-  server.port = 54321;
+  struct hostapd_radius_server server = {.addr = {.af = AF_INET},
+                                         .port = 54321};
   int ret = (hostapd_parse_ip_addr(conf.radius_client_ip, &server.addr) >= 0);
   assert_true(ret);
-
+  
   server.shared_secret = (uint8_t *)strdup(conf.radius_secret);
   server.shared_secret_len = strlen(conf.radius_secret);
 
-  servers.auth_server = servers.auth_servers = &server;
-  servers.num_auth_servers = 1;
-  servers.msg_dumps = 1;
+  struct hostapd_radius_servers servers = {.auth_server = &server,
+                                           .auth_servers = &server,
+                                           .num_auth_servers = 1,
+                                           .msg_dumps = 1};
 
   struct eloop_data *eloop = eloop_init();
   struct radius_client_data *radius =
