@@ -129,7 +129,7 @@ void *supervisor_client_thread(void *arg) {
       .radius_client_ip = "127.0.0.1",
       .radius_secret = "radius",
   };
-  
+
   struct in_addr own_ip_addr;
   inet_aton(conf.radius_client_ip, &own_ip_addr);
 
@@ -137,7 +137,7 @@ void *supervisor_client_thread(void *arg) {
                                          .port = 54321};
   int ret = (hostapd_parse_ip_addr(conf.radius_client_ip, &server.addr) >= 0);
   assert_true(ret);
-  
+
   server.shared_secret = (uint8_t *)strdup(conf.radius_secret);
   server.shared_secret_len = strlen(conf.radius_secret);
 
