@@ -77,18 +77,17 @@ static void test_get_mac_conn_cmd(void **state) {
   assert_int_equal(p->info.vlanid, 10);
   utarray_free(rows);
 
-  struct mac_conn conn;
-  struct mac_conn_info info2;
-  uint8_t mac_addr2[6] = {0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
-
-  info2.allow_connection = false;
-  os_memcpy(conn.mac_addr, mac_addr2, ETHER_ADDR_LEN);
-  os_memcpy(&conn.info, &info2, sizeof(struct mac_conn_info));
-
+  struct mac_conn conn = {
+      .info =
+          {
+              .allow_connection = false,
+          },
+      .mac_addr = {0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff},
+  };
   assert_int_equal(save_mac_mapper(&ctx, conn), 0);
 
-  struct mac_conn_info info3 = get_mac_conn_cmd(mac_addr2, (void *)&ctx);
-  assert_int_equal(info3.vlanid, -1);
+  struct mac_conn_info info2 = get_mac_conn_cmd(conn.mac_addr, (void *)&ctx);
+  assert_int_equal(info2.vlanid, -1);
 
   utarray_free(ctx.config_ifinfo_array);
   free(ctx.crypt_ctx); // only needed if WITH_CRYPTO_SERVICE
