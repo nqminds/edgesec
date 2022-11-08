@@ -137,14 +137,14 @@ bool load_interface_list(const char *filename, struct app_config *config) {
   UT_array *config_ifinfo_arr;
 
   if (config == NULL) {
-    log_debug("config param is NULL");
+    log_error("config param is NULL");
     return false;
   }
 
   ret =
       ini_gets("interfaces", "bridgePrefix", "", key, INI_BUFFERSIZE, filename);
   if (!ret) {
-    log_debug("bridge prefix was not specified\n");
+    log_error("bridge prefix was not specified\n");
     os_free(key);
     return false;
   }
@@ -156,7 +156,7 @@ bool load_interface_list(const char *filename, struct app_config *config) {
   ret = ini_gets("interfaces", "interfacePrefix", "", key, INI_BUFFERSIZE,
                  filename);
   if (!ret) {
-    log_debug("interface prefix was not specified\n");
+    log_error("interface prefix was not specified\n");
     os_free(key);
     return false;
   }
@@ -267,7 +267,7 @@ bool load_ap_conf(const char *filename, struct app_config *config) {
   // Load ap file path
   int ret = ini_gets("ap", "apFilePath", "", value, INI_BUFFERSIZE, filename);
   if (!ret) {
-    log_debug("apFilePath was not specified\n");
+    log_error("apFilePath was not specified\n");
     os_free(value);
     return false;
   }
@@ -279,7 +279,7 @@ bool load_ap_conf(const char *filename, struct app_config *config) {
   value = os_malloc(INI_BUFFERSIZE);
   ret = ini_gets("ap", "apBinPath", "", value, INI_BUFFERSIZE, filename);
   if (!ret) {
-    log_debug("apBinPath was not specified\n");
+    log_error("apBinPath was not specified\n");
     os_free(value);
     return false;
   }
@@ -303,7 +303,7 @@ bool load_ap_conf(const char *filename, struct app_config *config) {
   value = os_malloc(INI_BUFFERSIZE);
   ret = ini_gets("ap", "ssid", "", value, INI_BUFFERSIZE, filename);
   if (!ret) {
-    log_debug("ap ssid was not specified\n");
+    log_error("ap ssid was not specified\n");
     os_free(value);
     return false;
   }
@@ -394,7 +394,7 @@ bool load_ap_conf(const char *filename, struct app_config *config) {
   value = os_malloc(INI_BUFFERSIZE);
   ret = ini_gets("ap", "vlanFile", "", value, INI_BUFFERSIZE, filename);
   if (!ret) {
-    log_debug("ap vlanFile was not specified\n");
+    log_error("ap vlanFile was not specified\n");
     os_free(value);
     return false;
   }
@@ -466,7 +466,7 @@ bool load_mdns_conf(const char *filename, struct app_config *config) {
   value = os_zalloc(INI_BUFFERSIZE);
   ret = ini_gets("dns", "mdnsFilter", "", value, INI_BUFFERSIZE, filename);
   if (!ret) {
-    log_debug("dns mdnsFilter was not specified\n");
+    log_error("dns mdnsFilter was not specified\n");
     os_free(value);
     return false;
   }
@@ -484,7 +484,7 @@ bool load_dhcp_conf(const char *filename, struct app_config *config) {
   int ret =
       ini_gets("dhcp", "dhcpConfigPath", "", value, INI_BUFFERSIZE, filename);
   if (!ret) {
-    log_debug("dhcp dhcpConfigPath was not specified\n");
+    log_error("dhcp dhcpConfigPath was not specified\n");
     os_free(value);
     return false;
   }
@@ -496,7 +496,7 @@ bool load_dhcp_conf(const char *filename, struct app_config *config) {
   value = os_malloc(INI_BUFFERSIZE);
   ret = ini_gets("dhcp", "dhcpBinPath", "", value, INI_BUFFERSIZE, filename);
   if (!ret) {
-    log_debug("dhcp dhcpBinPath was not specified\n");
+    log_error("dhcp dhcpBinPath was not specified\n");
     os_free(value);
     return false;
   }
@@ -508,7 +508,7 @@ bool load_dhcp_conf(const char *filename, struct app_config *config) {
   value = os_malloc(INI_BUFFERSIZE);
   ret = ini_gets("dhcp", "dhcpScriptPath", "", value, INI_BUFFERSIZE, filename);
   if (!ret) {
-    log_debug("dhcp dhcpScriptPath was not specified\n");
+    log_error("dhcp dhcpScriptPath was not specified\n");
     os_free(value);
     return false;
   }
@@ -531,7 +531,7 @@ bool load_dhcp_conf(const char *filename, struct app_config *config) {
 
   // Load the dhcprange params
   if (!load_dhcp_list(filename, config)) {
-    log_debug("load_dhcp_list parsing error\n");
+    log_error("load_dhcp_list parsing error\n");
     return false;
   }
 
@@ -643,7 +643,7 @@ bool load_system_config(const char *filename, struct app_config *config) {
   ret = ini_gets("system", "cryptDbPath", "", value, INI_BUFFERSIZE, filename);
   os_strlcpy(config->crypt_db_path, value, MAX_OS_PATH_LEN);
   if (!ret) {
-    log_debug("Crypt db path was not specified\n");
+    log_error("Crypt db path was not specified\n");
     os_free(value);
     return false;
   }
@@ -654,7 +654,7 @@ bool load_system_config(const char *filename, struct app_config *config) {
   value = os_malloc(INI_BUFFERSIZE);
   ret = ini_gets("system", "pidFilePath", "", value, INI_BUFFERSIZE, filename);
   if (!ret) {
-    log_debug("pid file path was not specified\n");
+    log_error("pid file path was not specified\n");
     os_free(value);
     return false;
   }
@@ -690,7 +690,7 @@ bool load_supervisor_config(const char *filename, struct app_config *config) {
   ret = ini_gets("supervisor", "supervisorControlPath", "", value,
                  INI_BUFFERSIZE, filename);
   if (!ret) {
-    log_debug("Supervisor control server path was not specified\n");
+    log_error("Supervisor control server path was not specified\n");
     os_free(value);
     return false;
   }
@@ -742,65 +742,65 @@ int load_app_config(const char *filename, struct app_config *config) {
   os_strlcpy(config->config_ini_path, filename, MAX_OS_PATH_LEN);
 
   if (!load_system_config(filename, config)) {
-    log_debug("load_system_config fail");
+    log_error("load_system_config fail");
     return -1;
   }
 
   if (!load_supervisor_config(filename, config)) {
-    log_debug("load_supervisor_config fail");
+    log_error("load_supervisor_config fail");
     return -1;
   }
 
   if (!load_nat_config(filename, config)) {
-    log_debug("load_nat_config fail");
+    log_error("load_nat_config fail");
     return -1;
   }
 
   // Load ap radius config params
   if (!load_radius_conf(filename, config)) {
-    log_debug("radius config parsing error.\n");
+    log_error("radius config parsing error.\n");
     return -1;
   }
 
   // Load ap config params
   if (!load_ap_conf(filename, config)) {
-    log_debug("ap config parsing error.\n");
+    log_error("ap config parsing error.\n");
     return -1;
   }
 
   // Load the DNS server configuration
   if (!load_dns_conf(filename, config)) {
-    log_debug("dns config parsing error.\n");
+    log_error("dns config parsing error.\n");
     return -1;
   }
 
   // Load the mDNS server configuration
   if (!load_mdns_conf(filename, config)) {
-    log_debug("dns config parsing error.\n");
+    log_error("dns config parsing error.\n");
     return -1;
   }
 
   // Load the DHCP server configuration
   if (!load_dhcp_conf(filename, config)) {
-    log_debug("dhcp config parsing error.\n");
+    log_error("dhcp config parsing error.\n");
     return -1;
   }
 
   // Load the list of interfaces
   if (!load_interface_list(filename, config)) {
-    log_debug("Interface list parsing error.\n");
+    log_error("Interface list parsing error.\n");
     return -1;
   }
 
   // Load the capture config
   if (!load_capture_config(filename, &config->capture_config)) {
-    log_debug("Capture parsing error.\n");
+    log_error("Capture parsing error.\n");
     return -1;
   }
 
   // Load the firewall config
   if (!load_firewall_config(filename, &config->firewall_config)) {
-    log_debug("Firewall parsing error.\n");
+    log_error("Firewall parsing error.\n");
     return -1;
   }
 
