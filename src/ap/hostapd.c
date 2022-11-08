@@ -54,13 +54,6 @@ int generate_vlan_conf(char *vlan_file, char *interface) {
     return -1;
   }
 
-  fp = freopen(vlan_file, "a+", fp);
-
-  if (fp == NULL) {
-    log_errno("freopen");
-    return -1;
-  }
-
   log_debug("Writing into %s", vlan_file);
 
   fprintf(fp, "*\t%s.#\n", interface);
@@ -119,13 +112,6 @@ int generate_hostapd_conf(struct apconf *hconf, struct radius_conf *rconf) {
   FILE *fp = fopen(hconf->ap_file_path, "w");
   if (fp == NULL) {
     log_errno("fopen");
-    return -1;
-  }
-
-  fp = freopen(hconf->ap_file_path, "a+", fp);
-
-  if (fp == NULL) {
-    log_errno("freopen");
     return -1;
   }
 

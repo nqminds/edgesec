@@ -204,13 +204,6 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array) {
     return -1;
   }
 
-  fp = freopen(dconf->dhcp_conf_path, "a+", fp);
-
-  if (fp == NULL) {
-    log_errno("freopen");
-    return -1;
-  }
-
   log_debug("Writing into %s", dconf->dhcp_conf_path);
 
   fprintf(fp, "no-resolv\n");
@@ -243,13 +236,6 @@ int generate_dnsmasq_script(char *dhcp_script_path,
 
   if (fp == NULL) {
     log_errno("fopen");
-    return -1;
-  }
-
-  fp = freopen(dhcp_script_path, "a+", fp);
-
-  if (fp == NULL) {
-    log_errno("freopen");
     return -1;
   }
 
