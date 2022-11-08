@@ -59,10 +59,10 @@ struct apconf {
   char ctrl_interface_path[MAX_OS_PATH_LEN]; /**< The path constructed as
                                                 ctrl_interface/interface  */
   char
-      interface[IFNAMSIZ]; /**< The hostapd @c interface param @see
+      interface[IF_NAMESIZE]; /**< The hostapd @c interface param @see
                               https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf
                             */
-  char device[IFNAMSIZ];   /**< The hostapd uci device id*/
+  char device[IF_NAMESIZE];   /**< The hostapd uci device id*/
   char
       ssid[AP_NAME_LEN];              /**< The hostapd @c ssid param @see
                                          https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf
@@ -106,7 +106,7 @@ struct apconf {
   int dynamic_vlan;      /**< The hostapd @c dynamic_vlan param @see
                             https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf */
   char vlan_bridge
-      [IFNAMSIZ]; /**< The hostapd @c vlan_bridge param @see
+      [IF_NAMESIZE]; /**< The hostapd @c vlan_bridge param @see
                      https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf
                    */
   char vlan_file
@@ -130,7 +130,7 @@ struct apconf {
   int wpa_psk_radius;        /**< The hostapd @c wpa_psk_radius param @see
                                 https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf */
   char vlan_tagged_interface
-      [IFNAMSIZ]; /**< The hostapd @c vlan_tagged_interface param @see
+      [IF_NAMESIZE]; /**< The hostapd @c vlan_tagged_interface param @see
                      https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf */
 };
 

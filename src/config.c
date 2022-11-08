@@ -148,7 +148,7 @@ bool load_interface_list(const char *filename, struct app_config *config) {
     os_free(key);
     return false;
   }
-  os_strlcpy(config->bridge_prefix, key, IFNAMSIZ);
+  os_strlcpy(config->bridge_prefix, key, IF_NAMESIZE);
   os_free(key);
 
   // Load the interface prefix
@@ -160,7 +160,7 @@ bool load_interface_list(const char *filename, struct app_config *config) {
     os_free(key);
     return false;
   }
-  os_strlcpy(config->interface_prefix, key, IFNAMSIZ);
+  os_strlcpy(config->interface_prefix, key, IF_NAMESIZE);
   os_free(key);
 
   key = os_malloc(INI_BUFFERSIZE);
@@ -296,7 +296,7 @@ bool load_ap_conf(const char *filename, struct app_config *config) {
   // // Load ap bridge
   // value = os_malloc(INI_BUFFERSIZE);
   // ret = ini_gets("ap", "bridge", "", value, INI_BUFFERSIZE, filename);
-  // os_strlcpy(config->hconfig.bridge, value, IFNAMSIZ);
+  // os_strlcpy(config->hconfig.bridge, value, IF_NAMESIZE);
   // os_free(value);
 
   // Load AP name
@@ -321,23 +321,23 @@ bool load_ap_conf(const char *filename, struct app_config *config) {
   // Load AP interface
   value = os_malloc(INI_BUFFERSIZE);
   ret = ini_gets("ap", "interface", "", value, INI_BUFFERSIZE, filename);
-  if (os_strnlen_s(value, IFNAMSIZ)) {
-    os_strlcpy(config->hconfig.interface, value, IFNAMSIZ);
+  if (os_strnlen_s(value, IF_NAMESIZE)) {
+    os_strlcpy(config->hconfig.interface, value, IF_NAMESIZE);
   }
 
-  os_strlcpy(config->hconfig.interface, value, IFNAMSIZ);
+  os_strlcpy(config->hconfig.interface, value, IF_NAMESIZE);
   os_free(value);
 
   // Load device
   value = os_malloc(INI_BUFFERSIZE);
   ini_gets("ap", "device", "", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->hconfig.device, value, IFNAMSIZ);
+  os_strlcpy(config->hconfig.device, value, IF_NAMESIZE);
   os_free(value);
 
   // Load vlan_tagged_interface
   value = os_malloc(INI_BUFFERSIZE);
   ini_gets("ap", "vlanTaggedInterface", "", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->hconfig.vlan_tagged_interface, value, IFNAMSIZ);
+  os_strlcpy(config->hconfig.vlan_tagged_interface, value, IF_NAMESIZE);
   os_free(value);
 
   // Load ap driver
@@ -706,13 +706,13 @@ bool load_nat_config(const char *filename, struct app_config *config) {
   // Load NAT bridge
   value = os_malloc(INI_BUFFERSIZE);
   ini_gets("nat", "natBridge", "", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->nat_bridge, value, IFNAMSIZ);
+  os_strlcpy(config->nat_bridge, value, IF_NAMESIZE);
   os_free(value);
 
   // Load NAT interface
   value = os_malloc(INI_BUFFERSIZE);
   ini_gets("nat", "natInterface", "", value, INI_BUFFERSIZE, filename);
-  os_strlcpy(config->nat_interface, value, IFNAMSIZ);
+  os_strlcpy(config->nat_interface, value, IF_NAMESIZE);
   os_free(value);
 
   return true;

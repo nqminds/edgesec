@@ -179,7 +179,7 @@ struct fwctx *fw_init_context(hmap_if_conn *if_mapper,
 
 int fw_add_nat(struct fwctx *context, char *ip_addr) {
 #ifdef WITH_UCI_SERVICE
-  char brname[IFNAMSIZ];
+  char brname[IF_NAMESIZE];
 
   if (get_brname_from_ip(context->config_ifinfo_array, ip_addr, brname) < 0) {
     log_error("get_brname_from_ip fail");
@@ -198,7 +198,7 @@ int fw_add_nat(struct fwctx *context, char *ip_addr) {
     return -1;
   }
 #else
-  char ifname[IFNAMSIZ];
+  char ifname[IF_NAMESIZE];
 
   if (get_ifname_from_ip(context->config_ifinfo_array, ip_addr, ifname) < 0) {
     log_error("get_ifname_from_ip fail");
@@ -234,7 +234,7 @@ int fw_remove_nat(struct fwctx *context, char *ip_addr) {
     return -1;
   }
 #else
-  char ifname[IFNAMSIZ];
+  char ifname[IF_NAMESIZE];
 
   if (get_ifname_from_ip(context->config_ifinfo_array, ip_addr, ifname) < 0) {
     log_error("get_ifname_from_ip fail");
@@ -260,7 +260,7 @@ int fw_remove_nat(struct fwctx *context, char *ip_addr) {
 int fw_add_bridge(struct fwctx *context, char *ip_addr_left,
                   char *ip_addr_right) {
 #ifdef WITH_UCI_SERVICE
-  char brname_left[IFNAMSIZ], brname_right[IFNAMSIZ];
+  char brname_left[IF_NAMESIZE], brname_right[IF_NAMESIZE];
 
   if (get_brname_from_ip(context->config_ifinfo_array, ip_addr_left,
                          brname_left) < 0) {
@@ -287,7 +287,7 @@ int fw_add_bridge(struct fwctx *context, char *ip_addr_left,
     return -1;
   }
 #else
-  char ifname_left[IFNAMSIZ], ifname_right[IFNAMSIZ];
+  char ifname_left[IF_NAMESIZE], ifname_right[IF_NAMESIZE];
 
   if (get_ifname_from_ip(context->config_ifinfo_array, ip_addr_left,
                          ifname_left) < 0) {
@@ -333,7 +333,7 @@ int fw_remove_bridge(struct fwctx *context, char *ip_addr_left,
     return -1;
   }
 #else
-  char ifname_left[IFNAMSIZ], ifname_right[IFNAMSIZ];
+  char ifname_left[IF_NAMESIZE], ifname_right[IF_NAMESIZE];
 
   if (get_ifname_from_ip(context->config_ifinfo_array, ip_addr_left,
                          ifname_left) < 0) {

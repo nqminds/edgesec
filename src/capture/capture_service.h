@@ -24,7 +24,7 @@
 struct capture_middleware_context {
   struct capture_conf config;
   UT_array *handlers;
-  char ifname[IFNAMSIZ];
+  char ifname[IF_NAMESIZE];
 };
 
 /**

@@ -120,7 +120,7 @@ void init_default_mac_info(struct mac_conn_info *info, int default_open_vlanid,
   os_memset(info->pass, 0, AP_SECRET_LEN);
   os_memset(info->ip_addr, 0, OS_INET_ADDRSTRLEN);
   os_memset(info->ip_sec_addr, 0, OS_INET_ADDRSTRLEN);
-  os_memset(info->ifname, 0, IFNAMSIZ);
+  os_memset(info->ifname, 0, IF_NAMESIZE);
   os_memset(info->label, 0, MAX_DEVICE_LABEL_SIZE);
   os_memset(info->id, 0, MAX_RANDOM_UUID_LEN);
 }

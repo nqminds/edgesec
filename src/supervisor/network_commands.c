@@ -78,7 +78,7 @@ int accept_mac_cmd(struct supervisor_context *context, uint8_t *mac_addr,
     return -1;
   }
 
-  os_memcpy(conn.info.ifname, vlan_conn.ifname, IFNAMSIZ);
+  os_memcpy(conn.info.ifname, vlan_conn.ifname, IF_NAMESIZE);
   if (save_mac_mapper(context, conn) < 0) {
     log_error("save_mac_mapper fail");
     return -1;

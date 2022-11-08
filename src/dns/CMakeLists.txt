@@ -17,6 +17,8 @@ target_link_libraries(mdns_mapper PUBLIC mdns_decoder mdns_list os)
 
 add_library(mcast mcast.c)
 target_link_libraries(mcast PRIVATE os)
+# needed to enable BSD types like `struct group_req`
+target_compile_definitions(mcast PRIVATE _DEFAULT_SOURCE _BSD_SOURCE)
 
 add_library(reflection_list reflection_list.c)
 target_link_libraries(reflection_list PRIVATE os log)

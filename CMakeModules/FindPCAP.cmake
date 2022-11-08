@@ -64,4 +64,11 @@ if(PCAP_FOUND AND NOT TARGET PCAP::pcap)
         INTERFACE_INCLUDE_DIRECTORIES "${PCAP_INCLUDE_DIRS}"
         INTERFACE_LINK_LIBRARIES "${PCAP_LIBRARIES}"
     )
+    target_compile_definitions(
+      # pcap requires BSD types to be defined, e.g. u_int/u_short/u_char
+      # the following syntax works for uClibc, glibc, musl libc
+      PCAP::pcap INTERFACE
+        "_BSD_SOURCE" # deprecated in glibc >2.20
+        "_DEFAULT_SOURCE" # only added in glibc >2.19, musl >=1.1.5
+    )
 endif()

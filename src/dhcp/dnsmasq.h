@@ -80,7 +80,7 @@ int clear_dhcp_lease_entry(char *mac_addr, char *dhcp_leasefile_path);
  * @param vlanid The vlan id.
  * @param[out] ifname The DHCP interface name.
  * @pre @p vlanid must be less than 4095 chars
- * @pre @p ifname must point to at least #IFNAMSIZ bytes.
+ * @pre @p ifname must point to at least #IF_NAMESIZE bytes.
  * @retval  0 Success
  * @retval -1 Error (invalid args)
  */

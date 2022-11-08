@@ -12,6 +12,7 @@
 #define NL_H_
 
 #include <net/if.h>
+#include <net/ethernet.h>
 #include <netinet/if_ether.h>
 #include "linux/rtnetlink.h"
 #include <utarray.h>
@@ -37,7 +38,7 @@ struct nl80211_state {
  *
  */
 typedef struct {
-  char ifname[IFNAMSIZ];        /**< Interface string name */
+  char ifname[IF_NAMESIZE];     /**< Interface string name */
   uint32_t ifindex;             /**< Interface index */
   uint64_t wdev;                /**< Physical interface wdev param */
   uint8_t addr[ETHER_ADDR_LEN]; /**< Interface byte MAC address */
@@ -155,9 +156,9 @@ int nl_is_iw_vlan(const char *ifname);
 /**
  * @brief Returns an exisiting WiFi interface name that supports VLAN
  *
- * @param[out] buf Interface working buffer of at least IFNAMSIZ bytes.
+ * @param[out] buf Interface working buffer of at least IF_NAMESIZE bytes.
  * @return WiFi interface name (pointer to @p buf param)
  */
-char *nl_get_valid_iw(char buf[static IFNAMSIZ]);
+char *nl_get_valid_iw(char buf[static IF_NAMESIZE]);
 
 #endif

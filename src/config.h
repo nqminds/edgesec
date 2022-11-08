@@ -41,10 +41,10 @@ struct app_config {
   bool exec_capture;      /**< Flag to execute the capture service. */
   bool exec_mdns_forward; /**< Flag to execute the mdns forwarding service. */
   bool exec_firewall;     /**< Flag to execute the firewall command. */
-  char nat_bridge[IFNAMSIZ];       /**< The NAT bridge string. */
-  char nat_interface[IFNAMSIZ];    /**< The NAT interface string. */
-  char bridge_prefix[IFNAMSIZ];    /**< The bridge prefix. */
-  char interface_prefix[IFNAMSIZ]; /**< The interface prefix. */
+  char nat_bridge[IF_NAMESIZE];       /**< The NAT bridge string. */
+  char nat_interface[IF_NAMESIZE];    /**< The NAT interface string. */
+  char bridge_prefix[IF_NAMESIZE];    /**< The bridge prefix. */
+  char interface_prefix[IF_NAMESIZE]; /**< The interface prefix. */
   bool create_interfaces; /**< Flag to create the WiFi subnet interfaces. */
   bool ignore_if_error;   /**< Flag if set ignores the errors if subnet already
                              exists. */

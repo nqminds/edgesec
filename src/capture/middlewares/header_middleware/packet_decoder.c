@@ -362,7 +362,7 @@ int extract_packets(const char *ltype, const struct pcap_pkthdr *header,
   cpac.caplen = header->caplen;
   cpac.length = header->len;
 
-  os_strlcpy(cpac.ifname, interface, IFNAMSIZ);
+  os_strlcpy(cpac.ifname, interface, IF_NAMESIZE);
   os_strlcpy(cpac.id, id, MAX_RANDOM_UUID_LEN);
 
   if ((count = decode_packet(header, packet, &cpac)) > 0) {

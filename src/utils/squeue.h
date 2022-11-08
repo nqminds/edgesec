@@ -11,7 +11,7 @@
 #ifndef SQUEUE_H
 #define SQUEUE_H
 
-#include <sys/types.h>
+#include <sys/types.h> // For ssize_t
 
 #include "list.h"
 

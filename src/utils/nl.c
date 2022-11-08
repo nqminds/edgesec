@@ -291,7 +291,7 @@ int get_linkinfo(struct nlmsghdr *n, netif_info_t *info) {
     return -1;
 
   info->ifindex = ifi->ifi_index;
-  os_strlcpy(info->ifname, name, IFNAMSIZ);
+  os_strlcpy(info->ifname, name, IF_NAMESIZE);
   log_trace("ifindex=%d if=%s", ifi->ifi_index, info->ifname);
 
   if (tb[IFLA_OPERSTATE]) {
@@ -1056,7 +1056,7 @@ static int process_iface_handler(struct nl_msg *msg, void *arg) {
 
   if (tb_msg[NL80211_ATTR_IFNAME]) {
     os_strlcpy(element.ifname, nla_get_string(tb_msg[NL80211_ATTR_IFNAME]),
-               IFNAMSIZ);
+               IF_NAMESIZE);
 
     if (tb_msg[NL80211_ATTR_IFINDEX]) {
       element.ifindex = nla_get_u32(tb_msg[NL80211_ATTR_IFINDEX]);
@@ -1257,7 +1257,7 @@ char *nl_get_valid_iw(char buf[static IFNAMSIZ]) {
     int ret = iwace_isvlan(el->wiphy);
 
     if (ret == 1) {
-      os_strlcpy(buf, el->ifname, IFNAMSIZ);
+      os_strlcpy(buf, el->ifname, IF_NAMESIZE);
       utarray_free(netif_list);
       return buf;
     } else if (ret < 0) {

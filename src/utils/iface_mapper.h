@@ -14,6 +14,7 @@
 #include <net/if.h>
 #include <inttypes.h>
 #include <stdbool.h>
+#include <pthread.h>
 #include <netinet/in.h>
 #include <net/ethernet.h>
 
@@ -41,7 +42,7 @@ enum IF_STATE {
  *
  */
 typedef struct {
-  char ifname[IFNAMSIZ];              /**< Interface string name */
+  char ifname[IF_NAMESIZE];           /**< Interface string name */
   uint32_t ifindex;                   /**< Interface index value */
   enum IF_STATE state;                /**< Interface state */
   char link_type[LINK_TYPE_LEN];      /**< Interface link type */
@@ -60,8 +61,8 @@ typedef struct {
  */
 typedef struct config_ifinfo_t {
   int vlanid;                        /**< Interface VLAN ID */
-  char ifname[IFNAMSIZ];             /**< Interface string name */
-  char brname[IFNAMSIZ];             /**< Bridge string name */
+  char ifname[IF_NAMESIZE];          /**< Interface string name */
+  char brname[IF_NAMESIZE];          /**< Bridge string name */
   char ip_addr[OS_INET_ADDRSTRLEN];  /**< Interface string IP address */
   char brd_addr[OS_INET_ADDRSTRLEN]; /**< Interface string IP broadcast address
                                       */
@@ -73,9 +74,9 @@ typedef struct config_ifinfo_t {
  *
  */
 typedef struct hashmap_if_conn {
-  in_addr_t key;        /**< key as subnet */
-  char value[IFNAMSIZ]; /**< value as the interface name */
-  UT_hash_handle hh;    /**< makes this structure hashable */
+  in_addr_t key;           /**< key as subnet */
+  char value[IF_NAMESIZE]; /**< value as the interface name */
+  UT_hash_handle hh;       /**< makes this structure hashable */
 } hmap_if_conn;
 
 /**
@@ -83,9 +84,9 @@ typedef struct hashmap_if_conn {
  *
  */
 struct vlan_conn {
-  int vlanid;            /**< the VLAN ID */
-  char ifname[IFNAMSIZ]; /**< the interface name */
-  pthread_t capture_pid; /**< Capture thread descriptor */
+  int vlanid;               /**< the VLAN ID */
+  char ifname[IF_NAMESIZE]; /**< the interface name */
+  pthread_t capture_pid;    /**< Capture thread descriptor */
 };
 
 /**

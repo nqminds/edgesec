@@ -70,7 +70,7 @@ int init_mac_mapper_ifnames(UT_array *connections,
   if (connections != NULL) {
     while ((p = (struct mac_conn *)utarray_next(connections, p)) != NULL) {
       int ret = get_vlan_mapper(vlan_mapper, p->info.vlanid, &vlan_conn);
-      os_memcpy(p->info.ifname, vlan_conn.ifname, IFNAMSIZ);
+      os_memcpy(p->info.ifname, vlan_conn.ifname, IF_NAMESIZE);
       if (ret < 0) {
         log_error("get_vlan_mapper fail");
         return -1;
@@ -304,8 +304,8 @@ int init_context(struct app_config *app_config,
   os_memcpy(ctx->wpa_passphrase, app_config->hconfig.wpa_passphrase,
             ctx->wpa_passphrase_len);
 
-  os_memcpy(ctx->nat_bridge, app_config->nat_bridge, IFNAMSIZ);
-  os_memcpy(ctx->nat_interface, app_config->nat_interface, IFNAMSIZ);
+  os_memcpy(ctx->nat_bridge, app_config->nat_bridge, IF_NAMESIZE);
+  os_memcpy(ctx->nat_interface, app_config->nat_interface, IF_NAMESIZE);
 
   os_memcpy(&ctx->capture_config, &app_config->capture_config,
             sizeof(struct capture_conf));

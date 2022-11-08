@@ -12,6 +12,7 @@
 #define OS_H
 
 #include <stddef.h>
+#include <sys/time.h> // required for `struct timeval`
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdlib.h>
