@@ -1023,7 +1023,7 @@ int uwrt_gen_hostapd_instance(struct uctx *context,
            params->vlan_bridge);
   utarray_push_back(list_properties, &property);
 
-  if (uwrt_add_list_properties(context->uctx, properties) < 0) {
+  if (uwrt_add_list_properties(context->uctx, list_properties) < 0) {
     log_error("uwrt_gen_hostapd_instance: failed to uwrt_add_list_properties");
     utarray_free(list_properties);
     return -1;
