@@ -218,7 +218,7 @@ err:
 }
 
 static void test_generate_dnsmasq_conf(void **state) {
-  (void)state; /* unused */
+  (void)state;
   struct dhcp_conf dconf = {
       // must manually set bridge_prefix, otherwise we'll be working with
       // undefined memory
@@ -295,7 +295,7 @@ static void test_generate_dnsmasq_conf(void **state) {
 }
 
 static void test_generate_dnsmasq_script(void **state) {
-  (void)state; /* unused */
+  (void)state;
 
   int ret = generate_dnsmasq_script(test_dhcp_script_path,
                                     test_supervisor_control_path);
@@ -323,7 +323,7 @@ static void test_generate_dnsmasq_script(void **state) {
 }
 
 static void test_clear_dhcp_lease_entry(void **state) {
-  (void)state; /* unused */
+  (void)state;
   char *out = NULL;
   FILE *fp = fopen(test_dhcp_leasefile_path, "w");
 

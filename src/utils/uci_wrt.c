@@ -483,6 +483,7 @@ struct uctx *uwrt_init_context(char *path) {
       return NULL;
     }
   }
+
   return context;
 }
 
@@ -923,6 +924,18 @@ int uwrt_gen_hostapd_instance(struct uctx *context,
            params->wpa_passphrase);
   utarray_push_back(properties, &property);
 
+  snprintf(property, property_size, "wireless.edgesec.dynamic_vlan=%d",
+           params->dynamic_vlan);
+  utarray_push_back(properties, &property);
+
+  snprintf(property, property_size, "wireless.edgesec.vlan_bridge=%s",
+           params->vlan_bridge);
+  utarray_push_back(properties, &property);
+
+  snprintf(property, property_size, "wireless.edgesec.vlan_file=%s",
+           params->vlan_file);
+  utarray_push_back(properties, &property);
+
   snprintf(property, property_size, "wireless.%s=wifi-device", params->device);
   utarray_push_back(properties, &property);
 
@@ -1000,11 +1013,6 @@ int uwrt_gen_hostapd_instance(struct uctx *context,
            params->macaddr_acl);
   utarray_push_back(list_properties, &property);
 
-  snprintf(property, property_size,
-           "wireless.%s.hostapd_options=dynamic_vlan=%d", params->device,
-           params->dynamic_vlan);
-  utarray_push_back(list_properties, &property);
-
   snprintf(property, property_size, "wireless.%s.hostapd_options=vlan_file=%s",
            params->device, params->vlan_file);
   utarray_push_back(list_properties, &property);
@@ -1024,7 +1032,7 @@ int uwrt_gen_hostapd_instance(struct uctx *context,
            params->vlan_bridge);
   utarray_push_back(list_properties, &property);
 
-  if (uwrt_add_list_properties(context->uctx, properties) < 0) {
+  if (uwrt_add_list_properties(context->uctx, list_properties) < 0) {
     log_error("uwrt_gen_hostapd_instance: failed to uwrt_add_list_properties");
     utarray_free(list_properties);
     return -1;
@@ -1712,10 +1720,14 @@ int uwrt_cleanup_firewall(struct uctx *context) {
   if (!ret) {
     utarray_free(kv);
     return 0;
-  } else if (ret < 0) {
+  } else if (ret < 0 && context->uctx->err != UCI_ERR_NOTFOUND) {
     log_trace("uwrt_lookup_key fail");
     utarray_free(kv);
     return -1;
+  } else if (ret < 0 && context->uctx->err == UCI_ERR_NOTFOUND) {
+    log_warn("%s key not found", key);
+    utarray_free(kv);
+    return 0;
   }
 
   utarray_new(parray, &ut_str_icd);

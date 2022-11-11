@@ -157,6 +157,9 @@ int create_recv_mcast(const struct sockaddr_storage *sa, socklen_t sa_len,
         close(fd);
         return -1;
       }
+#else
+      (void)ifindex; /* binding a socket to a specific interface is very
+                        complicated for except for Linux/Darwin */
 #endif
       break;
     case AF_INET:

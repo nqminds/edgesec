@@ -241,7 +241,7 @@ static void test_run_engine(void **state) {
   will_return_always(__wrap_load_crypt_service, crypt_ctx);
 #endif
 
-  int ret = run_ctl(&app_config);
+  int ret = run_ctl(&app_config, NULL);
   assert_int_equal(ret, 0);
   utarray_free(config_ifinfo_arr);
 }
