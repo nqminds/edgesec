@@ -44,6 +44,7 @@ target_link_libraries(config PUBLIC supervisor_config LibUTHash::LibUTHash PRIVA
 
 add_executable(edgesec edgesec.c)
 if (USE_CRYPTO_SERVICE)
+  add_compile_definitions(WITH_CRYPTO_SERVICE)
   target_include_directories(edgesec PRIVATE ${PROJECT_BINARY_DIR} ${LIBOPENSSL_INCLUDE_PATH})
 else ()
   target_include_directories(edgesec PRIVATE ${PROJECT_BINARY_DIR})

@@ -15,6 +15,7 @@
 
 #include "utils/log.h"
 #include "supervisor/supervisor.h"
+#include "supervisor/supervisor_utils.h"
 #include "supervisor/sqlite_macconn_writer.h"
 
 #ifdef WITH_CRYPTO_SERVICE
@@ -23,6 +24,7 @@
 
 static const UT_icd config_ifinfo_icd = {sizeof(config_ifinfo_t), NULL, NULL,
                                          NULL};
+static const UT_icd mac_conn_icd = {sizeof(struct mac_conn), NULL, NULL, NULL};
 
 static void test_get_mac_conn_cmd(void **state) {
   (void)state; /* unused */
@@ -59,6 +61,34 @@ static void test_get_mac_conn_cmd(void **state) {
   struct mac_conn_info info = get_mac_conn_cmd(mac_addr, (void *)&ctx);
 
   assert_int_equal(info.vlanid, 10);
+  struct mac_conn_info info1;
+  get_mac_mapper(&ctx.mac_mapper, mac_addr, &info1);
+
+  assert_int_equal(info1.vlanid, 10);
+
+  UT_array *rows;
+
+  utarray_new(rows, &mac_conn_icd);
+
+  get_sqlite_macconn_entries(ctx.macconn_db, rows);
+  const struct mac_conn *p = (const struct mac_conn *)utarray_front(rows);
+  assert_non_null(p);
+  assert_memory_equal(p->mac_addr, mac_addr, ETHER_ADDR_LEN);
+  assert_int_equal(p->info.vlanid, 10);
+  utarray_free(rows);
+
+  struct mac_conn conn = {
+      .info =
+          {
+              .allow_connection = false,
+          },
+      .mac_addr = {0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff},
+  };
+  assert_int_equal(save_mac_mapper(&ctx, conn), 0);
+
+  struct mac_conn_info info2 = get_mac_conn_cmd(conn.mac_addr, (void *)&ctx);
+  assert_int_equal(info2.vlanid, -1);
+
   utarray_free(ctx.config_ifinfo_array);
   free(ctx.crypt_ctx); // only needed if WITH_CRYPTO_SERVICE
 }

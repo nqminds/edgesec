@@ -2,7 +2,7 @@
 # Use `config.ini` for use after running `make install`
 [system]
 binPath = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"
-createInterfaces = true
+createInterfaces = false
 ignoreErrorOnIfCreate = true
 allowAllConnections = true
 allowAllNat = true
@@ -10,34 +10,34 @@ apDetect = false
 generateSsid = true
 allocateVlans = true
 defaultOpenVlanId = 0
-execAp = true
+execAp = false
 execRadius = true
-execDhcp = true
-execCapture = true
-execMdnsForward = true
-execFirewall = true
-setIpForward = true
-connectionDbPath = "/tmp/connection.sqlite"
-cryptDbPath = "/tmp/crypt.sqlite"
-pidFilePath = "/var/run/edgesec.pid"
+execDhcp = false
+execCapture = false
+execMdnsForward = false
+execFirewall = false
+setIpForward = false
+connectionDbPath = ":memory:"
+cryptDbPath = ":memory:"
+pidFilePath = "/tmp/edgesec.pid"
 
 [capture]
-captureDbPath = "/tmp/capture.sqlite"
+captureDbPath = ":memory:"
 filter = ""
 promiscuous = false
 bufferTimeout = 10
 immediate = false
-middlewareParams = ""
+middlewareParams = "tap0"
 
 [supervisor]
 supervisorControlPort = 32001
 supervisorControlPath = "/tmp/edgesec-control-server"
 
 [ap]
-apBinPath = "/sbin/wifi"
-apFilePath = "/srv/hostapd.conf"
+apBinPath = "./hostapd"
+apFilePath = "/tmp/hostapd.conf"
 apLogPath = "/tmp/hostapd.log"
-interface = "wlan1"
+interface = "wifi0"
 device = "radio1"
 vlanTaggedInterface = ""
 ssid = "IOTH_TEST"
@@ -50,9 +50,10 @@ authAlgs = 1
 wpa = 2
 wpaKeyMgmt = "WPA-PSK"
 rsnPairwise = "CCMP"
-ctrlInterface = "/var/run/hostapd"
+ctrlInterface = "/tmp"
 macaddrAcl = 2
-vlanFile = "/var/run/hostapd-wlan1.vlan"
+dynamicVlan = 2
+vlanFile = "/tmp/hostapd.vlan"
 loggerStdout = -1
 loggerStdoutLevel = 0
 loggerSyslog = -1
@@ -61,7 +62,7 @@ ignoreBroadcastSsid = 0
 wpaPskRadius = 2
 
 [radius]
-port = 1812
+port = 54321
 clientIP = "127.0.0.1"
 clientMask = 32
 serverIP = "127.0.0.1"
@@ -69,11 +70,11 @@ serverMask = 32
 secret = "radius"
 
 [nat]
-natBridge = "wan"
-natInterface = "eth2"
+natBridge = ""
+natInterface = "enx000ec6b69a07"
 
 [firewall]
-firewallBinPath = "/etc/init.d/firewall"
+firewallBinPath = ""
 
 [dns]
 servers = "8.8.4.4,8.8.8.8"
@@ -82,9 +83,9 @@ mdnsReflectIp6 = true
 mdnsFilter = "src net 10.0 and dst net 10.0"
 
 [dhcp]
-dhcpBinPath = "/etc/init.d/dnsmasq"
-dhcpConfigPath = "/srv/dnsmasq.conf"
-dhcpScriptPath = "/srv/dnsmasq_exec.sh"
+dhcpBinPath = "/usr/sbin/dnsmasq"
+dhcpConfigPath = "/tmp/dnsmasq.conf"
+dhcpScriptPath = "/tmp/dnsmasq_exec.sh"
 dhcpLeasefilePath = "/tmp/dnsmasq.leases"
 dhcpRange0 = "0,10.0.0.2,10.0.0.254,255.255.255.0,24h"
 dhcpRange1 = "1,10.0.1.2,10.0.1.254,255.255.255.0,24h"
@@ -100,7 +101,7 @@ dhcpRange10 = "10,10.0.10.2,10.0.10.254,255.255.255.0,24h"
 
 [interfaces]
 bridgePrefix = "br"
-interfacePrefix = "br-br"
+interfacePrefix = "br"
 if0 = "0,10.0.0.1,10.0.0.255,255.255.255.0"
 if1 = "1,10.0.1.1,10.0.1.255,255.255.255.0"
 if2 = "2,10.0.2.1,10.0.2.255,255.255.255.0"

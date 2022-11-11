@@ -84,9 +84,9 @@ struct app_config {
  *
  * @param filename The app configuration file
  * @param config The configuration structure
- * @return true on success, false otherwise
+ * @return 0 on success, -1 otherwise
  */
-bool load_app_config(const char *filename, struct app_config *config);
+int load_app_config(const char *filename, struct app_config *config);
 
 /**
  * @brief Frees the app configuration

@@ -201,7 +201,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  if (!load_app_config(config_filename, &config)) {
+  if (load_app_config(config_filename, &config) < 0) {
     fprintf(stderr, "load_app_config fail\n");
     return EXIT_FAILURE;
   }
@@ -213,7 +213,7 @@ int main(int argc, char *argv[]) {
 
   os_init_random_seed();
 
-  if (run_ctl(&config) < 0) {
+  if (run_ctl(&config, NULL) < 0) {
     fprintf(stderr, "Failed to start edgesec engine.\n");
     return EXIT_FAILURE;
   } else

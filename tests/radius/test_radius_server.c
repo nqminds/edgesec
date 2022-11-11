@@ -125,8 +125,10 @@ static void start_test(void *eloop_ctx, void *timeout_ctx) {
     return;
   }
 
-  if (radius_client_send(ctx->radius, msg, RADIUS_AUTH, addr) < 0)
+  if (radius_client_send(ctx->radius, msg, RADIUS_AUTH, addr) < 0) {
     radius_msg_free(msg);
+    return;
+  }
 }
 
 static void test_radius_server_init(void **state) {
