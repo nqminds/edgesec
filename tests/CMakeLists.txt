@@ -58,6 +58,7 @@ target_link_options(test_runctl PRIVATE
 )
 
 if (USE_CRYPTO_SERVICE)
+  add_compile_definitions(WITH_CRYPTO_SERVICE)
   target_link_libraries(test_runctl PRIVATE crypt_service)
   target_link_options(test_runctl PRIVATE "LINKER:--wrap=load_crypt_service")
 endif ()
