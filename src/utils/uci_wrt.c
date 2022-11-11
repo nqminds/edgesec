@@ -923,6 +923,18 @@ int uwrt_gen_hostapd_instance(struct uctx *context,
            params->wpa_passphrase);
   utarray_push_back(properties, &property);
 
+  snprintf(property, property_size, "wireless.edgesec.dynamic_vlan=%d",
+           params->dynamic_vlan);
+  utarray_push_back(properties, &property);
+
+  snprintf(property, property_size, "wireless.edgesec.vlan_bridge=%s",
+           params->vlan_bridge);
+  utarray_push_back(properties, &property);
+
+  snprintf(property, property_size, "wireless.edgesec.vlan_file=%s",
+           params->vlan_file);
+  utarray_push_back(properties, &property);
+
   snprintf(property, property_size, "wireless.%s=wifi-device", params->device);
   utarray_push_back(properties, &property);
 
@@ -1000,11 +1012,6 @@ int uwrt_gen_hostapd_instance(struct uctx *context,
            params->macaddr_acl);
   utarray_push_back(list_properties, &property);
 
-  snprintf(property, property_size,
-           "wireless.%s.hostapd_options=dynamic_vlan=%d", params->device,
-           params->dynamic_vlan);
-  utarray_push_back(list_properties, &property);
-
   snprintf(property, property_size, "wireless.%s.hostapd_options=vlan_file=%s",
            params->device, params->vlan_file);
   utarray_push_back(list_properties, &property);
@@ -1024,7 +1031,7 @@ int uwrt_gen_hostapd_instance(struct uctx *context,
            params->vlan_bridge);
   utarray_push_back(list_properties, &property);
 
-  if (uwrt_add_list_properties(context->uctx, properties) < 0) {
+  if (uwrt_add_list_properties(context->uctx, list_properties) < 0) {
     log_error("uwrt_gen_hostapd_instance: failed to uwrt_add_list_properties");
     utarray_free(list_properties);
     return -1;
