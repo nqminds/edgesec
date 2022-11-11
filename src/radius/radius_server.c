@@ -714,6 +714,8 @@ static int radius_server_disable_pmtu_discovery(int s) {
   r = setsockopt(s, IPPROTO_IP, IP_MTU_DISCOVER, &action, sizeof(action));
   if (r == -1)
     log_errno("Failed to set IP_MTU_DISCOVER:");
+#else
+  (void)s; /* this function is a no-op on non-Linux machines */
 #endif
   return r;
 }
