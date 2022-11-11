@@ -67,7 +67,7 @@ bool close_ap(struct supervisor_context *context);
  * @param mac_addr The mac address to add to deny list
  * @return int 0 on success, -1 on failure
  */
-int denyacl_add_ap_command(struct apconf *hconf, char *mac_addr);
+int denyacl_add_ap_command(struct apconf *hconf, const char *mac_addr);
 
 /**
  * @brief Deny ACL DEL AP command
@@ -76,7 +76,7 @@ int denyacl_add_ap_command(struct apconf *hconf, char *mac_addr);
  * @param mac_addr The mac address to remove from deny list
  * @return int 0 on success, -1 on failure
  */
-int denyacl_del_ap_command(struct apconf *hconf, char *mac_addr);
+int denyacl_del_ap_command(struct apconf *hconf, const char *mac_addr);
 
 /**
  * @brief Disconnect and reconnect a MAC device from the AP
@@ -85,7 +85,7 @@ int denyacl_del_ap_command(struct apconf *hconf, char *mac_addr);
  * @param mac_addr The mac address to disconnect
  * @return int 0 on success, -1 on failure
  */
-int disconnect_ap_command(struct apconf *hconf, char *mac_addr);
+int disconnect_ap_command(struct apconf *hconf, const char *mac_addr);
 
 /**
  * @brief Check if a station is registered on the AP
@@ -94,5 +94,5 @@ int disconnect_ap_command(struct apconf *hconf, char *mac_addr);
  * @param mac_addr The mac address of the station
  * @return int 0 on success, -1 on failure
  */
-int check_sta_ap_command(struct apconf *hconf, char *mac_addr);
+int check_sta_ap_command(struct apconf *hconf, const char *mac_addr);
 #endif

@@ -88,4 +88,8 @@ void free_packet_queue(struct packet_queue *queue);
  * @return 1, is empty, 0 otherwise, -1 for error
  */
 int is_packet_queue_empty(struct packet_queue *queue);
+
+static inline void free_packet(void *elt) {
+  free_packet_tuple((struct tuple_packet *)elt);
+}
 #endif

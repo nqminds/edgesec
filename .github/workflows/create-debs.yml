@@ -24,6 +24,7 @@ jobs:
           - clang
           - openwrt-with-header
           - openwrt-21.02.1/bcm27xx/bcm2710 # Raspberry Pi 3 for OpenWRT 21.02.1
+          - recap # Uses the generic IP service
     permissions:
       contents: read
     runs-on: ubuntu-latest
@@ -47,6 +48,14 @@ jobs:
           # which is too old for Clang 11 compatibility
           echo 'set(CMAKE_C_COMPILER clang-10)
           set(CMAKE_CXX_COMPILER clang++-10)' > CMakeModules/CMakeToolchains/clang.cmake
+      - name: Cache CMake build/dl folder
+        uses: actions/cache@v3
+        with:
+          path: ./build/dl
+          key: ${{ runner.os }}-${{ matrix.cmake-preset }}-${{ hashFiles( 'lib/*' ) }}
+        # Sometimes the cache step just freezes forever
+        # so put a limit on it so that we can restart it earlier on failure
+        timeout-minutes: 10
       - name: Configure
         run: |
           cmake --preset "${{ matrix.cmake-preset }}" -DCONFIGURE_COVERAGE=BOOL:ON
@@ -132,6 +141,8 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           files: coverage.info
+          # not officially needed for public repos, but we're getting a bunch of API issues
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
   build-recap:
     name: Building Recap
@@ -145,10 +156,13 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install devscripts equivs -y # install mk-build-depends
+          sudo apt-get install devscripts equivs ninja-build -y # install mk-build-depends
           sudo mk-build-deps --install --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes'  debian/control
-      - name: Configure
-        run: cmake --preset recap -DCMAKE_BUILD_TYPE=Release
+      - name: Configure using Ninja
+        # Ninja is actually slightly slower than using Make, since then
+        # the ExternalProjects have to run in invidividual GNU Make sessions
+        # It's mainly here just to confirm that a Ninja build works.
+        run: cmake --preset recap -DCMAKE_BUILD_TYPE=Release -G Ninja
       - name: Build
         run: cmake --build --preset recap -j="$(($(nproc) + 1))"
       - name: Archive built recap

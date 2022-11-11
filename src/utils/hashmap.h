@@ -39,21 +39,24 @@ typedef struct hashmap_str_keyptr {
 /**
  * @brief Retrieves a string from string hashmap for a given key
  *
- * @param hmap The string hashmap object
- * @param keyptr The hashmap key
- * @return char* Returned string, NULL if not found
+ * @param hmap The string hashmap object.
+ * @param keyptr The hashmap key.
+ * @return Returned string, NULL if not found. Valid until the hashmap entry is
+ * deleted.
  */
-char *hmap_str_keychar_get(hmap_str_keychar **hmap, char *keyptr);
+const char *hmap_str_keychar_get(const hmap_str_keychar *hmap,
+                                 const char *keyptr);
 
 /**
  * @brief Inserts a string into a string hashmap for a given key
  *
- * @param hmap The string hashmap object
+ * @param[in, out] hmap Pointer to the string hashmap object.
  * @param keyptr The hashmap key
  * @param value The hashmap string value
  * @return true on succes, false if there's an insertion error
  */
-bool hmap_str_keychar_put(hmap_str_keychar **hmap, char *keyptr, char *value);
+bool hmap_str_keychar_put(hmap_str_keychar **hmap, const char *keyptr,
+                          const char *value);
 
 /**
  * @brief Deletes the string hashmap object

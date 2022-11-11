@@ -45,11 +45,12 @@ int __wrap_get_commands_paths(char *commands[], UT_array *bin_path_arr,
   return (int)mock();
 }
 
-char *__wrap_hmap_str_keychar_get(hmap_str_keychar **hmap, char *keyptr) {
+const char *__wrap_hmap_str_keychar_get(const hmap_str_keychar *hmap,
+                                        char *keyptr) {
   (void)hmap;
   (void)keyptr;
 
-  return (char *)mock();
+  return mock_ptr_type(const char *);
 }
 
 #ifdef WITH_CRYPTO_SERVICE

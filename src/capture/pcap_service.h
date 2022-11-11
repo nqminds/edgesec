@@ -96,6 +96,16 @@ int dump_file_pcap(struct pcap_context *ctx, char *file_path,
                    struct pcap_pkthdr *header, uint8_t *packet);
 
 /**
+ * @brief Injects a packets
+ *
+ * @param ctx The pcap context
+ * @param packet The packet data
+ * @param size The packet size
+ * @return int number of bytes injected on success, -1 on failure
+ */
+int inject_pcap(struct pcap_context *ctx, uint8_t *packet, size_t size);
+
+/**
  * @brief Closes the pcap service
  *
  * @param ctx The pcap context

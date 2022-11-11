@@ -37,8 +37,8 @@ int crypto_genkey(uint8_t *buf, int key_size) {
   return RAND_bytes(buf, key_size);
 }
 
-int crypto_buf2key(uint8_t *buf, int buf_size, uint8_t *salt, int salt_size,
-                   uint8_t *key, int key_size) {
+int crypto_buf2key(const uint8_t *buf, int buf_size, const uint8_t *salt,
+                   int salt_size, uint8_t *key, int key_size) {
   if (PKCS5_PBKDF2_HMAC((char *)buf, buf_size, salt, salt_size,
                         MAX_KEY_ITERATIONS, EVP_sha256(), key_size, key) < 1) {
     log_trace("PKCS5_PBKDF2_HMAC fail wit code=%d", ERR_get_error());
@@ -48,8 +48,8 @@ int crypto_buf2key(uint8_t *buf, int buf_size, uint8_t *salt, int salt_size,
   return 0;
 }
 
-ssize_t crypto_encrypt(uint8_t *in, int in_size, uint8_t *key, uint8_t *iv,
-                       uint8_t *out) {
+ssize_t crypto_encrypt(const uint8_t *in, int in_size, const uint8_t *key,
+                       const uint8_t *iv, uint8_t *out) {
   EVP_CIPHER_CTX *ctx;
   int len;
   ssize_t ciphertext_len;

@@ -6,7 +6,10 @@ include_directories (
 )
 
 if (USE_UCI_SERVICE)
-  add_compile_definitions(TEST_UCI_CONFIG_DIR="${CMAKE_SOURCE_DIR}/tests/data/uci")
+  # tests may modify these files, so we only run on a copy
+  file(COPY "${CMAKE_SOURCE_DIR}/tests/data/uci" DESTINATION "${CMAKE_BINARY_DIR}/tests/data")
+  set(TEST_UCI_CONFIG_DIR "${CMAKE_BINARY_DIR}/tests/data/uci")
+  add_compile_definitions(TEST_UCI_CONFIG_DIR="${TEST_UCI_CONFIG_DIR}")
   add_library(
     __wrap_uwrt_init_context OBJECT ./utils/__wrap_uwrt_init_context.c
   )
@@ -33,8 +36,15 @@ if (USE_MDNS_SERVICE)
   add_subdirectory(dns)
 endif ()
 
-add_executable(test_runctl test_runctl.c)
-target_link_libraries(test_runctl PUBLIC SQLite::SQLite3 LibUTHash::LibUTHash PRIVATE runctl log os supervisor_config mac_mapper cmocka::cmocka)
+add_cmocka_test(test_config
+  SOURCES test_config.c
+  LINK_LIBRARIES cmocka::cmocka log config
+)
+
+add_cmocka_test(test_runctl
+  SOURCES test_runctl.c
+  LINK_LIBRARIES SQLite::SQLite3 LibUTHash::LibUTHash runctl log os supervisor_config mac_mapper cmocka::cmocka
+)
 
 target_link_options(test_runctl PRIVATE
   "LINKER:--wrap=get_vlan_mapper,--wrap=eloop_run,--wrap=get_commands_paths,--wrap=hmap_str_keychar_get"
@@ -60,8 +70,3 @@ endif()
 if (USE_UCI_SERVICE)
   target_link_libraries(test_runctl PUBLIC __wrap_uwrt_init_context)
 endif()
-
-add_test(NAME test_runctl COMMAND test_runctl)
-set_tests_properties(test_runctl
-  PROPERTIES
-  WILL_FAIL FALSE)

@@ -54,7 +54,7 @@ int run_ap_process(struct apconf *hconf);
  * @param hconf The hostapd process config structure
  * @return int 0 on success, -1 on failure
  */
-int signal_ap_process(struct apconf *hconf);
+int signal_ap_process(const struct apconf *hconf);
 
 /**
  * @brief Terminate the AP service

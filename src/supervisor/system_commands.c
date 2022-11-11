@@ -14,6 +14,7 @@
 #include "system_commands.h"
 #include "mac_mapper.h"
 #include "supervisor.h"
+#include "supervisor_utils.h"
 #include "sqlite_macconn_writer.h"
 #include "network_commands.h"
 #include "subscriber_events.h"
@@ -101,7 +102,7 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
 
   log_debug("SET_IP type=%d mac=" MACSTR " ip=%s if=%s", ip_type,
             MAC2STR(mac_addr), ip_addr, ifname);
-  if (!save_mac_mapper(context, conn)) {
+  if (save_mac_mapper(context, conn) < 0) {
     log_error("save_mac_mapper fail");
     return -1;
   }
