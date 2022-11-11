@@ -1,5 +1,9 @@
-# Error on all C/C++ warnings in the src/ directory if making a Debug build
-add_compile_options($<$<CONFIG:Debug>:-Werror>)
+add_compile_options(
+  # Error on all C/C++ warnings in the src/ directory if making a Debug build
+  $<$<CONFIG:Debug>:-Werror>
+  # Warn/error if using a non-const pointer to a string literal
+  $<$<COMPILE_LANGUAGE:C>:-Wwrite-strings>
+)
 
 add_subdirectory(utils)
 add_subdirectory(supervisor)
