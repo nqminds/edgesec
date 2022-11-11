@@ -8,13 +8,8 @@ include_directories (
 if (USE_UCI_SERVICE)
   # tests may modify these files, so we only run on a copy
   file(COPY "${CMAKE_SOURCE_DIR}/tests/data/uci" DESTINATION "${CMAKE_BINARY_DIR}/tests/data")
-  set(TEST_UCI_CONFIG_DIR "${CMAKE_BINARY_DIR}/tests/data/uci")
-  add_compile_definitions(TEST_UCI_CONFIG_DIR="${TEST_UCI_CONFIG_DIR}")
-  add_library(
-    __wrap_uwrt_init_context OBJECT ./utils/__wrap_uwrt_init_context.c
-  )
-  target_link_libraries(__wrap_uwrt_init_context PRIVATE uci_wrt)
-  target_link_options(__wrap_uwrt_init_context PUBLIC "-Wl,--wrap=uwrt_init_context")
+  set(UCI_CONFIG_DIR "${CMAKE_BINARY_DIR}/tests/data/uci")
+  add_compile_definitions(UCI_CONFIG_DIR="${UCI_CONFIG_DIR}")
 endif ()
 
 if (USE_CAPTURE_SERVICE)
@@ -36,10 +31,21 @@ if (USE_MDNS_SERVICE)
   add_subdirectory(dns)
 endif ()
 
+configure_file("${CMAKE_CURRENT_LIST_DIR}/test-config.ini.in" "${CMAKE_BINARY_DIR}/test-config.ini" @ONLY)
 add_cmocka_test(test_config
   SOURCES test_config.c
   LINK_LIBRARIES cmocka::cmocka log config
 )
+target_compile_definitions(test_config PRIVATE TEST_CONFIG_INI_PATH="${CMAKE_BINARY_DIR}/test-config.ini")
+
+if (USE_RADIUS_SERVICE)
+  add_cmocka_test(test_edgesec
+    SOURCES test_edgesec.c
+    LINK_LIBRARIES radius radius_client sockctl runctl cmocka::cmocka log config
+  )
+  target_compile_definitions(test_edgesec PRIVATE TEST_CONFIG_INI_PATH="${CMAKE_BINARY_DIR}/test-config.ini")
+  set_tests_properties(test_edgesec PROPERTIES TIMEOUT 10)
+endif()
 
 add_cmocka_test(test_runctl
   SOURCES test_runctl.c
@@ -52,6 +58,7 @@ target_link_options(test_runctl PRIVATE
 )
 
 if (USE_CRYPTO_SERVICE)
+  add_compile_definitions(WITH_CRYPTO_SERVICE)
   target_link_libraries(test_runctl PRIVATE crypt_service)
   target_link_options(test_runctl PRIVATE "LINKER:--wrap=load_crypt_service")
 endif ()
@@ -68,5 +75,6 @@ if (USE_MDNS_SERVICE)
   target_link_options(test_runctl PRIVATE "LINKER:--wrap=run_mdns_thread")
 endif()
 if (USE_UCI_SERVICE)
-  target_link_libraries(test_runctl PUBLIC __wrap_uwrt_init_context)
+  target_link_libraries(test_runctl PRIVATE __wrap_uwrt_init_context)
+  target_link_libraries(test_edgesec PRIVATE __wrap_uwrt_init_context)
 endif()

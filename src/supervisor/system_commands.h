@@ -26,6 +26,8 @@ enum DHCP_IP_TYPE {
   DHCP_IP_ARP,
 };
 
+#define PING_REPLY "PONG\n"
+
 /**
  * @brief SET_IP command
  *

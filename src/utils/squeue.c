@@ -31,7 +31,7 @@ struct string_queue *init_string_queue(ssize_t max_length) {
   return queue;
 }
 
-int push_string_queue(struct string_queue *queue, char *str) {
+int push_string_queue(struct string_queue *queue, const char *str) {
   struct string_queue *el;
   ssize_t max_length;
 
@@ -72,14 +72,14 @@ void free_string_queue_el(struct string_queue *el) {
   }
 }
 
-int peek_string_queue(struct string_queue *queue, char **str) {
-  struct string_queue *el = NULL;
+int peek_string_queue(const struct string_queue *queue, char **str) {
   *str = NULL;
 
   if (queue == NULL)
     return -1;
 
-  el = dl_list_first(&queue->list, struct string_queue, list);
+  const struct string_queue *el =
+      dl_list_first(&queue->list, const struct string_queue, list);
 
   if (el != NULL)
     *str = os_strdup(el->str);
@@ -118,12 +118,12 @@ void free_string_queue(struct string_queue *queue) {
   }
 }
 
-ssize_t get_string_queue_length(struct string_queue *queue) {
+ssize_t get_string_queue_length(const struct string_queue *queue) {
   return (queue != NULL) ? dl_list_len(&queue->list) : 0;
 }
 
-char *concat_string_queue(struct string_queue *queue, ssize_t count) {
-  struct string_queue *el;
+char *concat_string_queue(const struct string_queue *queue, ssize_t count) {
+  const struct string_queue *el;
   char *concat_str = NULL;
   ssize_t size = 1, num = 0;
 

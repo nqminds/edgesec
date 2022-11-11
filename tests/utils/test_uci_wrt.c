@@ -24,18 +24,15 @@ static void test_uwrt_init_context(void **state) {
   struct uctx *context = uwrt_init_context(NULL);
   assert_non_null(context);
   uwrt_free_context(context);
-#ifdef TEST_UCI_CONFIG_DIR
-  context = uwrt_init_context(TEST_UCI_CONFIG_DIR);
+  context = uwrt_init_context(NULL);
   assert_non_null(context);
   uwrt_free_context(context);
-#endif
 }
 
-#ifdef TEST_UCI_CONFIG_DIR
 static void test_uwrt_get_interfaces(void **state) {
   (void)state;
 
-  struct uctx *context = uwrt_init_context(TEST_UCI_CONFIG_DIR);
+  struct uctx *context = uwrt_init_context(UCI_CONFIG_DIR);
   netif_info_t *ptr = NULL;
   UT_array *interfaces = uwrt_get_interfaces(context, NULL);
   assert_non_null(interfaces);
@@ -83,7 +80,7 @@ static void test_uwrt_create_interface(void **state) {
 
   struct uci_ptr p;
   netif_info_t *ptr = NULL;
-  struct uctx *context = uwrt_init_context(TEST_UCI_CONFIG_DIR);
+  struct uctx *context = uwrt_init_context(UCI_CONFIG_DIR);
   assert_int_equal(uwrt_create_interface(context, "br0", "bridge", "10.0.0.1",
                                          "10.0.0.255", "255.255.255.0"),
                    0);
@@ -107,7 +104,7 @@ static void test_uwrt_create_interface(void **state) {
 static void test_uwrt_firewall(void **state) {
   (void)state;
 
-  struct uctx *context = uwrt_init_context(TEST_UCI_CONFIG_DIR);
+  struct uctx *context = uwrt_init_context(UCI_CONFIG_DIR);
 
   assert_int_equal(uwrt_gen_firewall_zone(context, "br0"), 0);
 
@@ -123,7 +120,6 @@ static void test_uwrt_firewall(void **state) {
 
   uwrt_free_context(context);
 }
-#endif
 
 int main(int argc, char *argv[]) {
   (void)argc;
@@ -133,11 +129,9 @@ int main(int argc, char *argv[]) {
 
   const struct CMUnitTest tests[] = {
       cmocka_unit_test(test_uwrt_init_context),
-#ifdef TEST_UCI_CONFIG_DIR
       cmocka_unit_test(test_uwrt_get_interfaces),
       cmocka_unit_test(test_uwrt_create_interface),
       cmocka_unit_test(test_uwrt_firewall),
-#endif
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

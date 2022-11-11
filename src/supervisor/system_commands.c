@@ -30,8 +30,6 @@
 #include "../utils/sockctl.h"
 #include "../utils/iface_mapper.h"
 
-#define PING_REPLY "PONG\n"
-
 int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
                char *ip_addr, enum DHCP_IP_TYPE ip_type) {
   UT_array *mac_list_arr;
