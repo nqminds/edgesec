@@ -22,7 +22,7 @@
 #include "../utils/log.h"
 #include "../utils/allocs.h"
 #include "../utils/os.h"
-#include "../utils/eloop.h"
+#include <eloop.h>
 #include "../utils/sockctl.h"
 
 #include "../capture/capture_service.h"

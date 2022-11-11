@@ -10,8 +10,9 @@
 #include <string.h>
 #include <limits.h>
 
+#include <eloop.h>
+#include "utils/allocs.h"
 #include "utils/log.h"
-#include "utils/eloop.h"
 #include "utils/sockctl.h"
 
 #include "tmpdir.h"

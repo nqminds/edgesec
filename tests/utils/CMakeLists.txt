@@ -33,7 +33,7 @@ add_cmocka_test(test_os
 
 add_cmocka_test(test_eloop
   SOURCES test_eloop.c
-  LINK_LIBRARIES tmpdir sockctl os allocs eloop cmocka::cmocka)
+  LINK_LIBRARIES tmpdir sockctl allocs eloop::eloop cmocka::cmocka)
 # requires the POSIX.1-2008 to define PATH_MAX
 # (POSIX.1-2001 has some issues, see https://man7.org/linux/man-pages/man3/realpath.3.html)
 target_compile_definitions(test_eloop PRIVATE _POSIX_C_SOURCE=200809L)
@@ -41,12 +41,12 @@ target_compile_definitions(test_eloop PRIVATE _POSIX_C_SOURCE=200809L)
 add_cmocka_test(test_eloop_handles_null
   SOURCES test_eloop_handles_null.c
   LINK_LIBRARIES
-  PRIVATE eloop cmocka::cmocka wrap_log_error
+  PRIVATE eloop::eloop cmocka::cmocka wrap_log_error
 )
 
 add_cmocka_test(test_eloop_threaded
   SOURCES test_eloop_threaded.c
-  LINK_LIBRARIES eloop cmocka::cmocka sockctl LibUTHash::LibUTHash Threads::Threads
+  LINK_LIBRARIES eloop::eloop cmocka::cmocka sockctl LibUTHash::LibUTHash Threads::Threads
 )
 set_tests_properties(test_eloop_threaded
   PROPERTIES

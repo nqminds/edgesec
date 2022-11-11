@@ -14,7 +14,7 @@
 #include <cmocka.h>
 
 #include "utils/log.h"
-#include "utils/eloop.h"
+#include <eloop.h>
 #include "capture/capture_service.h"
 #include "capture/middlewares_list.h"
 #include "capture/middlewares/header_middleware/packet_decoder.h"

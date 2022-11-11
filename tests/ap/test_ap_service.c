@@ -20,7 +20,7 @@
 #include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/iface.h"
-#include "utils/eloop.h"
+#include <eloop.h>
 #include "ap/ap_service.h"
 #include "ap/ap_config.h"
 #include "ap/hostapd.h"

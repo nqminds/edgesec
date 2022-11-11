@@ -74,7 +74,7 @@ int close_domain_socket(int unix_domain_socket_fd);
 /**
  * @brief Create a udp server object
  *
- * @param port Server port
+ * @param port Server port in host endian.
  * @return int UDP server socket
  */
 int create_udp_server(unsigned int port);

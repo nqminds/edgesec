@@ -358,7 +358,8 @@ ssize_t write_socket_udp(int sock, const char *data, size_t data_len,
     return -1;
   }
 
-  log_trace("Sending to udp socket on %s:%d", ip, addr->caddr.addr_in.sin_port);
+  log_trace("Sending to udp socket on %s:%d", ip,
+            ntohs(addr->caddr.addr_in.sin_port));
   if ((sent = sendto(sock, data, data_len, 0,
                      (const struct sockaddr *)&addr->caddr.addr_in,
                      addr->len)) < 0) {

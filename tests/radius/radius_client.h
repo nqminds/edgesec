@@ -15,7 +15,7 @@
 #include <arpa/inet.h>
 #include <stdbool.h>
 
-#include "../../src/utils/eloop.h"
+#include <eloop.h>
 #include "ip_addr.h"
 
 struct radius_msg;

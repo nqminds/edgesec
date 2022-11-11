@@ -34,7 +34,7 @@ if (USE_MDNS_SERVICE)
 endif ()
 target_link_libraries(runctl PRIVATE
   LibUTHash::LibUTHash capture_service net log iface_mapper os
-  sqlite_macconn_writer firewall_service eloop supervisor
+  sqlite_macconn_writer firewall_service eloop::eloop supervisor
   network_commands mac_mapper ap_service firewall_service dhcp_service
   Threads::Threads
 )
@@ -49,7 +49,7 @@ if (USE_CRYPTO_SERVICE)
 else ()
   target_include_directories(edgesec PRIVATE ${PROJECT_BINARY_DIR})
 endif ()
-target_link_libraries(edgesec PRIVATE eloop config runctl os hashmap Threads::Threads)
+target_link_libraries(edgesec PRIVATE eloop::eloop config runctl os hashmap Threads::Threads)
 # link time optimization
 set_target_properties(edgesec PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
 

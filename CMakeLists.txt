@@ -164,6 +164,7 @@ include(hostapd)
 include(cmocka)
 include(minIni)
 include(mnl)
+include(eloop)
 include(netlink)
 include(nl)
 include(uuid)
@@ -232,9 +233,10 @@ if (NOT BUILD_ONLY_DOCS)
         EXECUTABLE_ARGS --output-on-failure -j "${PROCESSOR_COUNT}"
         EXCLUDE
           "${PROJECT_SOURCE_DIR}/lib/*"
-          # these file are only in the build/ directory, but
+          # These files are only in the build/ directory, but
           # llvm-cov gcov doesn't seem to like it
           "${PROJECT_SOURCE_DIR}/middlewares_list.c"
+          # The _deps/ folder is created by CMake's FetchContent
           "${PROJECT_SOURCE_DIR}/_deps/*"
       )
     endif()

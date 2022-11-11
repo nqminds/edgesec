@@ -4,8 +4,9 @@
 #include <stdint.h>
 #include <cmocka.h>
 
+#include <eloop.h>
+
 #include "utils/log.h"
-#include "utils/eloop.h"
 
 #include "./wrap_log_error.h"
 

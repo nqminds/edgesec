@@ -1,0 +1,190 @@
+From 90507aa857a7d9703788f67fe000fd18cbda5035 Mon Sep 17 00:00:00 2001
+From: Alois Klink <alois@nquiringminds.com>
+Date: Tue, 6 Sep 2022 18:24:27 +0100
+Subject: [PATCH 1/3] Replace eloop logging with edgesec logs
+
+---
+ src/utils/eloop.c | 51 ++++++++++++++++++++++-------------------------
+ src/utils/eloop.h |  2 ++
+ 2 files changed, 26 insertions(+), 27 deletions(-)
+
+diff --git a/src/utils/eloop.c b/src/utils/eloop.c
+index 00b0bef..66e05d1 100644
+--- a/src/utils/eloop.c
++++ b/src/utils/eloop.c
+@@ -6,13 +6,20 @@
+  * See README for more details.
+  */
+ 
+-#include "includes.h"
++#include <stddef.h>
++#include <stdint.h>
++#include <stdlib.h>
+ #include <assert.h>
++#include <signal.h>
++#include <sys/select.h>
++#include <errno.h>
+ 
+-#include "common.h"
+ #include "trace.h"
+ #include "list.h"
++// #include "common.h"
+ #include "eloop.h"
++#include "src/utils/allocs.h"
++#include "src/utils/log.h"
+ 
+ #if defined(CONFIG_ELOOP_POLL) && defined(CONFIG_ELOOP_EPOLL)
+ #error Do not define both of poll and epoll
+@@ -167,16 +174,14 @@ int eloop_init(void)
+ #ifdef CONFIG_ELOOP_EPOLL
+ 	eloop.epollfd = epoll_create1(0);
+ 	if (eloop.epollfd < 0) {
+-		wpa_printf(MSG_ERROR, "%s: epoll_create1 failed. %s",
+-			   __func__, strerror(errno));
++		log_errno("eloop_init: epoll_create1 failed.");
+ 		return -1;
+ 	}
+ #endif /* CONFIG_ELOOP_EPOLL */
+ #ifdef CONFIG_ELOOP_KQUEUE
+ 	eloop.kqueuefd = kqueue();
+ 	if (eloop.kqueuefd < 0) {
+-		wpa_printf(MSG_ERROR, "%s: kqueue failed: %s",
+-			   __func__, strerror(errno));
++		log_errno("eloop_init: kqueue failed");
+ 		return -1;
+ 	}
+ #endif /* CONFIG_ELOOP_KQUEUE */
+@@ -216,8 +221,7 @@ static int eloop_sock_queue(int sock, eloop_event_type type)
+ 	}
+ 	ev.data.fd = sock;
+ 	if (epoll_ctl(eloop.epollfd, EPOLL_CTL_ADD, sock, &ev) < 0) {
+-		wpa_printf(MSG_ERROR, "%s: epoll_ctl(ADD) for fd=%d failed: %s",
+-			   __func__, sock, strerror(errno));
++		log_errno("eloop_sock_queues: epoll_ctl(ADD) for fd=%d failed", sock);
+ 		return -1;
+ 	}
+ 	return 0;
+@@ -246,8 +250,7 @@ static int eloop_sock_queue(int sock, eloop_event_type type)
+ 
+ 	EV_SET(&ke, sock, event_type_kevent_filter(type), EV_ADD, 0, 0, 0);
+ 	if (kevent(eloop.kqueuefd, &ke, 1, NULL, 0, NULL) == -1) {
+-		wpa_printf(MSG_ERROR, "%s: kevent(ADD) for fd=%d failed: %s",
+-			   __func__, sock, strerror(errno));
++		log_errno("eloop_sock_queue: kevent(ADD) for fd=%d failed", sock);
+ 		return -1;
+ 	}
+ 	return 0;
+@@ -326,8 +329,7 @@ static int eloop_sock_table_add_sock(struct eloop_sock_table *table,
+ 		temp_events = os_realloc_array(eloop.epoll_events, next,
+ 					       sizeof(struct epoll_event));
+ 		if (temp_events == NULL) {
+-			wpa_printf(MSG_ERROR, "%s: malloc for epoll failed: %s",
+-				   __func__, strerror(errno));
++			log_errno("eloop_sock_table_add_sock: malloc for epoll failed");
+ 			return -1;
+ 		}
+ 
+@@ -340,9 +342,8 @@ static int eloop_sock_table_add_sock(struct eloop_sock_table *table,
+ 		next = eloop.kqueue_nevents == 0 ? 8 : eloop.kqueue_nevents * 2;
+ 		temp_events = os_malloc(next * sizeof(*temp_events));
+ 		if (!temp_events) {
+-			wpa_printf(MSG_ERROR,
+-				   "%s: malloc for kqueue failed: %s",
+-				   __func__, strerror(errno));
++			log_errno(
++				   "eloop_sock_table_add_sock: malloc for kqueue failed");
+ 			return -1;
+ 		}
+ 
+@@ -411,8 +412,7 @@ static void eloop_sock_table_remove_sock(struct eloop_sock_table *table,
+ 	eloop_trace_sock_add_ref(table);
+ #ifdef CONFIG_ELOOP_EPOLL
+ 	if (epoll_ctl(eloop.epollfd, EPOLL_CTL_DEL, sock, NULL) < 0) {
+-		wpa_printf(MSG_ERROR, "%s: epoll_ctl(DEL) for fd=%d failed: %s",
+-			   __func__, sock, strerror(errno));
++		log_errno("eloop_sock_table_remove_sock: epoll_ctl(DEL) for fd=%d failed", sock);
+ 		return;
+ 	}
+ 	os_memset(&eloop.fd_table[sock], 0, sizeof(struct eloop_sock));
+@@ -421,8 +421,7 @@ static void eloop_sock_table_remove_sock(struct eloop_sock_table *table,
+ 	EV_SET(&ke, sock, event_type_kevent_filter(table->type), EV_DELETE, 0,
+ 	       0, 0);
+ 	if (kevent(eloop.kqueuefd, &ke, 1, NULL, 0, NULL) < 0) {
+-		wpa_printf(MSG_ERROR, "%s: kevent(DEL) for fd=%d failed: %s",
+-			   __func__, sock, strerror(errno));
++		log_errno("eloop_sock_table_remove_sock: kevent(DEL) for fd=%d failed", sock);
+ 		return;
+ 	}
+ 	os_memset(&eloop.fd_table[sock], 0, sizeof(struct eloop_sock));
+@@ -678,8 +677,7 @@ int eloop_sock_requeue(void)
+ 	close(eloop.kqueuefd);
+ 	eloop.kqueuefd = kqueue();
+ 	if (eloop.kqueuefd < 0) {
+-		wpa_printf(MSG_ERROR, "%s: kqueue failed: %s",
+-			   __func__, strerror(errno));
++		log_errno("eloop_sock_requeue: kqueue failed");
+ 		return -1;
+ 	}
+ 
+@@ -701,7 +699,7 @@ static void eloop_sock_table_destroy(struct eloop_sock_table *table)
+ 		size_t i;
+ 
+ 		for (i = 0; i < table->count && table->table; i++) {
+-			wpa_printf(MSG_INFO, "ELOOP: remaining socket: "
++			log_info("ELOOP: remaining socket: "
+ 				   "sock=%d eloop_data=%p user_data=%p "
+ 				   "handler=%p",
+ 				   table->table[i].sock,
+@@ -817,7 +815,7 @@ overflow:
+ 	 * Integer overflow - assume long enough timeout to be assumed
+ 	 * to be infinite, i.e., the timeout would never happen.
+ 	 */
+-	wpa_printf(MSG_DEBUG,
++	log_debug(
+ 		   "ELOOP: Too long timeout (secs=%u usecs=%u) to ever happen - ignore it",
+ 		   secs,usecs);
+ 	os_free(timeout);
+@@ -1167,7 +1165,7 @@ void eloop_run(void)
+ 		}
+ #endif /* CONFIG_ELOOP_KQUEUE */
+ 		if (res < 0 && errno != EINTR && errno != 0) {
+-			wpa_printf(MSG_ERROR, "eloop: %s: %s",
++			log_errno("eloop: %s",
+ #ifdef CONFIG_ELOOP_POLL
+ 				   "poll"
+ #endif /* CONFIG_ELOOP_POLL */
+@@ -1180,8 +1178,7 @@ void eloop_run(void)
+ #ifdef CONFIG_ELOOP_KQUEUE
+ 				   "kqueue"
+ #endif /* CONFIG_ELOOP_EKQUEUE */
+-
+-				   , strerror(errno));
++				);
+ 			goto out;
+ 		}
+ 
+@@ -1274,7 +1271,7 @@ void eloop_destroy(void)
+ 			sec--;
+ 			usec += 1000000;
+ 		}
+-		wpa_printf(MSG_INFO, "ELOOP: remaining timeout: %d.%06d "
++		log_info("ELOOP: remaining timeout: %d.%06d "
+ 			   "eloop_data=%p user_data=%p handler=%p",
+ 			   sec, usec, timeout->eloop_data, timeout->user_data,
+ 			   timeout->handler);
+diff --git a/src/utils/eloop.h b/src/utils/eloop.h
+index 04ee6d1..6241beb 100644
+--- a/src/utils/eloop.h
++++ b/src/utils/eloop.h
+@@ -22,6 +22,8 @@
+  */
+ #define ELOOP_ALL_CTX (void *) -1
+ 
++#include "src/utils/os.h"
++
+ /**
+  * eloop_event_type - eloop socket event type for eloop_register_sock()
+  * @EVENT_TYPE_READ: Socket has data available for reading
+-- 
+2.25.1
+

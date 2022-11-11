@@ -48,19 +48,10 @@ Files: tests/radius/radius_client.*
 Copyright: 2002-2015, Jouni Malinen <j@w1.fi>
 License: BSD-3-clause
 
-Files: src/utils/eloop.*
-Copyright: 2002-2006, Jouni Malinen <j@w1.fi>
-           2022, NquiringMinds Ltd.
-License: BSD-3-clause
-
 Files: src/utils/log.*
 Copyright: 2017, rxi
            2021-2022, NquiringMinds Ltd.
 License: Expat
-
-Files: src/utils/list.h
-Copyright: 2009-2019, Jouni Malinen <j@w1.fi>
-License: BSD-3-clause
 
 License: Expat
  Permission is hereby granted, free of charge, to any person obtaining

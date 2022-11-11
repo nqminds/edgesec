@@ -13,7 +13,7 @@
 
 #include <sys/types.h> // For ssize_t
 
-#include "list.h"
+#include <list.h>
 
 /**
  * @brief String queue structure definition

@@ -23,7 +23,7 @@
 #include "../radius/radius_server.h"
 #include "../utils/allocs.h"
 #include "../utils/os.h"
-#include "../utils/eloop.h"
+#include <eloop.h>
 #include "../utils/iface.h"
 #include "../utils/log.h"
 #include "../utils/sockctl.h"

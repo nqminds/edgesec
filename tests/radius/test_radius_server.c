@@ -22,7 +22,7 @@
 #include <stdint.h>
 #include <cmocka.h>
 
-#include "utils/eloop.h"
+#include <eloop.h>
 #include "utils/allocs.h"
 #include "utils/os.h"
 #include "utils/log.h"

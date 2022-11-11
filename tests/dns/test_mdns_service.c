@@ -17,7 +17,7 @@
 #include "utils/os.h"
 #include "dns/mdns_service.h"
 #include "capture/pcap_service.h"
-#include "utils/eloop.h"
+#include <eloop.h>
 
 int __wrap_run_pcap(char *interface, bool immediate, bool promiscuous,
                     int timeout, char *filter, bool nonblock,

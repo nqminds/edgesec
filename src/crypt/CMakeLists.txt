@@ -3,7 +3,10 @@ include_directories (
 )
 
 add_library(sqlite_crypt_writer sqlite_crypt_writer.c)
-target_link_libraries(sqlite_crypt_writer sqliteu log os SQLite::SQLite3)
+target_link_libraries(sqlite_crypt_writer
+  PUBLIC SQLite::SQLite3
+  PRIVATE allocs os log sqliteu
+)
 
 add_library(generic_hsm_driver generic_hsm_driver.c)
 if (USE_ZYMKEY4_HSM)

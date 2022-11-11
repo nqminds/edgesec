@@ -27,7 +27,7 @@
 #include "../../../utils/allocs.h"
 #include "../../../utils/os.h"
 
-#include "../../../utils/eloop.h"
+#include <eloop.h>
 
 #define CLEANER_PROCESS_INTERVAL                                               \
   5 /* Frequency in sec to run the cleaner function*/

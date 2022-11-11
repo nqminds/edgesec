@@ -19,6 +19,7 @@ sudo ip tuntap add mode tap tap0
 #include <stdint.h>
 #include <libgen.h>
 #include <sqlite3.h>
+#include <eloop.h>
 
 #include "tap_middleware.h"
 
@@ -26,7 +27,6 @@ sudo ip tuntap add mode tap tap0
 #include "../../../utils/os.h"
 #include "../../../utils/log.h"
 #include "../../../utils/squeue.h"
-#include "../../../utils/eloop.h"
 
 #include "../../pcap_service.h"
 

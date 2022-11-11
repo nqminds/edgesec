@@ -14,10 +14,6 @@
 #include <stdint.h>
 #include <sqlite3.h>
 
-#include "../utils/allocs.h"
-#include "../utils/os.h"
-#include "../utils/squeue.h"
-
 #define CRYPT_STORE_TABLE_NAME "store"
 #define CRYPT_STORE_CREATE_TABLE                                               \
   "CREATE TABLE " CRYPT_STORE_TABLE_NAME                                       \
