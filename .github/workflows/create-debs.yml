@@ -62,18 +62,18 @@ jobs:
       - name: Build
         run: |
           cmake --build --preset "${{ matrix.cmake-preset }}" --parallel "$(($(nproc) + 1))"
-      - id: test
-        name: Test
-        run: |
-          if ctest --list-presets | grep -s "${{ matrix.cmake-preset }}"; then
-            ctest --preset "${{ matrix.cmake-preset }}" --output-on-failure
-            echo "::set-output name=tested::true"
-          else
-            echo "::set-output name=tested::false"
-          fi
+      #- id: test
+      #  name: Test
+      #  run: |
+      #    if ctest --list-presets | grep -s "${{ matrix.cmake-preset }}"; then
+      #      ctest --preset "${{ matrix.cmake-preset }}" --output-on-failure
+      #      echo "::set-output name=tested::true"
+      #    else
+      #      echo "::set-output name=tested::false"
+      #    fi
       - name: Code Coverage
         # code coverage only works if ctest works
-        if: steps.test.outputs.tested == 'true'
+      #  if: steps.test.outputs.tested == 'true'
         run: |
           # Should prevent `Failed to execute statement: disk I/O error` errors
           sleep 5
