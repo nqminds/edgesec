@@ -254,11 +254,6 @@ int init_context(struct app_config *app_config,
     return -1;
   }
 
-  if ((ctx->eloop = (struct eloop_data *)eloop_init()) == NULL) {
-    log_error("Failed to initialize event loop");
-    return -1;
-  }
-
   log_debug("Getting system commands paths");
   if (get_commands_paths(commands, app_config->bin_path_array,
                          &ctx->hmap_bin_paths) < 0) {
@@ -402,7 +397,7 @@ void close_capture_thread(const hmap_vlan_conn *vlan_mapper) {
   }
 }
 
-int run_ctl(struct app_config *app_config) {
+int run_ctl(struct app_config *app_config, struct eloop_data *eloop) {
   struct supervisor_context *context = NULL;
 
   if ((context = os_zalloc(sizeof(struct supervisor_context))) == NULL) {
@@ -413,6 +408,15 @@ int run_ctl(struct app_config *app_config) {
   if (init_context(app_config, context) < 0) {
     log_error("init_context fail");
     goto run_engine_fail;
+  }
+
+  if (eloop == NULL) {
+    if ((context->eloop = (struct eloop_data *)eloop_init()) == NULL) {
+      log_error("Failed to initialize event loop");
+      goto run_engine_fail;
+    }
+  } else {
+    context->eloop = eloop;
   }
 
   log_info("AP name: %s", context->hconfig.ssid);
@@ -458,12 +462,6 @@ int run_ctl(struct app_config *app_config) {
                                  context->config_ifinfo_array,
                                  app_config->ignore_if_error) < 0) {
       log_error("create_subnet_interfaces fail");
-      goto run_engine_fail;
-    }
-  } else {
-    log_info("Assigning subnet IPs...");
-    if (set_subnet_ips(context->iface_ctx, context->config_ifinfo_array) < 0) {
-      log_error("set_subnet_ips fail");
       goto run_engine_fail;
     }
   }
@@ -543,6 +541,7 @@ int run_ctl(struct app_config *app_config) {
   log_info("++++++++++++++++++");
 
   eloop_run(context->eloop);
+  log_info("Exit event loop");
 
   if (context->exec_capture) {
     close_capture_thread(context->vlan_mapper);

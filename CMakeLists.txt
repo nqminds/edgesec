@@ -96,9 +96,6 @@ option(USE_GENERIC_IP_SERVICE "Use generic ip service" OFF)
 
 option(USE_CRYPTO_SERVICE "Use the crypto service" OFF)
 cmake_dependent_option(BUILD_OPENSSL_LIB "Build OpenSSL" ON USE_CRYPTO_SERVICE OFF)
-if (USE_CRYPTO_SERVICE)
-  add_compile_definitions(TEST_CRYPTO_SERVICE_KEY="12345")
-endif ()
 
 option(USE_ZYMKEY4_HSM "Use the Zymkey4 HSM" OFF)
 option(CONFIGURE_COVERAGE "Configure for code coverage (requires lcov)" OFF)

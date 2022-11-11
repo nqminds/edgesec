@@ -194,7 +194,11 @@ void list_rule_cb(void *ctx, void *buf, size_t count) {
 
 int run_iptables(struct iptables_context *ctx, const char *const argv[],
                  process_callback_fn fn) {
-  return run_argv_command(ctx->iptables_path, argv, fn, (void *)ctx);
+  if (ctx->exec_iptables) {
+    return run_argv_command(ctx->iptables_path, argv, fn, (void *)ctx);
+  } else {
+    return 0;
+  }
 }
 
 int flush_iptables(struct iptables_context *ctx) {

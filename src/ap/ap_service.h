@@ -25,6 +25,8 @@
 #include "../utils/os.h"
 #include "../utils/iface.h"
 
+#define ATTACH_AP_COMMAND "ATTACH"
+
 #define STA_AP_COMMAND                                                         \
   "STA" /* Command name to check if a station is registered */
 

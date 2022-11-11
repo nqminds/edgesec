@@ -46,15 +46,8 @@ static char hostapd_proc_name[MAX_OS_PATH_LEN];
 static bool ap_process_started = false;
 
 int generate_vlan_conf(char *vlan_file, char *interface) {
-  // Delete the vlan config file if present
-  int stat = unlink(vlan_file);
 
-  if (stat == -1 && errno != ENOENT) {
-    log_errno("unlink");
-    return -1;
-  }
-
-  FILE *fp = fopen(vlan_file, "a+");
+  FILE *fp = fopen(vlan_file, "w");
 
   if (fp == NULL) {
     log_errno("fopen");
@@ -116,16 +109,7 @@ int generate_hostapd_conf(struct apconf *hconf, struct radius_conf *rconf) {
 }
 #else
 int generate_hostapd_conf(struct apconf *hconf, struct radius_conf *rconf) {
-  // Delete the config file if present
-  int stat = unlink(hconf->ap_file_path);
-
-  if (stat == -1 && errno != ENOENT) {
-    log_errno("unlink");
-    return -1;
-  }
-
-  FILE *fp = fopen(hconf->ap_file_path, "a+");
-
+  FILE *fp = fopen(hconf->ap_file_path, "w");
   if (fp == NULL) {
     log_errno("fopen");
     return -1;

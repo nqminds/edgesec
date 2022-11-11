@@ -483,6 +483,7 @@ struct uctx *uwrt_init_context(char *path) {
       return NULL;
     }
   }
+
   return context;
 }
 
@@ -1719,10 +1720,14 @@ int uwrt_cleanup_firewall(struct uctx *context) {
   if (!ret) {
     utarray_free(kv);
     return 0;
-  } else if (ret < 0) {
+  } else if (ret < 0 && context->uctx->err != UCI_ERR_NOTFOUND) {
     log_trace("uwrt_lookup_key fail");
     utarray_free(kv);
     return -1;
+  } else if (ret < 0 && context->uctx->err == UCI_ERR_NOTFOUND) {
+    log_warn("%s key not found", key);
+    utarray_free(kv);
+    return 0;
   }
 
   utarray_new(parray, &ut_str_icd);

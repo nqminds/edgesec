@@ -28,8 +28,6 @@
 #include "../utils/log.h"
 #include "../utils/sockctl.h"
 
-#define ATTACH_AP_COMMAND "ATTACH"
-
 #define AP_STA_DISCONNECTED "AP-STA-DISCONNECTED"
 #define AP_STA_CONNECTED "AP-STA-CONNECTED"
 
@@ -296,7 +294,6 @@ int run_ap(struct supervisor_context *context, bool exec_ap, bool generate_ssid,
   }
 
   if (generate_hostapd_conf(&context->hconfig, &context->rconfig) < 0) {
-    unlink(context->hconfig.vlan_file);
     log_error("generate_hostapd_conf fail");
     return -1;
   }
