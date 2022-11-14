@@ -25,13 +25,12 @@
 
 #include "version.h"
 #include "utils/os.h"
+#include "utils/sqliteu.h"
 #include "capture/middlewares/header_middleware/sqlite_header.h"
 #include "capture/middlewares/header_middleware/packet_decoder.h"
 #include "capture/middlewares/header_middleware/packet_queue.h"
 #include "capture/middlewares/protobuf_middleware/protobuf_middleware.h"
 
-#define PCAP_READ_INTERVAL 10 // in ms
-#define PCAP_READ_SIZE 1024   // bytes
 #define IFNAME_DEFAULT "ifname"
 
 #define OPT_STRING ":p:f:i:kdhv"
@@ -70,6 +69,14 @@ struct pcap_stream_context {
   struct pcap_file_header pcap_header;
   struct pcap_pkthdr32 pkt_header;
   int pipe;
+};
+
+const char *pragma_options[] = {
+  "PRAGMA journal_mode = OFF",
+  "PRAGMA synchronous = 0",
+  "PRAGMA cache_size = -4000",
+  "PRAGMA locking_mode = EXCLUSIVE",
+  "PRAGMA temp_store = MEMORY"
 };
 
 void show_app_version(void) {
@@ -390,6 +397,16 @@ int process_pcap_stream_state(struct pcap_stream_context *pctx) {
   }
 }
 
+int set_sqlite3_opts(sqlite3 *db) {
+  for (size_t i = 0; i < ARRAY_SIZE(pragma_options); i++) {
+    if (execute_sqlite_query(db, pragma_options[i]) < 0) {
+      log_error("execute_sqlite_query fail: %s", pragma_options[i]);
+      return -1;
+    }
+  }
+  return 0;
+}
+
 int main(int argc, char *argv[]) {
   int ret;
   uint8_t verbosity = 0;
@@ -437,6 +454,14 @@ int main(int argc, char *argv[]) {
       if (pcap_path != NULL) {
         os_free(pcap_path);
       }
+      os_free(pctx.ifname);
+      sqlite3_close(pctx.db);
+      os_free(pctx.out_path);
+      return EXIT_FAILURE;
+    }
+
+    if (set_sqlite3_opts(pctx.db) < 0) {
+      fprintf(stdout, "set_sqlite3_opts fail\n");
       os_free(pctx.ifname);
       sqlite3_close(pctx.db);
       os_free(pctx.out_path);
