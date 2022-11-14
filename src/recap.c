@@ -72,12 +72,9 @@ struct pcap_stream_context {
 };
 
 const char *pragma_options[] = {
-  "PRAGMA journal_mode = OFF",
-  "PRAGMA synchronous = 0",
-  "PRAGMA cache_size = -4000",
-  "PRAGMA locking_mode = EXCLUSIVE",
-  "PRAGMA temp_store = MEMORY"
-};
+    "PRAGMA journal_mode = OFF", "PRAGMA synchronous = 0",
+    "PRAGMA cache_size = -4000", "PRAGMA locking_mode = EXCLUSIVE",
+    "PRAGMA temp_store = MEMORY"};
 
 void show_app_version(void) {
   fprintf(stdout, "recap app version %s\n", EDGESEC_VERSION);
