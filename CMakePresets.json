@@ -135,6 +135,25 @@
       }
     },
     {
+      "name": "cheribsd",
+      "inherits": "default",
+      "displayName": "CheriBSD",
+      "description": "Compile for a Morello device",
+      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/cheribsd.cmake",
+      "cacheVariables": {
+        "BUILD_MNL_LIB": false,
+        "BUILD_NETLINK_LIB": false,
+        "USE_NETLINK_SERVICE": false,
+        "USE_UCI_SERVICE": true,
+        "USE_GENERIC_IP_SERVICE": false,
+        "USE_RADIUS_SERVICE": true,
+        "USE_MDNS_SERVICE": true,
+        "BUILD_HOSTAPD": false,
+        "USE_CRYPTO_SERVICE": false,
+        "BUILD_OPENSSL_LIB": false
+      }
+    },
+    {
       "name": "openwrt",
       "inherits": "default",
       "displayName": "OpenWRT",
@@ -255,6 +274,10 @@
       "configurePreset": "clang"
     },
     {
+      "name": "cheribsd",
+      "configurePreset": "cheribsd"
+    },
+    {
       "name": "openwrt",
       "configurePreset": "openwrt"
     },
@@ -327,6 +350,10 @@
     {
       "name": "clang",
       "configurePreset": "clang"
+    },
+    {
+      "name": "cheribsd",
+      "configurePreset": "cheribsd"
     }
   ]
 }
