@@ -29,6 +29,7 @@
 #include "capture/middlewares/header_middleware/packet_decoder.h"
 #include "capture/middlewares/header_middleware/packet_queue.h"
 #include "capture/middlewares/protobuf_middleware/protobuf_middleware.h"
+#include "capture/capture_service.h"
 
 #define PCAP_READ_INTERVAL 10 // in ms
 #define PCAP_READ_SIZE 1024   // bytes
@@ -282,21 +283,14 @@ int save_sqlite_packet(sqlite3 *db, UT_array *packets) {
 static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL,
                                    free_packet};
 
-int save_packet(struct pcap_stream_context *pctx) {
-  const char *ltype = pcap_datalink_val_to_name(pctx->pcap_header.linktype);
-  uint8_t *packet = (uint8_t *)pctx->pcap_data;
-
-  char cap_id[MAX_RANDOM_UUID_LEN];
-  generate_radom_uuid(cap_id);
-
-  struct pcap_pkthdr header;
-  get_packet_header(pctx, &header);
-
+int save_packet_data(const char *ltype, const struct pcap_pkthdr *header,
+                    const uint8_t *packet, char *ifname, char *id,
+                    struct pcap_stream_context *pctx) {
   UT_array *packets = NULL;
   utarray_new(packets, &tp_list_icd);
 
   int npackets =
-      extract_packets(ltype, &header, packet, pctx->ifname, cap_id, packets);
+      extract_packets(ltype, header, packet, ifname, id, packets);
   if (npackets < 0) {
     log_error("extract_packets fail");
     utarray_free(packets);
@@ -319,9 +313,29 @@ int save_packet(struct pcap_stream_context *pctx) {
     }
   }
 
+  utarray_free(packets);
+  return npackets;
+}
+
+int save_packet(struct pcap_stream_context *pctx) {
+  const char *ltype = pcap_datalink_val_to_name(pctx->pcap_header.linktype);
+  uint8_t *packet = (uint8_t *)pctx->pcap_data;
+
+  char cap_id[MAX_RANDOM_UUID_LEN];
+  generate_radom_uuid(cap_id);
+
+  struct pcap_pkthdr header;
+  get_packet_header(pctx, &header);
+  int npackets = save_packet_data(ltype, &header,
+                    packet, pctx->ifname, cap_id,
+                    pctx);
+  if (npackets < 0) {
+    log_error("save_packet_data fail");
+    return -1;
+  }
+
   pctx->npackets += npackets;
 
-  utarray_free(packets);
   return 0;
 }
 
@@ -416,6 +430,22 @@ int process_pcap_stream(char *pcap_path, struct pcap_stream_context *pctx) {
   return 0;
 }
 
+void pcap_callback(const void *ctx, const void *pcap_ctx, char *ltype,
+                   struct pcap_pkthdr *header, uint8_t *packet) {
+
+  (void)ctx;
+  (void)pcap_ctx;
+  (void)ltype;
+  (void)header;
+  (void)packet;
+
+  // struct pcap_stream_context *context =
+  //     (struct pcap_stream_context *)ctx;
+
+  // process_middlewares(context->handlers, ltype, header, packet,
+  //                     context->ifname);
+}
+
 int main(int argc, char *argv[]) {
   int ret;
   uint8_t verbosity = 0;
@@ -491,6 +521,7 @@ int main(int argc, char *argv[]) {
     fprintf(stdout, "Created pipe file at %s\n", pctx.out_path);
   }
 
+  struct pcap_context *pc = NULL;
   if (!capture) {
     if (process_pcap_stream(pcap_path, &pctx) < 0) {
       fprintf(stdout, "process_pcap_stream fail");
@@ -511,7 +542,16 @@ int main(int argc, char *argv[]) {
     }
 
   } else {
-
+    fprintf(stdout, "Registering pcap for ifname=%s", pctx.ifname);
+    if (run_pcap(pctx.ifname, false, false, 10,
+                 NULL, true, pcap_callback, (void *)&pctx,
+                 &pc) < 0) {
+      fprintf(stdout, "run_pcap fail");
+      os_free(pctx.out_path);
+      sqlite3_close(pctx.db);
+      os_free(pctx.ifname);
+      return EXIT_FAILURE;
+    }
   }
 
   fprintf(stdout, "Processed pcap size = %" PRIu64 " bytes\n", pctx.total_size);
