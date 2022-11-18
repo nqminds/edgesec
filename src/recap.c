@@ -23,6 +23,8 @@
 #include <inttypes.h>
 #include <pcap.h>
 
+#include <eloop.h>
+
 #include "version.h"
 #include "utils/os.h"
 #include "capture/middlewares/header_middleware/sqlite_header.h"
@@ -326,6 +328,7 @@ int save_packet(struct pcap_stream_context *pctx) {
 
   struct pcap_pkthdr header;
   get_packet_header(pctx, &header);
+
   int npackets = save_packet_data(ltype, &header,
                     packet, pctx->ifname, cap_id,
                     pctx);
@@ -433,17 +436,30 @@ int process_pcap_stream(char *pcap_path, struct pcap_stream_context *pctx) {
 void pcap_callback(const void *ctx, const void *pcap_ctx, char *ltype,
                    struct pcap_pkthdr *header, uint8_t *packet) {
 
-  (void)ctx;
   (void)pcap_ctx;
-  (void)ltype;
-  (void)header;
-  (void)packet;
 
-  // struct pcap_stream_context *context =
-  //     (struct pcap_stream_context *)ctx;
+  struct pcap_stream_context *context =
+      (struct pcap_stream_context *)ctx;
 
-  // process_middlewares(context->handlers, ltype, header, packet,
-  //                     context->ifname);
+  char cap_id[MAX_RANDOM_UUID_LEN];
+  generate_radom_uuid(cap_id);
+
+  if (save_packet_data(ltype, header,
+                    packet, context->ifname, cap_id,
+                    context) < 0) {
+    log_trace("save_packet_data fail");
+  }
+}
+
+void eloop_read_fd_handler(int sock, void *eloop_ctx, void *sock_ctx) {
+  (void)sock;
+  (void)sock_ctx;
+
+  struct pcap_context *pc = (struct pcap_context *)eloop_ctx;
+
+  if (capture_pcap_packet(pc) < 0) {
+    log_trace("capture_pcap_packet fail");
+  }
 }
 
 int main(int argc, char *argv[]) {
@@ -522,6 +538,7 @@ int main(int argc, char *argv[]) {
   }
 
   struct pcap_context *pc = NULL;
+  struct eloop_data *eloop = NULL;
   if (!capture) {
     if (process_pcap_stream(pcap_path, &pctx) < 0) {
       fprintf(stdout, "process_pcap_stream fail");
@@ -542,6 +559,14 @@ int main(int argc, char *argv[]) {
     }
 
   } else {
+    if ((eloop = eloop_init()) == NULL) {
+      fprintf(stdout, "eloop_init fail");
+      os_free(pctx.out_path);
+      sqlite3_close(pctx.db);
+      os_free(pctx.ifname);
+      return EXIT_FAILURE;
+    }
+
     fprintf(stdout, "Registering pcap for ifname=%s", pctx.ifname);
     if (run_pcap(pctx.ifname, false, false, 10,
                  NULL, true, pcap_callback, (void *)&pctx,
@@ -552,6 +577,27 @@ int main(int argc, char *argv[]) {
       os_free(pctx.ifname);
       return EXIT_FAILURE;
     }
+
+    if (pc != NULL) {
+      if (eloop_register_read_sock(eloop, pc->pcap_fd, eloop_read_fd_handler,
+                                   (void *)pc, (void *)NULL) == -1) {
+        fprintf(stdout, "eloop_register_read_sock fail");
+        os_free(pctx.out_path);
+        sqlite3_close(pctx.db);
+        os_free(pctx.ifname);
+        eloop_free(eloop);
+        return EXIT_FAILURE;
+      }
+    } else {
+      fprintf(stdout, "Empty pcap context");
+      os_free(pctx.out_path);
+      sqlite3_close(pctx.db);
+      os_free(pctx.ifname);
+      eloop_free(eloop);
+      return EXIT_FAILURE;
+    }
+    eloop_run(eloop);
+    eloop_free(eloop);
   }
 
   fprintf(stdout, "Processed pcap size = %" PRIu64 " bytes\n", pctx.total_size);
