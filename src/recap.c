@@ -34,12 +34,12 @@
 #define PCAP_READ_SIZE 1024   // bytes
 #define IFNAME_DEFAULT "ifname"
 
-#define OPT_STRING ":p:f:i:kdhv"
+#define OPT_STRING ":p:f:i:ktdhv"
 #define USAGE_STRING                                                           \
-  "\t%s [-p filename] [-f filename] [-i interface] [-k] [-d] [-h] [-v]\n"
+  "\t%s [-p filename] [-f filename] [-i interface] [-k] [-t] [-d] [-h] [-v]\n"
 
 #define DESCRIPTION_STRING                                                     \
-  "\nRun capture on an input pcap file and output to a capture db or pipe.\n"
+  "\nRun capture on an input pcap file, stdin or libpcap and output to a capture db or pipe.\n"
 
 enum PCAP_STATE {
   PCAP_STATE_INIT = 0,
@@ -85,6 +85,7 @@ void show_app_help(char *app_name) {
   fprintf(stdout, "\t-p filename\t Path to the pcap file name\n");
   fprintf(stdout, "\t-f filename\t Path to the capture db or pipe\n");
   fprintf(stdout, "\t-i interface\t Interface name to save to db\n");
+  fprintf(stdout, "\t-t\t\t Capture from interface using libpcap\n");
   fprintf(stdout, "\t-k\t\t Pipe to file\n");
   fprintf(stdout,
           "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n");
@@ -112,7 +113,7 @@ void log_cmdline_error(const char *format, ...) {
 
 void process_app_options(int argc, char *argv[], uint8_t *verbosity,
                          char **pcap_path, char **out_path, char **ifname,
-                         int *pipe) {
+                         int *capture, int *pipe) {
   int opt;
 
   while ((opt = getopt(argc, argv, OPT_STRING)) != -1) {
@@ -132,6 +133,9 @@ void process_app_options(int argc, char *argv[], uint8_t *verbosity,
         break;
       case 'i':
         *ifname = os_strdup(optarg);
+        break;
+      case 't':
+        *capture = 1;
         break;
       case 'k':
         *pipe = 1;
@@ -395,6 +399,7 @@ int main(int argc, char *argv[]) {
   uint8_t verbosity = 0;
   uint8_t level = 0;
   char *pcap_path = NULL;
+  int capture = 0;
   struct pcap_stream_context pctx = {.db = NULL,
                                      .pipe_fd = -1,
                                      .pcap_fd = NULL,
@@ -406,7 +411,7 @@ int main(int argc, char *argv[]) {
                                      .pipe = 0};
 
   process_app_options(argc, argv, &verbosity, &pcap_path, &pctx.out_path,
-                      &pctx.ifname, &pctx.pipe);
+                      &pctx.ifname, &capture, &pctx.pipe);
 
   if (verbosity > MAX_LOG_LEVELS) {
     level = 0;
