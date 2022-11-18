@@ -394,6 +394,28 @@ int process_pcap_stream_state(struct pcap_stream_context *pctx) {
   }
 }
 
+int process_pcap_stream(char *pcap_path, struct pcap_stream_context *pctx) {
+  if (pcap_path != NULL) {
+    if ((pctx->pcap_fd = fopen(pcap_path, "rb")) == NULL) {
+      log_errno("fopen");
+      return -1;
+    }
+  } else {
+    pctx->pcap_fd = stdin;
+  }
+
+  int ret;
+  while ((ret = process_pcap_stream_state(pctx) > 0)) {
+  }
+
+  if (ret < 0) {
+    log_error("process_pcap_stream_state fail");
+    return -1;
+  }
+
+  return 0;
+}
+
 int main(int argc, char *argv[]) {
   int ret;
   uint8_t verbosity = 0;
@@ -469,41 +491,31 @@ int main(int argc, char *argv[]) {
     fprintf(stdout, "Created pipe file at %s\n", pctx.out_path);
   }
 
-  if (pcap_path != NULL) {
-    if ((pctx.pcap_fd = fopen(pcap_path, "rb")) == NULL) {
-      perror("fopen");
-      os_free(pctx.out_path);
-      os_free(pcap_path);
+  if (!capture) {
+    if (process_pcap_stream(pcap_path, &pctx) < 0) {
+      fprintf(stdout, "process_pcap_stream fail");
+      if (pcap_path != NULL) {
+        os_free(pcap_path);
+        fclose(pctx.pcap_fd);
+      }
+
       os_free(pctx.ifname);
       sqlite3_close(pctx.db);
+      os_free(pctx.out_path);
       return EXIT_FAILURE;
     }
-  } else {
-    pctx.pcap_fd = stdin;
-  }
 
-  while ((ret = process_pcap_stream_state(&pctx) > 0)) {
-  }
-
-  if (ret < 0) {
-    fprintf(stdout, "process_pcap_stream_state fail\n");
-    sqlite3_close(pctx.db);
     if (pcap_path != NULL) {
       os_free(pcap_path);
       fclose(pctx.pcap_fd);
     }
-    os_free(pctx.out_path);
-    os_free(pctx.ifname);
-    return EXIT_FAILURE;
+
+  } else {
+
   }
 
   fprintf(stdout, "Processed pcap size = %" PRIu64 " bytes\n", pctx.total_size);
   fprintf(stdout, "Processed packets = %" PRIu64 "\n", pctx.npackets);
-
-  if (pcap_path != NULL) {
-    os_free(pcap_path);
-    fclose(pctx.pcap_fd);
-  }
 
   os_free(pctx.out_path);
   sqlite3_close(pctx.db);
