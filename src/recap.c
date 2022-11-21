@@ -438,8 +438,15 @@ void pcap_callback(const void *ctx, const void *pcap_ctx, char *ltype,
 
   (void)pcap_ctx;
 
+  struct pcap_context *pc = (struct pcap_context *) pcap_ctx;
+  struct pcap_stat ps;
+
+  if (get_pcap_stats(pc, &ps) == 0) {
+    log_trace("ps_recv=%d ps_drop=%d ps_ifdrop=%d", ps.ps_recv, ps.ps_drop, ps.ps_ifdrop);
+  }
+
   struct pcap_stream_context *context =
-      (struct pcap_stream_context *)ctx;
+    (struct pcap_stream_context *)ctx;
 
   char cap_id[MAX_RANDOM_UUID_LEN];
   generate_radom_uuid(cap_id);

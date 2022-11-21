@@ -40,7 +40,7 @@ int find_device(char *ifname, bpf_u_int32 *net, bpf_u_int32 *mask) {
     log_trace("Checking interface %s (%s)", temp->name, temp->description);
     if (strcmp(temp->name, ifname) == 0) {
       if (pcap_lookupnet(ifname, net, mask, err) == -1) {
-        log_error("Can't get netmask for device %s\n", ifname);
+        log_error("Can't get netmask for device %s", ifname);
         return -1;
       }
 
@@ -173,14 +173,14 @@ int run_pcap(char *interface, bool immediate, bool promiscuous, int timeout,
   if (filter != NULL) {
     if (strlen(filter)) {
       if (pcap_compile(ctx->pd, &fp, filter, 0, mask) == -1) {
-        log_error("Couldn't parse filter %s: %s\n", filter,
+        log_error("Couldn't parse filter %s: %s", filter,
                   pcap_geterr(ctx->pd));
         goto fail;
       }
 
       log_trace("Setting filter to=%s", filter);
       if (pcap_setfilter(ctx->pd, &fp) == -1) {
-        log_error("Couldn't set filter %s: %s\n", filter, pcap_geterr(ctx->pd));
+        log_error("Couldn't set filter %s: %s", filter, pcap_geterr(ctx->pd));
         pcap_freecode(&fp);
         goto fail;
       }
@@ -224,6 +224,15 @@ int dump_file_pcap(struct pcap_context *ctx, char *file_path,
   }
   pcap_dump((u_char *)dumper, header, packet);
   pcap_dump_close(dumper);
+  return 0;
+}
+
+int get_pcap_stats(struct pcap_context *ctx, struct pcap_stat *ps) {
+  if (pcap_stats(ctx->pd, ps) != 0) {
+    log_error("pcap_stats fail: %s", pcap_geterr(ctx->pd));
+    return -1;
+  }
+
   return 0;
 }
 
