@@ -391,7 +391,6 @@ int process_pcap_stream_state(struct pcap_stream_context *pctx) {
 }
 
 int main(int argc, char *argv[]) {
-  int ret;
   int exit_code = EXIT_FAILURE;
   uint8_t verbosity = 0;
   uint8_t level = 0;
@@ -429,7 +428,7 @@ int main(int argc, char *argv[]) {
   log_set_level(level);
 
   if (!pctx.pipe) {
-    ret = sqlite3_open(pctx.out_path, &pctx.db);
+    int ret = sqlite3_open(pctx.out_path, &pctx.db);
 
     fprintf(stdout, "Opened db at %s\n", pctx.out_path);
 
@@ -460,6 +459,7 @@ int main(int argc, char *argv[]) {
     pctx.pcap_fd = stdin;
   }
 
+  int ret;
   while ((ret = process_pcap_stream_state(&pctx) > 0)) {
   }
 
