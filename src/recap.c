@@ -29,6 +29,7 @@
 #include "capture/middlewares/header_middleware/packet_decoder.h"
 #include "capture/middlewares/header_middleware/packet_queue.h"
 #include "capture/middlewares/protobuf_middleware/protobuf_middleware.h"
+#include "utils/sqliteu.h"
 
 #define PCAP_READ_INTERVAL 10 // in ms
 #define PCAP_READ_SIZE 1024   // bytes
@@ -441,6 +442,13 @@ int main(int argc, char *argv[]) {
       fprintf(stdout, "init_sqlite_header_db fail\n");
       goto cleanup;
     }
+
+    if (execute_sqlite_query(pctx.db, "BEGIN IMMEDIATE TRANSACTION") < 0) {
+      log_error(
+          "Failed to capture a lock on db %s, please retry this command later",
+          pctx.out_path);
+      goto cleanup;
+    }
   } else {
     if (create_pipe_file(pctx.out_path) < 0) {
       log_error("create_pipe_file fail");
@@ -471,6 +479,15 @@ int main(int argc, char *argv[]) {
   fprintf(stdout, "Processed pcap size = %" PRIu64 " bytes\n", pctx.total_size);
   fprintf(stdout, "Processed packets = %" PRIu64 "\n", pctx.npackets);
 
+  if (pctx.db != NULL) {
+    log_info("Commiting changes to %s database", pctx.out_path);
+    if (execute_sqlite_query(pctx.db, "COMMIT TRANSACTION") < 0) {
+      log_error("Failed to commit %" PRIu64 " packets to database %s",
+                pctx.npackets, pctx.out_path);
+      goto cleanup;
+    }
+  }
+
   // success!
   exit_code = EXIT_SUCCESS;
 
@@ -482,6 +499,7 @@ cleanup:
 
   os_free(pctx.out_path);
   // sqlite3 close on a NULL ptr is fine
+  // any uncommited transactions will be automatically rolled-back on close
   sqlite3_close(pctx.db);
   os_free(pctx.ifname);
 
