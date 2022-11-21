@@ -218,7 +218,10 @@ if (NOT BUILD_ONLY_DOCS)
     message(FATAL_ERROR "You must define enable one of USE_NETLINK_SERVICE or USE_UCI_SERVICE or USE_GENERIC_IP_SERVICE.")
   endif()
 
-  if (NOT CMAKE_CROSSCOMPILING)
+  if (CMAKE_CROSSCOMPILING)
+    # don't add test / code coverage when cross-compiling
+    add_subdirectory(src)
+  else ()
     if (CONFIGURE_COVERAGE)
       include(CodeCoverage)
       # enable before the src() flag to enable code coverage
@@ -240,10 +243,11 @@ if (NOT BUILD_ONLY_DOCS)
           "${PROJECT_SOURCE_DIR}/_deps/*"
       )
     endif()
-
+    # src must be after codecoverage but before tests
+    add_subdirectory(src)
     add_subdirectory(tests)
   endif ()
-  add_subdirectory(src)
+
   include(install)
 endif ()
 
