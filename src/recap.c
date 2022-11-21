@@ -392,6 +392,7 @@ int process_pcap_stream_state(struct pcap_stream_context *pctx) {
 
 int main(int argc, char *argv[]) {
   int ret;
+  int exit_code = EXIT_FAILURE;
   uint8_t verbosity = 0;
   uint8_t level = 0;
   char *pcap_path = NULL;
@@ -434,31 +435,17 @@ int main(int argc, char *argv[]) {
 
     if (ret != SQLITE_OK) {
       fprintf(stdout, "Cannot open database: %s", sqlite3_errmsg(pctx.db));
-      if (pcap_path != NULL) {
-        os_free(pcap_path);
-      }
-      os_free(pctx.ifname);
-      sqlite3_close(pctx.db);
-      os_free(pctx.out_path);
-      return EXIT_FAILURE;
+      goto cleanup;
     }
 
     if (init_sqlite_header_db(pctx.db) < 0) {
       fprintf(stdout, "init_sqlite_header_db fail\n");
-      if (pcap_path != NULL) {
-        os_free(pcap_path);
-      }
-      os_free(pctx.ifname);
-      sqlite3_close(pctx.db);
-      os_free(pctx.out_path);
-      return EXIT_FAILURE;
+      goto cleanup;
     }
   } else {
     if (create_pipe_file(pctx.out_path) < 0) {
       log_error("create_pipe_file fail");
-      os_free(pctx.ifname);
-      os_free(pctx.out_path);
-      return EXIT_FAILURE;
+      goto cleanup;
     }
 
     fprintf(stdout, "Created pipe file at %s\n", pctx.out_path);
@@ -467,11 +454,7 @@ int main(int argc, char *argv[]) {
   if (pcap_path != NULL) {
     if ((pctx.pcap_fd = fopen(pcap_path, "rb")) == NULL) {
       perror("fopen");
-      os_free(pctx.out_path);
-      os_free(pcap_path);
-      os_free(pctx.ifname);
-      sqlite3_close(pctx.db);
-      return EXIT_FAILURE;
+      goto cleanup;
     }
   } else {
     pctx.pcap_fd = stdin;
@@ -482,26 +465,25 @@ int main(int argc, char *argv[]) {
 
   if (ret < 0) {
     fprintf(stdout, "process_pcap_stream_state fail\n");
-    sqlite3_close(pctx.db);
-    if (pcap_path != NULL) {
-      os_free(pcap_path);
-      fclose(pctx.pcap_fd);
-    }
-    os_free(pctx.out_path);
-    os_free(pctx.ifname);
-    return EXIT_FAILURE;
+    goto cleanup;
   }
 
   fprintf(stdout, "Processed pcap size = %" PRIu64 " bytes\n", pctx.total_size);
   fprintf(stdout, "Processed packets = %" PRIu64 "\n", pctx.npackets);
 
+  // success!
+  exit_code = EXIT_SUCCESS;
+
+cleanup:
   if (pcap_path != NULL) {
     os_free(pcap_path);
     fclose(pctx.pcap_fd);
   }
 
   os_free(pctx.out_path);
+  // sqlite3 close on a NULL ptr is fine
   sqlite3_close(pctx.db);
   os_free(pctx.ifname);
-  return EXIT_SUCCESS;
+
+  return exit_code;
 }
