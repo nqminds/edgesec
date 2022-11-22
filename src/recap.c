@@ -29,14 +29,17 @@
 #include "capture/middlewares/header_middleware/packet_decoder.h"
 #include "capture/middlewares/header_middleware/packet_queue.h"
 #include "capture/middlewares/protobuf_middleware/protobuf_middleware.h"
+#include "utils/sqliteu.h"
 
 #define PCAP_READ_INTERVAL 10 // in ms
 #define PCAP_READ_SIZE 1024   // bytes
 #define IFNAME_DEFAULT "ifname"
 
-#define OPT_STRING ":p:f:i:kdhv"
+#define OPT_STRING ":p:f:i:t:kdhv"
+
 #define USAGE_STRING                                                           \
-  "\t%s [-p filename] [-f filename] [-i interface] [-k] [-d] [-h] [-v]\n"
+  "\t%s [-p filename] [-f filename] [-i interface] [-k] [-d] [-h] [-v]\n"      \
+  "\t\t [-t {SINGLE_TRANSACTION,DISABLED}]"
 
 #define DESCRIPTION_STRING                                                     \
   "\nRun capture on an input pcap file and output to a capture db or pipe.\n"
@@ -47,6 +50,36 @@ enum PCAP_STATE {
   PCAP_STATE_READ_PKT_HEADER,
   PCAP_STATE_READ_PACKET,
   PCAP_STATE_FIN
+};
+
+/**
+ * @brief SQLITE_TRANSACTION_TYPE
+ *
+ * Decides how to insert data into the SQLITE database.
+ */
+enum SQLITE_TRANSACTION_TYPE {
+  /**
+   * @brief Runs the entire `recap` process in a single SQLITE transaction.
+   *
+   * This is the recommend option for maximum insertion performance. However,
+   * it does mean that nobody else can access the database while inserting data.
+   */
+  SINGLE_TRANSACTION = -1,
+  /**
+   * @brief Automatically picks an SQLITE_TRANSACTION_TYPE based on the input
+   * data by default.
+   *
+   * This is using a single SQLITE transaction when importing from a pcap file.
+   */
+  DEFAULT = 0,
+  /**
+   * @brief Disables SQLITE transactions.
+   *
+   * Each SQLITE insertion makes it's own transaction. Not recommended unless
+   * the input stream is throttled, as this will be very slow
+   * (e.g. 3000x slower that a SINGLE_TRANSACTION).
+   */
+  DISABLED,
 };
 
 struct pcap_pkthdr32 {
@@ -85,6 +118,19 @@ void show_app_help(char *app_name) {
   fprintf(stdout, "\t-p filename\t Path to the pcap file name\n");
   fprintf(stdout, "\t-f filename\t Path to the capture db or pipe\n");
   fprintf(stdout, "\t-i interface\t Interface name to save to db\n");
+
+  fprintf(stdout,
+          "\t-t TRANS_TYPE\t Controls how SQLITE transactions are used.\n");
+  fprintf(stdout, "\t             \t Allowed values:\n");
+  fprintf(stdout, "\t             \t   SINGLE_TRANSACTION: Use a single SQLITE "
+                  "transaction.\n");
+  fprintf(stdout,
+          "\t             \t   \t Provides maximum insertion performance.\n");
+  fprintf(stdout, "\t             \t   DISABLED: Don't use SQLITE transactions "
+                  "(very slow).\n");
+  fprintf(stdout,
+          "\t             \t   (default) Pick automatically based on input.\n");
+
   fprintf(stdout, "\t-k\t\t Pipe to file\n");
   fprintf(stdout,
           "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n");
@@ -110,9 +156,10 @@ void log_cmdline_error(const char *format, ...) {
   exit(EXIT_FAILURE);
 }
 
-void process_app_options(int argc, char *argv[], uint8_t *verbosity,
-                         char **pcap_path, char **out_path, char **ifname,
-                         int *pipe) {
+void process_app_options(
+    int argc, char *argv[], uint8_t *verbosity, char **pcap_path,
+    char **out_path, char **ifname, int *pipe,
+    enum SQLITE_TRANSACTION_TYPE *sqlite_transaction_type) {
   int opt;
 
   while ((opt = getopt(argc, argv, OPT_STRING)) != -1) {
@@ -138,6 +185,17 @@ void process_app_options(int argc, char *argv[], uint8_t *verbosity,
         break;
       case 'd':
         (*verbosity)++;
+        break;
+      case 't':
+        if (strcmp("SINGLE_TRANSACTION", optarg) == 0) {
+          *sqlite_transaction_type = SINGLE_TRANSACTION;
+        } else if (strcmp("DISABLED", optarg) == 0) {
+          *sqlite_transaction_type = DISABLED;
+        } else {
+          log_cmdline_error("argument t: invalid choice %s (choose from "
+                            "SINGLE_TRANSACTION, DISABLED)",
+                            optarg);
+        }
         break;
       case ':':
         log_cmdline_error("Missing argument for -%c\n", optopt);
@@ -391,7 +449,7 @@ int process_pcap_stream_state(struct pcap_stream_context *pctx) {
 }
 
 int main(int argc, char *argv[]) {
-  int ret;
+  int exit_code = EXIT_FAILURE;
   uint8_t verbosity = 0;
   uint8_t level = 0;
   char *pcap_path = NULL;
@@ -404,9 +462,10 @@ int main(int argc, char *argv[]) {
                                      .total_size = 0,
                                      .npackets = 0,
                                      .pipe = 0};
+  enum SQLITE_TRANSACTION_TYPE sqlite_transaction_type = DEFAULT;
 
   process_app_options(argc, argv, &verbosity, &pcap_path, &pctx.out_path,
-                      &pctx.ifname, &pctx.pipe);
+                      &pctx.ifname, &pctx.pipe, &sqlite_transaction_type);
 
   if (verbosity > MAX_LOG_LEVELS) {
     level = 0;
@@ -427,38 +486,37 @@ int main(int argc, char *argv[]) {
   /* Set the log level */
   log_set_level(level);
 
+  if (sqlite_transaction_type == DEFAULT) {
+    sqlite_transaction_type = SINGLE_TRANSACTION;
+  }
+
   if (!pctx.pipe) {
-    ret = sqlite3_open(pctx.out_path, &pctx.db);
+    int ret = sqlite3_open(pctx.out_path, &pctx.db);
 
     fprintf(stdout, "Opened db at %s\n", pctx.out_path);
 
     if (ret != SQLITE_OK) {
       fprintf(stdout, "Cannot open database: %s", sqlite3_errmsg(pctx.db));
-      if (pcap_path != NULL) {
-        os_free(pcap_path);
-      }
-      os_free(pctx.ifname);
-      sqlite3_close(pctx.db);
-      os_free(pctx.out_path);
-      return EXIT_FAILURE;
+      goto cleanup;
     }
 
     if (init_sqlite_header_db(pctx.db) < 0) {
       fprintf(stdout, "init_sqlite_header_db fail\n");
-      if (pcap_path != NULL) {
-        os_free(pcap_path);
+      goto cleanup;
+    }
+
+    if (sqlite_transaction_type == SINGLE_TRANSACTION) {
+      if (execute_sqlite_query(pctx.db, "BEGIN IMMEDIATE TRANSACTION") < 0) {
+        log_error("Failed to capture a lock on db %s, please retry this "
+                  "command later",
+                  pctx.out_path);
+        goto cleanup;
       }
-      os_free(pctx.ifname);
-      sqlite3_close(pctx.db);
-      os_free(pctx.out_path);
-      return EXIT_FAILURE;
     }
   } else {
     if (create_pipe_file(pctx.out_path) < 0) {
       log_error("create_pipe_file fail");
-      os_free(pctx.ifname);
-      os_free(pctx.out_path);
-      return EXIT_FAILURE;
+      goto cleanup;
     }
 
     fprintf(stdout, "Created pipe file at %s\n", pctx.out_path);
@@ -467,41 +525,50 @@ int main(int argc, char *argv[]) {
   if (pcap_path != NULL) {
     if ((pctx.pcap_fd = fopen(pcap_path, "rb")) == NULL) {
       perror("fopen");
-      os_free(pctx.out_path);
-      os_free(pcap_path);
-      os_free(pctx.ifname);
-      sqlite3_close(pctx.db);
-      return EXIT_FAILURE;
+      goto cleanup;
     }
   } else {
     pctx.pcap_fd = stdin;
   }
 
+  int ret;
   while ((ret = process_pcap_stream_state(&pctx) > 0)) {
   }
 
   if (ret < 0) {
     fprintf(stdout, "process_pcap_stream_state fail\n");
-    sqlite3_close(pctx.db);
-    if (pcap_path != NULL) {
-      os_free(pcap_path);
-      fclose(pctx.pcap_fd);
-    }
-    os_free(pctx.out_path);
-    os_free(pctx.ifname);
-    return EXIT_FAILURE;
+    goto cleanup;
   }
 
   fprintf(stdout, "Processed pcap size = %" PRIu64 " bytes\n", pctx.total_size);
   fprintf(stdout, "Processed packets = %" PRIu64 "\n", pctx.npackets);
 
+  if (pctx.db != NULL) {
+    // If AUTOCOMMIT is disabled, we need to manually make a COMMIT
+    if (sqlite3_get_autocommit(pctx.db) == 0) {
+      log_info("Commiting changes to %s database", pctx.out_path);
+      if (execute_sqlite_query(pctx.db, "COMMIT TRANSACTION") < 0) {
+        log_error("Failed to commit %" PRIu64 " packets to database %s",
+                  pctx.npackets, pctx.out_path);
+        goto cleanup;
+      }
+    }
+  }
+
+  // success!
+  exit_code = EXIT_SUCCESS;
+
+cleanup:
   if (pcap_path != NULL) {
     os_free(pcap_path);
     fclose(pctx.pcap_fd);
   }
 
   os_free(pctx.out_path);
+  // sqlite3 close on a NULL ptr is fine
+  // any uncommited transactions will be automatically rolled-back on close
   sqlite3_close(pctx.db);
   os_free(pctx.ifname);
-  return EXIT_SUCCESS;
+
+  return exit_code;
 }
