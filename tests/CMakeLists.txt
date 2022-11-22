@@ -78,3 +78,71 @@ if (USE_UCI_SERVICE)
   target_link_libraries(test_runctl PRIVATE __wrap_uwrt_init_context)
   target_link_libraries(test_edgesec PRIVATE __wrap_uwrt_init_context)
 endif()
+
+if (TARGET recap)
+  add_test(
+    NAME "test_recap_print_version"
+    COMMAND recap -v
+  )
+
+  set(recap_expected_version_output)
+  # need to escape regex special characters until https://gitlab.kitware.com/cmake/cmake/-/issues/21494
+  string(REGEX REPLACE
+    "([][+.*()^])" "\\\\\\1" # our version has `.` and `+` chars
+    recap_expected_version_output_regex "recap app version ${PROJECT_VERSION}"
+  )
+  set_tests_properties("test_recap_print_version" PROPERTIES
+    PASS_REGULAR_EXPRESSION "${recap_expected_version_output_regex}")
+
+  set(RECAP_TEST_DB "/tmp/edgesec-test-recap-pcap.pcap")
+
+  add_test(
+    NAME "test_recap_read_pcap"
+    COMMAND recap -f "${RECAP_TEST_DB}" -p "${CMAKE_SOURCE_DIR}/tests/data/test.pcap"
+  )
+  set_tests_properties("test_recap_read_pcap" PROPERTIES
+    RESOURCE_LOCK "${RECAP_TEST_DB}")
+
+  add_test(
+    NAME "test_recap_read_pcap TRANS_TYPE=SINGLE_TRANSACTION"
+    COMMAND
+      recap -f "${RECAP_TEST_DB}" -p "${CMAKE_SOURCE_DIR}/tests/data/test.pcap"
+      -t "SINGLE_TRANSACTION"
+  )
+  set_tests_properties("test_recap_read_pcap TRANS_TYPE=SINGLE_TRANSACTION" PROPERTIES
+    RESOURCE_LOCK "${RECAP_TEST_DB}")
+
+  add_test(
+    NAME "test_recap_read_pcap TRANS_TYPE=DISABLED"
+    COMMAND recap -f "${RECAP_TEST_DB}" -p "${CMAKE_SOURCE_DIR}/tests/data/test.pcap"
+    -t "DISABLED" # will be very slow :(
+  )
+  set_tests_properties("test_recap_read_pcap TRANS_TYPE=DISABLED" PROPERTIES
+    RESOURCE_LOCK "${RECAP_TEST_DB}")
+
+  add_test(
+    NAME "test_recap_read_pcap TRANS_TYPE=invalid-type-should-fail"
+    COMMAND recap -f "${RECAP_TEST_DB}" -p "${CMAKE_SOURCE_DIR}/tests/data/test.pcap"
+    -t "invalid-type-should-fail"
+  )
+  set_tests_properties("test_recap_read_pcap TRANS_TYPE=invalid-type-should-fail" PROPERTIES
+    RESOURCE_LOCK "${RECAP_TEST_DB}"
+    PASS_REGULAR_EXPRESSION "Command-line usage error: argument t: invalid choice invalid-type-should-fail"
+  )
+
+  add_test(
+    NAME "cleanup_recap_test_database"
+    COMMAND "${CMAKE_COMMAND}" -E rm -f "${RECAP_TEST_DB}"
+  )
+  set(RECAP_TESTS_TO_CLEANUP # list of tests that need to be cleaned up afterwards
+    "test_recap_read_pcap"
+    "test_recap_read_pcap TRANS_TYPE=SINGLE_TRANSACTION"
+    "test_recap_read_pcap TRANS_TYPE=DISABLED"
+    "test_recap_read_pcap TRANS_TYPE=invalid-type-should-fail"
+  )
+  set_tests_properties(
+    "cleanup_recap_test_database" PROPERTIES
+    RESOURCE_LOCK "${RECAP_TEST_DB}"
+    FIXTURES_CLEANUP "${RECAP_TESTS_TO_CLEANUP}"
+  )
+endif()
