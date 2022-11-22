@@ -34,6 +34,7 @@
 #include "capture/capture_service.h"
 #include "utils/sqliteu.h"
 
+#define QUEUE_PROCESS_INTERVAL 100 * 1000 // In microseconds
 #define PCAP_READ_INTERVAL 10 // in ms
 #define PCAP_READ_SIZE 1024   // bytes
 #define IFNAME_DEFAULT "ifname"
@@ -281,11 +282,20 @@ void get_packet_header(struct recap_context *pctx, struct pcap_pkthdr *header) {
   header->len = pctx->pkt_header.len;
 }
 
+int save_sqlite_tuple_packet(sqlite3 *db, struct tuple_packet *p) {
+  if (save_packet_statement(db, p) < 0) {
+    log_error("save_packet_statement fail");
+    return -1;
+  }
+
+  return 0;
+}
+
 int save_sqlite_packet(sqlite3 *db, UT_array *packets) {
   struct tuple_packet *p = NULL;
   while ((p = (struct tuple_packet *)utarray_next(packets, p)) != NULL) {
-    if (save_packet_statement(db, p) < 0) {
-      log_error("save_packet_statement fail");
+    if (save_sqlite_tuple_packet(db, p) < 0) {
+      log_error("save_sqlite_tuple_packet fail");
       return -1;
     }
   }
@@ -300,13 +310,27 @@ int save_packet_array(struct recap_context *pctx, UT_array *packets) {
   if (pctx->pipe) {
     if (pipe_protobuf_packets(pctx->out_path, &pctx->pipe_fd, packets) < 0) {
       log_error("pipe_protobuf_packets fail");
-      utarray_free(packets);
       return -1;
     }
   } else {
     if (save_sqlite_packet(pctx->db, packets) < 0) {
       log_error("save_sqlite_packet fail");
-      utarray_free(packets);
+      return -1;
+    }
+  }
+
+  return 0;
+}
+
+int save_tuple_packet(struct recap_context *pctx, struct tuple_packet *p) {
+  if (pctx->pipe) {
+    if (pipe_protobuf_tuple_packet(pctx->out_path, &pctx->pipe_fd, p) < 0) {
+      log_error("pipe_protobuf_tuple_packet fail");
+      return -1;
+    }
+  } else {
+    if (save_sqlite_tuple_packet(pctx->db, p) < 0) {
+      log_error("save_sqlite_tuple_packet fail");
       return -1;
     }
   }
@@ -495,6 +519,47 @@ void eloop_read_fd_handler(int sock, void *eloop_ctx, void *sock_ctx) {
   }
 }
 
+void save_packets_from_queue(struct recap_context *pctx) {
+  struct packet_queue *el = NULL;
+  while (is_packet_queue_empty(pctx->pq) < 1) {
+    if ((el = pop_packet_queue(pctx->pq)) != NULL) {
+      if (save_tuple_packet(pctx, &(el->tp)) < 0) {
+        log_error("save_tuple_packet fail");
+      }
+
+      free_packet_tuple(&el->tp);
+      free_packet_queue_el(el);
+    }
+  }
+}
+
+void eloop_tout_header_handler(void *eloop_ctx, void *user_ctx) {
+  struct recap_context *pctx = (struct recap_context *)user_ctx;
+
+
+  if (is_packet_queue_empty(pctx->pq) < 1) {
+    log_trace("Commiting packets to %s database", pctx->out_path);
+    if (execute_sqlite_query(pctx->db, "BEGIN IMMEDIATE TRANSACTION") < 0) {
+      log_error("Failed to capture a lock on db %s, please retry this "
+              "command later",
+              pctx->out_path);
+    }
+
+    save_packets_from_queue(pctx);
+
+    if (execute_sqlite_query(pctx->db, "COMMIT TRANSACTION") < 0) {
+      log_error("Failed to commit packets to database %s", pctx->out_path);
+    }
+  }
+
+  struct eloop_data *eloop = (struct eloop_data *)eloop_ctx;
+  if (eloop_register_timeout(eloop, 0, QUEUE_PROCESS_INTERVAL,
+                             eloop_tout_header_handler, eloop,
+                             (void *)pctx) == -1) {
+    log_error("eloop_register_timeout fail");
+  }
+}
+
 int process_pcap_capture(struct recap_context *pctx) {
   struct eloop_data *eloop = NULL;
   int exit_code = -1;
@@ -520,6 +585,13 @@ int process_pcap_capture(struct recap_context *pctx) {
     if (eloop_register_read_sock(eloop, pc->pcap_fd, eloop_read_fd_handler,
                                  (void *)pc, (void *)NULL) == -1) {
       log_error("eloop_register_read_sock fail");
+      goto process_pcap_capture_fail;
+    }
+
+    if (eloop_register_timeout(eloop, 0, QUEUE_PROCESS_INTERVAL,
+                               eloop_tout_header_handler, eloop,
+                               (void *)pctx) == -1) {
+      log_error("eloop_register_timeout fail");
       goto process_pcap_capture_fail;
     }
   } else {
@@ -592,7 +664,8 @@ int main(int argc, char *argv[]) {
       goto cleanup;
     }
 
-    if (transaction) {
+    // Begin transaction is used by default in capture
+    if (transaction && !capture) {
       fprintf(stdout, "Using transaction mode\n");
       if (execute_sqlite_query(pctx.db, "BEGIN IMMEDIATE TRANSACTION") < 0) {
         fprintf(stderr,
@@ -630,7 +703,7 @@ int main(int argc, char *argv[]) {
   }
   fprintf(stdout, "Processed packets = %" PRIu64 "\n", pctx.npackets);
 
-  if (pctx.db != NULL) {
+  if (pctx.db != NULL && !capture) {
     // If AUTOCOMMIT is disabled, we need to manually make a COMMIT
     if (sqlite3_get_autocommit(pctx.db) == 0) {
       fprintf(stdout, "Commiting changes to %s database", pctx.out_path);

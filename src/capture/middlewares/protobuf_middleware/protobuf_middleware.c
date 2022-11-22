@@ -32,23 +32,31 @@
 static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL,
                                    free_packet};
 
+int pipe_protobuf_tuple_packet(const char *path, int *fd, struct tuple_packet *p) {
+  uint8_t *buffer = NULL;
+  ssize_t length = encode_protobuf_sync_wrapper(p, &buffer);
+  if (length < 0) {
+    log_error("encode_protobuf_packet fail");
+    return -1;
+  }
+
+  if (open_write_nonblock(path, fd, buffer, length) < 0) {
+    log_error("open_write_nonblock fail");
+    os_free(buffer);
+    return -1;
+  }
+
+  os_free(buffer);
+  return 0;
+}
+
 int pipe_protobuf_packets(const char *path, int *fd, UT_array *packets) {
   struct tuple_packet *p = NULL;
   while ((p = (struct tuple_packet *)utarray_next(packets, p)) != NULL) {
-    uint8_t *buffer = NULL;
-    ssize_t length = encode_protobuf_sync_wrapper(p, &buffer);
-    if (length < 0) {
-      log_error("encode_protobuf_packet fail");
-      return -1;
+    if (pipe_protobuf_tuple_packet(path, fd, p) < 0) {
+      log_error("pipe_protobuf_tuple_packet fail");
+      return -1;     
     }
-
-    if (open_write_nonblock(path, fd, buffer, length) < 0) {
-      log_error("open_write_nonblock fail");
-      os_free(buffer);
-      return -1;
-    }
-
-    os_free(buffer);
   }
 
   return 0;
