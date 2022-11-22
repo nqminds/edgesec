@@ -67,6 +67,7 @@ struct recap_context {
   sqlite3 *db;
   int pipe_fd;
   FILE *pcap_fd;
+  struct packet_queue *pq;
   char *pcap_data;
   char *ifname;
   char *out_path;
@@ -478,39 +479,45 @@ void eloop_read_fd_handler(int sock, void *eloop_ctx, void *sock_ctx) {
 
 int process_pcap_capture(struct recap_context *pctx) {
   struct eloop_data *eloop = NULL;
+  int exit_code = -1;
 
   if ((eloop = eloop_init()) == NULL) {
     log_error("eloop_init fail");
-    return -1;
+    goto process_pcap_capture_fail;
   }
 
   struct pcap_context *pc = NULL;
   if (run_pcap(pctx->ifname, false, false, 10, NULL, true, pcap_callback,
                (void *)pctx, &pc) < 0) {
     log_error("run_pcap fail");
-    eloop_free(eloop);
-    return -1;
+    goto process_pcap_capture_fail;
   }
 
   if (pc != NULL) {
+    if ((pctx->pq = init_packet_queue()) == NULL) {
+      log_error("init_packet_queue fail");
+      goto process_pcap_capture_fail;
+    }
+
     if (eloop_register_read_sock(eloop, pc->pcap_fd, eloop_read_fd_handler,
                                  (void *)pc, (void *)NULL) == -1) {
       log_error("eloop_register_read_sock fail");
-      eloop_free(eloop);
-      close_pcap(pc);
-      return -1;
+      goto process_pcap_capture_fail;
     }
   } else {
     log_error("Empty pcap context");
-    eloop_free(eloop);
-    close_pcap(pc);
-    return -1;
+    goto process_pcap_capture_fail;
   }
 
   eloop_run(eloop);
+
+  exit_code = 0;
+
+process_pcap_capture_fail:
   eloop_free(eloop);
   close_pcap(pc);
-  return 0;
+  free_packet_queue(pctx->pq);
+  return exit_code;
 }
 
 int main(int argc, char *argv[]) {
@@ -523,6 +530,7 @@ int main(int argc, char *argv[]) {
   struct recap_context pctx = {.db = NULL,
                                .pipe_fd = -1,
                                .pcap_fd = NULL,
+                               .pq = NULL,
                                .ifname = NULL,
                                .out_path = NULL,
                                .state = PCAP_FILE_STATE_INIT,
