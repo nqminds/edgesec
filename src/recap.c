@@ -378,7 +378,7 @@ int process_pkt_read_state(struct pcap_stream_context *pctx) {
   return 0;
 }
 
-int process_pcap_stream_state(struct pcap_stream_context *pctx) {
+int process_file_stream_state(struct pcap_stream_context *pctx) {
   log_trace("Processing pcap file stream %zu bytes", pctx->total_size);
 
   switch (pctx->state) {
@@ -418,7 +418,7 @@ int process_pcap_stream_state(struct pcap_stream_context *pctx) {
   }
 }
 
-int process_pcap_stream(const char *pcap_path, struct pcap_stream_context *pctx) {
+int process_file_stream(const char *pcap_path, struct pcap_stream_context *pctx) {
   if (pcap_path != NULL) {
     if ((pctx->pcap_fd = fopen(pcap_path, "rb")) == NULL) {
       log_errno("fopen failed for pcap file %s", pcap_path);
@@ -429,11 +429,11 @@ int process_pcap_stream(const char *pcap_path, struct pcap_stream_context *pctx)
   }
 
   int ret;
-  while ((ret = process_pcap_stream_state(pctx) > 0)) {
+  while ((ret = process_file_stream_state(pctx) > 0)) {
   }
 
   if (ret < 0) {
-    log_error("process_pcap_stream_state fail");
+    log_error("process_file_stream_state fail");
     return -1;
   }
 
@@ -530,6 +530,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (transaction) {
+      fprintf(stdout, "Using transaction mode\n");
       if (execute_sqlite_query(pctx.db, "BEGIN IMMEDIATE TRANSACTION") < 0) {
         log_error("Failed to capture a lock on db %s, please retry this "
                   "command later",
@@ -549,8 +550,8 @@ int main(int argc, char *argv[]) {
   struct pcap_context *pc = NULL;
   struct eloop_data *eloop = NULL;
   if (!capture) {
-    if (process_pcap_stream(pcap_path, &pctx) < 0) {
-      fprintf(stdout, "process_pcap_stream fail");
+    if (process_file_stream(pcap_path, &pctx) < 0) {
+      fprintf(stdout, "process_file_stream fail");
       goto cleanup;
     }
   } else {
