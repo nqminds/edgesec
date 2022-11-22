@@ -99,7 +99,7 @@ if (TARGET recap)
   add_test(
     NAME "test_recap_read_pcap TRANS_TYPE=SINGLE_TRANSACTION"
     COMMAND
-      recap -f "${RECAP_TEST_DB}" -p "${CMAKE_SOURCE_DIR}/tests/data/test.pcap" -t 
+      recap -f "${RECAP_TEST_DB}" -p "${CMAKE_SOURCE_DIR}/tests/data/test.pcap" -t
   )
   set_tests_properties("test_recap_read_pcap TRANS_TYPE=SINGLE_TRANSACTION" PROPERTIES
     RESOURCE_LOCK "${RECAP_TEST_DB}")

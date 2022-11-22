@@ -41,10 +41,12 @@
 #define OPT_STRING ":p:f:i:tnkdhv"
 
 #define USAGE_STRING                                                           \
-  "\t%s [-p filename] [-f filename] [-i interface] [-t] [-n] [-k] [-d] [-h] [-v]\n"
+  "\t%s [-p filename] [-f filename] [-i interface] [-t] [-n] [-k] [-d] [-h] "  \
+  "[-v]\n"
 
 #define DESCRIPTION_STRING                                                     \
-  "\nRun capture on an input pcap file, stdin or libpcap and output to a capture db or pipe.\n"
+  "\nRun capture on an input pcap file, stdin or libpcap and output to a "     \
+  "capture db or pipe.\n"
 
 enum PCAP_FILE_STATE {
   PCAP_FILE_STATE_INIT = 0,
@@ -89,7 +91,9 @@ void show_app_help(char *app_name) {
   fprintf(stdout, "\nOptions:\n");
   fprintf(stdout, "\t-p filename\t Path to the pcap file name.\n");
   fprintf(stdout, "\t-f filename\t Path to the capture db or pipe.\n");
-  fprintf(stdout, "\t-i interface\t Interface name to save to db or to capture from.\n");
+  fprintf(
+      stdout,
+      "\t-i interface\t Interface name to save to db or to capture from.\n");
   fprintf(stdout, "\t-t\t\t Use a single SQLITE transaction.\n");
   fprintf(stdout, "\t-n\t\t Capture from network stream.\n");
   fprintf(stdout, "\t-k\t\t Pipe to file.\n");
@@ -108,7 +112,7 @@ void log_cmdline_error(const char *format, ...) {
 
   fflush(stdout); /* Flush any pending stdout */
   fflush(stderr);
- 
+
   fprintf(stderr, "Command-line usage error: ");
   va_start(argList, format);
   vfprintf(stderr, format, argList);
@@ -118,10 +122,9 @@ void log_cmdline_error(const char *format, ...) {
   exit(EXIT_FAILURE);
 }
 
-void process_app_options(
-    int argc, char *argv[], uint8_t *verbosity, char **pcap_path,
-    char **out_path, char **ifname, int *pipe, int *capture,
-    int *transaction) {
+void process_app_options(int argc, char *argv[], uint8_t *verbosity,
+                         char **pcap_path, char **out_path, char **ifname,
+                         int *pipe, int *capture, int *transaction) {
   int opt;
 
   while ((opt = getopt(argc, argv, OPT_STRING)) != -1) {
@@ -270,8 +273,7 @@ int process_pkt_header_state(struct recap_context *pctx) {
   return 0;
 }
 
-void get_packet_header(struct recap_context *pctx,
-                       struct pcap_pkthdr *header) {
+void get_packet_header(struct recap_context *pctx, struct pcap_pkthdr *header) {
   header->ts.tv_sec = pctx->pkt_header.ts_sec;
   header->ts.tv_usec = pctx->pkt_header.ts_usec;
   header->caplen = pctx->pkt_header.caplen;
@@ -294,13 +296,12 @@ static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL,
                                    free_packet};
 
 int save_packet_data(const char *ltype, const struct pcap_pkthdr *header,
-                    const uint8_t *packet, char *ifname, char *id,
-                    struct recap_context *pctx) {
+                     const uint8_t *packet, char *ifname, char *id,
+                     struct recap_context *pctx) {
   UT_array *packets = NULL;
   utarray_new(packets, &tp_list_icd);
 
-  int npackets =
-      extract_packets(ltype, header, packet, ifname, id, packets);
+  int npackets = extract_packets(ltype, header, packet, ifname, id, packets);
   if (npackets < 0) {
     log_error("extract_packets fail");
     utarray_free(packets);
@@ -337,9 +338,8 @@ int save_packet(struct recap_context *pctx) {
   struct pcap_pkthdr header;
   get_packet_header(pctx, &header);
 
-  int npackets = save_packet_data(ltype, &header,
-                    packet, pctx->ifname, cap_id,
-                    pctx);
+  int npackets =
+      save_packet_data(ltype, &header, packet, pctx->ifname, cap_id, pctx);
   if (npackets < 0) {
     log_error("save_packet_data fail");
     return -1;
@@ -446,22 +446,21 @@ void pcap_callback(const void *ctx, const void *pcap_ctx, char *ltype,
 
   (void)pcap_ctx;
 
-  struct pcap_context *pc = (struct pcap_context *) pcap_ctx;
+  struct pcap_context *pc = (struct pcap_context *)pcap_ctx;
   struct pcap_stat ps;
 
   if (get_pcap_stats(pc, &ps) == 0) {
-    log_trace("ps_recv=%d ps_drop=%d ps_ifdrop=%d", ps.ps_recv, ps.ps_drop, ps.ps_ifdrop);
+    log_trace("ps_recv=%d ps_drop=%d ps_ifdrop=%d", ps.ps_recv, ps.ps_drop,
+              ps.ps_ifdrop);
   }
 
-  struct recap_context *context =
-    (struct recap_context *)ctx;
+  struct recap_context *context = (struct recap_context *)ctx;
 
   char cap_id[MAX_RANDOM_UUID_LEN];
   generate_radom_uuid(cap_id);
 
-  if (save_packet_data(ltype, header,
-                    packet, context->ifname, cap_id,
-                    context) < 0) {
+  if (save_packet_data(ltype, header, packet, context->ifname, cap_id,
+                       context) < 0) {
     log_trace("save_packet_data fail");
   }
 }
@@ -486,9 +485,8 @@ int process_pcap_capture(struct recap_context *pctx) {
   }
 
   struct pcap_context *pc = NULL;
-  if (run_pcap(pctx->ifname, false, false, 10,
-               NULL, true, pcap_callback, (void *)pctx,
-               &pc) < 0) {
+  if (run_pcap(pctx->ifname, false, false, 10, NULL, true, pcap_callback,
+               (void *)pctx, &pc) < 0) {
     log_error("run_pcap fail");
     eloop_free(eloop);
     return -1;
@@ -523,14 +521,14 @@ int main(int argc, char *argv[]) {
   int capture = 0;
   int transaction = 0;
   struct recap_context pctx = {.db = NULL,
-                                     .pipe_fd = -1,
-                                     .pcap_fd = NULL,
-                                     .ifname = NULL,
-                                     .out_path = NULL,
-                                     .state = PCAP_FILE_STATE_INIT,
-                                     .total_size = 0,
-                                     .npackets = 0,
-                                     .pipe = 0};
+                               .pipe_fd = -1,
+                               .pcap_fd = NULL,
+                               .ifname = NULL,
+                               .out_path = NULL,
+                               .state = PCAP_FILE_STATE_INIT,
+                               .total_size = 0,
+                               .npackets = 0,
+                               .pipe = 0};
 
   process_app_options(argc, argv, &verbosity, &pcap_path, &pctx.out_path,
                       &pctx.ifname, &pctx.pipe, &capture, &transaction);
@@ -571,9 +569,10 @@ int main(int argc, char *argv[]) {
     if (transaction) {
       fprintf(stdout, "Using transaction mode\n");
       if (execute_sqlite_query(pctx.db, "BEGIN IMMEDIATE TRANSACTION") < 0) {
-        fprintf(stderr, "Failed to capture a lock on db %s, please retry this "
-                  "command later",
-                  pctx.out_path);
+        fprintf(stderr,
+                "Failed to capture a lock on db %s, please retry this "
+                "command later",
+                pctx.out_path);
         goto cleanup;
       }
     }
@@ -600,7 +599,8 @@ int main(int argc, char *argv[]) {
   }
 
   if (!capture) {
-    fprintf(stdout, "Processed pcap file/stream size = %" PRIu64 " bytes\n", pctx.total_size);
+    fprintf(stdout, "Processed pcap file/stream size = %" PRIu64 " bytes\n",
+            pctx.total_size);
   }
   fprintf(stdout, "Processed packets = %" PRIu64 "\n", pctx.npackets);
 
@@ -610,7 +610,7 @@ int main(int argc, char *argv[]) {
       fprintf(stdout, "Commiting changes to %s database", pctx.out_path);
       if (execute_sqlite_query(pctx.db, "COMMIT TRANSACTION") < 0) {
         fprintf(stderr, "Failed to commit %" PRIu64 " packets to database %s",
-                  pctx.npackets, pctx.out_path);
+                pctx.npackets, pctx.out_path);
         goto cleanup;
       }
     }

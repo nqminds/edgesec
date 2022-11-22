@@ -173,8 +173,7 @@ int run_pcap(char *interface, bool immediate, bool promiscuous, int timeout,
   if (filter != NULL) {
     if (strlen(filter)) {
       if (pcap_compile(ctx->pd, &fp, filter, 0, mask) == -1) {
-        log_error("Couldn't parse filter %s: %s", filter,
-                  pcap_geterr(ctx->pd));
+        log_error("Couldn't parse filter %s: %s", filter, pcap_geterr(ctx->pd));
         goto fail;
       }
 
