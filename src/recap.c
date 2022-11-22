@@ -414,7 +414,7 @@ int process_pcap_stream_state(struct pcap_stream_context *pctx) {
 int process_pcap_stream(const char *pcap_path, struct pcap_stream_context *pctx) {
   if (pcap_path != NULL) {
     if ((pctx->pcap_fd = fopen(pcap_path, "rb")) == NULL) {
-      log_errno("fopen");
+      log_errno("fopen failed for pcap file %s", pcap_path);
       return -1;
     }
   } else {
