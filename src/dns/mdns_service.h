@@ -29,7 +29,6 @@ struct mdns_context {
   hmap_command_conn *command_mapper; /**< The command mapper */
   UT_array *pctx_list;               /**< The list of pcap context */
   struct mdns_conf config;           /**< mDNS config. */
-  char cap_id[MAX_RANDOM_UUID_LEN];  /**< Auto generated capture ID */
   char supervisor_control_path[MAX_OS_PATH_LEN]; /**< Specifies the path to the
                                                UNIX domain supervisor control
                                                path */

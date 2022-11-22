@@ -339,12 +339,10 @@ struct capture_packet {
  * @param header The packet header as per pcap
  * @param packet The packet data
  * @param interface The packet interface
- * @param id The packet id
  * @param tp_array The array of returned packet tuples
  * @return int Total count of packet tuples
  */
 int extract_packets(const char *ltype, const struct pcap_pkthdr *header,
-                    const uint8_t *packet, char *interface, char *id,
-                    UT_array *tp_array);
+                    const uint8_t *packet, char *interface, UT_array *tp_array);
 
 #endif

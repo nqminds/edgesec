@@ -614,8 +614,7 @@ void mdns_pcap_callback(const void *ctx, const void *pcap_ctx, char *ltype,
 
   utarray_new(tp_array, &tp_list_icd);
 
-  if (extract_packets(ltype, header, packet, pc->ifname, context->cap_id,
-                      tp_array) > 0) {
+  if (extract_packets(ltype, header, packet, pc->ifname, tp_array) > 0) {
     while ((p = (struct tuple_packet *)utarray_next(tp_array, p)) != NULL) {
       if (send_bridge_command(context, p) < 0) {
         log_error("send_pcap_meta fail");
@@ -742,8 +741,6 @@ int init_mdns_context(struct mdns_conf *mdns_config,
     log_error("copy_vlan_mapper fail");
     return -1;
   }
-
-  generate_radom_uuid(context->cap_id);
 
   return 0;
 }

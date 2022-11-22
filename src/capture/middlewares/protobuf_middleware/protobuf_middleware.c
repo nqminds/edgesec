@@ -100,8 +100,6 @@ struct middleware_context *init_protobuf_middleware(sqlite3 *db, char *db_path,
 int process_protobuf_middleware(struct middleware_context *context,
                                 const char *ltype, struct pcap_pkthdr *header,
                                 uint8_t *packet, char *ifname) {
-  char cap_id[MAX_RANDOM_UUID_LEN];
-
   if (context == NULL) {
     log_error("context param is NULL");
     return -1;
@@ -123,9 +121,8 @@ int process_protobuf_middleware(struct middleware_context *context,
   UT_array *packets = NULL;
   utarray_new(packets, &tp_list_icd);
 
-  generate_radom_uuid(cap_id);
   int npackets =
-      extract_packets(ltype, header, packet, ifname, cap_id, packets);
+      extract_packets(ltype, header, packet, ifname, packets);
 
   if (npackets < 0) {
     log_error("extract_packets fail");

@@ -347,8 +347,7 @@ int decode_packet(const struct pcap_pkthdr *header, const uint8_t *packet,
 }
 
 int extract_packets(const char *ltype, const struct pcap_pkthdr *header,
-                    const uint8_t *packet, char *interface, char *id,
-                    UT_array *tp_array) {
+                    const uint8_t *packet, char *interface, UT_array *tp_array) {
   (void)ltype;
 
   struct capture_packet cpac;
@@ -363,6 +362,10 @@ int extract_packets(const char *ltype, const struct pcap_pkthdr *header,
   cpac.length = header->len;
 
   os_strlcpy(cpac.ifname, interface, IF_NAMESIZE);
+
+  char id[MAX_RANDOM_UUID_LEN];
+  generate_radom_uuid(id);
+
   os_strlcpy(cpac.id, id, MAX_RANDOM_UUID_LEN);
 
   if ((count = decode_packet(header, packet, &cpac)) > 0) {
