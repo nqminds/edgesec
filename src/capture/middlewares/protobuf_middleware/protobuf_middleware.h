@@ -17,7 +17,8 @@
  * @brief pipe the serialised protobuf tuple packets
  *
  * @param path[in] The pipe file path
- * @param fd[in] The pipe file descriptor
+ * @param fd[in,out] The pipe file descriptor.
+ * If `0`, this will be set to a new fd pointing to @p path.
  * @param p[in] The tuple packet
  * @return 0 on success, -1 otherwise
  */
