@@ -21,7 +21,8 @@
  * @param p[in] The tuple packet
  * @return 0 on success, -1 otherwise
  */
-int pipe_protobuf_tuple_packet(const char *path, int *fd, struct tuple_packet *p);
+int pipe_protobuf_tuple_packet(const char *path, int *fd,
+                               struct tuple_packet *p);
 
 /**
  * @brief pipe the serialised protobuf packets

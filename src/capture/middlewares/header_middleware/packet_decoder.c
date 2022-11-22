@@ -347,7 +347,8 @@ int decode_packet(const struct pcap_pkthdr *header, const uint8_t *packet,
 }
 
 int extract_packets(const char *ltype, const struct pcap_pkthdr *header,
-                    const uint8_t *packet, char *interface, UT_array *tp_array) {
+                    const uint8_t *packet, char *interface,
+                    UT_array *tp_array) {
   (void)ltype;
 
   struct capture_packet cpac;

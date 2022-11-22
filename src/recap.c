@@ -35,8 +35,8 @@
 #include "utils/sqliteu.h"
 
 #define QUEUE_PROCESS_INTERVAL 100 * 1000 // In microseconds
-#define PCAP_READ_INTERVAL 10 // in ms
-#define PCAP_READ_SIZE 1024   // bytes
+#define PCAP_READ_INTERVAL 10             // in ms
+#define PCAP_READ_SIZE 1024               // bytes
 #define IFNAME_DEFAULT "ifname"
 
 #define OPT_STRING ":p:f:i:tnkdhv"
@@ -339,7 +339,8 @@ int save_tuple_packet(struct recap_context *pctx, struct tuple_packet *p) {
 }
 
 int save_decoded_packet(const char *ltype, const struct pcap_pkthdr *header,
-                     const uint8_t *packet, char *ifname, struct recap_context *pctx) {
+                        const uint8_t *packet, char *ifname,
+                        struct recap_context *pctx) {
   UT_array *packets = NULL;
   utarray_new(packets, &tp_list_icd);
 
@@ -536,13 +537,12 @@ void save_packets_from_queue(struct recap_context *pctx) {
 void eloop_tout_header_handler(void *eloop_ctx, void *user_ctx) {
   struct recap_context *pctx = (struct recap_context *)user_ctx;
 
-
   if (is_packet_queue_empty(pctx->pq) < 1) {
     log_trace("Commiting packets to %s database", pctx->out_path);
     if (execute_sqlite_query(pctx->db, "BEGIN IMMEDIATE TRANSACTION") < 0) {
       log_error("Failed to capture a lock on db %s, please retry this "
-              "command later",
-              pctx->out_path);
+                "command later",
+                pctx->out_path);
     }
 
     save_packets_from_queue(pctx);

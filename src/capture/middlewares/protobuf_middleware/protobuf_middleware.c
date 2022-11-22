@@ -32,7 +32,8 @@
 static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL,
                                    free_packet};
 
-int pipe_protobuf_tuple_packet(const char *path, int *fd, struct tuple_packet *p) {
+int pipe_protobuf_tuple_packet(const char *path, int *fd,
+                               struct tuple_packet *p) {
   uint8_t *buffer = NULL;
   ssize_t length = encode_protobuf_sync_wrapper(p, &buffer);
   if (length < 0) {
@@ -55,7 +56,7 @@ int pipe_protobuf_packets(const char *path, int *fd, UT_array *packets) {
   while ((p = (struct tuple_packet *)utarray_next(packets, p)) != NULL) {
     if (pipe_protobuf_tuple_packet(path, fd, p) < 0) {
       log_error("pipe_protobuf_tuple_packet fail");
-      return -1;     
+      return -1;
     }
   }
 
@@ -129,8 +130,7 @@ int process_protobuf_middleware(struct middleware_context *context,
   UT_array *packets = NULL;
   utarray_new(packets, &tp_list_icd);
 
-  int npackets =
-      extract_packets(ltype, header, packet, ifname, packets);
+  int npackets = extract_packets(ltype, header, packet, ifname, packets);
 
   if (npackets < 0) {
     log_error("extract_packets fail");
