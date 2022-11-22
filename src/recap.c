@@ -46,12 +46,12 @@
 #define DESCRIPTION_STRING                                                     \
   "\nRun capture on an input pcap file, stdin or libpcap and output to a capture db or pipe.\n"
 
-enum PCAP_STATE {
-  PCAP_STATE_INIT = 0,
-  PCAP_STATE_READ_PCAP_HEADER,
-  PCAP_STATE_READ_PKT_HEADER,
-  PCAP_STATE_READ_PACKET,
-  PCAP_STATE_FIN
+enum PCAP_FILE_STATE {
+  PCAP_FILE_STATE_INIT = 0,
+  PCAP_FILE_STATE_READ_PCAP_HEADER,
+  PCAP_FILE_STATE_READ_PKT_HEADER,
+  PCAP_FILE_STATE_READ_PACKET,
+  PCAP_FILE_STATE_FIN
 };
 
 struct pcap_pkthdr32 {
@@ -61,7 +61,7 @@ struct pcap_pkthdr32 {
   uint32_t len;     /* length this packet (off wire) */
 } STRUCT_PACKED;
 
-struct pcap_stream_context {
+struct recap_context {
   sqlite3 *db;
   int pipe_fd;
   FILE *pcap_fd;
@@ -71,7 +71,7 @@ struct pcap_stream_context {
   ssize_t data_size;
   uint64_t total_size;
   uint64_t npackets;
-  enum PCAP_STATE state;
+  enum PCAP_FILE_STATE state;
   struct pcap_file_header pcap_header;
   struct pcap_pkthdr32 pkt_header;
   int pipe;
@@ -107,10 +107,11 @@ void log_cmdline_error(const char *format, ...) {
   va_list argList;
 
   fflush(stdout); /* Flush any pending stdout */
-
-  fprintf(stdout, "Command-line usage error: ");
+  fflush(stderr);
+ 
+  fprintf(stderr, "Command-line usage error: ");
   va_start(argList, format);
-  vfprintf(stdout, format, argList);
+  vfprintf(stderr, format, argList);
   va_end(argList);
 
   fflush(stderr); /* In case stderr is not line-buffered */
@@ -165,7 +166,7 @@ void process_app_options(
   }
 }
 
-ssize_t read_pcap_stream_fd(struct pcap_stream_context *pctx, size_t len,
+ssize_t read_pcap_stream_fd(struct recap_context *pctx, size_t len,
                             char **data) {
   if ((*data = os_malloc(len)) == NULL) {
     log_errno("os_malloc");
@@ -175,7 +176,7 @@ ssize_t read_pcap_stream_fd(struct pcap_stream_context *pctx, size_t len,
   return (ssize_t)fread(*data, sizeof(char), len, pctx->pcap_fd);
 }
 
-ssize_t read_pcap(struct pcap_stream_context *pctx, size_t len) {
+ssize_t read_pcap(struct recap_context *pctx, size_t len) {
   char *data = NULL;
   ssize_t read_size = read_pcap_stream_fd(pctx, len, &data);
   if (read_size < 0) {
@@ -201,7 +202,7 @@ ssize_t read_pcap(struct pcap_stream_context *pctx, size_t len) {
   return read_size;
 }
 
-int process_pcap_header_state(struct pcap_stream_context *pctx) {
+int process_file_header_state(struct recap_context *pctx) {
   ssize_t pcap_header_size = (ssize_t)sizeof(struct pcap_file_header);
 
   size_t len = (pcap_header_size > pctx->data_size)
@@ -224,16 +225,16 @@ int process_pcap_header_state(struct pcap_stream_context *pctx) {
     log_trace("\tpcap_file_header snaplen = %d", pctx->pcap_header.snaplen);
     log_trace("\tpcap_file_header linktype = %d", pctx->pcap_header.linktype);
     pctx->data_size = 0;
-    pctx->state = PCAP_STATE_READ_PKT_HEADER;
+    pctx->state = PCAP_FILE_STATE_READ_PKT_HEADER;
   } else if (read_size == 0) {
     log_trace("No data received");
-    pctx->state = PCAP_STATE_FIN;
+    pctx->state = PCAP_FILE_STATE_FIN;
   }
 
   return 0;
 }
 
-int process_pkt_header_state(struct pcap_stream_context *pctx) {
+int process_pkt_header_state(struct recap_context *pctx) {
   ssize_t read_size = 0;
   ssize_t pkt_header_size = (ssize_t)sizeof(struct pcap_pkthdr32);
 
@@ -260,16 +261,16 @@ int process_pkt_header_state(struct pcap_stream_context *pctx) {
     }
 
     pctx->data_size = 0;
-    pctx->state = PCAP_STATE_READ_PACKET;
+    pctx->state = PCAP_FILE_STATE_READ_PACKET;
   } else if (read_size == 0) {
     log_trace("No data received");
-    pctx->state = PCAP_STATE_FIN;
+    pctx->state = PCAP_FILE_STATE_FIN;
   }
 
   return 0;
 }
 
-void get_packet_header(struct pcap_stream_context *pctx,
+void get_packet_header(struct recap_context *pctx,
                        struct pcap_pkthdr *header) {
   header->ts.tv_sec = pctx->pkt_header.ts_sec;
   header->ts.tv_usec = pctx->pkt_header.ts_usec;
@@ -294,7 +295,7 @@ static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL,
 
 int save_packet_data(const char *ltype, const struct pcap_pkthdr *header,
                     const uint8_t *packet, char *ifname, char *id,
-                    struct pcap_stream_context *pctx) {
+                    struct recap_context *pctx) {
   UT_array *packets = NULL;
   utarray_new(packets, &tp_list_icd);
 
@@ -326,7 +327,7 @@ int save_packet_data(const char *ltype, const struct pcap_pkthdr *header,
   return npackets;
 }
 
-int save_packet(struct pcap_stream_context *pctx) {
+int save_packet(struct recap_context *pctx) {
   const char *ltype = pcap_datalink_val_to_name(pctx->pcap_header.linktype);
   uint8_t *packet = (uint8_t *)pctx->pcap_data;
 
@@ -349,7 +350,7 @@ int save_packet(struct pcap_stream_context *pctx) {
   return 0;
 }
 
-int process_pkt_read_state(struct pcap_stream_context *pctx) {
+int process_pkt_read_state(struct recap_context *pctx) {
   size_t len = ((ssize_t)pctx->pkt_header.caplen > pctx->data_size)
                    ? pctx->pkt_header.caplen - pctx->data_size
                    : 0;
@@ -369,20 +370,20 @@ int process_pkt_read_state(struct pcap_stream_context *pctx) {
     }
 
     pctx->data_size = 0;
-    pctx->state = PCAP_STATE_READ_PKT_HEADER;
+    pctx->state = PCAP_FILE_STATE_READ_PKT_HEADER;
   } else if (read_size == 0) {
     log_trace("No data received");
-    pctx->state = PCAP_STATE_FIN;
+    pctx->state = PCAP_FILE_STATE_FIN;
   }
 
   return 0;
 }
 
-int process_file_stream_state(struct pcap_stream_context *pctx) {
-  log_trace("Processing pcap file stream %zu bytes", pctx->total_size);
+int process_file_stream_state(struct recap_context *pctx) {
+  log_trace("Processing file stream %zu bytes", pctx->total_size);
 
   switch (pctx->state) {
-    case PCAP_STATE_INIT:
+    case PCAP_FILE_STATE_INIT:
       if ((pctx->pcap_data = os_malloc(sizeof(char))) == NULL) {
         log_errno("os_malloc");
         return -1;
@@ -390,27 +391,27 @@ int process_file_stream_state(struct pcap_stream_context *pctx) {
       pctx->npackets = 0;
       pctx->total_size = 0;
       pctx->data_size = 0;
-      pctx->state = PCAP_STATE_READ_PCAP_HEADER;
+      pctx->state = PCAP_FILE_STATE_READ_PCAP_HEADER;
       return 1;
-    case PCAP_STATE_READ_PCAP_HEADER:
-      if (process_pcap_header_state(pctx) < 0) {
-        log_error("process_pcap_header_state fail");
+    case PCAP_FILE_STATE_READ_PCAP_HEADER:
+      if (process_file_header_state(pctx) < 0) {
+        log_error("process_file_header_state fail");
         return -1;
       }
       return 1;
-    case PCAP_STATE_READ_PKT_HEADER:
+    case PCAP_FILE_STATE_READ_PKT_HEADER:
       if (process_pkt_header_state(pctx) < 0) {
         log_error("process_pkt_header_state fail");
         return -1;
       }
       return 1;
-    case PCAP_STATE_READ_PACKET:
+    case PCAP_FILE_STATE_READ_PACKET:
       if (process_pkt_read_state(pctx) < 0) {
         log_error("process_pkt_read_state fail");
         return -1;
       }
       return 1;
-    case PCAP_STATE_FIN:
+    case PCAP_FILE_STATE_FIN:
       return 0;
     default:
       log_trace("Unknown state");
@@ -418,7 +419,7 @@ int process_file_stream_state(struct pcap_stream_context *pctx) {
   }
 }
 
-int process_file_stream(const char *pcap_path, struct pcap_stream_context *pctx) {
+int process_file_stream(const char *pcap_path, struct recap_context *pctx) {
   if (pcap_path != NULL) {
     if ((pctx->pcap_fd = fopen(pcap_path, "rb")) == NULL) {
       log_errno("fopen failed for pcap file %s", pcap_path);
@@ -452,8 +453,8 @@ void pcap_callback(const void *ctx, const void *pcap_ctx, char *ltype,
     log_trace("ps_recv=%d ps_drop=%d ps_ifdrop=%d", ps.ps_recv, ps.ps_drop, ps.ps_ifdrop);
   }
 
-  struct pcap_stream_context *context =
-    (struct pcap_stream_context *)ctx;
+  struct recap_context *context =
+    (struct recap_context *)ctx;
 
   char cap_id[MAX_RANDOM_UUID_LEN];
   generate_radom_uuid(cap_id);
@@ -476,6 +477,44 @@ void eloop_read_fd_handler(int sock, void *eloop_ctx, void *sock_ctx) {
   }
 }
 
+int process_pcap_capture(struct recap_context *pctx) {
+  struct eloop_data *eloop = NULL;
+
+  if ((eloop = eloop_init()) == NULL) {
+    log_error("eloop_init fail");
+    return -1;
+  }
+
+  struct pcap_context *pc = NULL;
+  if (run_pcap(pctx->ifname, false, false, 10,
+               NULL, true, pcap_callback, (void *)pctx,
+               &pc) < 0) {
+    log_error("run_pcap fail");
+    eloop_free(eloop);
+    return -1;
+  }
+
+  if (pc != NULL) {
+    if (eloop_register_read_sock(eloop, pc->pcap_fd, eloop_read_fd_handler,
+                                 (void *)pc, (void *)NULL) == -1) {
+      log_error("eloop_register_read_sock fail");
+      eloop_free(eloop);
+      close_pcap(pc);
+      return -1;
+    }
+  } else {
+    log_error("Empty pcap context");
+    eloop_free(eloop);
+    close_pcap(pc);
+    return -1;
+  }
+
+  eloop_run(eloop);
+  eloop_free(eloop);
+  close_pcap(pc);
+  return 0;
+}
+
 int main(int argc, char *argv[]) {
   int exit_code = EXIT_FAILURE;
   uint8_t verbosity = 0;
@@ -483,12 +522,12 @@ int main(int argc, char *argv[]) {
   char *pcap_path = NULL;
   int capture = 0;
   int transaction = 0;
-  struct pcap_stream_context pctx = {.db = NULL,
+  struct recap_context pctx = {.db = NULL,
                                      .pipe_fd = -1,
                                      .pcap_fd = NULL,
                                      .ifname = NULL,
                                      .out_path = NULL,
-                                     .state = PCAP_STATE_INIT,
+                                     .state = PCAP_FILE_STATE_INIT,
                                      .total_size = 0,
                                      .npackets = 0,
                                      .pipe = 0};
@@ -525,14 +564,14 @@ int main(int argc, char *argv[]) {
     }
 
     if (init_sqlite_header_db(pctx.db) < 0) {
-      fprintf(stdout, "init_sqlite_header_db fail\n");
+      fprintf(stderr, "init_sqlite_header_db fail\n");
       goto cleanup;
     }
 
     if (transaction) {
       fprintf(stdout, "Using transaction mode\n");
       if (execute_sqlite_query(pctx.db, "BEGIN IMMEDIATE TRANSACTION") < 0) {
-        log_error("Failed to capture a lock on db %s, please retry this "
+        fprintf(stderr, "Failed to capture a lock on db %s, please retry this "
                   "command later",
                   pctx.out_path);
         goto cleanup;
@@ -540,46 +579,24 @@ int main(int argc, char *argv[]) {
     }
   } else {
     if (create_pipe_file(pctx.out_path) < 0) {
-      log_error("create_pipe_file fail");
+      fprintf(stderr, "create_pipe_file fail");
       goto cleanup;
     }
 
     fprintf(stdout, "Created pipe file at %s\n", pctx.out_path);
   }
 
-  struct pcap_context *pc = NULL;
-  struct eloop_data *eloop = NULL;
   if (!capture) {
     if (process_file_stream(pcap_path, &pctx) < 0) {
-      fprintf(stdout, "process_file_stream fail");
+      fprintf(stderr, "process_file_stream fail");
       goto cleanup;
     }
   } else {
-    if ((eloop = eloop_init()) == NULL) {
-      fprintf(stdout, "eloop_init fail");
+    fprintf(stdout, "Registering pcap capture for ifname=%s", pctx.ifname);
+    if (process_pcap_capture(&pctx) < 0) {
+      fprintf(stderr, "process_pcap_capture fail");
       goto cleanup;
     }
-
-    fprintf(stdout, "Registering pcap for ifname=%s", pctx.ifname);
-    if (run_pcap(pctx.ifname, false, false, 10,
-                 NULL, true, pcap_callback, (void *)&pctx,
-                 &pc) < 0) {
-      fprintf(stdout, "run_pcap fail");
-      goto cleanup;
-    }
-
-    if (pc != NULL) {
-      if (eloop_register_read_sock(eloop, pc->pcap_fd, eloop_read_fd_handler,
-                                   (void *)pc, (void *)NULL) == -1) {
-        fprintf(stdout, "eloop_register_read_sock fail");
-        goto cleanup;
-      }
-    } else {
-      fprintf(stdout, "Empty pcap context");
-      goto cleanup;
-    }
-
-    eloop_run(eloop);
   }
 
   if (!capture) {
@@ -590,9 +607,9 @@ int main(int argc, char *argv[]) {
   if (pctx.db != NULL) {
     // If AUTOCOMMIT is disabled, we need to manually make a COMMIT
     if (sqlite3_get_autocommit(pctx.db) == 0) {
-      log_info("Commiting changes to %s database", pctx.out_path);
+      fprintf(stdout, "Commiting changes to %s database", pctx.out_path);
       if (execute_sqlite_query(pctx.db, "COMMIT TRANSACTION") < 0) {
-        log_error("Failed to commit %" PRIu64 " packets to database %s",
+        fprintf(stderr, "Failed to commit %" PRIu64 " packets to database %s",
                   pctx.npackets, pctx.out_path);
         goto cleanup;
       }
@@ -603,8 +620,6 @@ int main(int argc, char *argv[]) {
   exit_code = EXIT_SUCCESS;
 
 cleanup:
-  eloop_free(eloop);
-  close_pcap(pc);
   os_free(pctx.ifname);
   if (pcap_path != NULL) {
     os_free(pcap_path);
