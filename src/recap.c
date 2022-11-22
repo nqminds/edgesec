@@ -604,30 +604,12 @@ int main(int argc, char *argv[]) {
   if (!capture) {
     if (process_pcap_stream(pcap_path, &pctx) < 0) {
       fprintf(stdout, "process_pcap_stream fail");
-      if (pcap_path != NULL) {
-        os_free(pcap_path);
-        fclose(pctx.pcap_fd);
-      }
-
-      os_free(pctx.ifname);
-      sqlite3_close(pctx.db);
-      os_free(pctx.out_path);
-      return EXIT_FAILURE;
+      goto cleanup;
     }
-
-    if (pcap_path != NULL) {
-      os_free(pcap_path);
-      fclose(pctx.pcap_fd);
-      pcap_path = NULL;
-    }
-
   } else {
     if ((eloop = eloop_init()) == NULL) {
       fprintf(stdout, "eloop_init fail");
-      os_free(pctx.out_path);
-      sqlite3_close(pctx.db);
-      os_free(pctx.ifname);
-      return EXIT_FAILURE;
+      goto cleanup;
     }
 
     fprintf(stdout, "Registering pcap for ifname=%s", pctx.ifname);
@@ -635,32 +617,21 @@ int main(int argc, char *argv[]) {
                  NULL, true, pcap_callback, (void *)&pctx,
                  &pc) < 0) {
       fprintf(stdout, "run_pcap fail");
-      os_free(pctx.out_path);
-      sqlite3_close(pctx.db);
-      os_free(pctx.ifname);
-      return EXIT_FAILURE;
+      goto cleanup;
     }
 
     if (pc != NULL) {
       if (eloop_register_read_sock(eloop, pc->pcap_fd, eloop_read_fd_handler,
                                    (void *)pc, (void *)NULL) == -1) {
         fprintf(stdout, "eloop_register_read_sock fail");
-        os_free(pctx.out_path);
-        sqlite3_close(pctx.db);
-        os_free(pctx.ifname);
-        eloop_free(eloop);
-        return EXIT_FAILURE;
+        goto cleanup;
       }
     } else {
       fprintf(stdout, "Empty pcap context");
-      os_free(pctx.out_path);
-      sqlite3_close(pctx.db);
-      os_free(pctx.ifname);
-      eloop_free(eloop);
-      return EXIT_FAILURE;
+      goto cleanup;
     }
+
     eloop_run(eloop);
-    eloop_free(eloop);
   }
 
   fprintf(stdout, "Processed pcap size = %" PRIu64 " bytes\n", pctx.total_size);
@@ -682,6 +653,9 @@ int main(int argc, char *argv[]) {
   exit_code = EXIT_SUCCESS;
 
 cleanup:
+  eloop_free(eloop);
+  close_pcap(pc);
+  os_free(pctx.ifname);
   if (pcap_path != NULL) {
     os_free(pcap_path);
     fclose(pctx.pcap_fd);
