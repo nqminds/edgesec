@@ -38,10 +38,10 @@
 #define PCAP_READ_SIZE 1024   // bytes
 #define IFNAME_DEFAULT "ifname"
 
-#define OPT_STRING ":p:f:i:t:kdhv"
+#define OPT_STRING ":p:f:i:t:skdhv"
 
 #define USAGE_STRING                                                           \
-  "\t%s [-p filename] [-f filename] [-i interface] [-k] [-d] [-h] [-v]\n"      \
+  "\t%s [-p filename] [-f filename] [-i interface] [-n] [-k] [-d] [-h] [-v]\n"      \
   "\t\t [-t {SINGLE_TRANSACTION,DISABLED}]"
 
 #define DESCRIPTION_STRING                                                     \
@@ -132,6 +132,7 @@ void show_app_help(char *app_name) {
                   "(very slow).\n");
   fprintf(stdout,
           "\t             \t   (default) Pick automatically based on input.\n");
+  fprintf(stdout, "\t-n\t\t Capture from network stream.\n");
   fprintf(stdout, "\t-k\t\t Pipe to file\n");
   fprintf(stdout,
           "\t-d\t\t Verbosity level (use multiple -dd... to increase)\n");
@@ -159,7 +160,7 @@ void log_cmdline_error(const char *format, ...) {
 
 void process_app_options(
     int argc, char *argv[], uint8_t *verbosity, char **pcap_path,
-    char **out_path, char **ifname, int *pipe,
+    char **out_path, char **ifname, int *pipe, int *capture,
     enum SQLITE_TRANSACTION_TYPE *sqlite_transaction_type) {
   int opt;
 
@@ -181,7 +182,7 @@ void process_app_options(
       case 'i':
         *ifname = os_strdup(optarg);
         break;
-      case 't':
+      case 'n':
         *capture = 1;
         break;
       case 'k':
@@ -542,7 +543,7 @@ int main(int argc, char *argv[]) {
   enum SQLITE_TRANSACTION_TYPE sqlite_transaction_type = DEFAULT;
 
   process_app_options(argc, argv, &verbosity, &pcap_path, &pctx.out_path,
-                      &pctx.ifname, &pctx.pipe, &sqlite_transaction_type);
+                      &pctx.ifname, &pctx.pipe, &capture, &sqlite_transaction_type);
   if (verbosity > MAX_LOG_LEVELS) {
     level = 0;
   } else if (!verbosity) {
@@ -617,6 +618,7 @@ int main(int argc, char *argv[]) {
     if (pcap_path != NULL) {
       os_free(pcap_path);
       fclose(pctx.pcap_fd);
+      pcap_path = NULL;
     }
 
   } else {
