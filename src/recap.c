@@ -563,13 +563,12 @@ void eloop_tout_header_handler(void *eloop_ctx, void *user_ctx) {
 int process_pcap_capture(struct recap_context *pctx) {
   struct eloop_data *eloop = NULL;
   int exit_code = -1;
+  struct pcap_context *pc = NULL;
 
   if ((eloop = eloop_init()) == NULL) {
     log_error("eloop_init fail");
     goto process_pcap_capture_fail;
   }
-
-  struct pcap_context *pc = NULL;
   if (run_pcap(pctx->ifname, false, false, 10, NULL, true, pcap_callback,
                (void *)pctx, &pc) < 0) {
     log_error("run_pcap fail");
