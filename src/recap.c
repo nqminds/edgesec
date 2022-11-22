@@ -296,21 +296,7 @@ int save_sqlite_packet(sqlite3 *db, UT_array *packets) {
 static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL,
                                    free_packet};
 
-int save_packet_data(const char *ltype, const struct pcap_pkthdr *header,
-                     const uint8_t *packet, char *ifname, char *id,
-                     struct recap_context *pctx) {
-  UT_array *packets = NULL;
-  utarray_new(packets, &tp_list_icd);
-
-  int npackets = extract_packets(ltype, header, packet, ifname, id, packets);
-  if (npackets < 0) {
-    log_error("extract_packets fail");
-    utarray_free(packets);
-    return -1;
-  }
-
-  log_trace("Decoded %d packets", npackets);
-
+int save_packet_array(struct recap_context *pctx, UT_array *packets) {
   if (pctx->pipe) {
     if (pipe_protobuf_packets(pctx->out_path, &pctx->pipe_fd, packets) < 0) {
       log_error("pipe_protobuf_packets fail");
@@ -325,11 +311,34 @@ int save_packet_data(const char *ltype, const struct pcap_pkthdr *header,
     }
   }
 
+  return 0;
+}
+
+int save_decoded_packet(const char *ltype, const struct pcap_pkthdr *header,
+                     const uint8_t *packet, char *ifname, char *id,
+                     struct recap_context *pctx) {
+  UT_array *packets = NULL;
+  utarray_new(packets, &tp_list_icd);
+
+  int npackets = extract_packets(ltype, header, packet, ifname, id, packets);
+  if (npackets < 0) {
+    log_error("extract_packets fail");
+    utarray_free(packets);
+    return -1;
+  }
+
+  log_trace("Decoded %d packets", npackets);
+  if (save_packet_array(pctx, packets) < 0) {
+    log_error("save_packet_array fail");
+    utarray_free(packets);
+    return -1;
+  }
+
   utarray_free(packets);
   return npackets;
 }
 
-int save_packet(struct recap_context *pctx) {
+int save_raw_packet(struct recap_context *pctx) {
   const char *ltype = pcap_datalink_val_to_name(pctx->pcap_header.linktype);
   uint8_t *packet = (uint8_t *)pctx->pcap_data;
 
@@ -340,9 +349,9 @@ int save_packet(struct recap_context *pctx) {
   get_packet_header(pctx, &header);
 
   int npackets =
-      save_packet_data(ltype, &header, packet, pctx->ifname, cap_id, pctx);
+      save_decoded_packet(ltype, &header, packet, pctx->ifname, cap_id, pctx);
   if (npackets < 0) {
-    log_error("save_packet_data fail");
+    log_error("save_decoded_packet fail");
     return -1;
   }
 
@@ -365,7 +374,7 @@ int process_pkt_read_state(struct recap_context *pctx) {
   if (pctx->data_size >= (ssize_t)pctx->pkt_header.caplen) {
     log_trace("Received pkt data");
 
-    if (save_packet(pctx) < 0) {
+    if (save_raw_packet(pctx) < 0) {
       log_error("process_packet fail");
       return -1;
     }
@@ -455,14 +464,16 @@ void pcap_callback(const void *ctx, const void *pcap_ctx, char *ltype,
               ps.ps_ifdrop);
   }
 
+  // struct tuple_packet tp
+  
   struct recap_context *context = (struct recap_context *)ctx;
 
   char cap_id[MAX_RANDOM_UUID_LEN];
   generate_radom_uuid(cap_id);
 
-  if (save_packet_data(ltype, header, packet, context->ifname, cap_id,
+  if (save_decoded_packet(ltype, header, packet, context->ifname, cap_id,
                        context) < 0) {
-    log_trace("save_packet_data fail");
+    log_trace("save_decoded_packet fail");
   }
 }
 
