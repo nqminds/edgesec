@@ -364,10 +364,7 @@ int extract_packets(const char *ltype, const struct pcap_pkthdr *header,
 
   os_strlcpy(cpac.ifname, interface, IF_NAMESIZE);
 
-  char id[MAX_RANDOM_UUID_LEN];
-  generate_radom_uuid(id);
-
-  os_strlcpy(cpac.id, id, MAX_RANDOM_UUID_LEN);
+  generate_radom_uuid(cpac.id);
 
   if ((count = decode_packet(header, packet, &cpac)) > 0) {
     if (cpac.ethh != NULL) {
