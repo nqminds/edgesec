@@ -551,8 +551,7 @@ void eloop_tout_header_handler(void *eloop_ctx, void *user_ctx) {
   if (is_packet_queue_empty(pctx->pq) < 1) {
     log_trace("Commiting packets to %s database", pctx->out_path);
     if (execute_sqlite_query(pctx->db, "BEGIN IMMEDIATE TRANSACTION") < 0) {
-      log_error("Failed to capture a lock on db %s, please retry this "
-                "command later",
+      log_error("Failed to capture a lock on db %s, ignoring.",
                 pctx->out_path);
     }
 
