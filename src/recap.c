@@ -78,7 +78,7 @@ struct recap_context {
   enum PCAP_FILE_STATE state;
   struct pcap_file_header pcap_header;
   struct pcap_pkthdr32 pkt_header;
-  int pipe;
+  bool pipe;
 };
 
 void show_app_version(void) {
@@ -126,7 +126,7 @@ void log_cmdline_error(const char *format, ...) {
 
 void process_app_options(int argc, char *argv[], uint8_t *verbosity,
                          char **pcap_path, char **out_path, char **ifname,
-                         int *pipe, int *capture, int *transaction) {
+                         bool *pipe, bool *capture, bool *transaction) {
   int opt;
 
   while ((opt = getopt(argc, argv, OPT_STRING)) != -1) {
@@ -148,16 +148,16 @@ void process_app_options(int argc, char *argv[], uint8_t *verbosity,
         *ifname = os_strdup(optarg);
         break;
       case 'n':
-        *capture = 1;
+        *capture = true;
         break;
       case 'k':
-        *pipe = 1;
+        *pipe = true;
         break;
       case 'd':
         (*verbosity)++;
         break;
       case 't':
-        *transaction = 1;
+        *transaction = true;
         break;
       case ':':
         log_cmdline_error("Missing argument for -%c\n", optopt);
@@ -614,8 +614,8 @@ int main(int argc, char *argv[]) {
   uint8_t verbosity = 0;
   uint8_t level = 0;
   char *pcap_path = NULL;
-  int capture = 0;
-  int transaction = 0;
+  bool capture = false;
+  bool transaction = false;
   struct recap_context pctx = {.db = NULL,
                                .pipe_fd = -1,
                                .pcap_fd = NULL,
@@ -625,7 +625,7 @@ int main(int argc, char *argv[]) {
                                .state = PCAP_FILE_STATE_INIT,
                                .total_size = 0,
                                .npackets = 0,
-                               .pipe = 0};
+                               .pipe = false};
 
   process_app_options(argc, argv, &verbosity, &pcap_path, &pctx.out_path,
                       &pctx.ifname, &pctx.pipe, &capture, &transaction);
