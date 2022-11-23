@@ -144,7 +144,6 @@ int process_header_middleware(struct middleware_context *context,
                               uint8_t *packet, char *ifname) {
   struct packet_queue *queue;
   int npackets;
-  char cap_id[MAX_RANDOM_UUID_LEN];
   UT_array *tp_array = NULL;
 
   if (context == NULL) {
@@ -161,8 +160,7 @@ int process_header_middleware(struct middleware_context *context,
 
   utarray_new(tp_array, &tp_list_icd);
 
-  generate_radom_uuid(cap_id);
-  npackets = extract_packets(ltype, header, packet, ifname, cap_id, tp_array);
+  npackets = extract_packets(ltype, header, packet, ifname, tp_array);
 
   if (npackets < 0) {
     log_error("extract_packets fail");

@@ -32,23 +32,32 @@
 static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL,
                                    free_packet};
 
+int pipe_protobuf_tuple_packet(const char *path, int *fd,
+                               struct tuple_packet *p) {
+  uint8_t *buffer = NULL;
+  ssize_t length = encode_protobuf_sync_wrapper(p, &buffer);
+  if (length < 0) {
+    log_error("encode_protobuf_packet fail");
+    return -1;
+  }
+
+  if (open_write_nonblock(path, fd, buffer, length) < 0) {
+    log_error("open_write_nonblock fail");
+    os_free(buffer);
+    return -1;
+  }
+
+  os_free(buffer);
+  return 0;
+}
+
 int pipe_protobuf_packets(const char *path, int *fd, UT_array *packets) {
   struct tuple_packet *p = NULL;
   while ((p = (struct tuple_packet *)utarray_next(packets, p)) != NULL) {
-    uint8_t *buffer = NULL;
-    ssize_t length = encode_protobuf_sync_wrapper(p, &buffer);
-    if (length < 0) {
-      log_error("encode_protobuf_packet fail");
+    if (pipe_protobuf_tuple_packet(path, fd, p) < 0) {
+      log_error("pipe_protobuf_tuple_packet fail");
       return -1;
     }
-
-    if (open_write_nonblock(path, fd, buffer, length) < 0) {
-      log_error("open_write_nonblock fail");
-      os_free(buffer);
-      return -1;
-    }
-
-    os_free(buffer);
   }
 
   return 0;
@@ -100,8 +109,6 @@ struct middleware_context *init_protobuf_middleware(sqlite3 *db, char *db_path,
 int process_protobuf_middleware(struct middleware_context *context,
                                 const char *ltype, struct pcap_pkthdr *header,
                                 uint8_t *packet, char *ifname) {
-  char cap_id[MAX_RANDOM_UUID_LEN];
-
   if (context == NULL) {
     log_error("context param is NULL");
     return -1;
@@ -123,9 +130,7 @@ int process_protobuf_middleware(struct middleware_context *context,
   UT_array *packets = NULL;
   utarray_new(packets, &tp_list_icd);
 
-  generate_radom_uuid(cap_id);
-  int npackets =
-      extract_packets(ltype, header, packet, ifname, cap_id, packets);
+  int npackets = extract_packets(ltype, header, packet, ifname, packets);
 
   if (npackets < 0) {
     log_error("extract_packets fail");
