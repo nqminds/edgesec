@@ -223,12 +223,17 @@ int process_file_header_state(struct recap_context *pctx) {
   if (pctx->data_size >= pcap_header_size) {
     log_trace("Received pcap header:");
     os_memcpy(&pctx->pcap_header, pctx->pcap_data, pcap_header_size);
+
+    log_trace("\tpcap_file_header magic = %x",
+              pctx->pcap_header.magic);
     log_trace("\tpcap_file_header version_major = %d",
               pctx->pcap_header.version_major);
     log_trace("\tpcap_file_header version_minor = %d",
               pctx->pcap_header.version_minor);
-    log_trace("\tpcap_file_header snaplen = %d", pctx->pcap_header.snaplen);
-    log_trace("\tpcap_file_header linktype = %d", pctx->pcap_header.linktype);
+    log_trace("\tpcap_file_header thiszone = %"PRId32,
+              pctx->pcap_header.thiszone);
+    log_trace("\tpcap_file_header snaplen = %"PRIu32, pctx->pcap_header.snaplen);
+    log_trace("\tpcap_file_header linktype = %"PRIu32, pctx->pcap_header.linktype);
     pctx->data_size = 0;
     pctx->state = PCAP_FILE_STATE_READ_PKT_HEADER;
   } else if (read_size == 0) {
@@ -705,7 +710,7 @@ int main(int argc, char *argv[]) {
   if (pctx.db != NULL && !capture) {
     // If AUTOCOMMIT is disabled, we need to manually make a COMMIT
     if (sqlite3_get_autocommit(pctx.db) == 0) {
-      fprintf(stdout, "Commiting changes to %s database", pctx.out_path);
+      fprintf(stdout, "Commiting changes to %s database\n", pctx.out_path);
       if (execute_sqlite_query(pctx.db, "COMMIT TRANSACTION") < 0) {
         fprintf(stderr, "Failed to commit %" PRIu64 " packets to database %s",
                 pctx.npackets, pctx.out_path);
@@ -718,7 +723,6 @@ int main(int argc, char *argv[]) {
   exit_code = EXIT_SUCCESS;
 
 cleanup:
-  os_free(pctx.ifname);
   if (pcap_path != NULL) {
     os_free(pcap_path);
     fclose(pctx.pcap_fd);
