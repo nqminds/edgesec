@@ -34,6 +34,7 @@
 #include "capture/capture_service.h"
 #include "utils/sqliteu.h"
 
+#define PCAP_MAGIC_VALUE 0xa1b2c3d4
 #define QUEUE_PROCESS_INTERVAL 100 * 1000 // In microseconds
 #define PCAP_READ_INTERVAL 10             // in ms
 #define PCAP_READ_SIZE 1024               // bytes
@@ -235,6 +236,11 @@ int process_file_header_state(struct recap_context *pctx) {
     log_trace("\tpcap_file_header snaplen = %"PRIu32, pctx->pcap_header.snaplen);
     log_trace("\tpcap_file_header linktype = %"PRIu32, pctx->pcap_header.linktype);
     pctx->data_size = 0;
+
+    if (pctx->pcap_header.magic != PCAP_MAGIC_VALUE) {
+      log_error("Not a pcap file (magic number error), perhaps a pcapng file!!!");
+      return -1;
+    }
     pctx->state = PCAP_FILE_STATE_READ_PKT_HEADER;
   } else if (read_size == 0) {
     log_trace("No data received");
