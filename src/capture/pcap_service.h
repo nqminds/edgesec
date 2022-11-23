@@ -108,11 +108,11 @@ int inject_pcap(struct pcap_context *ctx, uint8_t *packet, size_t size);
 /**
  * @brief Return pcap capture statistics
  *
- * @param ctx The pcap context
- * @param ps The pcap_stat structure
+ * @param ctx[in] The pcap context
+ * @param ps[out] The pcap_stat structure
  * @return 0 on success, -1 on failure
  */
-int get_pcap_stats(struct pcap_context *ctx, struct pcap_stat *ps);
+int get_pcap_stats(const struct pcap_context *ctx, struct pcap_stat *ps);
 
 /**
  * @brief Closes the pcap service

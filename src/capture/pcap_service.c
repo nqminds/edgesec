@@ -226,7 +226,7 @@ int dump_file_pcap(struct pcap_context *ctx, char *file_path,
   return 0;
 }
 
-int get_pcap_stats(struct pcap_context *ctx, struct pcap_stat *ps) {
+int get_pcap_stats(const struct pcap_context *ctx, struct pcap_stat *ps) {
   if (pcap_stats(ctx->pd, ps) != 0) {
     log_error("pcap_stats fail: %s", pcap_geterr(ctx->pd));
     return -1;
