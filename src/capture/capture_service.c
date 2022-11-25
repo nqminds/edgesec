@@ -146,7 +146,7 @@ void *capture_thread(void *arg) {
   if (ret == NULL) {
     log_errno("os_zalloc");
     free_capture_context(context);
-    return NULL;  
+    return NULL;
   }
 
   if (run_capture(context) < 0) {

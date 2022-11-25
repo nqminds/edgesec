@@ -159,7 +159,7 @@ static void test_run_capture_thread(void **state) {
   pthread_t pid;
   int *thread_return = NULL;
   run_capture_thread(ifname, &config, &pid);
-  pthread_join(pid, (void**)&thread_return);
+  pthread_join(pid, (void **)&thread_return);
   assert_non_null(thread_return);
   assert_int_equal(*thread_return, -1);
   os_free(thread_return);
@@ -171,9 +171,7 @@ int main(int argc, char *argv[]) {
 
   log_set_quiet(false);
 
-  const struct CMUnitTest tests[] = {
-    cmocka_unit_test(test_run_capture_thread)
-  };
+  const struct CMUnitTest tests[] = {cmocka_unit_test(test_run_capture_thread)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }
