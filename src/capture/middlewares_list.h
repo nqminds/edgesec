@@ -89,6 +89,10 @@ static inline int init_middlewares(UT_array *handlers, sqlite3 *db,
 static inline void free_middlewares(UT_array *handlers) {
   struct middleware_handlers *handler = NULL;
 
+  if (handlers == NULL) {
+    return;
+  }
+
   while ((handler =
               (struct middleware_handlers *)utarray_next(handlers, handler))) {
     handler->f.free(handler->context);
