@@ -316,17 +316,20 @@ void close_supervisor(struct supervisor_context *context) {
     if (close(context->domain_sock) == -1) {
       log_errno("close");
     }
+    context->domain_sock = -1;
   }
 
   if (context->udp_sock != -1) {
     if (close(context->udp_sock) == -1) {
       log_errno("close");
     }
+    context->udp_sock = -1;
   }
 
   if (context->subscribers_array != NULL) {
     utarray_free(context->subscribers_array);
   }
+  context->subscribers_array = NULL;
 }
 
 int run_supervisor(char *server_path, unsigned int port,
