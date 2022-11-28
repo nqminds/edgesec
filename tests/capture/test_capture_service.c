@@ -152,7 +152,7 @@ void capture_config(struct capture_conf *config) {
 static void test_run_capture_thread(void **state) {
   (void)state;
 
-  char *ifname = "wlan0";
+  char ifname[] = "wlan0";
   struct capture_conf config;
   capture_config(&config);
 
