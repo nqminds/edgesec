@@ -142,13 +142,21 @@ void *capture_thread(void *arg) {
   struct capture_middleware_context *context =
       (struct capture_middleware_context *)arg;
 
+  int *ret = os_zalloc(sizeof(int));
+  if (ret == NULL) {
+    log_errno("os_zalloc");
+    free_capture_context(context);
+    return NULL;
+  }
+
   if (run_capture(context) < 0) {
     log_error("run_capture fail");
+    *ret = -1;
   }
 
   free_capture_context(context);
 
-  return NULL;
+  return (void *)ret;
 }
 
 int run_capture_thread(char *ifname, struct capture_conf const *config,

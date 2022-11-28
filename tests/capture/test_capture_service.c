@@ -12,6 +12,7 @@
 #include <setjmp.h>
 #include <stdint.h>
 #include <cmocka.h>
+#include <pthread.h>
 
 #include "utils/log.h"
 #include <eloop.h>
@@ -22,6 +23,7 @@
 
 static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL,
                                    NULL};
+static struct eloop_data test_eloop;
 
 int __wrap_init_sqlite_header_db(sqlite3 *db) {
   (void)db;
@@ -48,8 +50,8 @@ int __wrap_run_pcap(char *interface, bool immediate, bool promiscuous,
   assert_false(promiscuous);
   assert_int_equal(timeout, 10);
   assert_true(nonblock);
-  *pctx = os_zalloc(sizeof(struct pcap_context));
-  return 0;
+  *pctx = NULL;
+  return -1;
 }
 
 void __wrap_close_pcap(struct pcap_context *ctx) {
@@ -58,7 +60,7 @@ void __wrap_close_pcap(struct pcap_context *ctx) {
 }
 
 struct eloop_data *__wrap_eloop_init(void) {
-  return (struct eloop_data *)mock();
+  return (struct eloop_data *)&test_eloop;
 }
 
 int __wrap_eloop_register_read_sock(struct eloop_data *eloop, int sock,
@@ -147,23 +149,20 @@ void capture_config(struct capture_conf *config) {
   strcpy(config->middleware_params, "wlan0");
 }
 
-static void test_run_capture(void **state) {
-  (void)state; /* unused */
+static void test_run_capture_thread(void **state) {
+  (void)state;
 
-  struct capture_middleware_context context;
+  char ifname[] = "wlan0";
+  struct capture_conf config;
+  capture_config(&config);
 
-  strcpy(context.ifname, "wlan0");
-  capture_config(&context.config);
-
-  struct eloop_data *eloop = os_zalloc(sizeof(struct eloop_data));
-  assert_non_null(eloop);
-
-  will_return_always(__wrap_eloop_init, eloop);
-  int ret = run_capture(&context);
-
-  assert_int_equal(ret, 0);
-  os_free(eloop);
-  free_middlewares(context.handlers);
+  pthread_t pid;
+  int *thread_return = NULL;
+  run_capture_thread(ifname, &config, &pid);
+  pthread_join(pid, (void **)&thread_return);
+  assert_non_null(thread_return);
+  assert_int_equal(*thread_return, -1);
+  os_free(thread_return);
 }
 
 int main(int argc, char *argv[]) {
@@ -172,7 +171,7 @@ int main(int argc, char *argv[]) {
 
   log_set_quiet(false);
 
-  const struct CMUnitTest tests[] = {cmocka_unit_test(test_run_capture)};
+  const struct CMUnitTest tests[] = {cmocka_unit_test(test_run_capture_thread)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

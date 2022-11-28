@@ -391,8 +391,13 @@ void close_capture_thread(const hmap_vlan_conn *vlan_mapper) {
     if (current->value.capture_pid == 0) {
       continue; // vlan has no capture thread running
     }
-    if (pthread_join(current->value.capture_pid, NULL) != 0) {
-      log_errno("pthread_join");
+    int *ret = NULL;
+    pthread_join(current->value.capture_pid, (void **)&ret);
+    if (ret != NULL) {
+      if (*ret < 0) {
+        log_error("run_capture on vlanid=%d fail", current->value.vlanid);
+      }
+      os_free(ret);
     }
   }
 }
