@@ -10,25 +10,25 @@
 #include <libgen.h>
 
 #include "mac_mapper.h"
+#include "network_commands.h"
+#include "sqlite_macconn_writer.h"
 #include "supervisor.h"
 #include "supervisor_utils.h"
-#include "sqlite_macconn_writer.h"
-#include "network_commands.h"
 
 #include "../ap/ap_config.h"
 #include "../ap/ap_service.h"
 #ifdef WITH_CRYPTO_SERVICE
 #include "../crypt/crypt_service.h"
 #endif
+#include <eloop.h>
 #include "../capture/capture_service.h"
 #include "../dhcp/dhcp_service.h"
+#include "../firewall/firewall_service.h"
 #include "../utils/allocs.h"
-#include "../utils/os.h"
+#include "../utils/base64.h"
 #include "../utils/log.h"
 #include "../utils/net.h"
-#include "../utils/base64.h"
-#include <eloop.h>
-#include "../firewall/firewall_service.h"
+#include "../utils/os.h"
 
 #define ANALYSER_FILTER_FORMAT                                                 \
   "\"ether dst " MACSTR " or ether src " MACSTR "\""

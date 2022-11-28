@@ -10,12 +10,12 @@
 #include <stdbool.h>
 
 #include "utils/allocs.h"
+#include "utils/log.h"
 #include "utils/net.h"
 #include "utils/os.h"
-#include "utils/log.h"
 
-#include "mac_mapper.h"
 #include "bridge_list.h"
+#include "mac_mapper.h"
 
 int get_mac_mapper(hmap_mac_conn **hmap, uint8_t mac_addr[ETHER_ADDR_LEN],
                    struct mac_conn_info *info) {

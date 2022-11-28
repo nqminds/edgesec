@@ -15,15 +15,15 @@
 #ifndef HOSTAPD_SERVICE_H
 #define HOSTAPD_SERVICE_H
 
-#include <sys/types.h>
 #include <stdbool.h>
+#include <sys/types.h>
 
-#include "ap_config.h"
-#include "../supervisor/supervisor_config.h"
 #include "../radius/radius_server.h"
+#include "../supervisor/supervisor_config.h"
 #include "../utils/allocs.h"
-#include "../utils/os.h"
 #include "../utils/iface.h"
+#include "../utils/os.h"
+#include "ap_config.h"
 
 #define ATTACH_AP_COMMAND "ATTACH"
 

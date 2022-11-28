@@ -11,21 +11,21 @@
  * defines auxiliary commands to manage the acces control list for stations
  * connected to the AP.
  */
-#include <unistd.h>
 #include <errno.h>
 #include <sys/ioctl.h>
+#include <unistd.h>
 
 #include "ap_config.h"
 #include "ap_service.h"
 #include "hostapd.h"
 
-#include "../supervisor/supervisor_config.h"
-#include "../radius/radius_server.h"
-#include "../utils/allocs.h"
-#include "../utils/os.h"
 #include <eloop.h>
+#include "../radius/radius_server.h"
+#include "../supervisor/supervisor_config.h"
+#include "../utils/allocs.h"
 #include "../utils/iface.h"
 #include "../utils/log.h"
+#include "../utils/os.h"
 #include "../utils/sockctl.h"
 
 #define AP_STA_DISCONNECTED "AP-STA-DISCONNECTED"

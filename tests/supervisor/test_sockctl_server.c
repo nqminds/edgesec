@@ -1,28 +1,28 @@
 #define _GNU_SOURCE
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <inttypes.h>
-#include <unistd.h>
-#include <setjmp.h>
-#include <stdint.h>
-#include <cmocka.h>
-#include <sys/un.h>
 #include <sys/socket.h>
-#include <ctype.h>
+#include <cmocka.h>
 #include <arpa/inet.h>
+#include <ctype.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <inttypes.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/un.h>
+#include <unistd.h>
 
-#include "utils/sockctl.h"
+#include "utils/allocs.h"
 #include "utils/hashmap.h"
 #include "utils/log.h"
-#include "utils/allocs.h"
 #include "utils/os.h"
+#include "utils/sockctl.h"
 
 #define TMP_PFX "tdoms"
 

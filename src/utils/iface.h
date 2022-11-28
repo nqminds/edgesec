@@ -11,9 +11,9 @@
 #ifndef IFACE_H_
 #define IFACE_H_
 
-#include <inttypes.h>
 #include <stdbool.h>
 #include <netinet/in.h>
+#include <inttypes.h>
 #include <net/ethernet.h>
 #include <net/if.h>
 

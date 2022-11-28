@@ -5,29 +5,28 @@
  * This software may be distributed under the terms of the BSD license.
  * See README for more details.
  */
-#include <sys/types.h>
-#include <unistd.h>
-#include <arpa/inet.h>
+#include <setjmp.h>
+#include <stdarg.h>
 #include <stdbool.h>
-#include <errno.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <inttypes.h>
-#include <unistd.h>
-#include <setjmp.h>
-#include <stdint.h>
 #include <cmocka.h>
+#include <arpa/inet.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <inttypes.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include <eloop.h>
-#include "utils/allocs.h"
-#include "utils/os.h"
-#include "utils/log.h"
 #include "radius/radius.h"
 #include "radius/radius_server.h"
+#include "utils/allocs.h"
+#include "utils/log.h"
+#include "utils/os.h"
 
 #include "radius_client.h"
 

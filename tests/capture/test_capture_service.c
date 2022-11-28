@@ -1,25 +1,25 @@
 #define _GNU_SOURCE
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <inttypes.h>
-#include <unistd.h>
-#include <setjmp.h>
-#include <stdint.h>
 #include <cmocka.h>
+#include <fcntl.h>
+#include <inttypes.h>
 #include <pthread.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-#include "utils/log.h"
 #include <eloop.h>
 #include "capture/capture_service.h"
-#include "capture/middlewares_list.h"
 #include "capture/middlewares/header_middleware/packet_decoder.h"
+#include "capture/middlewares_list.h"
 #include "capture/pcap_service.h"
+#include "utils/log.h"
 
 static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL,
                                    NULL};

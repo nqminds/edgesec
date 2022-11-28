@@ -11,8 +11,8 @@
 #ifndef CRYPT_COMMANDS_H
 #define CRYPT_COMMANDS_H
 
-#include <inttypes.h>
 #include <stdbool.h>
+#include <inttypes.h>
 
 /**
  * @brief PUT_CRYPT command

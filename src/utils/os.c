@@ -11,29 +11,29 @@
 
 #define _GNU_SOURCE
 #include <stdint.h>
-#include <time.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <signal.h>
-#include <sys/time.h>
-#include <sys/wait.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <errno.h>
 #include <stdio.h>
-#include <limits.h>
+#include <stdlib.h>
+#include <errno.h>
 #include <libgen.h>
+#include <limits.h>
+#include <signal.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <time.h>
+#include <unistd.h>
 // #include <string.h>
 #include <stdbool.h>
-#include <dirent.h>
 #include <ctype.h>
+#include <dirent.h>
 #include <fcntl.h>
 #include <uuid/uuid.h>
 
-#include "hashmap.h"
 #include "allocs.h"
-#include "os.h"
+#include "hashmap.h"
 #include "log.h"
+#include "os.h"
 
 #define MAX_64BIT_DIGITS 19
 

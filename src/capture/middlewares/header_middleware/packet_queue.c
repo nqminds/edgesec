@@ -12,11 +12,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "packet_queue.h"
-#include "packet_decoder.h"
 #include "../../../utils/allocs.h"
-#include "../../../utils/os.h"
 #include "../../../utils/log.h"
+#include "../../../utils/os.h"
+#include "packet_decoder.h"
+#include "packet_queue.h"
 
 struct packet_queue *init_packet_queue(void) {
   struct packet_queue *queue;

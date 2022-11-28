@@ -9,28 +9,28 @@
  */
 
 #define _GNU_SOURCE /* To get defns of NI_MAXSERV and NI_MAXHOST */
-#include <errno.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <arpa/inet.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <fnmatch.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <fcntl.h>
 #include <unistd.h>
-#include <stdbool.h>
-#include <fnmatch.h>
-#include <arpa/inet.h>
 
 #include <sys/socket.h>
-#include <netdb.h>
 #include <ifaddrs.h>
+#include <netdb.h>
 
 #include "allocs.h"
-#include "os.h"
-#include "log.h"
 #include "iface.h"
-#include "ifaceu.h"
-#include "net.h"
 #include "iface_mapper.h"
+#include "ifaceu.h"
+#include "log.h"
+#include "net.h"
+#include "os.h"
 
 #ifdef WITH_NETLINK_SERVICE
 #include "nl.h"

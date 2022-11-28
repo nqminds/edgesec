@@ -8,22 +8,20 @@
  * @brief File containing the implementation of the firewall service commands.
  */
 
-#include <inttypes.h>
 #include <stdbool.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <inttypes.h>
+#include <libgen.h>
+#include <signal.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <stdbool.h>
-#include <errno.h>
-#include <signal.h>
 #include <unistd.h>
-#include <libgen.h>
-#include <fcntl.h>
 
+#include "../utils/allocs.h"
 #include "../utils/hashmap.h"
 #include "../utils/log.h"
-#include "../utils/allocs.h"
 #include "../utils/os.h"
 
 #ifdef WITH_UCI_SERVICE

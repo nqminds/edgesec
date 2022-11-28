@@ -12,8 +12,8 @@
 #include "squeue.h"
 
 #include "allocs.h"
-#include "os.h"
 #include "log.h"
+#include "os.h"
 
 struct string_queue *init_string_queue(ssize_t max_length) {
   struct string_queue *queue;

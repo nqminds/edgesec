@@ -16,8 +16,8 @@
 
 #include "mdns_list.h"
 
-#include "../utils/os.h"
 #include "../capture/middlewares/header_middleware/mdns_decoder.h"
+#include "../utils/os.h"
 
 /**
  * @brief MDNS connection structure

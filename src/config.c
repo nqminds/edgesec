@@ -8,19 +8,19 @@
  * @brief File containing the implementation of the app configuration utilities.
  */
 
+#include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <fcntl.h>
 #include <ctype.h>
-#include <unistd.h>
-#include <stdbool.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <minIni.h>
+#include <unistd.h>
 
+#include "config.h"
 #include "utils/allocs.h"
 #include "utils/os.h"
-#include "config.h"
 
 #include "supervisor/cmd_processor.h"
 

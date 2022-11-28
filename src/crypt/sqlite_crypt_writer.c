@@ -15,8 +15,8 @@
 #include "sqlite_crypt_writer.h"
 
 #include "../utils/allocs.h"
-#include "../utils/os.h"
 #include "../utils/log.h"
+#include "../utils/os.h"
 #include "../utils/sqliteu.h"
 
 int open_sqlite_crypt_db(const char *db_path, sqlite3 **sql) {

@@ -9,16 +9,16 @@
  * utilities.
  */
 
-#include "sqlite_crypt_writer.h"
-#include "crypt_config.h"
 #include "crypt_service.h"
+#include "crypt_config.h"
 #include "generic_hsm_driver.h"
+#include "sqlite_crypt_writer.h"
 
-#include "../utils/log.h"
 #include "../utils/allocs.h"
-#include "../utils/os.h"
-#include "../utils/cryptou.h"
 #include "../utils/base64.h"
+#include "../utils/cryptou.h"
+#include "../utils/log.h"
+#include "../utils/os.h"
 
 void free_crypt_service(struct crypt_context *ctx) {
   if (ctx != NULL) {

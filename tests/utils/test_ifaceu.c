@@ -1,13 +1,13 @@
 #include <stdbool.h>
 
+#include <setjmp.h>
 #include <stdarg.h>
 #include <stddef.h>
-#include <setjmp.h>
 #include <stdint.h>
 #include <cmocka.h>
 
-#include "utils/log.h"
 #include "utils/ifaceu.h"
+#include "utils/log.h"
 
 #ifdef __FreeBSD__
 static const char LOCALHOST_INTERFACE[] = "lo0";

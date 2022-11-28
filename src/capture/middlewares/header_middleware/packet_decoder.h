@@ -16,8 +16,8 @@
 
 #include <utarray.h>
 #include "../../../utils/allocs.h"
-#include "../../../utils/os.h"
 #include "../../../utils/net.h"
+#include "../../../utils/os.h"
 
 #define MAX_QUESTION_LEN 255
 

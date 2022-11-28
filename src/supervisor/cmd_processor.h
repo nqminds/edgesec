@@ -11,9 +11,9 @@
 #ifndef CMD_PROCESSOR_H
 #define CMD_PROCESSOR_H
 
-#include <sys/un.h>
-#include <sys/types.h>
 #include <stdbool.h>
+#include <sys/types.h>
+#include <sys/un.h>
 
 #include <utarray.h>
 #include "../utils/sockctl.h"

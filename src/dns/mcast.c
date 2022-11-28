@@ -8,21 +8,21 @@
  * @brief File containing the implementation of mDNS utils.
  */
 
-#include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
-#include <errno.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/ioctl.h>
-#include <netinet/in.h>
-#include <net/if.h>
-#include <syslog.h>
-#include <fcntl.h>
+#include <stdlib.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
 #include <arpa/inet.h>
-#include <signal.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <inttypes.h>
+#include <net/if.h>
+#include <signal.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <sys/types.h>
+#include <syslog.h>
+#include <unistd.h>
 
 #include "../utils/log.h"
 #include "../utils/sockctl.h"

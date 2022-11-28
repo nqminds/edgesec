@@ -11,11 +11,11 @@
 #ifndef IPGEN_H_
 #define IPGEN_H_
 
-#include <errno.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <string.h>
-#include <stdbool.h>
 
 #include "os.h"
 

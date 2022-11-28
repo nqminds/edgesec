@@ -11,16 +11,15 @@
 #ifndef OS_H
 #define OS_H
 
-#include <stddef.h>
-#include <sys/time.h> // required for `struct timeval`
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include <stdarg.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdbool.h>
-#include <stdarg.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <sys/time.h> // required for `struct timeval`
+#include <sys/types.h>
+#include <unistd.h>
 #include <utarray.h>
 
 #include "hashmap.h"

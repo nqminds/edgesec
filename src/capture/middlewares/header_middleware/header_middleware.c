@@ -10,20 +10,20 @@
  */
 #include "header_middleware.h"
 
-#include <sqlite3.h>
-#include <pcap.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <pcap.h>
+#include <sqlite3.h>
 #include <string.h>
 
-#include "sqlite_header.h"
+#include <eloop.h>
+#include "../../../utils/allocs.h"
+#include "../../../utils/log.h"
+#include "../../../utils/os.h"
 #include "packet_decoder.h"
 #include "packet_queue.h"
-#include "../../../utils/allocs.h"
-#include "../../../utils/os.h"
-#include "../../../utils/log.h"
-#include <eloop.h>
+#include "sqlite_header.h"
 
 #include "../../pcap_service.h"
 

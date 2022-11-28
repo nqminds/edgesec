@@ -8,29 +8,29 @@
  * @brief File containing the edgesec tool implementations.
  */
 
+#include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <signal.h>
-#include <fcntl.h>
-#include <ctype.h>
-#include <unistd.h>
-#include <stdbool.h>
-#include <errno.h>
-#include <sys/types.h>
 #include <sys/socket.h>
+#include <ctype.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <libgen.h>
 #include <pthread.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-#include "version.h"
-#include "utils/log.h"
-#include "utils/allocs.h"
-#include "utils/os.h"
-#include "utils/iface.h"
 #include <eloop.h>
+#include "config.h"
 #include "dhcp/dhcp_config.h"
 #include "runctl.h"
-#include "config.h"
+#include "utils/allocs.h"
+#include "utils/iface.h"
+#include "utils/log.h"
+#include "utils/os.h"
+#include "version.h"
 
 #define OPT_STRING ":c:f:mdvh"
 #define USAGE_STRING "\t%s [-c filename] [-f filename] [-m] [-d] [-h] [-v]\n"

@@ -11,13 +11,13 @@
 #ifndef CAPTURE_SERVICE_H
 #define CAPTURE_SERVICE_H
 
-#include <sqlite3.h>
 #include <pcap.h>
+#include <sqlite3.h>
 
 #include <eloop.h>
 
-#include "pcap_service.h"
 #include "capture_config.h"
+#include "pcap_service.h"
 
 #define DB_BUSY_TIMEOUT 5000 // Sets the sqlite busy timeout in milliseconds
 

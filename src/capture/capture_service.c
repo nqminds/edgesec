@@ -11,27 +11,27 @@
  * @brief File containing the implementation of the capture service.
  */
 
+#include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <fcntl.h>
 #include <ctype.h>
-#include <unistd.h>
-#include <stdbool.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <libgen.h>
 #include <pthread.h>
+#include <unistd.h>
 
 #include "capture_config.h"
 #include "capture_service.h"
 #include "pcap_service.h"
 
-#include "../utils/sockctl.h"
-#include "../utils/squeue.h"
-#include "../utils/log.h"
 #include <eloop.h>
 #include "../utils/allocs.h"
+#include "../utils/log.h"
 #include "../utils/os.h"
+#include "../utils/sockctl.h"
+#include "../utils/squeue.h"
 
 #include "middlewares_list.h"
 

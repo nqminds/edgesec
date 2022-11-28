@@ -1,24 +1,24 @@
 #define _GNU_SOURCE
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <inttypes.h>
-#include <unistd.h>
-#include <setjmp.h>
-#include <stdint.h>
 #include <cmocka.h>
+#include <fcntl.h>
+#include <inttypes.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-#include "utils/os.h"
-#include "utils/log.h"
-#include "utils/allocs.h"
 #include "capture/middlewares/protobuf_middleware/eth.pb-c.h"
-#include "capture/middlewares/protobuf_middleware/sync.pb-c.h"
 #include "capture/middlewares/protobuf_middleware/protobuf_utils.h"
+#include "capture/middlewares/protobuf_middleware/sync.pb-c.h"
+#include "utils/allocs.h"
+#include "utils/log.h"
+#include "utils/os.h"
 
 uint64_t timestamp = 999;
 char *id = "id";

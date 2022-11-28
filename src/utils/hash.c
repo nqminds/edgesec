@@ -7,8 +7,8 @@
  * SPDX-License-Identifier: LGPL-3.0-or-later
  * @brief File containing the implementation of the hash functions.
  */
-#include <string.h>
 #include "hash.h"
+#include <string.h>
 
 static uint32_t md_mix(uint32_t block, uint32_t state) {
   return (state * block) ^ ((state << 3) + (block >> 2));

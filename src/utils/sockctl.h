@@ -11,9 +11,9 @@
 #ifndef SOCKCTL_H
 #define SOCKCTL_H
 
-#include <sys/un.h>
-#include <sys/types.h>
 #include <netinet/in.h>
+#include <sys/types.h>
+#include <sys/un.h>
 
 enum SOCKET_TYPE {
   SOCKET_TYPE_NONE = 0,

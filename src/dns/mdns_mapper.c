@@ -8,8 +8,8 @@
  * @brief File containing the implementation of the mdns mapper utils.
  */
 
-#include "mdns_list.h"
 #include "mdns_mapper.h"
+#include "mdns_list.h"
 
 #include "../utils/os.h"
 

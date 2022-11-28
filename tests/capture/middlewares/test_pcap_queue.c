@@ -1,22 +1,22 @@
 #define _GNU_SOURCE
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <inttypes.h>
-#include <unistd.h>
-#include <setjmp.h>
-#include <stdint.h>
 #include <cmocka.h>
+#include <fcntl.h>
+#include <inttypes.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-#include "utils/allocs.h"
-#include "utils/os.h"
-#include "utils/log.h"
 #include "capture/middlewares/pcap_middleware/pcap_queue.h"
+#include "utils/allocs.h"
+#include "utils/log.h"
+#include "utils/os.h"
 
 static void test_push_pcap_queue(void **state) {
   (void)state; /* unused */

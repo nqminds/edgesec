@@ -13,19 +13,19 @@
 sudo ip tuntap add mode tap tap0
 */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
+#include <eloop.h>
 #include <libgen.h>
 #include <sqlite3.h>
-#include <eloop.h>
+#include <string.h>
 
 #include "tap_middleware.h"
 
 #include "../../../utils/allocs.h"
-#include "../../../utils/os.h"
 #include "../../../utils/log.h"
+#include "../../../utils/os.h"
 #include "../../../utils/squeue.h"
 
 #include "../../pcap_service.h"

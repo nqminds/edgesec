@@ -12,11 +12,11 @@
 #ifndef WPABUF_H
 #define WPABUF_H
 
-#include <endian.h>
 #include <byteswap.h>
+#include <endian.h>
 
-#include "utils/log.h"
 #include "utils/allocs.h"
+#include "utils/log.h"
 #include "utils/os.h"
 
 #ifndef WPA_BYTE_SWAP_DEFINED

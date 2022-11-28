@@ -11,11 +11,11 @@
 #ifndef MDNS_SERVICE_H
 #define MDNS_SERVICE_H
 
-#include "dns_config.h"
-#include "reflection_list.h"
-#include "mdns_mapper.h"
-#include "command_mapper.h"
 #include "../utils/iface_mapper.h"
+#include "command_mapper.h"
+#include "dns_config.h"
+#include "mdns_mapper.h"
+#include "reflection_list.h"
 
 /**
  * @brief The mDNS context.

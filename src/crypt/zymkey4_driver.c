@@ -12,8 +12,8 @@
 #include <sys/types.h>
 #include <zymkey/zk_app_utils.h>
 
-#include "../utils/log.h"
 #include "../utils/allocs.h"
+#include "../utils/log.h"
 #include "../utils/os.h"
 
 zkCTX *init_zymkey4(void) {

@@ -11,9 +11,9 @@
 #ifndef NET_H_
 #define NET_H_
 
-#include <inttypes.h>
 #include <stdbool.h>
 #include <netinet/in.h>
+#include <inttypes.h>
 #include <net/ethernet.h>
 
 #include <utarray.h>

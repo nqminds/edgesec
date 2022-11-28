@@ -11,8 +11,8 @@
 #ifndef IPTABLES_H_
 #define IPTABLES_H_
 
-#include <inttypes.h>
 #include <stdbool.h>
+#include <inttypes.h>
 #include <utarray.h>
 
 #include "allocs.h"

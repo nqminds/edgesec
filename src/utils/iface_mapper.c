@@ -8,23 +8,23 @@
  * @brief File containing the implementation of the interface mapper utilities.
  */
 
-#include <errno.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <arpa/inet.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <fnmatch.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <fcntl.h>
 #include <unistd.h>
-#include <stdbool.h>
-#include <fnmatch.h>
-#include <arpa/inet.h>
 
 #include "allocs.h"
-#include "os.h"
-#include "log.h"
 #include "iface_mapper.h"
 #include "ifaceu.h"
+#include "log.h"
 #include "net.h"
+#include "os.h"
 
 int get_if_mapper(hmap_if_conn **hmap, in_addr_t subnet, char *ifname) {
   hmap_if_conn *s;

@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
 #include <fcntl.h>
 #include <pthread.h>
 #include <string.h>

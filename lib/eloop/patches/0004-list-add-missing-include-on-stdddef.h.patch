@@ -1,0 +1,26 @@
+From 203dddf79ec58094eff4b2e3c20f6b86999722fc Mon Sep 17 00:00:00 2001
+From: Alois Klink <alois@nquiringminds.com>
+Date: Fri, 11 Nov 2022 14:59:44 +0000
+Subject: [PATCH 4/4] list: add missing include on <stdddef.h>
+
+The `list.h` header uses `NULL`, which is defined in stddef.h
+---
+ src/utils/list.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/utils/list.h b/src/utils/list.h
+index aa62c0881..2237c5d8e 100644
+--- a/src/utils/list.h
++++ b/src/utils/list.h
+@@ -9,6 +9,8 @@
+ #ifndef LIST_H
+ #define LIST_H
+ 
++#include <stddef.h>
++
+ /**
+  * struct dl_list - Doubly-linked list
+  */
+-- 
+2.34.1
+

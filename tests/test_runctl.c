@@ -1,26 +1,26 @@
 #define _GNU_SOURCE
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <inttypes.h>
-#include <unistd.h>
-#include <setjmp.h>
-#include <stdint.h>
 #include <cmocka.h>
+#include <fcntl.h>
+#include <inttypes.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-#include "supervisor/sqlite_macconn_writer.h"
+#include <utarray.h>
 #include "crypt/crypt_service.h"
+#include "supervisor/sqlite_macconn_writer.h"
 #include "utils/hashmap.h"
 #include "utils/log.h"
-#include <utarray.h>
 
-#include "supervisor/supervisor_config.h"
 #include "runctl.h"
+#include "supervisor/supervisor_config.h"
 
 static const UT_icd config_ifinfo_icd = {sizeof(config_ifinfo_t), NULL, NULL,
                                          NULL};

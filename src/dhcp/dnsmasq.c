@@ -9,21 +9,21 @@
  * utilities.
  */
 
+#include <stdbool.h>
 #include <stdio.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <libgen.h>
+#include <signal.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <stdbool.h>
-#include <errno.h>
-#include <signal.h>
 #include <unistd.h>
-#include <libgen.h>
-#include <fcntl.h>
 
 #include "dhcp_config.h"
 
-#include "../utils/log.h"
 #include "../utils/allocs.h"
+#include "../utils/log.h"
 #include "../utils/os.h"
 #include "../utils/squeue.h"
 

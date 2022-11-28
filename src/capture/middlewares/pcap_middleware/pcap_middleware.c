@@ -9,22 +9,22 @@
  * utilities.
  */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
 #include <libgen.h>
 #include <sqlite3.h>
+#include <string.h>
 
 #include "pcap_middleware.h"
 #include "pcap_queue.h"
 #include "sqlite_pcap.h"
 
-#include "../../../utils/allocs.h"
-#include "../../../utils/os.h"
-#include "../../../utils/log.h"
-#include "../../../utils/squeue.h"
 #include <eloop.h>
+#include "../../../utils/allocs.h"
+#include "../../../utils/log.h"
+#include "../../../utils/os.h"
+#include "../../../utils/squeue.h"
 
 #include "../../pcap_service.h"
 
