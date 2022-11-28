@@ -14,8 +14,8 @@
 #include <utarray.h>
 
 #include "../utils/allocs.h"
-#include "../utils/os.h"
 #include "../utils/net.h"
+#include "../utils/os.h"
 
 #define DHCP_LEASE_TIME_SIZE 10
 

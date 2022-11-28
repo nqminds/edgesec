@@ -8,29 +8,29 @@
  * @brief File containing the implementation of the protobuf encoder utilities.
  */
 
-#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
-#include "../../../utils/log.h"
 #include "../../../utils/allocs.h"
+#include "../../../utils/log.h"
 #include "../../../utils/os.h"
 
 #include "../header_middleware/packet_decoder.h"
 
-#include "eth.pb-c.h"
 #include "arp.pb-c.h"
-#include "ip4.pb-c.h"
-#include "ip6.pb-c.h"
-#include "tcp.pb-c.h"
-#include "udp.pb-c.h"
+#include "dhcp.pb-c.h"
+#include "dns.pb-c.h"
+#include "eth.pb-c.h"
 #include "icmp4.pb-c.h"
 #include "icmp6.pb-c.h"
-#include "dns.pb-c.h"
+#include "ip4.pb-c.h"
+#include "ip6.pb-c.h"
 #include "mdns.pb-c.h"
-#include "dhcp.pb-c.h"
 #include "sync.pb-c.h"
+#include "tcp.pb-c.h"
+#include "udp.pb-c.h"
 
 #include "protobuf_utils.h"
 

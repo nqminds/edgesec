@@ -8,10 +8,10 @@
  * @brief File containing the implementation of reflection list structures.
  */
 
-#include <stdlib.h>
 #include <stdio.h>
-#include <syslog.h>
+#include <stdlib.h>
 #include <string.h>
+#include <syslog.h>
 
 #include "../utils/allocs.h"
 #include "../utils/log.h"

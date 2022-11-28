@@ -11,11 +11,11 @@
 #ifndef PCAP_SERVICE_H
 #define PCAP_SERVICE_H
 
-#include <net/if.h>
-#include <sys/types.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <net/if.h>
 #include <pcap.h>
+#include <sys/types.h>
 #include <utarray.h>
 
 typedef void (*capture_callback_fn)(const void *ctx, const void *pcap_ctx,

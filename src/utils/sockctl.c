@@ -9,20 +9,20 @@
  */
 
 #include <stdio.h>
-#include <sys/un.h>
 #include <sys/socket.h>
 #include <ctype.h>
 #include <errno.h>
-#include <sys/ioctl.h>
-#include <limits.h> // for PATH_MAX
 #include <libgen.h> // for dirname()
+#include <limits.h> // for PATH_MAX
+#include <sys/ioctl.h>
+#include <sys/un.h>
 
 #include "sockctl.h"
 
 #include "allocs.h"
-#include "os.h"
 #include "log.h"
 #include "net.h"
+#include "os.h"
 
 #define SOCK_EXTENSION ".sock"
 #define TMP_UNIX_SOCK_FOLDER_PREFIX "/tmp/edgesec/tmp-unix-socks."

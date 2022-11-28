@@ -15,8 +15,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "packet_decoder.h"
 #include <list.h>
+#include "packet_decoder.h"
 
 /**
  * @brief Packet queueu structure definition

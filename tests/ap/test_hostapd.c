@@ -1,25 +1,25 @@
 #define _GNU_SOURCE
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <setjmp.h>
 #include <stdarg.h>
 #include <stddef.h>
-#include <string.h>
-#include <inttypes.h>
-#include <unistd.h>
-#include <setjmp.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <cmocka.h>
+#include <fcntl.h>
+#include <inttypes.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-#include "utils/log.h"
-#include "utils/allocs.h"
-#include "utils/os.h"
-#include "utils/iface.h"
 #include "ap/ap_config.h"
 #include "ap/hostapd.h"
+#include "utils/allocs.h"
+#include "utils/iface.h"
+#include "utils/log.h"
+#include "utils/os.h"
 
 // seems to be hard coded in hostapd.c
 #define WITH_HOSTAPD_UCI

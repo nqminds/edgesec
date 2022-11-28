@@ -11,8 +11,8 @@
 #ifndef CRYPTOU_H
 #define CRYPTOU_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <sys/types.h>
 
 #define AES_BLOCK_SIZE 16

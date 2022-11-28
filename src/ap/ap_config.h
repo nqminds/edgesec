@@ -14,13 +14,13 @@
 #ifndef CONFIG_GENERATOR_H
 #define CONFIG_GENERATOR_H
 
-#include <sys/types.h>
-#include <net/if.h>
 #include <stdbool.h>
+#include <net/if.h>
+#include <sys/types.h>
 
+#include "../radius/radius_server.h"
 #include "../utils/allocs.h"
 #include "../utils/os.h"
-#include "../radius/radius_server.h"
 
 #define AP_NAME_LEN 32 /* Maximum length of the AP name, i.e., ESSID name */
 #define AP_SECRET_LEN                                                          \

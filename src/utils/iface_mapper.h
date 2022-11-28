@@ -11,18 +11,18 @@
 #ifndef IFACE_MAPPER_H_
 #define IFACE_MAPPER_H_
 
-#include <net/if.h>
-#include <inttypes.h>
 #include <stdbool.h>
-#include <pthread.h>
 #include <netinet/in.h>
+#include <inttypes.h>
 #include <net/ethernet.h>
+#include <net/if.h>
+#include <pthread.h>
 
 #include <utarray.h>
 #include <uthash.h>
 #include "allocs.h"
-#include "os.h"
 #include "net.h"
+#include "os.h"
 
 #define LINK_TYPE_LEN 64
 

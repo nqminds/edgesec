@@ -11,15 +11,15 @@
 #define CONFIG_H
 
 #include <utarray.h>
-#include "utils/hashmap.h"
-#include "utils/allocs.h"
-#include "utils/os.h"
 #include "ap/ap_config.h"
-#include "radius/radius_server.h"
-#include "dns/dns_config.h"
-#include "dhcp/dhcp_config.h"
-#include "supervisor/supervisor_config.h"
 #include "capture/capture_config.h"
+#include "dhcp/dhcp_config.h"
+#include "dns/dns_config.h"
+#include "radius/radius_server.h"
+#include "supervisor/supervisor_config.h"
+#include "utils/allocs.h"
+#include "utils/hashmap.h"
+#include "utils/os.h"
 
 #define MAX_USER_SECRET 255
 #define MAX_SALT_STRING_SIZE 255

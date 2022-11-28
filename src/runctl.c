@@ -8,32 +8,32 @@
  * @brief File containing the definition of the service runners.
  */
 
+#include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <fcntl.h>
 #include <ctype.h>
-#include <unistd.h>
-#include <stdbool.h>
+#include <fcntl.h>
 #include <libgen.h>
-#include <utarray.h>
 #include <pthread.h>
+#include <unistd.h>
+#include <utarray.h>
 
-#include "utils/log.h"
-#include "utils/hashmap.h"
-#include "utils/allocs.h"
-#include "utils/os.h"
-#include "utils/net.h"
 #include <eloop.h>
+#include "utils/allocs.h"
+#include "utils/hashmap.h"
+#include "utils/iface.h"
 #include "utils/iface_mapper.h"
 #include "utils/ifaceu.h"
-#include "utils/iface.h"
+#include "utils/log.h"
+#include "utils/net.h"
+#include "utils/os.h"
 
 #include "capture/capture_service.h"
 
-#include "supervisor/supervisor.h"
 #include "supervisor/network_commands.h"
 #include "supervisor/sqlite_macconn_writer.h"
+#include "supervisor/supervisor.h"
 #ifdef WITH_RADIUS_SERVICE
 #include "radius/radius_service.h"
 #endif
@@ -47,8 +47,8 @@
 
 #include "firewall/firewall_service.h"
 
-#include "runctl.h"
 #include "config.h"
+#include "runctl.h"
 
 static const UT_icd mac_conn_icd = {sizeof(struct mac_conn), NULL, NULL, NULL};
 static const UT_icd config_ifinfo_icd = {sizeof(config_ifinfo_t), NULL, NULL,

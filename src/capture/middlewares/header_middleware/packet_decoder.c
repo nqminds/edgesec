@@ -9,31 +9,31 @@
  */
 
 #define _GNU_SOURCE
-#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <netinet/ip.h>
-#include <netinet/if_ether.h>
-#include <netinet/ip6.h>
 #include <netinet/icmp6.h>
+#include <netinet/if_ether.h>
+#include <netinet/ip.h>
+#include <netinet/ip6.h>
 #include <netinet/ip_icmp.h>
 #include <netinet/tcp.h>
 #include <netinet/udp.h>
 #include <pcap.h>
 
-#include "../../../utils/log.h"
 #include "../../../utils/allocs.h"
-#include "../../../utils/os.h"
-#include "../../../utils/net.h"
 #include "../../../utils/hash.h"
+#include "../../../utils/log.h"
+#include "../../../utils/net.h"
+#include "../../../utils/os.h"
 
-#include "packet_decoder.h"
 #include "dns_decoder.h"
 #include "mdns_decoder.h"
+#include "packet_decoder.h"
 
 #define LINKTYPE_LINUX_SLL "LINUX_SLL"
 #define LINKTYPE_ETHERNET "EN10MB"

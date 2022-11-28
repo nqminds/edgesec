@@ -9,20 +9,20 @@
  */
 
 #include <stdbool.h>
-#include <unistd.h>
-#include <sys/un.h>
 #include <sys/socket.h>
-#include <sys/ioctl.h>
 #include <libgen.h>
+#include <sys/ioctl.h>
+#include <sys/un.h>
 #include <time.h>
+#include <unistd.h>
 #include <utarray.h>
 
 #include "subscriber_events.h"
 
-#include "../utils/log.h"
-#include "../utils/allocs.h"
-#include "../utils/os.h"
 #include <eloop.h>
+#include "../utils/allocs.h"
+#include "../utils/log.h"
+#include "../utils/os.h"
 #include "../utils/sockctl.h"
 
 #include "../capture/capture_service.h"

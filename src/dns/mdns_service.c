@@ -10,36 +10,36 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include <string.h>
-#include <syslog.h>
-#include <errno.h>
-#include <unistd.h>
-#include <fcntl.h>
 #include <sys/socket.h>
-#include <sys/ioctl.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <signal.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <inttypes.h>
 #include <pthread.h>
+#include <signal.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <syslog.h>
+#include <unistd.h>
 
-#include <uthash.h>
-#include "../utils/ifaceu.h"
-#include "../utils/net.h"
-#include "../utils/log.h"
 #include <eloop.h>
-#include "../utils/sockctl.h"
-#include "../utils/squeue.h"
+#include <uthash.h>
+#include "../capture/middlewares/header_middleware/mdns_decoder.h"
+#include "../capture/middlewares/header_middleware/packet_queue.h"
+#include "../capture/pcap_service.h"
+#include "../supervisor/cmd_processor.h"
+#include "../supervisor/supervisor_config.h"
 #include "../utils/hashmap.h"
 #include "../utils/iface_mapper.h"
-#include "../capture/middlewares/header_middleware/mdns_decoder.h"
-#include "../capture/pcap_service.h"
-#include "../capture/middlewares/header_middleware/packet_queue.h"
-#include "../supervisor/supervisor_config.h"
-#include "../supervisor/cmd_processor.h"
+#include "../utils/ifaceu.h"
+#include "../utils/log.h"
+#include "../utils/net.h"
+#include "../utils/sockctl.h"
+#include "../utils/squeue.h"
 
-#include "mdns_service.h"
 #include "mcast.h"
+#include "mdns_service.h"
 
 #define MDNS_PORT 5353
 #define MDNS_ADDR4 (uint32_t)0xE00000FB /* 224.0.0.251 */

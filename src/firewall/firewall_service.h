@@ -11,8 +11,8 @@
 #ifndef FIREWALL_SERVICE_H
 #define FIREWALL_SERVICE_H
 
-#include <inttypes.h>
 #include <stdbool.h>
+#include <inttypes.h>
 #include <utarray.h>
 
 #include "../supervisor/supervisor_config.h"

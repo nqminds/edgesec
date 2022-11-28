@@ -16,13 +16,13 @@
 
 #include "./cleaner_middleware.h"
 
-#include <sqlite3.h>
 #include <libgen.h>
+#include <sqlite3.h>
 #include <utarray.h>
 
-#include "../pcap_middleware/sqlite_pcap.h"
-#include "../../capture_service.h"
 #include "../../capture_config.h"
+#include "../../capture_service.h"
+#include "../pcap_middleware/sqlite_pcap.h"
 
 #include "../../../utils/allocs.h"
 #include "../../../utils/os.h"

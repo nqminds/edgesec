@@ -16,8 +16,8 @@
 
 #include "generic_hsm_driver.h"
 
-#include "../utils/log.h"
 #include "../utils/allocs.h"
+#include "../utils/log.h"
 #include "../utils/os.h"
 
 struct hsm_context *init_hsm(void) {

@@ -8,16 +8,16 @@
  * @brief File containing the definition of the ip generic interface utilities.
  */
 
-#include <errno.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <string.h>
-#include <stdbool.h>
 
 #include "allocs.h"
 #include "log.h"
-#include "os.h"
 #include "net.h"
+#include "os.h"
 
 #include "ipgen.h"
 

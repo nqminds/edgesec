@@ -6,24 +6,24 @@
  * See README for more details.
  */
 
-#include <stdint.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <arpa/inet.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <netinet/if_ether.h>
+#include <arpa/inet.h>
 #include <errno.h>
+#include <netinet/if_ether.h>
+#include <sys/types.h>
+#include <unistd.h>
 
+#include <eloop.h>
 #include "radius/radius.h"
 #include "radius/wpabuf.h"
 #include "radius_client.h"
-#include <eloop.h>
 #include "utils/allocs.h"
-#include "utils/os.h"
-#include "utils/net.h"
 #include "utils/log.h"
+#include "utils/net.h"
+#include "utils/os.h"
 
 /* Defaults for RADIUS retransmit values (exponential backoff) */
 

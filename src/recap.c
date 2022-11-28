@@ -8,31 +8,31 @@
  * @brief A tool to run the capture with an input pcap file
  */
 
-#include <sqlite3.h>
+#include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <signal.h>
-#include <fcntl.h>
 #include <ctype.h>
-#include <unistd.h>
-#include <stdbool.h>
 #include <errno.h>
-#include <sys/types.h>
-#include <libgen.h>
+#include <fcntl.h>
 #include <inttypes.h>
+#include <libgen.h>
 #include <pcap.h>
+#include <signal.h>
+#include <sqlite3.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include <eloop.h>
 
-#include "version.h"
-#include "utils/os.h"
-#include "capture/middlewares/header_middleware/sqlite_header.h"
+#include "capture/capture_service.h"
 #include "capture/middlewares/header_middleware/packet_decoder.h"
 #include "capture/middlewares/header_middleware/packet_queue.h"
+#include "capture/middlewares/header_middleware/sqlite_header.h"
 #include "capture/middlewares/protobuf_middleware/protobuf_middleware.h"
-#include "capture/capture_service.h"
+#include "utils/os.h"
 #include "utils/sqliteu.h"
+#include "version.h"
 
 #define PCAP_MAGIC_VALUE 0xa1b2c3d4
 #define QUEUE_PROCESS_INTERVAL 100 * 1000 // In microseconds

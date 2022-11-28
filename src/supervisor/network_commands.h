@@ -11,14 +11,14 @@
 #ifndef NETWORK_COMMANDS_H
 #define NETWORK_COMMANDS_H
 
-#include <inttypes.h>
 #include <stdbool.h>
+#include <inttypes.h>
 
 #define TICKET_PASSPHRASE_SIZE 16
 #define TICKET_TIMEOUT 60 // In seconds
 
-#include "supervisor_config.h"
 #include "../ap/ap_config.h"
+#include "supervisor_config.h"
 
 /**
  * @brief Frees an allocated ticket

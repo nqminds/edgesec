@@ -11,12 +11,12 @@
 #ifndef NL_H_
 #define NL_H_
 
-#include <net/if.h>
-#include <net/ethernet.h>
-#include <netinet/if_ether.h>
-#include "linux/rtnetlink.h"
-#include <utarray.h>
 #include <stdbool.h>
+#include <net/ethernet.h>
+#include <net/if.h>
+#include <netinet/if_ether.h>
+#include <utarray.h>
+#include "linux/rtnetlink.h"
 
 #ifdef DEBUG_LIBNL
 #define NL_CB_TYPE NL_CB_DEBUG

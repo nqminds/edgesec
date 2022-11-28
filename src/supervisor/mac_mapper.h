@@ -11,8 +11,8 @@
 #ifndef MAC_MAPPER_H
 #define MAC_MAPPER_H
 
-#include <inttypes.h>
 #include <stdbool.h>
+#include <inttypes.h>
 #include <utarray.h>
 #include <uthash.h>
 
@@ -21,8 +21,8 @@
 #include "../ap/ap_config.h"
 
 #include "../utils/allocs.h"
-#include "../utils/os.h"
 #include "../utils/hashmap.h"
+#include "../utils/os.h"
 
 #define MAX_DEVICE_LABEL_SIZE 255
 

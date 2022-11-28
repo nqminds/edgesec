@@ -12,18 +12,17 @@
  * @brief RADIUS authentication server.
  */
 
+#include <stdbool.h>
 #include <stdint.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <arpa/inet.h>
-#include <stdbool.h>
-#include <sys/types.h>
-#include <sys/socket.h>
 
-#include "../utils/log.h"
-#include "../utils/allocs.h"
-#include "../utils/net.h"
 #include "../supervisor/mac_mapper.h"
+#include "../utils/allocs.h"
+#include "../utils/log.h"
+#include "../utils/net.h"
 
 #include "radius.h"
 #include "radius_server.h"

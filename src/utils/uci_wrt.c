@@ -8,18 +8,18 @@
  * @brief File containing the implementation of the uci utilities.
  */
 
-#include <inttypes.h>
 #include <arpa/inet.h>
+#include <inttypes.h>
 #include <string.h>
 #include <uci.h>
 
 #include "uci_wrt.h"
 
-#include "iface_mapper.h"
-#include "squeue.h"
 #include "allocs.h"
+#include "iface_mapper.h"
 #include "log.h"
 #include "net.h"
+#include "squeue.h"
 
 #define IFNAME_EXPR ".ifname="
 #define IPADDR_EXPR ".ipaddr="

@@ -12,11 +12,11 @@
 #ifndef MIDDLEWARE_H
 #define MIDDLEWARE_H
 
-#include <sqlite3.h>
 #include <stdint.h>
+#include <sqlite3.h>
 
-#include "./pcap_service.h"
 #include <eloop.h>
+#include "./pcap_service.h"
 
 // params is a pointer to an already allocated string
 struct middleware_context {

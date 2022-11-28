@@ -12,22 +12,22 @@
  * manages (execute, kill and signal) the hostapd process.
  */
 
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/wait.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <errno.h>
-#include <signal.h>
-#include <unistd.h>
-#include <libgen.h>
 #include <fcntl.h>
+#include <libgen.h>
+#include <signal.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 #include "ap_config.h"
-#include "utils/log.h"
 #include "utils/allocs.h"
-#include "utils/os.h"
 #include "utils/iface.h"
+#include "utils/log.h"
+#include "utils/os.h"
 
 #define WITH_HOSTAPD_UCI
 

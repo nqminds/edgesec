@@ -12,9 +12,9 @@
 #define REFLECTION_LIST_H
 
 #include <stdbool.h>
-#include <sys/types.h>
 #include <sys/socket.h>
 #include <net/if.h>
+#include <sys/types.h>
 
 #include <list.h>
 

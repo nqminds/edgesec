@@ -1,21 +1,21 @@
 #define _GNU_SOURCE
 
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <fcntl.h>
-#include <ctype.h>
-#include <unistd.h>
-#include <stdbool.h>
-#include <errno.h>
-#include <libgen.h>
-#include <setjmp.h>
-#include <stdint.h>
 #include <cmocka.h>
+#include <ctype.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <libgen.h>
+#include <unistd.h>
 
-#include "utils/log.h"
-#include "dhcp/dnsmasq.h"
 #include "dhcp/dhcp_config.h"
+#include "dhcp/dnsmasq.h"
+#include "utils/log.h"
 
 static const UT_icd config_dhcpinfo_icd = {sizeof(config_dhcpinfo_t), NULL,
                                            NULL, NULL};

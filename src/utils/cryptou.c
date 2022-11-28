@@ -9,23 +9,23 @@
  */
 
 #include <stdint.h>
-#include <openssl/evp.h>
-#include <openssl/sha.h>
+#include <openssl/conf.h>
 #include <openssl/crypto.h>
 #include <openssl/err.h>
-#include <openssl/rand.h>
+#include <openssl/evp.h>
 #include <openssl/pem.h>
-#include <openssl/conf.h>
-#include <openssl/x509v3.h>
+#include <openssl/rand.h>
 #include <openssl/rsa.h>
+#include <openssl/sha.h>
+#include <openssl/x509v3.h>
 #ifndef OPENSSL_NO_ENGINE
 #include <openssl/engine.h>
 #endif
 #include "cryptou.h"
 
 #include "../utils/allocs.h"
-#include "../utils/os.h"
 #include "../utils/log.h"
+#include "../utils/os.h"
 
 int crypto_geniv(uint8_t *buf, int iv_size) { return RAND_bytes(buf, iv_size); }
 

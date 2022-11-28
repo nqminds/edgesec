@@ -9,18 +9,18 @@
  * utilities.
  */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
 #include <sqlite3.h>
+#include <string.h>
 
 #include "sqlite_macconn_writer.h"
 
 #include "../utils/allocs.h"
-#include "../utils/os.h"
-#include "../utils/net.h"
 #include "../utils/log.h"
+#include "../utils/net.h"
+#include "../utils/os.h"
 #include "../utils/sqliteu.h"
 
 void free_sqlite_macconn_db(sqlite3 *db) {

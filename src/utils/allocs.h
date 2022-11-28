@@ -10,15 +10,14 @@
 #ifndef ALLOCS_H
 #define ALLOCS_H
 
-#include <stddef.h>
-#include <sys/types.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include <stdarg.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdbool.h>
-#include <stdarg.h>
+#include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 /**
  * @brief Allocate and zero memory

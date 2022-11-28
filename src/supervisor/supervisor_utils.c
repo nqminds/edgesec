@@ -14,8 +14,8 @@
 #include "../crypt/crypt_service.h"
 #endif
 
-#include "../utils/os.h"
 #include "../utils/hash.h"
+#include "../utils/os.h"
 
 #include "sqlite_macconn_writer.h"
 #include "supervisor_config.h"

@@ -9,17 +9,17 @@
  */
 
 #include <stdbool.h>
-#include <stdlib.h>
-#include <limits.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
+#include <limits.h>
 
-#include "iptables.h"
 #include "allocs.h"
-#include "os.h"
-#include "log.h"
 #include "iface_mapper.h"
+#include "iptables.h"
+#include "log.h"
 #include "net.h"
+#include "os.h"
 
 struct iptables_columns {
   long num;

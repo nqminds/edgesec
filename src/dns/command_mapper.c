@@ -8,11 +8,11 @@
  * @brief File containing the implementation of the command mapper.
  */
 
-#include <inttypes.h>
 #include <stdbool.h>
+#include <inttypes.h>
 
-#include "command_mapper.h"
 #include "../utils/hash.h"
+#include "command_mapper.h"
 
 void free_command_mapper(hmap_command_conn **hmap) {
   hmap_command_conn *current, *tmp;

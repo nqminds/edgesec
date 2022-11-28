@@ -23,8 +23,8 @@
 
 #include <stdbool.h>
 
-#include "log.h"
 #include "hashmap.h"
+#include "log.h"
 
 const char *hmap_str_keychar_get(const hmap_str_keychar *hmap,
                                  const char *keyptr) {

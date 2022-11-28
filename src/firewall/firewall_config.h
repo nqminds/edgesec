@@ -11,13 +11,13 @@
 #ifndef FIREWALL_CONFIG_H
 #define FIREWALL_CONFIG_H
 
-#include <inttypes.h>
 #include <stdbool.h>
+#include <inttypes.h>
 
 #include <utarray.h>
-#include "../utils/os.h"
 #include "../utils/hashmap.h"
 #include "../utils/iface_mapper.h"
+#include "../utils/os.h"
 
 #ifdef WITH_UCI_SERVICE
 #include "../utils/uci_wrt.h"

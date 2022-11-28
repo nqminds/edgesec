@@ -14,8 +14,8 @@
 #include <utarray.h>
 
 #include "../../../utils/allocs.h"
-#include "../../../utils/os.h"
 #include "../../../utils/hash.h"
+#include "../../../utils/os.h"
 
 #include "packet_decoder.h"
 

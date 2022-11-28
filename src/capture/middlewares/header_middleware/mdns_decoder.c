@@ -12,13 +12,13 @@
 #include <netinet/udp.h>
 
 #include "../../../utils/allocs.h"
-#include "../../../utils/os.h"
-#include "../../../utils/iface.h"
 #include "../../../utils/hash.h"
+#include "../../../utils/iface.h"
+#include "../../../utils/os.h"
 #include "../../../utils/squeue.h"
 
-#include "packet_decoder.h"
 #include "mdns_decoder.h"
+#include "packet_decoder.h"
 
 #define COMPRESSION_FLAG 0xC0
 #define COMPRESSION_FLAG_BIT7 0x80

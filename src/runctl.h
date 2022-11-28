@@ -10,8 +10,8 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
-#include <inttypes.h>
 #include <stdbool.h>
+#include <inttypes.h>
 
 #include "config.h"
 #include "supervisor/supervisor_config.h"

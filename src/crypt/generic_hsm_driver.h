@@ -11,10 +11,10 @@
 #ifndef GENERIC_HSM_DRIVER_H
 #define GENERIC_HSM_DRIVER_H
 
-#include <sys/un.h>
-#include <sys/types.h>
 #include <stdbool.h>
 #include <inttypes.h>
+#include <sys/types.h>
+#include <sys/un.h>
 
 struct hsm_context {
   void *hsm_ctx;

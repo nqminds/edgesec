@@ -14,13 +14,13 @@
 #ifndef HOSTAPD_H
 #define HOSTAPD_H
 
-#include <sys/types.h>
 #include <stdbool.h>
+#include <sys/types.h>
 
-#include "ap_config.h"
+#include "../radius/radius_server.h"
 #include "../utils/allocs.h"
 #include "../utils/os.h"
-#include "../radius/radius_server.h"
+#include "ap_config.h"
 
 /**
  * @brief Generates and saves the hostapd configuration files

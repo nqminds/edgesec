@@ -1,25 +1,25 @@
 #define _GNU_SOURCE
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <inttypes.h>
-#include <unistd.h>
-#include <setjmp.h>
-#include <stdint.h>
 #include <cmocka.h>
+#include <fcntl.h>
+#include <inttypes.h>
 #include <pthread.h>
 #include <sqlite3.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-#include "utils/log.h"
-#include "utils/sqliteu.h"
+#include "capture/capture_service.h"
 #include "capture/middlewares/header_middleware/header_middleware.h"
 #include "capture/middlewares/header_middleware/sqlite_header.h"
-#include "capture/capture_service.h"
+#include "utils/log.h"
+#include "utils/sqliteu.h"
 
 char *test_capture_db = "file::memory:?cache=shared";
 

@@ -1,31 +1,31 @@
 #define _GNU_SOURCE
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <inttypes.h>
-#include <unistd.h>
-#include <setjmp.h>
-#include <stdint.h>
 #include <cmocka.h>
-#include <pthread.h>
-#include <sys/ioctl.h>
 #include <arpa/inet.h>
+#include <fcntl.h>
+#include <inttypes.h>
+#include <pthread.h>
 #include <signal.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-#include "runctl.h"
 #include "config.h"
+#include "runctl.h"
 
-#include "utils/sockctl.h"
+#include "ap/ap_service.h"
+#include "radius/radius.h"
+#include "radius/radius_client.h"
 #include "supervisor/cmd_processor.h"
 #include "supervisor/system_commands.h"
-#include "ap/ap_service.h"
-#include "radius/radius_client.h"
-#include "radius/radius.h"
+#include "utils/sockctl.h"
 
 #define AP_CTRL_IFACE_PATH "/tmp/wifi0"
 #define SUPERVISOR_CONTROL_PATH "/tmp/edgesec-control-server"

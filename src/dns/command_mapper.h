@@ -11,14 +11,14 @@
 #ifndef COMMAND_MAPPER_H
 #define COMMAND_MAPPER_H
 
-#include <inttypes.h>
 #include <stdbool.h>
+#include <inttypes.h>
 #include <utarray.h>
 #include <uthash.h>
 
 #include "../utils/allocs.h"
-#include "../utils/os.h"
 #include "../utils/hashmap.h"
+#include "../utils/os.h"
 
 /**
  * @brief Command mapper connection structure

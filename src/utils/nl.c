@@ -8,41 +8,41 @@
  * @brief File containing the implementation of the netlink utilities.
  */
 
-#include <errno.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+#include <arpa/inet.h>
+#include <errno.h>
 #include <fcntl.h>
-#include <unistd.h>
-#include <stdbool.h>
 #include <fnmatch.h>
 #include <linux/netlink.h>
 #include <linux/nl80211.h>
-#include <arpa/inet.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-#include <netlink/genl/genl.h>
-#include <netlink/genl/family.h>
-#include <netlink/genl/ctrl.h>
-#include <netlink/msg.h>
 #include <netlink/attr.h>
+#include <netlink/genl/ctrl.h>
+#include <netlink/genl/family.h>
+#include <netlink/genl/genl.h>
+#include <netlink/msg.h>
 
 #include "libnetlink.h"
 #include "ll_map.h"
-#include "utils.h"
 #include "rt_names.h"
+#include "utils.h"
 
 #include "linux/if_addr.h"
 #include "linux/if_infiniband.h"
 
 #include "allocs.h"
-#include "os.h"
-#include "log.h"
-#include "nl.h"
-#include "net.h"
 #include "iface_mapper.h"
 #include "ifaceu.h"
+#include "log.h"
+#include "net.h"
+#include "nl.h"
+#include "os.h"
 
 static int ifindex = 0;
 struct rtnl_handle rth = {.fd = -1};

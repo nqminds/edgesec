@@ -11,11 +11,11 @@
 #ifndef PCAP_QUEUE_H
 #define PCAP_QUEUE_H
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <pcap.h>
-#include <stdint.h>
+#include <string.h>
 
 #include <list.h>
 

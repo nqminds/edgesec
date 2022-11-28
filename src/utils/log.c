@@ -26,18 +26,18 @@
  * @brief File containing the implementation of the logging functions.
  */
 
-#include <stdio.h>
 #include <stdarg.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <inttypes.h>
-#include <errno.h>
 #include <stdbool.h>
-#include <time.h>
-#include <sys/time.h>
-#include <sys/stat.h>
-#include <syslog.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <inttypes.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <syslog.h>
+#include <time.h>
+#include <unistd.h>
 
 #include "log.h"
 #include "time.h"

@@ -8,15 +8,15 @@
  * @brief File containing the implementation of the network utilities.
  */
 
-#include <inttypes.h>
 #include <stdbool.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <errno.h>
+#include <inttypes.h>
 
 #include "allocs.h"
-#include "os.h"
 #include "net.h"
+#include "os.h"
 
 bool validate_ipv4_string(const char *ip) {
   struct sockaddr_in sa;

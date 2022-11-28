@@ -13,11 +13,11 @@
 #ifndef MIDDLEWARES_LIST_H
 #define MIDDLEWARES_LIST_H
 
-#include <sqlite3.h>
+#include <eloop.h>
 #include <pcap.h>
+#include <sqlite3.h>
 #include <utarray.h>
 #include "middleware.h"
-#include <eloop.h>
 
 /**
  * @brief Generic middleware context and functions.

@@ -1,14 +1,14 @@
+#include <setjmp.h>
 #include <stdarg.h>
 #include <stddef.h>
-#include <setjmp.h>
 #include <stdint.h>
 #include <cmocka.h>
 
 #include "./utils/log.h"
 
-#include "./config.h"
 #include <libgen.h>
 #include <limits.h>
+#include "./config.h"
 
 static void test_load_configs(void **state) {
   (void)state; /* unused */

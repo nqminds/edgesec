@@ -9,8 +9,8 @@
  */
 
 #include "utils/allocs.h"
-#include "utils/os.h"
 #include "utils/log.h"
+#include "utils/os.h"
 
 #include "bridge_list.h"
 
