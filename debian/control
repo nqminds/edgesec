@@ -3,7 +3,7 @@ Section: net
 Priority: optional
 Maintainer: Alois Klink <alois@nquiringminds.com>
 Build-Depends: debhelper-compat (= 12),
-    git, ca-certificates, cmake (>=3.15.0),
+    git, ca-certificates, cmake (>=3.19.0),
     doxygen, graphviz, texinfo,
     libnl-genl-3-dev, libnl-route-3-dev,
     autoconf, flex, bison,
