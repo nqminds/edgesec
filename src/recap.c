@@ -551,15 +551,19 @@ void eloop_tout_header_handler(void *eloop_ctx, void *user_ctx) {
   struct recap_context *pctx = (struct recap_context *)user_ctx;
 
   if (is_packet_queue_empty(pctx->pq) < 1) {
-    log_trace("Commiting packets to %s database", pctx->out_path);
-    if (execute_sqlite_query(pctx->db, "BEGIN IMMEDIATE TRANSACTION") < 0) {
-      log_error("Failed to capture a lock on db %s, ignoring.", pctx->out_path);
+    if (!pctx->pipe) {
+      log_trace("Commiting packets to %s database", pctx->out_path);
+      if (execute_sqlite_query(pctx->db, "BEGIN IMMEDIATE TRANSACTION") < 0) {
+        log_error("Failed to capture a lock on db %s, ignoring.", pctx->out_path);
+      }
     }
 
     save_packets_from_queue(pctx);
 
-    if (execute_sqlite_query(pctx->db, "COMMIT TRANSACTION") < 0) {
-      log_error("Failed to commit packets to database %s", pctx->out_path);
+    if (!pctx->pipe) {
+      if (execute_sqlite_query(pctx->db, "COMMIT TRANSACTION") < 0) {
+        log_error("Failed to commit packets to database %s", pctx->out_path);
+      }
     }
   }
 
