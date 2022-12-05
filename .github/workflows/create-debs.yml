@@ -27,7 +27,7 @@ jobs:
           - recap # Uses the generic IP service
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -41,13 +41,6 @@ jobs:
         if: matrix.cmake-preset == 'clang'
         run: |
           sudo apt-get install llvm -y
-          llvm-cov gcov --version
-          clang --version
-          # Very annoyingly, the Ubuntu-20.04 image uses Clang 11 by default
-          # however, the default version of LLVM that is installed is v10,
-          # which is too old for Clang 11 compatibility
-          echo 'set(CMAKE_C_COMPILER clang-10)
-          set(CMAKE_CXX_COMPILER clang++-10)' > CMakeModules/CMakeToolchains/clang.cmake
       - name: Cache CMake build/dl folder
         uses: actions/cache@v3
         with:
