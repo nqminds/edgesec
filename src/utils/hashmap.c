@@ -7,6 +7,8 @@
  * SPDX-License-Identifier: LGPL-3.0-or-later
  * @brief File containing the implementation of the hashmap utilities.
  */
+// needed for strnlen() and strdup()
+#define _POSIX_C_SOURCE 200809L
 
 #include <stdlib.h>
 
@@ -15,7 +17,6 @@
 // strnlen_s() is available in our <string.h> library
 #else
 // declare strnlen_s() in terms of POSIX strnlen()
-#define _POSIX_C_SOURCE 200809L
 #define strnlen_s(_string, _maxlen)                                            \
   ((_string) == NULL ? 0 : strnlen((_string), (_maxlen)))
 #endif
