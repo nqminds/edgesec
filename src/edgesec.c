@@ -8,6 +8,9 @@
  * @brief File containing the edgesec tool implementations.
  */
 
+// needed for getopt()
+#define _POSIX_C_SOURCE 200809L
+
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
