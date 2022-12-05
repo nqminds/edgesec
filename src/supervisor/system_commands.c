@@ -7,35 +7,34 @@
  * SPDX-License-Identifier: LGPL-3.0-or-later
  * @brief File containing the implementation of the system commands.
  */
-#include <sys/un.h>
 #include <libgen.h>
+#include <sys/un.h>
 #include <utarray.h>
 
-#include "system_commands.h"
 #include "mac_mapper.h"
-#include "supervisor.h"
-#include "sqlite_macconn_writer.h"
 #include "network_commands.h"
+#include "sqlite_macconn_writer.h"
 #include "subscriber_events.h"
+#include "supervisor.h"
+#include "supervisor_utils.h"
+#include "system_commands.h"
 
+#include <eloop.h>
 #include "../ap/ap_config.h"
 #include "../ap/ap_service.h"
 #include "../capture/capture_service.h"
 #include "../utils/allocs.h"
-#include "../utils/os.h"
-#include "../utils/log.h"
 #include "../utils/base64.h"
-#include "../utils/eloop.h"
-#include "../utils/sockctl.h"
 #include "../utils/iface_mapper.h"
-
-#define PING_REPLY "PONG\n"
+#include "../utils/log.h"
+#include "../utils/os.h"
+#include "../utils/sockctl.h"
 
 int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
                char *ip_addr, enum DHCP_IP_TYPE ip_type) {
   UT_array *mac_list_arr;
   uint8_t *p = NULL;
-  char ifname[IFNAMSIZ];
+  char ifname[IF_NAMESIZE];
   struct mac_conn conn;
   struct mac_conn_info right_info, info;
   int ret;
@@ -95,13 +94,13 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
       return -1;
   }
 
-  os_memcpy(info.ifname, ifname, IFNAMSIZ);
+  os_memcpy(info.ifname, ifname, IF_NAMESIZE);
   os_memcpy(conn.mac_addr, mac_addr, ETHER_ADDR_LEN);
   os_memcpy(&conn.info, &info, sizeof(struct mac_conn_info));
 
   log_debug("SET_IP type=%d mac=" MACSTR " ip=%s if=%s", ip_type,
             MAC2STR(mac_addr), ip_addr, ifname);
-  if (!save_mac_mapper(context, conn)) {
+  if (save_mac_mapper(context, conn) < 0) {
     log_error("save_mac_mapper fail");
     return -1;
   }

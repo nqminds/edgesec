@@ -13,18 +13,18 @@
  */
 
 #include <stddef.h>
-#include <sys/un.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <sys/un.h>
 
-#include "wpabuf.h"
-#include "radius.h"
 #include "md5.h"
 #include "md5_internal.h"
+#include "radius.h"
+#include "wpabuf.h"
 
-#include "utils/log.h"
 #include "utils/allocs.h"
+#include "utils/log.h"
 #include "utils/os.h"
 
 /**
@@ -171,7 +171,7 @@ static const char *radius_code_string(uint8_t code) {
 
 struct radius_attr_type {
   uint8_t type;
-  char *name;
+  const char *name;
   enum {
     RADIUS_ATTR_UNDIST,
     RADIUS_ATTR_TEXT,

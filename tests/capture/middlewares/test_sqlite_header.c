@@ -1,27 +1,27 @@
 #define _GNU_SOURCE
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <inttypes.h>
-#include <unistd.h>
-#include <setjmp.h>
-#include <stdint.h>
 #include <cmocka.h>
+#include <fcntl.h>
+#include <inttypes.h>
 #include <pthread.h>
 #include <sqlite3.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-#include "utils/log.h"
-#include "utils/sqliteu.h"
+#include "capture/capture_service.h"
 #include "capture/middlewares/header_middleware/header_middleware.h"
 #include "capture/middlewares/header_middleware/sqlite_header.h"
-#include "capture/capture_service.h"
+#include "utils/log.h"
+#include "utils/sqliteu.h"
 
-char *test_capture_db = "/tmp/edgesec/test_capture.sqlite";
+char *test_capture_db = "file::memory:?cache=shared";
 
 struct sqlite_thread_arg {
   char error_message[512];
@@ -63,8 +63,6 @@ static void test_init_sqlite_header_db(void **state) {
 
   struct sqlite_thread_arg arg1, arg2, arg3;
   pthread_t id1, id2, id3;
-
-  remove(test_capture_db);
 
   assert_int_equal(pthread_create(&id1, NULL, sqlite_header_thread, &arg1), 0);
   assert_int_equal(pthread_create(&id2, NULL, sqlite_header_thread, &arg2), 0);

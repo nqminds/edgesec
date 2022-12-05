@@ -11,28 +11,27 @@
  * @brief File containing the implementation of the capture service.
  */
 
+#include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <fcntl.h>
 #include <ctype.h>
-#include <unistd.h>
-#include <stdbool.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <libgen.h>
 #include <pthread.h>
+#include <unistd.h>
 
 #include "capture_config.h"
 #include "capture_service.h"
 #include "pcap_service.h"
 
+#include <eloop.h>
+#include "../utils/allocs.h"
+#include "../utils/log.h"
+#include "../utils/os.h"
 #include "../utils/sockctl.h"
 #include "../utils/squeue.h"
-#include "../utils/log.h"
-#include "../utils/eloop.h"
-#include "../utils/list.h"
-#include "../utils/allocs.h"
-#include "../utils/os.h"
 
 #include "middlewares_list.h"
 
@@ -71,6 +70,7 @@ int run_capture(struct capture_middleware_context *context) {
   log_info("Promiscuous mode=%d", context->config.promiscuous);
   log_info("Immediate mode=%d", context->config.immediate);
   log_info("Buffer timeout=%d", context->config.buffer_timeout);
+  log_info("Middleware params=%s", context->config.middleware_params);
 
   ret = sqlite3_open(context->config.capture_db_path, &db);
 
@@ -110,7 +110,7 @@ int run_capture(struct capture_middleware_context *context) {
   context->handlers = assign_middlewares();
 
   if (init_middlewares(context->handlers, db, context->config.capture_db_path,
-                       eloop, pc) < 0) {
+                       eloop, pc, context->config.middleware_params) < 0) {
     log_error("init_middlewares fail");
     goto capture_fail;
   }
@@ -142,13 +142,21 @@ void *capture_thread(void *arg) {
   struct capture_middleware_context *context =
       (struct capture_middleware_context *)arg;
 
+  int *ret = os_zalloc(sizeof(int));
+  if (ret == NULL) {
+    log_errno("os_zalloc");
+    free_capture_context(context);
+    return NULL;
+  }
+
   if (run_capture(context) < 0) {
     log_error("run_capture fail");
+    *ret = -1;
   }
 
   free_capture_context(context);
 
-  return NULL;
+  return (void *)ret;
 }
 
 int run_capture_thread(char *ifname, struct capture_conf const *config,
@@ -161,7 +169,7 @@ int run_capture_thread(char *ifname, struct capture_conf const *config,
     return -1;
   }
 
-  os_strlcpy(context->ifname, ifname, IFNAMSIZ);
+  os_strlcpy(context->ifname, ifname, IF_NAMESIZE);
   os_memcpy(&context->config, config, sizeof(struct capture_conf));
 
   log_info("Running the capture thread");

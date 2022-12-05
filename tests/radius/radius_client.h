@@ -9,13 +9,13 @@
 #ifndef RADIUS_CLIENT_H
 #define RADIUS_CLIENT_H
 
+#include <stdbool.h>
 #include <stdint.h>
+#include <arpa/inet.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <arpa/inet.h>
-#include <stdbool.h>
 
-#include "../../src/utils/eloop.h"
+#include <eloop.h>
 #include "ip_addr.h"
 
 struct radius_msg;

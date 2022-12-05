@@ -11,24 +11,22 @@
  * defines auxiliary commands to manage the acces control list for stations
  * connected to the AP.
  */
-#include <unistd.h>
 #include <errno.h>
 #include <sys/ioctl.h>
+#include <unistd.h>
 
 #include "ap_config.h"
 #include "ap_service.h"
 #include "hostapd.h"
 
-#include "../supervisor/supervisor_config.h"
+#include <eloop.h>
 #include "../radius/radius_server.h"
+#include "../supervisor/supervisor_config.h"
 #include "../utils/allocs.h"
-#include "../utils/os.h"
-#include "../utils/eloop.h"
 #include "../utils/iface.h"
 #include "../utils/log.h"
+#include "../utils/os.h"
 #include "../utils/sockctl.h"
-
-#define ATTACH_AP_COMMAND "ATTACH"
 
 #define AP_STA_DISCONNECTED "AP-STA-DISCONNECTED"
 #define AP_STA_CONNECTED "AP-STA-CONNECTED"
@@ -56,46 +54,56 @@ int ping_ap_command(struct apconf *hconf) {
   return 0;
 }
 
-int denyacl_ap_command(struct apconf *hconf, char *cmd, char *mac_addr) {
-  char *buffer;
+int denyacl_ap_command(struct apconf *hconf, const char *cmd,
+                       const char *mac_addr) {
+  char *buffer = NULL;
   char *reply = NULL;
+
+  int return_code = -1;
 
   if (mac_addr == NULL) {
     log_error("mac_addr is NULL");
-    return -1;
+    goto error_cleanup;
   }
 
-  if ((buffer = os_zalloc(strlen(cmd) + strlen(mac_addr) + 1)) == NULL) {
-    log_errno("os_zalloc");
-    return -1;
+  buffer = malloc(strlen(cmd) + 1 /* space char */ + strlen(mac_addr) +
+                  1 /* nul terminator */
+  );
+  if (buffer == NULL) {
+    log_errno("malloc");
+    goto error_cleanup;
   }
 
   sprintf(buffer, "%s %s", cmd, mac_addr);
   if (writeread_domain_data_str(hconf->ctrl_interface_path, buffer, &reply) <
       0) {
     log_error("writeread_domain_data_str fail");
-    return -1;
+    goto error_cleanup;
   }
 
   if (strcmp(reply, GENERIC_AP_COMMAND_OK_REPLY) != 0) {
     log_error(GENERIC_AP_COMMAND_OK_REPLY " reply doesn't match %s", reply);
-    os_free(reply);
-    return -1;
+    goto error_cleanup;
   }
 
+  return_code = 0;
+error_cleanup:
+  // free(null_ptr) is perfectly safe and does nothing
+  free(buffer);
   os_free(reply);
-  return 0;
+
+  return return_code;
 }
 
-int denyacl_add_ap_command(struct apconf *hconf, char *mac_addr) {
+int denyacl_add_ap_command(struct apconf *hconf, const char *mac_addr) {
   return denyacl_ap_command(hconf, DENYACL_ADD_COMMAND, mac_addr);
 }
 
-int denyacl_del_ap_command(struct apconf *hconf, char *mac_addr) {
+int denyacl_del_ap_command(struct apconf *hconf, const char *mac_addr) {
   return denyacl_ap_command(hconf, DENYACL_DEL_COMMAND, mac_addr);
 }
 
-int disconnect_ap_command(struct apconf *hconf, char *mac_addr) {
+int disconnect_ap_command(struct apconf *hconf, const char *mac_addr) {
   if (denyacl_add_ap_command(hconf, mac_addr) < 0) {
     log_error("denyacl_add_ap_command fail");
     return -1;
@@ -109,91 +117,108 @@ int disconnect_ap_command(struct apconf *hconf, char *mac_addr) {
   return 0;
 }
 
-int check_sta_ap_command(struct apconf *hconf, char *mac_addr) {
-  char *buffer;
+int check_sta_ap_command(struct apconf *hconf, const char *mac_addr) {
+  char *buffer = NULL;
   char *reply = NULL;
+
+  int return_code = -1;
 
   if (mac_addr == NULL) {
     log_error("mac_addr is NULL");
-    return -1;
+    goto error_cleanup;
   }
 
-  if ((buffer = os_zalloc(strlen(STA_AP_COMMAND) + strlen(mac_addr) + 1)) ==
-      NULL) {
-    log_errno("os_zalloc");
-    return -1;
+  buffer = malloc(strlen(STA_AP_COMMAND) + 1 /* space char */ +
+                  strlen(mac_addr) + 1 /* nul terminator */);
+  if (buffer == NULL) {
+    log_errno("malloc");
+    goto error_cleanup;
   }
 
   sprintf(buffer, STA_AP_COMMAND " %s", mac_addr);
   if (writeread_domain_data_str(hconf->ctrl_interface_path, buffer, &reply) <
       0) {
     log_error("writeread_domain_data_str fail");
-    return -1;
+    goto error_cleanup;
   }
 
   if (strcmp(reply, GENERIC_AP_COMMAND_FAIL_REPLY) == 0) {
     log_error("no STA registered with mac=%s", mac_addr);
-    os_free(reply);
-    return -1;
+    goto error_cleanup;
   }
 
   if (!strlen(reply)) {
     log_error("no reply for mac=%s", mac_addr);
-    os_free(reply);
-    return -1;
+    goto error_cleanup;
   }
 
+  return_code = 0;
+error_cleanup:
+  // free(NULL ptr) is safe and does nothing
+  free(buffer);
   os_free(reply);
-  return 0;
+  return return_code;
 }
 
-int find_ap_status(char *ap_answer, uint8_t *mac_addr,
+/**
+ * @brief Finds the stauts of the given access point
+ *
+ * @param ap_answer Response from ap socket.
+ * @param[out] mac_addr The MAC address of the AP.
+ * @param[out] status Outputs the the status of the AP to this variable.
+ * @retval  0 Sucess.
+ * @retval -1 Error. No valid AP status found in the @p ap_answer string.
+ */
+int find_ap_status(const char *ap_answer,
+                   uint8_t mac_addr[static ETHER_ADDR_LEN],
                    enum AP_CONNECTION_STATUS *status) {
   UT_array *str_arr;
-  char **ptr = NULL;
-
   utarray_new(str_arr, &ut_str_icd);
 
-  if (split_string_array(ap_answer, 0x20, str_arr) > 1) {
-    ptr = (char **)utarray_next(str_arr, ptr);
-    if (ptr != NULL && *ptr != NULL) {
-      if (strstr(*ptr, AP_STA_CONNECTED) != NULL) {
-        *status = AP_CONNECTED_STATUS;
-      } else if (strstr(ap_answer, AP_STA_DISCONNECTED) != NULL) {
-        *status = AP_DISCONNECTED_STATUS;
-      } else {
-        utarray_free(str_arr);
-        return -1;
-      }
+  int return_code = -1;
 
-      ptr = (char **)utarray_next(str_arr, ptr);
-      if (ptr != NULL && *ptr != NULL) {
-        if (hwaddr_aton2(*ptr, mac_addr) != -1) {
-          utarray_free(str_arr);
-          return 0;
-        }
-      }
-    }
+  if (split_string_array(ap_answer, 0x20, str_arr) <= 1) {
+    goto cleanup;
   }
 
+  char **status_string = (char **)utarray_front(str_arr);
+  if (status_string == NULL || *status_string == NULL) {
+    goto cleanup;
+  }
+
+  if (strstr(*status_string, AP_STA_CONNECTED) != NULL) {
+    *status = AP_CONNECTED_STATUS;
+  } else if (strstr(ap_answer, AP_STA_DISCONNECTED) != NULL) {
+    *status = AP_DISCONNECTED_STATUS;
+  } else {
+    goto cleanup;
+  }
+
+  char **mac_address_string = (char **)utarray_next(str_arr, status_string);
+  if (mac_address_string == NULL || *mac_address_string == NULL) {
+    goto cleanup;
+  }
+  if (hwaddr_aton2(*mac_address_string, mac_addr) < 0) {
+    goto cleanup;
+  }
+
+  return_code = 0;
+cleanup:
   utarray_free(str_arr);
-  return -1;
+  return return_code;
 }
 
 void ap_sock_handler(int sock, void *eloop_ctx, void *sock_ctx) {
-  uint8_t mac_addr[ETHER_ADDR_LEN];
-  enum AP_CONNECTION_STATUS status;
-  uint32_t bytes_available;
-  char *rec_data, *trimmed;
   struct supervisor_context *context = (struct supervisor_context *)sock_ctx;
   ap_service_fn fn = (ap_service_fn)eloop_ctx;
 
+  uint32_t bytes_available;
   if (ioctl(sock, FIONREAD, &bytes_available) == -1) {
     log_errno("ioctl");
     return;
   }
 
-  rec_data = os_zalloc(bytes_available + 1);
+  char *rec_data = os_zalloc(bytes_available + 1);
   if (rec_data == NULL) {
     log_errno("os_zalloc");
     return;
@@ -207,12 +232,15 @@ void ap_sock_handler(int sock, void *eloop_ctx, void *sock_ctx) {
     return;
   }
 
-  if ((trimmed = rtrim(rec_data, NULL)) == NULL) {
+  char *trimmed = rtrim(rec_data, NULL);
+  if (trimmed == NULL) {
     log_error("rtrim fail");
     os_free(rec_data);
     return;
   }
 
+  enum AP_CONNECTION_STATUS status;
+  uint8_t mac_addr[ETHER_ADDR_LEN];
   if (find_ap_status(trimmed, mac_addr, &status) > -1) {
     fn(context, mac_addr, status);
   }
@@ -249,8 +277,6 @@ int register_ap_event(struct supervisor_context *context,
 
 int run_ap(struct supervisor_context *context, bool exec_ap, bool generate_ssid,
            void *ap_callback_fn) {
-  char hostname[OS_HOST_NAME_MAX];
-  int res;
   if (generate_vlan_conf(context->hconfig.vlan_file,
                          context->hconfig.interface) < 0) {
     log_error("generate_vlan_conf fail");
@@ -258,6 +284,7 @@ int run_ap(struct supervisor_context *context, bool exec_ap, bool generate_ssid,
   }
 
   if (generate_ssid) {
+    char hostname[OS_HOST_NAME_MAX];
     if (get_hostname(hostname) < 0) {
       log_error("get_hostname fail");
       return -1;
@@ -267,11 +294,11 @@ int run_ap(struct supervisor_context *context, bool exec_ap, bool generate_ssid,
   }
 
   if (generate_hostapd_conf(&context->hconfig, &context->rconfig) < 0) {
-    unlink(context->hconfig.vlan_file);
     log_error("generate_hostapd_conf fail");
     return -1;
   }
 
+  int res;
   if (exec_ap) {
     res = run_ap_process(&context->hconfig);
   } else {

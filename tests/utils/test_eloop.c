@@ -1,17 +1,18 @@
+#include <setjmp.h>
 #include <stdarg.h>
 #include <stddef.h>
-#include <setjmp.h>
 #include <stdint.h>
 #include <cmocka.h>
 
-#include <sys/socket.h>
-#include <sys/un.h>
 #include <stdio.h>
-#include <string.h>
+#include <sys/socket.h>
 #include <limits.h>
+#include <string.h>
+#include <sys/un.h>
 
+#include <eloop.h>
+#include "utils/allocs.h"
 #include "utils/log.h"
-#include "utils/eloop.h"
 #include "utils/sockctl.h"
 
 #include "tmpdir.h"

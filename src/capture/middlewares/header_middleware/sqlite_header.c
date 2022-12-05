@@ -9,19 +9,19 @@
  * utilities.
  */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
 #include <sqlite3.h>
+#include <string.h>
 
 #include "../../../utils/allocs.h"
-#include "../../../utils/os.h"
 #include "../../../utils/log.h"
+#include "../../../utils/os.h"
 #include "../../../utils/sqliteu.h"
 
-#include "sqlite_header.h"
 #include "packet_decoder.h"
+#include "sqlite_header.h"
 
 #define EXTRACT_META_PACKET(term, tp)                                          \
   term.hash = tp->mp.hash;                                                     \
@@ -555,12 +555,12 @@ int save_packet_statement(sqlite3 *db, struct tuple_packet *tp) {
   }
 
   if (tp == NULL) {
-    log_trace("tp param is NULL");
+    log_error("tp param is NULL");
     return -1;
   }
 
   if (tp->packet == NULL) {
-    log_trace("tp->packet param is NULL");
+    log_error("tp->packet param is NULL");
     return -1;
   }
 

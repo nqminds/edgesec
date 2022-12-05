@@ -1,20 +1,20 @@
 #define _GNU_SOURCE
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <inttypes.h>
-#include <unistd.h>
-#include <setjmp.h>
-#include <stdint.h>
 #include <cmocka.h>
+#include <fcntl.h>
+#include <inttypes.h>
+#include <minIni.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "utils/log.h"
-#include "utils/minIni.h"
 
 static const char *tmp_file = "/tmp/test_iniXXXXXX";
 

@@ -9,31 +9,31 @@
  */
 
 #define _GNU_SOURCE
-#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <netinet/ip.h>
-#include <netinet/if_ether.h>
-#include <netinet/ip6.h>
 #include <netinet/icmp6.h>
+#include <netinet/if_ether.h>
+#include <netinet/ip.h>
+#include <netinet/ip6.h>
 #include <netinet/ip_icmp.h>
 #include <netinet/tcp.h>
 #include <netinet/udp.h>
 #include <pcap.h>
 
-#include "../../../utils/log.h"
 #include "../../../utils/allocs.h"
-#include "../../../utils/os.h"
-#include "../../../utils/net.h"
 #include "../../../utils/hash.h"
+#include "../../../utils/log.h"
+#include "../../../utils/net.h"
+#include "../../../utils/os.h"
 
-#include "packet_decoder.h"
 #include "dns_decoder.h"
 #include "mdns_decoder.h"
+#include "packet_decoder.h"
 
 #define LINKTYPE_LINUX_SLL "LINUX_SLL"
 #define LINKTYPE_ETHERNET "EN10MB"
@@ -347,7 +347,7 @@ int decode_packet(const struct pcap_pkthdr *header, const uint8_t *packet,
 }
 
 int extract_packets(const char *ltype, const struct pcap_pkthdr *header,
-                    const uint8_t *packet, char *interface, char *id,
+                    const uint8_t *packet, char *interface,
                     UT_array *tp_array) {
   (void)ltype;
 
@@ -362,8 +362,9 @@ int extract_packets(const char *ltype, const struct pcap_pkthdr *header,
   cpac.caplen = header->caplen;
   cpac.length = header->len;
 
-  os_strlcpy(cpac.ifname, interface, IFNAMSIZ);
-  os_strlcpy(cpac.id, id, MAX_RANDOM_UUID_LEN);
+  os_strlcpy(cpac.ifname, interface, IF_NAMESIZE);
+
+  generate_radom_uuid(cpac.id);
 
   if ((count = decode_packet(header, packet, &cpac)) > 0) {
     if (cpac.ethh != NULL) {

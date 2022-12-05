@@ -8,21 +8,21 @@
  * @brief Tests for eloop when using multi-threading.
  */
 
+#include <setjmp.h>
 #include <stdarg.h>
 #include <stddef.h>
-#include <setjmp.h>
 #include <stdint.h>
 #include <cmocka.h>
 
-#include <sys/types.h>
 #include <sys/socket.h>
-#include <arpa/inet.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
+#include <eloop.h>
+#include <sys/types.h>
 #include <threads.h>
 #include <utarray.h>
 
 #include "utils/log.h"
-#include "utils/eloop.h"
 #include "utils/sockctl.h"
 
 struct test_state_t {

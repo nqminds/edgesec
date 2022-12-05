@@ -9,11 +9,11 @@
 #ifndef IP_ADDR_H
 #define IP_ADDR_H
 
+#include <stdbool.h>
 #include <stdint.h>
+#include <arpa/inet.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <arpa/inet.h>
-#include <stdbool.h>
 
 struct hostapd_ip_addr {
   int af; /* AF_INET / AF_INET6 */

@@ -12,17 +12,17 @@
 #define REFLECTION_LIST_H
 
 #include <stdbool.h>
-#include <sys/types.h>
 #include <sys/socket.h>
 #include <net/if.h>
+#include <sys/types.h>
 
-#include "../utils/list.h"
+#include <list.h>
 
 struct reflection_list {
   int recv_fd;
   int send_fd;
   unsigned int ifindex;
-  char ifname[IFNAMSIZ];
+  char ifname[IF_NAMESIZE];
   struct dl_list list; /**< List definition */
 };
 

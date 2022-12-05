@@ -11,29 +11,29 @@
 
 #define _GNU_SOURCE
 #include <stdint.h>
-#include <time.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <signal.h>
-#include <sys/time.h>
-#include <sys/wait.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <errno.h>
 #include <stdio.h>
-#include <limits.h>
+#include <stdlib.h>
+#include <errno.h>
 #include <libgen.h>
+#include <limits.h>
+#include <signal.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <time.h>
+#include <unistd.h>
 // #include <string.h>
 #include <stdbool.h>
-#include <dirent.h>
 #include <ctype.h>
+#include <dirent.h>
 #include <fcntl.h>
 #include <uuid/uuid.h>
 
-#include "hashmap.h"
 #include "allocs.h"
-#include "os.h"
+#include "hashmap.h"
 #include "log.h"
+#include "os.h"
 
 #define MAX_64BIT_DIGITS 19
 
@@ -464,7 +464,13 @@ int run_command(char *const argv[], char *const envp[], process_callback_fn fn,
   return status;
 }
 
-void log_run_command(char *argv[], int arg_count) {
+/**
+ * @brief Logs the given command.
+ *
+ * @param argv Array of command parameters.
+ * @param arg_count Length of array (not including NULL terminator).
+ */
+void log_run_command(const char *const argv[], int arg_count) {
   char buf[255];
 
   os_memset(buf, 0, 255);
@@ -476,10 +482,8 @@ void log_run_command(char *argv[], int arg_count) {
   log_trace("Running %s", buf);
 }
 
-int run_argv_command(char *path, char *const argv[], process_callback_fn fn,
-                     void *ctx) {
-  char **full_arg;
-  int arg_count = 0, count = 0;
+int run_argv_command(const char *path, const char *const argv[],
+                     process_callback_fn fn, void *ctx) {
 
   if (path == NULL) {
     log_trace("path param is NULL");
@@ -491,23 +495,39 @@ int run_argv_command(char *path, char *const argv[], process_callback_fn fn,
     return -1;
   }
 
-  while (argv[arg_count++] != NULL)
-    ;
-
-  full_arg = (char **)os_malloc(sizeof(char *) * (arg_count + 1));
-
-  full_arg[0] = path;
-  while (count < arg_count - 1) {
-    full_arg[count + 1] = argv[count];
-    count++;
+  // number of entries in argv (not including NULL terminator)
+  size_t argc = 0;
+  while (argv[argc] != NULL) {
+    argc++;
   }
 
-  full_arg[count + 1] = NULL;
+  // prepends `path` to the array of argv
+  size_t full_argc = argc + 1;
+  const char **full_arg = os_malloc(sizeof(char *) * (full_argc + 1));
 
-  log_run_command(full_arg, arg_count);
+  if (full_arg == NULL) {
+    log_errno("Failed to malloc %d bytes", sizeof(char *) * (full_argc + 1));
+    return -1;
+  }
 
-  int status = run_command(full_arg, NULL, fn, (void *)ctx);
+  full_arg[0] = path;
+  // copy over entire argv (including NULL terminator)
+  for (size_t count = 0; count < (argc + 1); count++) {
+    full_arg[count + 1] = argv[count];
+  }
+
+  char **full_arg_copy = copy_argv(full_arg);
   os_free(full_arg);
+
+  if (full_arg_copy == NULL) {
+    log_errno("Failed to copy_argv");
+    return -1;
+  }
+
+  log_run_command((const char **)full_arg_copy, full_argc);
+
+  int status = run_command(full_arg_copy, NULL, fn, (void *)ctx);
+  os_free(full_arg_copy);
   return (!status ? 0 : -1);
 }
 
@@ -572,7 +592,7 @@ ssize_t split_string_array(const char *str, char sep, UT_array *arr) {
   return split_string(str, sep, fn_split_string_array, (void *)arr);
 }
 
-char *concat_paths(char *path_left, char *path_right) {
+char *concat_paths(const char *path_left, const char *path_right) {
   size_t concat_len;
 
   if (path_left == NULL && path_right != NULL)
@@ -605,7 +625,7 @@ char *concat_paths(char *path_left, char *path_right) {
   return concat;
 }
 
-char *get_valid_path(char *path) {
+char *get_valid_path(const char *path) {
   char *concat = NULL;
 
   if (path == NULL)
@@ -642,7 +662,7 @@ char *get_valid_path(char *path) {
   return concat;
 }
 
-char *construct_path(char *path_left, char *path_right) {
+char *construct_path(const char *path_left, const char *path_right) {
   char *path = NULL;
   if (path_left == NULL || path_right == NULL)
     return NULL;
@@ -677,7 +697,8 @@ char *construct_path(char *path_left, char *path_right) {
   return path;
 }
 
-char *get_secure_path(UT_array *bin_path_arr, char *filename, bool real) {
+char *get_secure_path(const UT_array *bin_path_arr, const char *filename,
+                      bool real) {
   char **p = NULL;
 
   if (bin_path_arr == NULL) {
@@ -730,14 +751,10 @@ int is_proc_running(char *name) {
   return dir_args.proc_running;
 }
 
-int list_dir(char *dirpath, list_dir_fn fun, void *args) {
-  DIR *dirp;
-  struct dirent *dp;
-  char *path;
-
+int list_dir(const char *dirpath, list_dir_fn fun, void *args) {
   /* Open the directory - on failure print an error and return */
   errno = 0;
-  dirp = opendir(dirpath);
+  DIR *dirp = opendir(dirpath);
   if (dirp == NULL) {
     log_errno("opendir");
     return -1;
@@ -748,7 +765,7 @@ int list_dir(char *dirpath, list_dir_fn fun, void *args) {
   /* Look at each of the entries in this directory */
   for (;;) {
     errno = 0; /* To distinguish error from end-of-directory */
-    dp = readdir(dirp);
+    struct dirent *dp = readdir(dirp);
     if (dp == NULL)
       break;
 
@@ -757,7 +774,7 @@ int list_dir(char *dirpath, list_dir_fn fun, void *args) {
       continue;
 
     /* Print directory + filename */
-    path = construct_path(dirpath, dp->d_name);
+    char *path = construct_path(dirpath, dp->d_name);
     if (fun != NULL) {
       if (!fun(path, args)) {
         log_trace("list_dir callback fail");
@@ -1189,6 +1206,25 @@ int create_dir(const char *dirpath, mode_t mode) {
   return 0;
 }
 
+int create_pipe_file(const char *path) {
+  if (path == NULL) {
+    log_error("path param is NULL");
+    return -1;
+  }
+
+  mode_t prev = umask(0);
+  errno = 0;
+  if (mkfifo(path, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP) == -1 &&
+      errno != EEXIST) {
+    log_errno("mkfifo");
+    umask(prev);
+    return -1;
+  }
+
+  umask(prev);
+  return 0;
+}
+
 int check_file_exists(char *path, struct stat *sb) {
   struct stat sb_in;
   int res;
@@ -1394,7 +1430,35 @@ int read_file_string(char *path, char **out) {
   return 0;
 }
 
-int get_commands_paths(char *commands[], UT_array *bin_path_arr,
+ssize_t open_write_nonblock(const char *path, int *fd, const uint8_t *buffer,
+                            size_t length) {
+  if (path == NULL) {
+    log_error("path param is NULL");
+    return -1;
+  }
+
+  if (fd == NULL) {
+    log_error("fd param is NULL");
+    return -1;
+  }
+
+  if (buffer == NULL) {
+    log_error("buffer param is NULL");
+    return -1;
+  }
+
+  if (*fd <= 0) {
+    errno = 0;
+    if ((*fd = open(path, O_WRONLY | O_NONBLOCK)) < 0) {
+      log_errno("open");
+      return -1;
+    }
+  }
+
+  return write(*fd, buffer, length);
+}
+
+int get_commands_paths(const char *commands[], const UT_array *bin_path_arr,
                        hmap_str_keychar **hmap_bin_paths) {
   if (bin_path_arr == NULL) {
     log_error("bin_path_arr param NULL");

@@ -1,21 +1,21 @@
 #define _GNU_SOURCE
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <inttypes.h>
-#include <unistd.h>
-#include <setjmp.h>
-#include <stdint.h>
 #include <cmocka.h>
+#include <fcntl.h>
+#include <inttypes.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "supervisor/bridge_list.h"
-#include "utils/net.h"
 #include "utils/log.h"
+#include "utils/net.h"
 
 static void test_add_bridge_mac(void **state) {
   (void)state; /* unused */

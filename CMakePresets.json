@@ -15,6 +15,10 @@
         "CMAKE_BUILD_TYPE": {
           "type": "STRING",
           "value": "Debug"
+        },
+        "EP_DOWNLOAD_DIR": {
+          "type": "PATH",
+          "value": "${sourceDir}/build/dl"
         }
       }
     },
@@ -43,7 +47,9 @@
       "cacheVariables": {
         "USE_CLEANER_MIDDLEWARE": false,
         "USE_HEADER_MIDDLEWARE": true,
-        "USE_PCAP_MIDDLEWARE": false
+        "USE_PCAP_MIDDLEWARE": false,
+        "USE_TAP_MIDDLEWARE": false,
+        "USE_PROTOBUF_MIDDLEWARE": false
       }
     },
     {
@@ -86,14 +92,47 @@
       "cacheVariables": {
         "USE_CLEANER_MIDDLEWARE": true,
         "USE_HEADER_MIDDLEWARE": true,
-        "USE_PCAP_MIDDLEWARE": true
+        "USE_PCAP_MIDDLEWARE": true,
+        "USE_TAP_MIDDLEWARE": true,
+        "USE_PROTOBUF_MIDDLEWARE": true
+      }
+    },
+    {
+      "name": "linux-with-tap",
+      "inherits": "linux",
+      "displayName": "Linux (with tap middleware)",
+      "description": "Linux (with tap middleware)",
+      "cacheVariables": {
+        "USE_CLEANER_MIDDLEWARE": false,
+        "USE_HEADER_MIDDLEWARE": false,
+        "USE_PCAP_MIDDLEWARE": false,
+        "USE_TAP_MIDDLEWARE": true,
+        "USE_PROTOBUF_MIDDLEWARE": false
+      }
+    },
+    {
+      "name": "linux-with-protobuf",
+      "inherits": "linux",
+      "displayName": "Linux (with protobuf middleware)",
+      "description": "Linux (with protobuf middleware)",
+      "cacheVariables": {
+        "BUILD_PROTOBUFC_LIB": true,
+        "USE_CLEANER_MIDDLEWARE": false,
+        "USE_HEADER_MIDDLEWARE": false,
+        "USE_PCAP_MIDDLEWARE": false,
+        "USE_TAP_MIDDLEWARE": false,
+        "USE_PROTOBUF_MIDDLEWARE": true
       }
     },
     {
       "name": "clang",
       "inherits": "linux",
       "displayName": "Clang",
-      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/clang.cmake"
+      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/clang.cmake",
+      "cacheVariables": {
+        "//": "We need to test CMocka builds somewhere, might as well be here",
+        "BUILD_CMOCKA_LIB": true
+      }
     },
     {
       "name": "openwrt",
@@ -121,7 +160,9 @@
       "cacheVariables": {
         "USE_CLEANER_MIDDLEWARE": false,
         "USE_HEADER_MIDDLEWARE": true,
-        "USE_PCAP_MIDDLEWARE": false
+        "USE_PCAP_MIDDLEWARE": false,
+        "USE_TAP_MIDDLEWARE": false,
+        "USE_PROTOBUF_MIDDLEWARE": false
       }
     },
     {
@@ -202,6 +243,14 @@
       "configurePreset": "linux-with-example-middlewares"
     },
     {
+      "name": "linux-with-tap",
+      "configurePreset": "linux-with-tap"
+    },
+    {
+      "name": "linux-with-protobuf",
+      "configurePreset": "linux-with-protobuf"
+    },
+    {
       "name": "clang",
       "configurePreset": "clang"
     },
@@ -246,6 +295,18 @@
     {
       "name": "linux-with-example-middlewares",
       "configurePreset": "linux-with-example-middlewares"
+    },
+    {
+      "name": "linux-with-tap",
+      "configurePreset": "linux-with-tap"
+    },
+    {
+      "name": "linux-with-protobuf",
+      "configurePreset": "linux-with-protobuf"
+    },
+    {
+      "name": "recap",
+      "configurePreset": "recap"
     },
     {
       "name": "linux-with-crypt",

@@ -10,12 +10,12 @@
 #include <stdbool.h>
 
 #include "utils/allocs.h"
+#include "utils/log.h"
 #include "utils/net.h"
 #include "utils/os.h"
-#include "utils/log.h"
 
-#include "mac_mapper.h"
 #include "bridge_list.h"
+#include "mac_mapper.h"
 
 int get_mac_mapper(hmap_mac_conn **hmap, uint8_t mac_addr[ETHER_ADDR_LEN],
                    struct mac_conn_info *info) {
@@ -120,7 +120,7 @@ void init_default_mac_info(struct mac_conn_info *info, int default_open_vlanid,
   os_memset(info->pass, 0, AP_SECRET_LEN);
   os_memset(info->ip_addr, 0, OS_INET_ADDRSTRLEN);
   os_memset(info->ip_sec_addr, 0, OS_INET_ADDRSTRLEN);
-  os_memset(info->ifname, 0, IFNAMSIZ);
+  os_memset(info->ifname, 0, IF_NAMESIZE);
   os_memset(info->label, 0, MAX_DEVICE_LABEL_SIZE);
   os_memset(info->id, 0, MAX_RANDOM_UUID_LEN);
 }

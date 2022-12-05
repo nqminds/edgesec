@@ -11,8 +11,8 @@
 #ifndef SQLITE_HEADER_H
 #define SQLITE_HEADER_H
 
-#include <pcap.h>
 #include <stdint.h>
+#include <pcap.h>
 #include <sqlite3.h>
 
 #include "../../../utils/allocs.h"

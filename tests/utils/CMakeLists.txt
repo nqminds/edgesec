@@ -6,143 +6,102 @@ add_library(tmpdir OBJECT tmpdir.c)
 target_link_libraries(tmpdir PRIVATE log cmocka::cmocka)
 
 if (USE_UCI_SERVICE)
-  add_executable(test_uci_wrt test_uci_wrt.c)
-  target_link_libraries(test_uci_wrt PRIVATE uci_wrt cmocka::cmocka iface_mapper)
+  add_compile_definitions(UCI_CONFIG_DIR="${UCI_CONFIG_DIR}")
+  add_library(__wrap_uwrt_init_context OBJECT __wrap_uwrt_init_context.c)
+  target_link_libraries(__wrap_uwrt_init_context PRIVATE uci_wrt)
+  target_link_options(__wrap_uwrt_init_context PUBLIC "-Wl,--wrap=uwrt_init_context")
+  add_cmocka_test(test_uci_wrt
+    SOURCES test_uci_wrt.c
+    LINK_LIBRARIES uci_wrt cmocka::cmocka iface_mapper)
 endif ()
 
-add_executable(test_iface_mapper test_iface_mapper.c)
-target_link_libraries(test_iface_mapper PRIVATE iface_mapper cmocka::cmocka)
+add_cmocka_test(test_iface_mapper
+  SOURCES test_iface_mapper.c
+  LINK_LIBRARIES iface_mapper cmocka::cmocka)
 
-add_executable(test_ifaceu test_ifaceu.c)
-target_link_libraries(test_ifaceu PRIVATE ifaceu cmocka::cmocka)
+add_cmocka_test(test_ifaceu
+  SOURCES test_ifaceu.c
+  LINK_LIBRARIES ifaceu cmocka::cmocka)
 
-add_executable(test_net test_net.c)
-target_link_libraries(test_net PRIVATE net cmocka::cmocka)
+add_cmocka_test(test_net
+  SOURCES test_net.c
+  LINK_LIBRARIES net cmocka::cmocka)
 
-add_executable(test_os test_os.c)
-target_link_libraries(test_os PRIVATE tmpdir os allocs hashmap cmocka::cmocka)
+add_cmocka_test(test_os
+  SOURCES test_os.c
+  LINK_LIBRARIES tmpdir os allocs hashmap cmocka::cmocka)
 
-add_executable(test_eloop test_eloop.c)
-target_link_libraries(test_eloop PRIVATE tmpdir sockctl os allocs eloop cmocka::cmocka)
+add_cmocka_test(test_eloop
+  SOURCES test_eloop.c
+  LINK_LIBRARIES tmpdir sockctl allocs eloop::eloop cmocka::cmocka)
+# requires the POSIX.1-2008 to define PATH_MAX
+# (POSIX.1-2001 has some issues, see https://man7.org/linux/man-pages/man3/realpath.3.html)
+target_compile_definitions(test_eloop PRIVATE _POSIX_C_SOURCE=200809L)
 
-add_executable(test_eloop_threaded test_eloop_threaded.c)
-target_link_libraries(test_eloop_threaded PRIVATE eloop cmocka::cmocka sockctl LibUTHash::LibUTHash Threads::Threads)
+add_cmocka_test(test_eloop_handles_null
+  SOURCES test_eloop_handles_null.c
+  LINK_LIBRARIES
+  PRIVATE eloop::eloop cmocka::cmocka wrap_log_error
+)
 
-add_executable(test_sqliteu test_sqliteu.c)
-target_link_libraries(test_sqliteu PRIVATE sqliteu cmocka::cmocka)
-
-add_executable(test_hashmap test_hashmap.c)
-target_link_libraries(test_hashmap PRIVATE hashmap cmocka::cmocka)
-
-add_executable(test_utarray test_utarray.c)
-target_link_libraries(test_utarray PRIVATE LibUTHash::LibUTHash cmocka::cmocka)
-
-add_executable(test_minIni test_minIni.c)
-target_link_libraries(test_minIni PRIVATE minIni cmocka::cmocka)
-
-add_executable(test_squeue test_squeue.c)
-target_link_libraries(test_squeue PRIVATE squeue os cmocka::cmocka)
-
-add_executable(test_log_thread_safe test_log_thread_safe.c)
-target_link_libraries(test_log_thread_safe log Threads::Threads)
-
-add_executable(test_log_level test_log_level.c)
-target_link_libraries(test_log_level PRIVATE log)
-
-add_executable(test_log_err test_log_err.c)
-target_link_libraries(test_log_err PRIVATE log)
-
-add_library(wrap_log_error OBJECT wrap_log_error.c)
-target_link_libraries(wrap_log_error PRIVATE log cmocka::cmocka)
-target_link_options(wrap_log_error PUBLIC "LINKER:--wrap=log_levels")
-
-add_executable(test_wrap_log_error test_wrap_log_error.c)
-target_link_libraries(test_wrap_log_error PRIVATE log cmocka::cmocka wrap_log_error)
-
-if (USE_NETLINK_SERVICE)
-  add_executable(test_nl test_nl.c)
-  target_link_libraries(test_nl PRIVATE cmocka::cmocka nl wrap_log_error)
-
-  add_test(NAME test_nl COMMAND test_nl)
-  set_tests_properties(test_nl
-    PROPERTIES
-    WILL_FAIL FALSE)
-endif()
-
-if (USE_UCI_SERVICE)
-  add_test(NAME test_uci_wrt COMMAND test_uci_wrt)
-  set_tests_properties(test_uci_wrt
-   PROPERTIES
-   WILL_FAIL FALSE)
-endif ()
-
-add_test(NAME test_ifaceu COMMAND test_ifaceu)
-set_tests_properties(test_ifaceu
- PROPERTIES
- WILL_FAIL FALSE)
-
-add_test(NAME test_net COMMAND test_net)
-set_tests_properties(test_net
- PROPERTIES
- WILL_FAIL FALSE)
-
-add_test(NAME test_os COMMAND test_os)
-set_tests_properties(test_os
-  PROPERTIES
-  WILL_FAIL FALSE)
-
-add_test(NAME test_eloop COMMAND test_eloop)
-set_tests_properties(test_eloop
-  PROPERTIES
-  WILL_FAIL FALSE)
-
-add_test(NAME test_eloop_threaded COMMAND test_eloop_threaded)
+add_cmocka_test(test_eloop_threaded
+  SOURCES test_eloop_threaded.c
+  LINK_LIBRARIES eloop::eloop cmocka::cmocka sockctl LibUTHash::LibUTHash Threads::Threads
+)
 set_tests_properties(test_eloop_threaded
   PROPERTIES
   WILL_FAIL FALSE
   ENVIRONMENT CMOCKA_TEST_ABORT='1' # these tests uses threading
 )
 
-add_test(NAME test_sqliteu COMMAND test_sqliteu)
-  set_tests_properties(test_sqliteu
-    PROPERTIES
-    WILL_FAIL FALSE)
+add_cmocka_test(test_sqliteu
+  SOURCES test_sqliteu.c
+  LINK_LIBRARIES sqliteu cmocka::cmocka)
 
-add_test(NAME test_hashmap COMMAND test_hashmap)
-set_tests_properties(test_hashmap
-  PROPERTIES
-  WILL_FAIL FALSE)
+add_cmocka_test(test_hashmap
+  SOURCES test_hashmap.c
+  LINK_LIBRARIES hashmap cmocka::cmocka)
 
-add_test(NAME test_utarray COMMAND test_utarray)
-set_tests_properties(test_utarray
-  PROPERTIES
-  WILL_FAIL FALSE)
+add_cmocka_test(test_utarray
+  SOURCES test_utarray.c
+  LINK_LIBRARIES LibUTHash::LibUTHash cmocka::cmocka)
 
-add_test(NAME test_minIni COMMAND test_minIni)
-set_tests_properties(test_minIni
-  PROPERTIES
-  WILL_FAIL FALSE)
+add_cmocka_test(test_minIni
+  SOURCES test_minIni.c
+  LINK_LIBRARIES MinIni::minIni cmocka::cmocka)
 
-add_test(NAME test_squeue COMMAND test_squeue)
-set_tests_properties(test_squeue
-  PROPERTIES
-  WILL_FAIL FALSE)
+add_cmocka_test(test_squeue
+  SOURCES test_squeue.c
+  LINK_LIBRARIES squeue os cmocka::cmocka)
 
-add_test(NAME test_log_thread_safe COMMAND test_log_thread_safe)
-set_tests_properties(test_log_thread_safe
-  PROPERTIES
-  WILL_FAIL FALSE)
+add_cmocka_test(test_log_thread_safe
+  SOURCES test_log_thread_safe.c
+  LINK_LIBRARIES log Threads::Threads)
 
-add_test(NAME test_log_level COMMAND test_log_level)
+add_cmocka_test(test_log_level
+  SOURCES test_log_level.c
+  LINK_LIBRARIES log)
 set_tests_properties(test_log_level
   PROPERTIES PASS_REGULAR_EXPRESSION ".+TRACE.+Hello world;.+DEBUG.+Hello world;.+INFO.+Hello world;.+WARN.+Hello world")
 
-add_test(NAME test_log_err COMMAND test_log_err)
+add_cmocka_test(test_log_err
+  SOURCES test_log_err.c
+  LINK_LIBRARIES log)
 set_tests_properties(test_log_err
   PROPERTIES
   PASS_REGULAR_EXPRESSION ".+ERROR")
 
-add_test(NAME test_wrap_log_error COMMAND test_wrap_log_error)
-set_tests_properties(test_wrap_log_error
-  PROPERTIES
-  WILL_FAIL FALSE)
+add_library(wrap_log_error OBJECT wrap_log_error.c)
+target_link_libraries(wrap_log_error PRIVATE log cmocka::cmocka)
+target_link_options(wrap_log_error PUBLIC "LINKER:--wrap=log_levels")
+
+add_cmocka_test(test_wrap_log_error
+  SOURCES test_wrap_log_error.c
+  LINK_LIBRARIES log cmocka::cmocka wrap_log_error)
+
+if (USE_NETLINK_SERVICE)
+  add_cmocka_test(test_nl
+    SOURCES test_nl.c
+    LINK_LIBRARIES cmocka::cmocka nl wrap_log_error
+  )
+endif()

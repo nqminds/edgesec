@@ -11,8 +11,8 @@
 #ifndef MAC_MAPPER_H
 #define MAC_MAPPER_H
 
-#include <inttypes.h>
 #include <stdbool.h>
+#include <inttypes.h>
 #include <utarray.h>
 #include <uthash.h>
 
@@ -21,8 +21,8 @@
 #include "../ap/ap_config.h"
 
 #include "../utils/allocs.h"
-#include "../utils/os.h"
 #include "../utils/hashmap.h"
+#include "../utils/os.h"
 
 #define MAX_DEVICE_LABEL_SIZE 255
 
@@ -43,8 +43,8 @@ struct mac_conn_info {
       ip_addr[OS_INET_ADDRSTRLEN]; /**< IP address assigned to the MAC device */
   char ip_sec_addr[OS_INET_ADDRSTRLEN]; /**< The secondary IP address assigned
                                to the MAC device */
-  char
-      ifname[IFNAMSIZ]; /**< WiFi subnet interface assigned to the MAC device */
+  char ifname[IF_NAMESIZE]; /**< WiFi subnet interface assigned to the MAC
+                               device */
   char label[MAX_DEVICE_LABEL_SIZE]; /**< The MAC device label */
   char id[MAX_RANDOM_UUID_LEN];      /**< The MAC device ID */
   uint64_t join_timestamp;           /**< The MAC device AP join timestamp */

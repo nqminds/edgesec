@@ -15,11 +15,11 @@
 #include "sqlite_crypt_writer.h"
 
 #include "../utils/allocs.h"
-#include "../utils/os.h"
 #include "../utils/log.h"
+#include "../utils/os.h"
 #include "../utils/sqliteu.h"
 
-int open_sqlite_crypt_db(char *db_path, sqlite3 **sql) {
+int open_sqlite_crypt_db(const char *db_path, sqlite3 **sql) {
   sqlite3 *db = NULL;
   int rc;
 
@@ -270,7 +270,7 @@ void free_sqlite_secrets_row(struct secrets_row *row) {
   }
 }
 
-struct secrets_row *get_sqlite_secrets_row(sqlite3 *db, char *id) {
+struct secrets_row *get_sqlite_secrets_row(sqlite3 *db, const char *id) {
   struct secrets_row *row;
   sqlite3_stmt *res;
   int rc;

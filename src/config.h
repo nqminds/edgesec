@@ -11,15 +11,15 @@
 #define CONFIG_H
 
 #include <utarray.h>
-#include "utils/hashmap.h"
-#include "utils/allocs.h"
-#include "utils/os.h"
 #include "ap/ap_config.h"
-#include "radius/radius_server.h"
-#include "dns/dns_config.h"
-#include "dhcp/dhcp_config.h"
-#include "supervisor/supervisor_config.h"
 #include "capture/capture_config.h"
+#include "dhcp/dhcp_config.h"
+#include "dns/dns_config.h"
+#include "radius/radius_server.h"
+#include "supervisor/supervisor_config.h"
+#include "utils/allocs.h"
+#include "utils/hashmap.h"
+#include "utils/os.h"
 
 #define MAX_USER_SECRET 255
 #define MAX_SALT_STRING_SIZE 255
@@ -41,10 +41,10 @@ struct app_config {
   bool exec_capture;      /**< Flag to execute the capture service. */
   bool exec_mdns_forward; /**< Flag to execute the mdns forwarding service. */
   bool exec_firewall;     /**< Flag to execute the firewall command. */
-  char nat_bridge[IFNAMSIZ];       /**< The NAT bridge string. */
-  char nat_interface[IFNAMSIZ];    /**< The NAT interface string. */
-  char bridge_prefix[IFNAMSIZ];    /**< The bridge prefix. */
-  char interface_prefix[IFNAMSIZ]; /**< The interface prefix. */
+  char nat_bridge[IF_NAMESIZE];       /**< The NAT bridge string. */
+  char nat_interface[IF_NAMESIZE];    /**< The NAT interface string. */
+  char bridge_prefix[IF_NAMESIZE];    /**< The bridge prefix. */
+  char interface_prefix[IF_NAMESIZE]; /**< The interface prefix. */
   bool create_interfaces; /**< Flag to create the WiFi subnet interfaces. */
   bool ignore_if_error;   /**< Flag if set ignores the errors if subnet already
                              exists. */
@@ -84,9 +84,9 @@ struct app_config {
  *
  * @param filename The app configuration file
  * @param config The configuration structure
- * @return true on success, false otherwise
+ * @return 0 on success, -1 otherwise
  */
-bool load_app_config(const char *filename, struct app_config *config);
+int load_app_config(const char *filename, struct app_config *config);
 
 /**
  * @brief Frees the app configuration

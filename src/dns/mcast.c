@@ -8,24 +8,23 @@
  * @brief File containing the implementation of mDNS utils.
  */
 
-#include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
-#include <errno.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/ioctl.h>
-#include <netinet/in.h>
-#include <net/if.h>
-#include <syslog.h>
-#include <fcntl.h>
+#include <stdlib.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
 #include <arpa/inet.h>
-#include <signal.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <inttypes.h>
+#include <net/if.h>
+#include <signal.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <sys/types.h>
+#include <syslog.h>
+#include <unistd.h>
 
 #include "../utils/log.h"
-#include "../utils/eloop.h"
 #include "../utils/sockctl.h"
 
 #include "mcast.h"
@@ -115,7 +114,6 @@ int join_mcast(int fd, const struct sockaddr_storage *sa, socklen_t sa_len,
 
 int create_recv_mcast(const struct sockaddr_storage *sa, socklen_t sa_len,
                       uint32_t ifindex) {
-  struct ifreq ifr;
   int on = 1;
   int fd, flags;
 
@@ -140,16 +138,20 @@ int create_recv_mcast(const struct sockaddr_storage *sa, socklen_t sa_len,
         return -1;
       }
 #if defined(SO_BINDTODEVICE)
-      if (if_indextoname(ifindex, ifr.ifr_ifrn.ifrn_name) == NULL) {
-        log_errno("if_indextoname");
-        close(fd);
-        return -1;
-      }
+      {
+        struct ifreq ifr;
+        if (if_indextoname(ifindex, ifr.ifr_ifrn.ifrn_name) == NULL) {
+          log_errno("if_indextoname");
+          close(fd);
+          return -1;
+        }
 
-      if (setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, &ifr, sizeof(ifr)) < 0) {
-        log_errno("setsockopt");
-        close(fd);
-        return -1;
+        if (setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, &ifr, sizeof(ifr)) <
+            0) {
+          log_errno("setsockopt");
+          close(fd);
+          return -1;
+        }
       }
 #elif defined(IPV6_BOUND_IF)
       if (setsockopt(fd, IPPROTO_IPV6, IPV6_BOUND_IF, &ifindex,
@@ -158,6 +160,9 @@ int create_recv_mcast(const struct sockaddr_storage *sa, socklen_t sa_len,
         close(fd);
         return -1;
       }
+#else
+      (void)ifindex; /* binding a socket to a specific interface is very
+                        complicated for except for Linux/Darwin */
 #endif
       break;
     case AF_INET:
@@ -179,16 +184,20 @@ int create_recv_mcast(const struct sockaddr_storage *sa, socklen_t sa_len,
       }
 #endif
 #if defined(SO_BINDTODEVICE)
-      if (if_indextoname(ifindex, ifr.ifr_ifrn.ifrn_name) == NULL) {
-        log_errno("if_indextoname");
-        close(fd);
-        return -1;
-      }
+      {
+        struct ifreq ifr;
+        if (if_indextoname(ifindex, ifr.ifr_ifrn.ifrn_name) == NULL) {
+          log_errno("if_indextoname");
+          close(fd);
+          return -1;
+        }
 
-      if (setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, &ifr, sizeof(ifr)) < 0) {
-        log_errno("setsockopt");
-        close(fd);
-        return -1;
+        if (setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, &ifr, sizeof(ifr)) <
+            0) {
+          log_errno("setsockopt");
+          close(fd);
+          return -1;
+        }
       }
 #elif defined(IP_BOUND_IF)
       if (setsockopt(fd, IPPROTO_IP, IP_BOUND_IF, &ifindex, sizeof(ifindex)) <

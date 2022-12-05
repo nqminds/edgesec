@@ -34,7 +34,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/docs")
 
-include(CTest)
+include(AddCMockaTest)
 include(FetchContent)
 include(ExternalProject)
 include(CMakeDependentOption)
@@ -73,6 +73,7 @@ option(BUILD_SQLITE_LIB "Build sqlite3 library" ON)
 option(BUILD_CMOCKA_LIB "Build cmocka library" OFF)
 option(BUILD_UUID_LIB "Build uuid library" ON)
 option(BUILD_PCAP_LIB "Build pcap library" ON)
+option(BUILD_PROTOBUFC_LIB "Build protobuf-c library" ON)
 
 option(USE_NETLINK_SERVICE "Use netlink service" OFF)
 cmake_dependent_option(BUILD_MNL_LIB "Build mnl library" ON USE_NETLINK_SERVICE OFF)
@@ -87,18 +88,24 @@ option(USE_CAPTURE_SERVICE "Use the capture service" ON)
 option(USE_CLEANER_MIDDLEWARE "Use the cleaner middleware" OFF)
 option(USE_HEADER_MIDDLEWARE "Use the header middleware" OFF)
 option(USE_PCAP_MIDDLEWARE "Use the pcap middleware" OFF)
+option(USE_TAP_MIDDLEWARE "Use the tap middleware" OFF)
+option(USE_PROTOBUF_MIDDLEWARE "Use the protobuf middleware" OFF)
 
 cmake_dependent_option(BUILD_UCI_LIB "Build OpenWRT UCI library" ON USE_UCI_SERVICE OFF)
 option(USE_GENERIC_IP_SERVICE "Use generic ip service" OFF)
 
 option(USE_CRYPTO_SERVICE "Use the crypto service" OFF)
 cmake_dependent_option(BUILD_OPENSSL_LIB "Build OpenSSL" ON USE_CRYPTO_SERVICE OFF)
-if (USE_CRYPTO_SERVICE)
-  add_compile_definitions(TEST_CRYPTO_SERVICE_KEY="12345")
-endif ()
 
 option(USE_ZYMKEY4_HSM "Use the Zymkey4 HSM" OFF)
 option(CONFIGURE_COVERAGE "Configure for code coverage (requires lcov)" OFF)
+
+# Default ExternalProject download directory.
+# Useful for two reasons:
+#   - A single download directory can be shared for all build presets
+#   - Allows building/configuring when there is no internet connection
+#     (e.g. OpenWRT SDK or default `pdebuild` environment)
+set(EP_DOWNLOAD_DIR "" CACHE PATH "ExternalProject default DOWNLOAD_DIR")
 
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -155,7 +162,9 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # Include the libraries
 include(hostapd)
 include(cmocka)
+include(minIni)
 include(mnl)
+include(eloop)
 include(netlink)
 include(nl)
 include(uuid)
@@ -165,6 +174,7 @@ include(sqlite)
 include(zymkey4)
 include(uci)
 include(uthash)
+include(protobuf-c)
 
 # On Linux, creates a Threads::Threads target that points to pthread
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
@@ -208,7 +218,10 @@ if (NOT BUILD_ONLY_DOCS)
     message(FATAL_ERROR "You must define enable one of USE_NETLINK_SERVICE or USE_UCI_SERVICE or USE_GENERIC_IP_SERVICE.")
   endif()
 
-  if (NOT CMAKE_CROSSCOMPILING)
+  if (CMAKE_CROSSCOMPILING)
+    # don't add test / code coverage when cross-compiling
+    add_subdirectory(src)
+  else ()
     if (CONFIGURE_COVERAGE)
       include(CodeCoverage)
       # enable before the src() flag to enable code coverage
@@ -223,15 +236,18 @@ if (NOT BUILD_ONLY_DOCS)
         EXECUTABLE_ARGS --output-on-failure -j "${PROCESSOR_COUNT}"
         EXCLUDE
           "${PROJECT_SOURCE_DIR}/lib/*"
-          # this file is only in the build/ directory, but
+          # These files are only in the build/ directory, but
           # llvm-cov gcov doesn't seem to like it
           "${PROJECT_SOURCE_DIR}/middlewares_list.c"
+          # The _deps/ folder is created by CMake's FetchContent
+          "${PROJECT_SOURCE_DIR}/_deps/*"
       )
     endif()
-
+    # src must be after codecoverage but before tests
+    add_subdirectory(src)
     add_subdirectory(tests)
   endif ()
-  add_subdirectory(src)
+
   include(install)
 endif ()
 

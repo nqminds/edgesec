@@ -8,16 +8,16 @@
  * @brief File containing the implementation of the subscriber events structure.
  */
 
-#include <sys/un.h>
-#include <inttypes.h>
 #include <stdbool.h>
+#include <inttypes.h>
+#include <sys/un.h>
 #include <utarray.h>
 
-#include "supervisor_config.h"
 #include "subscriber_events.h"
+#include "supervisor_config.h"
 
-#include "../utils/sockctl.h"
 #include "../utils/log.h"
+#include "../utils/sockctl.h"
 
 #define MAX_SEND_EVENTS_BUF_SIZE 4096
 
@@ -66,7 +66,7 @@ int add_events_subscriber(struct supervisor_context *context,
   return 0;
 }
 
-int send_events(struct supervisor_context *context, char *name,
+int send_events(struct supervisor_context *context, const char *name,
                 const char *format, va_list args) {
   struct client_address *p = NULL;
   char *send_buf = NULL;

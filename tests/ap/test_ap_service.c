@@ -1,29 +1,29 @@
 
 #define _GNU_SOURCE
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <setjmp.h>
 #include <stdarg.h>
 #include <stddef.h>
-#include <string.h>
-#include <inttypes.h>
-#include <unistd.h>
-#include <setjmp.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <cmocka.h>
+#include <fcntl.h>
+#include <inttypes.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-#include "supervisor/supervisor_config.h"
-#include "utils/log.h"
-#include "utils/allocs.h"
-#include "utils/os.h"
-#include "utils/iface.h"
-#include "utils/eloop.h"
-#include "ap/ap_service.h"
+#include <eloop.h>
 #include "ap/ap_config.h"
+#include "ap/ap_service.h"
 #include "ap/hostapd.h"
+#include "supervisor/supervisor_config.h"
+#include "utils/allocs.h"
+#include "utils/iface.h"
+#include "utils/log.h"
+#include "utils/os.h"
 
 bool __wrap_generate_vlan_conf(char *vlan_file, char *interface) {
   (void)vlan_file;

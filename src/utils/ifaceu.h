@@ -11,11 +11,11 @@
 #ifndef IFACEU_H_
 #define IFACEU_H_
 
-#include <errno.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <string.h>
-#include <stdbool.h>
 
 /**
  * @brief if_nametoindex from net/if.h

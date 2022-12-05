@@ -14,13 +14,13 @@
 #ifndef HOSTAPD_H
 #define HOSTAPD_H
 
-#include <sys/types.h>
 #include <stdbool.h>
+#include <sys/types.h>
 
-#include "ap_config.h"
+#include "../radius/radius_server.h"
 #include "../utils/allocs.h"
 #include "../utils/os.h"
-#include "../radius/radius_server.h"
+#include "ap_config.h"
 
 /**
  * @brief Generates and saves the hostapd configuration files
@@ -54,7 +54,7 @@ int run_ap_process(struct apconf *hconf);
  * @param hconf The hostapd process config structure
  * @return int 0 on success, -1 on failure
  */
-int signal_ap_process(struct apconf *hconf);
+int signal_ap_process(const struct apconf *hconf);
 
 /**
  * @brief Terminate the AP service

@@ -11,8 +11,8 @@
 #ifndef IPTABLES_H_
 #define IPTABLES_H_
 
-#include <inttypes.h>
 #include <stdbool.h>
+#include <inttypes.h>
 #include <utarray.h>
 
 #include "allocs.h"
@@ -37,7 +37,7 @@ struct iptables_context {
  * @return struct iptables_context*, pointer to newly created iptables context,
  * NULL on failure
  */
-struct iptables_context *iptables_init(char *path, UT_array *ifinfo_array,
+struct iptables_context *iptables_init(const char *path, UT_array *ifinfo_array,
                                        bool exec_iptables);
 
 /**
@@ -70,8 +70,8 @@ int iptables_add_bridge(struct iptables_context *ctx, char *sip, char *sif,
  * @param dif Destination interface name string
  * @return 0 on success, -1 on error
  */
-int iptables_delete_bridge(struct iptables_context *ctx, char *sip, char *sif,
-                           char *dip, char *dif);
+int iptables_delete_bridge(struct iptables_context *ctx, const char *sip,
+                           const char *sif, const char *dip, const char *dif);
 
 /**
  * @brief Add a NAT rule

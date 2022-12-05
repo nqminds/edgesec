@@ -1,0 +1,87 @@
+From 03270444add875925fef1e2cb97647f45a394d30 Mon Sep 17 00:00:00 2001
+From: Alois Klink <alois@nquiringminds.com>
+Date: Tue, 6 Sep 2022 18:34:47 +0100
+Subject: [PATCH 3/3] Bump timeout parameters from int to long
+
+I'm not 100% sure why this was done.
+I'm guessing that on some platforms, the max int value is only
+32768, and that may cause overflow.
+
+Taken from commit
+https://github.com/nqminds/edgesec/commit/00d465d8705fa439b52a513541dc03c1f4231e4d
+---
+ src/utils/eloop.c |  6 +++---
+ src/utils/eloop.h | 12 ++++++------
+ 2 files changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/src/utils/eloop.c b/src/utils/eloop.c
+index 4035a9a..d1affd2 100644
+--- a/src/utils/eloop.c
++++ b/src/utils/eloop.c
+@@ -694,7 +694,7 @@ void eloop_unregister_sock(struct eloop_data *eloop, int sock, eloop_event_type
+ }
+ 
+ 
+-int eloop_register_timeout(struct eloop_data *eloop, unsigned int secs, unsigned int usecs,
++int eloop_register_timeout(struct eloop_data *eloop, unsigned long secs, unsigned long usecs,
+ 			   eloop_timeout_handler handler,
+ 			   void *eloop_data, void *user_data)
+ {
+@@ -843,7 +843,7 @@ int eloop_is_timeout_registered(struct eloop_data *eloop, eloop_timeout_handler
+ }
+ 
+ 
+-int eloop_deplete_timeout(struct eloop_data *eloop, unsigned int req_secs, unsigned int req_usecs,
++int eloop_deplete_timeout(struct eloop_data *eloop, unsigned long req_secs, unsigned long req_usecs,
+ 			  eloop_timeout_handler handler, void *eloop_data,
+ 			  void *user_data)
+ {
+@@ -880,7 +880,7 @@ int eloop_deplete_timeout(struct eloop_data *eloop, unsigned int req_secs, unsig
+ }
+ 
+ 
+-int eloop_replenish_timeout(struct eloop_data *eloop, unsigned int req_secs, unsigned int req_usecs,
++int eloop_replenish_timeout(struct eloop_data *eloop, unsigned long req_secs, unsigned long req_usecs,
+ 			    eloop_timeout_handler handler, void *eloop_data,
+ 			    void *user_data)
+ {
+diff --git a/src/utils/eloop.h b/src/utils/eloop.h
+index d38e2a9..3269f02 100644
+--- a/src/utils/eloop.h
++++ b/src/utils/eloop.h
+@@ -297,8 +297,8 @@ void eloop_unregister_event(struct eloop_data *eloop, void *event,
+  * Register a timeout that will cause the handler function to be called after
+  * given time.
+  */
+-int eloop_register_timeout(struct eloop_data *eloop, unsigned int secs,
+-                           unsigned int usecs, eloop_timeout_handler handler,
++int eloop_register_timeout(struct eloop_data *eloop, unsigned long secs,
++                           unsigned long usecs, eloop_timeout_handler handler,
+                            void *eloop_data, void *user_data);
+ 
+ /**
+@@ -362,8 +362,8 @@ int eloop_is_timeout_registered(struct eloop_data *eloop,
+  * Find a registered matching <handler,eloop_data,user_data> timeout. If found,
+  * deplete the timeout if remaining time is more than the requested time.
+  */
+-int eloop_deplete_timeout(struct eloop_data *eloop, unsigned int req_secs,
+-                          unsigned int req_usecs,
++int eloop_deplete_timeout(struct eloop_data *eloop, unsigned long req_secs,
++                          unsigned long req_usecs,
+                           eloop_timeout_handler handler, void *eloop_data,
+                           void *user_data);
+ 
+@@ -381,8 +381,8 @@ int eloop_deplete_timeout(struct eloop_data *eloop, unsigned int req_secs,
+  * Find a registered matching <handler,eloop_data,user_data> timeout. If found,
+  * replenish the timeout if remaining time is less than the requested time.
+  */
+-int eloop_replenish_timeout(struct eloop_data *eloop, unsigned int req_secs,
+-                            unsigned int req_usecs,
++int eloop_replenish_timeout(struct eloop_data *eloop, unsigned long req_secs,
++                            unsigned long req_usecs,
+                             eloop_timeout_handler handler, void *eloop_data,
+                             void *user_data);
+ 
+-- 
+2.25.1
+

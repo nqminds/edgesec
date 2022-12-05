@@ -8,17 +8,17 @@
  * @brief File containing the implementation of the network utilities.
  */
 
-#include <inttypes.h>
 #include <stdbool.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <errno.h>
+#include <inttypes.h>
 
 #include "allocs.h"
-#include "os.h"
 #include "net.h"
+#include "os.h"
 
-bool validate_ipv4_string(char *ip) {
+bool validate_ipv4_string(const char *ip) {
   struct sockaddr_in sa;
   char proc_ip[OS_INET_ADDRSTRLEN];
   char *netmask_sep = strchr(ip, '/');
@@ -58,7 +58,7 @@ bool validate_ipv4_string(char *ip) {
   return ret > 0;
 }
 
-int ip_2_nbo(char *ip, char *subnet_mask, in_addr_t *addr) {
+int ip_2_nbo(const char *ip, const char *subnet_mask, in_addr_t *addr) {
   in_addr_t subnet;
 
   if (addr == NULL) {
@@ -81,7 +81,7 @@ int ip_2_nbo(char *ip, char *subnet_mask, in_addr_t *addr) {
   return 0;
 }
 
-int ip4_2_buf(char *ip, uint8_t *buf) {
+int ip4_2_buf(const char *ip, uint8_t buf[static IP_ALEN]) {
   struct in_addr addr;
 
   if (ip == NULL) {
@@ -113,17 +113,20 @@ int ip4_2_buf(char *ip, uint8_t *buf) {
   return 0;
 }
 
-const char *bit32_2_ip(uint32_t addr, char *ip) {
-  struct in_addr in;
-  in.s_addr = addr;
+const char *bit32_2_ip(uint32_t addr, char ip[static OS_INET_ADDRSTRLEN]) {
+  struct in_addr in = {
+      .s_addr = addr,
+  };
   return inet_ntop(AF_INET, &in, ip, OS_INET_ADDRSTRLEN);
 }
 
-const char *inaddr4_2_ip(struct in_addr *addr, char *ip) {
+const char *inaddr4_2_ip(const struct in_addr *addr,
+                         char ip[static OS_INET_ADDRSTRLEN]) {
   return inet_ntop(AF_INET, addr, ip, OS_INET_ADDRSTRLEN);
 }
 
-const char *inaddr6_2_ip(struct in6_addr *addr, char *ip) {
+const char *inaddr6_2_ip(const struct in6_addr *addr,
+                         char ip[static OS_INET6_ADDRSTRLEN]) {
   return inet_ntop(AF_INET6, addr, ip, OS_INET6_ADDRSTRLEN);
 }
 
@@ -148,7 +151,7 @@ uint8_t get_short_subnet(const char *subnet_mask) {
   return short_mask;
 }
 
-int get_ip_host(char *ip, char *subnet_mask, uint32_t *host) {
+int get_ip_host(const char *ip, const char *subnet_mask, uint32_t *host) {
   uint8_t ipbuf[4], mbuf[4];
 
   if (ip4_2_buf(ip, ipbuf) < 0) {

@@ -9,28 +9,28 @@
  */
 
 #define _GNU_SOURCE /* To get defns of NI_MAXSERV and NI_MAXHOST */
-#include <errno.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <arpa/inet.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <fnmatch.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <fcntl.h>
 #include <unistd.h>
-#include <stdbool.h>
-#include <fnmatch.h>
-#include <arpa/inet.h>
 
 #include <sys/socket.h>
-#include <netdb.h>
 #include <ifaddrs.h>
+#include <netdb.h>
 
 #include "allocs.h"
-#include "os.h"
-#include "log.h"
 #include "iface.h"
-#include "ifaceu.h"
-#include "net.h"
 #include "iface_mapper.h"
+#include "ifaceu.h"
+#include "log.h"
+#include "net.h"
+#include "os.h"
 
 #ifdef WITH_NETLINK_SERVICE
 #include "nl.h"
@@ -98,7 +98,7 @@ struct iface_context *iface_init_context(void *params) {
   return ctx;
 }
 
-UT_array *iface_get(char *ifname) {
+UT_array *iface_get(const char *ifname) {
   struct ifaddrs *ifaddr;
   int ret;
   char ipaddr[NI_MAXHOST];
@@ -154,7 +154,8 @@ UT_array *iface_get(char *ifname) {
   return interfaces;
 }
 
-UT_array *iface_get_ip4(struct iface_context *ctx, char *brname, char *ifname) {
+UT_array *iface_get_ip4(const struct iface_context *ctx, const char *brname,
+                        const char *ifname) {
   (void)ctx;
 
   UT_array *ip4s = NULL;
@@ -194,18 +195,18 @@ UT_array *iface_get_ip4(struct iface_context *ctx, char *brname, char *ifname) {
   return ip4s;
 }
 
-char *iface_get_vlan(char *buf) {
+char *iface_get_vlan(char if_buf[static IF_NAMESIZE]) {
 #ifdef WITH_NETLINK_SERVICE
-  return nl_get_valid_iw(buf);
+  return nl_get_valid_iw(if_buf);
 #else
-  (void)buf;
+  (void)if_buf;
 
   log_trace("iface_get_vlan not implemented");
   return NULL;
 #endif
 }
 
-int reset_interface(struct iface_context *ctx, char *ifname) {
+int reset_interface(const struct iface_context *ctx, const char *ifname) {
   log_trace("Reseting interface state for if_name=%s", ifname);
 #ifdef WITH_NETLINK_SERVICE
   (void)ctx;
@@ -221,8 +222,9 @@ int reset_interface(struct iface_context *ctx, char *ifname) {
 #endif
 }
 
-int iface_create(struct iface_context *ctx, char *brname, char *ifname,
-                 char *type, char *ip_addr, char *brd_addr, char *subnet_mask) {
+int iface_create(const struct iface_context *ctx, const char *brname,
+                 const char *ifname, const char *type, const char *ip_addr,
+                 const char *brd_addr, const char *subnet_mask) {
 #ifdef WITH_NETLINK_SERVICE
   (void)brname;
   return nl_create_interface(ctx->context, ifname, type, ip_addr, brd_addr,
@@ -249,8 +251,9 @@ int iface_create(struct iface_context *ctx, char *brname, char *ifname,
 #endif
 }
 
-int iface_set_ip4(struct iface_context *ctx, char *brname, char *ifname,
-                  char *ip_addr, char *brd_addr, char *subnet_mask) {
+int iface_set_ip4(const struct iface_context *ctx, const char *brname,
+                  const char *ifname, const char *ip_addr, const char *brd_addr,
+                  const char *subnet_mask) {
 
 #ifdef WITH_NETLINK_SERVICE
   (void)brname;
@@ -277,7 +280,7 @@ int iface_set_ip4(struct iface_context *ctx, char *brname, char *ifname,
 #endif
 }
 
-int iface_commit(struct iface_context *ctx) {
+int iface_commit(const struct iface_context *ctx) {
   log_debug("Commiting interface changes");
 #ifdef WITH_NETLINK_SERVICE
   (void)ctx;

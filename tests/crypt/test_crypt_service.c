@@ -1,21 +1,21 @@
 #define _GNU_SOURCE
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <inttypes.h>
-#include <unistd.h>
-#include <setjmp.h>
-#include <stdint.h>
 #include <cmocka.h>
+#include <fcntl.h>
+#include <inttypes.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
+#include "crypt/crypt_service.h"
 #include "utils/log.h"
 #include "utils/sqliteu.h"
-#include "crypt/crypt_service.h"
 
 extern int __real_crypto_decrypt(uint8_t *in, int in_size, uint8_t *key,
                                  uint8_t *iv, uint8_t *out);

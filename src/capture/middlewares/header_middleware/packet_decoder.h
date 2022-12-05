@@ -16,8 +16,8 @@
 
 #include <utarray.h>
 #include "../../../utils/allocs.h"
-#include "../../../utils/os.h"
 #include "../../../utils/net.h"
+#include "../../../utils/os.h"
 
 #define MAX_QUESTION_LEN 255
 
@@ -50,7 +50,7 @@ struct eth_schema {
   char id[MAX_RANDOM_UUID_LEN]; /**< Packet id */
   uint32_t caplen;              /**< Packet caplen */
   uint32_t length;              /**< Packet length */
-  char ifname[IFNAMSIZ];        /**< Packet interface name */
+  char ifname[IF_NAMESIZE];     /**< Packet interface name */
   char ether_dhost[MACSTR_LEN]; /**< Packet destination eth addr */
   char ether_shost[MACSTR_LEN]; /**< Packet source ether addr */
   uint16_t ether_type;          /**< Packet packet type ID field */
@@ -180,7 +180,7 @@ struct dns_schema {
   uint16_t nanswers;            /**< Packet Answers */
   uint16_t nauth;               /**< Packet Authority PRs */
   uint16_t nother;              /**< Packet Other PRs */
-  char qname[MAX_QUESTION_LEN]; /**< Packet question name*/
+  char qname[MAX_QUESTION_LEN]; /**< Packet question name */
 };
 
 /**
@@ -328,7 +328,7 @@ struct capture_packet {
   uint64_t timestamp;
   uint32_t caplen;
   uint32_t length;
-  char ifname[IFNAMSIZ];
+  char ifname[IF_NAMESIZE];
   char id[MAX_RANDOM_UUID_LEN];
 };
 
@@ -339,12 +339,10 @@ struct capture_packet {
  * @param header The packet header as per pcap
  * @param packet The packet data
  * @param interface The packet interface
- * @param id The packet id
  * @param tp_array The array of returned packet tuples
  * @return int Total count of packet tuples
  */
 int extract_packets(const char *ltype, const struct pcap_pkthdr *header,
-                    const uint8_t *packet, char *interface, char *id,
-                    UT_array *tp_array);
+                    const uint8_t *packet, char *interface, UT_array *tp_array);
 
 #endif

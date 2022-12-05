@@ -11,9 +11,9 @@
 #ifndef SUBSCRIBER_EVENTS_H
 #define SUBSCRIBER_EVENTS_H
 
-#include <sys/un.h>
-#include <inttypes.h>
 #include <stdbool.h>
+#include <inttypes.h>
+#include <sys/un.h>
 
 #include "supervisor_config.h"
 

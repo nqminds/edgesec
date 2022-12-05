@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package eth;
+
+message EthSchema {
+  // Packet timestamp
+  uint64 timestamp = 1;
+
+  // Packet id
+  string id = 2;
+
+  // Packet caplen
+  uint32 caplen = 3;
+
+  // Packet length
+  uint32 length = 4;
+
+  // Packet interface name
+  string ifname = 5;
+
+  // Packet destination eth addr
+  string ether_dhost = 6;
+
+  // Packet source ether addr
+  string ether_shost = 7;
+
+  // Packet packet type ID field
+  uint32 ether_type = 8;
+}

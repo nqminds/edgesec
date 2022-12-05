@@ -12,15 +12,15 @@
  * @brief Dynamic data buffer.
  */
 
-#include <stdio.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <signal.h>
-#include <sys/select.h>
 #include <errno.h>
+#include <signal.h>
 #include <string.h>
+#include <sys/select.h>
 
 /* According to earlier standards */
 #include <sys/time.h>
@@ -29,8 +29,8 @@
 
 #include "wpabuf.h"
 
-#include "utils/log.h"
 #include "utils/allocs.h"
+#include "utils/log.h"
 #include "utils/os.h"
 
 static void wpabuf_overflow(const struct wpabuf *buf, size_t len) {

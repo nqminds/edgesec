@@ -1,22 +1,22 @@
 #define _GNU_SOURCE
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <inttypes.h>
-#include <unistd.h>
-#include <setjmp.h>
-#include <stdint.h>
 #include <cmocka.h>
+#include <fcntl.h>
+#include <inttypes.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "system_checks.h"
 #include "utils/hashmap.h"
-#include "utils/log.h"
 #include "utils/iw.h"
+#include "utils/log.h"
 
 static void test_check_systems_commands(void **state) {
   (void)state; /* unused */
@@ -32,7 +32,7 @@ static void test_check_systems_commands(void **state) {
 
   assert_non_null(hmap);
 
-  char *value = hmap_str_keychar_get(&hmap, "ls");
+  const char *value = hmap_str_keychar_get(hmap, "ls");
 
   assert_string_equal(value, "/bin/ls");
 

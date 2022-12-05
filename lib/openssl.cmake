@@ -45,19 +45,27 @@ if (USE_CRYPTO_SERVICE)
       no-dso no-engine no-threads no-unit-test
     )
 
+    if ("${CMAKE_GENERATOR}" MATCHES "Makefiles")
+      set(MAKE_COMMAND "$(MAKE)") # recursive make (uses the same make as the main project)
+    else()
+      # just run make in a subprocess. Will be very slow, since it's single-process.
+      set(MAKE_COMMAND "make")
+    endif ()
+
     set(LIBOPENSSL_INSTALL_ROOT "${CMAKE_CURRENT_BINARY_DIR}/lib")
     set(LIBOPENSSL_INSTALL_DIR "${LIBOPENSSL_INSTALL_ROOT}/openssl")
     ExternalProject_Add(
       openssl_src
       URL https://www.openssl.org/source/openssl-3.0.0.tar.gz
       URL_HASH SHA256=59eedfcb46c25214c9bd37ed6078297b4df01d012267fe9e9eee31f61bc70536
+      DOWNLOAD_DIR "${EP_DOWNLOAD_DIR}" # if empty string, uses default download dir
       INSTALL_DIR "${LIBOPENSSL_INSTALL_DIR}"
       CONFIGURE_COMMAND
         ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" "CC=${CMAKE_C_COMPILER}" "CXX=${CMAKE_CXX_COMPILER}"
         <SOURCE_DIR>/Configure ${OpenSSL_Configure_Args}
       LIST_SEPARATOR " " # expand ${OpenSSL_Configure_Args} to space-separated list
       # only install software, don't install or build docs
-      INSTALL_COMMAND $(MAKE) install_sw
+      INSTALL_COMMAND "${MAKE_COMMAND}" install_sw
     )
 
     set(LIBOPENSSL_INCLUDE_PATH "${LIBOPENSSL_INSTALL_DIR}/include")

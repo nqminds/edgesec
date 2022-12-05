@@ -9,22 +9,22 @@
  * utilities.
  */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
 #include <libgen.h>
 #include <sqlite3.h>
+#include <string.h>
 
 #include "pcap_middleware.h"
 #include "pcap_queue.h"
 #include "sqlite_pcap.h"
 
+#include <eloop.h>
 #include "../../../utils/allocs.h"
-#include "../../../utils/os.h"
 #include "../../../utils/log.h"
+#include "../../../utils/os.h"
 #include "../../../utils/squeue.h"
-#include "../../../utils/eloop.h"
 
 #include "../../pcap_service.h"
 
@@ -156,7 +156,8 @@ void free_pcap_middleware(struct middleware_context *context) {
 
 struct middleware_context *init_pcap_middleware(sqlite3 *db, char *db_path,
                                                 struct eloop_data *eloop,
-                                                struct pcap_context *pc) {
+                                                struct pcap_context *pc,
+                                                char *params) {
   struct middleware_context *context = NULL;
   struct pcap_middleware_context *pcap_context = NULL;
 
@@ -193,6 +194,7 @@ struct middleware_context *init_pcap_middleware(sqlite3 *db, char *db_path,
   context->eloop = eloop;
   context->pc = pc;
   context->mdata = (void *)pcap_context;
+  context->params = params;
 
   if (get_pcap_folder_path(db_path, pcap_context->pcap_path) < 0) {
     log_error("get_pcap_folder_path fail");

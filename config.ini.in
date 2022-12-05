@@ -29,6 +29,7 @@ filter = ""
 promiscuous = false
 bufferTimeout = 10
 immediate = false
+middlewareParams = ""
 
 [supervisor]
 supervisorControlPort = 32001
@@ -53,7 +54,7 @@ wpaKeyMgmt = "WPA-PSK"
 rsnPairwise = "CCMP"
 ctrlInterface = "@EDGESEC_full_runstate_dir@/hostapd"
 macaddrAcl = 2
-dynamicVlan = 1
+dynamicVlan = 2
 vlanFile = "@EDGESEC_full_config_dir@/hostapd.vlan"
 loggerStdout = -1
 loggerStdoutLevel = 0

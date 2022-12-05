@@ -1,22 +1,22 @@
 #define _GNU_SOURCE
 
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <fcntl.h>
-#include <ctype.h>
-#include <unistd.h>
-#include <stdbool.h>
-#include <errno.h>
-#include <libgen.h>
-#include <setjmp.h>
-#include <stdint.h>
 #include <cmocka.h>
+#include <ctype.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <libgen.h>
+#include <unistd.h>
 
-#include "utils/log.h"
-#include "dhcp/dnsmasq.h"
 #include "dhcp/dhcp_config.h"
 #include "dhcp/dhcp_service.h"
+#include "dhcp/dnsmasq.h"
+#include "utils/log.h"
 
 char *dhcp_bin_path = "/tmp/sbin/dnsmasq";
 char *dnsmasq_proc_name = "dnsmasq";

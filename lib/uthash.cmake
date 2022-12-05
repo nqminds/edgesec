@@ -3,17 +3,18 @@ if (BUILD_ONLY_DOCS)
 else ()
     # it's possible to find uthash on Ubuntu/Debian repos, but it's a tiny
     # download, so we might as well download it
-    ExternalProject_Add(
+
+    # this version removes the strdup requirement for better ISO C compatibility
+    set(UTHASH_VERSION 85bf75ab7189858f97b83a90a1426a1d5420d2d6)
+    FetchContent_Declare(
         uthash
-        URL https://github.com/troydhanson/uthash/archive/refs/tags/v2.1.0.tar.gz
-        URL_HASH SHA512=c8005113a48ec7636715ecec0286a5d9086971a7267947aba9e0ad031b6113a4f38a1fb512d33d6fefb5891635fdd31169ce4d6ab04b938bda612ebbccb3eda0
-        CONFIGURE_COMMAND ""
-        BUILD_COMMAND ""
-        # no point in installing anything, since it's just .h header files
-        INSTALL_COMMAND ""
+        URL "https://api.github.com/repos/troydhanson/uthash/tarball/${UTHASH_VERSION}"
+        URL_HASH SHA512=2343ea488694e3d982a20cde0a2dfe371fc4cf7873f692eaca86f4ba36ad1e082797ad2006450cc0e68c504de689c0d7c12942622e724213782c6887f671512b
+        DOWNLOAD_NAME "uthash-${UTHASH_VERSION}.tar.gz"
+        DOWNLOAD_DIR "${EP_DOWNLOAD_DIR}" # if empty string, uses default download dir
     )
-    ExternalProject_Get_Property(uthash SOURCE_DIR)
-    set(UTHASH_INCLUDE_DIR "${SOURCE_DIR}/include")
+    FetchContent_MakeAvailable(uthash)
+    set(UTHASH_INCLUDE_DIR "${uthash_SOURCE_DIR}/include")
     file(MAKE_DIRECTORY "${UTHASH_INCLUDE_DIR}")
 
     # Could import libut for static lib (see https://github.com/troydhanson/libut)

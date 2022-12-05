@@ -8,32 +8,32 @@
  * @brief File containing the definition of the service runners.
  */
 
+#include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <fcntl.h>
 #include <ctype.h>
-#include <unistd.h>
-#include <stdbool.h>
+#include <fcntl.h>
 #include <libgen.h>
-#include <utarray.h>
 #include <pthread.h>
+#include <unistd.h>
+#include <utarray.h>
 
-#include "utils/log.h"
-#include "utils/hashmap.h"
+#include <eloop.h>
 #include "utils/allocs.h"
-#include "utils/os.h"
-#include "utils/net.h"
-#include "utils/eloop.h"
+#include "utils/hashmap.h"
+#include "utils/iface.h"
 #include "utils/iface_mapper.h"
 #include "utils/ifaceu.h"
-#include "utils/iface.h"
+#include "utils/log.h"
+#include "utils/net.h"
+#include "utils/os.h"
 
 #include "capture/capture_service.h"
 
-#include "supervisor/supervisor.h"
 #include "supervisor/network_commands.h"
 #include "supervisor/sqlite_macconn_writer.h"
+#include "supervisor/supervisor.h"
 #ifdef WITH_RADIUS_SERVICE
 #include "radius/radius_service.h"
 #endif
@@ -47,8 +47,8 @@
 
 #include "firewall/firewall_service.h"
 
-#include "runctl.h"
 #include "config.h"
+#include "runctl.h"
 
 static const UT_icd mac_conn_icd = {sizeof(struct mac_conn), NULL, NULL, NULL};
 static const UT_icd config_ifinfo_icd = {sizeof(config_ifinfo_t), NULL, NULL,
@@ -70,7 +70,7 @@ int init_mac_mapper_ifnames(UT_array *connections,
   if (connections != NULL) {
     while ((p = (struct mac_conn *)utarray_next(connections, p)) != NULL) {
       int ret = get_vlan_mapper(vlan_mapper, p->info.vlanid, &vlan_conn);
-      os_memcpy(p->info.ifname, vlan_conn.ifname, IFNAMSIZ);
+      os_memcpy(p->info.ifname, vlan_conn.ifname, IF_NAMESIZE);
       if (ret < 0) {
         log_error("get_vlan_mapper fail");
         return -1;
@@ -243,7 +243,7 @@ int construct_ap_ctrlif(char *ctrl_interface, char *interface,
 
 int init_context(struct app_config *app_config,
                  struct supervisor_context *ctx) {
-  char *commands[] = {"ip", "iw", "iptables", "sysctl", NULL};
+  const char *commands[] = {"ip", "iw", "iptables", "sysctl", NULL};
 
   ctx->config_ifinfo_array = NULL;
   ctx->hmap_bin_paths = NULL;
@@ -254,11 +254,6 @@ int init_context(struct app_config *app_config,
     return -1;
   }
 
-  if ((ctx->eloop = (struct eloop_data *)eloop_init()) == NULL) {
-    log_error("Failed to initialize event loop");
-    return -1;
-  }
-
   log_debug("Getting system commands paths");
   if (get_commands_paths(commands, app_config->bin_path_array,
                          &ctx->hmap_bin_paths) < 0) {
@@ -266,7 +261,7 @@ int init_context(struct app_config *app_config,
     return -1;
   }
 
-  char *ipcmd_path = hmap_str_keychar_get(&ctx->hmap_bin_paths, "ip");
+  const char *ipcmd_path = hmap_str_keychar_get(ctx->hmap_bin_paths, "ip");
   if (ipcmd_path == NULL) {
     log_error("Couldn't find ip command");
     return -1;
@@ -304,8 +299,8 @@ int init_context(struct app_config *app_config,
   os_memcpy(ctx->wpa_passphrase, app_config->hconfig.wpa_passphrase,
             ctx->wpa_passphrase_len);
 
-  os_memcpy(ctx->nat_bridge, app_config->nat_bridge, IFNAMSIZ);
-  os_memcpy(ctx->nat_interface, app_config->nat_interface, IFNAMSIZ);
+  os_memcpy(ctx->nat_bridge, app_config->nat_bridge, IF_NAMESIZE);
+  os_memcpy(ctx->nat_interface, app_config->nat_interface, IF_NAMESIZE);
 
   os_memcpy(&ctx->capture_config, &app_config->capture_config,
             sizeof(struct capture_conf));
@@ -339,7 +334,7 @@ int init_context(struct app_config *app_config,
   }
 
   log_debug("Creating VLAN ID to interface mapper...");
-  if (!create_vlan_mapper(ctx->config_ifinfo_array, &ctx->vlan_mapper)) {
+  if (create_vlan_mapper(ctx->config_ifinfo_array, &ctx->vlan_mapper) < 0) {
     log_error("create_if_mapper fail");
     return -1;
   }
@@ -355,30 +350,36 @@ int init_context(struct app_config *app_config,
   return 0;
 }
 
-int run_mdns_forwarder(char *mdns_bin_path, char *config_ini_path) {
-  int ret;
+int run_mdns_forwarder(const char *mdns_bin_path, const char *config_ini_path) {
+  int ret = -1;
+  const char *process_argv[5] = {mdns_bin_path, MDNS_OPT_CONFIG,
+                                 config_ini_path, NULL};
+  char *proc_name = NULL;
+  char **process_argv_copy = copy_argv(process_argv);
+  if (process_argv_copy == NULL) {
+    log_errno("Failed to copy_argv for %s", mdns_bin_path);
+    goto cleanup;
+  }
+
   pid_t child_pid;
-  char *proc_name;
-  char *process_argv[5] = {NULL, NULL, NULL, NULL};
-  process_argv[0] = mdns_bin_path;
-  process_argv[1] = MDNS_OPT_CONFIG;
-  process_argv[2] = config_ini_path;
+  int run_process_return_code = run_process(process_argv_copy, &child_pid);
 
-  ret = run_process(process_argv, &child_pid);
-
-  if ((proc_name = os_strdup(basename(process_argv[0]))) == NULL) {
+  if ((proc_name = os_strdup(basename(process_argv_copy[0]))) == NULL) {
     log_errno("os_strdup");
-    return -1;
+    goto cleanup;
   }
 
   if (is_proc_running(proc_name) <= 0) {
     log_error("is_proc_running fail (%s)", proc_name);
-    os_free(proc_name);
-    return -1;
+    goto cleanup;
   }
 
   log_debug("Found mdns process running with pid=%d (%s)", child_pid,
             proc_name);
+  ret = run_process_return_code;
+
+cleanup:
+  free(process_argv_copy);
   os_free(proc_name);
 
   return ret;
@@ -390,13 +391,18 @@ void close_capture_thread(const hmap_vlan_conn *vlan_mapper) {
     if (current->value.capture_pid == 0) {
       continue; // vlan has no capture thread running
     }
-    if (pthread_join(current->value.capture_pid, NULL) != 0) {
-      log_errno("pthread_join");
+    int *ret = NULL;
+    pthread_join(current->value.capture_pid, (void **)&ret);
+    if (ret != NULL) {
+      if (*ret < 0) {
+        log_error("run_capture on vlanid=%d fail", current->value.vlanid);
+      }
+      os_free(ret);
     }
   }
 }
 
-int run_ctl(struct app_config *app_config) {
+int run_ctl(struct app_config *app_config, struct eloop_data *eloop) {
   struct supervisor_context *context = NULL;
 
   if ((context = os_zalloc(sizeof(struct supervisor_context))) == NULL) {
@@ -407,6 +413,15 @@ int run_ctl(struct app_config *app_config) {
   if (init_context(app_config, context) < 0) {
     log_error("init_context fail");
     goto run_engine_fail;
+  }
+
+  if (eloop == NULL) {
+    if ((context->eloop = (struct eloop_data *)eloop_init()) == NULL) {
+      log_error("Failed to initialize event loop");
+      goto run_engine_fail;
+    }
+  } else {
+    context->eloop = eloop;
   }
 
   log_info("AP name: %s", context->hconfig.ssid);
@@ -452,12 +467,6 @@ int run_ctl(struct app_config *app_config) {
                                  context->config_ifinfo_array,
                                  app_config->ignore_if_error) < 0) {
       log_error("create_subnet_interfaces fail");
-      goto run_engine_fail;
-    }
-  } else {
-    log_info("Assigning subnet IPs...");
-    if (set_subnet_ips(context->iface_ctx, context->config_ifinfo_array) < 0) {
-      log_error("set_subnet_ips fail");
       goto run_engine_fail;
     }
   }
@@ -537,6 +546,7 @@ int run_ctl(struct app_config *app_config) {
   log_info("++++++++++++++++++");
 
   eloop_run(context->eloop);
+  log_info("Exit event loop");
 
   if (context->exec_capture) {
     close_capture_thread(context->vlan_mapper);

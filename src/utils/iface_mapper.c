@@ -8,23 +8,23 @@
  * @brief File containing the implementation of the interface mapper utilities.
  */
 
-#include <errno.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <arpa/inet.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <fnmatch.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <fcntl.h>
 #include <unistd.h>
-#include <stdbool.h>
-#include <fnmatch.h>
-#include <arpa/inet.h>
 
 #include "allocs.h"
-#include "os.h"
-#include "log.h"
 #include "iface_mapper.h"
 #include "ifaceu.h"
+#include "log.h"
 #include "net.h"
+#include "os.h"
 
 int get_if_mapper(hmap_if_conn **hmap, in_addr_t subnet, char *ifname) {
   hmap_if_conn *s;
@@ -43,7 +43,7 @@ int get_if_mapper(hmap_if_conn **hmap, in_addr_t subnet, char *ifname) {
             s); /* id already in the hash? */
 
   if (s != NULL) {
-    os_memcpy(ifname, s->value, IFNAMSIZ);
+    os_memcpy(ifname, s->value, IF_NAMESIZE);
     return 1;
   }
 
@@ -75,12 +75,12 @@ bool put_if_mapper(hmap_if_conn **hmap, in_addr_t subnet, char *ifname) {
 
     // Copy the key and value
     s->key = subnet;
-    os_memcpy(s->value, ifname, IFNAMSIZ);
+    os_memcpy(s->value, ifname, IF_NAMESIZE);
 
     HASH_ADD(hh, *hmap, key, sizeof(in_addr_t), s);
   } else {
     // Copy the value
-    os_memcpy(s->value, ifname, IFNAMSIZ);
+    os_memcpy(s->value, ifname, IF_NAMESIZE);
   }
 
   return true;
@@ -285,7 +285,7 @@ bool create_if_mapper(UT_array *config_ifinfo_array, hmap_if_conn **hmap) {
   return true;
 }
 
-bool create_vlan_mapper(UT_array *config_ifinfo_array, hmap_vlan_conn **hmap) {
+int create_vlan_mapper(UT_array *config_ifinfo_array, hmap_vlan_conn **hmap) {
   config_ifinfo_t *p = NULL;
   struct vlan_conn vlan_conn;
   if (config_ifinfo_array != NULL) {
@@ -294,16 +294,16 @@ bool create_vlan_mapper(UT_array *config_ifinfo_array, hmap_vlan_conn **hmap) {
       log_trace("Adding vlanid=%d and ifname=%s to mapper", p->vlanid,
                 p->ifname);
       vlan_conn.vlanid = p->vlanid;
-      os_memcpy(vlan_conn.ifname, p->ifname, IFNAMSIZ);
+      os_memcpy(vlan_conn.ifname, p->ifname, IF_NAMESIZE);
       vlan_conn.capture_pid = 0;
       if (!put_vlan_mapper(hmap, &vlan_conn)) {
         log_trace("put_if_mapper fail");
         free_vlan_mapper(hmap);
-        return false;
+        return -1;
       }
     }
   }
-  return true;
+  return 0;
 }
 
 int init_ifbridge_names(UT_array *config_ifinfo_array, char *ifname,
@@ -312,12 +312,12 @@ int init_ifbridge_names(UT_array *config_ifinfo_array, char *ifname,
 
   while ((p = (config_ifinfo_t *)utarray_next(config_ifinfo_array, p)) !=
          NULL) {
-    if (snprintf(p->ifname, IFNAMSIZ, "%s%d", ifname, p->vlanid) < 0) {
+    if (snprintf(p->ifname, IF_NAMESIZE, "%s%d", ifname, p->vlanid) < 0) {
       log_errno("snprintf");
       return -1;
     }
 
-    if (snprintf(p->brname, IFNAMSIZ, "%s%d", brname, p->vlanid) < 0) {
+    if (snprintf(p->brname, IF_NAMESIZE, "%s%d", brname, p->vlanid) < 0) {
       log_errno("snprintf");
       return -1;
     }

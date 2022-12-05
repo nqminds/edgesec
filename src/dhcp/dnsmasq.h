@@ -39,12 +39,15 @@ int generate_dnsmasq_script(char *dhcp_script_path,
 /**
  * @brief Execute the DHCP server
  *
+ * This function returns a pointer to statically allocated memory,
+ * which may be overwritten by subsequent calls.
+ *
  * @param dhcp_bin_path The DHCP server binary path
  * @param dhcp_conf_path The DHCP server config path
- * @return char* The pointer to the statically allocated process name, NULL on
- * failure
+ * @return The pointer to the statically allocated process name, NULL on
+ * failure. Do not pass this pointer to @p free()
  */
-char *run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path);
+char *run_dhcp_process(const char *dhcp_bin_path, const char *dhcp_conf_path);
 
 /**
  * @brief Terminate the DHCP server
@@ -77,7 +80,7 @@ int clear_dhcp_lease_entry(char *mac_addr, char *dhcp_leasefile_path);
  * @param vlanid The vlan id.
  * @param[out] ifname The DHCP interface name.
  * @pre @p vlanid must be less than 4095 chars
- * @pre @p ifname must point to at least #IFNAMSIZ bytes.
+ * @pre @p ifname must point to at least #IF_NAMESIZE bytes.
  * @retval  0 Success
  * @retval -1 Error (invalid args)
  */

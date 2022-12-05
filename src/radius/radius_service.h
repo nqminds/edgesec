@@ -11,8 +11,8 @@
 #ifndef RADIUS_SERVICE_H
 #define RADIUS_SERVICE_H
 
+#include <eloop.h>
 #include "../supervisor/supervisor.h"
-#include "../utils/eloop.h"
 
 #include "radius_server.h"
 

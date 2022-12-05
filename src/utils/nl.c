@@ -8,41 +8,41 @@
  * @brief File containing the implementation of the netlink utilities.
  */
 
-#include <errno.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+#include <arpa/inet.h>
+#include <errno.h>
 #include <fcntl.h>
-#include <unistd.h>
-#include <stdbool.h>
 #include <fnmatch.h>
 #include <linux/netlink.h>
 #include <linux/nl80211.h>
-#include <arpa/inet.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-#include <netlink/genl/genl.h>
-#include <netlink/genl/family.h>
-#include <netlink/genl/ctrl.h>
-#include <netlink/msg.h>
 #include <netlink/attr.h>
+#include <netlink/genl/ctrl.h>
+#include <netlink/genl/family.h>
+#include <netlink/genl/genl.h>
+#include <netlink/msg.h>
 
 #include "libnetlink.h"
 #include "ll_map.h"
-#include "utils.h"
 #include "rt_names.h"
+#include "utils.h"
 
 #include "linux/if_addr.h"
 #include "linux/if_infiniband.h"
 
 #include "allocs.h"
-#include "os.h"
-#include "log.h"
-#include "nl.h"
-#include "net.h"
 #include "iface_mapper.h"
 #include "ifaceu.h"
+#include "log.h"
+#include "net.h"
+#include "nl.h"
+#include "os.h"
 
 static int ifindex = 0;
 struct rtnl_handle rth = {.fd = -1};
@@ -291,7 +291,7 @@ int get_linkinfo(struct nlmsghdr *n, netif_info_t *info) {
     return -1;
 
   info->ifindex = ifi->ifi_index;
-  os_strlcpy(info->ifname, name, IFNAMSIZ);
+  os_strlcpy(info->ifname, name, IF_NAMESIZE);
   log_trace("ifindex=%d if=%s", ifi->ifi_index, info->ifname);
 
   if (tb[IFLA_OPERSTATE]) {
@@ -757,7 +757,7 @@ nl_new_interface_err:
   return -1;
 }
 
-int nl_set_interface_ip(struct nlctx *context, const char *ifname,
+int nl_set_interface_ip(const struct nlctx *context, const char *ifname,
                         const char *ip_addr, const char *brd_addr,
                         const char *subnet_mask) {
   (void)context;
@@ -846,11 +846,9 @@ void nl_free_context(struct nlctx *context) {
   }
 }
 
-int nl_create_interface(struct nlctx *context, char *ifname, char *type,
-                        char *ip_addr, char *brd_addr,
-                        const char *subnet_mask) {
-  (void)context;
-
+int nl_create_interface(const struct nlctx *context, const char *ifname,
+                        const char *type, const char *ip_addr,
+                        const char *brd_addr, const char *subnet_mask) {
   if (ifname == NULL) {
     log_error("ifname param is NULL");
     return -1;
@@ -895,7 +893,7 @@ int nl_create_interface(struct nlctx *context, char *ifname, char *type,
   return 0;
 }
 
-int nl_reset_interface(char *ifname) {
+int nl_reset_interface(const char *ifname) {
   if (nl_set_interface_state(ifname, false) < 0) {
     log_error("nl_set_interface_state fail");
     return -1;
@@ -1058,7 +1056,7 @@ static int process_iface_handler(struct nl_msg *msg, void *arg) {
 
   if (tb_msg[NL80211_ATTR_IFNAME]) {
     os_strlcpy(element.ifname, nla_get_string(tb_msg[NL80211_ATTR_IFNAME]),
-               IFNAMSIZ);
+               IF_NAMESIZE);
 
     if (tb_msg[NL80211_ATTR_IFINDEX]) {
       element.ifindex = nla_get_u32(tb_msg[NL80211_ATTR_IFINDEX]);
@@ -1239,7 +1237,7 @@ int nl_is_iw_vlan(const char *ifname) {
   return -1;
 }
 
-char *nl_get_valid_iw(char *buf) {
+char *nl_get_valid_iw(char buf[static IF_NAMESIZE]) {
   UT_array *netif_list = get_netiw_info();
 
   if (netif_list == NULL) {
@@ -1259,7 +1257,7 @@ char *nl_get_valid_iw(char *buf) {
     int ret = iwace_isvlan(el->wiphy);
 
     if (ret == 1) {
-      os_strlcpy(buf, el->ifname, IFNAMSIZ);
+      os_strlcpy(buf, el->ifname, IF_NAMESIZE);
       utarray_free(netif_list);
       return buf;
     } else if (ret < 0) {

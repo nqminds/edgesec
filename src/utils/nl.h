@@ -11,11 +11,12 @@
 #ifndef NL_H_
 #define NL_H_
 
+#include <stdbool.h>
+#include <net/ethernet.h>
 #include <net/if.h>
 #include <netinet/if_ether.h>
-#include "linux/rtnetlink.h"
 #include <utarray.h>
-#include <stdbool.h>
+#include "linux/rtnetlink.h"
 
 #ifdef DEBUG_LIBNL
 #define NL_CB_TYPE NL_CB_DEBUG
@@ -37,7 +38,7 @@ struct nl80211_state {
  *
  */
 typedef struct {
-  char ifname[IFNAMSIZ];        /**< Interface string name */
+  char ifname[IF_NAMESIZE];     /**< Interface string name */
   uint32_t ifindex;             /**< Interface index */
   uint64_t wdev;                /**< Physical interface wdev param */
   uint8_t addr[ETHER_ADDR_LEN]; /**< Interface byte MAC address */
@@ -53,14 +54,15 @@ struct iplink_req {
 /**
  * @brief Initialises the nl context
  *
- * @return struct nlctx* The nl context
+ * @return The nl context, or NULL on error (e.g. memory allocation failure).
+ * You must nl_free_context() this object when done with it.
  */
 struct nlctx *nl_init_context(void);
 
 /**
  * @brief Frees the nl context
  *
- * @param context The nl context
+ * @param context The nl context created by nl_init_context()
  */
 void nl_free_context(struct nlctx *context);
 
@@ -68,7 +70,8 @@ void nl_free_context(struct nlctx *context);
  * @brief Get the array of @c struct netif_info_t for each available interface
  *
  * @param if_id The intreface id, if 0 return all interfaces
- * @return UT_array* The returned array of @c struct netif_info_t
+ * @return UT_array* The returned array of @c struct netif_info_t.
+ * You must `utarray_free()` this array when done.
  */
 UT_array *nl_get_interfaces(int if_id);
 
@@ -91,7 +94,7 @@ int nl_new_interface(const char *if_name, const char *type);
  * @param subnet_mask The subnet mask (e.g. `24` for `/24`)
  * @return 0 on success, -1 otherwise
  */
-int nl_set_interface_ip(struct nlctx *context, const char *ifname,
+int nl_set_interface_ip(const struct nlctx *context, const char *ifname,
                         const char *ip_addr, const char *brd_addr,
                         const char *subnet_mask);
 
@@ -115,8 +118,9 @@ int nl_set_interface_state(const char *if_name, bool state);
  * @param subnet_mask The interface IP4 subnet mask
  * @return int 0 on success, -1 on failure
  */
-int nl_create_interface(struct nlctx *context, char *ifname, char *type,
-                        char *ip_addr, char *brd_addr, const char *subnet_mask);
+int nl_create_interface(const struct nlctx *context, const char *ifname,
+                        const char *type, const char *ip_addr,
+                        const char *brd_addr, const char *subnet_mask);
 
 /**
  * @brief Resets the interface
@@ -124,7 +128,7 @@ int nl_create_interface(struct nlctx *context, char *ifname, char *type,
  * @param ifname The interface name string
  * @return 0 on success, -1 otherwise
  */
-int nl_reset_interface(char *ifname);
+int nl_reset_interface(const char *ifname);
 
 /**
  * @brief Check if wireless physical interface has VLAN capability
@@ -152,9 +156,9 @@ int nl_is_iw_vlan(const char *ifname);
 /**
  * @brief Returns an exisiting WiFi interface name that supports VLAN
  *
- * @param buf Interface working buffer
- * @return char* WiFi interface name
+ * @param[out] buf Interface working buffer of at least IF_NAMESIZE bytes.
+ * @return WiFi interface name (pointer to @p buf param)
  */
-char *nl_get_valid_iw(char *buf);
+char *nl_get_valid_iw(char buf[static IF_NAMESIZE]);
 
 #endif

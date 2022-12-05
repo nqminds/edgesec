@@ -8,14 +8,13 @@
  * @brief File containing the implementation of the allocs functionalities.
  */
 
-#include <stddef.h>
-#include <sys/types.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include <stdarg.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdbool.h>
-#include <stdarg.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "allocs.h"
 

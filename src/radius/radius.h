@@ -16,9 +16,9 @@
 #define RADIUS_H
 
 #include <stdint.h>
+#include <arpa/inet.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <arpa/inet.h>
 
 #include "utils/allocs.h"
 #include "utils/os.h"

@@ -1,21 +1,21 @@
 #define _GNU_SOURCE
 
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <fcntl.h>
-#include <ctype.h>
-#include <unistd.h>
-#include <stdbool.h>
-#include <errno.h>
-#include <libgen.h>
-#include <setjmp.h>
-#include <stdint.h>
 #include <cmocka.h>
+#include <ctype.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <libgen.h>
+#include <unistd.h>
 
-#include "utils/log.h"
-#include "dhcp/dnsmasq.h"
 #include "dhcp/dhcp_config.h"
+#include "dhcp/dnsmasq.h"
+#include "utils/log.h"
 
 static const UT_icd config_dhcpinfo_icd = {sizeof(config_dhcpinfo_t), NULL,
                                            NULL, NULL};
@@ -218,7 +218,7 @@ err:
 }
 
 static void test_generate_dnsmasq_conf(void **state) {
-  (void)state; /* unused */
+  (void)state;
   struct dhcp_conf dconf = {
       // must manually set bridge_prefix, otherwise we'll be working with
       // undefined memory
@@ -295,7 +295,7 @@ static void test_generate_dnsmasq_conf(void **state) {
 }
 
 static void test_generate_dnsmasq_script(void **state) {
-  (void)state; /* unused */
+  (void)state;
 
   int ret = generate_dnsmasq_script(test_dhcp_script_path,
                                     test_supervisor_control_path);
@@ -323,7 +323,7 @@ static void test_generate_dnsmasq_script(void **state) {
 }
 
 static void test_clear_dhcp_lease_entry(void **state) {
-  (void)state; /* unused */
+  (void)state;
   char *out = NULL;
   FILE *fp = fopen(test_dhcp_leasefile_path, "w");
 

@@ -10,36 +10,36 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include <string.h>
-#include <syslog.h>
-#include <errno.h>
-#include <unistd.h>
-#include <fcntl.h>
 #include <sys/socket.h>
-#include <sys/ioctl.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <signal.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <inttypes.h>
 #include <pthread.h>
+#include <signal.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <syslog.h>
+#include <unistd.h>
 
+#include <eloop.h>
 #include <uthash.h>
-#include "../utils/ifaceu.h"
-#include "../utils/net.h"
-#include "../utils/log.h"
-#include "../utils/eloop.h"
-#include "../utils/sockctl.h"
-#include "../utils/squeue.h"
+#include "../capture/middlewares/header_middleware/mdns_decoder.h"
+#include "../capture/middlewares/header_middleware/packet_queue.h"
+#include "../capture/pcap_service.h"
+#include "../supervisor/cmd_processor.h"
+#include "../supervisor/supervisor_config.h"
 #include "../utils/hashmap.h"
 #include "../utils/iface_mapper.h"
-#include "../capture/middlewares/header_middleware/mdns_decoder.h"
-#include "../capture/pcap_service.h"
-#include "../capture/middlewares/header_middleware/packet_queue.h"
-#include "../supervisor/supervisor_config.h"
-#include "../supervisor/cmd_processor.h"
+#include "../utils/ifaceu.h"
+#include "../utils/log.h"
+#include "../utils/net.h"
+#include "../utils/sockctl.h"
+#include "../utils/squeue.h"
 
-#include "mdns_service.h"
 #include "mcast.h"
+#include "mdns_service.h"
 
 #define MDNS_PORT 5353
 #define MDNS_ADDR4 (uint32_t)0xE00000FB /* 224.0.0.251 */
@@ -614,8 +614,7 @@ void mdns_pcap_callback(const void *ctx, const void *pcap_ctx, char *ltype,
 
   utarray_new(tp_array, &tp_list_icd);
 
-  if (extract_packets(ltype, header, packet, pc->ifname, context->cap_id,
-                      tp_array) > 0) {
+  if (extract_packets(ltype, header, packet, pc->ifname, tp_array) > 0) {
     while ((p = (struct tuple_packet *)utarray_next(tp_array, p)) != NULL) {
       if (send_bridge_command(context, p) < 0) {
         log_error("send_pcap_meta fail");
@@ -742,8 +741,6 @@ int init_mdns_context(struct mdns_conf *mdns_config,
     log_error("copy_vlan_mapper fail");
     return -1;
   }
-
-  generate_radom_uuid(context->cap_id);
 
   return 0;
 }

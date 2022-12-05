@@ -11,19 +11,19 @@
 #include <libgen.h>
 
 #include "mac_mapper.h"
-#include "supervisor.h"
-#include "sqlite_macconn_writer.h"
 #include "network_commands.h"
+#include "sqlite_macconn_writer.h"
+#include "supervisor.h"
 
+#include <eloop.h>
 #include "../ap/ap_config.h"
 #include "../ap/ap_service.h"
-#include "../crypt/crypt_service.h"
 #include "../capture/capture_service.h"
+#include "../crypt/crypt_service.h"
 #include "../utils/allocs.h"
-#include "../utils/os.h"
-#include "../utils/log.h"
 #include "../utils/base64.h"
-#include "../utils/eloop.h"
+#include "../utils/log.h"
+#include "../utils/os.h"
 
 int put_crypt_cmd(struct supervisor_context *context, char *key, char *value) {
   struct crypt_pair pair = {key, NULL, 0};

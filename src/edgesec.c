@@ -8,30 +8,32 @@
  * @brief File containing the edgesec tool implementations.
  */
 
+// needed for getopt()
+#define _POSIX_C_SOURCE 200809L
+
+#include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <signal.h>
-#include <fcntl.h>
-#include <ctype.h>
-#include <unistd.h>
-#include <stdbool.h>
-#include <errno.h>
-#include <sys/types.h>
 #include <sys/socket.h>
+#include <ctype.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <libgen.h>
 #include <pthread.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-#include "version.h"
-#include "utils/log.h"
-#include "utils/allocs.h"
-#include "utils/os.h"
-#include "utils/minIni.h"
-#include "utils/iface.h"
-#include "utils/eloop.h"
+#include <eloop.h>
+#include "config.h"
 #include "dhcp/dhcp_config.h"
 #include "runctl.h"
-#include "config.h"
+#include "utils/allocs.h"
+#include "utils/iface.h"
+#include "utils/log.h"
+#include "utils/os.h"
+#include "version.h"
 
 #define OPT_STRING ":c:f:mdvh"
 #define USAGE_STRING "\t%s [-c filename] [-f filename] [-m] [-d] [-h] [-v]\n"
@@ -202,7 +204,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  if (!load_app_config(config_filename, &config)) {
+  if (load_app_config(config_filename, &config) < 0) {
     fprintf(stderr, "load_app_config fail\n");
     return EXIT_FAILURE;
   }
@@ -214,7 +216,7 @@ int main(int argc, char *argv[]) {
 
   os_init_random_seed();
 
-  if (run_ctl(&config) < 0) {
+  if (run_ctl(&config, NULL) < 0) {
     fprintf(stderr, "Failed to start edgesec engine.\n");
     return EXIT_FAILURE;
   } else

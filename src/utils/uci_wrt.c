@@ -8,18 +8,18 @@
  * @brief File containing the implementation of the uci utilities.
  */
 
-#include <inttypes.h>
 #include <arpa/inet.h>
+#include <inttypes.h>
 #include <string.h>
 #include <uci.h>
 
 #include "uci_wrt.h"
 
-#include "iface_mapper.h"
-#include "squeue.h"
 #include "allocs.h"
+#include "iface_mapper.h"
 #include "log.h"
 #include "net.h"
+#include "squeue.h"
 
 #define IFNAME_EXPR ".ifname="
 #define IPADDR_EXPR ".ipaddr="
@@ -34,7 +34,7 @@ struct uci_type_list {
 
 static const UT_icd netif_info_icd = {sizeof(netif_info_t), NULL, NULL, NULL};
 
-void uwrt_print_error(struct uci_context *ctx, char *name) {
+void uwrt_print_error(struct uci_context *ctx, const char *name) {
   char *error = NULL;
 
   uci_get_errorstr(ctx, &error, NULL);
@@ -288,10 +288,10 @@ uwrt_lookup_fail:
   return ret;
 }
 
-char *uwrt_extract_value(char *str, char *key) {
-  char *value = NULL;
-
-  if ((value = strstr(str, key)) == NULL) {
+const char *uwrt_extract_value(const char *str, const char *key) {
+  // substr returns a non-const str, but it really should be a const char *
+  const char *value = strstr(str, key);
+  if (value == NULL) {
     return NULL;
   }
 
@@ -306,18 +306,19 @@ char *uwrt_extract_value(char *str, char *key) {
 
 int uwrt_get_net_if(UT_array *kv, netif_info_t *nif) {
   char **ptr = NULL;
-  char *value = NULL;
 
   os_memset(nif, 0, sizeof(netif_info_t));
 
   while ((ptr = (char **)utarray_next(kv, ptr))) {
-    if ((value = uwrt_extract_value(*ptr, IFNAME_EXPR)) != NULL) {
-      strcpy(nif->ifname, value);
+    const char *ifname_value = uwrt_extract_value(*ptr, IFNAME_EXPR);
+    if (ifname_value != NULL) {
+      strcpy(nif->ifname, ifname_value);
     }
 
-    if ((value = uwrt_extract_value(*ptr, IPADDR_EXPR)) != NULL) {
+    const char *ip_addr_value = uwrt_extract_value(*ptr, IPADDR_EXPR);
+    if (ip_addr_value != NULL) {
       nif->ifa_family = AF_INET;
-      strcpy(nif->ip_addr, value);
+      strcpy(nif->ip_addr, ip_addr_value);
     }
   }
 
@@ -459,7 +460,7 @@ void uwrt_free_context(struct uctx *context) {
   }
 }
 
-struct uctx *uwrt_init_context(char *path) {
+struct uctx *uwrt_init_context(const char *path) {
   struct uctx *context = os_zalloc(sizeof(struct uctx));
 
   if (context == NULL) {
@@ -482,10 +483,11 @@ struct uctx *uwrt_init_context(char *path) {
       return NULL;
     }
   }
+
   return context;
 }
 
-UT_array *uwrt_get_interfaces(struct uctx *context, char *ifname) {
+UT_array *uwrt_get_interfaces(const struct uctx *context, const char *ifname) {
   int ret, idx = 0;
   UT_array *kv = NULL;
   UT_array *interfaces = NULL;
@@ -534,8 +536,8 @@ uwrt_get_fail:
   return NULL;
 }
 
-int uwrt_set_interface_ip(struct uctx *context, char *ifname, char *ip_addr,
-                          char *netmask) {
+int uwrt_set_interface_ip(const struct uctx *context, const char *ifname,
+                          const char *ip_addr, const char *netmask) {
   if (context == NULL) {
     log_trace("context param is NULL");
     return -1;
@@ -581,8 +583,9 @@ int uwrt_set_interface_ip(struct uctx *context, char *ifname, char *ip_addr,
   return 0;
 }
 
-int uwrt_create_interface(struct uctx *context, char *ifname, char *type,
-                          char *ip_addr, char *brd_addr, char *netmask) {
+int uwrt_create_interface(const struct uctx *context, const char *ifname,
+                          const char *type, const char *ip_addr,
+                          const char *brd_addr, const char *netmask) {
   if (context == NULL) {
     log_trace("context param is NULL");
     return -1;
@@ -658,7 +661,7 @@ int uwrt_create_interface(struct uctx *context, char *ifname, char *type,
   return 0;
 }
 
-int uwrt_commit_section(struct uctx *context, char *section) {
+int uwrt_commit_section(const struct uctx *context, const char *section) {
   struct uci_ptr ptr;
   char *psection = os_strdup(section);
 
@@ -683,10 +686,10 @@ int uwrt_commit_section(struct uctx *context, char *section) {
   return 0;
 }
 
-int uwrt_gen_dnsmasq_instance(struct uctx *context,
-                              struct string_queue *ifname_queue,
-                              UT_array *server_array, char *leasefile,
-                              char *scriptfile) {
+int uwrt_gen_dnsmasq_instance(const struct uctx *context,
+                              const struct string_queue *ifname_queue,
+                              const UT_array *server_array,
+                              const char *leasefile, const char *scriptfile) {
   char **p = NULL;
   struct string_queue *el = NULL;
 
@@ -778,8 +781,9 @@ int uwrt_gen_dnsmasq_instance(struct uctx *context,
   return 0;
 }
 
-int uwrt_add_dhcp_pool(struct uctx *context, char *ifname, char *ip_addr_low,
-                       char *ip_addr_upp, char *subnet_mask, char *lease_time) {
+int uwrt_add_dhcp_pool(const struct uctx *context, const char *ifname,
+                       const char *ip_addr_low, const char *ip_addr_upp,
+                       const char *subnet_mask, const char *lease_time) {
   uint32_t start, limit;
 
   if (context == NULL) {
@@ -873,8 +877,8 @@ int uwrt_add_dhcp_pool(struct uctx *context, char *ifname, char *ip_addr_low,
   return 0;
 }
 
-int uwrt_gen_hostapd_instance(struct uctx *context,
-                              struct hostapd_params *params) {
+int uwrt_gen_hostapd_instance(const struct uctx *context,
+                              const struct hostapd_params *params) {
   if (context == NULL) {
     log_trace("context param is NULL");
     return -1;
@@ -920,6 +924,18 @@ int uwrt_gen_hostapd_instance(struct uctx *context,
 
   snprintf(property, property_size, "wireless.edgesec.key=%s",
            params->wpa_passphrase);
+  utarray_push_back(properties, &property);
+
+  snprintf(property, property_size, "wireless.edgesec.dynamic_vlan=%d",
+           params->dynamic_vlan);
+  utarray_push_back(properties, &property);
+
+  snprintf(property, property_size, "wireless.edgesec.vlan_bridge=%s",
+           params->vlan_bridge);
+  utarray_push_back(properties, &property);
+
+  snprintf(property, property_size, "wireless.edgesec.vlan_file=%s",
+           params->vlan_file);
   utarray_push_back(properties, &property);
 
   snprintf(property, property_size, "wireless.%s=wifi-device", params->device);
@@ -999,11 +1015,6 @@ int uwrt_gen_hostapd_instance(struct uctx *context,
            params->macaddr_acl);
   utarray_push_back(list_properties, &property);
 
-  snprintf(property, property_size,
-           "wireless.%s.hostapd_options=dynamic_vlan=%d", params->device,
-           params->dynamic_vlan);
-  utarray_push_back(list_properties, &property);
-
   snprintf(property, property_size, "wireless.%s.hostapd_options=vlan_file=%s",
            params->device, params->vlan_file);
   utarray_push_back(list_properties, &property);
@@ -1023,7 +1034,7 @@ int uwrt_gen_hostapd_instance(struct uctx *context,
            params->vlan_bridge);
   utarray_push_back(list_properties, &property);
 
-  if (uwrt_add_list_properties(context->uctx, properties) < 0) {
+  if (uwrt_add_list_properties(context->uctx, list_properties) < 0) {
     log_error("uwrt_gen_hostapd_instance: failed to uwrt_add_list_properties");
     utarray_free(list_properties);
     return -1;
@@ -1033,7 +1044,7 @@ int uwrt_gen_hostapd_instance(struct uctx *context,
   return 0;
 }
 
-int uwrt_gen_firewall_zone(struct uctx *context, char *brname) {
+int uwrt_gen_firewall_zone(const struct uctx *context, const char *brname) {
   if (context == NULL) {
     log_trace("context param is NULL");
     return -1;
@@ -1228,8 +1239,8 @@ int uwrt_gen_firewall_zone(struct uctx *context, char *brname) {
   return 0;
 }
 
-int uwrt_add_firewall_nat(struct uctx *context, char *brname, char *ip_addr,
-                          char *nat_name) {
+int uwrt_add_firewall_nat(const struct uctx *context, const char *brname,
+                          const char *ip_addr, const char *nat_name) {
   uint8_t ip_buf[4];
 
   if (context == NULL) {
@@ -1442,7 +1453,7 @@ int uwrt_add_firewall_nat(struct uctx *context, char *brname, char *ip_addr,
   return 0;
 }
 
-int uwrt_delete_firewall_nat(struct uctx *context, char *ip_addr) {
+int uwrt_delete_firewall_nat(const struct uctx *context, const char *ip_addr) {
   uint8_t ip_buf[4];
 
   if (context == NULL) {
@@ -1491,8 +1502,9 @@ int uwrt_delete_firewall_nat(struct uctx *context, char *ip_addr) {
   return 0;
 }
 
-int uwrt_add_firewall_bridge(struct uctx *context, char *sip, char *sbr,
-                             char *dip, char *dbr) {
+int uwrt_add_firewall_bridge(const struct uctx *context, const char *sip,
+                             const char *sbr, const char *dip,
+                             const char *dbr) {
   uint8_t sip_buf[4], dip_buf[4];
 
   if (context == NULL) {
@@ -1643,7 +1655,8 @@ int uwrt_add_firewall_bridge(struct uctx *context, char *sip, char *sbr,
   return 0;
 }
 
-int uwrt_delete_firewall_bridge(struct uctx *context, char *sip, char *dip) {
+int uwrt_delete_firewall_bridge(const struct uctx *context, const char *sip,
+                                const char *dip) {
   uint8_t sip_buf[4], dip_buf[4];
 
   if (context == NULL) {
@@ -1696,7 +1709,7 @@ int uwrt_delete_firewall_bridge(struct uctx *context, char *sip, char *dip) {
   return 0;
 }
 
-int uwrt_cleanup_firewall(struct uctx *context) {
+int uwrt_cleanup_firewall(const struct uctx *context) {
   int ret;
   char **ptr = NULL, *fo = NULL, *p = NULL;
   UT_array *kv = NULL, *parray = NULL;
@@ -1711,10 +1724,14 @@ int uwrt_cleanup_firewall(struct uctx *context) {
   if (!ret) {
     utarray_free(kv);
     return 0;
-  } else if (ret < 0) {
+  } else if (ret < 0 && context->uctx->err != UCI_ERR_NOTFOUND) {
     log_trace("uwrt_lookup_key fail");
     utarray_free(kv);
     return -1;
+  } else if (ret < 0 && context->uctx->err == UCI_ERR_NOTFOUND) {
+    log_warn("%s key not found", key);
+    utarray_free(kv);
+    return 0;
   }
 
   utarray_new(parray, &ut_str_icd);

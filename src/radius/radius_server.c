@@ -12,19 +12,17 @@
  * @brief RADIUS authentication server.
  */
 
+#include <stdbool.h>
 #include <stdint.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <arpa/inet.h>
-#include <stdbool.h>
-#include <sys/types.h>
-#include <sys/socket.h>
 
-#include "../utils/log.h"
-#include "../utils/allocs.h"
-#include "../utils/net.h"
-#include "../utils/list.h"
 #include "../supervisor/mac_mapper.h"
+#include "../utils/allocs.h"
+#include "../utils/log.h"
+#include "../utils/net.h"
 
 #include "radius.h"
 #include "radius_server.h"
@@ -714,6 +712,8 @@ static int radius_server_disable_pmtu_discovery(int s) {
   r = setsockopt(s, IPPROTO_IP, IP_MTU_DISCOVER, &action, sizeof(action));
   if (r == -1)
     log_errno("Failed to set IP_MTU_DISCOVER:");
+#else
+  (void)s; /* this function is a no-op on non-Linux machines */
 #endif
   return r;
 }

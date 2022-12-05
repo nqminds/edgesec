@@ -10,8 +10,8 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
-#include <inttypes.h>
 #include <stdbool.h>
+#include <inttypes.h>
 
 #include "config.h"
 #include "supervisor/supervisor_config.h"
@@ -31,8 +31,9 @@ int init_context(struct app_config *app_config, struct supervisor_context *ctx);
  *
  * @param app_config The app configuration structures, setting WiFi network
  * config params.
+ * @param eloop The eloop structure, if NULL initialises a new one
  * @return @c 0 if succes, @c -1 if a service fails to start.
  */
-int run_ctl(struct app_config *app_config);
+int run_ctl(struct app_config *app_config, struct eloop_data *eloop);
 
 #endif

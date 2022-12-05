@@ -1,26 +1,26 @@
 #define _GNU_SOURCE
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <inttypes.h>
-#include <unistd.h>
-#include <setjmp.h>
-#include <stdint.h>
 #include <cmocka.h>
+#include <fcntl.h>
+#include <inttypes.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-#include "supervisor/sqlite_macconn_writer.h"
+#include <utarray.h>
 #include "crypt/crypt_service.h"
+#include "supervisor/sqlite_macconn_writer.h"
 #include "utils/hashmap.h"
 #include "utils/log.h"
-#include <utarray.h>
 
-#include "supervisor/supervisor_config.h"
 #include "runctl.h"
+#include "supervisor/supervisor_config.h"
 
 static const UT_icd config_ifinfo_icd = {sizeof(config_ifinfo_t), NULL, NULL,
                                          NULL};
@@ -45,11 +45,12 @@ int __wrap_get_commands_paths(char *commands[], UT_array *bin_path_arr,
   return (int)mock();
 }
 
-char *__wrap_hmap_str_keychar_get(hmap_str_keychar **hmap, char *keyptr) {
+const char *__wrap_hmap_str_keychar_get(const hmap_str_keychar *hmap,
+                                        char *keyptr) {
   (void)hmap;
   (void)keyptr;
 
-  return (char *)mock();
+  return mock_ptr_type(const char *);
 }
 
 #ifdef WITH_CRYPTO_SERVICE
@@ -240,7 +241,7 @@ static void test_run_engine(void **state) {
   will_return_always(__wrap_load_crypt_service, crypt_ctx);
 #endif
 
-  int ret = run_ctl(&app_config);
+  int ret = run_ctl(&app_config, NULL);
   assert_int_equal(ret, 0);
   utarray_free(config_ifinfo_arr);
 }

@@ -10,13 +10,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <pcap.h>
+#include <string.h>
 
-#include "pcap_queue.h"
 #include "../../../utils/allocs.h"
-#include "../../../utils/os.h"
 #include "../../../utils/log.h"
+#include "../../../utils/os.h"
+#include "pcap_queue.h"
 
 struct pcap_queue *init_pcap_queue(void) {
   struct pcap_queue *queue;

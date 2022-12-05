@@ -1,5 +1,9 @@
-# Error on all C/C++ warnings in the src/ directory if making a Debug build
-add_compile_options($<$<CONFIG:Debug>:-Werror>)
+add_compile_options(
+  # Error on all C/C++ warnings in the src/ directory if making a Debug build
+  $<$<CONFIG:Debug>:-Werror>
+  # Warn/error if using a non-const pointer to a string literal
+  $<$<COMPILE_LANGUAGE:C>:-Wwrite-strings>
+)
 
 add_subdirectory(utils)
 add_subdirectory(supervisor)
@@ -34,26 +38,27 @@ if (USE_MDNS_SERVICE)
 endif ()
 target_link_libraries(runctl PRIVATE
   LibUTHash::LibUTHash capture_service net log iface_mapper os
-  sqlite_macconn_writer firewall_service eloop supervisor
+  sqlite_macconn_writer firewall_service eloop::eloop supervisor
   network_commands mac_mapper ap_service firewall_service dhcp_service
   Threads::Threads
 )
 
 add_library(config config.c)
-target_link_libraries(config PUBLIC supervisor_config LibUTHash::LibUTHash PRIVATE minIni os log)
+target_link_libraries(config PUBLIC supervisor_config LibUTHash::LibUTHash PRIVATE MinIni::minIni os log)
 
 add_executable(edgesec edgesec.c)
 if (USE_CRYPTO_SERVICE)
+  add_compile_definitions(WITH_CRYPTO_SERVICE)
   target_include_directories(edgesec PRIVATE ${PROJECT_BINARY_DIR} ${LIBOPENSSL_INCLUDE_PATH})
 else ()
   target_include_directories(edgesec PRIVATE ${PROJECT_BINARY_DIR})
 endif ()
-target_link_libraries(edgesec PRIVATE eloop config runctl minIni os hashmap Threads::Threads)
+target_link_libraries(edgesec PRIVATE eloop::eloop config runctl os hashmap Threads::Threads)
 # link time optimization
 set_target_properties(edgesec PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 if (USE_CAPTURE_SERVICE)
   add_executable(edgesec-recap edgesec-recap.c)
-  target_link_libraries(edgesec-recap PRIVATE packet_queue packet_decoder sqlite_header os log SQLite::SQLite3)
+  target_link_libraries(edgesec-recap PRIVATE capture_service protobuf_middleware packet_queue packet_decoder sqlite_header os log SQLite::SQLite3 eloop::eloop)
   target_include_directories(edgesec-recap PRIVATE ${PROJECT_BINARY_DIR})
 endif()

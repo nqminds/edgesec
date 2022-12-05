@@ -46,9 +46,10 @@ struct hostapd_params {
  * @brief Initialises the uci context
  *
  * @param path The path string to the config folder
- * @return struct uctx* The uci context
+ * @return The uci context, or `NULL` on error.
+ * This return variable must be cleaned up by uwrt_free_context().
  */
-struct uctx *uwrt_init_context(char *path);
+struct uctx *uwrt_init_context(const char *path);
 
 /**
  * @brief Frees the uci context
@@ -63,8 +64,9 @@ void uwrt_free_context(struct uctx *context);
  * @param context The uci context
  * @param ifname The interface name, if NULL return all interfaces
  * @return UT_array* The returned array of @c struct netif_info_t
+ * This return variable must be cleaned up by utarray_free().
  */
-UT_array *uwrt_get_interfaces(struct uctx *context, char *ifname);
+UT_array *uwrt_get_interfaces(const struct uctx *context, const char *ifname);
 
 /**
  * @brief Assigns an IP to an interface
@@ -75,8 +77,8 @@ UT_array *uwrt_get_interfaces(struct uctx *context, char *ifname);
  * @param netmask The interface IP4 netmask
  * @return int 0 on success, -1 on failure
  */
-int uwrt_set_interface_ip(struct uctx *context, char *ifname, char *ip_addr,
-                          char *netmask);
+int uwrt_set_interface_ip(const struct uctx *context, const char *ifname,
+                          const char *ip_addr, const char *netmask);
 /**
  * @brief Creates and interface and assigns an IP
  *
@@ -88,8 +90,9 @@ int uwrt_set_interface_ip(struct uctx *context, char *ifname, char *ip_addr,
  * @param netmask The interface IP4 netmask
  * @return int 0 on success, -1 on failure
  */
-int uwrt_create_interface(struct uctx *context, char *ifname, char *type,
-                          char *ip_addr, char *brd_addr, char *netmask);
+int uwrt_create_interface(const struct uctx *context, const char *ifname,
+                          const char *type, const char *ip_addr,
+                          const char *brd_addr, const char *netmask);
 
 /**
  * @brief Commit a uci section
@@ -98,7 +101,7 @@ int uwrt_create_interface(struct uctx *context, char *ifname, char *type,
  * @param section The uci section
  * @return int 0 on success, -1 on failure
  */
-int uwrt_commit_section(struct uctx *context, char *section);
+int uwrt_commit_section(const struct uctx *context, const char *section);
 
 /**
  * @brief Generates a dnsmasq uci instance
@@ -110,10 +113,10 @@ int uwrt_commit_section(struct uctx *context, char *section);
  * @param scriptfile The script file path string
  * @return int 0 on success, -1 on failure
  */
-int uwrt_gen_dnsmasq_instance(struct uctx *context,
-                              struct string_queue *ifname_queue,
-                              UT_array *server_array, char *leasefile,
-                              char *scriptfile);
+int uwrt_gen_dnsmasq_instance(const struct uctx *context,
+                              const struct string_queue *ifname_queue,
+                              const UT_array *server_array,
+                              const char *leasefile, const char *scriptfile);
 
 /**
  * @brief Adds a dhcp pool entry
@@ -126,18 +129,19 @@ int uwrt_gen_dnsmasq_instance(struct uctx *context,
  * @param lease_time Interface lease time string
  * @return int 0 on success, -1 on failure
  */
-int uwrt_add_dhcp_pool(struct uctx *context, char *ifname, char *ip_addr_low,
-                       char *ip_addr_upp, char *subnet_mask, char *lease_time);
+int uwrt_add_dhcp_pool(const struct uctx *context, const char *ifname,
+                       const char *ip_addr_low, const char *ip_addr_upp,
+                       const char *subnet_mask, const char *lease_time);
 
 /**
- * @brief Generate the hostapd configf
+ * @brief Generate the hostapd config
  *
  * @param context The uci context
  * @param params The hostapd params
  * @return int 0 on success, -1 on failure
  */
-int uwrt_gen_hostapd_instance(struct uctx *context,
-                              struct hostapd_params *params);
+int uwrt_gen_hostapd_instance(const struct uctx *context,
+                              const struct hostapd_params *params);
 
 /**
  * @brief Generate a firewall zone for a bridge
@@ -146,7 +150,7 @@ int uwrt_gen_hostapd_instance(struct uctx *context,
  * @param brname The bridge name
  * @return int 0 on success, -1 on failure
  */
-int uwrt_gen_firewall_zone(struct uctx *context, char *brname);
+int uwrt_gen_firewall_zone(const struct uctx *context, const char *brname);
 
 /**
  * @brief Adds a firewall rule for an IP address
@@ -157,8 +161,8 @@ int uwrt_gen_firewall_zone(struct uctx *context, char *brname);
  * @param nat_name The NAT bridge name
  * @return int 0 on success, -1 on failure
  */
-int uwrt_add_firewall_nat(struct uctx *context, char *brname, char *ip_addr,
-                          char *nat_name);
+int uwrt_add_firewall_nat(const struct uctx *context, const char *brname,
+                          const char *ip_addr, const char *nat_name);
 
 /**
  * @brief Deletes a firewall rule for an IP address
@@ -167,7 +171,7 @@ int uwrt_add_firewall_nat(struct uctx *context, char *brname, char *ip_addr,
  * @param ip_addr The IP address
  * @return int 0 on success, -1 on failure
  */
-int uwrt_delete_firewall_nat(struct uctx *context, char *ip_addr);
+int uwrt_delete_firewall_nat(const struct uctx *context, const char *ip_addr);
 
 /**
  * @brief Adds a firewall bridge rule for two IP addresses
@@ -179,8 +183,8 @@ int uwrt_delete_firewall_nat(struct uctx *context, char *ip_addr);
  * @param dbr The destination bridge interface name
  * @return int 0 on success, -1 on failure
  */
-int uwrt_add_firewall_bridge(struct uctx *context, char *sip, char *sbr,
-                             char *dip, char *dbr);
+int uwrt_add_firewall_bridge(const struct uctx *context, const char *sip,
+                             const char *sbr, const char *dip, const char *dbr);
 
 /**
  * @brief Deletes a firewall bridge rule for two IP addresses
@@ -190,7 +194,8 @@ int uwrt_add_firewall_bridge(struct uctx *context, char *sip, char *sbr,
  * @param dip The destination IP address
  * @return int 0 on success, -1 on failure
  */
-int uwrt_delete_firewall_bridge(struct uctx *context, char *sip, char *dip);
+int uwrt_delete_firewall_bridge(const struct uctx *context, const char *sip,
+                                const char *dip);
 
 /**
  * @brief Removes all the firewall rules
@@ -198,5 +203,5 @@ int uwrt_delete_firewall_bridge(struct uctx *context, char *sip, char *dip);
  * @param context The uci context
  * @return int 0 on success, -1 on failure
  */
-int uwrt_cleanup_firewall(struct uctx *context);
+int uwrt_cleanup_firewall(const struct uctx *context);
 #endif

@@ -1,7 +1,7 @@
 #define _XOPEN_SOURCE 700 /* mkdtemp() is part of POSIX 700 spec*/
+#include <setjmp.h>
 #include <stdarg.h>
 #include <stddef.h>
-#include <setjmp.h>
 #include <stdint.h>
 #include <cmocka.h>
 // used to delete directory recursively

@@ -1,12 +1,12 @@
 // Set the environment variable ENV_DB_KEY=dbpath:dbprefix
 // Use SELECT load_extension("./src/libsqlhook.so"); to load the extension
-#include <libgen.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
 #include <sys/socket.h>
-#include <arpa/inet.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
+#include <errno.h>
+#include <libgen.h>
 #include <sqlite3ext.h> /* Do not use <sqlite3.h>! */
 #include <utarray.h>
 

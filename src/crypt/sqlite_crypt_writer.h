@@ -14,10 +14,6 @@
 #include <stdint.h>
 #include <sqlite3.h>
 
-#include "../utils/allocs.h"
-#include "../utils/os.h"
-#include "../utils/squeue.h"
-
 #define CRYPT_STORE_TABLE_NAME "store"
 #define CRYPT_STORE_CREATE_TABLE                                               \
   "CREATE TABLE " CRYPT_STORE_TABLE_NAME                                       \
@@ -66,10 +62,10 @@ struct secrets_row {
  * @brief Opens the sqlite crypt db
  *
  * @param db_path The sqlite db path
- * @param sql The returned sqlite db structure pointer
+ * @param[out] sql The returned sqlite db structure pointer
  * @return 0 on success, -1 on failure
  */
-int open_sqlite_crypt_db(char *db_path, sqlite3 **sql);
+int open_sqlite_crypt_db(const char *db_path, sqlite3 **sql);
 
 /**
  * @brief Closes the sqlite db
@@ -119,7 +115,7 @@ void free_sqlite_store_row(struct store_row *row);
  * @param id The secrets column id
  * @return struct secrets_row* row value, NULL on failure
  */
-struct secrets_row *get_sqlite_secrets_row(sqlite3 *db, char *id);
+struct secrets_row *get_sqlite_secrets_row(sqlite3 *db, const char *id);
 
 /**
  * @brief Frees a secrets row entry

@@ -10,20 +10,20 @@
  */
 #include "header_middleware.h"
 
-#include <sqlite3.h>
-#include <pcap.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <pcap.h>
+#include <sqlite3.h>
 #include <string.h>
 
-#include "sqlite_header.h"
+#include <eloop.h>
+#include "../../../utils/allocs.h"
+#include "../../../utils/log.h"
+#include "../../../utils/os.h"
 #include "packet_decoder.h"
 #include "packet_queue.h"
-#include "../../../utils/allocs.h"
-#include "../../../utils/os.h"
-#include "../../../utils/log.h"
-#include "../../../utils/eloop.h"
+#include "sqlite_header.h"
 
 #include "../../pcap_service.h"
 
@@ -88,7 +88,8 @@ void free_header_middleware(struct middleware_context *context) {
 
 struct middleware_context *init_header_middleware(sqlite3 *db, char *db_path,
                                                   struct eloop_data *eloop,
-                                                  struct pcap_context *pc) {
+                                                  struct pcap_context *pc,
+                                                  char *params) {
   (void)db_path;
 
   struct middleware_context *context = NULL;
@@ -113,6 +114,7 @@ struct middleware_context *init_header_middleware(sqlite3 *db, char *db_path,
   context->db = db;
   context->eloop = eloop;
   context->pc = pc;
+  context->params = params;
 
   if ((context->mdata = (void *)init_packet_queue()) == NULL) {
     log_error("init_packet_queue fail");
@@ -142,7 +144,6 @@ int process_header_middleware(struct middleware_context *context,
                               uint8_t *packet, char *ifname) {
   struct packet_queue *queue;
   int npackets;
-  char cap_id[MAX_RANDOM_UUID_LEN];
   UT_array *tp_array = NULL;
 
   if (context == NULL) {
@@ -159,8 +160,7 @@ int process_header_middleware(struct middleware_context *context,
 
   utarray_new(tp_array, &tp_list_icd);
 
-  generate_radom_uuid(cap_id);
-  npackets = extract_packets(ltype, header, packet, ifname, cap_id, tp_array);
+  npackets = extract_packets(ltype, header, packet, ifname, tp_array);
 
   if (npackets < 0) {
     log_error("extract_packets fail");

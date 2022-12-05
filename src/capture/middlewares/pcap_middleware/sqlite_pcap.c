@@ -8,17 +8,17 @@
  * @brief File containing the implementation of the sqlite pcap utilities.
  */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
 #include <sqlite3.h>
+#include <string.h>
 
 #include "sqlite_pcap.h"
 
 #include "../../../utils/allocs.h"
-#include "../../../utils/os.h"
 #include "../../../utils/log.h"
+#include "../../../utils/os.h"
 #include "../../../utils/sqliteu.h"
 
 int init_sqlite_pcap_db(sqlite3 *db) {

@@ -11,20 +11,20 @@
 #ifndef CAPTURE_SERVICE_H
 #define CAPTURE_SERVICE_H
 
-#include <sqlite3.h>
 #include <pcap.h>
+#include <sqlite3.h>
 
-#include "../utils/eloop.h"
+#include <eloop.h>
 
-#include "pcap_service.h"
 #include "capture_config.h"
+#include "pcap_service.h"
 
 #define DB_BUSY_TIMEOUT 5000 // Sets the sqlite busy timeout in milliseconds
 
 struct capture_middleware_context {
   struct capture_conf config;
   UT_array *handlers;
-  char ifname[IFNAMSIZ];
+  char ifname[IF_NAMESIZE];
 };
 
 /**
@@ -55,6 +55,13 @@ int get_pcap_folder_path(char *capture_db_path, char *pcap_path);
  * @return int 0 on success, -1 on failure
  */
 int run_capture(struct capture_middleware_context *context);
+
+/**
+ * @brief Frees the capture context
+ *
+ * @param context The middleware context
+ */
+void free_capture_context(struct capture_middleware_context *context);
 
 /**
  * @brief Runs the capture service thread

@@ -11,11 +11,11 @@
 #ifndef PCAP_SERVICE_H
 #define PCAP_SERVICE_H
 
-#include <net/if.h>
-#include <sys/types.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <net/if.h>
 #include <pcap.h>
+#include <sys/types.h>
 #include <utarray.h>
 
 typedef void (*capture_callback_fn)(const void *ctx, const void *pcap_ctx,
@@ -29,7 +29,7 @@ typedef void (*capture_callback_fn)(const void *ctx, const void *pcap_ctx,
 struct pcap_context {
   int pcap_fd;                 /**< The pcap selectable fd */
   pcap_t *pd;                  /**< The pcap structure */
-  char ifname[IFNAMSIZ];       /**< The pcap interface */
+  char ifname[IF_NAMESIZE];    /**< The pcap interface */
   capture_callback_fn pcap_fn; /**< The pcap capture callback */
   void *fn_ctx;                /**< The context for callback function */
 };
@@ -94,6 +94,25 @@ int capture_pcap_packet(struct pcap_context *ctx);
  */
 int dump_file_pcap(struct pcap_context *ctx, char *file_path,
                    struct pcap_pkthdr *header, uint8_t *packet);
+
+/**
+ * @brief Injects a packets
+ *
+ * @param ctx The pcap context
+ * @param packet The packet data
+ * @param size The packet size
+ * @return int number of bytes injected on success, -1 on failure
+ */
+int inject_pcap(struct pcap_context *ctx, uint8_t *packet, size_t size);
+
+/**
+ * @brief Return pcap capture statistics
+ *
+ * @param ctx[in] The pcap context
+ * @param ps[out] The pcap_stat structure
+ * @return 0 on success, -1 on failure
+ */
+int get_pcap_stats(const struct pcap_context *ctx, struct pcap_stat *ps);
 
 /**
  * @brief Closes the pcap service

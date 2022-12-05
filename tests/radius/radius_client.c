@@ -6,24 +6,24 @@
  * See README for more details.
  */
 
-#include <stdint.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <arpa/inet.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <netinet/if_ether.h>
+#include <arpa/inet.h>
 #include <errno.h>
+#include <netinet/if_ether.h>
+#include <sys/types.h>
+#include <unistd.h>
 
+#include <eloop.h>
 #include "radius/radius.h"
 #include "radius/wpabuf.h"
 #include "radius_client.h"
-#include "utils/eloop.h"
 #include "utils/allocs.h"
-#include "utils/os.h"
-#include "utils/net.h"
 #include "utils/log.h"
+#include "utils/net.h"
+#include "utils/os.h"
 
 /* Defaults for RADIUS retransmit values (exponential backoff) */
 
@@ -1208,6 +1208,8 @@ static int radius_client_disable_pmtu_discovery(int s) {
   r = setsockopt(s, IPPROTO_IP, IP_MTU_DISCOVER, &action, sizeof(action));
   if (r == -1)
     log_errno("RADIUS: Failed to set IP_MTU_DISCOVER");
+#else
+  (void)s; /* this function is a no-op on non-Linux machines */
 #endif
   return r;
 }

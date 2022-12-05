@@ -1,22 +1,22 @@
 #define _GNU_SOURCE
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <inttypes.h>
-#include <unistd.h>
-#include <setjmp.h>
-#include <stdint.h>
 #include <cmocka.h>
+#include <fcntl.h>
+#include <inttypes.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
+#include "supervisor/mac_mapper.h"
+#include "supervisor/sqlite_macconn_writer.h"
 #include "utils/log.h"
 #include "utils/sqliteu.h"
-#include "supervisor/sqlite_macconn_writer.h"
-#include "supervisor/mac_mapper.h"
 
 static const UT_icd mac_conn_icd = {sizeof(struct mac_conn), NULL, NULL, NULL};
 

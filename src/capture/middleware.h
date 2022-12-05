@@ -12,17 +12,19 @@
 #ifndef MIDDLEWARE_H
 #define MIDDLEWARE_H
 
-#include <sqlite3.h>
 #include <stdint.h>
+#include <sqlite3.h>
 
+#include <eloop.h>
 #include "./pcap_service.h"
-#include "../utils/eloop.h"
 
+// params is a pointer to an already allocated string
 struct middleware_context {
   sqlite3 *db;
   struct eloop_data *eloop;
   struct pcap_context *pc;
   void *mdata;
+  char *params;
 };
 
 /**
@@ -44,11 +46,13 @@ struct capture_middleware {
    * @param db_path The sqlite3 db path
    * @param eloop The eloop structure
    * @param pc The pcap context
+   * @param params The middleware params
    * @return The middleware context on success, NULL on failure
    */
   struct middleware_context *(*const init)(sqlite3 *db, char *db_path,
                                            struct eloop_data *eloop,
-                                           struct pcap_context *pc);
+                                           struct pcap_context *pc,
+                                           char *params);
 
   /**
    * @brief Runs the middleware.

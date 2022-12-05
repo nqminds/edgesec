@@ -61,21 +61,26 @@ if (USE_CAPTURE_SERVICE)
   add_subdirectory(./middlewares/cleaner_middleware)
   add_subdirectory(./middlewares/header_middleware)
   add_subdirectory(./middlewares/pcap_middleware)
+  add_subdirectory(./middlewares/tap_middleware)
+  add_subdirectory(./middlewares/protobuf_middleware EXCLUDE_FROM_ALL)
 
   add_library(capture_config INTERFACE) # header only library
   target_link_libraries(capture_config INTERFACE os)
 
   add_library(pcap_service pcap_service.c)
-  target_link_libraries(pcap_service PUBLIC LibUTHash::LibUTHash PRIVATE net log os PCAP::pcap)
+  target_link_libraries(pcap_service PUBLIC LibUTHash::LibUTHash PCAP::pcap PRIVATE net log os)
+
+  add_library(middleware INTERFACE)
+  target_link_libraries(middleware INTERFACE eloop::eloop SQLite::SQLite3 pcap_service)
 
   add_library(capture_service capture_service.c)
   target_include_directories(capture_service PRIVATE ${PROJECT_BINARY_DIR})
   target_link_libraries(
     capture_service
-    PUBLIC PCAP::pcap middlewares_list
+    PUBLIC PCAP::pcap middlewares_list eloop::eloop
     PRIVATE
       dns_decoder pcap_service pcap_queue packet_queue packet_decoder squeue
-      eloop iface log os hashmap SQLite::SQLite3 Threads::Threads)
+      iface log os hashmap SQLite::SQLite3 Threads::Threads)
 
   set(CAPTURE_MIDDLEWARES "")
 
@@ -112,7 +117,7 @@ if (USE_CAPTURE_SERVICE)
   _edgesec_buildMiddlewaresSource(CAPTURE_MIDDLEWARES "${CAPTURE_MIDDLEWARES}")
   add_library(middlewares_list "${CMAKE_CURRENT_BINARY_DIR}/middlewares_list.c")
   target_include_directories(middlewares_list PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
-  target_link_libraries(middlewares_list PUBLIC LibUTHash::LibUTHash SQLite::SQLite3 PCAP::pcap eloop)
+  target_link_libraries(middlewares_list PUBLIC LibUTHash::LibUTHash SQLite::SQLite3 PCAP::pcap eloop::eloop)
 
   function(edgesecAddCaptureMiddleware)
     set(oneValueArgs
@@ -129,6 +134,8 @@ if (USE_CAPTURE_SERVICE)
       message(FATAL_ERROR "MIDDLEWARE_STRUCT is not defined for edgesecAddCaptureMiddleware")
     endif()
 
+    target_link_libraries("${arg_MIDDLEWARE_TARGET}" PUBLIC middleware)
+
     target_link_libraries(middlewares_list PRIVATE "${arg_MIDDLEWARE_TARGET}")
     list(APPEND CAPTURE_MIDDLEWARES "${arg_MIDDLEWARE_STRUCT}")
     set(CAPTURE_MIDDLEWARES "${CAPTURE_MIDDLEWARES}" PARENT_SCOPE)
@@ -143,5 +150,11 @@ if (USE_CAPTURE_SERVICE)
   endif ()
   if (USE_PCAP_MIDDLEWARE)
     edgesecAddCaptureMiddleware(MIDDLEWARE_TARGET pcap_middleware MIDDLEWARE_STRUCT pcap_middleware)
+  endif ()
+  if (USE_TAP_MIDDLEWARE)
+    edgesecAddCaptureMiddleware(MIDDLEWARE_TARGET tap_middleware MIDDLEWARE_STRUCT tap_middleware)
+  endif ()
+  if (USE_PROTOBUF_MIDDLEWARE)
+    edgesecAddCaptureMiddleware(MIDDLEWARE_TARGET protobuf_middleware MIDDLEWARE_STRUCT protobuf_middleware)
   endif ()
 endif()

@@ -12,12 +12,22 @@ if (BUILD_UUID_LIB AND NOT (BUILD_ONLY_DOCS))
 
   message("Will install libuuid into ${LIBUUID_INSTALL_DIR}")
 
+  if ("${CMAKE_GENERATOR}" MATCHES "Makefiles")
+    set(MAKE_COMMAND "$(MAKE)") # recursive make (uses the same make as the main project)
+  else()
+    # just run make in a subprocess. We use single-process, but libmnl is a small project
+    set(MAKE_COMMAND "make")
+  endif ()
+
+  set(UTIL_LINUX_VERSION 2.37.2)
   # ExternalProject downloads/builds/installs at **build** time
   # (e.g. during the `cmake --build` step)
   ExternalProject_Add(
     util_linux
-    URL https://github.com/karelzak/util-linux/archive/refs/tags/v2.37.2.tar.gz
+    URL "https://github.com/karelzak/util-linux/archive/refs/tags/v${UTIL_LINUX_VERSION}.tar.gz"
     URL_HASH SHA3_256=d45c2b0ef0cca67ef9cbac1099503564d559fa1c52c0335dfd119546624b6bd0
+    DOWNLOAD_NAME "util_linux-${UTIL_LINUX_VERSION}.tar.gz"
+    DOWNLOAD_DIR "${EP_DOWNLOAD_DIR}" # if empty string, uses default download dir
     CONFIGURE_COMMAND <SOURCE_DIR>/autogen.sh
     COMMAND
       ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" <SOURCE_DIR>/configure
@@ -28,8 +38,10 @@ if (BUILD_UUID_LIB AND NOT (BUILD_ONLY_DOCS))
       "CC=${CMAKE_C_COMPILER}" "CXX=${CMAKE_CXX_COMPILER}"
     INSTALL_DIR "${LIBUUID_INSTALL_DIR}"
     # need to manually specify PATH, so that make knows where to find GCC
-    BUILD_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" $(MAKE)
-    INSTALL_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" $(MAKE) install
+    BUILD_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" "${MAKE_COMMAND}"
+    INSTALL_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" "${MAKE_COMMAND}" install
+    # technically this is an INSTALL_BYPRODUCT, but we only ever need this to make Ninja happy
+    BUILD_BYPRODUCTS "<INSTALL_DIR>/lib/libuuid.a"
   )
   ExternalProject_Get_Property(util_linux INSTALL_DIR)
 

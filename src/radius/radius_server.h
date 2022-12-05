@@ -20,13 +20,13 @@
 #include <unistd.h>
 // On FreeBSD, you must include `<sys/socket.h>` and `<netinet/in.h>` before
 // `<netinet/if_ether.h>`
+#include <stdbool.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#include <stdbool.h>
 
+#include <eloop.h>
 #include "../utils/os.h"
-#include "../utils/eloop.h"
 #include "radius_config.h"
 
 /**

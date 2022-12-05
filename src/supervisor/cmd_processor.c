@@ -8,14 +8,14 @@
  * @brief File containing the implementation of the command processor functions.
  */
 
-#include <sys/un.h>
-#include <sys/types.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <inttypes.h>
+#include <sys/types.h>
+#include <sys/un.h>
 
 #include "cmd_processor.h"
 #include "mac_mapper.h"
@@ -26,10 +26,10 @@
 #include "system_commands.h"
 
 #include "utils/allocs.h"
-#include "utils/os.h"
+#include "utils/base64.h"
 #include "utils/log.h"
 #include "utils/net.h"
-#include "utils/base64.h"
+#include "utils/os.h"
 #include "utils/sockctl.h"
 
 bool process_domain_buffer(char *domain_buffer, size_t domain_buffer_len,

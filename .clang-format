@@ -3,20 +3,27 @@ Language:      Cpp
 BasedOnStyle:  LLVM
 # indent case in switch statement
 IndentCaseLabels: true
-# ---- TODO: Make another PR where we do sort includes ---- #
-SortIncludes: false
 IncludeCategories:
   - Regex: '^<std'
     SortPriority: 1
+    Priority: 1
+  - Regex: '<setjmp.h>'
+    SortPriority: 1
   - Regex: '^<cmocka.h>'
-    # <cmocha.h> relies on <std...h> being included first
+    # <cmocha.h> relies on <std...h> and <setjmp.h> being included first
     SortPriority: 2
+    Priority: 1
   - Regex: '^<sys/socket.h>'
     # On FreeBSD, sys/socket.h must be included before `<netinet/in.h>`
     SortPriority: 1
+    Priority: 2
   - Regex: '^<netinet/in.h>'
     SortPriority: 2
+    Priority: 2
   - Regex: '^<netinet/'
     # On FreeBSD, you must include `<netinet/in.h>` before `<netinet/if_ether.h>`
     SortPriority: 3
+    Priority: 2
+  - Regex: '^<'
+    Priority: 3
 ...

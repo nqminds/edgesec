@@ -11,9 +11,9 @@
 #ifndef SYSTEM_COMMANDS_H
 #define SYSTEM_COMMANDS_H
 
-#include <sys/un.h>
-#include <inttypes.h>
 #include <stdbool.h>
+#include <inttypes.h>
+#include <sys/un.h>
 
 #include "../utils/sockctl.h"
 #include "supervisor_config.h"
@@ -25,6 +25,8 @@ enum DHCP_IP_TYPE {
   DHCP_IP_DEL,
   DHCP_IP_ARP,
 };
+
+#define PING_REPLY "PONG\n"
 
 /**
  * @brief SET_IP command

@@ -11,11 +11,11 @@
 #ifndef IPGEN_H_
 #define IPGEN_H_
 
-#include <errno.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <string.h>
-#include <stdbool.h>
 
 #include "os.h"
 
@@ -27,14 +27,15 @@ struct ipgenctx {
  * @brief Initialises the ipgen context
  *
  * @param path The path string to the ip command
- * @return struct ipgenctx* The ip generic context
+ * @return The ip generic context or NULL on failure.
+ * Must be cleaned-up with ipgen_free_context().
  */
 struct ipgenctx *ipgen_init_context(char *path);
 
 /**
  * @brief Frees the ipgen context
  *
- * @param context The ipgen context
+ * @param context The ipgen context created by ipgen_init_context()
  */
 void ipgen_free_context(struct ipgenctx *context);
 
@@ -49,8 +50,9 @@ void ipgen_free_context(struct ipgenctx *context);
  * @param subnet_mask The interface IP4 subnet mask
  * @return int 0 on success, -1 on failure
  */
-int ipgen_create_interface(struct ipgenctx *context, char *ifname, char *type,
-                           char *ip_addr, char *brd_addr, char *subnet_mask);
+int ipgen_create_interface(const struct ipgenctx *context, const char *ifname,
+                           const char *type, const char *ip_addr,
+                           const char *brd_addr, const char *subnet_mask);
 
 /**
  * @brief Set the IP address for an interface
@@ -62,9 +64,9 @@ int ipgen_create_interface(struct ipgenctx *context, char *ifname, char *type,
  * @param subnet_mask The interface IP4 subnet mask
  * @return int 0 on success, -1 on failure
  */
-int ipgen_set_interface_ip(struct ipgenctx *context, char *ifname,
-                           const char *ip_addr, char *brd_addr,
-                           char *subnet_mask);
+int ipgen_set_interface_ip(const struct ipgenctx *context, const char *ifname,
+                           const char *ip_addr, const char *brd_addr,
+                           const char *subnet_mask);
 
 /**
  * @brief Resets the interface
@@ -73,5 +75,5 @@ int ipgen_set_interface_ip(struct ipgenctx *context, char *ifname,
  * @param ifname The interface name
  * @return int 0 on success, -1 on failure
  */
-int ipgen_reset_interface(struct ipgenctx *context, char *ifname);
+int ipgen_reset_interface(const struct ipgenctx *context, const char *ifname);
 #endif

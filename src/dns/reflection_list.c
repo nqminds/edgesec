@@ -8,14 +8,13 @@
  * @brief File containing the implementation of reflection list structures.
  */
 
-#include <stdlib.h>
 #include <stdio.h>
-#include <syslog.h>
+#include <stdlib.h>
 #include <string.h>
+#include <syslog.h>
 
 #include "../utils/allocs.h"
 #include "../utils/log.h"
-#include "../utils/list.h"
 
 #include "reflection_list.h"
 
@@ -25,9 +24,9 @@ void setup_reflection_if_el(struct reflection_list *el, unsigned int ifindex,
   el->send_fd = -1;
   el->ifindex = ifindex;
   if (ifname == NULL) {
-    os_memset(el->ifname, 0, IFNAMSIZ);
+    os_memset(el->ifname, 0, IF_NAMESIZE);
   } else {
-    snprintf(el->ifname, IFNAMSIZ, "%s", ifname);
+    snprintf(el->ifname, IF_NAMESIZE, "%s", ifname);
   }
 }
 

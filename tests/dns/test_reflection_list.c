@@ -1,22 +1,22 @@
 #define _GNU_SOURCE
 
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <fcntl.h>
-#include <ctype.h>
-#include <unistd.h>
-#include <stdbool.h>
-#include <errno.h>
-#include <libgen.h>
-#include <setjmp.h>
-#include <stdint.h>
-#include <cmocka.h>
 #include <sys/socket.h>
+#include <cmocka.h>
+#include <ctype.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <libgen.h>
+#include <unistd.h>
 
+#include "dns/reflection_list.h"
 #include "utils/log.h"
 #include "utils/os.h"
-#include "dns/reflection_list.h"
 
 static void test_init_reflection_list(void **state) {
   (void)state;

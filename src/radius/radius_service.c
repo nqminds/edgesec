@@ -8,17 +8,17 @@
  * @brief File containing the implementation of the radius service.
  */
 
+#include <stdbool.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <libgen.h>
+#include <signal.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <stdbool.h>
-#include <errno.h>
-#include <signal.h>
 #include <unistd.h>
-#include <libgen.h>
-#include <fcntl.h>
 
-#include "../utils/eloop.h"
+#include <eloop.h>
 #include "radius_server.h"
 
 struct radius_server_data *run_radius(struct eloop_data *eloop,

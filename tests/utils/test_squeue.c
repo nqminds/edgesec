@@ -1,16 +1,8 @@
 #define _GNU_SOURCE
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <inttypes.h>
-#include <unistd.h>
-#include <stdbool.h>
 #include <setjmp.h>
+#include <stdarg.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <cmocka.h>
 

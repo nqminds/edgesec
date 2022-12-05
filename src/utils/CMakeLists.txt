@@ -1,5 +1,7 @@
 add_library(log log.c)
 set_property(TARGET log PROPERTY POSITION_INDEPENDENT_CODE ON)
+# requires POSIX mode_t/umask functions
+target_compile_definitions(log PRIVATE _POSIX_C_SOURCE=200112L)
 
 add_library(allocs allocs.c)
 
@@ -12,7 +14,7 @@ add_library(base64 base64.c)
 target_link_libraries(base64 PRIVATE os log)
 
 add_library(hashmap hashmap.c)
-target_link_libraries(hashmap PUBLIC LibUTHash::LibUTHash PRIVATE log os)
+target_link_libraries(hashmap PUBLIC LibUTHash::LibUTHash PRIVATE log)
 
 add_library(os os.c)
 set_property(TARGET os PROPERTY POSITION_INDEPENDENT_CODE ON)
@@ -35,11 +37,13 @@ target_link_libraries(iface PUBLIC os LibUTHash::LibUTHash PRIVATE ifaceu net lo
 if (USE_NETLINK_SERVICE)
   add_library(nl nl.c)
   target_link_libraries(nl PUBLIC LibUTHash::LibUTHash PRIVATE ifaceu NL::core NL::genl libnetlink MNL::mnl ll_map utils rt_names log os net)
+  # IFF_UP is a BSD definition, strnlen is a POSIX.1-2008 function
+  target_compile_definitions(nl PRIVATE _DEFAULT_SOURCE _BSD_SOURCE)
 
   target_link_libraries(iface PUBLIC nl)
 elseif (USE_UCI_SERVICE)
   add_library(uci_wrt uci_wrt.c)
-  target_link_libraries(uci_wrt PUBLIC OpenWRT::UCI LibUTHash::LibUTHash PRIVATE squeue net os log)
+  target_link_libraries(uci_wrt PUBLIC OpenWRT::UCI LibUTHash::LibUTHash squeue PRIVATE net os log)
   target_link_libraries(iface PUBLIC uci_wrt)
 elseif (USE_GENERIC_IP_SERVICE)
   add_library(ipgen ipgen.c)
@@ -47,23 +51,18 @@ elseif (USE_GENERIC_IP_SERVICE)
   target_link_libraries(iface PUBLIC ipgen)
 endif ()
 
-add_library(minIni minIni.c)
-
-add_library(eloop eloop.c)
-# todo, add list
-target_link_libraries(eloop PUBLIC allocs os PRIVATE log)
-
-add_library(hash hash.c)
-target_link_libraries(hash PRIVATE os)
+add_library(hash OBJECT hash.c)
 
 add_library(squeue squeue.c)
-target_link_libraries(squeue PRIVATE log os)
+target_link_libraries(squeue PUBLIC eloop::list PRIVATE allocs os log)
 
 add_library(sqliteu sqliteu.c)
 target_link_libraries(sqliteu PUBLIC SQLite::SQLite3 PRIVATE log os)
 
 add_library(sockctl sockctl.c)
 target_link_libraries(sockctl PRIVATE net log os)
+# required for mkdtemp() support
+target_compile_definitions(sockctl PRIVATE _POSIX_C_SOURCE=200809L)
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
   # Abstract Unix domain sockets are only supported on Linux, but save a bit of writing
   # to the disk

@@ -1,26 +1,29 @@
 #define _GNU_SOURCE
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <inttypes.h>
-#include <unistd.h>
-#include <setjmp.h>
-#include <stdint.h>
 #include <cmocka.h>
+#include <fcntl.h>
+#include <inttypes.h>
+#include <pthread.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-#include "utils/log.h"
-#include "utils/eloop.h"
+#include <eloop.h>
 #include "capture/capture_service.h"
 #include "capture/middlewares/header_middleware/packet_decoder.h"
+#include "capture/middlewares_list.h"
 #include "capture/pcap_service.h"
+#include "utils/log.h"
 
 static const UT_icd tp_list_icd = {sizeof(struct tuple_packet), NULL, NULL,
                                    NULL};
+static struct eloop_data test_eloop;
 
 int __wrap_init_sqlite_header_db(sqlite3 *db) {
   (void)db;
@@ -40,15 +43,15 @@ int __wrap_run_pcap(char *interface, bool immediate, bool promiscuous,
                     struct pcap_context **pctx) {
   (void)fn_ctx;
   (void)pcap_fn;
+  (void)filter;
 
   assert_string_equal(interface, "wlan0");
-  assert_true(immediate);
-  assert_true(promiscuous);
-  assert_int_equal(timeout, 100);
-  assert_string_equal(filter, "port 80");
+  assert_false(immediate);
+  assert_false(promiscuous);
+  assert_int_equal(timeout, 10);
   assert_true(nonblock);
-  *pctx = os_zalloc(sizeof(struct pcap_context));
-  return 0;
+  *pctx = NULL;
+  return -1;
 }
 
 void __wrap_close_pcap(struct pcap_context *ctx) {
@@ -57,7 +60,7 @@ void __wrap_close_pcap(struct pcap_context *ctx) {
 }
 
 struct eloop_data *__wrap_eloop_init(void) {
-  return (struct eloop_data *)mock();
+  return (struct eloop_data *)&test_eloop;
 }
 
 int __wrap_eloop_register_read_sock(struct eloop_data *eloop, int sock,
@@ -135,32 +138,31 @@ struct pcap_queue *__wrap_push_pcap_queue(struct pcap_queue *queue,
 void capture_config(struct capture_conf *config) {
   os_memset(config, 0, sizeof(struct capture_conf));
 
-  config->promiscuous = true;
-  config->immediate = true;
-  config->buffer_timeout = 100;
+  config->promiscuous = false;
+  config->immediate = false;
+  config->buffer_timeout = 10;
   strcpy(config->filter, "port 80");
   const char *capture_db_path = "/tmp/edgesec/test_capture.sqlite";
   int ret = make_dirs_to_path(capture_db_path, 0755);
   assert_int_equal(ret, 0);
   strcpy(config->capture_db_path, capture_db_path);
+  strcpy(config->middleware_params, "wlan0");
 }
 
-static void test_run_capture(void **state) {
-  (void)state; /* unused */
+static void test_run_capture_thread(void **state) {
+  (void)state;
 
-  struct capture_middleware_context context;
+  char ifname[] = "wlan0";
+  struct capture_conf config;
+  capture_config(&config);
 
-  strcpy(context.ifname, "wlan0");
-  capture_config(&context.config);
-
-  struct eloop_data *eloop = os_zalloc(sizeof(struct eloop_data));
-  assert_non_null(eloop);
-
-  will_return_always(__wrap_eloop_init, eloop);
-  int ret = run_capture(&context);
-
-  assert_int_equal(ret, 0);
-  os_free(eloop);
+  pthread_t pid;
+  int *thread_return = NULL;
+  run_capture_thread(ifname, &config, &pid);
+  pthread_join(pid, (void **)&thread_return);
+  assert_non_null(thread_return);
+  assert_int_equal(*thread_return, -1);
+  os_free(thread_return);
 }
 
 int main(int argc, char *argv[]) {
@@ -169,7 +171,7 @@ int main(int argc, char *argv[]) {
 
   log_set_quiet(false);
 
-  const struct CMUnitTest tests[] = {cmocka_unit_test(test_run_capture)};
+  const struct CMUnitTest tests[] = {cmocka_unit_test(test_run_capture_thread)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }
