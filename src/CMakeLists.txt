@@ -54,8 +54,11 @@ else ()
   target_include_directories(edgesec PRIVATE ${PROJECT_BINARY_DIR})
 endif ()
 target_link_libraries(edgesec PRIVATE eloop::eloop config runctl os hashmap Threads::Threads)
-# link time optimization
-set_target_properties(edgesec PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
+
+set_target_properties(edgesec PROPERTIES
+  INTERPROCEDURAL_OPTIMIZATION TRUE # link time optimization
+  C_EXTENSIONS ON # edgesec uses POSIX getopt() extension
+)
 
 if (USE_CAPTURE_SERVICE)
   add_executable(edgesec-recap edgesec-recap.c)
