@@ -114,7 +114,6 @@ int join_mcast(int fd, const struct sockaddr_storage *sa, socklen_t sa_len,
 
 int create_recv_mcast(const struct sockaddr_storage *sa, socklen_t sa_len,
                       uint32_t ifindex) {
-  struct ifreq ifr;
   int on = 1;
   int fd, flags;
 
@@ -139,16 +138,20 @@ int create_recv_mcast(const struct sockaddr_storage *sa, socklen_t sa_len,
         return -1;
       }
 #if defined(SO_BINDTODEVICE)
-      if (if_indextoname(ifindex, ifr.ifr_ifrn.ifrn_name) == NULL) {
-        log_errno("if_indextoname");
-        close(fd);
-        return -1;
-      }
+      {
+        struct ifreq ifr;
+        if (if_indextoname(ifindex, ifr.ifr_ifrn.ifrn_name) == NULL) {
+          log_errno("if_indextoname");
+          close(fd);
+          return -1;
+        }
 
-      if (setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, &ifr, sizeof(ifr)) < 0) {
-        log_errno("setsockopt");
-        close(fd);
-        return -1;
+        if (setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, &ifr, sizeof(ifr)) <
+            0) {
+          log_errno("setsockopt");
+          close(fd);
+          return -1;
+        }
       }
 #elif defined(IPV6_BOUND_IF)
       if (setsockopt(fd, IPPROTO_IPV6, IPV6_BOUND_IF, &ifindex,
@@ -181,16 +184,20 @@ int create_recv_mcast(const struct sockaddr_storage *sa, socklen_t sa_len,
       }
 #endif
 #if defined(SO_BINDTODEVICE)
-      if (if_indextoname(ifindex, ifr.ifr_ifrn.ifrn_name) == NULL) {
-        log_errno("if_indextoname");
-        close(fd);
-        return -1;
-      }
+      {
+        struct ifreq ifr;
+        if (if_indextoname(ifindex, ifr.ifr_ifrn.ifrn_name) == NULL) {
+          log_errno("if_indextoname");
+          close(fd);
+          return -1;
+        }
 
-      if (setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, &ifr, sizeof(ifr)) < 0) {
-        log_errno("setsockopt");
-        close(fd);
-        return -1;
+        if (setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, &ifr, sizeof(ifr)) <
+            0) {
+          log_errno("setsockopt");
+          close(fd);
+          return -1;
+        }
       }
 #elif defined(IP_BOUND_IF)
       if (setsockopt(fd, IPPROTO_IP, IP_BOUND_IF, &ifindex, sizeof(ifindex)) <
