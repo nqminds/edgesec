@@ -1,7 +1,6 @@
 add_library(log log.c)
-set_property(TARGET log PROPERTY POSITION_INDEPENDENT_CODE ON)
-# requires POSIX mode_t/umask functions
-target_compile_definitions(log PRIVATE _POSIX_C_SOURCE=200112L)
+# requires POSIX mode_t/umask functions, and BSD gettimeofday
+set_target_properties(log PROPERTIES C_EXTENSIONS ON POSITION_INDEPENDENT_CODE ON)
 
 add_library(allocs allocs.c)
 
@@ -17,7 +16,10 @@ add_library(hashmap hashmap.c)
 target_link_libraries(hashmap PUBLIC LibUTHash::LibUTHash PRIVATE log)
 
 add_library(os os.c)
-set_property(TARGET os PROPERTY POSITION_INDEPENDENT_CODE ON)
+set_target_properties(os PROPERTIES
+  C_EXTENSIONS ON # requires BSD gettimeofday
+  POSITION_INDEPENDENT_CODE ON
+)
 target_link_libraries(os PUBLIC LibUTHash::LibUTHash PRIVATE hashmap allocs log LibUUID::LibUUID)
 
 add_library(ifaceu ifaceu.c)
@@ -62,7 +64,7 @@ target_link_libraries(sqliteu PUBLIC SQLite::SQLite3 PRIVATE log os)
 add_library(sockctl sockctl.c)
 target_link_libraries(sockctl PRIVATE net log os)
 # required for mkdtemp() support
-target_compile_definitions(sockctl PRIVATE _POSIX_C_SOURCE=200809L)
+set_target_properties(sockctl PROPERTIES C_EXTENSIONS ON)
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
   # Abstract Unix domain sockets are only supported on Linux, but save a bit of writing
   # to the disk

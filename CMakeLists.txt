@@ -120,6 +120,8 @@ endif()
 function(get_autoconf_os system_name output_var)
   if (system_name STREQUAL "Linux")
     set(${output_var} "linux-gnu" PARENT_SCOPE)
+  elseif (system_name STREQUAL "FreeBSD")
+    set(${output_var} "freebsd" PARENT_SCOPE)
   else (system_name STREQUAL "Linux")
     message(FATAL_ERROR "'${system_name}' could not be converted to an autoconf os specifier")
   endif(system_name STREQUAL "Linux")
@@ -147,7 +149,15 @@ set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Build shared libraries")
 # C compiler options
 set(CMAKE_C_STANDARD 11) # we use C11 raw-strings
 set(CMAKE_C_STANDARD_REQUIRED TRUE)
-set(CMAKE_C_EXTENSIONS OFF) # We're aiming for Clang compatibility
+if("${CMAKE_SYSTEM_NAME}" STREQUAL "FreeBSD")
+  # we use some BSD exclusive functions, and there is no easy way to opt-in
+  # to this on FreeBSD
+  # __BSD_VISIBLE might work, but is non-official
+  set(CMAKE_C_EXTENSIONS ON)
+else()
+  # only use standard C and opt-in to non-standard includes
+  set(CMAKE_C_EXTENSIONS OFF)
+endif()
 set(CMAKE_C_FLAGS "-Wunused-variable -Wall -Wextra")
 
 set(CMAKE_CXX_STANDARD 11)
@@ -185,6 +195,14 @@ include(CheckIncludeFile)
 check_include_file(threads.h C11_STD_THREADS)
 if (NOT C11_STD_THREADS)
   message(FATAL_ERROR "Your C11 stdlib does not support #include <threads.h>, see https://en.cppreference.com/w/c/thread")
+endif()
+
+add_library(Threads::C11Threads INTERFACE IMPORTED)
+if("${CMAKE_SYSTEM_NAME}" STREQUAL "FreeBSD")
+  # FreeBSD has a seperate C11 threads library we need to link to
+  set_target_properties(Threads::C11Threads PROPERTIES INTERFACE_LINK_LIBRARIES "stdthreads")
+else()
+  set_target_properties(Threads::C11Threads PROPERTIES INTERFACE_LINK_LIBRARIES Threads::Threads)
 endif()
 
 # configure a header file to pass some of the CMake settings

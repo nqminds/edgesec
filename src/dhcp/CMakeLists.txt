@@ -3,6 +3,8 @@ include_directories (
 )
 
 add_library(dnsmasq dnsmasq.c)
+# needed for fileno()
+set_target_properties(dnsmasq PROPERTIES C_EXTENSIONS ON)
 target_link_libraries(dnsmasq PUBLIC dhcp_config PRIVATE squeue log os)
 if (USE_UCI_SERVICE)
     target_link_libraries(dnsmasq PRIVATE squeue uci_wrt)

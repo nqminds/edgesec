@@ -12,8 +12,12 @@
 #ifndef WPABUF_H
 #define WPABUF_H
 
+#ifdef __FreeBSD__ // FreeBSD
+#include <sys/endian.h>
+#else // Linux
 #include <byteswap.h>
 #include <endian.h>
+#endif
 
 #include "utils/allocs.h"
 #include "utils/log.h"

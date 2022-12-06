@@ -23,6 +23,24 @@
       }
     },
     {
+      "name": "freebsd",
+      "inherits": "default",
+      "description": "FreeBSD build (alpha)",
+      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/clang.cmake",
+      "cacheVariables": {
+        "BUILD_MNL_LIB": false,
+        "BUILD_NETLINK_LIB": false,
+        "USE_NETLINK_SERVICE": false,
+        "USE_UCI_SERVICE": false,
+        "USE_GENERIC_IP_SERVICE": true,
+        "USE_RADIUS_SERVICE": true,
+        "BUILD_HOSTAPD": false,
+        "USE_CRYPTO_SERVICE": false,
+        "BUILD_OPENSSL_LIB": false,
+        "BUILD_CMOCKA_LIB": true
+      }
+    },
+    {
       "name": "linux",
       "inherits": "default",
       "displayName": "Linux",
@@ -231,6 +249,10 @@
       "configurePreset": "recap"
     },
     {
+      "name": "freebsd",
+      "configurePreset": "freebsd"
+    },
+    {
       "name": "linux/header",
       "configurePreset": "linux/header"
     },
@@ -311,6 +333,10 @@
     {
       "name": "linux-with-crypt",
       "configurePreset": "linux-with-crypt"
+    },
+    {
+      "name": "freebsd",
+      "configurePreset": "freebsd"
     },
     {
       "name": "openwrt",
