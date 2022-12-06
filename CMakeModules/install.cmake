@@ -1,6 +1,6 @@
 include(GNUInstallDirs) # automagically setup install dir locations
 install(
-  TARGETS edgesec
+  TARGETS edgesec edgesec-recap
   RUNTIME
 )
 

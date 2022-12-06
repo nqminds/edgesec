@@ -1,3 +1,13 @@
+edgesec (0.1.0-alpha.0-1) UNRELEASED; urgency=low
+
+  * See <https://github.com/nqminds/edgesec/releases/tag/v0.1.0-alpha.0>
+    for v0.1.0-alpha.0 upstream changes.
+
+  * Added
+    - Added `usr/bin/edgesec-recap` to debian.
+
+ -- Alois Klink <alois@nquiringminds.com>  Tue, 26 Sep 2022 10:22:00 +0100
+
 edgesec (0.0.8) UNRELEASED; urgency=low
 
   * Added

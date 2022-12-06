@@ -255,7 +255,7 @@ jobs:
         id: load-deb-name
         run: |
           OLD_DEB_PATH="$(ls -rt '${{ runner.temp }}/pbuilder/result'/edgesec*.deb | head -1)"
-          NEW_DEB_PATH="$(echo "$OLD_DEB_PATH" | sed -E 's/_(([[:digit:]]\.){0,2}[[:digit:]](-[A-Za-z0-9+.~])?)_/_\1_${{ matrix.distribution }}_/')"
+          NEW_DEB_PATH="$(echo "$OLD_DEB_PATH" | sed -E 's/_(([[:digit:]]\.){0,2}[[:digit:]](-[A-Za-z0-9+.~]+)*)_/_\1_${{ matrix.distribution }}_/')"
           mv "$OLD_DEB_PATH" "$NEW_DEB_PATH"
           echo " ::set-output name=old-deb-path::${OLD_DEB_PATH}"
           echo " ::set-output name=deb-path::${NEW_DEB_PATH}"
