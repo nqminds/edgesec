@@ -158,7 +158,7 @@ else()
   # only use standard C and opt-in to non-standard includes
   set(CMAKE_C_EXTENSIONS OFF)
 endif()
-set(CMAKE_C_FLAGS "-Wunused-variable -Wall -Wextra")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wunused-variable -Wall -Wextra")
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
