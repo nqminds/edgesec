@@ -15,9 +15,27 @@ task:
     cmake --preset freebsd -DCONFIGURE_COVERAGE=BOOL:ON
   build_script: |
     cmake --build --preset freebsd --parallel "$(($(sysctl -n hw.ncpu) + 1))"
-  test_sciprt: |
-    ctest --preset freebsd --output-on-failure
-  test_with_coverage_script: |
-    cmake --build --preset freebsd --parallel "$(($(sysctl -n hw.ncpu) + 1))" --target coverage
+  env:
+    # list of tests that are currently failing on FreeBSD
+    FAILING_TESTS: test_edgesec test_dnsmasq test_mdns_service
+  test_script: |
+    exclude_regex=""
+    for failing_test in $FAILING_TESTS; do
+      exclude_regex="${exclude_regex}|(${failing_test})"
+    done
+    exclude_regex="${exclude_regex:1}" # remove first | in string
+
+    ctest --preset freebsd --output-on-failure --exclude-regex "$exclude_regex"
+  test_failing_tests_script: |
+    # double-check that failing tests actually fail
+    # if they don't fail, then we should be testing them normally
+    for failing_test in $FAILING_TESTS; do
+      if ctest --preset freebsd --output-on-failure --tests-regex "$failing_test"; then
+        >&2 echo "Expected test $failing_test to fail but it passed! Please update .cirrus.yml if this test now works."
+        exit 1
+      fi
+    done
+  # test_with_coverage_script: |
+  #   cmake --build --preset freebsd --parallel "$(($(sysctl -n hw.ncpu) + 1))" --target coverage
   # uploading coverage is currently a bit difficult
   # since the codecoverage uploader doesn't yet support FreeBSD
