@@ -107,6 +107,8 @@ option(CONFIGURE_COVERAGE "Configure for code coverage (requires lcov)" OFF)
 #     (e.g. OpenWRT SDK or default `pdebuild` environment)
 set(EP_DOWNLOAD_DIR "" CACHE PATH "ExternalProject default DOWNLOAD_DIR")
 
+set(TRIPLET "${CMAKE_LIBRARY_ARCHITECTURE}" CACHE STRING "Target triplet to use for autoconf (e.g. output of `cc -dumpmachine`)")
+
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to 'Debug' as none was specified.")
@@ -129,12 +131,12 @@ endfunction(get_autoconf_os)
 
 get_autoconf_os(${CMAKE_HOST_SYSTEM_NAME} build_autoconf_os)
 string(TOLOWER "${CMAKE_HOST_SYSTEM_PROCESSOR}-${build_autoconf_os}" build_autoconf_triple)
-set(target_autoconf_triple "${CMAKE_LIBRARY_ARCHITECTURE}")
+set(target_autoconf_triple "${TRIPLET}")
 
 if (CMAKE_CROSSCOMPILING)
   message("Cross-compiling, setting cross-compiling autoconf/pkg-config vars")
   message("Build (autoconf --build) autoconf triple is ${build_autoconf_triple}")
-  message("Target (autoconf --host) autoconf triple is ${CMAKE_LIBRARY_ARCHITECTURE}")
+  message("Target (autoconf --host) autoconf triple is ${TRIPLET}")
   # tell PKG_CONFIG (required by hostap) to search correct folders when cross-compiling
   set(ENV{PKG_CONFIG_LIBDIR} "/usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}/pkgconfig:/usr/share/pkgconfig")
   message("Setting cross-compiling PKG_CONFIG_LIBDIR to $ENV{PKG_CONFIG_LIBDIR}")
