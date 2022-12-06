@@ -42,21 +42,9 @@
     },
     {
       "name": "cheribsd",
-      "inherits": "default",
+      "inherits": "freebsd",
       "description": "CheriBSD build (alpha)",
-      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/cheri.cmake",
-      "cacheVariables": {
-        "BUILD_MNL_LIB": false,
-        "BUILD_NETLINK_LIB": false,
-        "USE_NETLINK_SERVICE": false,
-        "USE_UCI_SERVICE": false,
-        "USE_GENERIC_IP_SERVICE": true,
-        "USE_RADIUS_SERVICE": true,
-        "BUILD_HOSTAPD": false,
-        "USE_CRYPTO_SERVICE": false,
-        "BUILD_OPENSSL_LIB": false,
-        "BUILD_CMOCKA_LIB": true
-      }
+      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/cheri.cmake"
     },
     {
       "name": "linux",
