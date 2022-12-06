@@ -47,6 +47,12 @@
       "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/cheri.cmake"
     },
     {
+      "name": "cheribsd-cc",
+      "inherits": "freebsd",
+      "description": "CheriBSD Cross Compile build (alpha)",
+      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/cheri-cross.cmake"
+    },
+    {
       "name": "linux",
       "inherits": "default",
       "displayName": "Linux",
@@ -263,6 +269,10 @@
       "configurePreset": "cheribsd"
     },
     {
+      "name": "cheribsd-cc",
+      "configurePreset": "cheribsd-cc"
+    },
+    {
       "name": "linux/header",
       "configurePreset": "linux/header"
     },
@@ -351,6 +361,10 @@
     {
       "name": "cheribsd",
       "configurePreset": "cheribsd"
+    },
+    {
+      "name": "cheribsd-cc",
+      "configurePreset": "cheribsd-cc"
     },
     {
       "name": "openwrt",
