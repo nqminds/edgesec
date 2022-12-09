@@ -137,6 +137,12 @@ if (CMAKE_CROSSCOMPILING)
   message("Cross-compiling, setting cross-compiling autoconf/pkg-config vars")
   message("Build (autoconf --build) autoconf triple is ${build_autoconf_triple}")
   message("Target (autoconf --host) autoconf triple is ${TRIPLET}")
+  if (target_autoconf_triple STREQUAL "")
+    message(WARNING
+      "edgesec is configured for cross-compiling, but could not detect a valid TRIPLET value."
+      " This may cause issues when cross-compiling sqlite/other libs.")
+  endif()
+
   # tell PKG_CONFIG (required by hostap) to search correct folders when cross-compiling
   set(ENV{PKG_CONFIG_LIBDIR} "/usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}/pkgconfig:/usr/share/pkgconfig")
   message("Setting cross-compiling PKG_CONFIG_LIBDIR to $ENV{PKG_CONFIG_LIBDIR}")
