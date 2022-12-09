@@ -46,7 +46,7 @@ else()
     CONFIGURE_COMMAND autoreconf -f -i <SOURCE_DIR>
     COMMAND
       ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}"
-      <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> "--host=${CMAKE_LIBRARY_ARCHITECTURE}"
+      <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> "--host=${target_autoconf_triple}"
       # use position independent code, even for static lib, in case we want to make shared lib later
       --with-pic=on ${configure_args}
       "CC=${CMAKE_C_COMPILER}" "CXX=${CMAKE_CXX_COMPILER}" "CFLAGS=${CMAKE_C_FLAGS}"
