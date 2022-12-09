@@ -37,7 +37,8 @@
         "BUILD_HOSTAPD": false,
         "USE_CRYPTO_SERVICE": false,
         "BUILD_OPENSSL_LIB": false,
-        "BUILD_CMOCKA_LIB": true
+        "BUILD_CMOCKA_LIB": true,
+        "BUILD_SQLITE_LIB": false
       }
     },
     {

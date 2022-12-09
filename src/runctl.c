@@ -243,7 +243,7 @@ int construct_ap_ctrlif(char *ctrl_interface, char *interface,
 
 int init_context(struct app_config *app_config,
                  struct supervisor_context *ctx) {
-  const char *commands[] = {"ip", "iw", "iptables", "sysctl", NULL};
+  const char *commands[] = {"ip", "ifconfig", "iw", "iptables", "sysctl", NULL};
 
   ctx->config_ifinfo_array = NULL;
   ctx->hmap_bin_paths = NULL;
@@ -261,10 +261,12 @@ int init_context(struct app_config *app_config,
     return -1;
   }
 
-  const char *ipcmd_path = hmap_str_keychar_get(ctx->hmap_bin_paths, "ip");
+  char *ipcmd_path = (char *)hmap_str_keychar_get(ctx->hmap_bin_paths, "ip");
   if (ipcmd_path == NULL) {
-    log_error("Couldn't find ip command");
-    return -1;
+    if ((ipcmd_path = (char *)hmap_str_keychar_get(ctx->hmap_bin_paths, "ifconfig")) == NULL) {
+      log_error("Couldn't find ip/ifconfig commands");
+      return -1;
+    }
   }
 
   utarray_new(ctx->config_ifinfo_array, &config_ifinfo_icd);
