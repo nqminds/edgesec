@@ -84,23 +84,33 @@ int define_dhcp_interface_name(const struct dhcp_conf *dconf, uint16_t vlanid,
 #endif
 
 #ifdef WITH_UCI_SERVICE
-  snprintf(ifname, IF_NAMESIZE, "%.*s%d", IF_NAMESIZE - 1 - MAX_VLANID_CHARS,
-           dconf->bridge_prefix, vlanid);
+  int snprintf_rc = snprintf(ifname, IF_NAMESIZE, "%.*s%d",
+                             IF_NAMESIZE - 1 - MAX_VLANID_CHARS,
+                             dconf->bridge_prefix, vlanid);
 #else
+  int snprintf_rc;
   if (strlen(dconf->wifi_interface)) {
     if (vlanid) {
-      snprintf(ifname, IF_NAMESIZE, "%.*s.%d",
-               IF_NAMESIZE - 2 - MAX_VLANID_CHARS, dconf->wifi_interface,
-               vlanid);
+      snprintf_rc = snprintf(ifname, IF_NAMESIZE, "%.*s.%d",
+                             IF_NAMESIZE - 2 - MAX_VLANID_CHARS,
+                             dconf->wifi_interface, vlanid);
     } else {
-      snprintf(ifname, IF_NAMESIZE, "%s", dconf->wifi_interface);
+      // should never truncate, since we're writing from a 16-char buffer to a
+      // 16-char buffer
+      snprintf_rc = snprintf(ifname, IF_NAMESIZE, "%s", dconf->wifi_interface);
     }
   } else {
     // Max VLANID is 4094 = 4 digits
-    snprintf(ifname, IF_NAMESIZE, "%.*s%d", IF_NAMESIZE - 1 - MAX_VLANID_CHARS,
-             dconf->interface_prefix, vlanid);
+    snprintf_rc = snprintf(ifname, IF_NAMESIZE, "%.*s%d",
+                           IF_NAMESIZE - 1 - MAX_VLANID_CHARS,
+                           dconf->interface_prefix, vlanid);
   }
 #endif
+  if (snprintf_rc >= IF_NAMESIZE || snprintf_rc < 0) {
+    // this should only happen if vlanid is waaaay too high
+    log_error("define_dhcp_interface_name: snprintf error.");
+    return -1;
+  }
   return 0;
 }
 
