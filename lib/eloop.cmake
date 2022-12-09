@@ -42,10 +42,10 @@ if (NOT (BUILD_ONLY_DOCS))
     if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
         # include <sys/epoll.h> (Linux/glibc only)
         target_compile_definitions(eloop PUBLIC CONFIG_ELOOP_EPOLL)
-
-        # include <sys/event.h> (FreeBSD?)
-        # target_compile_definitions(eloop PUBLIC CONFIG_ELOOP_KQUEUE)
-
+    elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "FreeBSD" OR "${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
+        # include <sys/event.h> (FreeBSD/MacOS)
+        target_compile_definitions(eloop PUBLIC CONFIG_ELOOP_KQUEUE)
+    #else ()
         # include <poll.h>
         # target_compile_definitions(eloop PUBLIC CONFIG_ELOOP_POLL)
 

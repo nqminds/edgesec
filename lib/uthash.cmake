@@ -3,11 +3,13 @@ if (BUILD_ONLY_DOCS)
 else ()
     # it's possible to find uthash on Ubuntu/Debian repos, but it's a tiny
     # download, so we might as well download it
-    set(UTHASH_VERSION 2.1.0)
+
+    # this version removes the strdup requirement for better ISO C compatibility
+    set(UTHASH_VERSION 85bf75ab7189858f97b83a90a1426a1d5420d2d6)
     FetchContent_Declare(
         uthash
-        URL "https://github.com/troydhanson/uthash/archive/refs/tags/v${UTHASH_VERSION}.tar.gz"
-        URL_HASH SHA512=c8005113a48ec7636715ecec0286a5d9086971a7267947aba9e0ad031b6113a4f38a1fb512d33d6fefb5891635fdd31169ce4d6ab04b938bda612ebbccb3eda0
+        URL "https://api.github.com/repos/troydhanson/uthash/tarball/${UTHASH_VERSION}"
+        URL_HASH SHA512=2343ea488694e3d982a20cde0a2dfe371fc4cf7873f692eaca86f4ba36ad1e082797ad2006450cc0e68c504de689c0d7c12942622e724213782c6887f671512b
         DOWNLOAD_NAME "uthash-${UTHASH_VERSION}.tar.gz"
         DOWNLOAD_DIR "${EP_DOWNLOAD_DIR}" # if empty string, uses default download dir
     )
@@ -20,7 +22,4 @@ else ()
     add_library(LibUTHash::LibUTHash INTERFACE IMPORTED)
     target_include_directories(LibUTHash::LibUTHash INTERFACE "${UTHASH_INCLUDE_DIR}")
     add_dependencies(LibUTHash::LibUTHash uthash)
-    # utarray.h requires strdup, which is a POSIX.1-2008 function
-    # (it may also be in C23)
-    target_compile_definitions(LibUTHash::LibUTHash INTERFACE _POSIX_C_SOURCE=200809L)
 endif ()
