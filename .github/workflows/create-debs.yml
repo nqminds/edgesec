@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Install Dependencies
         shell: bash # we're using bash arrays here
         run: |
@@ -216,7 +216,7 @@ jobs:
         deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${{ matrix.distribution }} main universe | deb [arch=amd64] http://archive.ubuntu.com/ubuntu ${{ matrix.distribution }} main universe
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Create pbuilder cache dir
         # The actions/cache action does not have permissions to create the pbuilder
         # cache folder if it doesn't exist
