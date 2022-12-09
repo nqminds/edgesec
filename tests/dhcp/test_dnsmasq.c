@@ -155,6 +155,9 @@ static void test_define_dhcp_interface_name(void **state) {
     char ifname[IFNAMSIZ] = {0};
     assert_return_code(define_dhcp_interface_name(&dconf, vlanid, ifname), 0);
     assert_string_equal(ifname, "abcdefghij.512");
+
+    // should return -1 if vlanid is over 4 digits in decimal
+    assert_int_equal(define_dhcp_interface_name(&dconf, 12345, ifname), -1);
   }
 #endif
 }
