@@ -363,10 +363,6 @@
       "configurePreset": "cheribsd"
     },
     {
-      "name": "cheribsd-cc",
-      "configurePreset": "cheribsd-cc"
-    },
-    {
       "name": "openwrt",
       "configurePreset": "openwrt",
       "environment": {
