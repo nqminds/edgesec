@@ -76,7 +76,9 @@ int become_daemon(int flags) {
 
   /* Change to root directory */
   if (!(flags & BD_NO_CHDIR)) {
-    chdir("/");
+    if (chdir("/") == -1) {
+      return -1;
+    }
   }
 
   /* Close all open files */
