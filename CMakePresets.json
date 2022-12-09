@@ -38,7 +38,11 @@
         "USE_CRYPTO_SERVICE": false,
         "BUILD_OPENSSL_LIB": false,
         "BUILD_CMOCKA_LIB": true,
-        "BUILD_SQLITE_LIB": false
+        "BUILD_SQLITE_LIB": false,
+        "USE_PROTOBUF_MIDDLEWARE": true,
+        "USE_CAPTURE_SERVICE": true,
+        "BUILD_UUID_LIB": true,
+        "BUILD_PCAP_LIB": true
       }
     },
     {

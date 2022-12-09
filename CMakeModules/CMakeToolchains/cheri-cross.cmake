@@ -14,16 +14,18 @@ set(CheriBSD_pkgconfig_locations "${CheriBSD_pkgconfig_locations}:${CheriBSD_usr
 set(CheriBSD_pkgconfig_locations "${CheriBSD_pkgconfig_locations}:${CheriBSD_usr_location}/local/libdata/pkgconfig")
 
 set(CheriBSD_SDK_GNU_TARGET "aarch64-unknown-freebsd")
-set(CheriBSD_c_flags "-target aarch64-unknown-freebsd13 --sysroot=${CheriBSD_rootfs_location} -B${CheriBSD_tools_location} -mcpu=rainier -march=morello+c64 -mabi=purecap -Xclang -morello-vararg=new")
-set(CheriBSD_cxx_flags "-target aarch64-unknown-freebsd13 --sysroot=${CheriBSD_rootfs_location} -B${CheriBSD_tools_location} -mcpu=rainier -march=morello+c64 -mabi=purecap -Xclang -morello-vararg=new")
+set(CheriBSD_c_flags "-target ${CheriBSD_SDK_GNU_TARGET} --sysroot=${CheriBSD_rootfs_location} -B${CheriBSD_tools_location} -mcpu=rainier -march=morello+c64 -mabi=purecap -Xclang -morello-vararg=new")
+set(CheriBSD_cxx_flags "-target ${CheriBSD_SDK_GNU_TARGET} --sysroot=${CheriBSD_rootfs_location} -B${CheriBSD_tools_location} -mcpu=rainier -march=morello+c64 -mabi=purecap -Xclang -morello-vararg=new")
 
 if (NOT IS_DIRECTORY "${CheriBSD_tools_location}")
     message(FATAL_ERROR "CheriBSD SDK toolchain directory TOOLCHAIN_DIR=${CheriBSD_tools_location} is not found")
 endif()
 
-# make sure we skip downloading the toolchain again for sub-CMake processes
-# Setting cheribsd_toolchain_location should work for all sub-CMake processes
-set(ENV{cheribsd_toolchain_location} "${cheribsd_toolchain_location}")
+set(ENV{STAGING_DIR} "${CMAKE_STAGING_PREFIX}")
+
+# need to add toolchain prefix to path, as dependencies use autoconf ./configure to find compilers
+set(ENV{PATH} "$ENV{PATH}:${CheriBSD_tools_location}")
+
 # setting CMAKE_REQUIRED_DEFINITIONS should be better for `check_include_file()`
 list(APPEND CMAKE_REQUIRED_DEFINITIONS "-Dcheribsd_toolchain_location=${cheribsd_toolchain_location}")
 set(CMAKE_REQUIRED_DEFINITIONS "${CMAKE_REQUIRED_DEFINITIONS}")
@@ -32,11 +34,6 @@ set(CMAKE_SYSROOT "${CheriBSD_rootfs_location}")
 
 # where is the target environment
 set(CMAKE_FIND_ROOT_PATH "${CheriBSD_rootfs_location}")
-
-set(ENV{STAGING_DIR} "${CMAKE_STAGING_PREFIX}")
-
-# need to add toolchain prefix to path, as dependencies use autoconf ./configure to find compilers
-set(ENV{PATH} "$ENV{PATH}:${CheriBSD_tools_location}")
 
 set(CMAKE_SYSTEM_NAME FreeBSD) # FreeBSD
 set(CMAKE_LIBRARY_ARCHITECTURE "${CheriBSD_SDK_GNU_TARGET}")
@@ -76,11 +73,11 @@ set(ENV{PKG_CONFIG_PATH} "")
 # Use -pthread flag https://gitlab.kitware.com/cmake/cmake/issues/16920
 set(THREADS_HAVE_PTHREAD_ARG TRUE)
 
-
 # Ensure we search in the custom install prefix that we install everything to:
 set(CMAKE_PREFIX_PATH "${CheriBSD_package_location};${CMAKE_PREFIX_PATH}")
 
 
+# Standard propgrams like flex, etc
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 
 # for libraries and headers in the target directories
@@ -88,4 +85,5 @@ set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 
-set(CMAKE_FIND_DEBUG_MODE TRUE)
+# Debug mode
+# set(CMAKE_FIND_DEBUG_MODE TRUE)
