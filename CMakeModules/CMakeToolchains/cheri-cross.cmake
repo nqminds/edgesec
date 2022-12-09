@@ -4,6 +4,7 @@ set(CheriBSD_toolchain_location "${CheriBSD_output_location}/morello-sdk")
 set(CheriBSD_tools_location "${CheriBSD_toolchain_location}/bin")
 set(CheriBSD_rootfs_location "${CheriBSD_output_location}/rootfs-morello-purecap")
 set(CheriBSD_usr_location "${CheriBSD_rootfs_location}/usr")
+set(CheriBSD_package_location "${CheriBSD_usr_location}/local/morello-purecap")
 set(CheriBSD_pkgconfig_locations "${CheriBSD_usr_location}/libdata/pkgconfig")
 set(CheriBSD_pkgconfig_locations "${CheriBSD_pkgconfig_locations}:${CheriBSD_usr_location}/local/morello-purecap/lib/pkgconfig")
 set(CheriBSD_pkgconfig_locations "${CheriBSD_pkgconfig_locations}:${CheriBSD_usr_location}/local/morello-purecap/share/pkgconfig")
@@ -77,9 +78,14 @@ set(THREADS_HAVE_PTHREAD_ARG TRUE)
 
 
 # Ensure we search in the custom install prefix that we install everything to:
-set(CMAKE_PREFIX_PATH "@TOOLCHAIN_CMAKE_PREFIX_PATH@;${CMAKE_PREFIX_PATH}")
-SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set(CMAKE_PREFIX_PATH "${CheriBSD_package_location};${CMAKE_PREFIX_PATH}")
+
+
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+
 # for libraries and headers in the target directories
-SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
-SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
-SET(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
+
+set(CMAKE_FIND_DEBUG_MODE TRUE)

@@ -74,6 +74,7 @@ option(BUILD_CMOCKA_LIB "Build cmocka library" OFF)
 option(BUILD_UUID_LIB "Build uuid library" ON)
 option(BUILD_PCAP_LIB "Build pcap library" ON)
 option(BUILD_PROTOBUFC_LIB "Build protobuf-c library" ON)
+option(BUILD_SQLHOOK "Build the sqlhook extension library" OFF)
 
 option(USE_NETLINK_SERVICE "Use netlink service" OFF)
 cmake_dependent_option(BUILD_MNL_LIB "Build mnl library" ON USE_NETLINK_SERVICE OFF)
