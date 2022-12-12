@@ -28,7 +28,7 @@ elseif(BUILD_MNL_LIB)
       <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> "--host=${target_autoconf_triple}"
       # use position independent code, even for static lib, in case we want to make shared lib later
       --with-pic=on
-      "CC=${CMAKE_C_COMPILER}" "CXX=${CMAKE_CXX_COMPILER}"
+      "CC=${CMAKE_C_COMPILER}" "CFLAGS=${CMAKE_C_FLAGS}" "LDFLAGS=${CMAKE_SHARED_LINKER_FLAGS}"
     # need to manually specify PATH, so that make knows where to find cross-compiling GCC
     BUILD_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" "${MAKE_COMMAND}"
     INSTALL_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" "${MAKE_COMMAND}" install
