@@ -103,7 +103,7 @@ if (USE_CAPTURE_SERVICE)
     # C array initialiser for capture middleware
     # e.g. `middleware1, middleware2`
     list(JOIN arg_CAPTURE_MIDDLEWARES ", " _CAPTURE_MIDDLEWARES_LIST_INITIALISER)
-
+    list(LENGTH arg_CAPTURE_MIDDLEWARES _CAPTURE_MIDDLEWARES_COUNT)
     set(_CAPTURE_MIDDLEWARES_DEFINITIONS "extern struct capture_middleware ${_CAPTURE_MIDDLEWARES_LIST_INITIALISER};")
 
     configure_file(
