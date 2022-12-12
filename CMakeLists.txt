@@ -107,8 +107,6 @@ option(CONFIGURE_COVERAGE "Configure for code coverage (requires lcov)" OFF)
 #     (e.g. OpenWRT SDK or default `pdebuild` environment)
 set(EP_DOWNLOAD_DIR "" CACHE PATH "ExternalProject default DOWNLOAD_DIR")
 
-set(TRIPLET "${CMAKE_LIBRARY_ARCHITECTURE}" CACHE STRING "Target triplet to use for autoconf (e.g. output of `cc -dumpmachine`)")
-
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to 'Debug' as none was specified.")
@@ -131,15 +129,21 @@ endfunction(get_autoconf_os)
 
 get_autoconf_os(${CMAKE_HOST_SYSTEM_NAME} build_autoconf_os)
 string(TOLOWER "${CMAKE_HOST_SYSTEM_PROCESSOR}-${build_autoconf_os}" build_autoconf_triple)
-set(target_autoconf_triple "${TRIPLET}")
+set(target_autoconf_triple "${CMAKE_C_COMPILER_TARGET}")
+if (target_autoconf_triple STREQUAL "")
+  # When cross-compiling debians use debuild, CMAKE_C_COMPILER_TARGET isn't set,
+  # however, we can load the triple from CMAKE_LIBRARY_ARCHITECTURE instead
+  set(target_autoconf_triple "${CMAKE_LIBRARY_ARCHITECTURE}")
+endif()
 
 if (CMAKE_CROSSCOMPILING)
   message("Cross-compiling, setting cross-compiling autoconf/pkg-config vars")
   message("Build (autoconf --build) autoconf triple is ${build_autoconf_triple}")
-  message("Target (autoconf --host) autoconf triple is ${TRIPLET}")
+  message("Target (autoconf --host) autoconf triple is ${target_autoconf_triple}")
   if (target_autoconf_triple STREQUAL "")
     message(WARNING
-      "edgesec is configured for cross-compiling, but could not detect a valid TRIPLET value."
+      "edgesec is configured for cross-compiling, but could not detect a valid target_autoconf_triple value."
+      " This is normally loaded from CMAKE_C_COMPILER_TARGET or CMAKE_LIBRARY_ARCHITECTURE."
       " This may cause issues when cross-compiling sqlite/other libs.")
   endif()
 
