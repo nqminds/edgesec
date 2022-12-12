@@ -41,7 +41,7 @@ char *__wrap_run_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path) {
   (void)dhcp_bin_path;
   (void)dhcp_conf_path;
 
-  return mock_type(char *);
+  return mock_ptr_type(char *);
 }
 
 bool __wrap_kill_dhcp_process(void) { return true; }
