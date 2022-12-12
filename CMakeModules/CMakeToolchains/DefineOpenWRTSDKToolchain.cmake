@@ -125,6 +125,9 @@ function(defineOpenwrtSDKToolchain)
     set(CMAKE_RANLIB                    "${tools}/bin/${OpenWRT_SDK_GNU_TARGET}-ranlib${CMAKE_EXECUTABLE_SUFFIX}" PARENT_SCOPE)
     set(CMAKE_SIZE                      "${tools}/bin/${OpenWRT_SDK_GNU_TARGET}-size${CMAKE_EXECUTABLE_SUFFIX}" PARENT_SCOPE)
     set(CMAKE_STRIP                     "${tools}/bin/${OpenWRT_SDK_GNU_TARGET}-strip${CMAKE_EXECUTABLE_SUFFIX}" PARENT_SCOPE)
+    set(CMAKE_ASM_COMPILER_TARGET       "${OpenWRT_SDK_GNU_TARGET}" PARENT_SCOPE)
+    set(CMAKE_C_COMPILER_TARGET         "${OpenWRT_SDK_GNU_TARGET}" PARENT_SCOPE)
+    set(CMAKE_CXX_COMPILER_TARGET       "${OpenWRT_SDK_GNU_TARGET}" PARENT_SCOPE)
 
     # Without this flag CMake is not able to pass test compilation check
     set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY PARENT_SCOPE)
