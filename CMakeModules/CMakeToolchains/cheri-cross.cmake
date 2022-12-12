@@ -36,7 +36,9 @@ set(CMAKE_SYSROOT "${CheriBSD_rootfs_location}")
 set(CMAKE_FIND_ROOT_PATH "${CheriBSD_rootfs_location}")
 
 set(CMAKE_SYSTEM_NAME FreeBSD) # FreeBSD
-set(CMAKE_LIBRARY_ARCHITECTURE "${CheriBSD_SDK_GNU_TARGET}")
+set(CMAKE_ASM_COMPILER_TARGET "${CheriBSD_SDK_GNU_TARGET}")
+set(CMAKE_C_COMPILER_TARGET   "${CheriBSD_SDK_GNU_TARGET}")
+set(CMAKE_CXX_COMPILER_TARGET "${CheriBSD_SDK_GNU_TARGET}")
 set(CROSS_COMPILE_PREFIX "${CheriBSD_tools_location}/${CheriBSD_SDK_GNU_TARGET}-") # used by lib/openssl.cmake only
 #set(CMAKE_SYSTEM_PROCESSOR "${CheriBSD_SDK_SYSTEM_PROCESSOR}")
 
