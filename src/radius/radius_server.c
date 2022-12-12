@@ -770,7 +770,7 @@ void radius_server_free_clients(struct radius_server_data *data,
 }
 
 struct radius_client *init_radius_client(struct radius_conf *conf,
-                                         void *mac_conn_fn,
+                                         mac_conn_fn mac_conn_fn,
                                          void *mac_conn_arg) {
   struct radius_client *entry;
   struct in_addr addr;
