@@ -23,6 +23,7 @@ override_dh_auto_configure:
 		 -DBUILD_PCAP_LIB=OFF\
 		 -DBUILD_LIB_MININI=OFF\
 		 -DBUILD_HOSTAPD=ON\
+		 -DBUILD_UUID_LIB=OFF\
 		 -DBUILD_PROTOBUFC_LIB=OFF
 
 # make sure to always install into `debian/tmp` and use
