@@ -151,7 +151,8 @@ __declspec(dllexport)
     return rc;
   }
 
-  strncpy(sock_path, env_key_value, MAX_OS_PATH_LEN);
+  strncpy(sock_path, env_key_value, MAX_OS_PATH_LEN - 1);
+  sock_path[MAX_OS_PATH_LEN - 1] = '\0';
 
   if ((domain_fd = create_domain_client(NULL)) < 0) {
     return rc;
