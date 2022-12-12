@@ -36,15 +36,15 @@ void decode_dns_questions(uint8_t *payload, struct capture_packet *cpac) {
 }
 
 bool decode_dns_packet(struct capture_packet *cpac) {
-  int payload_offset = 0;
+  ptrdiff_t payload_offset = 0;
 
-  if ((void *)cpac->tcph != NULL && (void *)cpac->udph == NULL) {
+  if (cpac->tcph != NULL && cpac->udph == NULL) {
     cpac->dnsh =
-        (struct dns_header *)((void *)cpac->tcph + sizeof(struct tcphdr));
+        (struct dns_header *)((char *)cpac->tcph + sizeof(struct tcphdr));
     payload_offset = 2;
-  } else if ((void *)cpac->tcph == NULL && (void *)cpac->udph != NULL) {
+  } else if (cpac->tcph == NULL && cpac->udph != NULL) {
     cpac->dnsh =
-        (struct dns_header *)((void *)cpac->udph + sizeof(struct udphdr));
+        (struct dns_header *)((char *)cpac->udph + sizeof(struct udphdr));
     payload_offset = 0;
   } else
     return false;
@@ -58,11 +58,11 @@ bool decode_dns_packet(struct capture_packet *cpac) {
   cpac->dnss.nauth = ntohs(cpac->dnsh->nauth);
   cpac->dnss.nother = ntohs(cpac->dnsh->nother);
 
-  int pos = (int)((void *)cpac->dnsh - (void *)cpac->ethh);
+  ptrdiff_t pos = ((char *)cpac->dnsh - (char *)cpac->ethh);
   // We consider only the UDP encapsulation
   if (pos + payload_offset + sizeof(struct dns_header) <= cpac->length &&
       !payload_offset) {
-    void *payload = (void *)cpac->dnsh + sizeof(struct dns_header);
+    void *payload = (char *)cpac->dnsh + sizeof(struct dns_header);
     if (cpac->dnss.nqueries)
       decode_dns_questions((uint8_t *)payload, cpac);
   }
