@@ -263,7 +263,8 @@ int init_context(struct app_config *app_config,
 
   char *ipcmd_path = (char *)hmap_str_keychar_get(ctx->hmap_bin_paths, "ip");
   if (ipcmd_path == NULL) {
-    if ((ipcmd_path = (char *)hmap_str_keychar_get(ctx->hmap_bin_paths, "ifconfig")) == NULL) {
+    if ((ipcmd_path = (char *)hmap_str_keychar_get(ctx->hmap_bin_paths,
+                                                   "ifconfig")) == NULL) {
       log_error("Couldn't find ip/ifconfig commands");
       return -1;
     }
