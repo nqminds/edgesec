@@ -1,3 +1,9 @@
+edgesec (0.1.0-alpha.0-2) UNRELEASED; urgency=low
+
+  * Dynamically to `libuuid1`, instead of statically linking to a bundled version.
+
+ -- Alois Klink <alois@nquiringminds.com>  Mon, 12 Dec 2022 11:57:00 +0000
+
 edgesec (0.1.0-alpha.0-1) UNRELEASED; urgency=low
 
   * See <https://github.com/nqminds/edgesec/releases/tag/v0.1.0-alpha.0>
