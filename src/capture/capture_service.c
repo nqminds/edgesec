@@ -170,7 +170,7 @@ int run_capture_thread(char *ifname, struct capture_conf const *config,
   }
 
   os_strlcpy(context->ifname, ifname, IF_NAMESIZE);
-  os_memcpy(&context->config, config, sizeof(struct capture_conf));
+  context->config = *config;
 
   log_info("Running the capture thread");
   if (pthread_create(id, NULL, capture_thread, (void *)context) != 0) {
