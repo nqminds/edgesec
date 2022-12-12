@@ -19,6 +19,18 @@ if (BUILD_UUID_LIB AND NOT (BUILD_ONLY_DOCS))
     set(MAKE_COMMAND "make")
   endif ()
 
+  # util-unix uses SOLIB_LDFLAGS as libtool flags for linking
+  set(SOLIB_LDFLAGS "${CMAKE_SHARED_LINKER_FLAGS}")
+  if (CMAKE_CROSSCOMPILING AND "${CMAKE_C_COMPILER_ID}" MATCHES "Clang")
+    # util-linux links with libtool
+    # unfortunately, libtool ignores the `-target=...` parameter in it's flags,
+    # which breaks cross-compiling for CheriBSD using cheribuild.
+    # We can specify `-XCClinker` to force libtool to pass the value to the
+    # underlying clang linker command.
+    list(APPEND SOLIB_LDFLAGS "-XCClinker --target=${target_autoconf_triple}")
+  endif()
+  list(JOIN SOLIB_LDFLAGS " " SOLIB_LDFLAGS)
+
   set(UTIL_LINUX_VERSION 2.37.2)
   # ExternalProject downloads/builds/installs at **build** time
   # (e.g. during the `cmake --build` step)
@@ -35,7 +47,8 @@ if (BUILD_UUID_LIB AND NOT (BUILD_ONLY_DOCS))
       --prefix=<INSTALL_DIR>
       "--host=${target_autoconf_triple}"
       --disable-all-programs --enable-libuuid
-      "CC=${CMAKE_C_COMPILER}" "CXX=${CMAKE_CXX_COMPILER}" "CFLAGS=${CMAKE_C_FLAGS}"
+      "CC=${CMAKE_C_COMPILER}" "CFLAGS=${CMAKE_C_FLAGS}" "LDFLAGS=${CMAKE_SHARED_LINKER_FLAGS}"
+      "SOLIB_LDFLAGS=${SOLIB_LDFLAGS}" # util-linux uses a custom ldflags for linking
     INSTALL_DIR "${LIBUUID_INSTALL_DIR}"
     # need to manually specify PATH, so that make knows where to find GCC
     BUILD_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" "${MAKE_COMMAND}"
