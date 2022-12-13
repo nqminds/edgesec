@@ -34,7 +34,10 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/docs")
 
-include(AddCMockaTest)
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+  include(AddCMockaTest)
+endif()
+
 include(FetchContent)
 include(ExternalProject)
 include(CMakeDependentOption)
@@ -98,7 +101,7 @@ option(USE_CRYPTO_SERVICE "Use the crypto service" OFF)
 cmake_dependent_option(BUILD_OPENSSL_LIB "Build OpenSSL" ON USE_CRYPTO_SERVICE OFF)
 
 option(USE_ZYMKEY4_HSM "Use the Zymkey4 HSM" OFF)
-option(CONFIGURE_COVERAGE "Configure for code coverage (requires lcov)" OFF)
+cmake_dependent_option(CONFIGURE_COVERAGE "Configure for code coverage (requires lcov)" OFF BUILD_TESTING OFF)
 
 # Default ExternalProject download directory.
 # Useful for two reasons:
@@ -252,35 +255,34 @@ if (NOT BUILD_ONLY_DOCS)
     message(FATAL_ERROR "You must define enable one of USE_NETLINK_SERVICE or USE_UCI_SERVICE or USE_GENERIC_IP_SERVICE.")
   endif()
 
-  if (CMAKE_CROSSCOMPILING)
-    # don't add test / code coverage when cross-compiling
-    add_subdirectory(src)
-  else ()
-    if (CONFIGURE_COVERAGE)
-      include(CodeCoverage)
-      # enable before the src() flag to enable code coverage
-      append_coverage_compiler_flags()
+  if (CONFIGURE_COVERAGE)
+    include(CodeCoverage)
+    # enable before the src() flag to enable code coverage
+    append_coverage_compiler_flags()
 
-      include(ProcessorCount)
-      ProcessorCount(PROCESSOR_COUNT)
+    include(ProcessorCount)
+    ProcessorCount(PROCESSOR_COUNT)
 
-      setup_target_for_coverage_lcov(
-        NAME coverage
-        EXECUTABLE ctest
-        EXECUTABLE_ARGS --output-on-failure -j "${PROCESSOR_COUNT}"
-        EXCLUDE
-          "${PROJECT_SOURCE_DIR}/lib/*"
-          # These files are only in the build/ directory, but
-          # llvm-cov gcov doesn't seem to like it
-          "${PROJECT_SOURCE_DIR}/middlewares_list.c"
-          # The _deps/ folder is created by CMake's FetchContent
-          "${PROJECT_SOURCE_DIR}/_deps/*"
-      )
-    endif()
-    # src must be after codecoverage but before tests
-    add_subdirectory(src)
+    setup_target_for_coverage_lcov(
+      NAME coverage
+      EXECUTABLE ctest
+      EXECUTABLE_ARGS --output-on-failure -j "${PROCESSOR_COUNT}"
+      EXCLUDE
+        "${PROJECT_SOURCE_DIR}/lib/*"
+        # These files are only in the build/ directory, but
+        # llvm-cov gcov doesn't seem to like it
+        "${PROJECT_SOURCE_DIR}/middlewares_list.c"
+        # The _deps/ folder is created by CMake's FetchContent
+        "${PROJECT_SOURCE_DIR}/_deps/*"
+    )
+  endif()
+
+  # src must be after codecoverage but before tests
+  add_subdirectory(src)
+
+  if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
     add_subdirectory(tests)
-  endif ()
+  endif()
 
   include(install)
 endif ()
