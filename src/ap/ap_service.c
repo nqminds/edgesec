@@ -31,10 +31,6 @@
 #define AP_STA_DISCONNECTED "AP-STA-DISCONNECTED"
 #define AP_STA_CONNECTED "AP-STA-CONNECTED"
 
-typedef void (*ap_service_fn)(struct supervisor_context *context,
-                              uint8_t mac_addr[],
-                              enum AP_CONNECTION_STATUS status);
-
 int ping_ap_command(struct apconf *hconf) {
   char *reply = NULL;
 
@@ -210,7 +206,8 @@ cleanup:
 
 void ap_sock_handler(int sock, void *eloop_ctx, void *sock_ctx) {
   struct supervisor_context *context = (struct supervisor_context *)sock_ctx;
-  ap_service_fn fn = (ap_service_fn)eloop_ctx;
+  ap_service_fn fn =
+      ((struct run_ap_callback_fn_struct *)eloop_ctx)->ap_service_fn;
 
   uint32_t bytes_available;
   if (ioctl(sock, FIONREAD, &bytes_available) == -1) {
@@ -249,7 +246,7 @@ void ap_sock_handler(int sock, void *eloop_ctx, void *sock_ctx) {
 }
 
 int register_ap_event(struct supervisor_context *context,
-                      void *ap_callback_fn) {
+                      struct run_ap_callback_fn_struct *ap_callback_fn) {
   ssize_t cmd_len = (ssize_t)ARRAY_SIZE(ATTACH_AP_COMMAND);
 
   if ((context->ap_sock = create_domain_client(NULL)) == -1) {
@@ -276,7 +273,7 @@ int register_ap_event(struct supervisor_context *context,
 }
 
 int run_ap(struct supervisor_context *context, bool exec_ap, bool generate_ssid,
-           void *ap_callback_fn) {
+           struct run_ap_callback_fn_struct *ap_callback_fn) {
   if (generate_vlan_conf(context->hconfig.vlan_file,
                          context->hconfig.interface) < 0) {
     log_error("generate_vlan_conf fail");

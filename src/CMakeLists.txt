@@ -3,7 +3,10 @@ add_compile_options(
   $<$<CONFIG:Debug>:-Werror>
   # Warn/error if using a non-const pointer to a string literal
   $<$<COMPILE_LANGUAGE:C>:-Wwrite-strings>
+  $<$<COMPILE_LANGUAGE:C>:-Wpedantic>
   $<$<COMPILE_LANGUAGE:C>:-Wformat-security> # required by debian builds
+  $<$<COMPILE_LANGUAGE:C>:-Wfloat-equal> # warn/error if checking for equality between floats
+  $<$<COMPILE_LANGUAGE:C>:-Wnull-dereference> # warn if dereferencing NULL
 )
 
 add_subdirectory(utils)

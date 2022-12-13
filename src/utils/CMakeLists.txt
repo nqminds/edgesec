@@ -42,6 +42,12 @@ if (USE_NETLINK_SERVICE)
   # IFF_UP is a BSD definition, strnlen is a POSIX.1-2008 function
   target_compile_definitions(nl PRIVATE _DEFAULT_SOURCE _BSD_SOURCE)
 
+  # nl include linux/netlink, which includes some 0-length arrays, which are invalid
+  # in ISO C
+  get_target_property(nl_COMPILE_OPTIONS nl COMPILE_OPTIONS)
+  list(REMOVE_ITEM nl_COMPILE_OPTIONS "$<$<COMPILE_LANGUAGE:C>:-Wpedantic>")
+  set_property(TARGET nl PROPERTY COMPILE_OPTIONS ${nl_COMPILE_OPTIONS})
+
   target_link_libraries(iface PUBLIC nl)
 elseif (USE_UCI_SERVICE)
   add_library(uci_wrt uci_wrt.c)

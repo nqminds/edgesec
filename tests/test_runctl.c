@@ -72,7 +72,7 @@ int __wrap_fw_set_ip_forward(void) { return 0; }
 char *__wrap_iface_get_vlan(char *buf) {
   (void)buf;
 
-  return (char *)mock();
+  return mock_ptr_type(char *);
 }
 struct fwctx *__wrap_fw_init_context(hmap_if_conn *if_mapper,
                                      hmap_vlan_conn *vlan_mapper,
@@ -89,7 +89,7 @@ struct fwctx *__wrap_fw_init_context(hmap_if_conn *if_mapper,
   (void)exec_firewall;
   (void)path;
 
-  return (struct fwctx *)mock();
+  return mock_ptr_type(struct fwctx *);
 }
 
 int __wrap_run_supervisor(char *server_path,
@@ -119,7 +119,7 @@ struct radius_server_data *__wrap_run_radius(struct eloop_data *eloop,
   (void)radius_callback_fn;
   (void)radius_callback_args;
 
-  return (struct radius_server_data *)mock();
+  return mock_ptr_type(struct radius_server_data *);
 }
 #endif
 

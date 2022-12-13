@@ -188,6 +188,9 @@
       "inherits": "openwrt",
       "hidden": true,
       "displayName": "CMake config for cross-compiling OpenWRT with the SDK",
+      "cacheVariables": {
+        "BUILD_TESTING": false
+      },
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
