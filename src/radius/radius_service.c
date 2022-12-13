@@ -23,7 +23,7 @@
 
 struct radius_server_data *run_radius(struct eloop_data *eloop,
                                       struct radius_conf *rconf,
-                                      void *radius_callback_fn,
+                                      mac_conn_fn radius_callback_fn,
                                       void *radius_callback_args) {
   struct radius_client *client =
       init_radius_client(rconf, radius_callback_fn, radius_callback_args);

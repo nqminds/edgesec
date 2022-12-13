@@ -2,15 +2,11 @@
 #include "middlewares_list.h"
 
 #cmakedefine _CAPTURE_MIDDLEWARES_DEFINITIONS @_CAPTURE_MIDDLEWARES_DEFINITIONS@
+#cmakedefine _CAPTURE_MIDDLEWARES_COUNT @_CAPTURE_MIDDLEWARES_COUNT@
 #cmakedefine _CAPTURE_MIDDLEWARES_LIST_INITIALISER @_CAPTURE_MIDDLEWARES_LIST_INITIALISER@
 
 #ifdef _CAPTURE_MIDDLEWARES_DEFINITIONS
 _CAPTURE_MIDDLEWARES_DEFINITIONS
-#endif
-
-#ifndef _CAPTURE_MIDDLEWARES_LIST_INITIALISER
-// if this not defined, set it nothing, a.k.a. empty list
-#define _CAPTURE_MIDDLEWARES_LIST_INITIALISER
 #endif
 
 UT_array *assign_middlewares(void) {
@@ -18,9 +14,15 @@ UT_array *assign_middlewares(void) {
 
   utarray_new(handlers, &middleware_icd);
 
+#if _CAPTURE_MIDDLEWARES_COUNT
   struct capture_middleware const capture_middlewares[] = {_CAPTURE_MIDDLEWARES_LIST_INITIALISER};
 
   const size_t middleware_lengths = sizeof(capture_middlewares) / sizeof(capture_middlewares[0]);
+#else
+  // if _CAPTURE_MIDDLEWARES_COUNT is 0, empty lists are illegal, so use a NULL ptr instead
+  struct capture_middleware const * capture_middlewares = NULL;
+  const size_t middleware_lengths = 0;
+#endif
 
   for (size_t i = 0; i < middleware_lengths; i++) {
     struct middleware_handlers handler = {

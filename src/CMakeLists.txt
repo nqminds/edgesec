@@ -3,6 +3,7 @@ add_compile_options(
   $<$<CONFIG:Debug>:-Werror>
   # Warn/error if using a non-const pointer to a string literal
   $<$<COMPILE_LANGUAGE:C>:-Wwrite-strings>
+  $<$<COMPILE_LANGUAGE:C>:-Wpedantic>
   $<$<COMPILE_LANGUAGE:C>:-Wformat-security> # required by debian builds
 )
 

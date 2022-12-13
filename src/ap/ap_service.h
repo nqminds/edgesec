@@ -42,17 +42,28 @@
 #define DENYACL_DEL_COMMAND                                                    \
   "DENY_ACL DEL_MAC" /* Command name to remove a station from the deny ACL */
 
+/** Type of callback for AP service in run_ap()*/
+typedef void (*ap_service_fn)(struct supervisor_context *context,
+                              uint8_t mac_addr[],
+                              enum AP_CONNECTION_STATUS status);
+
+/** Structure containing @p ap_callback_fn callback pointer for run_ap() */
+struct run_ap_callback_fn_struct {
+  /** The callback for the AP service. */
+  ap_service_fn ap_service_fn;
+};
+
 /**
  * @brief Runs the AP service
  *
  * @param context The supervisor context structure
  * @param exec_ap Flag to execute/signal the AP process
  * @param generate_ssid Flag to generate the SSID for AP
- * @param ap_callback_fn The callback for AP service
+ * @param[in] ap_callback_fn A stuct containing the callback for AP service
  * @return int 0 on success, -1 on failure
  */
 int run_ap(struct supervisor_context *context, bool exec_ap, bool generate_ssid,
-           void *ap_callback_fn);
+           struct run_ap_callback_fn_struct *ap_callback_fn);
 
 /**
  * @brief Closes (terminates) AP process
