@@ -29,25 +29,6 @@
  */
 void *os_zalloc(size_t size);
 
-/**
- * @brief Allocate and zero memory for an array
- *
- * This function can be used as a wrapper for os_zalloc(nmemb * size) when an
- * allocation is used for an array. The main benefit over os_zalloc() is in
- * having an extra check to catch integer overflows in multiplication.
- *
- * Caller is responsible for freeing the returned buffer with os_free().
- *
- * @param nmemb Number of members in the array
- * @param size Number of bytes in each member
- * @return void* Pointer to allocated and zeroed memory or %NULL on failure
- */
-static inline void *os_calloc(size_t nmemb, size_t size) {
-  if (size && nmemb > (~(size_t)0) / size)
-    return NULL;
-  return os_zalloc(nmemb * size);
-}
-
 // void *os_malloc(size_t size);
 // void os_free(void* ptr);
 
