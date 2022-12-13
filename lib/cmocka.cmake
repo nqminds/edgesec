@@ -18,7 +18,9 @@
 # THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 # Compile the cmocka library
-if (BUILD_CMOCKA_LIB AND NOT (BUILD_ONLY_DOCS) AND NOT (CMAKE_CROSSCOMPILING))
+if (BUILD_ONLY_DOCS OR NOT (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING))
+  # skip building cmocka, not needed
+elseif (BUILD_CMOCKA_LIB)
   include(FetchContent)
 
   set(CMOCKA_GIT_SHA "c911f1cb11479435818c59fd265c103b4d8c66fb")
@@ -50,7 +52,7 @@ if (BUILD_CMOCKA_LIB AND NOT (BUILD_ONLY_DOCS) AND NOT (CMAKE_CROSSCOMPILING))
   if (NOT TARGET cmocka::cmocka)
     add_library(cmocka::cmocka ALIAS cmocka)
   endif(NOT TARGET cmocka::cmocka)
-elseif (NOT BUILD_ONLY_DOCS AND NOT (CMAKE_CROSSCOMPILING))
+else ()
   find_package(cmocka 1.1.5 REQUIRED)
   add_library(cmocka::cmocka UNKNOWN IMPORTED)
   set_target_properties(cmocka::cmocka PROPERTIES
