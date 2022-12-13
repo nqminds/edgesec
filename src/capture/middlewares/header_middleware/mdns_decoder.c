@@ -207,9 +207,9 @@ bool decode_mdns_packet(struct capture_packet *cpac) {
   // char *qname = NULL;
   // size_t first;
 
-  if ((void *)cpac->udph != NULL) {
+  if (cpac->udph != NULL) {
     cpac->mdnsh =
-        (struct mdns_header *)((void *)cpac->udph + sizeof(struct udphdr));
+        (struct mdns_header *)((char *)cpac->udph + sizeof(struct udphdr));
   } else
     return false;
 

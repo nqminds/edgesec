@@ -50,7 +50,7 @@ int __wrap_eloop_register_read_sock(struct eloop_data *eloop, int sock,
 }
 
 struct eloop_data *__wrap_eloop_init(void) {
-  return mock_type(struct eloop_data *);
+  return mock_ptr_type(struct eloop_data *);
 }
 
 void __wrap_eloop_free(struct eloop_data *eloop) { os_free(eloop); }

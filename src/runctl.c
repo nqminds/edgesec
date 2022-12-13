@@ -492,6 +492,11 @@ int run_ctl(struct app_config *app_config, struct eloop_data *eloop) {
     }
   }
 
+  // callback for run_ap()
+  struct run_ap_callback_fn_struct run_ap_callback_fn_struct = {
+      .ap_service_fn = ap_service_callback,
+  };
+
   if (strlen(context->hconfig.interface)) {
     log_info("Running the AP service on %s ...", context->hconfig.interface);
 
@@ -503,7 +508,7 @@ int run_ctl(struct app_config *app_config, struct eloop_data *eloop) {
     }
 
     if (run_ap(context, app_config->exec_ap, app_config->generate_ssid,
-               ap_service_callback) < 0) {
+               &run_ap_callback_fn_struct) < 0) {
       log_error("run_ap fail");
       goto run_engine_fail;
     }
@@ -515,8 +520,7 @@ int run_ctl(struct app_config *app_config, struct eloop_data *eloop) {
              context->rconfig.radius_port, context->rconfig.radius_client_ip);
 
     if ((context->radius_srv = run_radius(context->eloop, &context->rconfig,
-                                          (void *)get_mac_conn_cmd, context)) ==
-        NULL) {
+                                          get_mac_conn_cmd, context)) == NULL) {
       log_error("run_radius fail");
       goto run_engine_fail;
     }

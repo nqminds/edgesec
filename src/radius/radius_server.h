@@ -146,7 +146,8 @@ void radius_server_deinit(struct radius_server_data *data);
 int radius_server_get_mib(struct radius_server_data *data, char *buf,
                           size_t buflen);
 struct radius_client *init_radius_client(struct radius_conf *conf,
-                                         void *mac_conn_fn, void *mac_conn_arg);
+                                         mac_conn_fn mac_conn_fn,
+                                         void *mac_conn_arg);
 void radius_server_free_clients(struct radius_server_data *data,
                                 struct radius_client *clients);
 #endif /* RADIUS_SERVER_H */

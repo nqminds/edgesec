@@ -52,9 +52,9 @@
 #define MAX_PACKET_TYPES 10
 
 bool decode_dhcp_packet(struct capture_packet *cpac) {
-  if ((void *)cpac->udph != NULL) {
+  if (cpac->udph != NULL) {
     cpac->dhcph =
-        (struct dhcp_header *)((void *)cpac->udph + sizeof(struct udphdr));
+        (struct dhcp_header *)((char *)cpac->udph + sizeof(struct udphdr));
   } else
     return false;
 
@@ -77,10 +77,10 @@ bool decode_dhcp_packet(struct capture_packet *cpac) {
 }
 
 bool decode_udp_packet(struct capture_packet *cpac) {
-  if ((void *)cpac->ip4h != NULL && (void *)cpac->ip6h == NULL)
-    cpac->udph = (struct udphdr *)((void *)cpac->ip4h + sizeof(struct ip));
-  else if ((void *)cpac->ip4h == NULL && (void *)cpac->ip6h != NULL)
-    cpac->udph = (struct udphdr *)((void *)cpac->ip6h + sizeof(struct ip6_hdr));
+  if (cpac->ip4h != NULL && cpac->ip6h == NULL)
+    cpac->udph = (struct udphdr *)((char *)cpac->ip4h + sizeof(struct ip));
+  else if (cpac->ip4h == NULL && cpac->ip6h != NULL)
+    cpac->udph = (struct udphdr *)((char *)cpac->ip6h + sizeof(struct ip6_hdr));
   else
     return false;
 
@@ -97,10 +97,10 @@ bool decode_udp_packet(struct capture_packet *cpac) {
 }
 
 bool decode_tcp_packet(struct capture_packet *cpac) {
-  if ((void *)cpac->ip4h != NULL && (void *)cpac->ip6h == NULL)
-    cpac->tcph = (struct tcphdr *)((void *)cpac->ip4h + sizeof(struct ip));
-  else if ((void *)cpac->ip4h == NULL && (void *)cpac->ip6h != NULL)
-    cpac->tcph = (struct tcphdr *)((void *)cpac->ip6h + sizeof(struct ip6_hdr));
+  if (cpac->ip4h != NULL && cpac->ip6h == NULL)
+    cpac->tcph = (struct tcphdr *)((char *)cpac->ip4h + sizeof(struct ip));
+  else if (cpac->ip4h == NULL && cpac->ip6h != NULL)
+    cpac->tcph = (struct tcphdr *)((char *)cpac->ip6h + sizeof(struct ip6_hdr));
   else
     return false;
 
@@ -128,7 +128,7 @@ bool decode_tcp_packet(struct capture_packet *cpac) {
 
 bool decode_icmp4_packet(struct capture_packet *cpac) {
   // don't use icmphdr, it's non-standard and not supported on FreeBSD
-  cpac->icmp4h = (struct icmp *)((void *)cpac->ip4h + sizeof(struct ip));
+  cpac->icmp4h = (struct icmp *)((char *)cpac->ip4h + sizeof(struct ip));
 
   strcpy(cpac->icmp4s.id, cpac->id);
 
@@ -144,7 +144,7 @@ bool decode_icmp4_packet(struct capture_packet *cpac) {
 
 bool decode_icmp6_packet(struct capture_packet *cpac) {
   cpac->icmp6h =
-      (struct icmp6_hdr *)((void *)cpac->ip6h + sizeof(struct ip6_hdr));
+      (struct icmp6_hdr *)((char *)cpac->ip6h + sizeof(struct ip6_hdr));
 
   strcpy(cpac->icmp6s.id, cpac->id);
 
@@ -166,7 +166,7 @@ bool decode_ip4_packet(struct capture_packet *cpac) {
     return false;
   }
 
-  cpac->ip4h = (struct ip *)((void *)cpac->ethh + sizeof(struct ether_header));
+  cpac->ip4h = (struct ip *)((char *)cpac->ethh + sizeof(struct ether_header));
 
   strcpy(cpac->ip4s.id, cpac->id);
 
@@ -196,7 +196,7 @@ bool decode_ip6_packet(struct capture_packet *cpac) {
   }
 
   cpac->ip6h =
-      (struct ip6_hdr *)((void *)cpac->ethh + sizeof(struct ether_header));
+      (struct ip6_hdr *)((char *)cpac->ethh + sizeof(struct ether_header));
 
   // Wrong IP6 version
   if (((cpac->ip6h)->ip6_vfc & IPV6_VERSION_MASK) != IPV6_VERSION) {
@@ -221,7 +221,7 @@ bool decode_ip6_packet(struct capture_packet *cpac) {
 
 bool decode_arp_packet(struct capture_packet *cpac) {
   cpac->arph =
-      (struct ether_arp *)((void *)cpac->ethh + sizeof(struct ether_header));
+      (struct ether_arp *)((char *)cpac->ethh + sizeof(struct ether_header));
 
   strcpy(cpac->arps.id, cpac->id);
 
