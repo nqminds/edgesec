@@ -43,11 +43,6 @@
  */
 #define RADIUS_MAX_SESSION 1000
 
-/**
- * RADIUS_MAX_MSG_LEN - Maximum message length for incoming RADIUS messages
- */
-#define RADIUS_MAX_MSG_LEN 3000
-
 // struct radius_server_data;
 
 static void radius_server_session_timeout(void *eloop_ctx, void *timeout_ctx);
