@@ -53,7 +53,7 @@ if (USE_CRYPTO_SERVICE)
     endif ()
 
     set(LIBOPENSSL3_INSTALL_ROOT "${CMAKE_CURRENT_BINARY_DIR}/lib")
-    set(LIBOPENSSL3_INSTALL_DIR "${LIBOPENSSL3_INSTALL_ROOT}/openssl")
+    set(LIBOPENSSL3_INSTALL_DIR "${LIBOPENSSL3_INSTALL_ROOT}/openssl3")
     ExternalProject_Add(
       openssl3_src
       URL https://www.openssl.org/source/openssl-3.0.0.tar.gz
