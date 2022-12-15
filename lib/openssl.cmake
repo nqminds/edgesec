@@ -1,10 +1,10 @@
 include(FetchContent)
 
 if (BUILD_HOSTAPD AND NOT BUILD_ONLY_DOCS)
-  find_package(OpenSSL 1.1.1 MODULE REQUIRED COMPONENTS Crypto)
+  find_package(OpenSSL 1.1.1 EXACT MODULE COMPONENTS Crypto)
   if (OpenSSL_FOUND)
     message("Found OpenSSL 1.1.1 crypto library")
-  else
+  else()
     if (CMAKE_CROSSCOMPILING)
       if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
@@ -62,7 +62,7 @@ if (BUILD_HOSTAPD AND NOT BUILD_ONLY_DOCS)
       INSTALL_DIR "${LIBOPENSSL_INSTALL_DIR}"
       CONFIGURE_COMMAND
         ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" "CC=${CMAKE_C_COMPILER}" "CXX=${CMAKE_CXX_COMPILER}"
-        <SOURCE_DIR>/Configure ${OpenSSL_Configure_Args}
+        <SOURCE_DIR>/config ${OpenSSL_Configure_Args}
       LIST_SEPARATOR " " # expand ${OpenSSL_Configure_Args} to space-separated list
       # only install software, don't install or build docs
       INSTALL_COMMAND "${MAKE_COMMAND}" install_sw
