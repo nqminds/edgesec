@@ -25,6 +25,12 @@ if (BUILD_HOSTAPD AND NOT (BUILD_ONLY_DOCS))
     @ONLY
   )
 
+  configure_file(
+    "${CMAKE_CURRENT_LIST_DIR}/eap.Makefile.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/eap.Makefile"
+    @ONLY
+  )
+
   ExternalProject_Add(
     hostapd_externalproject
     URL https://w1.fi/releases/hostapd-2.10.tar.gz
@@ -41,4 +47,6 @@ if (BUILD_HOSTAPD AND NOT (BUILD_ONLY_DOCS))
     INSTALL_COMMAND cmake -E copy <BINARY_DIR>/hostapd <INSTALL_DIR>/hostapd
   )
   set(HOSTAPD "${HOSTAPD_INSTALL_DIR}/hostapd")
+  ExternalProject_Get_property(hostapd_externalproject SOURCE_DIR)
+  set(HOSTAPD_SOURCE_DIR "${SOURCE_DIR}/src")
 endif ()
