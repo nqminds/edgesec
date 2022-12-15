@@ -108,7 +108,7 @@ function(defineOpenwrtSDKToolchain)
 
     set(CMAKE_SYSTEM_NAME Linux PARENT_SCOPE) # OpenWRT
     set(CMAKE_LIBRARY_ARCHITECTURE "${OpenWRT_SDK_GNU_TARGET}" PARENT_SCOPE)
-    set(CROSS_COMPILE_PREFIX "${tools}/bin/${OpenWRT_SDK_GNU_TARGET}-" PARENT_SCOPE) # used by lib/openssl.cmake only
+    set(CROSS_COMPILE_PREFIX "${tools}/bin/${OpenWRT_SDK_GNU_TARGET}-" PARENT_SCOPE) # used by lib/openssl3.cmake only
     set(CMAKE_SYSTEM_PROCESSOR "${OpenWRT_SDK_SYSTEM_PROCESSOR}" PARENT_SCOPE)
 
     set(c_compiler "${tools}/bin/${OpenWRT_SDK_GNU_TARGET}-gcc${CMAKE_EXECUTABLE_SUFFIX}")

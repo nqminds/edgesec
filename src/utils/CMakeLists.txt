@@ -6,7 +6,7 @@ add_library(allocs allocs.c)
 
 if (USE_CRYPTO_SERVICE)
   add_library(cryptou cryptou.c)
-  target_link_libraries(cryptou PRIVATE base64 os log OpenSSL::Crypto)
+  target_link_libraries(cryptou PRIVATE base64 os log OpenSSL3::Crypto)
 endif ()
 
 add_library(base64 base64.c)
