@@ -72,10 +72,10 @@ if (USE_CRYPTO_SERVICE)
     set(LIBOPENSSL3_LIB_PATH "${LIBOPENSSL3_INSTALL_DIR}/lib")
     file(MAKE_DIRECTORY "${LIBOPENSSL3_INCLUDE_PATH}")
     if(BUILD_SHARED_LIBS)
-      set(OPENSSL3_CRYPTO_LIBRARY "${LIBOPENSSL3_LIB_PATH}/libcrypto.so")
+      set(LIBOPENSSL3_CRYPTO_LIBRARY "${LIBOPENSSL3_LIB_PATH}/libcrypto.so")
       add_library(OpenSSL3::Crypto SHARED IMPORTED)
     else()
-      set(OPENSSL3_CRYPTO_LIBRARY "${LIBOPENSSL3_LIB_PATH}/libcrypto.a")
+      set(LIBOPENSSL3_CRYPTO_LIBRARY "${LIBOPENSSL3_LIB_PATH}/libcrypto.a")
       add_library(OpenSSL3::Crypto STATIC IMPORTED)
 
       set(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -88,14 +88,15 @@ if (USE_CRYPTO_SERVICE)
     endif()
 
     set_target_properties(OpenSSL3::Crypto PROPERTIES
-      IMPORTED_LOCATION "${OPENSSL3_CRYPTO_LIBRARY}"
+      IMPORTED_LOCATION "${LIBOPENSSL3_CRYPTO_LIBRARY}"
       # Check ./build/lib/pcap/lib/pkgconfig for linker dependencies
       INTERFACE_INCLUDE_DIRECTORIES "${LIBOPENSSL3_INCLUDE_PATH}"
     )
     add_dependencies(OpenSSL3::Crypto openssl3_src)
   else()
     find_package(OpenSSL 3 MODULE REQUIRED COMPONENTS Crypto)
-    message("Found OpenSSL 3 crypto library")
+    message("Found OpenSSL ${OPENSSL_VERSION} crypto library")
     add_library(OpenSSL3::Crypto ALIAS OpenSSL::Crypto)
+    set(LIBOPENSSL3_INCLUDE_PATH "${OPENSSL_INCLUDE_DIR}")
   endif()
 endif ()

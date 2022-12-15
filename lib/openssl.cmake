@@ -2,8 +2,10 @@ include(FetchContent)
 
 if (BUILD_HOSTAPD AND NOT BUILD_ONLY_DOCS)
   find_package(OpenSSL 1.1.1 EXACT MODULE COMPONENTS Crypto)
-  if (OpenSSL_FOUND)
-    message("Found OpenSSL 1.1.1 crypto library")
+  if (OPENSSL_FOUND)
+    message("Found OpenSSL ${OPENSSL_VERSION} crypto library")
+    set(LIBOPENSSL_INCLUDE_PATH "${OPENSSL_INCLUDE_DIR}")
+    set(LIBOPENSSL_LIB_PATH "${OPENSSL_LIBRARIES}")
   else()
     if (CMAKE_CROSSCOMPILING)
       if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -73,11 +75,16 @@ if (BUILD_HOSTAPD AND NOT BUILD_ONLY_DOCS)
     file(MAKE_DIRECTORY "${LIBOPENSSL_INCLUDE_PATH}")
     
     if(BUILD_SHARED_LIBS)
-      set(OPENSSL_CRYPTO_LIBRARY "${LIBOPENSSL_LIB_PATH}/libcrypto.so")
+      set(LIBOPENSSL_CRYPTO_LIBRARY "${LIBOPENSSL_LIB_PATH}/libcrypto.so")
       add_library(OpenSSL::Crypto SHARED IMPORTED)
+
+      set(LIBOPENSSL_SSL_LIBRARY "${LIBOPENSSL_LIB_PATH}/libssl.so")
+      add_library(OpenSSL::SSL SHARED IMPORTED)
     else()
-      set(OPENSSL_CRYPTO_LIBRARY "${LIBOPENSSL_LIB_PATH}/libcrypto.a")
+      set(LIBOPENSSL_CRYPTO_LIBRARY "${LIBOPENSSL_LIB_PATH}/libcrypto.a")
       add_library(OpenSSL::Crypto STATIC IMPORTED)
+      set(LIBOPENSSL_SSL_LIBRARY "${LIBOPENSSL_LIB_PATH}/libssl.a")
+      add_library(OpenSSL::SSL STATIC IMPORTED)
       set(THREADS_PREFER_PTHREAD_FLAG ON)
       find_package(Threads REQUIRED)
       # equivalent to -ldl -lpthread
@@ -85,14 +92,23 @@ if (BUILD_HOSTAPD AND NOT BUILD_ONLY_DOCS)
       target_link_libraries(
         OpenSSL::Crypto INTERFACE Threads::Threads "${CMAKE_DL_LIBS}"
       )
+      target_link_libraries(
+        OpenSSL::SSL INTERFACE Threads::Threads "${CMAKE_DL_LIBS}"
+      )
     endif(BUILD_SHARED_LIBS)
 
     set_target_properties(OpenSSL::Crypto PROPERTIES
-      IMPORTED_LOCATION "${OPENSSL_CRYPTO_LIBRARY}"
+      IMPORTED_LOCATION "${LIBOPENSSL_CRYPTO_LIBRARY}"
+      # Check ./build/lib/pcap/lib/pkgconfig for linker dependencies
+      INTERFACE_INCLUDE_DIRECTORIES "${LIBOPENSSL_INCLUDE_PATH}"
+    )
+    set_target_properties(OpenSSL::SSL PROPERTIES
+      IMPORTED_LOCATION "${LIBOPENSSL_SSL_LIBRARY}"
       # Check ./build/lib/pcap/lib/pkgconfig for linker dependencies
       INTERFACE_INCLUDE_DIRECTORIES "${LIBOPENSSL_INCLUDE_PATH}"
     )
 
     add_dependencies(OpenSSL::Crypto openssl_src)
+    add_dependencies(OpenSSL::SSL openssl_src)
   endif(OpenSSL_FOUND)
 endif ()
