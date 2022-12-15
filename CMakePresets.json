@@ -36,7 +36,7 @@
         "USE_RADIUS_SERVICE": true,
         "BUILD_HOSTAPD": false,
         "USE_CRYPTO_SERVICE": false,
-        "BUILD_OPENSSL_LIB": false,
+        "BUILD_OPENSSL3_LIB": false,
         "BUILD_CMOCKA_LIB": true
       }
     },
@@ -54,7 +54,7 @@
         "USE_RADIUS_SERVICE": true,
         "BUILD_HOSTAPD": true,
         "USE_CRYPTO_SERVICE": false,
-        "BUILD_OPENSSL_LIB": false
+        "BUILD_OPENSSL3_LIB": false
       }
     },
     {
@@ -84,7 +84,7 @@
         "USE_RADIUS_SERVICE": false,
         "BUILD_HOSTAPD": false,
         "USE_CRYPTO_SERVICE": false,
-        "BUILD_OPENSSL_LIB": false,
+        "BUILD_OPENSSL3_LIB": false,
         "USE_HEADER_MIDDLEWARE": true,
         "USE_CAPTURE_SERVICE": true,
         "BUILD_SQLITE_LIB": true,
@@ -99,7 +99,7 @@
       "description": "Build for Linux using encrypted crypto service",
       "cacheVariables": {
         "USE_CRYPTO_SERVICE": true,
-        "BUILD_OPENSSL_LIB": true
+        "BUILD_OPENSSL3_LIB": true
       }
     },
     {
@@ -167,7 +167,7 @@
         "USE_MDNS_SERVICE": true,
         "BUILD_HOSTAPD": false,
         "USE_CRYPTO_SERVICE": false,
-        "BUILD_OPENSSL_LIB": false
+        "BUILD_OPENSSL3_LIB": false
       }
     },
     {

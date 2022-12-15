@@ -98,7 +98,7 @@ cmake_dependent_option(BUILD_UCI_LIB "Build OpenWRT UCI library" ON USE_UCI_SERV
 option(USE_GENERIC_IP_SERVICE "Use generic ip service" OFF)
 
 option(USE_CRYPTO_SERVICE "Use the crypto service" OFF)
-cmake_dependent_option(BUILD_OPENSSL_LIB "Build OpenSSL" ON USE_CRYPTO_SERVICE OFF)
+cmake_dependent_option(BUILD_OPENSSL3_LIB "Build OpenSSL" ON USE_CRYPTO_SERVICE OFF)
 
 option(USE_ZYMKEY4_HSM "Use the Zymkey4 HSM" OFF)
 cmake_dependent_option(CONFIGURE_COVERAGE "Configure for code coverage (requires lcov)" OFF BUILD_TESTING OFF)

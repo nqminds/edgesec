@@ -4,7 +4,7 @@ if (USE_CRYPTO_SERVICE)
   add_compile_definitions(WITH_CRYPTO_SERVICE)
   if(BUILD_ONLY_DOCS)
     # pass
-  elseif(BUILD_OPENSSL_LIB)
+  elseif(BUILD_OPENSSL3_LIB)
     if (CMAKE_CROSSCOMPILING)
       if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
