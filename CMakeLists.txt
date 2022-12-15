@@ -189,6 +189,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Include the libraries
+include(openssl) # openssl 1.1.1 Used only for hostapd
 include(hostapd)
 include(cmocka)
 include(minIni)
