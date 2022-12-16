@@ -65,8 +65,11 @@ if (BUILD_HOSTAPD AND NOT (BUILD_ONLY_DOCS))
       SOURCE_SUBDIR eaplib
       BUILD_IN_SOURCE true
       CONFIGURE_COMMAND
-        cmake -E make_directory <SOURCE_DIR>/eaplib
+        cmake -E make_directory ${EAPLIB_SOURCE_DIR}
       COMMAND
-        cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/eap.Makefile <SOURCE_DIR>/eaplib/Makefile
+        cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/eap.Makefile ${EAPLIB_SOURCE_DIR}/Makefile
+      COMMAND
+        cmake -E copy "${CMAKE_CURRENT_BINARY_DIR}/hostapd.config" ${EAPLIB_SOURCE_DIR}/.config
+      BUILD_COMMAND make -n
   )
 endif ()
