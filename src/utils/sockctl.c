@@ -50,7 +50,7 @@ void init_domain_addr(struct sockaddr_un *unaddr, const char *addr) {
  * @post Please delete the temporary folder,
  * e.g. by using cleanup_tmp_domain_socket_path()
  */
-static const char *create_tmp_domain_socket_path() {
+static const char *create_tmp_domain_socket_path(void) {
   char socket_dir[] = TMP_UNIX_SOCK_FOLDER_TEMPLATE;
   if (make_dirs_to_path(socket_dir, 0755)) {
     log_errno("Failed to make_dirs_to_path(%s, 0755)", socket_dir);
