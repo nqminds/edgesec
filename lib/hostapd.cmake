@@ -19,6 +19,12 @@ if (BUILD_HOSTAPD AND NOT (BUILD_ONLY_DOCS))
     )
   endif()
 
+  if ("${CMAKE_GENERATOR}" MATCHES "Makefiles")
+    set(MAKE_COMMAND "$(MAKE)") # recursive make (uses the same make as the main project)
+  else()
+    set(MAKE_COMMAND "make")
+  endif ()
+
   configure_file(
     "${CMAKE_CURRENT_LIST_DIR}/hostapd.config.in"
     "${CMAKE_CURRENT_BINARY_DIR}/hostapd.config"
@@ -31,13 +37,16 @@ if (BUILD_HOSTAPD AND NOT (BUILD_ONLY_DOCS))
     @ONLY
   )
 
-  set(EAPLIB_BUILD_DIR "eaplib")
-
-  ExternalProject_Add(
-    hostapd_externalproject
+  FetchContent_Declare(hostapdsrc
     URL https://w1.fi/releases/hostapd-2.10.tar.gz
     URL_HASH SHA512=243baa82d621f859d2507d8d5beb0ebda15a75548a62451dc9bca42717dcc8607adac49b354919a41d8257d16d07ac7268203a79750db0cfb34b51f80ff1ce8f
     DOWNLOAD_DIR "${EP_DOWNLOAD_DIR}" # if empty string, uses default download dir
+  )
+  FetchContent_MakeAvailable(hostapdsrc)
+
+  ExternalProject_Add(
+    hostapd_binary
+    SOURCE_DIR ${hostapdsrc_SOURCE_DIR}
     INSTALL_DIR "${HOSTAPD_INSTALL_DIR}"
     BUILD_IN_SOURCE true
     SOURCE_SUBDIR "hostapd" # we only care about hostapd, not the entire hostap dir
@@ -46,9 +55,18 @@ if (BUILD_HOSTAPD AND NOT (BUILD_ONLY_DOCS))
       cmake -E copy
         "${CMAKE_CURRENT_BINARY_DIR}/hostapd.config"
         <BINARY_DIR>/.config
-    COMMAND cmake -E make_directory <SOURCE_DIR>/${EAPLIB_BUILD_DIR}
-    COMMAND cmake -E copy "${CMAKE_CURRENT_BINARY_DIR}/eap.Makefile" <SOURCE_DIR>/${EAPLIB_BUILD_DIR}/Makefile
     INSTALL_COMMAND cmake -E copy <BINARY_DIR>/hostapd <INSTALL_DIR>/hostapd
   )
   set(HOSTAPD "${HOSTAPD_INSTALL_DIR}/hostapd")
+
+  set(EAPLIB_SOURCE_DIR "${hostapdsrc_SOURCE_DIR}/eaplib")
+  ExternalProject_Add(libeap
+      SOURCE_DIR ${hostapdsrc_SOURCE_DIR}
+      SOURCE_SUBDIR eaplib
+      BUILD_IN_SOURCE true
+      CONFIGURE_COMMAND
+        cmake -E make_directory <SOURCE_DIR>/eaplib
+      COMMAND
+        cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/eap.Makefile <SOURCE_DIR>/eaplib/Makefile
+  )
 endif ()
