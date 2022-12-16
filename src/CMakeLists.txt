@@ -7,6 +7,7 @@ add_compile_options(
   $<$<COMPILE_LANGUAGE:C>:-Wformat-security> # required by debian builds
   $<$<COMPILE_LANGUAGE:C>:-Wfloat-equal> # warn/error if checking for equality between floats
   $<$<COMPILE_LANGUAGE:C>:-Wnull-dereference> # warn if dereferencing NULL
+  $<$<COMPILE_LANGUAGE:C>:-Wstrict-prototypes> # warn if creating a function without specifiying args
 )
 
 add_subdirectory(utils)
