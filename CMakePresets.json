@@ -53,6 +53,7 @@
         "USE_GENERIC_IP_SERVICE": false,
         "USE_RADIUS_SERVICE": true,
         "BUILD_HOSTAPD": true,
+        "BUILD_EAP_LIB": true,
         "USE_CRYPTO_SERVICE": false,
         "BUILD_OPENSSL3_LIB": false
       }

@@ -3,7 +3,7 @@
 # v3.14.0+ is required by BUILD_IN_SOURCE + SOURCE_SUBDIR together
 include(ExternalProject)
 
-if (BUILD_HOSTAPD AND NOT (BUILD_ONLY_DOCS))
+if ((BUILD_HOSTAPD OR BUILD_EAP_LIB) AND NOT (BUILD_ONLY_DOCS))
   set(HOSTAPD_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 
   include(FindPkgConfig)
@@ -43,9 +43,11 @@ if (BUILD_HOSTAPD AND NOT (BUILD_ONLY_DOCS))
     DOWNLOAD_DIR "${EP_DOWNLOAD_DIR}" # if empty string, uses default download dir
   )
   FetchContent_MakeAvailable(hostapdsrc)
+endif ()
 
+if (BUILD_HOSTAPD AND NOT (BUILD_ONLY_DOCS))
   ExternalProject_Add(
-    hostapd_binary
+    hostapd_project
     SOURCE_DIR ${hostapdsrc_SOURCE_DIR}
     INSTALL_DIR "${HOSTAPD_INSTALL_DIR}"
     BUILD_IN_SOURCE true
@@ -58,18 +60,39 @@ if (BUILD_HOSTAPD AND NOT (BUILD_ONLY_DOCS))
     INSTALL_COMMAND cmake -E copy <BINARY_DIR>/hostapd <INSTALL_DIR>/hostapd
   )
   set(HOSTAPD "${HOSTAPD_INSTALL_DIR}/hostapd")
+endif ()
+
+if (BUILD_EAP_LIB AND NOT (BUILD_ONLY_DOCS))
+  set(LIBEAP_INSTALL_ROOT "${CMAKE_CURRENT_BINARY_DIR}/lib")
+  set(LIBEAP_INSTALL_DIR "${LIBEAP_INSTALL_ROOT}/libeap")
+  set(LIBEAP_INCLUDE_DIR "${LIBEAP_INSTALL_DIR}/include")
+  set(LIBEAP_LIB_DIR "${LIBEAP_INSTALL_DIR}/lib")
+
+  if(BUILD_SHARED_LIBS)
+    set(LIBEAP_LIB "${LIBEAP_INSTALL_DIR}/lib/libeap.so")
+    add_library(libeap::libeap SHARED IMPORTED)
+  else()
+    set(LIBEAP_LIB "${LIBEAP_INSTALL_DIR}/lib/libeap.a")
+    add_library(libeap::libeap STATIC IMPORTED)
+  endif()
 
   set(EAPLIB_SOURCE_DIR "${hostapdsrc_SOURCE_DIR}/eaplib")
-  ExternalProject_Add(libeap
+  ExternalProject_Add(
+      libeap_project
       SOURCE_DIR ${hostapdsrc_SOURCE_DIR}
-      SOURCE_SUBDIR eaplib
+      INSTALL_DIR ${LIBEAP_INSTALL_DIR}
       BUILD_IN_SOURCE true
-      CONFIGURE_COMMAND
-        cmake -E make_directory ${EAPLIB_SOURCE_DIR}
-      COMMAND
-        cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/eap.Makefile ${EAPLIB_SOURCE_DIR}/Makefile
-      COMMAND
-        cmake -E copy "${CMAKE_CURRENT_BINARY_DIR}/hostapd.config" ${EAPLIB_SOURCE_DIR}/.config
-      BUILD_COMMAND make -n
+      CONFIGURE_COMMAND 
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/eap.Makefile <SOURCE_DIR>/Makefile
+        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/hostapd.config" <SOURCE_DIR>/.config
+      BUILD_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" "${MAKE_COMMAND}"
+      INSTALL_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" "${MAKE_COMMAND}" install
   )
+
+  set_target_properties(libeap::libeap PROPERTIES
+      IMPORTED_LOCATION "${LIBEAP_LIB}"
+      INTERFACE_INCLUDE_DIRECTORIES "${LIBEAP_INCLUDE_DIR}"
+  )
+
+  add_dependencies(libeap::libeap libeap_project)
 endif ()
