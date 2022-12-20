@@ -3,10 +3,19 @@
 # v3.14.0+ is required by BUILD_IN_SOURCE + SOURCE_SUBDIR together
 include(ExternalProject)
 
-if ((BUILD_HOSTAPD OR BUILD_EAP_LIB) AND NOT (BUILD_ONLY_DOCS))
-  set(HOSTAPD_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+set(HOSTAPD_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+set(LIBEAP_INSTALL_ROOT "${CMAKE_CURRENT_BINARY_DIR}/lib")
+set(LIBEAP_INSTALL_DIR "${LIBEAP_INSTALL_ROOT}/libeap")
+set(LIBEAP_INCLUDE_DIR "${LIBEAP_INSTALL_DIR}/include")
+set(LIBEAP_LIB_DIR "${LIBEAP_INSTALL_DIR}/lib")
 
-  include(FindPkgConfig)
+if ((BUILD_HOSTAPD OR BUILD_EAP_LIB) AND NOT (BUILD_ONLY_DOCS))
+  if ("${CMAKE_GENERATOR}" MATCHES "Makefiles")
+    set(MAKE_COMMAND "$(MAKE)") # recursive make (uses the same make as the main project)
+  else()
+    set(MAKE_COMMAND "make")
+  endif ()
+
   if (NOT PKG_CONFIG_FOUND)
     message(FATAL_ERROR "pkg-config is required to build hostapd, but could not be found")
   endif()
@@ -18,12 +27,6 @@ if ((BUILD_HOSTAPD OR BUILD_EAP_LIB) AND NOT (BUILD_ONLY_DOCS))
       "Please disable BUILD_HOSTAPD in your cmake config to skip compiling hostapd."
     )
   endif()
-
-  if ("${CMAKE_GENERATOR}" MATCHES "Makefiles")
-    set(MAKE_COMMAND "$(MAKE)") # recursive make (uses the same make as the main project)
-  else()
-    set(MAKE_COMMAND "make")
-  endif ()
 
   configure_file(
     "${CMAKE_CURRENT_LIST_DIR}/hostapd.config.in"
@@ -63,11 +66,6 @@ if (BUILD_HOSTAPD AND NOT (BUILD_ONLY_DOCS))
 endif ()
 
 if (BUILD_EAP_LIB AND NOT (BUILD_ONLY_DOCS))
-  set(LIBEAP_INSTALL_ROOT "${CMAKE_CURRENT_BINARY_DIR}/lib")
-  set(LIBEAP_INSTALL_DIR "${LIBEAP_INSTALL_ROOT}/libeap")
-  set(LIBEAP_INCLUDE_DIR "${LIBEAP_INSTALL_DIR}/include")
-  set(LIBEAP_LIB_DIR "${LIBEAP_INSTALL_DIR}/lib")
-
   if(BUILD_SHARED_LIBS)
     set(LIBEAP_LIB "${LIBEAP_INSTALL_DIR}/lib/libeap.so")
     add_library(libeap::libeap SHARED IMPORTED)
