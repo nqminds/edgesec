@@ -748,7 +748,7 @@ CFLAGS += -DIEEE8021X_EAPOL
 
 EAP_LIBS += ./src/utils/libutils.a
 EAP_LIBS += ./src/crypto/libcrypto.a
-#EAP_LIBS += ./src/tls/libtls.a
+EAP_LIBS += ./src/tls/libtls.a
 
 OBJS_lib=$(OBJS) $(OBJS_peer)
 _OBJS_VAR := OBJS_lib
@@ -774,5 +774,19 @@ clean: common-clean
 install: $(alib) $(slib)
 	mkdir -p $(INSTALL_DIR)/lib
 	cp $^ $(INSTALL_DIR)/lib
+	mkdir -p $(INSTALL_DIR)/include/eap_common
+	cp src/eap_common/*.h $(INSTALL_DIR)/include/eap_common
+	mkdir -p $(INSTALL_DIR)/include/eap_peer
+	cp src/eap_peer/*.h $(INSTALL_DIR)/include/eap_peer
+	mkdir -p $(INSTALL_DIR)/include/eap_server
+	cp src/eap_server/*.h $(INSTALL_DIR)/include/eap_server
+	mkdir -p $(INSTALL_DIR)/include/crypto
+	cp src/crypto/*.h $(INSTALL_DIR)/include/crypto
+	mkdir -p $(INSTALL_DIR)/include/utils
+	cp src/utils/*.h $(INSTALL_DIR)/include/utils
+	mkdir -p $(INSTALL_DIR)/include/tls
+	cp src/tls/*.h $(INSTALL_DIR)/include/tls
+	mkdir -p $(INSTALL_DIR)/include/common
+	cp src/common/*.h $(INSTALL_DIR)/include/common
 
 -include $(OBJS:%.o=%.d)

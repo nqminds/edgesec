@@ -1,6 +1,6 @@
 include(FetchContent)
 
-if (BUILD_HOSTAPD AND NOT BUILD_ONLY_DOCS)
+if (BUILD_OPENSSL_LIB AND NOT BUILD_ONLY_DOCS)
   find_package(OpenSSL 1.1.1 EXACT MODULE COMPONENTS Crypto)
   if (OPENSSL_FOUND)
     message("Found OpenSSL ${OPENSSL_VERSION} crypto library")
