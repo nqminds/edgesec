@@ -22,7 +22,7 @@ target_link_libraries(radius_client PUBLIC ip_addr PRIVATE radius md5 wpabuf log
 
 add_cmocka_test(test_libeap
   SOURCES test_libeap.c
-  LINK_LIBRARIES eap_test_peer eap_test_server libeap::libeap
+  LINK_LIBRARIES eap_test_peer eap_test_server libeap::libeap cmocka::cmocka
 )
 
 add_cmocka_test(test_radius_server

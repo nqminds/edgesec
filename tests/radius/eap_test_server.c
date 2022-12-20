@@ -14,7 +14,7 @@
 #include <eap_server/eap.h>
 #include <utils/wpabuf.h>
 
-void eap_example_peer_rx(const u8 *data, size_t data_len);
+void eap_test_peer_rx(const u8 *data, size_t data_len);
 
 
 struct eap_server_ctx {
@@ -67,7 +67,7 @@ static const char * server_get_eap_req_id_text(void *ctx, size_t *len)
 static struct eapol_callbacks eap_cb;
 static struct eap_config eap_conf;
 
-static int eap_example_server_init_tls(void)
+static int eap_test_server_init_tls(void)
 {
 	struct tls_config tconf;
 	struct tls_connection_params tparams;
@@ -207,7 +207,7 @@ static int eap_server_register_methods(void)
 }
 
 
-int eap_example_server_init(void)
+int eap_test_server_init(void)
 {
 	struct eap_session_data eap_sess;
 
@@ -216,7 +216,7 @@ int eap_example_server_init(void)
 
 	os_memset(&eap_ctx, 0, sizeof(eap_ctx));
 
-	if (eap_example_server_init_tls() < 0)
+	if (eap_test_server_init_tls() < 0)
 		return -1;
 
 	os_memset(&eap_cb, 0, sizeof(eap_cb));
@@ -243,7 +243,7 @@ int eap_example_server_init(void)
 }
 
 
-void eap_example_server_deinit(void)
+void eap_test_server_deinit(void)
 {
 	eap_server_sm_deinit(eap_ctx.eap);
 	eap_server_unregister_methods();
@@ -251,7 +251,7 @@ void eap_example_server_deinit(void)
 }
 
 
-int eap_example_server_step(void)
+int eap_test_server_step(void)
 {
 	int res, process = 0;
 
@@ -284,7 +284,7 @@ int eap_example_server_step(void)
 
 	if (process && eap_ctx.eap_if->eapReqData) {
 		/* Send EAP request to the peer */
-		eap_example_peer_rx(wpabuf_head(eap_ctx.eap_if->eapReqData),
+		eap_test_peer_rx(wpabuf_head(eap_ctx.eap_if->eapReqData),
 				    wpabuf_len(eap_ctx.eap_if->eapReqData));
 	}
 
@@ -292,7 +292,7 @@ int eap_example_server_step(void)
 }
 
 
-void eap_example_server_rx(const u8 *data, size_t data_len)
+void eap_test_server_rx(const u8 *data, size_t data_len)
 {
 	/* Make received EAP message available to the EAP library */
 	wpabuf_free(eap_ctx.eap_if->eapRespData);

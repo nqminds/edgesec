@@ -13,7 +13,7 @@
 #include <eap_peer/eap_config.h>
 #include <utils/wpabuf.h>
 
-void eap_example_server_rx(const u8 *data, size_t data_len);
+void eap_test_server_rx(const u8 *data, size_t data_len);
 
 
 struct eap_peer_ctx {
@@ -291,7 +291,7 @@ static int eap_peer_register_methods(void)
 static struct eapol_callbacks eap_cb;
 static struct eap_config eap_conf;
 
-int eap_example_peer_init(void)
+int eap_test_peer_init(void)
 {
 	if (eap_peer_register_methods() < 0)
 		return -1;
@@ -328,7 +328,7 @@ int eap_example_peer_init(void)
 }
 
 
-void eap_example_peer_deinit(void)
+void eap_test_peer_deinit(void)
 {
 	eap_peer_sm_deinit(eap_ctx.eap);
 	eap_peer_unregister_methods();
@@ -339,7 +339,7 @@ void eap_example_peer_deinit(void)
 }
 
 
-int eap_example_peer_step(void)
+int eap_test_peer_step(void)
 {
 	int res;
 	res = eap_peer_sm_step(eap_ctx.eap);
@@ -351,7 +351,7 @@ int eap_example_peer_step(void)
 		resp = eap_get_eapRespData(eap_ctx.eap);
 		if (resp) {
 			/* Send EAP response to the server */
-			eap_example_server_rx(wpabuf_head(resp),
+			eap_test_server_rx(wpabuf_head(resp),
 					      wpabuf_len(resp));
 			wpabuf_free(resp);
 		}
@@ -372,7 +372,7 @@ int eap_example_peer_step(void)
 }
 
 
-void eap_example_peer_rx(const u8 *data, size_t data_len)
+void eap_test_peer_rx(const u8 *data, size_t data_len)
 {
 	/* Make received EAP message available to the EAP library */
 	eap_ctx.eapReq = true;
