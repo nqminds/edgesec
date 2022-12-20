@@ -2,6 +2,16 @@ include_directories(
   "${PROJECT_SOURCE_DIR}/src"
 )
 
+if (BUILD_EAP_LIB)
+  add_library(eap_test_peer eap_test_peer.c)
+  target_link_libraries(eap_test_peer PRIVATE libeap::libeap)
+  target_compile_definitions(eap_test_peer PRIVATE _DEFAULT_SOURCE _BSD_SOURCE IEEE8021X_EAPOL)
+
+  add_library(eap_test_server eap_test_server.c)
+  target_link_libraries(eap_test_server PRIVATE libeap::libeap)
+  target_compile_definitions(eap_test_server PRIVATE _DEFAULT_SOURCE _BSD_SOURCE IEEE8021X_EAPOL)
+endif ()
+
 add_library(ip_addr ip_addr.c)
 target_link_libraries(ip_addr PRIVATE os allocs)
 # requires inet_aton, which is a non-standard glibc function, see https://linux.die.net/man/3/inet_aton
@@ -9,6 +19,11 @@ target_compile_definitions(ip_addr PRIVATE _DEFAULT_SOURCE _BSD_SOURCE)
 
 add_library(radius_client radius_client.c)
 target_link_libraries(radius_client PUBLIC ip_addr PRIVATE radius md5 wpabuf log os eloop)
+
+add_cmocka_test(test_libeap
+  SOURCES test_libeap.c
+  LINK_LIBRARIES eap_test_peer eap_test_server libeap::libeap
+)
 
 add_cmocka_test(test_radius_server
   SOURCES test_radius_server.c
