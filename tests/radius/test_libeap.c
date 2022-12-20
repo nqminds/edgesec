@@ -39,19 +39,19 @@ int eap_test_server_step(void);
 
 static void test_libeap(void **state) {
 	(void)state;
-	// int res_s, res_p;
+	int res_s, res_p;
 
 	wpa_debug_level = 0;
 
 	int ret = eap_test_peer_init() < 0 || eap_test_server_init() < 0;
 	assert_int_equal(ret, 0);
 
-	// do {
-	// 	printf("---[ server ]--------------------------------\n");
-	// 	res_s = eap_example_server_step();
-	// 	printf("---[ peer ]----------------------------------\n");
-	// 	res_p = eap_example_peer_step();
-	// } while (res_s || res_p);
+	do {
+		printf("---[ server ]--------------------------------\n");
+		res_s = eap_test_server_step();
+		printf("---[ peer ]----------------------------------\n");
+		res_p = eap_test_peer_step();
+	} while (res_s || res_p);
 
 	eap_test_peer_deinit();
 	eap_test_server_deinit();

@@ -23,9 +23,10 @@ if (USE_MDNS_SERVICE)
 endif ()
 add_subdirectory(capture)
 
-
-add_library(sqlhook SHARED sqlhook.c)
-target_link_libraries(sqlhook PRIVATE sockctl os allocs SQLite::SQLite3 LibUTHash::LibUTHash)
+if (BUILD_SQLHOOK)
+  add_library(sqlhook SHARED sqlhook.c)
+  target_link_libraries(sqlhook PRIVATE sockctl os allocs SQLite::SQLite3 LibUTHash::LibUTHash)
+endif ()
 
 add_library(runctl runctl.c)
 target_include_directories(runctl PRIVATE SQLite::SQLite3)

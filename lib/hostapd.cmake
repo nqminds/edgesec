@@ -66,6 +66,9 @@ if (BUILD_HOSTAPD AND NOT (BUILD_ONLY_DOCS))
 endif ()
 
 if (BUILD_EAP_LIB AND NOT (BUILD_ONLY_DOCS))
+  file(MAKE_DIRECTORY "${LIBEAP_INCLUDE_DIR}")
+  file(MAKE_DIRECTORY "${LIBEAP_INCLUDE_DIR}/utils")
+
   if(BUILD_SHARED_LIBS)
     set(LIBEAP_LIB "${LIBEAP_INSTALL_DIR}/lib/libeap.so")
     add_library(libeap::libeap SHARED IMPORTED)
