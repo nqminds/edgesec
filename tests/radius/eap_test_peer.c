@@ -159,7 +159,7 @@ static void peer_set_config_blob(void *ctx, struct wpa_config_blob *blob)
 {
 	(void)ctx;
 	(void)blob;
-	printf("TODO: %s\n", __func__);
+	/* printf("TODO: %s\n", __func__); */
 }
 
 
@@ -168,7 +168,7 @@ peer_get_config_blob(void *ctx, const char *name)
 {
 	(void)ctx;
 	(void)name;
-	printf("TODO: %s\n", __func__);
+	/* printf("TODO: %s\n", __func__); */
 	return NULL;
 }
 
@@ -176,7 +176,7 @@ peer_get_config_blob(void *ctx, const char *name)
 static void peer_notify_pending(void *ctx)
 {
 	(void)ctx;
-	printf("TODO: %s\n", __func__);
+	/* printf("TODO: %s\n", __func__); */
 }
 
 
@@ -302,7 +302,7 @@ int eap_test_peer_init(void)
 	eap_ctx.eap_config.identity_len = 4;
 	eap_ctx.eap_config.password = (u8 *) os_strdup("password");
 	eap_ctx.eap_config.password_len = 8;
-	eap_ctx.eap_config.cert.ca_cert = os_strdup("ca.pem");
+	eap_ctx.eap_config.cert.ca_cert = os_strdup(EAP_TEST_DIR"ca.pem");
 	eap_ctx.eap_config.fragment_size = 1398;
 
 	os_memset(&eap_cb, 0, sizeof(eap_cb));
@@ -346,7 +346,7 @@ int eap_test_peer_step(void)
 
 	if (eap_ctx.eapResp) {
 		struct wpabuf *resp;
-		printf("==> Response\n");
+		/* printf("==> Response\n"); */
 		eap_ctx.eapResp = false;
 		resp = eap_get_eapRespData(eap_ctx.eap);
 		if (resp) {

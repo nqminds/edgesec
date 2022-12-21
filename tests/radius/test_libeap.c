@@ -47,9 +47,9 @@ static void test_libeap(void **state) {
 	assert_int_equal(ret, 0);
 
 	do {
-		printf("---[ server ]--------------------------------\n");
+		/*printf("---[ server ]--------------------------------\n");*/
 		res_s = eap_test_server_step();
-		printf("---[ peer ]----------------------------------\n");
+		/*printf("---[ peer ]----------------------------------\n");*/
 		res_p = eap_test_peer_step();
 	} while (res_s || res_p);
 

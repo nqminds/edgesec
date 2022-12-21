@@ -78,14 +78,13 @@ static int eap_test_server_init_tls(void)
 		return -1;
 
 	os_memset(&tparams, 0, sizeof(tparams));
-	tparams.ca_cert = "ca.pem";
-	tparams.client_cert = "server.pem";
+	tparams.ca_cert = EAP_TEST_DIR"ca.pem";
+	tparams.client_cert = EAP_TEST_DIR"server.pem";
 	/* tparams.private_key = "server.key"; */
-	tparams.private_key = "server-key.pem";
+	tparams.private_key = EAP_TEST_DIR"server-key.pem";
 	/* tparams.private_key_passwd = "whatever"; */
-	tparams.dh_file = "dh.conf";
+	tparams.dh_file = EAP_TEST_DIR"dh.conf";
 
-	printf("HHHHHHHHHHHHHHHHHH >>>>>>\n");
 	if (tls_global_set_params(eap_ctx.tls_ctx, &tparams)) {
 		printf("Failed to set TLS parameters\n");
 		return -1;
@@ -259,13 +258,13 @@ int eap_test_server_step(void)
 	res = eap_server_sm_step(eap_ctx.eap);
 
 	if (eap_ctx.eap_if->eapReq) {
-		printf("==> Request\n");
+		/* printf("==> Request\n"); */
 		process = 1;
 		eap_ctx.eap_if->eapReq = 0;
 	}
 
 	if (eap_ctx.eap_if->eapSuccess) {
-		printf("==> Success\n");
+		/* printf("==> Success\n"); */
 		process = 1;
 		res = 0;
 		eap_ctx.eap_if->eapSuccess = 0;
