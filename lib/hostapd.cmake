@@ -69,13 +69,8 @@ if (BUILD_EAP_LIB AND NOT (BUILD_ONLY_DOCS))
   file(MAKE_DIRECTORY "${LIBEAP_INCLUDE_DIR}")
   file(MAKE_DIRECTORY "${LIBEAP_INCLUDE_DIR}/utils")
 
-  if(BUILD_SHARED_LIBS)
-    set(LIBEAP_LIB "${LIBEAP_INSTALL_DIR}/lib/libeap.so")
-    add_library(libeap::libeap SHARED IMPORTED)
-  else()
-    set(LIBEAP_LIB "${LIBEAP_INSTALL_DIR}/lib/libeap.a")
-    add_library(libeap::libeap STATIC IMPORTED)
-  endif()
+  set(LIBEAP_LIB "${LIBEAP_INSTALL_DIR}/lib/libeap.a")
+  add_library(libeap::libeap STATIC IMPORTED)
 
   set(EAPLIB_SOURCE_DIR "${hostapdsrc_SOURCE_DIR}/eaplib")
   ExternalProject_Add(

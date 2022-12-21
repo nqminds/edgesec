@@ -1,9 +1,7 @@
 alib = libeap.a
-slib  = libeap.so
-ALL = $(alib) #$(slib)
+ALL = $(alib)
 CONFIG_FILE = .config
 INSTALL_DIR = @LIBEAP_INSTALL_DIR@
-
 
 include ./src/build.rules
 
@@ -568,7 +566,6 @@ CFLAGS += -DEAP_GPSK
 
 CFLAGS += -DEAP_SERVER_IDENTITY
 CFLAGS += -DEAP_SERVER_GPSK_SHA256
-
 CFLAGS += -DIEEE8021X_EAPOL
 
 # Optional components to add EAP server support
@@ -587,27 +584,21 @@ include ./src/objs.mk
 #_OBJS_VAR := OBJS_ex
 #include ./src/objs.mk
 
+#eap_example: $(OBJS_ex) $(UTILS_LIB)
+#	$(LDO) $(LDFLAGS) -o eap_example $(OBJS_ex) -L. -leap $(LIBS)
+
 $(alib): $(UTILS_LIB) $(OBJS_lib)
 	$(AR) crT $(alib) $^
 	$(RANLIB) $(alib)
 
-#LDFLAGS += -shared
-
-#$(slib): $(UTILS_LIB) $(OBJS_lib)
-#	$(LDO) $(LDFLAGS) $^ -o $(slib)
-
-#eap_example: $(OBJS_ex) $(UTILS_LIB)
-#	$(LDO) $(LDFLAGS) -o eap_example $(OBJS_ex) -L. -leap $(LIBS)
-
-
 .PHONY: clean
 clean: common-clean
-	rm -f core *~ *.o *.d $(alib) $(slib)
+	rm -f core *~ *.o *.d $(alib)
 
 print-%  : ; @echo $* = $($*)
 
 .PHONY: install
-install: $(alib) $(slib)
+install: $(alib)
 	mkdir -p $(INSTALL_DIR)/lib
 	cp $^ $(INSTALL_DIR)/lib
 	mkdir -p $(INSTALL_DIR)/include/eap_common
