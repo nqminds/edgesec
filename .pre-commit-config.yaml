@@ -23,4 +23,4 @@ repos:
     -   id: clang-format
         types_or: [c++, c, cuda]
         # we want to keep the lib/ directory closer to the original source code
-        exclude: ^lib/
+        exclude: ^lib/|tests/radius/eap_test_*
