@@ -8,11 +8,11 @@ if (BUILD_EAP_LIB)
 
   add_library(eap_test_peer eap_test_peer.c)
   target_link_libraries(eap_test_peer PRIVATE libeap::libeap)
-  target_compile_definitions(eap_test_peer PRIVATE _DEFAULT_SOURCE _BSD_SOURCE IEEE8021X_EAPOL)
+  target_compile_definitions(eap_test_peer PRIVATE _DEFAULT_SOURCE _BSD_SOURCE IEEE8021X_EAPOL EAP_TLS)
 
   add_library(eap_test_server eap_test_server.c)
   target_link_libraries(eap_test_server PRIVATE libeap::libeap)
-  target_compile_definitions(eap_test_server PRIVATE _DEFAULT_SOURCE _BSD_SOURCE IEEE8021X_EAPOL)
+  target_compile_definitions(eap_test_server PRIVATE _DEFAULT_SOURCE _BSD_SOURCE IEEE8021X_EAPOL EAP_SERVER_TLS)
 endif ()
 
 add_library(ip_addr ip_addr.c)
