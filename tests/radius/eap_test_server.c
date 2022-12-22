@@ -72,11 +72,14 @@ static int eap_test_server_init_tls(void) {
   if (eap_ctx.tls_ctx == NULL)
     return -1;
 
+  // How to generate certs:
+  // https://gist.github.com/fntlnz/cf14feb5a46b2eda428e000157447309
+
   os_memset(&tparams, 0, sizeof(tparams));
-  tparams.ca_cert = EAP_TEST_DIR "ca.pem"; //"ca.pem"
-  tparams.client_cert = EAP_TEST_DIR "server.pem"; //"server.pem"
+  tparams.ca_cert = EAP_TEST_DIR "ca.pem";
+  tparams.client_cert = EAP_TEST_DIR "server.pem";
   /* tparams.private_key = "server.key"; */
-  tparams.private_key = EAP_TEST_DIR "server.key"; //"server-key.pem"
+  tparams.private_key = EAP_TEST_DIR "server.key";
   /* tparams.private_key_passwd = "whatever"; */
   tparams.dh_file = EAP_TEST_DIR "dh.conf";
 
