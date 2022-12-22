@@ -218,6 +218,9 @@ int eap_test_server_init(void) {
   eap_conf.eap_server = 1;
   eap_conf.ssl_ctx = eap_ctx.tls_ctx;
 
+  eap_conf.max_auth_rounds = 100;
+	eap_conf.max_auth_rounds_short = 50;
+
   os_memset(&eap_sess, 0, sizeof(eap_sess));
   eap_ctx.eap = eap_server_sm_init(&eap_ctx, &eap_cb, &eap_conf, &eap_sess);
   if (eap_ctx.eap == NULL)
