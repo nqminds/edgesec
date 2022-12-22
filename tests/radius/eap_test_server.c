@@ -47,7 +47,7 @@ static int server_get_eap_user(void *ctx, const u8 *identity,
 
   /* Only allow EAP-MSCHAPv2 as the Phase 2 method */
   user->methods[0].vendor = EAP_VENDOR_IETF;
-  user->methods[0].method = EAP_TYPE_MSCHAPV2;
+  user->methods[0].method = EAP_TYPE_TLS;//EAP_TYPE_MSCHAPV2;
   user->password = (u8 *)os_strdup("password");
   user->password_len = 8;
 
@@ -73,10 +73,10 @@ static int eap_test_server_init_tls(void) {
     return -1;
 
   os_memset(&tparams, 0, sizeof(tparams));
-  tparams.ca_cert = EAP_TEST_DIR "ca.pem";
-  tparams.client_cert = EAP_TEST_DIR "server.pem";
+  tparams.ca_cert = EAP_TEST_DIR "ca.pem"; //"ca.pem"
+  tparams.client_cert = EAP_TEST_DIR "server.pem"; //"server.pem"
   /* tparams.private_key = "server.key"; */
-  tparams.private_key = EAP_TEST_DIR "server-key.pem";
+  tparams.private_key = EAP_TEST_DIR "server.key"; //"server-key.pem"
   /* tparams.private_key_passwd = "whatever"; */
   tparams.dh_file = EAP_TEST_DIR "dh.conf";
 
