@@ -162,55 +162,55 @@ static void peer_notify_pending(void *ctx) {
 static int eap_peer_register_methods(void) {
   int ret = 0;
 
-#ifdef EAP_MD5
+// #ifdef EAP_MD5
   if (ret == 0)
     ret = eap_peer_md5_register();
-#endif /* EAP_MD5 */
+// #endif /* EAP_MD5 */
 
-#ifdef EAP_TLS
+// #ifdef EAP_TLS
   if (ret == 0)
     ret = eap_peer_tls_register();
-#endif /* EAP_TLS */
+// #endif /* EAP_TLS */
 
-#ifdef EAP_MSCHAPv2
+// #ifdef EAP_MSCHAPv2
   if (ret == 0)
     ret = eap_peer_mschapv2_register();
-#endif /* EAP_MSCHAPv2 */
+// #endif /* EAP_MSCHAPv2 */
 
-#ifdef EAP_PEAP
+// #ifdef EAP_PEAP
   if (ret == 0)
     ret = eap_peer_peap_register();
-#endif /* EAP_PEAP */
+// #endif /* EAP_PEAP */
 
-#ifdef EAP_TTLS
+// #ifdef EAP_TTLS
   if (ret == 0)
     ret = eap_peer_ttls_register();
-#endif /* EAP_TTLS */
+// #endif /* EAP_TTLS */
 
-#ifdef EAP_GTC
+// #ifdef EAP_GTC
   if (ret == 0)
     ret = eap_peer_gtc_register();
-#endif /* EAP_GTC */
+// #endif /* EAP_GTC */
 
-#ifdef EAP_OTP
+// #ifdef EAP_OTP
   if (ret == 0)
     ret = eap_peer_otp_register();
-#endif /* EAP_OTP */
+// #endif /* EAP_OTP */
 
 #ifdef EAP_SIM
   if (ret == 0)
     ret = eap_peer_sim_register();
 #endif /* EAP_SIM */
 
-#ifdef EAP_LEAP
+// #ifdef EAP_LEAP
   if (ret == 0)
     ret = eap_peer_leap_register();
-#endif /* EAP_LEAP */
+// #endif /* EAP_LEAP */
 
-#ifdef EAP_PSK
+// #ifdef EAP_PSK
   if (ret == 0)
     ret = eap_peer_psk_register();
-#endif /* EAP_PSK */
+// #endif /* EAP_PSK */
 
 #ifdef EAP_AKA
   if (ret == 0)
@@ -227,20 +227,20 @@ static int eap_peer_register_methods(void) {
     ret = eap_peer_fast_register();
 #endif /* EAP_FAST */
 
-#ifdef EAP_PAX
+// #ifdef EAP_PAX
   if (ret == 0)
     ret = eap_peer_pax_register();
-#endif /* EAP_PAX */
+// #endif /* EAP_PAX */
 
-#ifdef EAP_SAKE
+// #ifdef EAP_SAKE
   if (ret == 0)
     ret = eap_peer_sake_register();
-#endif /* EAP_SAKE */
+// #endif /* EAP_SAKE */
 
-#ifdef EAP_GPSK
+// #ifdef EAP_GPSK
   if (ret == 0)
     ret = eap_peer_gpsk_register();
-#endif /* EAP_GPSK */
+// #endif /* EAP_GPSK */
 
 #ifdef EAP_WSC
   if (ret == 0)
