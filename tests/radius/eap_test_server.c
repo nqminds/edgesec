@@ -30,6 +30,8 @@ static int server_get_eap_user(void *ctx, const u8 *identity,
   (void)ctx;
   os_memset(user, 0, sizeof(*user));
 
+  printf("==> Server Phase2=%d\n", phase2);
+
   if (!phase2) {
     /* Only allow EAP-PEAP as the Phase 1 method */
     user->methods[0].vendor = EAP_VENDOR_IETF;

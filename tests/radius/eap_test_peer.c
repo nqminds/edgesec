@@ -143,20 +143,20 @@ static struct wpabuf *peer_get_eapReqData(void *ctx) {
 static void peer_set_config_blob(void *ctx, struct wpa_config_blob *blob) {
   (void)ctx;
   (void)blob;
-  /* printf("TODO: %s\n", __func__); */
+  printf("TODO: %s\n", __func__);
 }
 
 static const struct wpa_config_blob *peer_get_config_blob(void *ctx,
                                                           const char *name) {
   (void)ctx;
   (void)name;
-  /* printf("TODO: %s\n", __func__); */
+  printf("TODO: %s\n", __func__);
   return NULL;
 }
 
 static void peer_notify_pending(void *ctx) {
   (void)ctx;
-  /* printf("TODO: %s\n", __func__); */
+  printf("TODO: %s\n", __func__);
 }
 
 static int eap_peer_register_methods(void) {
@@ -318,7 +318,7 @@ int eap_test_peer_step(void) {
 
   if (eap_ctx.eapResp) {
     struct wpabuf *resp;
-    /* printf("==> Response\n"); */
+    printf("==> Response\n");
     eap_ctx.eapResp = false;
     resp = eap_get_eapRespData(eap_ctx.eap);
     if (resp) {
