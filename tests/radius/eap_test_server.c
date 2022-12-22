@@ -242,13 +242,13 @@ int eap_test_server_step(void) {
   res = eap_server_sm_step(eap_ctx.eap);
 
   if (eap_ctx.eap_if->eapReq) {
-    /* printf("==> Request\n"); */
+    printf("==> Request\n");
     process = 1;
     eap_ctx.eap_if->eapReq = 0;
   }
 
   if (eap_ctx.eap_if->eapSuccess) {
-    /* printf("==> Success\n"); */
+    printf("==> Success\n");
     process = 1;
     res = 0;
     eap_ctx.eap_if->eapSuccess = 0;
