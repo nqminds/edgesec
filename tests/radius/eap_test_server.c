@@ -47,7 +47,7 @@ static int server_get_eap_user(void *ctx, const u8 *identity,
 
   /* Only allow EAP-MSCHAPv2 as the Phase 2 method */
   user->methods[0].vendor = EAP_VENDOR_IETF;
-  user->methods[0].method = EAP_TYPE_TLS;//EAP_TYPE_MSCHAPV2;
+  user->methods[0].method = EAP_TYPE_MSCHAPV2;
   user->password = (u8 *)os_strdup("password");
   user->password_len = 8;
 
