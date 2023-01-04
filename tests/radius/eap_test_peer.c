@@ -316,8 +316,9 @@ void eap_test_peer_deinit(void) {
   os_free(eap_ctx.eap_config.cert.ca_cert);
 }
 
-int eap_test_peer_step(void) {
+int eap_test_peer_step(bool *eapSuccess) {
   int res;
+
   res = eap_peer_sm_step(eap_ctx.eap);
 
   if (eap_ctx.eapResp) {
@@ -334,6 +335,7 @@ int eap_test_peer_step(void) {
 
   if (eap_ctx.eapSuccess) {
     printf("==> Success\n");
+    *eapSuccess = true;
     res = 0;
     if (eap_key_available(eap_ctx.eap)) {
       const u8 *key;
