@@ -28,29 +28,15 @@ static int server_get_eap_user(void *ctx, const u8 *identity,
                                size_t identity_len, int phase2,
                                struct eap_user *user) {
   (void)ctx;
+  (void)identity;
+  (void)identity_len;
+
   os_memset(user, 0, sizeof(*user));
 
   printf("==> Server Phase2=%d\n", phase2);
-
-  if (!phase2) {
-    /* Only allow EAP-PEAP as the Phase 1 method */
-    user->methods[0].vendor = EAP_VENDOR_IETF;
-    user->methods[0].method = EAP_TYPE_PEAP;
-    return 0;
-  }
-
-  if (identity_len != 4 || identity == NULL ||
-      os_memcmp(identity, "user", 4) != 0) {
-    printf("Unknown user\n");
-    return -1;
-  }
-
-  /* Only allow EAP-MSCHAPv2 as the Phase 2 method */
+  
   user->methods[0].vendor = EAP_VENDOR_IETF;
-  user->methods[0].method = EAP_TYPE_MSCHAPV2;
-  user->password = (u8 *)os_strdup("password");
-  user->password_len = 8;
-
+  user->methods[0].method = EAP_TYPE_TLS;
   return 0;
 }
 
@@ -78,9 +64,7 @@ static int eap_test_server_init_tls(void) {
   os_memset(&tparams, 0, sizeof(tparams));
   tparams.ca_cert = EAP_TEST_DIR "ca.pem";
   tparams.client_cert = EAP_TEST_DIR "server.pem";
-  /* tparams.private_key = "server.key"; */
   tparams.private_key = EAP_TEST_DIR "server.key";
-  /* tparams.private_key_passwd = "whatever"; */
   tparams.dh_file = EAP_TEST_DIR "dh.conf";
 
   if (tls_global_set_params(eap_ctx.tls_ctx, &tparams)) {
