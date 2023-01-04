@@ -274,8 +274,11 @@ int eap_test_peer_init(void) {
 
   os_memset(&eap_ctx, 0, sizeof(eap_ctx));
 
-  eap_ctx.eap_config.anonymous_identity = (u8 *)os_strdup("user");
-  eap_ctx.eap_config.anonymous_identity_len = 4;
+  eap_ctx.eap_config.anonymous_identity = (u8 *)os_strdup("01:02:03:04:05:06");
+  eap_ctx.eap_config.anonymous_identity_len = 17;
+	eap_ctx.eap_config.machine_identity = (u8 *)os_strdup("01:02:03:04:05:06");
+	eap_ctx.eap_config.machine_identity_len = 17;
+
   eap_ctx.eap_config.cert.ca_cert = os_strdup(EAP_TEST_DIR "ca.pem");
   eap_ctx.eap_config.cert.client_cert = os_strdup(EAP_TEST_DIR "client.pem");
   eap_ctx.eap_config.cert.private_key = os_strdup(EAP_TEST_DIR "client.key");
@@ -330,6 +333,7 @@ int eap_test_peer_step(void) {
   }
 
   if (eap_ctx.eapSuccess) {
+    printf("==> Success\n");
     res = 0;
     if (eap_key_available(eap_ctx.eap)) {
       const u8 *key;
