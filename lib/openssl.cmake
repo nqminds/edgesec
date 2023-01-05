@@ -25,7 +25,7 @@ if (BUILD_OPENSSL_LIB AND NOT BUILD_ONLY_DOCS)
         message(FATAL_ERROR
           "Could not figure out config for cross compiling openssl. "
           "Please set openssl_config manually, by following the instructions in: "
-          "https://github.com/openssl/openssl/blob/master/INSTALL.md#manual-configuration"
+          "https://github.com/openssl/openssl/blob/OpenSSL_1_1_1s/INSTALL"
         )
       endif ()
 
