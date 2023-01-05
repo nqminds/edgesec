@@ -7,11 +7,11 @@ if (BUILD_EAP_LIB)
   add_compile_definitions(EAP_TEST_DIR="${EAP_TEST_DIR}")
 
   add_library(eap_test_peer eap_test_peer.c)
-  target_link_libraries(eap_test_peer PRIVATE libeap::libeap)
+  target_link_libraries(eap_test_peer PRIVATE hostapd::libeap)
   target_compile_definitions(eap_test_peer PRIVATE _DEFAULT_SOURCE _BSD_SOURCE IEEE8021X_EAPOL)
 
   add_library(eap_test_server eap_test_server.c)
-  target_link_libraries(eap_test_server PRIVATE libeap::libeap)
+  target_link_libraries(eap_test_server PRIVATE hostapd::libeap)
   target_compile_definitions(eap_test_server PRIVATE _DEFAULT_SOURCE _BSD_SOURCE IEEE8021X_EAPOL)
 endif ()
 
@@ -25,7 +25,7 @@ target_link_libraries(radius_client PUBLIC ip_addr PRIVATE radius md5 wpabuf log
 
 add_cmocka_test(test_libeap
   SOURCES test_libeap.c
-  LINK_LIBRARIES eap_test_peer eap_test_server libeap::libeap cmocka::cmocka OpenSSL::SSL
+  LINK_LIBRARIES eap_test_peer eap_test_server hostapd::libeap cmocka::cmocka OpenSSL::SSL
 )
 target_compile_definitions(test_libeap PRIVATE _DEFAULT_SOURCE _BSD_SOURCE IEEE8021X_EAPOL)
 

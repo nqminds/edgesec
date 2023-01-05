@@ -86,11 +86,11 @@ if (BUILD_EAP_LIB AND NOT (BUILD_ONLY_DOCS))
   )
 
   set(LIBEAP_INTERFACE_DIRS "${LIBEAP_INCLUDE_DIR}" "${LIBEAP_INCLUDE_DIR}/utils")
-  set_target_properties(libeap::libeap PROPERTIES
+  set_target_properties(hostapd::libeap PROPERTIES
       IMPORTED_LOCATION "${LIBEAP_LIB}"
       INTERFACE_LINK_LIBRARIES OpenSSL::Crypto
       INTERFACE_INCLUDE_DIRECTORIES "${LIBEAP_INTERFACE_DIRS}"
   )
 
-  add_dependencies(libeap::libeap libeap_project)
+  add_dependencies(hostapd::libeap libeap_project)
 endif ()
