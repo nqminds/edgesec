@@ -70,7 +70,7 @@ if (BUILD_EAP_LIB AND NOT (BUILD_ONLY_DOCS))
   file(MAKE_DIRECTORY "${LIBEAP_INCLUDE_DIR}/utils")
 
   set(LIBEAP_LIB "${LIBEAP_INSTALL_DIR}/lib/libeap.a")
-  add_library(libeap::libeap STATIC IMPORTED)
+  add_library(hostapd::libeap STATIC IMPORTED)
 
   set(EAPLIB_SOURCE_DIR "${hostapdsrc_SOURCE_DIR}/eaplib")
   ExternalProject_Add(
