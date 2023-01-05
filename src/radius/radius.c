@@ -3,8 +3,8 @@
  * @author Alexandru Mereacre
  * @date 2023
  * @copyright
- * SPDX-FileCopyrightText: Copyright (c) 2002-2009, 2011-2015, Jouni Malinen <j@w1.fi>
- * SPDX-License-Identifier: BSD license
+ * SPDX-FileCopyrightText: Copyright (c) 2002-2009, 2011-2015, Jouni Malinen
+ * <j@w1.fi> SPDX-License-Identifier: BSD license
  * @version hostapd-2.10
  * @brief RADIUS message processing
  */

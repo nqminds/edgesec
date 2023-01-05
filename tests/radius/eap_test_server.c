@@ -36,7 +36,7 @@ static int server_get_eap_user(void *ctx, const u8 *identity,
   os_memset(user, 0, sizeof(*user));
 
   printf("==> Server Phase2=%d\n", phase2);
-  
+
   user->methods[0].vendor = EAP_VENDOR_IETF;
   user->methods[0].method = EAP_TYPE_TLS;
   return 0;
