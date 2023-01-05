@@ -238,7 +238,7 @@ static void test_generate_dnsmasq_conf(void **state) {
   const size_t WIFI_INTERFACE_STR_LEN = ARRAY_SIZE(dconf.wifi_interface);
 
   strncpy(dconf.wifi_interface, wifi_interface, WIFI_INTERFACE_STR_LEN);
-  assert_null(dconf.wifi_interface[WIFI_INTERFACE_STR_LEN - 1]);
+  assert_int_equal(dconf.wifi_interface[WIFI_INTERFACE_STR_LEN - 1], '\0');
 
   config_dhcpinfo_t el;
   assert_true(
