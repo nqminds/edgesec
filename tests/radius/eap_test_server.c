@@ -1,10 +1,12 @@
-/*
- * Example application showing how EAP server code from hostapd can be used as
- * a library.
- * Copyright (c) 2007, Jouni Malinen <j@w1.fi>
- *
- * This software may be distributed under the terms of the BSD license.
- * See README for more details.
+/**
+ * @file
+ * @author Alexandru Mereacre
+ * @date 2023
+ * @copyright
+ * SPDX-FileCopyrightText: Copyright (c) 2007, Jouni Malinen <j@w1.fi>
+ * SPDX-License-Identifier: BSD license
+ * @version hostapd-2.10
+ * @brief Example application showing how EAP server code from hostapd can be used as a library.
  */
 
 #include <utils/includes.h>

@@ -1,13 +1,15 @@
-/*
- * Example application showing how EAP peer and server code from
- * wpa_supplicant/hostapd can be used as a library. This example program
- * initializes both an EAP server and an EAP peer entities and then runs
- * through an EAP-PEAP/MSCHAPv2 authentication.
- * Copyright (c) 2007, Jouni Malinen <j@w1.fi>
- *
- * This software may be distributed under the terms of the BSD license.
- * See README for more details.
+/**
+ * @file
+ * @author Alexandru Mereacre
+ * @date 2023
+ * @copyright
+ * SPDX-FileCopyrightText: Copyright (c) 2007, Jouni Malinen <j@w1.fi>
+ * SPDX-License-Identifier: BSD license
+ * @version hostapd-2.10
+ * @brief Test showing how EAP peer and server code from
+ * wpa_supplicant/hostapd can be used as a library for a EAP-TLS connection.
  */
+
 #include <setjmp.h>
 #include <stdarg.h>
 #include <stdbool.h>
