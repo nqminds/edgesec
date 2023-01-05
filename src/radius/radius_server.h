@@ -1,14 +1,11 @@
-/*
- * RADIUS authentication server
- * Copyright (c) 2005-2009, 2011, Jouni Malinen <j@w1.fi>
- *
- * This software may be distributed under the terms of the BSD license.
- * See README for more details.
- */
-
 /**
- * @file radius_server.h
- * @authors Jouni Malinen, Alexandru Mereacre
+ * @file
+ * @author Alexandru Mereacre
+ * @date 2023
+ * @copyright
+ * SPDX-FileCopyrightText: Copyright (c) 2005-2009, 2011, Jouni Malinen <j@w1.fi>
+ * SPDX-License-Identifier: BSD license
+ * @version hostapd-2.10
  * @brief RADIUS authentication server.
  */
 

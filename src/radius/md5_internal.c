@@ -1,14 +1,11 @@
-/*
- * MD5 hash implementation and interface functions
- * Copyright (c) 2003-2005, Jouni Malinen <j@w1.fi>
- *
- * This software may be distributed under the terms of the BSD license.
- * See README for more details.
- */
-
 /**
- * @file md5_internal.c
- * @author Jouni Malinen
+ * @file
+ * @author Alexandru Mereacre
+ * @date 2023
+ * @copyright
+ * SPDX-FileCopyrightText: Copyright (c) 2003-2005, Jouni Malinen <j@w1.fi>
+ * SPDX-License-Identifier: BSD license
+ * @version hostapd-2.10
  * @brief MD5 hash implementation and interface functions.
  */
 

@@ -1,10 +1,12 @@
 /**
  * @file
  * @author Alexandru Mereacre
- * @date 2022
+ * @date 2023
  * @copyright
  * SPDX-FileCopyrightText: © 2022 NQMCyber Ltd and edgesec contributors
- * SPDX-License-Identifier: LGPL-3.0-or-later
+ * Copyright (c) 2002-2007, Jouni Malinen <j@w1.fi>
+ * SPDX-License-Identifier: BSD licence
+ * @version hostapd-2.10
  * @brief File containing the common definitions used by radius and eap
  */
 
