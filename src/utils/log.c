@@ -76,17 +76,17 @@ uint8_t time_to_str(char *buf) {
 
   /* Add 1900 to get the right year value read the manual page for localtime()
    */
-  uint16_t year = tm->tm_year + 1900;
+  int year = tm->tm_year + 1900;
 
   /* Months are 0 indexed in struct tm */
-  uint8_t month = tm->tm_mon + 1;
-  uint8_t day = tm->tm_mday;
-  uint8_t hour = tm->tm_hour;
-  uint8_t minutes = tm->tm_min;
-  uint8_t seconds = tm->tm_sec;
+  int month = tm->tm_mon + 1;
+  int day = tm->tm_mday;
+  int hour = tm->tm_hour;
+  int minutes = tm->tm_min;
+  int seconds = tm->tm_sec;
   uint16_t msec = (uint16_t)(tv.tv_usec / 1000);
-  uint8_t len = sprintf(buf, "%04d-%02d-%02d %02d:%02d:%02d.%03d ", year, month,
-                        day, hour, minutes, seconds, msec);
+  int len = sprintf(buf, "%04d-%02d-%02d %02d:%02d:%02d.%03d ", year, month,
+                    day, hour, minutes, seconds, msec);
   buf[len] = '\0';
   return 0;
 }
@@ -181,8 +181,8 @@ bool log_check_level(uint8_t level, bool ignore_level) {
  * guaranteed to be threadsafe. Please make sure to uses mutxes/locks
  * before calling this function.
  */
-int16_t get_error_text(char *buf, uint8_t err) {
-  int16_t ret = 0;
+int get_error_text(char *buf, int err) {
+  int ret = 0;
   if (err > 0) {
     ret = snprintf(buf, 30, "[%s(%d)]", strerror(err), err);
   } else {
@@ -192,7 +192,7 @@ int16_t get_error_text(char *buf, uint8_t err) {
   return ret;
 }
 
-void print_to(uint8_t level, const char *file, uint32_t line, uint8_t err,
+void print_to(uint8_t level, const char *file, uint32_t line, int err,
               const char *time_string, const char *err_text_buf,
               const char *format, va_list args) {
   FILE *stream = (L.logfp != NULL) ? L.logfp : stderr;
@@ -217,7 +217,7 @@ void print_to(uint8_t level, const char *file, uint32_t line, uint8_t err,
 }
 
 void log_msg(uint8_t level, const char *file, uint32_t line, bool flush_std,
-             bool ignore_level, uint8_t err, const char *format, va_list args) {
+             bool ignore_level, int err, const char *format, va_list args) {
   (void)flush_std; /* unused */
 
   char time_string[25];
@@ -257,10 +257,8 @@ void log_levels(uint8_t level, const char *file, uint32_t line,
 /* Display error message including 'errno' diagnostic */
 void log_errno_error(uint8_t level, const char *file, uint32_t line,
                      const char *format, ...) {
-  uint8_t saved_errno;
+  int saved_errno = errno; /* In case we change it here */
   va_list args;
-
-  saved_errno = errno; /* In case we change it here */
 
   va_start(args, format);
   log_msg(level, file, line, true, false, saved_errno, format, args);
@@ -273,10 +271,8 @@ void log_errno_error(uint8_t level, const char *file, uint32_t line,
    terminate the process */
 void log_error_exit(uint8_t level, const char *file, uint32_t line,
                     const char *format, ...) {
-  uint8_t saved_errno;
+  int saved_errno = errno; /* In case we change it here */
   va_list args;
-
-  saved_errno = errno; /* In case we change it here */
 
   va_start(args, format);
   log_msg(level, file, line, true, false, saved_errno, format, args);
@@ -303,10 +299,8 @@ void log_error_exit(uint8_t level, const char *file, uint32_t line,
    invoking exit handlers that were established by the caller. */
 void log_error_exit_proc(uint8_t level, const char *file, uint32_t line,
                          const char *format, ...) {
-  uint8_t saved_errno;
+  int saved_errno = errno; /* In case we change it here */
   va_list args;
-
-  saved_errno = errno; /* In case we change it here */
 
   va_start(args, format);
   log_msg(level, file, line, true, true, saved_errno, format, args);
@@ -351,10 +345,16 @@ void printf_encode(char *txt, size_t maxlen, const uint8_t *data, size_t len) {
         *txt++ = 't';
         break;
       default:
+        // check if value is a valid printable ASCII char
+        // this also confirms that we can safely cast unsigned data to signed
+        // char
         if (data[i] >= 32 && data[i] <= 126) {
-          *txt++ = data[i];
+          *txt++ = (char)data[i];
         } else {
-          txt += snprintf(txt, end - txt, "\\x%02x", data[i]);
+          // guaranteed to be positive and to have 4 chars left, as otherwise
+          // loop will break
+          size_t max_chars_to_print = (size_t)(end - txt);
+          txt += snprintf(txt, max_chars_to_print, "\\x%02x", data[i]);
         }
         break;
     }
@@ -363,8 +363,8 @@ void printf_encode(char *txt, size_t maxlen, const uint8_t *data, size_t len) {
   *txt = '\0';
 }
 
-int printf_hex(char *buf, size_t buf_size, const uint8_t *data, size_t len,
-               int uppercase) {
+size_t printf_hex(char *buf, size_t buf_size, const uint8_t *data, size_t len,
+                  int uppercase) {
   size_t i;
   char *pos = buf, *end = buf + buf_size;
   int ret;
@@ -378,13 +378,16 @@ int printf_hex(char *buf, size_t buf_size, const uint8_t *data, size_t len,
     return 0;
 
   for (i = 0; i < len; i++) {
-    ret = snprintf(pos, end - pos, uppercase ? "%02X" : "%02x", data[i]);
-    if (snprintf_error(end - pos, ret)) {
-      end[-1] = '\0';
-      return pos - buf;
+    // guaranteed to be positive, since we return an error if writing fails
+    size_t max_len = (size_t)(end - pos);
+    ret = snprintf(pos, max_len, uppercase ? "%02X" : "%02x", data[i]);
+    if (snprintf_error(max_len, ret)) {
+      goto cleanup;
     }
     pos += ret;
   }
+
+cleanup:
   end[-1] = '\0';
-  return pos - buf;
+  return (size_t)(pos - buf);
 }
