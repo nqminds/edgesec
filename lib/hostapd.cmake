@@ -10,6 +10,7 @@ set(LIBEAP_INCLUDE_DIR "${LIBEAP_INSTALL_DIR}/include")
 set(LIBEAP_LIB_DIR "${LIBEAP_INSTALL_DIR}/lib")
 
 if ((BUILD_HOSTAPD OR BUILD_EAP_LIB) AND NOT (BUILD_ONLY_DOCS))
+  find_package(PkgConfig)
   if ("${CMAKE_GENERATOR}" MATCHES "Makefiles")
     set(MAKE_COMMAND "$(MAKE)") # recursive make (uses the same make as the main project)
   else()
