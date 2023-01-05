@@ -23,14 +23,18 @@ if (BUILD_ONLY_DOCS OR NOT (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_T
 elseif (BUILD_CMOCKA_LIB)
   include(FetchContent)
 
-  set(CMOCKA_GIT_SHA "c911f1cb11479435818c59fd265c103b4d8c66fb")
+  set(CMOCKA_GIT_SHA "55c444ee6ab77f27b188b09b1a32792d3a02d2f1")
   FetchContent_Declare(
     cmocka
-    # Use upstream in development cmocka version to fix https://gitlab.com/cmocka/cmocka/-/issues/38
-    # Adds 64-bit Muslibc, Cheri ARM/Morello/128-bit pointer support
-    # Bug-fix for standard C POSIX compatibility
+    # Use upstream in development cmocka version to fix some bugs
+    # - Adds Cheri Hybrid support https://gitlab.com/cmocka/cmocka/-/issues/38
+    # - Support building with `C_EXTENSIONS` https://gitlab.com/cmocka/cmocka/-/merge_requests/51
+    # - Work-around for FreeBSD libc bug https://gitlab.com/cmocka/cmocka/-/merge_requests/53
+    # - CHERI PureCap fixes
+    #   - Use `__builtin_align_down` to align pointers https://gitlab.com/cmocka/cmocka/-/merge_requests/55
+    #   - Remove casts from `uintptr_t` to `uintmax_t` https://gitlab.com/cmocka/cmocka/-/merge_requests/56
     URL "https://gitlab.com/api/v4/projects/aloisklink%2Fcmocka/repository/archive.tar.bz2?sha=${CMOCKA_GIT_SHA}"
-    URL_HASH SHA256=1ea81dd90548d488750635ba1a4935a8d7f32e749c9207412121f7cc5635cc87
+    URL_HASH SHA256=496c8628a7e9fd000a59540fab97d21fdd3721a8e8b7930c55bdef78acf301f7
     DOWNLOAD_NAME "cmocka-${CMOCKA_GIT_SHA}.tar.bz2"
     DOWNLOAD_DIR "${EP_DOWNLOAD_DIR}" # if empty string, uses default dir
   )
