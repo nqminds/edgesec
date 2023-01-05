@@ -1,3 +1,6 @@
+# Based on https://w1.fi/cgit/hostap/tree/eap_example/Makefile and
+# https://w1.fi/cgit/hostap/tree/hostapd/Makefile
+
 alib = libeap.a
 ALL = $(alib)
 CONFIG_FILE = .config
