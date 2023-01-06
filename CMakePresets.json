@@ -37,8 +37,25 @@
         "BUILD_HOSTAPD": false,
         "USE_CRYPTO_SERVICE": false,
         "BUILD_OPENSSL_LIB": false,
-        "BUILD_CMOCKA_LIB": true
+        "BUILD_CMOCKA_LIB": true,
+        "BUILD_SQLITE_LIB": false,
+        "USE_PROTOBUF_MIDDLEWARE": true,
+        "USE_CAPTURE_SERVICE": true,
+        "BUILD_UUID_LIB": true,
+        "BUILD_PCAP_LIB": true
       }
+    },
+    {
+      "name": "cheribsd",
+      "inherits": "freebsd",
+      "description": "CheriBSD build (alpha)",
+      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/cheri.cmake"
+    },
+    {
+      "name": "cheribsd-cc",
+      "inherits": "freebsd",
+      "description": "CheriBSD Cross Compile build (alpha)",
+      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/cheri-cross.cmake"
     },
     {
       "name": "linux",
@@ -256,6 +273,14 @@
       "configurePreset": "freebsd"
     },
     {
+      "name": "cheribsd",
+      "configurePreset": "cheribsd"
+    },
+    {
+      "name": "cheribsd-cc",
+      "configurePreset": "cheribsd-cc"
+    },
+    {
       "name": "linux/header",
       "configurePreset": "linux/header"
     },
@@ -340,6 +365,10 @@
     {
       "name": "freebsd",
       "configurePreset": "freebsd"
+    },
+    {
+      "name": "cheribsd",
+      "configurePreset": "cheribsd"
     },
     {
       "name": "openwrt",
