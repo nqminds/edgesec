@@ -1,142 +1,121 @@
-/**
- * @file
- * @author Alexandru Mereacre
- * @date 2023
- * @copyright
- * SPDX-FileCopyrightText: Copyright (c) 2005-2009, 2011, Jouni Malinen
- * <j@w1.fi> SPDX-License-Identifier: BSD license
- * @version hostapd-2.10
- * @brief RADIUS authentication server.
+/*
+ * RADIUS authentication server
+ * Copyright (c) 2005-2009, 2011, Jouni Malinen <j@w1.fi>
+ *
+ * This software may be distributed under the terms of the BSD license.
+ * See README for more details.
  */
 
 #ifndef RADIUS_SERVER_H
 #define RADIUS_SERVER_H
 
-#include <stdint.h>
-#include <sys/types.h>
-#include <unistd.h>
-// On FreeBSD, you must include `<sys/socket.h>` and `<netinet/in.h>` before
-// `<netinet/if_ether.h>`
-#include <stdbool.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netinet/if_ether.h>
-
-#include <eloop.h>
-#include "../utils/os.h"
-#include "radius_config.h"
+struct radius_server_data;
+struct eap_user;
 
 /**
- * struct radius_server_counters - RADIUS server statistics counters
+ * struct radius_server_conf - RADIUS server configuration
  */
-struct radius_server_counters {
-  uint32_t access_requests;
-  uint32_t invalid_requests;
-  uint32_t dup_access_requests;
-  uint32_t access_accepts;
-  uint32_t access_rejects;
-  uint32_t access_challenges;
-  uint32_t malformed_access_requests;
-  uint32_t bad_authenticators;
-  uint32_t packets_dropped;
-  uint32_t unknown_types;
+struct radius_server_conf {
+	/**
+	 * auth_port - UDP port to listen to as an authentication server
+	 */
+	int auth_port;
+
+	/**
+	 * acct_port - UDP port to listen to as an accounting server
+	 */
+	int acct_port;
+
+	/**
+	 * client_file - RADIUS client configuration file
+	 *
+	 * This file contains the RADIUS clients and the shared secret to be
+	 * used with them in a format where each client is on its own line. The
+	 * first item on the line is the IPv4 or IPv6 address of the client
+	 * with an optional address mask to allow full network to be specified
+	 * (e.g., 192.168.1.2 or 192.168.1.0/24). This is followed by white
+	 * space (space or tabulator) and the shared secret. Lines starting
+	 * with '#' are skipped and can be used as comments.
+	 */
+	char *client_file;
+
+	/**
+	 * sqlite_file - SQLite database for storing debug log information
+	 */
+	const char *sqlite_file;
+
+	/**
+	 * conf_ctx - Context pointer for callbacks
+	 *
+	 * This is used as the ctx argument in get_eap_user() calls.
+	 */
+	void *conf_ctx;
+
+	const char *erp_domain;
+
+	/**
+	 * ipv6 - Whether to enable IPv6 support in the RADIUS server
+	 */
+	int ipv6;
+
+	/**
+	 * get_eap_user - Callback for fetching EAP user information
+	 * @ctx: Context data from conf_ctx
+	 * @identity: User identity
+	 * @identity_len: identity buffer length in octets
+	 * @phase2: Whether this is for Phase 2 identity
+	 * @user: Data structure for filling in the user information
+	 * Returns: 0 on success, -1 on failure
+	 *
+	 * This is used to fetch information from user database. The callback
+	 * will fill in information about allowed EAP methods and the user
+	 * password. The password field will be an allocated copy of the
+	 * password data and RADIUS server will free it after use.
+	 */
+	int (*get_eap_user)(void *ctx, const u8 *identity, size_t identity_len,
+			    int phase2, struct eap_user *user);
+
+	/**
+	 * eap_req_id_text - Optional data for EAP-Request/Identity
+	 *
+	 * This can be used to configure an optional, displayable message that
+	 * will be sent in EAP-Request/Identity. This string can contain an
+	 * ASCII-0 character (nul) to separate network infromation per RFC
+	 * 4284. The actual string length is explicit provided in
+	 * eap_req_id_text_len since nul character will not be used as a string
+	 * terminator.
+	 */
+	const char *eap_req_id_text;
+
+	/**
+	 * eap_req_id_text_len - Length of eap_req_id_text buffer in octets
+	 */
+	size_t eap_req_id_text_len;
+
+#ifdef CONFIG_RADIUS_TEST
+	const char *dump_msk_file;
+#endif /* CONFIG_RADIUS_TEST */
+
+	char *subscr_remediation_url;
+	u8 subscr_remediation_method;
+	char *hs20_sim_provisioning_url;
+
+	char *t_c_server_url;
+
+	struct eap_config *eap_cfg;
 };
 
-/**
- * struct radius_session - Internal RADIUS server data for a session
- */
-struct radius_session {
-  struct radius_session *next;
-  struct radius_client *client;
-  struct radius_server_data *server;
-  unsigned int sess_id;
-  char *username; /* from User-Name attribute */
-  char *nas_ip;
-  uint8_t mac_addr[ETHER_ADDR_LEN]; /* from Calling-Station-Id attribute */
 
-  struct radius_msg *last_msg;
-  char *last_from_addr;
-  int last_from_port;
-  struct sockaddr_storage last_from;
-  socklen_t last_fromlen;
-  uint8_t last_identifier;
-  struct radius_msg *last_reply;
-  uint8_t last_authenticator[16];
+struct radius_server_data *
+radius_server_init(struct radius_server_conf *conf);
 
-  unsigned int macacl : 1;
-
-  struct hostapd_radius_attr *accept_attr;
-};
-
-/**
- * struct radius_client - Internal RADIUS server data for a client
- */
-struct radius_client {
-  struct radius_client *next;
-  struct in_addr addr;
-  struct in_addr mask;
-  char *shared_secret;
-  int shared_secret_len;
-  struct radius_session *sessions;
-  struct radius_server_counters counters;
-
-  mac_conn_fn conn_fn;
-  void *mac_conn_arg;
-  // int (*get_vlan_id)(uint8_t mac_addr[]);
-  struct hostapd_tunnel_pass (*get_tunnel_pass)(uint8_t mac_addr[]);
-};
-
-/**
- * struct radius_server_data - Internal RADIUS server data
- */
-struct radius_server_data {
-  /**
-   * eloop - The eloop context
-   */
-  struct eloop_data *eloop;
-
-  /**
-   * auth_sock - Socket for RADIUS authentication messages
-   */
-  int auth_sock;
-
-  /**
-   * clients - List of authorized RADIUS clients
-   */
-  struct radius_client *clients;
-
-  /**
-   * next_sess_id - Next session identifier
-   */
-  unsigned int next_sess_id;
-
-  /**
-   * num_sess - Number of active sessions
-   */
-  int num_sess;
-
-  /**
-   * start_time - Timestamp of server start
-   */
-  struct os_reltime start_time;
-
-  /**
-   * counters - Statistics counters for server operations
-   *
-   * These counters are the sum over all clients.
-   */
-  struct radius_server_counters counters;
-};
-
-struct radius_server_data *radius_server_init(struct eloop_data *eloop,
-                                              int auth_port,
-                                              struct radius_client *clients);
+void radius_server_erp_flush(struct radius_server_data *data);
 void radius_server_deinit(struct radius_server_data *data);
+
 int radius_server_get_mib(struct radius_server_data *data, char *buf,
-                          size_t buflen);
-struct radius_client *init_radius_client(struct radius_conf *conf,
-                                         mac_conn_fn mac_conn_fn,
-                                         void *mac_conn_arg);
-void radius_server_free_clients(struct radius_server_data *data,
-                                struct radius_client *clients);
+			  size_t buflen);
+
+void radius_server_eap_pending_cb(struct radius_server_data *data, void *ctx);
+int radius_server_dac_request(struct radius_server_data *data, const char *req);
+
 #endif /* RADIUS_SERVER_H */
