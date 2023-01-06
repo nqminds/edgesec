@@ -25,14 +25,19 @@ struct radius_server_data *run_radius(struct eloop_data *eloop,
                                       struct radius_conf *rconf,
                                       mac_conn_fn radius_callback_fn,
                                       void *radius_callback_args) {
-  struct radius_client *client =
-      init_radius_client(rconf, radius_callback_fn, radius_callback_args);
+  (void)eloop;
+  (void)rconf;
+  (void)radius_callback_fn;
+  (void)radius_callback_args;
+  // struct radius_client *client =
+  //     init_radius_client(rconf, radius_callback_fn, radius_callback_args);
 
-  return radius_server_init(eloop, rconf->radius_port, client);
+  return NULL;
+  // return radius_server_init(eloop, rconf->radius_port, client);
 }
 
 void close_radius(struct radius_server_data *srv) {
   if (srv != NULL) {
-    radius_server_deinit(srv);
+    // radius_server_deinit(srv);
   }
 }
