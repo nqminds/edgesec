@@ -1,13 +1,19 @@
-/*
- * RADIUS authentication server
- * Copyright (c) 2005-2009, 2011, Jouni Malinen <j@w1.fi>
- *
- * This software may be distributed under the terms of the BSD license.
- * See README for more details.
+/**
+ * @file
+ * @author Alexandru Mereacre
+ * @date 2023
+ * @copyright
+ * SPDX-FileCopyrightText: Copyright (c) 2005-2009, 2011, Jouni Malinen
+ * <j@w1.fi> SPDX-License-Identifier: BSD license
+ * @version hostapd-2.10
+ * @brief RADIUS authentication server.
  */
-
 #ifndef RADIUS_SERVER_H
 #define RADIUS_SERVER_H
+
+#include <eloop.h>
+
+#include "common.h"
 
 struct radius_server_data;
 struct eap_user;
@@ -16,6 +22,11 @@ struct eap_user;
  * struct radius_server_conf - RADIUS server configuration
  */
 struct radius_server_conf {
+	/** 
+	 * eloop - the pointer to the eloop context
+	*/
+	struct eloop_data *eloop;
+
 	/**
 	 * auth_port - UDP port to listen to as an authentication server
 	 */

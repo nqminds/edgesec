@@ -16,6 +16,7 @@
 
 #include <eloop.h>
 #include "../ap/ap_config.h"
+#include "../radius/radius_config.h"
 #include "../capture/capture_config.h"
 #include "../crypt/crypt_config.h"
 #include "../dhcp/dhcp_config.h"

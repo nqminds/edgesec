@@ -15,8 +15,8 @@
 
 #include <stddef.h>
 
-#include "utils/log.h"
-#include "utils/allocs.h"
+#include "../utils/log.h"
+#include "../utils/allocs.h"
 
 typedef uint64_t u64;
 typedef uint32_t u32;

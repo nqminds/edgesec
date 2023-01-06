@@ -20,6 +20,7 @@
 
 #include <eloop.h>
 #include "radius_server.h"
+#include "radius_config.h"
 
 struct radius_server_data *run_radius(struct eloop_data *eloop,
                                       struct radius_conf *rconf,

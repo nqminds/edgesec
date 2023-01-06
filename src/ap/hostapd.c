@@ -29,6 +29,7 @@
 #include "utils/log.h"
 #include "utils/os.h"
 
+#include "radius/radius_config.h"
 #define WITH_HOSTAPD_UCI
 
 #ifdef WITH_UCI_SERVICE

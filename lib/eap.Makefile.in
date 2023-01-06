@@ -617,11 +617,12 @@ install: $(alib)
 	cp src/eap_server/*.h $(INSTALL_DIR)/include/eap_server
 	mkdir -p $(INSTALL_DIR)/include/crypto
 	cp src/crypto/*.h $(INSTALL_DIR)/include/crypto
-	mkdir -p $(INSTALL_DIR)/include/utils
-	cp src/utils/*.h $(INSTALL_DIR)/include/utils
 	mkdir -p $(INSTALL_DIR)/include/tls
 	cp src/tls/*.h $(INSTALL_DIR)/include/tls
+	mkdir -p $(INSTALL_DIR)/include/utils
+	cp src/utils/list.h $(INSTALL_DIR)/include/utils
+	cp src/utils/wpabuf.h $(INSTALL_DIR)/include/utils
 	mkdir -p $(INSTALL_DIR)/include/common
-	cp src/common/*.h $(INSTALL_DIR)/include/common
+	cp src/common/defs.h $(INSTALL_DIR)/include/common
 
 -include $(OBJS:%.o=%.d)
