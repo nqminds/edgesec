@@ -12,7 +12,7 @@
 #define RADIUS_CONFIG_H
 
 #include "../utils/net.h"
-#include "../utils/os.h"
+// #include "../utils/os.h"
 
 #define RADIUS_SECRET_LEN 255
 

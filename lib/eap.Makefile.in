@@ -620,9 +620,8 @@ install: $(alib)
 	mkdir -p $(INSTALL_DIR)/include/tls
 	cp src/tls/*.h $(INSTALL_DIR)/include/tls
 	mkdir -p $(INSTALL_DIR)/include/utils
-	cp src/utils/list.h $(INSTALL_DIR)/include/utils
-	cp src/utils/wpabuf.h $(INSTALL_DIR)/include/utils
+	cp src/utils/*.h $(INSTALL_DIR)/include/utils
 	mkdir -p $(INSTALL_DIR)/include/common
-	cp src/common/defs.h $(INSTALL_DIR)/include/common
+	cp src/common/*.h $(INSTALL_DIR)/include/common
 
 -include $(OBJS:%.o=%.d)

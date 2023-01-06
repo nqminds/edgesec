@@ -14,7 +14,7 @@
 #define COMMON_H
 
 #include <stddef.h>
-
+#include <stdlib.h>
 #include "../utils/log.h"
 #include "../utils/allocs.h"
 
@@ -173,8 +173,8 @@ static inline int os_snprintf_error(size_t size, int res)
 static inline void bin_clear_free(void *bin, size_t len)
 {
 	if (bin) {
-		os_memset(bin, 0, len); //forced_memzero(bin, len);
-		os_free(bin);
+		memset(bin, 0, len); //forced_memzero(bin, len);
+		free(bin);
 	}
 }
 

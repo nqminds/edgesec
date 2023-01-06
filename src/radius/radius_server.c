@@ -11,12 +11,13 @@
 
 #include "includes.h"
 #include <net/if.h>
+#include <linux/if_ether.h>
 #ifdef CONFIG_SQLITE
 #include <sqlite3.h>
 #endif /* CONFIG_SQLITE */
 
-#include "../utils/allocs.h"
-#include "../utils/log.h"
+// #include "../utils/allocs.h"
+// #include "../utils/log.h"
 #include "../utils/net.h"
 
 #include "common.h"
