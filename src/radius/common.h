@@ -16,6 +16,7 @@
 #include <stddef.h>
 
 #include "utils/log.h"
+#include "utils/allocs.h"
 
 typedef uint64_t u64;
 typedef uint32_t u32;
@@ -39,6 +40,22 @@ typedef int8_t s8;
 #undef __bitwise
 #define __bitwise
 #endif
+
+#ifndef __must_check
+#if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4)
+#define __must_check __attribute__((__warn_unused_result__))
+#else
+#define __must_check
+#endif /* __GNUC__ */
+#endif /* __must_check */
+
+#ifndef __maybe_unused
+#if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4)
+#define __maybe_unused __attribute__((unused))
+#else
+#define __maybe_unused
+#endif /* __GNUC__ */
+#endif /* __must_check */
 
 typedef u16 __bitwise be16;
 typedef u16 __bitwise le16;
@@ -148,10 +165,48 @@ static inline u32 WPA_GET_BE24(const u8 *a) {
   return (a[0] << 16) | (a[1] << 8) | a[2];
 }
 
+static inline int os_snprintf_error(size_t size, int res)
+{
+	return res < 0 || (unsigned int) res >= size;
+}
+
+static inline void bin_clear_free(void *bin, size_t len)
+{
+	if (bin) {
+		os_memset(bin, 0, len); //forced_memzero(bin, len);
+		os_free(bin);
+	}
+}
+
+#define WLAN_REASON_IEEE_802_1X_AUTH_FAILED 23
+
+struct hostapd_radius_attr {
+	u8 type;
+	struct wpabuf *val;
+	struct hostapd_radius_attr *next;
+};
+
+/* Debugging function - conditional printf and hex dump. Driver wrappers can
+ * use these for debugging purposes. */
+
+enum {
+	MSG_EXCESSIVE, MSG_MSGDUMP, MSG_DEBUG, MSG_INFO, MSG_WARNING, MSG_ERROR
+};
+
 #define wpa_printf(level, ...)                                                 \
   log_levels(LOGC_TRACE, __FILENAME__, __LINE__, __VA_ARGS__)
 #define wpa_snprintf_hex(buf, buf_size, data, len)                             \
   printf_hex(buf, buf_size, data, len, 0)
+
+static inline void wpa_hexdump_ascii(int level, const char *title, const void *buf,
+			       size_t len) {
+  (void)level;
+  char hex_buf[32];
+  printf_hex(hex_buf, 32, buf, len, 0);
+  log_trace("%s - hexdump(len=%lu):%s", title, len, hex_buf);
+}
+
+#define wpa_hexdump(level, title, buf, len) wpa_hexdump_ascii(level, title, buf, len)
 
 #ifndef wpa_trace_show
 #define wpa_trace_show(s) log_trace("%s", s)
