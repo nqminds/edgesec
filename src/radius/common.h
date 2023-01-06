@@ -14,6 +14,7 @@
 #define COMMON_H
 
 #include <stddef.h>
+#include <stdlib.h>
 
 #include "../utils/allocs.h"
 #include "../utils/log.h"
@@ -203,8 +204,8 @@ static inline void bin_clear_free(void *bin, size_t len) {
   if (bin) {
     // may be optimized out by a smart compiler, we should use
     // memset_s (C11 Annex K) or memset_explicit (C23) instead
-    os_memset(bin, '\0', len);
-    os_free(bin);
+    memset(bin, '\0', len);
+    free(bin);
   }
 }
 
