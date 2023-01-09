@@ -110,7 +110,7 @@ int __wrap_run_ap(struct supervisor_context *context, bool exec_ap,
   return 0;
 }
 #ifdef WITH_RADIUS_SERVICE
-struct radius_server_data *__wrap_run_radius(struct eloop_data *eloop,
+struct radius_context *__wrap_run_radius(struct eloop_data *eloop,
                                              struct radius_conf *rconf,
                                              void *radius_callback_fn,
                                              void *radius_callback_args) {
@@ -119,7 +119,7 @@ struct radius_server_data *__wrap_run_radius(struct eloop_data *eloop,
   (void)radius_callback_fn;
   (void)radius_callback_args;
 
-  return mock_ptr_type(struct radius_server_data *);
+  return mock_ptr_type(struct radius_context *);
 }
 #endif
 
@@ -210,8 +210,8 @@ static void test_run_engine(void **state) {
       (struct crypt_context *)os_zalloc(sizeof(struct crypt_context));
 #endif
 #ifdef WITH_RADIUS_SERVICE
-  struct radius_server_data *radius_srv =
-      os_zalloc(sizeof(struct radius_server_data *));
+  struct radius_context *radius_ctx =
+      os_zalloc(sizeof(struct radius_context));
 #endif
 
   struct fwctx *fw_ctx = os_zalloc(sizeof(struct fwctx));
@@ -235,7 +235,7 @@ static void test_run_engine(void **state) {
   will_return_always(__wrap_fw_init_context, fw_ctx);
   will_return_always(__wrap_iface_get_vlan, "wlan0");
 #ifdef WITH_RADIUS_SERVICE
-  will_return_always(__wrap_run_radius, radius_srv);
+  will_return_always(__wrap_run_radius, radius_ctx);
 #endif
 #ifdef WITH_CRYPTO_SERVICE
   will_return_always(__wrap_load_crypt_service, crypt_ctx);
