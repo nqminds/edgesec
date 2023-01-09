@@ -447,9 +447,9 @@ int writeread_domain_data_str(char *socket_path, const char *write_str,
   }
 
   log_trace("Socket received bytes available=%u", bytes_available);
-  char *rec_data = os_zalloc(bytes_available + 1);
+  char *rec_data = sys_zalloc(bytes_available + 1);
   if (rec_data == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     goto cleanup_sfd;
   }
 

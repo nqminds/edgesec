@@ -22,10 +22,10 @@ static const UT_icd mac_list_icd = {sizeof(uint8_t) * ETHER_ADDR_LEN, NULL,
 struct bridge_mac_list *init_bridge_list(void) {
   struct bridge_mac_list *e;
 
-  e = os_zalloc(sizeof(*e));
+  e = sys_zalloc(sizeof(*e));
 
   if (e == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return NULL;
   }
 
@@ -142,15 +142,15 @@ int add_bridge_mac(struct bridge_mac_list *ml, const uint8_t *mac_addr_left,
   if (ret.left_edge && ret.right_edge)
     return 0;
 
-  src_el = os_zalloc(sizeof(*src_el));
+  src_el = sys_zalloc(sizeof(*src_el));
   if (src_el == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return -1;
   }
 
-  dst_el = os_zalloc(sizeof(*dst_el));
+  dst_el = sys_zalloc(sizeof(*dst_el));
   if (dst_el == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return -1;
   }
 

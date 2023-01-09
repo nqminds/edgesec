@@ -178,14 +178,14 @@ struct middleware_context *init_pcap_middleware(sqlite3 *db, char *db_path,
     return NULL;
   }
 
-  if ((context = os_zalloc(sizeof(struct middleware_context))) == NULL) {
+  if ((context = sys_zalloc(sizeof(struct middleware_context))) == NULL) {
     log_errno("zalloc");
     return NULL;
   }
 
-  if ((pcap_context = os_zalloc(sizeof(struct pcap_middleware_context))) ==
+  if ((pcap_context = sys_zalloc(sizeof(struct pcap_middleware_context))) ==
       NULL) {
-    log_errno("zalloc");
+    log_errno("sys_zalloc");
     free_pcap_middleware(context);
     return NULL;
   }

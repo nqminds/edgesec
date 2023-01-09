@@ -299,7 +299,7 @@ ssize_t process_get_all_cmd(int sock, struct client_address *client_addr,
           (int)el.info.status);
       total += line_size + 1;
       if (reply_buf == NULL)
-        reply_buf = os_zalloc(total);
+        reply_buf = sys_zalloc(total);
       else
         reply_buf = os_realloc(reply_buf, total);
       strcat(reply_buf, temp);
@@ -496,7 +496,7 @@ ssize_t process_get_bridges_cmd(int sock, struct client_address *client_addr,
                                MAC2STR(p->src_addr), MAC2STR(p->dst_addr));
       total += line_size + 1;
       if (reply_buf == NULL)
-        reply_buf = os_zalloc(total);
+        reply_buf = sys_zalloc(total);
       else
         reply_buf = os_realloc(reply_buf, total);
       strcat(reply_buf, temp);

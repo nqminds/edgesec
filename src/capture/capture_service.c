@@ -142,9 +142,9 @@ void *capture_thread(void *arg) {
   struct capture_middleware_context *context =
       (struct capture_middleware_context *)arg;
 
-  int *ret = os_zalloc(sizeof(int));
+  int *ret = sys_zalloc(sizeof(int));
   if (ret == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     free_capture_context(context);
     return NULL;
   }
@@ -163,9 +163,9 @@ int run_capture_thread(char *ifname, struct capture_conf const *config,
                        pthread_t *id) {
   struct capture_middleware_context *context = NULL;
 
-  if ((context = os_zalloc(sizeof(struct capture_middleware_context))) ==
+  if ((context = sys_zalloc(sizeof(struct capture_middleware_context))) ==
       NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return -1;
   }
 

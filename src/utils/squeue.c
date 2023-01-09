@@ -17,10 +17,10 @@
 
 struct string_queue *init_string_queue(ssize_t max_length) {
   struct string_queue *queue;
-  queue = os_zalloc(sizeof(*queue));
+  queue = sys_zalloc(sizeof(*queue));
 
   if (queue == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return NULL;
   }
 
@@ -136,7 +136,7 @@ char *concat_string_queue(const struct string_queue *queue, ssize_t count) {
     if (el != NULL && ((num < count && count > 0) || count < 0)) {
       size += strlen(el->str);
       if (concat_str == NULL) {
-        concat_str = os_zalloc(size);
+        concat_str = sys_zalloc(size);
       } else
         concat_str = os_realloc(concat_str, size);
 
@@ -155,7 +155,7 @@ char *concat_string_queue(const struct string_queue *queue, ssize_t count) {
   //   if ((el = pop_string_queue(queue)) != NULL) {
   //     size += strlen(el->str);
   //     if (concat_str == NULL) {
-  //       concat_str = os_zalloc(size);
+  //       concat_str = sys_zalloc(size);
   //     } else concat_str = os_realloc(concat_str, size);
 
   //     if (concat_str == NULL) {

@@ -99,9 +99,9 @@ get_password_attribute(const uint8_t *req_authenticator, const uint8_t *secret,
 
   salt |= 0x8000;
 
-  buf = os_zalloc(packet_len);
+  buf = sys_zalloc(packet_len);
   if (buf == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return 0;
   }
 
@@ -112,9 +112,9 @@ get_password_attribute(const uint8_t *req_authenticator, const uint8_t *secret,
   encrypt_ms_key(key, key_len, salt, req_authenticator, secret, secret_len, pos,
                  &elen);
 
-  attr = os_zalloc(sizeof(*attr));
+  attr = sys_zalloc(sizeof(*attr));
   if (!attr) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     os_free(buf);
     return NULL;
   }
@@ -133,9 +133,9 @@ struct hostapd_radius_attr *get_vlan_attribute(uint16_t vlan_id) {
 #define RADIUS_ATTR_TUNNEL_VALUE 13
 #define RADIUS_ATTR_TUNNEL_MEDIUM_VALUE 6
 
-  attr = os_zalloc(sizeof(*attr));
+  attr = sys_zalloc(sizeof(*attr));
   if (!attr) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return NULL;
   }
 
@@ -144,9 +144,9 @@ struct hostapd_radius_attr *get_vlan_attribute(uint16_t vlan_id) {
   if (attr->val)
     wpabuf_put_be32(attr->val, RADIUS_ATTR_TUNNEL_VALUE);
 
-  attr_medium_type = os_zalloc(sizeof(*attr_medium_type));
+  attr_medium_type = sys_zalloc(sizeof(*attr_medium_type));
   if (!attr_medium_type) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     free_radius_attr(attr);
     return NULL;
   }
@@ -155,9 +155,9 @@ struct hostapd_radius_attr *get_vlan_attribute(uint16_t vlan_id) {
   if (attr_medium_type->val)
     wpabuf_put_be32(attr_medium_type->val, RADIUS_ATTR_TUNNEL_MEDIUM_VALUE);
 
-  attr_id = os_zalloc(sizeof(*attr_id));
+  attr_id = sys_zalloc(sizeof(*attr_id));
   if (!attr_id) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     free_radius_attr(attr);
     free_radius_attr(attr_medium_type);
     return NULL;
@@ -270,7 +270,7 @@ radius_server_new_session(struct radius_server_data *data,
     return NULL;
   }
 
-  sess = os_zalloc(sizeof(*sess));
+  sess = sys_zalloc(sizeof(*sess));
   if (sess == NULL)
     return NULL;
 
@@ -773,9 +773,9 @@ struct radius_client *init_radius_client(struct radius_conf *conf,
     return NULL;
   }
 
-  entry = os_zalloc(sizeof(*entry));
+  entry = sys_zalloc(sizeof(*entry));
   if (entry == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return NULL;
   }
 
@@ -816,9 +816,9 @@ struct radius_server_data *radius_server_init(struct eloop_data *eloop,
     return NULL;
   }
 
-  data = os_zalloc(sizeof(*data));
+  data = sys_zalloc(sizeof(*data));
   if (data == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return NULL;
   }
 

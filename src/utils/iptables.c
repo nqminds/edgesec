@@ -257,7 +257,7 @@ struct iptables_context *iptables_init(const char *path, UT_array *ifinfo_array,
     return NULL;
   }
 
-  ctx = (struct iptables_context *)os_zalloc(sizeof(struct iptables_context));
+  ctx = (struct iptables_context *)sys_zalloc(sizeof(struct iptables_context));
 
   ctx->exec_iptables = exec_iptables;
   os_strlcpy(ctx->iptables_path, path, MAX_OS_PATH_LEN);

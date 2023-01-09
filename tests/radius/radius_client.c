@@ -648,7 +648,7 @@ static void radius_client_list_add(struct radius_client_data *radius,
     return;
   }
 
-  entry = os_zalloc(sizeof(*entry));
+  entry = sys_zalloc(sizeof(*entry));
   if (entry == NULL) {
     log_trace("RADIUS: Failed to add packet into retransmit list");
     radius_msg_free(msg);
@@ -1374,9 +1374,9 @@ radius_client_init(struct eloop_data *eloop, void *ctx,
     log_error("eloop param is NULL");
     return NULL;
   }
-  radius = os_zalloc(sizeof(struct radius_client_data));
+  radius = sys_zalloc(sizeof(struct radius_client_data));
   if (radius == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return NULL;
   }
 

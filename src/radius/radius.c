@@ -100,7 +100,7 @@ static int radius_msg_initialize(struct radius_msg *msg) {
 struct radius_msg *radius_msg_new(u8 code, u8 identifier) {
   struct radius_msg *msg;
 
-  msg = os_zalloc(sizeof(*msg));
+  msg = sys_zalloc(sizeof(*msg));
   if (msg == NULL)
     return NULL;
 
@@ -658,7 +658,7 @@ struct radius_msg *radius_msg_parse(const u8 *data, size_t len) {
                (unsigned long)len - msg_len);
   }
 
-  msg = os_zalloc(sizeof(*msg));
+  msg = sys_zalloc(sizeof(*msg));
   if (msg == NULL)
     return NULL;
 
@@ -1057,7 +1057,7 @@ struct radius_ms_mppe_keys *radius_msg_get_ms_keys(struct radius_msg *msg,
   if (msg == NULL || sent_msg == NULL)
     return NULL;
 
-  keys = os_zalloc(sizeof(*keys));
+  keys = sys_zalloc(sizeof(*keys));
   if (keys == NULL)
     return NULL;
 
@@ -1098,7 +1098,7 @@ radius_msg_get_cisco_keys(struct radius_msg *msg, struct radius_msg *sent_msg,
   if (msg == NULL || sent_msg == NULL)
     return NULL;
 
-  keys = os_zalloc(sizeof(*keys));
+  keys = sys_zalloc(sizeof(*keys));
   if (keys == NULL)
     return NULL;
 

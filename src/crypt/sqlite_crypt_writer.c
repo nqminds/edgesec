@@ -207,7 +207,7 @@ struct store_row *get_sqlite_store_row(sqlite3 *db, const char *key) {
     return NULL;
   }
 
-  row = (struct store_row *)os_zalloc(sizeof(struct store_row));
+  row = (struct store_row *)sys_zalloc(sizeof(struct store_row));
 
   rc = sqlite3_prepare_v2(db, CRYPT_STORE_GET, -1, &res, 0);
 
@@ -281,7 +281,7 @@ struct secrets_row *get_sqlite_secrets_row(sqlite3 *db, const char *id) {
     return NULL;
   }
 
-  row = (struct secrets_row *)os_zalloc(sizeof(struct secrets_row));
+  row = (struct secrets_row *)sys_zalloc(sizeof(struct secrets_row));
 
   rc = sqlite3_prepare_v2(db, CRYPT_SECRETS_GET, -1, &res, 0);
 

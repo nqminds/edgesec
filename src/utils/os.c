@@ -603,10 +603,10 @@ char *concat_paths(const char *path_left, const char *path_right) {
   else
     concat_len = strlen(path_left) + strlen(path_right) + 2;
 
-  char *concat = os_zalloc(concat_len);
+  char *concat = sys_zalloc(concat_len);
 
   if (concat == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return NULL;
   }
 
@@ -1416,8 +1416,8 @@ int read_file_string(char *path, char **out) {
     return -1;
   }
 
-  if ((buffer = (char *)os_zalloc(data_size + 1)) == NULL) {
-    log_errno("os_zalloc");
+  if ((buffer = (char *)sys_zalloc(data_size + 1)) == NULL) {
+    log_errno("sys_zalloc");
     return -1;
   }
 
@@ -1500,7 +1500,7 @@ char *string_append_char(const char *str, char character) {
 
   char *appended = os_malloc(str_len + 2);
   if (appended == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return NULL;
   }
 

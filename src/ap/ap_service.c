@@ -215,9 +215,9 @@ void ap_sock_handler(int sock, void *eloop_ctx, void *sock_ctx) {
     return;
   }
 
-  char *rec_data = os_zalloc(bytes_available + 1);
+  char *rec_data = sys_zalloc(bytes_available + 1);
   if (rec_data == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return;
   }
 

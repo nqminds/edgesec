@@ -31,9 +31,9 @@ void setup_reflection_if_el(struct reflection_list *el, unsigned int ifindex,
 }
 
 struct reflection_list *init_reflection_list(void) {
-  struct reflection_list *rif = os_zalloc(sizeof(struct reflection_list));
+  struct reflection_list *rif = sys_zalloc(sizeof(struct reflection_list));
   if (rif == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return NULL;
   }
 

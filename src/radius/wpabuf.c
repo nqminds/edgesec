@@ -105,14 +105,14 @@ int wpabuf_resize(struct wpabuf **_buf, size_t add_len) {
 struct wpabuf *wpabuf_alloc(size_t len) {
 #ifdef WPA_TRACE
   struct wpabuf_trace *trace =
-      os_zalloc(sizeof(struct wpabuf_trace) + sizeof(struct wpabuf) + len);
+      sys_zalloc(sizeof(struct wpabuf_trace) + sizeof(struct wpabuf) + len);
   struct wpabuf *buf;
   if (trace == NULL)
     return NULL;
   trace->magic = WPABUF_MAGIC;
   buf = (struct wpabuf *)(trace + 1);
 #else  /* WPA_TRACE */
-  struct wpabuf *buf = os_zalloc(sizeof(struct wpabuf) + len);
+  struct wpabuf *buf = sys_zalloc(sizeof(struct wpabuf) + len);
   if (buf == NULL)
     return NULL;
 #endif /* WPA_TRACE */
@@ -125,14 +125,14 @@ struct wpabuf *wpabuf_alloc(size_t len) {
 struct wpabuf *wpabuf_alloc_ext_data(u8 *data, size_t len) {
 #ifdef WPA_TRACE
   struct wpabuf_trace *trace =
-      os_zalloc(sizeof(struct wpabuf_trace) + sizeof(struct wpabuf));
+      sys_zalloc(sizeof(struct wpabuf_trace) + sizeof(struct wpabuf));
   struct wpabuf *buf;
   if (trace == NULL)
     return NULL;
   trace->magic = WPABUF_MAGIC;
   buf = (struct wpabuf *)(trace + 1);
 #else  /* WPA_TRACE */
-  struct wpabuf *buf = os_zalloc(sizeof(struct wpabuf));
+  struct wpabuf *buf = sys_zalloc(sizeof(struct wpabuf));
   if (buf == NULL)
     return NULL;
 #endif /* WPA_TRACE */

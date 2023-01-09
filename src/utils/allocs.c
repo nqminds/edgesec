@@ -18,7 +18,7 @@
 
 #include "allocs.h"
 
-void *os_zalloc(size_t size) { return os_calloc(size, 1); }
+void *sys_zalloc(size_t size) { return os_calloc(size, 1); }
 
 char *os_strdup(const char *s) {
   char *dest = NULL;

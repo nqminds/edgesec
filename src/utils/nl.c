@@ -830,10 +830,10 @@ nl_set_interface_state_err:
 }
 
 struct nlctx *nl_init_context(void) {
-  struct nlctx *context = os_zalloc(sizeof(struct nlctx));
+  struct nlctx *context = sys_zalloc(sizeof(struct nlctx));
 
   if (context == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return NULL;
   }
 

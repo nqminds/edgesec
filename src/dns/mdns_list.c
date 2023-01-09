@@ -20,8 +20,8 @@
 struct mdns_list *init_mdns_list(void) {
   struct mdns_list *mlist;
 
-  if ((mlist = os_zalloc(sizeof(struct mdns_list))) == NULL) {
-    log_errno("os_zalloc");
+  if ((mlist = sys_zalloc(sizeof(struct mdns_list))) == NULL) {
+    log_errno("sys_zalloc");
     return NULL;
   }
 

@@ -62,10 +62,10 @@ void iface_free_context(struct iface_context *ctx) {
 }
 
 struct iface_context *iface_init_context(void *params) {
-  struct iface_context *ctx = os_zalloc(sizeof(struct iface_context));
+  struct iface_context *ctx = sys_zalloc(sizeof(struct iface_context));
 
   if (ctx == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return NULL;
   }
 

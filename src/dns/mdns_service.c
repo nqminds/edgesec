@@ -762,8 +762,8 @@ int run_mdns_thread(struct mdns_conf *mdns_config,
                     pthread_t *id) {
   struct mdns_context *context = NULL;
 
-  if ((context = os_zalloc(sizeof(struct mdns_context))) == NULL) {
-    log_errno("os_zalloc");
+  if ((context = sys_zalloc(sizeof(struct mdns_context))) == NULL) {
+    log_errno("sys_zalloc");
     return -1;
   }
 

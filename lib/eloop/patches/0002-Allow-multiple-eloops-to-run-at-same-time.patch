@@ -151,8 +151,8 @@ index 66e05d1..4035a9a 100644
 -	dl_list_init(&eloop.timeout);
 +	struct eloop_data *eloop = NULL;
 +
-+	if ((eloop = os_zalloc(sizeof(struct eloop_data))) == NULL) {
-+		log_errno("os_zalloc");
++	if ((eloop = sys_zalloc(sizeof(struct eloop_data))) == NULL) {
++		log_errno("sys_zalloc");
 +		return NULL;
 +	}
 +

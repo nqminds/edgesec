@@ -27,10 +27,10 @@ struct ipgenctx *ipgen_init_context(char *path) {
     return NULL;
   }
 
-  struct ipgenctx *context = os_zalloc(sizeof(struct ipgenctx));
+  struct ipgenctx *context = sys_zalloc(sizeof(struct ipgenctx));
 
   if (context == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return NULL;
   }
 

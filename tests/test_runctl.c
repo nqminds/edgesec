@@ -207,14 +207,14 @@ static void test_run_engine(void **state) {
 
 #ifdef WITH_CRYPTO_SERVICE
   struct crypt_context *crypt_ctx =
-      (struct crypt_context *)os_zalloc(sizeof(struct crypt_context));
+      (struct crypt_context *)sys_zalloc(sizeof(struct crypt_context));
 #endif
 #ifdef WITH_RADIUS_SERVICE
   struct radius_server_data *radius_srv =
-      os_zalloc(sizeof(struct radius_server_data *));
+      sys_zalloc(sizeof(struct radius_server_data *));
 #endif
 
-  struct fwctx *fw_ctx = os_zalloc(sizeof(struct fwctx));
+  struct fwctx *fw_ctx = sys_zalloc(sizeof(struct fwctx));
   UT_array *config_ifinfo_arr = NULL;
   utarray_new(config_ifinfo_arr, &config_ifinfo_icd);
 

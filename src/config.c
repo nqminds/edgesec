@@ -463,7 +463,7 @@ bool load_mdns_conf(const char *filename, struct app_config *config) {
   config->mdns_config.reflect_ip6 =
       (int)ini_getbool("dns", "mdnsReflectIp6", 0, filename);
 
-  value = os_zalloc(INI_BUFFERSIZE);
+  value = sys_zalloc(INI_BUFFERSIZE);
   ret = ini_gets("dns", "mdnsFilter", "", value, INI_BUFFERSIZE, filename);
   if (!ret) {
     log_error("dns mdnsFilter was not specified\n");
@@ -539,7 +539,7 @@ bool load_dhcp_conf(const char *filename, struct app_config *config) {
 }
 
 bool load_capture_config(const char *filename, struct capture_conf *config) {
-  char *value = os_zalloc(INI_BUFFERSIZE);
+  char *value = sys_zalloc(INI_BUFFERSIZE);
 
   // Load captureDbParam param
   ini_gets("capture", "captureDbPath", "./", value, INI_BUFFERSIZE, filename);
@@ -547,7 +547,7 @@ bool load_capture_config(const char *filename, struct capture_conf *config) {
   os_free(value);
 
   // Load filter param
-  value = os_zalloc(INI_BUFFERSIZE);
+  value = sys_zalloc(INI_BUFFERSIZE);
   ini_gets("capture", "filter", "", value, INI_BUFFERSIZE, filename);
 
   os_strlcpy(config->filter, value, MAX_FILTER_SIZE);
@@ -631,7 +631,7 @@ bool load_system_config(const char *filename, struct app_config *config) {
   config->allow_all_nat = ini_getbool("system", "allowAllNat", 0, filename);
 
   // Load connection db param
-  value = os_zalloc(INI_BUFFERSIZE);
+  value = sys_zalloc(INI_BUFFERSIZE);
   ret = ini_gets("system", "connectionDbPath", "", value, INI_BUFFERSIZE,
                  filename);
   os_strlcpy(config->connection_db_path, value, MAX_OS_PATH_LEN);
@@ -639,7 +639,7 @@ bool load_system_config(const char *filename, struct app_config *config) {
 
 #ifdef WITH_CRYPTO_SERVICE
   // Load the crypt db path param
-  value = os_zalloc(INI_BUFFERSIZE);
+  value = sys_zalloc(INI_BUFFERSIZE);
   ret = ini_gets("system", "cryptDbPath", "", value, INI_BUFFERSIZE, filename);
   os_strlcpy(config->crypt_db_path, value, MAX_OS_PATH_LEN);
   if (!ret) {

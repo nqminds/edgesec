@@ -405,8 +405,8 @@ void close_capture_thread(const hmap_vlan_conn *vlan_mapper) {
 int run_ctl(struct app_config *app_config, struct eloop_data *eloop) {
   struct supervisor_context *context = NULL;
 
-  if ((context = os_zalloc(sizeof(struct supervisor_context))) == NULL) {
-    log_errno("os_zalloc");
+  if ((context = sys_zalloc(sizeof(struct supervisor_context))) == NULL) {
+    log_errno("sys_zalloc");
     return -1;
   }
 

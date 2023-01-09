@@ -154,7 +154,7 @@ static void test_radius_server_init(void **state) {
   eloop = eloop_init();
   assert_non_null(eloop);
 
-  srv = os_zalloc(sizeof(*srv));
+  srv = sys_zalloc(sizeof(*srv));
   assert_non_null(srv);
 
   srv->addr.af = AF_INET;

@@ -470,7 +470,7 @@ radius_server_new_session(struct radius_server_data *data,
 		return NULL;
 	}
 
-	sess = os_zalloc(sizeof(*sess));
+	sess = sys_zalloc(sizeof(*sess));
 	if (sess == NULL)
 		return NULL;
 
@@ -591,7 +591,7 @@ radius_server_get_new_session(struct radius_server_data *data,
 	}
 	RADIUS_DUMP_ASCII("User-Name", user, user_len);
 
-	tmp = os_zalloc(sizeof(*tmp));
+	tmp = sys_zalloc(sizeof(*tmp));
 	if (!tmp)
 		return NULL;
 
@@ -600,7 +600,7 @@ radius_server_get_new_session(struct radius_server_data *data,
 	if (res != 0 && data->eap_cfg->erp) {
 		char *username;
 
-		username = os_zalloc(user_len + 1);
+		username = sys_zalloc(user_len + 1);
 		if (username) {
 			os_memcpy(username, user, user_len);
 			if (radius_server_erp_find_key(data, username))
@@ -2134,7 +2134,7 @@ radius_server_read_clients(const char *client_file, int ipv6)
 			break;
 		}
 
-		entry = os_zalloc(sizeof(*entry));
+		entry = sys_zalloc(sizeof(*entry));
 		if (entry == NULL) {
 			failed = 1;
 			break;
@@ -2209,7 +2209,7 @@ radius_server_init(struct radius_server_conf *conf)
 	}
 #endif /* CONFIG_IPV6 */
 
-	data = os_zalloc(sizeof(*data));
+	data = sys_zalloc(sizeof(*data));
 	if (data == NULL)
 		return NULL;
 

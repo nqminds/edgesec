@@ -167,9 +167,9 @@ int uwrt_lookup_option(struct uci_option *o, char *sref, UT_array *kv) {
     return -1;
   }
 
-  if ((kvstr = os_zalloc(strlen(cname) + strlen(sname) + strlen(oname) +
+  if ((kvstr = sys_zalloc(strlen(cname) + strlen(sname) + strlen(oname) +
                          strlen(vname) + 4)) == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     os_free(vname);
     return -1;
   }
@@ -189,9 +189,9 @@ int uwrt_lookup_section(struct uci_section *s, char *sref, UT_array *kv) {
   char *vname = s->type;
   char *kvstr = NULL;
 
-  if ((kvstr = os_zalloc(strlen(cname) + strlen(sname) + strlen(vname) + 3)) ==
+  if ((kvstr = sys_zalloc(strlen(cname) + strlen(sname) + strlen(vname) + 3)) ==
       NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return -1;
   }
 
@@ -461,10 +461,10 @@ void uwrt_free_context(struct uctx *context) {
 }
 
 struct uctx *uwrt_init_context(const char *path) {
-  struct uctx *context = os_zalloc(sizeof(struct uctx));
+  struct uctx *context = sys_zalloc(sizeof(struct uctx));
 
   if (context == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return NULL;
   }
 

@@ -418,10 +418,10 @@ uint8_t *register_ticket_cmd(struct supervisor_context *context,
     return NULL;
   }
 
-  context->ticket = os_zalloc(sizeof(struct auth_ticket));
+  context->ticket = sys_zalloc(sizeof(struct auth_ticket));
 
   if (context->ticket == NULL) {
-    log_errno("os_malloc");
+    log_errno("sys_zalloc");
     return NULL;
   }
 
