@@ -34,7 +34,7 @@ bool validate_ipv4_string(const char *ip) {
   os_memset(proc_ip, 0, OS_INET_ADDRSTRLEN);
   if (netmask_sep) {
     ip_len = strlen(ip) - strlen(netmask_sep);
-    os_strlcpy(proc_ip, ip, ip_len + 1);
+    sys_strlcpy(proc_ip, ip, ip_len + 1);
 
     netmask_char_size = strlen(netmask_sep + 1);
     if (netmask_char_size > 2 || netmask_char_size < 1) {
@@ -52,7 +52,7 @@ bool validate_ipv4_string(const char *ip) {
       return false;
     }
   } else
-    os_strlcpy(proc_ip, ip, OS_INET_ADDRSTRLEN);
+    sys_strlcpy(proc_ip, ip, OS_INET_ADDRSTRLEN);
 
   errno = 0;
   ret = inet_pton(AF_INET, proc_ip, &(sa.sin_addr));

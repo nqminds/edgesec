@@ -67,10 +67,10 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
       }
 
       if (!strlen(info.ip_addr)) {
-        os_strlcpy(info.ip_addr, ip_addr, OS_INET_ADDRSTRLEN);
+        sys_strlcpy(info.ip_addr, ip_addr, OS_INET_ADDRSTRLEN);
         primary = true;
       } else if (strlen(info.ip_addr) && !strlen(info.ip_sec_addr)) {
-        os_strlcpy(info.ip_sec_addr, ip_addr, OS_INET_ADDRSTRLEN);
+        sys_strlcpy(info.ip_sec_addr, ip_addr, OS_INET_ADDRSTRLEN);
         primary = false;
       } else {
         log_error("IPs already present");

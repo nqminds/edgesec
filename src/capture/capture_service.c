@@ -169,7 +169,7 @@ int run_capture_thread(char *ifname, struct capture_conf const *config,
     return -1;
   }
 
-  os_strlcpy(context->ifname, ifname, IF_NAMESIZE);
+  sys_strlcpy(context->ifname, ifname, IF_NAMESIZE);
   context->config = *config;
 
   log_info("Running the capture thread");

@@ -329,7 +329,7 @@ ssize_t process_set_ip_cmd(int sock, struct client_address *client_addr,
   // add type
   ptr = (char **)utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
-    os_strlcpy(dhcp_type, *ptr, 4);
+    sys_strlcpy(dhcp_type, *ptr, 4);
     log_debug("Received DHCP request with type=%s", dhcp_type);
     if (strcmp(dhcp_type, "add") == 0) {
       ip_type = DHCP_IP_NEW;
@@ -403,13 +403,13 @@ ssize_t process_add_bridge_cmd(int sock, struct client_address *client_addr,
         }
       }
     } else if (validate_ipv4_string(*ptr)) {
-      os_strlcpy(left_ip, *ptr, OS_INET_ADDRSTRLEN);
+      sys_strlcpy(left_ip, *ptr, OS_INET_ADDRSTRLEN);
 
       // IP address destination
       ptr = (char **)utarray_next(cmd_arr, ptr);
       if (ptr != NULL && *ptr != NULL) {
         if (validate_ipv4_string(*ptr)) {
-          os_strlcpy(right_ip, *ptr, OS_INET_ADDRSTRLEN);
+          sys_strlcpy(right_ip, *ptr, OS_INET_ADDRSTRLEN);
 
           if (add_bridge_ip_cmd(context, left_ip, right_ip) < 0) {
             log_error("add_bridge_cmd fail");
@@ -533,7 +533,7 @@ ssize_t process_register_ticket_cmd(int sock,
       ptr = (char **)utarray_next(cmd_arr, ptr);
       if (ptr != NULL && *ptr != NULL) {
         if (os_strnlen_s(*ptr, MAX_DEVICE_LABEL_SIZE) < MAX_DEVICE_LABEL_SIZE) {
-          os_strlcpy(label, *ptr, MAX_DEVICE_LABEL_SIZE);
+          sys_strlcpy(label, *ptr, MAX_DEVICE_LABEL_SIZE);
 
           // VLAN ID
           ptr = (char **)utarray_next(cmd_arr, ptr);

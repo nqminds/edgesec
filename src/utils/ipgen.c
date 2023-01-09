@@ -34,7 +34,7 @@ struct ipgenctx *ipgen_init_context(char *path) {
     return NULL;
   }
 
-  os_strlcpy(context->ipcmd_path, path, MAX_OS_PATH_LEN);
+  sys_strlcpy(context->ipcmd_path, path, MAX_OS_PATH_LEN);
 
   return context;
 }

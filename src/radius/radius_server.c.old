@@ -642,7 +642,7 @@ static void radius_server_receive_auth(int sock, void *eloop_ctx,
     goto fail;
   }
 
-  os_strlcpy(abuf, inet_ntoa(from.sin.sin_addr), sizeof(abuf));
+  sys_strlcpy(abuf, inet_ntoa(from.sin.sin_addr), sizeof(abuf));
   from_port = ntohs(from.sin.sin_port);
   log_trace("Received %d bytes from %s:%d", len, abuf, from_port);
 
@@ -931,8 +931,8 @@ int radius_server_get_mib(struct radius_server_data *data, char *buf,
 
   for (cli = data->clients, idx = 0; cli; cli = cli->next, idx++) {
     char abuf[50], mbuf[50];
-    os_strlcpy(abuf, inet_ntoa(cli->addr), sizeof(abuf));
-    os_strlcpy(mbuf, inet_ntoa(cli->mask), sizeof(mbuf));
+    sys_strlcpy(abuf, inet_ntoa(cli->addr), sizeof(abuf));
+    sys_strlcpy(mbuf, inet_ntoa(cli->mask), sizeof(mbuf));
 
     ret = snprintf(pos, end - pos,
                    "radiusAuthClientIndex=%u\n"

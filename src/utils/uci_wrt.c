@@ -1742,16 +1742,16 @@ int uwrt_cleanup_firewall(const struct uctx *context) {
     if (strstr(*ptr, "edgesec_") != NULL) {
       fo = strstr(*ptr, "=zone");
       if (fo != NULL) {
-        os_strlcpy(property, *ptr, (size_t)(fo - *ptr) + 1);
+        sys_strlcpy(property, *ptr, (size_t)(fo - *ptr) + 1);
       }
       fo = strstr(*ptr, "=rule");
       if (fo != NULL) {
-        os_strlcpy(property, *ptr, (size_t)(fo - *ptr) + 1);
+        sys_strlcpy(property, *ptr, (size_t)(fo - *ptr) + 1);
       }
 
       fo = strstr(*ptr, "=nat");
       if (fo != NULL) {
-        os_strlcpy(property, *ptr, (size_t)(fo - *ptr) + 1);
+        sys_strlcpy(property, *ptr, (size_t)(fo - *ptr) + 1);
       }
 
       if (strlen(property)) {

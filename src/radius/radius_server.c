@@ -1720,7 +1720,7 @@ static void radius_server_receive_auth(int sock, void *eloop_ctx,
 #endif /* CONFIG_IPV6 */
 
 	if (!data->ipv6) {
-		os_strlcpy(abuf, inet_ntoa(from.sin.sin_addr), sizeof(abuf));
+		sys_strlcpy(abuf, inet_ntoa(from.sin.sin_addr), sizeof(abuf));
 		from_port = ntohs(from.sin.sin_port);
 		RADIUS_DEBUG("Received %d bytes from %s:%d",
 			     len, abuf, from_port);
@@ -1851,7 +1851,7 @@ static void radius_server_receive_acct(int sock, void *eloop_ctx,
 #endif /* CONFIG_IPV6 */
 
 	if (!data->ipv6) {
-		os_strlcpy(abuf, inet_ntoa(from.sin.sin_addr), sizeof(abuf));
+		sys_strlcpy(abuf, inet_ntoa(from.sin.sin_addr), sizeof(abuf));
 		from_port = ntohs(from.sin.sin_port);
 		RADIUS_DEBUG("Received %d bytes from %s:%d",
 			     len, abuf, from_port);
@@ -2468,8 +2468,8 @@ int radius_server_get_mib(struct radius_server_data *data, char *buf,
 		}
 #endif /* CONFIG_IPV6 */
 		if (!data->ipv6) {
-			os_strlcpy(abuf, inet_ntoa(cli->addr), sizeof(abuf));
-			os_strlcpy(mbuf, inet_ntoa(cli->mask), sizeof(mbuf));
+			sys_strlcpy(abuf, inet_ntoa(cli->addr), sizeof(abuf));
+			sys_strlcpy(mbuf, inet_ntoa(cli->mask), sizeof(mbuf));
 		}
 
 		ret = os_snprintf(pos, end - pos,

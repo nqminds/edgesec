@@ -362,7 +362,7 @@ int extract_packets(const char *ltype, const struct pcap_pkthdr *header,
   cpac.caplen = header->caplen;
   cpac.length = header->len;
 
-  os_strlcpy(cpac.ifname, interface, IF_NAMESIZE);
+  sys_strlcpy(cpac.ifname, interface, IF_NAMESIZE);
 
   generate_radom_uuid(cpac.id);
 

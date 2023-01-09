@@ -336,9 +336,9 @@ char *run_dhcp_process(const char *dhcp_bin_path, const char *dhcp_conf_path) {
   {
     // basename() might modify the input string, so make a copy first
     char dnsmasq_proc_name_buffer[MAX_OS_PATH_LEN];
-    os_strlcpy(dnsmasq_proc_name_buffer, dhcp_bin_path, MAX_OS_PATH_LEN - 1);
+    sys_strlcpy(dnsmasq_proc_name_buffer, dhcp_bin_path, MAX_OS_PATH_LEN - 1);
     dnsmasq_proc_name_buffer[MAX_OS_PATH_LEN - 1] = '\0';
-    os_strlcpy(dnsmasq_proc_name, basename(dnsmasq_proc_name_buffer),
+    sys_strlcpy(dnsmasq_proc_name, basename(dnsmasq_proc_name_buffer),
                MAX_OS_PATH_LEN - 1);
   }
 
@@ -415,7 +415,7 @@ int signal_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path) {
 }
 #else
 int signal_dhcp_process(char *dhcp_bin_path) {
-  os_strlcpy(dnsmasq_proc_name, basename(dhcp_bin_path), MAX_OS_PATH_LEN);
+  sys_strlcpy(dnsmasq_proc_name, basename(dhcp_bin_path), MAX_OS_PATH_LEN);
 
   // Signal any running dnsmasq process to reload the config
   if (!signal_process(dnsmasq_proc_name, SIGHUP)) {

@@ -286,7 +286,7 @@ int run_ap(struct supervisor_context *context, bool exec_ap, bool generate_ssid,
       log_error("get_hostname fail");
       return -1;
     }
-    os_strlcpy(context->hconfig.ssid, hostname, AP_NAME_LEN);
+    sys_strlcpy(context->hconfig.ssid, hostname, AP_NAME_LEN);
     log_debug("Regenerating SSID=%s", context->hconfig.ssid);
   }
 

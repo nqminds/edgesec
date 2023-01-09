@@ -35,7 +35,7 @@
 
 void init_domain_addr(struct sockaddr_un *unaddr, const char *addr) {
   *unaddr = (struct sockaddr_un){.sun_family = AF_UNIX};
-  os_strlcpy(unaddr->sun_path, addr, sizeof(unaddr->sun_path));
+  sys_strlcpy(unaddr->sun_path, addr, sizeof(unaddr->sun_path));
 }
 
 /**
@@ -130,11 +130,11 @@ int create_domain_client(const char *path) {
       log_errno("Failed to create temporary unix domain socket.");
       return -1;
     }
-    os_strlcpy(claddr.sun_path, tmp_socket_path, sizeof(claddr.sun_path));
+    sys_strlcpy(claddr.sun_path, tmp_socket_path, sizeof(claddr.sun_path));
     addrlen = sizeof(struct sockaddr_un);
 #endif
   } else {
-    os_strlcpy(claddr.sun_path, path, sizeof(claddr.sun_path));
+    sys_strlcpy(claddr.sun_path, path, sizeof(claddr.sun_path));
     addrlen = sizeof(struct sockaddr_un);
   }
 

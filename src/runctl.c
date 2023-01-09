@@ -235,7 +235,7 @@ int construct_ap_ctrlif(char *ctrl_interface, char *interface,
     return -1;
   }
 
-  os_strlcpy(ap_ctrl_if_path, ctrl_if_path, MAX_OS_PATH_LEN);
+  sys_strlcpy(ap_ctrl_if_path, ctrl_if_path, MAX_OS_PATH_LEN);
   os_free(ctrl_if_path);
 
   return 0;

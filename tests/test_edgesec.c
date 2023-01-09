@@ -218,7 +218,7 @@ static void test_edgesec(void **state) {
   assert_int_equal(load_app_config(TEST_CONFIG_INI_PATH, &config), 0);
 
 #ifdef WITH_CRYPTO_SERVICE
-  os_strlcpy(config.crypt_secret, "test", MAX_USER_SECRET);
+  sys_strlcpy(config.crypt_secret, "test", MAX_USER_SECRET);
 #endif
 
   os_init_random_seed();
