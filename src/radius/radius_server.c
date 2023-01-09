@@ -1,15 +1,14 @@
-/*
- * RADIUS authentication server
- * Copyright (c) 2005-2009, 2011-2019, Jouni Malinen <j@w1.fi>
- *
- * This software may be distributed under the terms of the BSD license.
- * See README for more details.
- */
-
 /**
- * @file radius_server.h
- * @authors Jouni Malinen, Alexandru Mereacre
+ * @file
  * @brief RADIUS authentication server.
+ * @author Alexandru Mereacre, Jouni Malinen
+ * @copyright SPDX-FileCopyrightText: © 2022-2023 NQMCyber Ltd and edgesec
+ * contributors
+ * @copyright SPDX-FileCopyrightText: © 2005-2009, 2011-2019, Jouni Malinen
+ * <j@w1.fi>
+ * @copyright SPDX-License-Identifier: BSD-3-clause
+ * @version Adapted from [hostap 2.10 -
+ * `src/radius/radius_server.c`](https://w1.fi/cgit/hostap/tree/src/radius/radius_server.c?h=hostap_2_10)
  */
 
 #include <stdbool.h>
@@ -42,11 +41,6 @@
  * RADIUS_MAX_SESSION - Maximum number of active sessions
  */
 #define RADIUS_MAX_SESSION 1000
-
-/**
- * RADIUS_MAX_MSG_LEN - Maximum message length for incoming RADIUS messages
- */
-#define RADIUS_MAX_MSG_LEN 3000
 
 // struct radius_server_data;
 
