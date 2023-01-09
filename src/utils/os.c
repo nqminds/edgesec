@@ -163,7 +163,17 @@ int os_get_reltime(struct os_reltime *t) {
   return res;
 }
 
-int16_t hex2byte(const char hex[static 2]) {
+/**
+ * @brief ASCII hex character pair to byte
+ * @code{.c}
+ * // returns 0x91 aka 145 aka '\x91'
+ * hex2byte("91")
+ * @endcode
+ *
+ * @param hex Two char string
+ * @return Converted byte, or `-1` on error.
+ */
+static inline int16_t hex2byte(const char hex[static 2]) {
   int_fast8_t a = hex2num(*hex++);
   if (a < 0)
     return -1;
