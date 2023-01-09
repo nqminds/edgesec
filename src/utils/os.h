@@ -55,6 +55,12 @@
 #define BD_MAX_CLOSE                                                           \
   8192 /* Maximum file descriptors to close if                                 \
          sysconf(_SC_OPEN_MAX) is indeterminate */
+
+#ifndef os_strlen
+// Used by code taken from hostapd
+#define os_strlen(s) strlen((s))
+#endif
+
 struct find_dir_type {
   int proc_running;
   char *proc_name;
