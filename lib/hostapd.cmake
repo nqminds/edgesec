@@ -3,7 +3,11 @@
 # v3.14.0+ is required by BUILD_IN_SOURCE + SOURCE_SUBDIR together
 include(ExternalProject)
 
-if (BUILD_HOSTAPD AND NOT (BUILD_ONLY_DOCS))
+if (BUILD_ONLY_DOCS)
+  return()
+endif()
+
+if (BUILD_HOSTAPD)
   set(HOSTAPD_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 
   include(FindPkgConfig)
@@ -41,4 +45,4 @@ if (BUILD_HOSTAPD AND NOT (BUILD_ONLY_DOCS))
     INSTALL_COMMAND cmake -E copy <BINARY_DIR>/hostapd <INSTALL_DIR>/hostapd
   )
   set(HOSTAPD "${HOSTAPD_INSTALL_DIR}/hostapd")
-endif ()
+endif (BUILD_HOSTAPD)
