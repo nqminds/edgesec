@@ -301,7 +301,7 @@ struct wpabuf *wpabuf_parse_bin(const char *buf) {
   if (ret == NULL)
     return NULL;
 
-  if (hexstr2bin(buf, wpabuf_put(ret, len), len)) {
+  if (edge_hexstr2bin(buf, wpabuf_put(ret, len), len)) {
     wpabuf_free(ret);
     return NULL;
   }
