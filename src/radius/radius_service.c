@@ -21,6 +21,22 @@
 #include <eloop.h>
 #include "radius_server.h"
 
+int generate_client_conf(struct radius_conf *rconf) {
+  FILE *fp = fopen(rconf->client_conf_path, "w");
+
+  if (fp == NULL) {
+    log_errno("fopen");
+    return -1;
+  }
+
+  log_debug("Writing into %s", rconf->client_conf_path);
+
+  fprintf(fp, "%s/%d %s\n", rconf->radius_client_ip, rconf->radius_client_mask, rconf->radius_secret);
+
+  fclose(fp);
+  return 0;
+}
+
 void close_radius(struct radius_context *ctx) {
   if (ctx != NULL) {
     radius_server_deinit(ctx->srv);
@@ -44,16 +60,20 @@ struct radius_context *run_radius(struct eloop_data *eloop,
     return NULL;
   }
 
-  // context->srv = radius_server_init(struct radius_server_conf *conf);
-
-  if (context->srv == NULL) {
-    log_error("radius_server_init failure");
+  if (generate_client_conf(rconf) < 0) {
+    log_error("generate_client_conf fail");
     close_radius(context);
     return NULL;
   }
+
   // struct radius_client *client =
   //     init_radius_client(rconf, radius_callback_fn, radius_callback_args);
 
-  return NULL;
-  // return radius_server_init(eloop, rconf->radius_port, client);
+  // if ((context->srv = radius_server_init(struct radius_server_conf *conf)) == NULL) {
+  //   log_error("radius_server_init failure");
+  //   close_radius(context);
+  //   return NULL;
+  // }
+
+  return context;
 }
