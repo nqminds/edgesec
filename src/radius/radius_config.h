@@ -21,6 +21,7 @@
  *
  */
 struct radius_conf {
+  char client_conf_path[MAX_OS_PATH_LEN];  /**< The client config path string */
   int radius_port;                           /**< Radius port */
   char radius_client_ip[OS_INET_ADDRSTRLEN]; /**< Radius client IP string */
   int radius_client_mask; /**< Radius client IP mask string */
