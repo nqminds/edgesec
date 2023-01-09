@@ -185,18 +185,6 @@ void os_init_random_seed(void);
 int os_get_random_number_s(unsigned char *buf, size_t len);
 
 /**
- * @brief ASCII hex character to number
- * @code{.c}
- * // returns 0x9 aka 9 aka '\x09'
- * hex2num('9')
- * @endcode
- *
- * @param hex Two char string
- * @return int Converted byte
- */
-int hex2byte(const char *hex);
-
-/**
  * @brief Hex char two number
  *
  * @param[in] c Hex char

@@ -164,7 +164,7 @@ int os_get_reltime(struct os_reltime *t) {
   return res;
 }
 
-int hex2byte(const char *hex) {
+int convert_hex2byte(const char *hex) {
   int a, b;
   a = hex2num(*hex++);
   if (a < 0)
@@ -182,7 +182,7 @@ int hexstr2bin(const char *hex, uint8_t *buf, size_t len) {
   uint8_t *opos = buf;
 
   for (i = 0; i < len; i++) {
-    a = hex2byte(ipos);
+    a = convert_hex2byte(ipos);
     if (a < 0)
       return -1;
     *opos++ = a;
