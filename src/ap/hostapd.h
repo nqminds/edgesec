@@ -18,6 +18,7 @@
 #include <sys/types.h>
 
 #include "../radius/radius_server.h"
+#include "../radius/radius_config.h"
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 #include "ap_config.h"

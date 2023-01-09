@@ -24,6 +24,7 @@
 #include <eloop.h>
 #include "radius/radius.h"
 #include "radius/radius_server.h"
+#include "radius/radius_config.h"
 #include "utils/allocs.h"
 #include "utils/log.h"
 #include "utils/os.h"
