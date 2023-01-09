@@ -23,7 +23,7 @@
 
 #include <eloop.h>
 #include "radius/radius.h"
-#include "radius/radius_server.h"
+#include "radius/radius_service.h"
 #include "radius/radius_config.h"
 #include "utils/allocs.h"
 #include "utils/log.h"
@@ -32,6 +32,8 @@
 #include "radius_client.h"
 
 #include "supervisor/mac_mapper.h"
+
+static char *test_radius_conf_file = "/tmp/test-radius.conf";
 
 static uint8_t addr[6] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05};
 static uint8_t saved_addr[6];
@@ -134,37 +136,36 @@ static void start_test(void *eloop_ctx, void *timeout_ctx) {
 static void test_radius_server_init(void **state) {
   (void)state; /* unused */
 
+  struct radius_conf rconf;
+  os_memset(&rconf, 0, sizeof(struct radius_conf));
+
+  strcpy(rconf.client_conf_path, test_radius_conf_file);
+  strcpy(rconf.radius_client_ip, "127.0.0.1");
+  strcpy(rconf.radius_server_ip, "127.0.0.1");
+  rconf.radius_client_mask = 32;
+  rconf.radius_server_mask = 32;
+  strcpy(rconf.radius_secret, "radius");
+  rconf.radius_port = 12345;
+
   struct radius_test_ctx ctx;
-  struct hostapd_radius_server *srv = NULL;
-  struct radius_conf conf;
-
   os_memset(&ctx, 0, sizeof(struct radius_test_ctx));
-  os_memset(&conf, 0, sizeof(struct radius_conf));
 
-  strcpy(conf.radius_client_ip, "127.0.0.1");
-  conf.radius_client_mask = 32;
-  strcpy(conf.radius_secret, "radius");
-
-  struct radius_client *client = init_radius_client(&conf, get_mac_conn, NULL);
-  struct radius_server_data *radius_srv = NULL;
-
-  log_set_level(0);
-
-  inet_aton(conf.radius_client_ip, &ctx.own_ip_addr);
+  inet_aton(rconf.radius_client_ip, &ctx.own_ip_addr);
 
   eloop = eloop_init();
   assert_non_null(eloop);
 
+  struct hostapd_radius_server *srv;
   srv = sys_zalloc(sizeof(*srv));
   assert_non_null(srv);
 
   srv->addr.af = AF_INET;
-  srv->port = 12345;
-  int ret = (hostapd_parse_ip_addr(conf.radius_client_ip, &srv->addr) >= 0);
+  srv->port = rconf.radius_port;
+  int ret = (hostapd_parse_ip_addr(rconf.radius_client_ip, &srv->addr) >= 0);
   assert_true(ret);
 
-  srv->shared_secret = (uint8_t *)strdup(conf.radius_secret);
-  srv->shared_secret_len = strlen(conf.radius_secret);
+  srv->shared_secret = (uint8_t *)strdup(rconf.radius_secret);
+  srv->shared_secret_len = strlen(rconf.radius_secret);
 
   ctx.conf.auth_server = ctx.conf.auth_servers = srv;
   ctx.conf.num_auth_servers = 1;
@@ -176,8 +177,8 @@ static void test_radius_server_init(void **state) {
   ret = radius_client_register(ctx.radius, RADIUS_AUTH, receive_auth, &ctx);
   assert_int_equal(ret, 0);
 
-  radius_srv = radius_server_init(eloop, srv->port, client);
-  assert_non_null(radius_srv);
+  struct radius_context *radius_srv_ctx = run_radius(eloop, &rconf, NULL, NULL);
+  assert_non_null(radius_srv_ctx);
 
   eloop_register_timeout(eloop, 0, 0, start_test, &ctx, NULL);
 
@@ -187,7 +188,7 @@ static void test_radius_server_init(void **state) {
   assert_int_equal(cmp, 0);
 
   radius_client_deinit(ctx.radius);
-  radius_server_deinit(radius_srv);
+  close_radius(radius_srv_ctx);
   os_free(srv->shared_secret);
   os_free(srv);
 
@@ -198,7 +199,7 @@ int main(int argc, char *argv[]) {
   (void)argc;
   (void)argv;
 
-  log_set_quiet(true);
+  log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {cmocka_unit_test(test_radius_server_init)};
 
