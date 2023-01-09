@@ -25,7 +25,7 @@
  * @param radius_callback_args The Radius callback arguments
  * @return Pointer to private RADIUS server context or NULL on failure
  */
-struct radius_server_data *run_radius(struct eloop_data *eloop,
+struct radius_context *run_radius(struct eloop_data *eloop,
                                       struct radius_conf *rconf,
                                       mac_conn_fn radius_callback_fn,
                                       void *radius_callback_args);
@@ -33,8 +33,8 @@ struct radius_server_data *run_radius(struct eloop_data *eloop,
 /**
  * @brief Closes the radius service
  *
- * @param srv Pointer to private RADIUS server context
+ * @param ctx Pointer to private RADIUS server context
  */
-void close_radius(struct radius_server_data *srv);
+void close_radius(struct radius_context *ctx);
 
 #endif

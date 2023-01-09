@@ -402,7 +402,7 @@ int radius_msg_finish_srv(struct radius_msg *msg, const u8 *secret,
   len[2] = wpabuf_len(msg->buf) - sizeof(struct radius_hdr);
   addr[3] = secret;
   len[3] = secret_len;
-  md5_vector(4, addr, len, msg->hdr->authenticator);
+  md5_vector_base(4, addr, len, msg->hdr->authenticator);
 
   if (wpabuf_len(msg->buf) > 0xffff) {
     wpa_printf(MSG_WARNING, "RADIUS: Too long message (%lu)",
@@ -438,7 +438,7 @@ int radius_msg_finish_das_resp(struct radius_msg *msg, const u8 *secret,
   len[0] = wpabuf_len(msg->buf);
   addr[1] = secret;
   len[1] = secret_len;
-  if (md5_vector(2, addr, len, msg->hdr->authenticator) < 0)
+  if (md5_vector_base(2, addr, len, msg->hdr->authenticator) < 0)
     return -1;
 
   if (wpabuf_len(msg->buf) > 0xffff) {
@@ -460,7 +460,7 @@ void radius_msg_finish_acct(struct radius_msg *msg, const u8 *secret,
   len[0] = wpabuf_len(msg->buf);
   addr[1] = secret;
   len[1] = secret_len;
-  md5_vector(2, addr, len, msg->hdr->authenticator);
+  md5_vector_base(2, addr, len, msg->hdr->authenticator);
 
   if (wpabuf_len(msg->buf) > 0xffff) {
     wpa_printf(MSG_WARNING, "RADIUS: Too long messages (%lu)",
@@ -480,7 +480,7 @@ void radius_msg_finish_acct_resp(struct radius_msg *msg, const u8 *secret,
   len[0] = wpabuf_len(msg->buf);
   addr[1] = secret;
   len[1] = secret_len;
-  md5_vector(2, addr, len, msg->hdr->authenticator);
+  md5_vector_base(2, addr, len, msg->hdr->authenticator);
 
   if (wpabuf_len(msg->buf) > 0xffff) {
     wpa_printf(MSG_WARNING, "RADIUS: Too long messages (%lu)",
@@ -504,7 +504,7 @@ int radius_msg_verify_acct_req(struct radius_msg *msg, const u8 *secret,
   len[2] = wpabuf_len(msg->buf) - sizeof(struct radius_hdr);
   addr[3] = secret;
   len[3] = secret_len;
-  md5_vector(4, addr, len, hash);
+  md5_vector_base(4, addr, len, hash);
   return sys_memcmp_const(msg->hdr->authenticator, hash, MD5_MAC_LEN) != 0;
 }
 
@@ -530,7 +530,7 @@ int radius_msg_verify_das_req(struct radius_msg *msg, const u8 *secret,
   len[2] = wpabuf_len(msg->buf) - sizeof(struct radius_hdr);
   addr[3] = secret;
   len[3] = secret_len;
-  md5_vector(4, addr, len, hash);
+  md5_vector_base(4, addr, len, hash);
   if (sys_memcmp_const(msg->hdr->authenticator, hash, MD5_MAC_LEN) != 0)
     return 1;
 
@@ -829,7 +829,7 @@ int radius_msg_verify(struct radius_msg *msg, const u8 *secret,
   len[2] = wpabuf_len(msg->buf) - sizeof(struct radius_hdr);
   addr[3] = secret;
   len[3] = secret_len;
-  if (md5_vector(4, addr, len, hash) < 0 ||
+  if (md5_vector_base(4, addr, len, hash) < 0 ||
       sys_memcmp_const(hash, msg->hdr->authenticator, MD5_MAC_LEN) != 0) {
     wpa_printf(MSG_INFO, "Response Authenticator invalid!");
     return 1;
@@ -973,7 +973,7 @@ static u8 *decrypt_ms_key(const u8 *key, size_t len,
       addr[1] = pos - MD5_MAC_LEN;
       elen[1] = MD5_MAC_LEN;
     }
-    if (md5_vector(first ? 3 : 2, addr, elen, hash) < 0) {
+    if (md5_vector_base(first ? 3 : 2, addr, elen, hash) < 0) {
       os_free(plain);
       return NULL;
     }
@@ -1036,7 +1036,7 @@ static u8 *decrypt_ms_key(const u8 *key, size_t len,
       addr[1] = pos - MD5_MAC_LEN;
       _len[1] = MD5_MAC_LEN;
     }
-    md5_vector(first ? 3 : 2, addr, _len, hash);
+    md5_vector_base(first ? 3 : 2, addr, _len, hash);
     first = 0;
 
     for (i = 0; i < MD5_MAC_LEN; i++)
@@ -1237,7 +1237,7 @@ int radius_user_password_hide(struct radius_msg *msg, const u8 *data,
   len[0] = secret_len;
   addr[1] = msg->hdr->authenticator;
   len[1] = 16;
-  md5_vector(2, addr, len, hash);
+  md5_vector_base(2, addr, len, hash);
 
   for (i = 0; i < 16; i++)
     buf[i] ^= hash[i];
@@ -1248,7 +1248,7 @@ int radius_user_password_hide(struct radius_msg *msg, const u8 *data,
     len[0] = secret_len;
     addr[1] = &buf[pos - 16];
     len[1] = 16;
-    md5_vector(2, addr, len, hash);
+    md5_vector_base(2, addr, len, hash);
 
     for (i = 0; i < 16; i++)
       buf[pos + i] ^= hash[i];
@@ -1516,7 +1516,7 @@ char *radius_msg_get_tunnel_password(struct radius_msg *msg, int *keylen,
     len[0] = secret_len;
     addr[1] = pos - 16;
     len[1] = 16;
-    md5_vector(2, addr, len, hash);
+    md5_vector_base(2, addr, len, hash);
 
     for (i = 0; i < 16; i++)
       pos[i] ^= hash[i];
@@ -1533,7 +1533,7 @@ char *radius_msg_get_tunnel_password(struct radius_msg *msg, int *keylen,
   len[1] = 16;
   addr[2] = salt;
   len[2] = 2;
-  md5_vector(3, addr, len, hash);
+  md5_vector_base(3, addr, len, hash);
 
   for (i = 0; i < 16; i++)
     pos[i] ^= hash[i];

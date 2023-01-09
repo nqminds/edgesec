@@ -280,7 +280,7 @@ int init_context(struct app_config *app_config,
   ctx->subscribers_array = NULL;
   ctx->ap_sock = -1;
 #ifdef WITH_RADIUS_SERVICE
-  ctx->radius_srv = NULL;
+  ctx->radius_ctx = NULL;
 #endif
 #ifdef WITH_CRYPTO_SERVICE
   ctx->crypt_ctx = NULL;
@@ -516,7 +516,7 @@ int run_ctl(struct app_config *app_config, struct eloop_data *eloop) {
     log_info("Creating the radius server on port %d with client ip %s",
              context->rconfig.radius_port, context->rconfig.radius_client_ip);
 
-    if ((context->radius_srv = run_radius(context->eloop, &context->rconfig,
+    if ((context->radius_ctx = run_radius(context->eloop, &context->rconfig,
                                           get_mac_conn_cmd, context)) == NULL) {
       log_error("run_radius fail");
       goto run_engine_fail;
@@ -568,7 +568,7 @@ int run_ctl(struct app_config *app_config, struct eloop_data *eloop) {
   close_ap(context);
   close_dhcp();
 #ifdef WITH_RADIUS_SERVICE
-  close_radius(context->radius_srv);
+  close_radius(context->radius_ctx);
 #endif
   hmap_str_keychar_free(&context->hmap_bin_paths);
   fw_free_context(context->fw_ctx);
@@ -592,7 +592,7 @@ run_engine_fail:
   close_ap(context);
   close_dhcp();
 #ifdef WITH_RADIUS_SERVICE
-  close_radius(context->radius_srv);
+  close_radius(context->radius_ctx);
 #endif
   hmap_str_keychar_free(&context->hmap_bin_paths);
   fw_free_context(context->fw_ctx);
