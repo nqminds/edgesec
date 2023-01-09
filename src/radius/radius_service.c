@@ -38,6 +38,25 @@ int generate_client_conf(struct radius_conf *rconf) {
   return 0;
 }
 
+void generate_radius_server_conf(struct eloop_data *eloop, struct radius_conf *rconf, struct radius_server_conf *sconf) {
+	sconf->eloop = eloop;
+	sconf->auth_port = rconf->radius_port;
+	sconf->client_file = rconf->client_conf_path;
+	sconf->conf_ctx = NULL;
+	sconf->get_eap_user = NULL;
+  sconf->eap_cfg = NULL;
+
+  sconf->acct_port = 0;
+  sconf->sqlite_file = NULL;
+  sconf->subscr_remediation_url = NULL;
+  sconf->subscr_remediation_method = 0;
+	sconf->erp_domain = NULL;
+	sconf->ipv6 = 0;
+  sconf->eap_req_id_text = NULL;
+  sconf->hs20_sim_provisioning_url = NULL;
+  sconf->t_c_server_url = NULL;
+}
+
 void close_radius(struct radius_context *ctx) {
   if (ctx != NULL) {
     radius_server_deinit(ctx->srv);
@@ -66,6 +85,8 @@ struct radius_context *run_radius(struct eloop_data *eloop,
     close_radius(context);
     return NULL;
   }
+
+  generate_radius_server_conf(eloop, rconf, &context->conf);
 
   // struct radius_client *client =
   //     init_radius_client(rconf, radius_callback_fn, radius_callback_args);
