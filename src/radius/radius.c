@@ -505,7 +505,7 @@ int radius_msg_verify_acct_req(struct radius_msg *msg, const u8 *secret,
   addr[3] = secret;
   len[3] = secret_len;
   md5_vector(4, addr, len, hash);
-  return os_memcmp_const(msg->hdr->authenticator, hash, MD5_MAC_LEN) != 0;
+  return sys_memcmp_const(msg->hdr->authenticator, hash, MD5_MAC_LEN) != 0;
 }
 
 int radius_msg_verify_das_req(struct radius_msg *msg, const u8 *secret,
@@ -531,7 +531,7 @@ int radius_msg_verify_das_req(struct radius_msg *msg, const u8 *secret,
   addr[3] = secret;
   len[3] = secret_len;
   md5_vector(4, addr, len, hash);
-  if (os_memcmp_const(msg->hdr->authenticator, hash, MD5_MAC_LEN) != 0)
+  if (sys_memcmp_const(msg->hdr->authenticator, hash, MD5_MAC_LEN) != 0)
     return 1;
 
   for (i = 0; i < msg->attr_used; i++) {
@@ -567,7 +567,7 @@ int radius_msg_verify_das_req(struct radius_msg *msg, const u8 *secret,
   os_memcpy(msg->hdr->authenticator, orig_authenticator,
             sizeof(orig_authenticator));
 
-  return os_memcmp_const(orig, auth, MD5_MAC_LEN) != 0;
+  return sys_memcmp_const(orig, auth, MD5_MAC_LEN) != 0;
 }
 
 static int radius_msg_add_attr_to_array(struct radius_msg *msg,
@@ -795,7 +795,7 @@ int radius_msg_verify_msg_auth(struct radius_msg *msg, const u8 *secret,
               sizeof(orig_authenticator));
   }
 
-  if (os_memcmp_const(orig, auth, MD5_MAC_LEN) != 0) {
+  if (sys_memcmp_const(orig, auth, MD5_MAC_LEN) != 0) {
     wpa_printf(MSG_INFO, "Invalid Message-Authenticator!");
     return 1;
   }
@@ -830,7 +830,7 @@ int radius_msg_verify(struct radius_msg *msg, const u8 *secret,
   addr[3] = secret;
   len[3] = secret_len;
   if (md5_vector(4, addr, len, hash) < 0 ||
-      os_memcmp_const(hash, msg->hdr->authenticator, MD5_MAC_LEN) != 0) {
+      sys_memcmp_const(hash, msg->hdr->authenticator, MD5_MAC_LEN) != 0) {
     wpa_printf(MSG_INFO, "Response Authenticator invalid!");
     return 1;
   }

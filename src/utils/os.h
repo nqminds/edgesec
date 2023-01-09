@@ -239,9 +239,9 @@ size_t os_strnlen_s(char *str, size_t max_len);
  * This function is meant for comparing passwords or hash values where
  * difference in execution time could provide external observer information
  * about the location of the difference in the memory buffers. The return value
- * does not behave like os_memcmp(), i.e., os_memcmp_const() cannot be used to
+ * does not behave like os_memcmp(), i.e., sys_memcmp_const() cannot be used to
  * sort items into a defined order. Unlike os_memcmp(), execution time of
- * os_memcmp_const() does not depend on the contents of the compared memory
+ * sys_memcmp_const() does not depend on the contents of the compared memory
  * buffers, but only on the total compared length.
  *
  * @param a First buffer to compare
@@ -249,7 +249,7 @@ size_t os_strnlen_s(char *str, size_t max_len);
  * @param len Number of octets to compare
  * @return int 0 if buffers are equal, non-zero if not
  */
-int os_memcmp_const(const void *a, const void *b, size_t len);
+int sys_memcmp_const(const void *a, const void *b, size_t len);
 
 /**
  * @brief Callback function for run_command() and similar functions.
