@@ -172,6 +172,59 @@ static inline void *os_memdup(const void *src, size_t len) {
 #define wpa_snprintf_hex(buf, buf_size, data, len)                             \
   printf_hex(buf, buf_size, data, len, 0)
 
+static inline void printf_encode(char *txt, size_t maxlen, const uint8_t *data,
+                                 size_t len) {
+  char *end = txt + maxlen;
+  size_t i;
+
+  for (i = 0; i < len; i++) {
+    if (txt + 4 >= end)
+      break;
+
+    switch (data[i]) {
+      case '\"':
+        *txt++ = '\\';
+        *txt++ = '\"';
+        break;
+      case '\\':
+        *txt++ = '\\';
+        *txt++ = '\\';
+        break;
+      case '\033':
+        *txt++ = '\\';
+        *txt++ = 'e';
+        break;
+      case '\n':
+        *txt++ = '\\';
+        *txt++ = 'n';
+        break;
+      case '\r':
+        *txt++ = '\\';
+        *txt++ = 'r';
+        break;
+      case '\t':
+        *txt++ = '\\';
+        *txt++ = 't';
+        break;
+      default:
+        // check if value is a valid printable ASCII char
+        // this also confirms that we can safely cast unsigned data to signed
+        // char
+        if (data[i] >= 32 && data[i] <= 126) {
+          *txt++ = (char)data[i];
+        } else {
+          // guaranteed to be positive and to have 4 chars left, as otherwise
+          // loop will break
+          size_t max_chars_to_print = (size_t)(end - txt);
+          txt += snprintf(txt, max_chars_to_print, "\\x%02x", data[i]);
+        }
+        break;
+    }
+  }
+
+  *txt = '\0';
+}
+
 #ifndef wpa_trace_show
 #define wpa_trace_show(s) log_trace("%s", s)
 #endif
