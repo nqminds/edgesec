@@ -20,14 +20,6 @@
 
 void *os_zalloc(size_t size) { return os_calloc(size, 1); }
 
-void *os_memdup(const void *src, size_t len) {
-  void *r = os_malloc(len);
-
-  if (r && src)
-    os_memcpy(r, src, len);
-  return r;
-}
-
 char *os_strdup(const char *s) {
   char *dest = NULL;
   size_t len = strlen(s) + 1;

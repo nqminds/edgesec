@@ -178,6 +178,24 @@ static inline void bin_clear_free(void *bin, size_t len)
 	}
 }
 
+/**
+ * @brief Allocate duplicate of passed memory chunk
+ *
+ * This function allocates a memory block like os_malloc() would, and
+ * copies the given source buffer into it.
+ *
+ * @param src Source buffer to duplicate
+ * @param len Length of source buffer
+ * @return void* %NULL if allocation failed, copy of src buffer otherwise
+ */
+static inline void *os_memdup(const void *src, size_t len) {
+  void *r = os_malloc(len);
+
+  if (r && src)
+    os_memcpy(r, src, len);
+  return r;
+}
+
 /*
  * gcc 4.4 ends up generating strict-aliasing warnings about some very common
  * networking socket uses that do not really result in a real problem and
