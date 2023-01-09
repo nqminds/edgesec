@@ -732,7 +732,7 @@ static void radius_server_add_session(struct radius_session *sess)
 	os_snprintf(addr_txt, sizeof(addr_txt), MACSTR,
 		    MAC2STR(sess->mac_addr));
 
-	os_get_time(&now);
+	sys_get_time(&now);
 	sql = sqlite3_mprintf("INSERT OR REPLACE INTO current_sessions(mac_addr,identity,start_time,nas,hs20_t_c_filtering) VALUES (%Q,%Q,%d,%Q,%u)",
 			      addr_txt, sess->username, now.sec,
 			      sess->nas_ip, sess->t_c_filtering);
@@ -886,7 +886,7 @@ static int radius_server_sim_provisioning_session(struct radius_session *sess,
 	wpa_snprintf_hex(hash_txt, sizeof(hash_txt), hash,
 			 HS20_MOBILE_ID_HASH_LEN);
 
-	os_get_time(&now);
+	sys_get_time(&now);
 	sql = sqlite3_mprintf("INSERT INTO sim_provisioning(mobile_identifier_hash,imsi,mac_addr,eap_method,timestamp) VALUES (%Q,%Q,%Q,%Q,%u)",
 			      hash_txt, imsi, addr_txt, eap_method, now.sec);
 	if (!sql)
@@ -2823,7 +2823,7 @@ int radius_server_dac_request(struct radius_server_data *data, const char *req)
 		}
 	}
 
-	os_get_time(&now);
+	sys_get_time(&now);
 	if (!radius_msg_add_attr_int32(msg, RADIUS_ATTR_EVENT_TIMESTAMP,
 				       now.sec)) {
 		RADIUS_ERROR("Failed to add Event-Timestamp attribute");

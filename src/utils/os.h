@@ -96,7 +96,7 @@ int become_daemon(int flags);
  * @param t Pointer to buffer for the time
  * @return int 0 on success, -1 on failure
  */
-int os_get_time(struct os_time *t);
+int sys_get_time(struct os_time *t);
 
 /**
  * @brief Get relative time (sec, usec)

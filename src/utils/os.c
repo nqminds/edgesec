@@ -146,7 +146,7 @@ int hex2num(char c) {
   return -1;
 }
 
-int os_get_time(struct os_time *t) {
+int sys_get_time(struct os_time *t) {
   int res;
   struct timeval tv;
   res = gettimeofday(&tv, NULL);
