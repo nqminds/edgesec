@@ -44,7 +44,7 @@ Copyright: 2002-2019, Jouni Malinen <j@w1.fi>
            2021-2022, NquiringMinds Ltd.
 License: BSD-3-clause
 
-Files: lib/libeap.mak
+Files: lib/libeap.mak tests/radius/eap_test_peer.c tests/radius/eap_test_server.c tests/radius/test_libeap.c
 Copyright: 2007, Jouni Malinen <j@w1.fi>
            2023, Edgesec contributors
 License: BSD-3-clause
