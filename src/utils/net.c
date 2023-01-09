@@ -199,7 +199,7 @@ int disable_pmtu_discovery(int sock) {
   return 0;
 }
 
-static int hwaddr_aton2(const char *txt, uint8_t *addr) {
+int hwaddr_aton2(const char *txt, uint8_t *addr) {
   int i;
   const char *pos = txt;
 
