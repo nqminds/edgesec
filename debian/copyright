@@ -44,6 +44,11 @@ Copyright: 2002-2019, Jouni Malinen <j@w1.fi>
            2021-2022, NquiringMinds Ltd.
 License: BSD-3-clause
 
+Files: lib/libeap.mak
+Copyright: 2007, Jouni Malinen <j@w1.fi>
+           2023, Edgesec contributors
+License: BSD-3-clause
+
 Files: tests/radius/radius_client.*
 Copyright: 2002-2015, Jouni Malinen <j@w1.fi>
 License: BSD-3-clause
