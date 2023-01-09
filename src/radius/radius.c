@@ -360,7 +360,7 @@ int radius_msg_finish(struct radius_msg *msg, const u8 *secret,
       return -1;
     }
     msg->hdr->length = host_to_be16(wpabuf_len(msg->buf));
-    hmac_md5(secret, secret_len, wpabuf_head(msg->buf), wpabuf_len(msg->buf),
+    hmac_md5_base(secret, secret_len, wpabuf_head(msg->buf), wpabuf_len(msg->buf),
              (u8 *)(attr + 1));
   } else
     msg->hdr->length = host_to_be16(wpabuf_len(msg->buf));
@@ -390,7 +390,7 @@ int radius_msg_finish_srv(struct radius_msg *msg, const u8 *secret,
   msg->hdr->length = host_to_be16(wpabuf_len(msg->buf));
   os_memcpy(msg->hdr->authenticator, req_authenticator,
             sizeof(msg->hdr->authenticator));
-  hmac_md5(secret, secret_len, wpabuf_head(msg->buf), wpabuf_len(msg->buf),
+  hmac_md5_base(secret, secret_len, wpabuf_head(msg->buf), wpabuf_len(msg->buf),
            (u8 *)(attr + 1));
 
   /* ResponseAuth = MD5(Code+ID+Length+RequestAuth+Attributes+Secret) */
@@ -430,7 +430,7 @@ int radius_msg_finish_das_resp(struct radius_msg *msg, const u8 *secret,
 
   msg->hdr->length = host_to_be16(wpabuf_len(msg->buf));
   os_memcpy(msg->hdr->authenticator, req_hdr->authenticator, 16);
-  hmac_md5(secret, secret_len, wpabuf_head(msg->buf), wpabuf_len(msg->buf),
+  hmac_md5_base(secret, secret_len, wpabuf_head(msg->buf), wpabuf_len(msg->buf),
            (u8 *)(attr + 1));
 
   /* ResponseAuth = MD5(Code+ID+Length+RequestAuth+Attributes+Secret) */
@@ -561,7 +561,7 @@ int radius_msg_verify_das_req(struct radius_msg *msg, const u8 *secret,
   os_memcpy(orig_authenticator, msg->hdr->authenticator,
             sizeof(orig_authenticator));
   os_memset(msg->hdr->authenticator, 0, sizeof(msg->hdr->authenticator));
-  hmac_md5(secret, secret_len, wpabuf_head(msg->buf), wpabuf_len(msg->buf),
+  hmac_md5_base(secret, secret_len, wpabuf_head(msg->buf), wpabuf_len(msg->buf),
            auth);
   os_memcpy(attr + 1, orig, MD5_MAC_LEN);
   os_memcpy(msg->hdr->authenticator, orig_authenticator,
@@ -786,7 +786,7 @@ int radius_msg_verify_msg_auth(struct radius_msg *msg, const u8 *secret,
     os_memcpy(msg->hdr->authenticator, req_auth,
               sizeof(msg->hdr->authenticator));
   }
-  if (hmac_md5(secret, secret_len, wpabuf_head(msg->buf), wpabuf_len(msg->buf),
+  if (hmac_md5_base(secret, secret_len, wpabuf_head(msg->buf), wpabuf_len(msg->buf),
                auth) < 0)
     return 1;
   os_memcpy(attr + 1, orig, MD5_MAC_LEN);
