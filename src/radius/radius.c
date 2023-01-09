@@ -861,7 +861,7 @@ int radius_msg_copy_attr(struct radius_msg *dst, struct radius_msg *src,
  * of the shared secret between authenticator and authentication server.
  */
 int radius_msg_make_authenticator(struct radius_msg *msg) {
-  return os_get_random((u8 *)&msg->hdr->authenticator,
+  return get_random((u8 *)&msg->hdr->authenticator,
                        sizeof(msg->hdr->authenticator));
 }
 
@@ -1141,7 +1141,7 @@ int radius_msg_add_mppe_keys(struct radius_msg *msg,
   vhdr = (struct radius_attr_vendor *)pos;
   vhdr->vendor_type = RADIUS_VENDOR_ATTR_MS_MPPE_SEND_KEY;
   pos = (u8 *)(vhdr + 1);
-  if (os_get_random((u8 *)&salt, sizeof(salt)) < 0) {
+  if (get_random((u8 *)&salt, sizeof(salt)) < 0) {
     os_free(buf);
     return 0;
   }
@@ -1620,5 +1620,5 @@ int radius_gen_session_id(u8 *id, size_t len) {
    * temporarily unique. A high quality random number is required
    * therefore. This could be be improved by switching to a GUID.
    */
-  return os_get_random(id, len);
+  return get_random(id, len);
 }

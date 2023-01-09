@@ -92,8 +92,8 @@ get_password_attribute(const uint8_t *req_authenticator, const uint8_t *secret,
   uint16_t packet_len =
       tag_salt_len + 1 + key_len + 15; // tag + salt + len + key_len + padding
 
-  if (os_get_random((uint8_t *)&salt, sizeof(salt)) < 0) {
-    log_error("os_get_random fail");
+  if (get_random((uint8_t *)&salt, sizeof(salt)) < 0) {
+    log_error("get_random fail");
     return NULL;
   }
 

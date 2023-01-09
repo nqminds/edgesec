@@ -1039,7 +1039,7 @@ radius_server_encapsulate_eap(struct radius_server_data *data,
 
 		RADIUS_DEBUG("Device needs HS 2.0 SIM provisioning");
 
-		if (os_get_random(hash, HS20_MOBILE_ID_HASH_LEN) < 0) {
+		if (get_random(hash, HS20_MOBILE_ID_HASH_LEN) < 0) {
 			radius_msg_free(msg);
 			return NULL;
 		}

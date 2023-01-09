@@ -158,7 +158,7 @@ void os_to_timestamp(struct timeval ts, uint64_t *timestamp);
  * @param len Length of the buffer.
  * @return int 0 on success, -1 on failure
  */
-int os_get_random(unsigned char *buf, size_t len);
+int get_random(unsigned char *buf, size_t len);
 
 /**
  * @brief Return a random int from a give range

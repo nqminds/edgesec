@@ -226,7 +226,7 @@ int sys_memcmp_const(const void *a, const void *b, size_t len) {
   return res;
 }
 
-int os_get_random(unsigned char *buf, size_t len) {
+int get_random(unsigned char *buf, size_t len) {
   FILE *f;
   size_t rc;
 
@@ -250,8 +250,8 @@ void os_init_random_seed(void) { srand(time(NULL)); }
 
 int os_get_random_number_s(unsigned char *buf, size_t len) {
   size_t idx = 0;
-  if (os_get_random(buf, len) < 0) {
-    log_trace("os_get_random fail");
+  if (get_random(buf, len) < 0) {
+    log_trace("get_random fail");
     return -1;
   }
 
