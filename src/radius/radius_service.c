@@ -88,14 +88,11 @@ struct radius_context *run_radius(struct eloop_data *eloop,
 
   generate_radius_server_conf(eloop, rconf, &context->conf);
 
-  // struct radius_client *client =
-  //     init_radius_client(rconf, radius_callback_fn, radius_callback_args);
-
-  // if ((context->srv = radius_server_init(struct radius_server_conf *conf)) == NULL) {
-  //   log_error("radius_server_init failure");
-  //   close_radius(context);
-  //   return NULL;
-  // }
+  if ((context->srv = radius_server_init(&context->conf)) == NULL) {
+    log_error("radius_server_init failure");
+    close_radius(context);
+    return NULL;
+  }
 
   return context;
 }
