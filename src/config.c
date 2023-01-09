@@ -227,6 +227,17 @@ bool load_dhcp_list(const char *filename, struct app_config *config) {
 bool load_radius_conf(const char *filename, struct app_config *config) {
   char *value = os_malloc(INI_BUFFERSIZE);
 
+  int ret =
+      ini_gets("radius", "clientConfigPath", "", value, MAX_OS_PATH_LEN, filename);
+  if (!ret) {
+    log_error("clientConfigPath was not specified\n");
+    os_free(value);
+    return false;
+  }
+  
+  sys_strlcpy(config->rconfig.client_conf_path, value, MAX_OS_PATH_LEN);
+  os_free(value);
+
   // Load radius port
   config->rconfig.radius_port = (int)ini_getl("radius", "port", 1812, filename);
 
