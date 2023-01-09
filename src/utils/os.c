@@ -262,8 +262,6 @@ int os_get_random_number_s(unsigned char *buf, size_t len) {
   return 0;
 }
 
-void *__hide_aliasing_typecast(void *foo) { return foo; }
-
 int read_command_output(int fd, process_callback_fn fn, void *ctx) {
   ssize_t read_bytes, count = 0;
   char *buf = os_malloc(PIPE_BUF);

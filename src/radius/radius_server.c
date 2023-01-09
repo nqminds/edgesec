@@ -647,7 +647,7 @@ radius_server_get_new_session(struct radius_server_data *data,
 		if (id_len >= sizeof(buf))
 			id_len = sizeof(buf) - 1;
 		os_memcpy(buf, id, id_len);
-		if (hwaddr_aton2(buf, sess->mac_addr) < 0)
+		if (convert_ascii2mac(buf, sess->mac_addr) < 0)
 			os_memset(sess->mac_addr, 0, ETH_ALEN);
 		else
 			RADIUS_DEBUG("Calling-Station-Id: " MACSTR,

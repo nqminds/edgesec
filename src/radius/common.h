@@ -178,6 +178,18 @@ static inline void bin_clear_free(void *bin, size_t len)
 	}
 }
 
+/*
+ * gcc 4.4 ends up generating strict-aliasing warnings about some very common
+ * networking socket uses that do not really result in a real problem and
+ * cannot be easily avoided with union-based type-punning due to struct
+ * definitions including another struct in system header files. To avoid having
+ * to fully disable strict-aliasing warnings, provide a mechanism to hide the
+ * typecast from aliasing for now. A cleaner solution will hopefully be found
+ * in the future to handle these cases.
+ */
+static inline void *__hide_aliasing_typecast(void *foo) { return foo; }
+#define aliasing_hide_typecast(a, t) (t *)__hide_aliasing_typecast((a))
+
 #define WLAN_REASON_IEEE_802_1X_AUTH_FAILED 23
 
 struct hostapd_radius_attr {

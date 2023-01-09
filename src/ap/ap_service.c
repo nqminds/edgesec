@@ -194,7 +194,7 @@ int find_ap_status(const char *ap_answer,
   if (mac_address_string == NULL || *mac_address_string == NULL) {
     goto cleanup;
   }
-  if (hwaddr_aton2(*mac_address_string, mac_addr) < 0) {
+  if (convert_ascii2mac(*mac_address_string, mac_addr) < 0) {
     goto cleanup;
   }
 

@@ -16,6 +16,7 @@
 #include "utils/allocs.h"
 #include "utils/os.h"
 
+#include "common.h"
 #include "md5_internal.h"
 
 static void MD5Transform(uint32_t buf[4], uint32_t const in[16]);
