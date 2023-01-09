@@ -2217,7 +2217,7 @@ radius_server_init(struct radius_server_conf *conf)
 	data->auth_sock = -1;
 	data->acct_sock = -1;
 	dl_list_init(&data->erp_keys);
-	get_reltime(&data->start_time);
+	sys_get_reltime(&data->start_time);
 	data->conf_ctx = conf->conf_ctx;
 	conf->eap_cfg->backend_auth = true;
 	conf->eap_cfg->eap_server = 1;
@@ -2400,7 +2400,7 @@ int radius_server_get_mib(struct radius_server_data *data, char *buf,
 	pos = buf;
 	end = buf + buflen;
 
-	get_reltime(&now);
+	sys_get_reltime(&now);
 	uptime = (now.sec - data->start_time.sec) * 100 +
 		((now.usec - data->start_time.usec) / 10000) % 100;
 	ret = os_snprintf(pos, end - pos,

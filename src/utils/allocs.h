@@ -29,6 +29,10 @@
  */
 void *sys_zalloc(size_t size);
 
+#ifndef os_zalloc
+#define os_zalloc(s) sys_zalloc((s))
+#endif
+
 // void *os_malloc(size_t size);
 // void os_free(void* ptr);
 

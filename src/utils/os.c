@@ -155,7 +155,7 @@ int sys_get_time(struct os_time *t) {
   return res;
 }
 
-int get_reltime(struct os_reltime *t) {
+int sys_get_reltime(struct os_reltime *t) {
   int res;
   struct timeval tv;
   res = gettimeofday(&tv, NULL);

@@ -104,7 +104,11 @@ int sys_get_time(struct os_time *t);
  * @param t Pointer to buffer for the time
  * @return int 0 on success, -1 on failure
  */
-int get_reltime(struct os_reltime *t);
+int sys_get_reltime(struct os_reltime *t);
+
+#ifndef os_get_reltime
+#define os_get_reltime(t) sys_get_reltime((t))
+#endif
 
 /**
  * @brief Compares the seconds value of two time params
