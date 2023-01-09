@@ -42,8 +42,6 @@ struct proc_signal_arg {
 };
 
 int become_daemon(int flags) {
-  int maxfd, fd;
-
   /* Become background process */
   switch (fork()) {
     case -1:
@@ -83,14 +81,15 @@ int become_daemon(int flags) {
 
   /* Close all open files */
   if (!(flags & BD_NO_CLOSE_FILES)) {
-    maxfd = sysconf(_SC_OPEN_MAX);
+    long maxfd = sysconf(_SC_OPEN_MAX);
 
     /* Limit is indeterminate... */
     if (maxfd == -1) {
       maxfd = BD_MAX_CLOSE; /* so take a guess */
     }
+    int maxfd_int = maxfd > INT_MAX ? INT_MAX : (int)maxfd;
 
-    for (fd = 0; fd < maxfd; fd++) {
+    for (int fd = 0; fd < maxfd_int; fd++) {
       close(fd);
     }
   }
