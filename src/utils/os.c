@@ -164,7 +164,17 @@ int os_get_reltime(struct os_reltime *t) {
   return res;
 }
 
-int hex2byte(const char *hex) {
+/**
+ * @brief ASCII hex character to number
+ * @code{.c}
+ * // returns 0x9 aka 9 aka '\x09'
+ * hex2num('9')
+ * @endcode
+ *
+ * @param hex Two char string
+ * @return int Converted byte
+ */
+static inline int hex2byte(const char *hex) {
   int a, b;
   a = hex2num(*hex++);
   if (a < 0)
