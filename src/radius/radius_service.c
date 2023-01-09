@@ -22,6 +22,13 @@
 #include "radius_server.h"
 #include "radius_config.h"
 
+void close_radius(struct radius_context *ctx) {
+  if (ctx != NULL) {
+    radius_server_deinit(ctx->srv);
+    os_free(ctx);
+  }
+}
+
 struct radius_context *run_radius(struct eloop_data *eloop,
                                       struct radius_conf *rconf,
                                       mac_conn_fn radius_callback_fn,
@@ -30,16 +37,24 @@ struct radius_context *run_radius(struct eloop_data *eloop,
   (void)rconf;
   (void)radius_callback_fn;
   (void)radius_callback_args;
+
+  struct radius_context *context = sys_zalloc(sizeof(struct radius_context));
+
+  if (context == NULL) {
+    log_errno("sys_zalloc");
+    return NULL;
+  }
+
+  // context->srv = radius_server_init(struct radius_server_conf *conf);
+
+  if (context->srv == NULL) {
+    log_error("radius_server_init failure");
+    close_radius(context);
+    return NULL;
+  }
   // struct radius_client *client =
   //     init_radius_client(rconf, radius_callback_fn, radius_callback_args);
 
   return NULL;
   // return radius_server_init(eloop, rconf->radius_port, client);
-}
-
-void close_radius(struct radius_context *ctx) {
-  if (ctx != NULL) {
-    radius_server_deinit(ctx->radius_srv);
-    os_free(ctx);
-  }
 }

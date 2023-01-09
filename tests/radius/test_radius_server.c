@@ -38,7 +38,7 @@ static uint8_t saved_addr[6];
 
 static struct eloop_data *eloop = NULL;
 
-struct radius_ctx {
+struct radius_test_ctx {
   struct radius_client_data *radius;
   struct hostapd_radius_servers conf;
   uint8_t radius_identifier;
@@ -65,7 +65,7 @@ static RadiusRxResult receive_auth(struct radius_msg *msg,
   (void)shared_secret_len;
   (void)data;
 
-  /* struct radius_ctx *ctx = data; */
+  /* struct radius_test_ctx *ctx = data; */
   log_trace("Received RADIUS Authentication message; code=%d",
             radius_msg_get_hdr(msg)->code);
 
@@ -78,7 +78,7 @@ static RadiusRxResult receive_auth(struct radius_msg *msg,
 static void start_test(void *eloop_ctx, void *timeout_ctx) {
   (void)timeout_ctx;
 
-  struct radius_ctx *ctx = eloop_ctx;
+  struct radius_test_ctx *ctx = eloop_ctx;
   struct radius_msg *msg;
 
   char buf[20];
@@ -134,11 +134,11 @@ static void start_test(void *eloop_ctx, void *timeout_ctx) {
 static void test_radius_server_init(void **state) {
   (void)state; /* unused */
 
-  struct radius_ctx ctx;
+  struct radius_test_ctx ctx;
   struct hostapd_radius_server *srv = NULL;
   struct radius_conf conf;
 
-  os_memset(&ctx, 0, sizeof(struct radius_ctx));
+  os_memset(&ctx, 0, sizeof(struct radius_test_ctx));
   os_memset(&conf, 0, sizeof(struct radius_conf));
 
   strcpy(conf.radius_client_ip, "127.0.0.1");
