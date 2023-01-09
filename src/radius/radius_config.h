@@ -33,7 +33,7 @@ typedef struct mac_conn_info (*mac_conn_fn)(uint8_t mac_addr[],
                                             void *mac_conn_arg);
 
 struct radius_context {
-  struct radius_server_conf *srv_conf;
-  struct radius_server_data *radius_srv;
+  struct radius_server_conf *conf;
+  struct radius_server_data *srv;
 };
 #endif
