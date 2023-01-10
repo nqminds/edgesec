@@ -18,9 +18,28 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include "common.h"
+
 #include <eloop.h>
+#include <eap_server/eap.h>
+
 #include "radius_server.h"
 #include "radius_config.h"
+
+int radius_get_eap_user(void *ctx, const u8 *identity,
+				       size_t identity_len, int phase2,
+				       struct eap_user *user) {
+  (void)ctx;
+  (void)identity;
+  (void)identity_len;
+  os_memset(user, 0, sizeof(*user));
+
+  // user->methods[0].vendor = EAP_VENDOR_IETF;
+  // user->methods[0].method = EAP_TYPE_TLS;
+
+  log_trace("radius_get_eap_user: phase2=%d", phase2);
+  return 0;
+}
 
 int generate_client_conf(struct radius_conf *rconf) {
   FILE *fp = fopen(rconf->client_conf_path, "w");
@@ -38,13 +57,66 @@ int generate_client_conf(struct radius_conf *rconf) {
   return 0;
 }
 
-void generate_radius_server_conf(struct eloop_data *eloop, struct radius_conf *rconf, struct radius_server_conf *sconf) {
+struct eap_config* generate_eap_config(struct radius_conf *rconf) {
+  (void)rconf;
+
+  struct eap_config *cfg = sys_zalloc(sizeof(struct eap_config));
+
+  if (cfg == NULL) {
+    log_errno("sys_zalloc");
+    return NULL;
+  }
+
+	cfg->ssl_ctx = NULL; // Actual ssl context
+	cfg->tls_session_lifetime = 0;
+
+#define TLS_CONN_DISABLE_TLSv1_3 BIT(13)
+
+	cfg->tls_flags = TLS_CONN_DISABLE_TLSv1_3;
+	cfg->max_auth_rounds = 100;
+	cfg->max_auth_rounds_short = 50;
+	cfg->server_id = (u8 *) os_strdup("edgesec");
+	cfg->server_id_len = 7;
+	cfg->erp = -1;
+
+  /*
+  cfg->eap_server = 0;
+	cfg->msg_ctx = NULL;
+	cfg->eap_sim_db_priv = NULL;
+  cfg->pac_opaque_encr_key = 0;
+	cfg->eap_fast_a_id = NULL;
+	cfg->eap_fast_a_id_len = 0;
+  cfg->eap_fast_a_id_info = NULL;
+	cfg->eap_fast_prov = 0;
+	cfg->pac_key_lifetime = 0;
+	cfg->pac_key_refresh_time = 0;
+	cfg->eap_teap_auth = 0;
+	cfg->eap_teap_pac_no_inner = 0;
+	cfg->eap_teap_separate_result = 0;
+	cfg->eap_teap_id = 0;
+	cfg->eap_sim_aka_result_ind = 0;
+	cfg->eap_sim_id = 0;
+	cfg->tnc = 0;
+	cfg->wps = NULL;
+	cfg->fragment_size = 0;
+	cfg->pwd_group = 0;
+	cfg->pbc_in_m1 = 0;
+  */
+
+  return cfg;
+}
+
+int generate_radius_server_conf(struct eloop_data *eloop, struct radius_conf *rconf, struct radius_server_conf *sconf) {
 	sconf->eloop = eloop;
 	sconf->auth_port = rconf->radius_port;
 	sconf->client_file = rconf->client_conf_path;
 	sconf->conf_ctx = NULL;
-	sconf->get_eap_user = NULL;
-  sconf->eap_cfg = NULL;
+	sconf->get_eap_user = radius_get_eap_user;
+
+  if((sconf->eap_cfg = generate_eap_config(rconf)) == NULL) {
+    log_error("generate_eap_config fail");
+    return -1;
+  }
 
   sconf->acct_port = 0;
   sconf->sqlite_file = NULL;
@@ -55,6 +127,8 @@ void generate_radius_server_conf(struct eloop_data *eloop, struct radius_conf *r
   sconf->eap_req_id_text = NULL;
   sconf->hs20_sim_provisioning_url = NULL;
   sconf->t_c_server_url = NULL;
+
+  return 0;
 }
 
 void close_radius(struct radius_context *ctx) {
@@ -86,7 +160,11 @@ struct radius_context *run_radius(struct eloop_data *eloop,
     return NULL;
   }
 
-  generate_radius_server_conf(eloop, rconf, &context->conf);
+  if (generate_radius_server_conf(eloop, rconf, &context->conf) < 0) {
+    log_error("generate_radius_server_conf fail");
+    close_radius(context);
+    return NULL;
+  }
 
   if ((context->srv = radius_server_init(&context->conf)) == NULL) {
     log_error("radius_server_init failure");

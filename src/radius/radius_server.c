@@ -2212,7 +2212,7 @@ radius_server_init(struct radius_server_conf *conf)
 	data = sys_zalloc(sizeof(*data));
 	if (data == NULL)
 		return NULL;
-
+	data->eloop = conf->eloop;
 	data->eap_cfg = conf->eap_cfg;
 	data->auth_sock = -1;
 	data->acct_sock = -1;
