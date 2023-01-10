@@ -615,6 +615,49 @@ static void test_string_append_char(void **state) {
   free(combined_str);
 }
 
+#define OS_STRLCPY_TEST_SIZE 16
+
+struct os_strlcpy_state {
+  char *string_a;
+  char *string_b;
+};
+static int setup_os_strlcpy_test(void **state) {
+  // use malloc instead of buffers, since cmocka checks for stack overflow
+  struct os_strlcpy_state *my_state = malloc(sizeof(struct os_strlcpy_state));
+  assert_non_null(my_state);
+  *my_state = (struct os_strlcpy_state){
+      .string_a = malloc(OS_STRLCPY_TEST_SIZE),
+      .string_b = malloc(OS_STRLCPY_TEST_SIZE),
+  };
+  assert_non_null(my_state->string_a);
+  assert_non_null(my_state->string_b);
+  *state = my_state;
+  return 0;
+}
+static int teardown_os_strlcpy_test(void **state) {
+  struct os_strlcpy_state *my_state = *state;
+  free(my_state->string_a);
+  free(my_state->string_b);
+  free(my_state);
+
+  return 0;
+}
+static void test_os_strlcpy(void **state) {
+  struct os_strlcpy_state *my_state = *state;
+
+  assert_int_equal(
+      os_strlcpy(my_state->string_a, "hello world", OS_STRLCPY_TEST_SIZE),
+      strlen("hello world"));
+  assert_string_equal(my_state->string_a, "hello world");
+
+  // should truncate
+  assert_int_equal(os_strlcpy(my_state->string_a,
+                              "0123456789abcdeTHIS_PART_IS_TOO_LONG",
+                              OS_STRLCPY_TEST_SIZE),
+                   strlen("0123456789abcdeTHIS_PART_IS_TOO_LONG"));
+  assert_string_equal(my_state->string_a, "0123456789abcde");
+}
+
 int main(int argc, char *argv[]) {
   (void)argc;
   (void)argv;
@@ -634,7 +677,10 @@ int main(int argc, char *argv[]) {
       cmocka_unit_test(test_list_dir),
       cmocka_unit_test(test_string_append_char),
       cmocka_unit_test_setup_teardown(test_make_dirs_to_path, setup_tmpdir,
-                                      teardown_tmpdir)};
+                                      teardown_tmpdir),
+      cmocka_unit_test_setup_teardown(test_os_strlcpy, setup_os_strlcpy_test,
+                                      teardown_os_strlcpy_test),
+  };
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }
