@@ -191,27 +191,18 @@ int hexstr2bin(const char *hex, uint8_t *buf, size_t len) {
   return 0;
 }
 
-size_t os_strlcpy(char *dest, const char *src, size_t siz) {
-  const char *s = src;
-  size_t left = siz;
+size_t os_strlcpy(char *restrict dest, const char *restrict src, size_t siz) {
+  /* Copy string up to the maximum size of the dest buffer */
+  const char *char_after_NUL = memccpy(dest, src, '\0', siz);
 
-  if (left) {
-    /* Copy string up to the maximum size of the dest buffer */
-    while (--left != 0) {
-      if ((*dest++ = *s++) == '\0')
-        break;
-    }
-  }
-
-  if (left == 0) {
+  if (char_after_NUL != NULL) {
+    return (size_t)(char_after_NUL - dest - 1);
+  } else {
     /* Not enough room for the string; force NUL-termination */
-    if (siz != 0)
-      *dest = '\0';
-    while (*s++)
-      ; /* determine total src string length */
+    dest[siz - 1] = '\0';
+    /* determine total src string length */
+    return strlen(src);
   }
-
-  return s - src - 1;
 }
 
 int os_memcmp_const(const void *a, const void *b, size_t len) {
