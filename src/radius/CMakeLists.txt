@@ -26,7 +26,7 @@ target_compile_definitions(radius_server PRIVATE _DEFAULT_SOURCE _BSD_SOURCE IEE
 
 if (BUILD_EAP_LIB)
   target_compile_definitions(radius_server PRIVATE WITH_EAP_LIB)
-  target_link_libraries(radius_server PRIVATE net hostapd::libeap)
+  target_link_libraries(radius_server PUBLIC hostapd::libeap PRIVATE net)
 else ()
   target_link_libraries(radius_server PUBLIC os PRIVATE log net)
 endif ()
