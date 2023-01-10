@@ -4,6 +4,13 @@ task:
     matrix:
       - image_family: freebsd-14-0-snap
       # - image_family: freebsd-13-1 # currently not working
+  cmake_dependencies_cache:
+    # cache CMake dependencies
+    folder: ./build/dl
+    fingerprint_script:
+      - echo $CIRRUS_OS
+      # lib/*.cmake files contains the dependencies that we use
+      - cat lib/*.cmake
   install_script: |
     # autoconf/automake/pkgconf is required by sqlite
     # bison/libtool/gettext is required by util-linux (uuid library)
