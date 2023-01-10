@@ -167,7 +167,7 @@
         "USE_RADIUS_SERVICE": true,
         "USE_MDNS_SERVICE": true,
         "BUILD_HOSTAPD": false,
-        "BUILD_EAP_LIB": true,
+        "BUILD_HOSTAPD_EAP_LIB": true,
         "USE_CRYPTO_SERVICE": false,
         "BUILD_OPENSSL3_LIB": false
       }
