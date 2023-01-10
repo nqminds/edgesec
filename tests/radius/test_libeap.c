@@ -1,13 +1,13 @@
 /**
  * @file
- * @author Alexandru Mereacre
- * @date 2023
- * @copyright
- * SPDX-FileCopyrightText: Copyright (c) 2007, Jouni Malinen <j@w1.fi>
- * SPDX-License-Identifier: BSD license
- * @version hostapd-2.10
  * @brief Test showing how EAP peer and server code from
  * wpa_supplicant/hostapd can be used as a library for a EAP-TLS connection.
+ * @author Alexandru Mereacre, Jouni Malinen
+ * @copyright SPDX-FileCopyrightText: © 2023 edgesec contributors
+ * @copyright SPDX-FileCopyrightText: © 2007, Jouni Malinen <j@w1.fi>
+ * @copyright SPDX-License-Identifier: BSD-3-clause
+ * @version Adapted from [hostap 2.10 -
+ * `eap_example/eap_example.c`](https://w1.fi/cgit/hostap/tree/eap_example/eap_example.c?h=hostap_2_10)
  */
 
 #include <setjmp.h>
