@@ -9,7 +9,7 @@ endif()
 
 if (BUILD_HOSTAPD)
   set(HOSTAPD_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}")
-
+  find_package(PkgConfig)
   if (NOT PKG_CONFIG_FOUND)
     message(FATAL_ERROR "pkg-config is required to build hostapd, but could not be found")
   endif()
