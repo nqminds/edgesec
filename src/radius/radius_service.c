@@ -34,6 +34,7 @@ int radius_get_eap_user(void *ctx, const u8 *identity,
   (void)identity_len;
   os_memset(user, 0, sizeof(*user));
 
+  user->macacl = 1;
   // user->methods[0].vendor = EAP_VENDOR_IETF;
   // user->methods[0].method = EAP_TYPE_TLS;
 
