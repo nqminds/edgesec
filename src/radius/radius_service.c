@@ -35,7 +35,7 @@ int radius_get_eap_user(void *ctx, const u8 *identity,
   (void)identity;
   (void)identity_len;
 
-  // struct radius_context *context = (struct radius_context *) ctx;
+  struct radius_context *context = (struct radius_context *) ctx;
 
   os_memset(user, 0, sizeof(*user));
 
@@ -43,6 +43,10 @@ int radius_get_eap_user(void *ctx, const u8 *identity,
   // user->methods[0].vendor = EAP_VENDOR_IETF;
   // user->methods[0].method = EAP_TYPE_TLS;
   log_trace("radius_get_eap_user: phase2=%d", phase2);
+
+	user->password = (u8 *) context->rconf->radius_secret;
+	user->password_len = os_strlen(context->rconf->radius_secret);
+
   return 0;
 }
 
@@ -114,40 +118,52 @@ struct eap_config* generate_eap_config(struct radius_conf *rconf) {
 int generate_radius_server_conf(struct eloop_data *eloop,
                                 struct radius_conf *rconf,
                                 struct radius_context *context) {
-	context->conf.eloop = eloop;
-	context->conf.auth_port = rconf->radius_port;
-	context->conf.client_file = rconf->client_conf_path;
-	context->conf.conf_ctx = (void *)context;
-	context->conf.get_eap_user = radius_get_eap_user;
 
-  if((context->conf.eap_cfg = generate_eap_config(rconf)) == NULL) {
+	context->sconf = sys_zalloc(sizeof(struct radius_server_conf));
+
+  if (context->sconf == NULL) {
+    log_errno("sys_zalloc");
+    return -1;
+  }
+
+  context->sconf->eloop = eloop;
+	context->sconf->auth_port = rconf->radius_port;
+	context->sconf->client_file = rconf->client_conf_path;
+	context->sconf->conf_ctx = (void *)context;
+	context->sconf->get_eap_user = radius_get_eap_user;
+
+  if((context->sconf->eap_cfg = generate_eap_config(rconf)) == NULL) {
     log_error("generate_eap_config fail");
     return -1;
   }
 
-  context->conf.acct_port = 0;
-  context->conf.sqlite_file = NULL;
-  context->conf.subscr_remediation_url = NULL;
-  context->conf.subscr_remediation_method = 0;
-	context->conf.erp_domain = NULL;
-	context->conf.ipv6 = 0;
-  context->conf.eap_req_id_text = NULL;
-  context->conf.hs20_sim_provisioning_url = NULL;
-  context->conf.t_c_server_url = NULL;
-
+  context->sconf->acct_port = 0;
+  context->sconf->sqlite_file = NULL;
+  context->sconf->subscr_remediation_url = NULL;
+  context->sconf->subscr_remediation_method = 0;
+	context->sconf->erp_domain = NULL;
+	context->sconf->ipv6 = 0;
+  context->sconf->eap_req_id_text = NULL;
+  context->sconf->hs20_sim_provisioning_url = NULL;
+  context->sconf->t_c_server_url = NULL;
   return 0;
 }
 
-void close_radius(struct radius_context *ctx) {
-  if (ctx != NULL) {
-    if (ctx->conf.eap_cfg != NULL) {
-      os_free(ctx->conf.eap_cfg->server_id);
-      os_free(ctx->conf.eap_cfg);
-      ctx->conf.eap_cfg = NULL;
+void close_radius(struct radius_context *context) {
+  if (context != NULL) {
+    if (context->sconf != NULL) {
+      if (context->sconf->eap_cfg != NULL) {
+        os_free(context->sconf->eap_cfg->server_id);
+        os_free(context->sconf->eap_cfg);
+        context->sconf->eap_cfg = NULL;
+      }
+      os_free(context->sconf);
+      context->sconf = NULL;
     }
-    radius_server_deinit(ctx->srv);
-    ctx->srv = NULL;
-    os_free(ctx);
+
+    radius_server_deinit(context->srv);
+    context->srv = NULL;
+    os_free(context);
   }
 }
 
@@ -179,7 +195,9 @@ struct radius_context *run_radius(struct eloop_data *eloop,
     return NULL;
   }
 
-  if ((context->srv = radius_server_init(&context->conf)) == NULL) {
+  context->rconf = rconf;
+
+  if ((context->srv = radius_server_init(context->sconf)) == NULL) {
     log_error("radius_server_init failure");
     close_radius(context);
     return NULL;
