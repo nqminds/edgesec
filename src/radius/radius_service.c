@@ -23,6 +23,7 @@
 #include <eloop.h>
 #include <eap_server/eap.h>
 
+#include "../supervisor/mac_mapper.h"
 #include "radius.h"
 #include "radius_server.h"
 
@@ -39,7 +40,7 @@ void free_radius_attribute(struct hostapd_radius_attr *attr) {
   }
 }
 
-struct hostapd_radius_attr *get_vlan_attribute(uint16_t vlan_id) {
+struct hostapd_radius_attr *get_vlan_attribute(uint16_t vlan_id, struct hostapd_radius_attr **last) {
   char id_str[5];
   struct hostapd_radius_attr *attr = NULL,
                              *attr_medium_type = NULL,
@@ -47,6 +48,8 @@ struct hostapd_radius_attr *get_vlan_attribute(uint16_t vlan_id) {
 
 #define RADIUS_ATTR_TUNNEL_VALUE 13
 #define RADIUS_ATTR_TUNNEL_MEDIUM_VALUE 6
+
+  *last = NULL;
 
   if ((attr = sys_zalloc(sizeof(*attr))) == NULL) {
     log_errno("sys_zalloc");
@@ -90,6 +93,9 @@ struct hostapd_radius_attr *get_vlan_attribute(uint16_t vlan_id) {
   attr->next = attr_medium_type;
   attr_medium_type->next = attr_id;
   attr_id->next = NULL;
+
+  *last = attr_id;
+
   return attr;
 
 get_vlan_attribute_fail:
@@ -172,7 +178,41 @@ int radius_get_eap_user(void *ctx, const u8 *identity,
 	user->password_len = os_strlen(context->rconf->radius_secret);
   user->salt = NULL;
 
-  user->macacl = 1;
+  if (identity_len && identity != NULL) {
+    char *mac_addr_str = sys_zalloc(identity_len + 1);
+    if (mac_addr_str == NULL) {
+      log_errno("sys_zalloc");
+      return -1;
+    }
+
+    sprintf(mac_addr_str, "%.*s", (int)identity_len, identity);
+
+    uint8_t mac_addr[ETHER_ADDR_LEN];
+    if (convert_ascii2mac(mac_addr_str, mac_addr) < 0) {
+      log_error("convert_ascii2mac fail");
+      os_free(mac_addr_str);
+      return -1;
+    }
+
+    log_trace("Received RADIUS identity "MACSTR, MAC2STR(mac_addr));
+
+    if (context->radius_callback_fn != NULL) {
+      struct mac_conn_info info = context->radius_callback_fn(mac_addr, context->radius_callback_args);
+      if (info.vlanid >= 0) {
+        user->macacl = 1;
+
+      } else {
+        user->macacl = 0;
+      }
+    } else {
+      user->macacl = 0;
+    }
+
+    os_free(mac_addr_str);
+  } else {
+    log_trace("Identity is NULL for RADIUS EAP user.");
+    return -1;
+  }
 
   return 0;
 }
