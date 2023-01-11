@@ -206,8 +206,9 @@ int convert_ascii2mac(const char *txt, uint8_t *addr) {
   for (i = 0; i < 6; i++) {
     int a, b;
 
-    while (*pos == ':' || *pos == '.' || *pos == '-')
+    while (*pos == ':' || *pos == '.' || *pos == '-') {
       pos++;
+    }
 
     a = hex2num(*pos++);
     if (a < 0)

@@ -177,7 +177,7 @@ static void test_radius_server_init(void **state) {
   ret = radius_client_register(ctx.radius, RADIUS_AUTH, receive_auth, &ctx);
   assert_int_equal(ret, 0);
 
-  struct radius_context *radius_srv_ctx = run_radius(eloop, &rconf, NULL, NULL);
+  struct radius_context *radius_srv_ctx = run_radius(eloop, &rconf, get_mac_conn, NULL);
   assert_non_null(radius_srv_ctx);
 
   eloop_register_timeout(eloop, 0, 0, start_test, &ctx, NULL);
