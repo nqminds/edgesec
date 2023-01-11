@@ -14,6 +14,7 @@
 #include <eloop.h>
 
 #include "common.h"
+#include "radius.h"
 
 struct radius_server_data;
 struct eap_user;
@@ -84,7 +85,7 @@ struct radius_server_conf {
 	 * password data and RADIUS server will free it after use.
 	 */
 	int (*get_eap_user)(void *ctx, const u8 *identity, size_t identity_len,
-			    int phase2, struct eap_user *user);
+			    int phase2, struct eap_user *user, struct radius_msg *msg);
 
 	/**
 	 * eap_req_id_text - Optional data for EAP-Request/Identity

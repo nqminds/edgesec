@@ -12,9 +12,11 @@
 #ifndef RADIUS_H
 #define RADIUS_H
 
+#include <netinet/in.h>
+
 #include "common.h"
 
-#include "utils/os.h"
+#include "../utils/os.h"
 
 /* RFC 2865 - RADIUS */
 

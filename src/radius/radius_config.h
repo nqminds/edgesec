@@ -36,5 +36,7 @@ struct radius_context {
   struct radius_conf *rconf;
   struct radius_server_conf *sconf;
   struct radius_server_data *srv;
+  mac_conn_fn radius_callback_fn;
+  void *radius_callback_args;
 };
 #endif

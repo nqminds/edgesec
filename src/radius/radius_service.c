@@ -154,16 +154,15 @@ get_password_attribute_fail:
 
 int radius_get_eap_user(void *ctx, const u8 *identity,
 				       size_t identity_len, int phase2,
-				       struct eap_user *user) {
-  (void)ctx;
+				       struct eap_user *user, struct radius_msg *msg) {
   (void)identity;
   (void)identity_len;
+  (void)msg;
 
   struct radius_context *context = (struct radius_context *) ctx;
 
   os_memset(user, 0, sizeof(*user));
 
-  user->macacl = 1;
   // user->methods[0].vendor = EAP_VENDOR_IETF;
   // user->methods[0].method = EAP_TYPE_TLS;
   log_trace("radius_get_eap_user: phase2=%d %.*s", phase2, identity_len, identity);
@@ -171,6 +170,9 @@ int radius_get_eap_user(void *ctx, const u8 *identity,
 	user->password = (u8 *) os_strdup(context->rconf->radius_secret);
 	user->password_len = os_strlen(context->rconf->radius_secret);
   user->salt = NULL;
+
+  user->macacl = 1;
+
   return 0;
 }
 
@@ -320,6 +322,8 @@ struct radius_context *run_radius(struct eloop_data *eloop,
   }
 
   context->rconf = rconf;
+  context->radius_callback_fn = radius_callback_fn;
+  context->radius_callback_args = radius_callback_args;
 
   if ((context->srv = radius_server_init(context->sconf)) == NULL) {
     log_error("radius_server_init failure");
