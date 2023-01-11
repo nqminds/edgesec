@@ -100,6 +100,58 @@ get_vlan_attribute_fail:
   return NULL;
 }
 
+struct hostapd_radius_attr *
+get_password_attribute(const uint8_t *req_authenticator, const uint8_t *secret,
+                       size_t secret_len, const uint8_t *key, size_t key_len) {
+  struct hostapd_radius_attr *attr = NULL;
+  uint16_t salt;
+  size_t elen;
+  uint8_t *buf = NULL, *pos = NULL;
+  uint8_t tag_salt_len = 3;
+  uint16_t packet_len =
+      tag_salt_len + 1 + key_len + 15; // tag + salt + len + key_len + padding
+
+  if ((buf = sys_zalloc(packet_len)) == NULL) {
+    log_errno("sys_zalloc");
+    return 0;
+  }
+
+  if (get_random((uint8_t *)&salt, sizeof(salt)) < 0) {
+    log_error("get_random fail");
+    goto get_password_attribute_fail;
+  }
+
+  salt |= 0x8000;
+
+  pos = buf + 1;
+  WPA_PUT_BE16(pos, salt);
+
+  pos += 2;
+  encrypt_ms_key(key, key_len, salt, req_authenticator, secret, secret_len, pos,
+                 &elen);
+
+  if ((attr = sys_zalloc(sizeof(*attr))) == NULL) {
+    log_errno("sys_zalloc");
+    goto get_password_attribute_fail;
+  }
+
+  attr->type = RADIUS_ATTR_TUNNEL_PASSWORD;
+  if((attr->val = wpabuf_alloc_copy(buf, tag_salt_len + elen)) == NULL) {
+    log_errno("wpabuf_alloc_copy fail");
+    goto get_password_attribute_fail;
+  }
+
+  attr->next = NULL;
+
+  os_free(buf);
+  return attr;
+
+get_password_attribute_fail:
+  free_radius_attribute(attr);
+  os_free(buf);
+  return NULL;
+}
+
 int radius_get_eap_user(void *ctx, const u8 *identity,
 				       size_t identity_len, int phase2,
 				       struct eap_user *user) {
