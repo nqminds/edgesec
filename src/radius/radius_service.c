@@ -25,8 +25,80 @@
 
 #include "radius_server.h"
 #include "radius_config.h"
+#include "radius.h"
 
 #define EAP_SERVER_IDENTITY "edgesec"
+
+void free_radius_attribute(struct hostapd_radius_attr *attr) {
+  struct hostapd_radius_attr *prev;
+
+  while (attr) {
+    prev = attr;
+    attr = attr->next;
+    wpabuf_free(prev->val);
+    os_free(prev);
+  }
+}
+
+struct hostapd_radius_attr *get_vlan_attribute(uint16_t vlan_id) {
+  char id_str[5];
+  struct hostapd_radius_attr *attr = NULL,
+                             *attr_medium_type = NULL,
+                             *attr_id = NULL;
+
+#define RADIUS_ATTR_TUNNEL_VALUE 13
+#define RADIUS_ATTR_TUNNEL_MEDIUM_VALUE 6
+
+  if ((attr = sys_zalloc(sizeof(*attr))) == NULL) {
+    log_errno("sys_zalloc");
+    return NULL;
+  }
+
+  attr->type = RADIUS_ATTR_TUNNEL_TYPE;
+  if ((attr->val = wpabuf_alloc(4)) == NULL) {
+    log_error("wpabuf_alloc fail");
+    goto get_vlan_attribute_fail;
+  }
+
+  wpabuf_put_be32(attr->val, RADIUS_ATTR_TUNNEL_VALUE);
+
+  if ((attr_medium_type = sys_zalloc(sizeof(*attr_medium_type))) == NULL) {
+    log_errno("sys_zalloc");
+    goto get_vlan_attribute_fail;
+  }
+
+  attr_medium_type->type = RADIUS_ATTR_TUNNEL_MEDIUM_TYPE;
+  
+  if ((attr_medium_type->val = wpabuf_alloc(4)) == NULL) {
+    log_error("wpabuf_alloc fail");
+    goto get_vlan_attribute_fail;
+  }
+
+  wpabuf_put_be32(attr_medium_type->val, RADIUS_ATTR_TUNNEL_MEDIUM_VALUE);
+
+  if ((attr_id = sys_zalloc(sizeof(*attr_id))) == NULL) {
+    log_errno("sys_zalloc");
+    goto get_vlan_attribute_fail;
+  }
+
+  sprintf(id_str, "%d", vlan_id);
+  attr_id->type = RADIUS_ATTR_TUNNEL_PRIVATE_GROUP_ID;
+  if((attr_id->val = wpabuf_alloc_copy(id_str, strlen(id_str))) == NULL) {
+    log_errno("wpabuf_alloc_copy fail");
+    goto get_vlan_attribute_fail;
+  }
+
+  attr->next = attr_medium_type;
+  attr_medium_type->next = attr_id;
+  attr_id->next = NULL;
+  return attr;
+
+get_vlan_attribute_fail:
+    free_radius_attribute(attr);
+    free_radius_attribute(attr_medium_type);
+    free_radius_attribute(attr_id);
+  return NULL;
+}
 
 int radius_get_eap_user(void *ctx, const u8 *identity,
 				       size_t identity_len, int phase2,
@@ -42,11 +114,11 @@ int radius_get_eap_user(void *ctx, const u8 *identity,
   user->macacl = 1;
   // user->methods[0].vendor = EAP_VENDOR_IETF;
   // user->methods[0].method = EAP_TYPE_TLS;
-  log_trace("radius_get_eap_user: phase2=%d", phase2);
+  log_trace("radius_get_eap_user: phase2=%d %.*s", phase2, identity_len, identity);
 
-	user->password = (u8 *) context->rconf->radius_secret;
+	user->password = (u8 *) os_strdup(context->rconf->radius_secret);
 	user->password_len = os_strlen(context->rconf->radius_secret);
-
+  user->salt = NULL;
   return 0;
 }
 
