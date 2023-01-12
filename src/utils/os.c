@@ -233,7 +233,10 @@ int os_get_random_int_range(int low, int up) {
   return rand() % (up - low + 1) + low;
 }
 
-void os_init_random_seed(void) { srand(time(NULL)); }
+void os_init_random_seed(void) {
+  int_fast64_t current_time = time(NULL);
+  srand((unsigned int)current_time);
+}
 
 int os_get_random_number_s(unsigned char *buf, size_t len) {
   size_t idx = 0;
