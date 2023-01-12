@@ -248,14 +248,14 @@ int radius_get_eap_user(void *ctx, const u8 *identity,
 }
 
 int generate_client_conf(struct radius_conf *rconf) {
+  log_debug("Writing into %s", rconf->client_conf_path);
+
   FILE *fp = fopen(rconf->client_conf_path, "w");
 
   if (fp == NULL) {
     log_errno("fopen");
     return -1;
   }
-
-  log_debug("Writing into %s", rconf->client_conf_path);
 
   fprintf(fp, "%s/%d %s\n", rconf->radius_client_ip, rconf->radius_client_mask, rconf->radius_secret);
 

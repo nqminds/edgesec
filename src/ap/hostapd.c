@@ -47,14 +47,14 @@ static bool ap_process_started = false;
 
 int generate_vlan_conf(char *vlan_file, char *interface) {
 
+  log_debug("Writing into %s", vlan_file);
+
   FILE *fp = fopen(vlan_file, "w");
 
   if (fp == NULL) {
     log_errno("fopen");
     return -1;
   }
-
-  log_debug("Writing into %s", vlan_file);
 
   fprintf(fp, "*\t%s.#\n", interface);
 
@@ -109,13 +109,13 @@ int generate_hostapd_conf(struct apconf *hconf, struct radius_conf *rconf) {
 }
 #else
 int generate_hostapd_conf(struct apconf *hconf, struct radius_conf *rconf) {
+  log_debug("Writing into %s", hconf->ap_file_path);
+
   FILE *fp = fopen(hconf->ap_file_path, "w");
   if (fp == NULL) {
     log_errno("fopen");
     return -1;
   }
-
-  log_debug("Writing into %s", hconf->ap_file_path);
 
   fprintf(fp, "interface=%s\n", hconf->interface);
   fprintf(fp, "driver=%s\n", hconf->driver);
