@@ -27,19 +27,9 @@
 #include "radius_server.h"
 #include "radius_config.h"
 #include "radius.h"
+#include "attr_mapper.h"
 
 #define EAP_SERVER_IDENTITY "edgesec"
-
-void free_radius_attribute(struct hostapd_radius_attr *attr) {
-  struct hostapd_radius_attr *prev;
-
-  while (attr) {
-    prev = attr;
-    attr = attr->next;
-    wpabuf_free(prev->val);
-    os_free(prev);
-  }
-}
 
 struct hostapd_radius_attr *get_vlan_attribute(uint16_t vlan_id, struct hostapd_radius_attr **last) {
   char id_str[5];
@@ -100,9 +90,9 @@ struct hostapd_radius_attr *get_vlan_attribute(uint16_t vlan_id, struct hostapd_
   return attr;
 
 get_vlan_attribute_fail:
-    free_radius_attribute(attr);
-    free_radius_attribute(attr_medium_type);
-    free_radius_attribute(attr_id);
+    free_attr(attr);
+    free_attr(attr_medium_type);
+    free_attr(attr_id);
   return NULL;
 }
 
@@ -153,7 +143,7 @@ get_password_attribute(const uint8_t *req_authenticator, const uint8_t *secret,
   return attr;
 
 get_password_attribute_fail:
-  free_radius_attribute(attr);
+  free_attr(attr);
   os_free(buf);
   return NULL;
 }

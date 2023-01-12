@@ -24,10 +24,10 @@
  *
  */
 typedef struct attr_mac_conn { /**< hashmap key */
-  char key[ETHER_ADDR_LEN];
+  uint8_t key[ETHER_ADDR_LEN];
   struct hostapd_radius_attr *attr; /**< Radius attribute structure */
   UT_hash_handle hh;                /**< hashmap handle */
-} hmap_mac_conn;
+} attr_mac_conn;
 
 /**
  * @brief Get the attribute structure for a given MAC address
@@ -38,7 +38,7 @@ typedef struct attr_mac_conn { /**< hashmap key */
  * @return int @c 1 if MAC address found, @c -1 error and @c 0 if MAC address
  * not found
  */
-int get_attr_mapper(hmap_mac_conn **hmap, uint8_t mac_addr[ETHER_ADDR_LEN],
+int get_attr_mapper(attr_mac_conn **hmap, uint8_t mac_addr[ETHER_ADDR_LEN],
                    struct hostapd_radius_attr **attr);
 
 /**
@@ -46,15 +46,22 @@ int get_attr_mapper(hmap_mac_conn **hmap, uint8_t mac_addr[ETHER_ADDR_LEN],
  *
  * @param hmap Attribute mapper object
  * @param mac_addr MAC address in byte format
- * @param attr Intput attribute structure address
+ * @param attr Input attribute structure address
  * @return int @c 0 on success, @c -1 otherwise
  */
-int put_attr_mapper(hmap_mac_conn **hmap, uint8_t mac_addr[ETHER_ADDR_LEN], struct hostapd_radius_attr *attr);
+int put_attr_mapper(attr_mac_conn **hmap, uint8_t mac_addr[ETHER_ADDR_LEN], struct hostapd_radius_attr *attr);
 
 /**
- * @brief Frees the MAC mapper connection object
+ * @brief Frees the attribute structure
  *
- * @param hmap MAC mapper connection object
+ * @param attr Attribute structure
  */
-void free_mac_mapper(hmap_mac_conn **hmap);
+void free_attr(struct hostapd_radius_attr *attr);
+
+/**
+ * @brief Frees the attribute mapper object
+ *
+ * @param hmap Attribute mapper object
+ */
+void free_attr_mapper(attr_mac_conn **hmap);
 #endif
