@@ -135,7 +135,7 @@ bool is_number(const char *ptr) {
   return (*ptr == '\0') ? false : true;
 }
 
-int hex2num(char c) {
+int8_t hex2num(char c) {
   if (c >= '0' && c <= '9')
     return c - '0';
   if (c >= 'a' && c <= 'f')
@@ -163,28 +163,25 @@ int os_get_reltime(struct os_reltime *t) {
   return res;
 }
 
-int hex2byte(const char *hex) {
-  int a, b;
-  a = hex2num(*hex++);
+int16_t hex2byte(const char hex[static 2]) {
+  int_fast8_t a = hex2num(*hex++);
   if (a < 0)
     return -1;
-  b = hex2num(*hex++);
+  int_fast8_t b = hex2num(*hex++);
   if (b < 0)
     return -1;
   return (a << 4) | b;
 }
 
 int hexstr2bin(const char *hex, uint8_t *buf, size_t len) {
-  size_t i;
-  int a;
   const char *ipos = hex;
   uint8_t *opos = buf;
 
-  for (i = 0; i < len; i++) {
-    a = hex2byte(ipos);
+  for (size_t i = 0; i < len; i++) {
+    int_fast16_t a = hex2byte(ipos);
     if (a < 0)
       return -1;
-    *opos++ = a;
+    *opos++ = (uint8_t)a; // should always be between 0-255
     ipos += 2;
   }
   return 0;
