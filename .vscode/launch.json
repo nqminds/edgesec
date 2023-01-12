@@ -8,7 +8,7 @@
       "name": "debug test_process",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/linux/tests/radius/test_radius_server",
+      "program": "${workspaceFolder}/build/linux/src/edgesec",
       "args": ["-c", "${workspaceFolder}/build/linux/dev-config.ini", "-dddddddd"],
       "stopAtEntry": true,
       "cwd": "${workspaceFolder}",
