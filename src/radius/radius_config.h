@@ -12,7 +12,7 @@
 #define RADIUS_CONFIG_H
 
 #include "../utils/net.h"
-// #include "../utils/os.h"
+#include "attr_mapper.h"
 
 #define RADIUS_SECRET_LEN 255
 
@@ -37,6 +37,7 @@ struct radius_context {
   struct radius_conf *rconf;
   struct radius_server_conf *sconf;
   struct radius_server_data *srv;
+  attr_mac_conn *attr_mapper;
   mac_conn_fn radius_callback_fn;
   void *radius_callback_args;
 };
