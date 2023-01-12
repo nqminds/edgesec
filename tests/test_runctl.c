@@ -112,12 +112,12 @@ int __wrap_run_ap(struct supervisor_context *context, bool exec_ap,
 #ifdef WITH_RADIUS_SERVICE
 struct radius_context *__wrap_run_radius(struct eloop_data *eloop,
                                              struct radius_conf *rconf,
-                                             void *radius_callback_fn,
-                                             void *radius_callback_args) {
+                                             void *get_vlaninfo_fn,
+                                             void *ctx_cb) {
   (void)eloop;
   (void)rconf;
-  (void)radius_callback_fn;
-  (void)radius_callback_args;
+  (void)get_vlaninfo_fn;
+  (void)ctx_cb;
 
   return mock_ptr_type(struct radius_context *);
 }

@@ -21,14 +21,14 @@
  *
  * @param eloop The eloop context
  * @param rconf The radius config
- * @param radius_callback_fn The radius callback function
+ * @param get_vlaninfo_fn The radius callback function
  * @param radius_callback_args The Radius callback arguments
  * @return Pointer to private RADIUS server context or NULL on failure
  */
 struct radius_context *run_radius(struct eloop_data *eloop,
                                       struct radius_conf *rconf,
-                                      mac_conn_fn radius_callback_fn,
-                                      void *radius_callback_args);
+                                      get_vlaninfo_cb get_vlaninfo_fn,
+                                      void *ctx_cb);
 
 /**
  * @brief Closes the radius service
