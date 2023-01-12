@@ -147,6 +147,25 @@ get_password_attribute_fail:
   return NULL;
 }
 
+int convert_identity2mac(const u8 *identity, size_t identity_len, uint8_t *mac_addr) {
+  char *mac_addr_str = sys_zalloc(identity_len + 1);
+  if (mac_addr_str == NULL) {
+    log_errno("sys_zalloc");
+    return -1;
+  }
+
+  sprintf(mac_addr_str, "%.*s", (int)identity_len, identity);
+
+  if (convert_ascii2mac(mac_addr_str, mac_addr) < 0) {
+    log_error("convert_ascii2mac fail");
+    os_free(mac_addr_str);
+    return -1;
+  }
+  os_free(mac_addr_str);
+
+  return 0;
+}
+
 int radius_get_eap_user(void *ctx, const u8 *identity,
 				       size_t identity_len, int phase2,
 				       struct eap_user *user, struct radius_msg *msg) {
@@ -169,36 +188,57 @@ int radius_get_eap_user(void *ctx, const u8 *identity,
   user->salt = NULL;
 
   if (identity_len && identity != NULL) {
-    char *mac_addr_str = sys_zalloc(identity_len + 1);
-    if (mac_addr_str == NULL) {
-      log_errno("sys_zalloc");
-      return -1;
-    }
-
-    sprintf(mac_addr_str, "%.*s", (int)identity_len, identity);
-
     uint8_t mac_addr[ETHER_ADDR_LEN];
-    if (convert_ascii2mac(mac_addr_str, mac_addr) < 0) {
-      log_error("convert_ascii2mac fail");
-      os_free(mac_addr_str);
+    if (convert_identity2mac(identity, identity_len, mac_addr) < 0) {
+      log_error("convert_identity2mac fail");
       return -1;
     }
 
     log_trace("Received RADIUS identity "MACSTR, MAC2STR(mac_addr));
 
-    if (context->radius_callback_fn != NULL) {
-      struct mac_conn_info info = context->radius_callback_fn(mac_addr, context->radius_callback_args);
+    if (context->get_vlaninfo_fn != NULL) {
+      struct mac_conn_info info = context->get_vlaninfo_fn(mac_addr, context->ctx_cb);
       if (info.vlanid >= 0) {
-        user->macacl = 1;
+        struct hostapd_radius_attr *last_attr = NULL;
+        struct hostapd_radius_attr *vlan_attr = get_vlan_attribute(info.vlanid, &last_attr);
+        if (vlan_attr == NULL) {
+          log_error("get_vlan_attribute fail");
+          return -1;
+        }
 
+        struct radius_hdr *hdr = radius_msg_get_hdr(msg);
+        struct hostapd_radius_attr *pass_attr = get_password_attribute(
+                                                      hdr->authenticator,
+                                                      user->password,
+                                                      user->password_len,
+                                                      info.pass, info.pass_len);
+        if (pass_attr == NULL) {
+          log_error("get_password_attribute fail");
+          free_attr(vlan_attr);
+          return -1;
+        }
+        last_attr->next = pass_attr;
+
+        if (put_attr_mapper(&context->attr_mapper, mac_addr, vlan_attr) < 0) {
+          log_error("put_attr_mapper fail");
+          free_attr(vlan_attr);
+          return -1;
+        }
+
+        if (get_attr_mapper(&context->attr_mapper, mac_addr, &user->accept_attr) < 0) {
+          log_error("get_attr_mapper fail");
+          free_attr(vlan_attr);
+          return -1;
+        }
+
+        user->macacl = 1;
       } else {
         user->macacl = 0;
       }
     } else {
+      log_error("RADIUS callback is NULL");
       user->macacl = 0;
     }
-
-    os_free(mac_addr_str);
   } else {
     log_trace("Identity is NULL for RADIUS EAP user.");
     return -1;
@@ -312,27 +352,20 @@ void close_radius(struct radius_context *context) {
       if (context->sconf->eap_cfg != NULL) {
         os_free(context->sconf->eap_cfg->server_id);
         os_free(context->sconf->eap_cfg);
-        context->sconf->eap_cfg = NULL;
       }
       os_free(context->sconf);
-      context->sconf = NULL;
     }
 
+    free_attr_mapper(&context->attr_mapper);
     radius_server_deinit(context->srv);
-    context->srv = NULL;
     os_free(context);
   }
 }
 
 struct radius_context *run_radius(struct eloop_data *eloop,
                                   struct radius_conf *rconf,
-                                  mac_conn_fn radius_callback_fn,
-                                  void *radius_callback_args) {
-  (void)eloop;
-  (void)rconf;
-  (void)radius_callback_fn;
-  (void)radius_callback_args;
-
+                                  get_vlaninfo_cb get_vlaninfo_fn,
+                                  void *ctx_cb) {
   struct radius_context *context = sys_zalloc(sizeof(struct radius_context));
 
   if (context == NULL) {
@@ -353,8 +386,8 @@ struct radius_context *run_radius(struct eloop_data *eloop,
   }
 
   context->rconf = rconf;
-  context->radius_callback_fn = radius_callback_fn;
-  context->radius_callback_args = radius_callback_args;
+  context->get_vlaninfo_fn = get_vlaninfo_fn;
+  context->ctx_cb = ctx_cb;
 
   if ((context->srv = radius_server_init(context->sconf)) == NULL) {
     log_error("radius_server_init failure");

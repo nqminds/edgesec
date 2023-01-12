@@ -30,15 +30,15 @@ struct radius_conf {
   char radius_secret[RADIUS_SECRET_LEN]; /**< Radius secret string */
 };
 
-typedef struct mac_conn_info (*mac_conn_fn)(uint8_t mac_addr[],
-                                            void *mac_conn_arg);
+typedef struct mac_conn_info (*get_vlaninfo_cb)(uint8_t mac_addr[],
+                                            void *ctx_cb);
 
 struct radius_context {
   struct radius_conf *rconf;
   struct radius_server_conf *sconf;
   struct radius_server_data *srv;
   attr_mac_conn *attr_mapper;
-  mac_conn_fn radius_callback_fn;
-  void *radius_callback_args;
+  get_vlaninfo_cb get_vlaninfo_fn;
+  void *ctx_cb;
 };
 #endif
