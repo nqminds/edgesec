@@ -181,12 +181,12 @@ int radius_get_eap_user(void *ctx, const u8 *identity,
   // user->methods[0].vendor = EAP_VENDOR_IETF;
   // user->methods[0].method = EAP_TYPE_TLS;
 
-	user->password = (u8 *) os_strdup(context->rconf->radius_secret);
-	user->password_len = os_strlen(context->rconf->radius_secret);
-  user->salt = NULL;
-
-  log_trace("radius_get_eap_user: phase2=%d %.*s pass=%.*s", phase2, identity_len, identity, user->password_len, user->password);
+  log_trace("radius_get_eap_user: phase2=%d", phase2);
   if (identity_len && identity != NULL) {
+	  user->password = (u8 *) sys_memdup(identity, identity_len);
+	  user->password_len = identity_len;
+    user->salt = NULL;
+
     uint8_t mac_addr[ETHER_ADDR_LEN];
     if (convert_identity2mac(identity, identity_len, mac_addr) < 0) {
       log_error("convert_identity2mac fail");
