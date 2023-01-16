@@ -37,17 +37,17 @@ if (USE_MDNS_SERVICE)
   add_subdirectory(dns)
 endif ()
 
+if (TARGET hostapd::libeap)
+  set(EAP_TEST_BINARY_DIR "${CMAKE_BINARY_DIR}/tests/data/eap")
+  file(COPY "${CMAKE_SOURCE_DIR}/tests/data/eap" DESTINATION "${CMAKE_BINARY_DIR}/tests/data/")
+endif ()
+
 configure_file("${CMAKE_CURRENT_LIST_DIR}/test-config.ini.in" "${CMAKE_BINARY_DIR}/test-config.ini" @ONLY)
 add_cmocka_test(test_config
   SOURCES test_config.c
   LINK_LIBRARIES cmocka::cmocka log config
 )
 target_compile_definitions(test_config PRIVATE TEST_CONFIG_INI_PATH="${CMAKE_BINARY_DIR}/test-config.ini")
-
-if (TARGET hostapd::libeap)
-  set(EAP_TEST_DIR "${CMAKE_SOURCE_DIR}/tests/data/eap/")
-  add_compile_definitions(EAP_TEST_DIR="${EAP_TEST_DIR}")
-endif ()
 
 if (USE_RADIUS_SERVICE)
   add_cmocka_test(test_edgesec
