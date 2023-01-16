@@ -2677,17 +2677,17 @@ static int get_db_session_fields(void *ctx, int argc, char *argv[], char *col[])
 
 		RADIUS_DEBUG("Session DB: %s=%s", col[i], argv[i]);
 
-		if (os_strcmp(col[i], "identity") == 0) {
+		if (sys_strcmp(col[i], "identity") == 0) {
 			os_free(fields->identity);
 			fields->identity = os_strdup(argv[i]);
-		} else if (os_strcmp(col[i], "nas") == 0) {
+		} else if (sys_strcmp(col[i], "nas") == 0) {
 			os_free(fields->nas);
 			fields->nas = os_strdup(argv[i]);
-		} else if (os_strcmp(col[i], "hs20_t_c_filtering") == 0) {
+		} else if (sys_strcmp(col[i], "hs20_t_c_filtering") == 0) {
 			fields->hs20_t_c_filtering = atoi(argv[i]);
-		} else if (os_strcmp(col[i], "waiting_coa_ack") == 0) {
+		} else if (sys_strcmp(col[i], "waiting_coa_ack") == 0) {
 			fields->waiting_coa_ack = atoi(argv[i]);
-		} else if (os_strcmp(col[i], "coa_ack_received") == 0) {
+		} else if (sys_strcmp(col[i], "coa_ack_received") == 0) {
 			fields->coa_ack_received = atoi(argv[i]);
 		}
 	}
@@ -2732,21 +2732,21 @@ int radius_server_dac_request(struct radius_server_data *data, const char *req)
 
 	/* req: <disconnect|coa> <MAC Address> [t_c_clear] */
 
-	if (os_strncmp(pos, "disconnect ", 11) == 0) {
+	if (sys_strncmp(pos, "disconnect ", 11) == 0) {
 		disconnect = 1;
 		pos += 11;
-	} else if (os_strncmp(req, "coa ", 4) == 0) {
+	} else if (sys_strncmp(req, "coa ", 4) == 0) {
 		disconnect = 0;
 		pos += 4;
 	} else {
 		return -1;
 	}
 
-	if (hwaddr_aton(pos, addr))
+	if (convert_ascii2mac(pos, addr))
 		return -1;
-	pos = os_strchr(pos, ' ');
+	pos = sys_strchr(pos, ' ');
 	if (pos) {
-		if (os_strstr(pos, "t_c_clear"))
+		if (sys_strstr(pos, "t_c_clear"))
 			t_c_clear = 1;
 	}
 

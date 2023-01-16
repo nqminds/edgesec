@@ -68,6 +68,14 @@
 #define sys_strncmp(s1, s2, n) strncmp((s1), (s2), (n))
 #endif
 
+#ifndef sys_strcmp
+#define sys_strcmp(s1, s2) strcmp((s1), (s2))
+#endif
+
+#ifndef sys_strchr
+#define sys_strchr(s, c) strchr((s), (c))
+#endif
+
 struct find_dir_type {
   int proc_running;
   char *proc_name;

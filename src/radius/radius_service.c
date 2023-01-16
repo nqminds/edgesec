@@ -185,17 +185,17 @@ int radius_get_eap_user(void *ctx, const u8 *identity,
 	  // user->password_len = identity_len;
     // user->salt = NULL;
 
-    uint8_t mac_addr[ETHER_ADDR_LEN];
-    if (convert_identity2mac(identity, identity_len, mac_addr) < 0) {
-      log_error("convert_identity2mac fail");
-      return -1;
-    }
+    // uint8_t mac_addr[ETHER_ADDR_LEN];
+    // if (convert_identity2mac(identity, identity_len, mac_addr) < 0) {
+    //   log_error("convert_identity2mac fail");
+    //   return -1;
+    // }
 
-    log_trace("Received RADIUS identity "MACSTR, MAC2STR(mac_addr));
+    // log_trace("Received RADIUS identity "MACSTR, MAC2STR(mac_addr));
 
     if (context->get_vlaninfo_fn != NULL) {
-      struct mac_conn_info info = context->get_vlaninfo_fn(mac_addr, context->ctx_cb);
-      if (info.vlanid >= 0) {
+      // struct mac_conn_info info = context->get_vlaninfo_fn(mac_addr, context->ctx_cb);
+      // if (info.vlanid >= 0) {
         // struct hostapd_radius_attr *last_attr = NULL;
         // struct hostapd_radius_attr *vlan_attr = get_vlan_attribute(info.vlanid, &last_attr);
         // if (vlan_attr == NULL) {
@@ -230,10 +230,11 @@ int radius_get_eap_user(void *ctx, const u8 *identity,
         //   return -1;
         // }
 
-        user->macacl = 1;
-      } else {
-        user->macacl = 0;
-      }
+      //   user->macacl = 1;
+      // } else {
+      //   user->macacl = 0;
+      // }
+      user->macacl = 1;
     } else {
       log_error("RADIUS callback is NULL");
       user->macacl = 0;
