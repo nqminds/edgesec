@@ -108,6 +108,8 @@ int put_attr_mapper(attr_mac_conn **hmap, uint8_t mac_addr[ETHER_ADDR_LEN], stru
     // Copy the value
     free_attr_contents(s->attr);
     copy_attr_contents(attr, s->attr);
+    // remove the main struct only
+    os_free(attr);
   }
 
   return true;
