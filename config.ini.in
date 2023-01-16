@@ -65,6 +65,10 @@ wpaPskRadius = 2
 
 [radius]
 clientConfigPath = "@EDGESEC_full_local_lib_dir@/radius.conf"
+eapCACertPath = ""
+eapServerCertPath = ""
+eapServerKeyPath = ""
+eapDHPath = ""
 port = 1812
 clientIP = "127.0.0.1"
 clientMask = 32

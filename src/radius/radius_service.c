@@ -313,6 +313,35 @@ static int register_eap_methods(void) {
 
 void *init_eap_tls(struct radius_conf *rconf) {
   (void) rconf;
+  void *tls_ctx = NULL;
+
+  struct tls_config tconf;
+  struct tls_connection_params tparams;
+
+  os_memset(&tconf, 0, sizeof(tconf));
+  tls_ctx = tls_init(&tconf);
+  if ((tls_ctx = tls_init(&tconf)) == NULL) {
+    log_error("tls_init fail");
+    return NULL;
+  }
+
+  os_memset(&tparams, 0, sizeof(tparams));
+  tparams.ca_cert = rconf->eap_ca_cert_path;
+  tparams.client_cert = rconf->eap_server_cert_path;
+  tparams.private_key = rconf->eap_server_key_path;
+  tparams.dh_file = rconf->eap_dh_path;
+
+  if (tls_global_set_params(tls_ctx, &tparams)) {
+    log_error("tls_global_set_params fail");
+    tls_deinit(tls_ctx);
+    return NULL;
+  }
+
+  if (tls_global_set_verify(tls_ctx, 0, 1)) {
+    log_error("tls_global_set_verify fail");
+    tls_deinit(tls_ctx);
+    return NULL;
+  }
 
   return NULL;
 }
