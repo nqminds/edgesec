@@ -238,6 +238,26 @@ bool load_radius_conf(const char *filename, struct app_config *config) {
   sys_strlcpy(config->rconfig.client_conf_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
+  value = os_malloc(INI_BUFFERSIZE);
+  ini_gets("radius", "eapCACertPath", "", value, MAX_OS_PATH_LEN, filename);
+  sys_strlcpy(config->rconfig.eap_ca_cert_path, value, MAX_OS_PATH_LEN);
+  os_free(value);
+
+  value = os_malloc(INI_BUFFERSIZE);
+  ini_gets("radius", "eapServerCertPath", "", value, MAX_OS_PATH_LEN, filename);
+  sys_strlcpy(config->rconfig.eap_server_cert_path, value, MAX_OS_PATH_LEN);
+  os_free(value);
+
+  value = os_malloc(INI_BUFFERSIZE);
+  ini_gets("radius", "eapServerKeyPath", "", value, MAX_OS_PATH_LEN, filename);
+  sys_strlcpy(config->rconfig.eap_server_key_path, value, MAX_OS_PATH_LEN);
+  os_free(value);
+
+  value = os_malloc(INI_BUFFERSIZE);
+  ini_gets("radius", "eapDHPath", "", value, MAX_OS_PATH_LEN, filename);
+  sys_strlcpy(config->rconfig.eap_dh_path, value, MAX_OS_PATH_LEN);
+  os_free(value);
+
   // Load radius port
   config->rconfig.radius_port = (int)ini_getl("radius", "port", 1812, filename);
 

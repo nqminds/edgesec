@@ -22,6 +22,10 @@
  */
 struct radius_conf {
   char client_conf_path[MAX_OS_PATH_LEN];  /**< The client config path string */
+  char eap_ca_cert_path[MAX_OS_PATH_LEN];  /**< The certificate authority file path in pem format */
+  char eap_server_cert_path[MAX_OS_PATH_LEN]; /**< The server certificate file path in pem format */
+  char eap_server_key_path[MAX_OS_PATH_LEN]; /**< The server private key file path */
+  char eap_dh_path[MAX_OS_PATH_LEN]; /**< The Diffie-Hellman config params file path */
   int radius_port;                           /**< Radius port */
   char radius_client_ip[OS_INET_ADDRSTRLEN]; /**< Radius client IP string */
   int radius_client_mask; /**< Radius client IP mask string */
