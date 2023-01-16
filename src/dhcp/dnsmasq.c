@@ -207,14 +207,14 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array) {
   config_dhcpinfo_t *el = NULL;
   char ifname[IF_NAMESIZE];
 
+  log_debug("Writing into %s", dconf->dhcp_conf_path);
+
   FILE *fp = fopen(dconf->dhcp_conf_path, "w");
 
   if (fp == NULL) {
     log_errno("fopen");
     return -1;
   }
-
-  log_debug("Writing into %s", dconf->dhcp_conf_path);
 
   fprintf(fp, "no-resolv\n");
   while ((p = (char **)utarray_next(dns_server_array, p)) != NULL) {
@@ -242,14 +242,15 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array) {
 
 int generate_dnsmasq_script(char *dhcp_script_path,
                             char *supervisor_control_path) {
+
+  log_debug("Writing into %s", dhcp_script_path);
+
   FILE *fp = fopen(dhcp_script_path, "w");
 
   if (fp == NULL) {
     log_errno("fopen");
     return -1;
   }
-
-  log_debug("Writing into %s", dhcp_script_path);
 
   fprintf(fp, DNSMASQ_SCRIPT_STR, supervisor_control_path);
 
