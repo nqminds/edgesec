@@ -64,6 +64,10 @@
 #define os_snprintf snprintf
 #endif
 
+#ifndef sys_strncmp
+#define sys_strncmp(s1, s2, n) strncmp((s1), (s2), (n))
+#endif
+
 struct find_dir_type {
   int proc_running;
   char *proc_name;
@@ -80,6 +84,14 @@ struct os_reltime {
   os_time_t sec;
   os_time_t usec;
 };
+
+/**
+ * sys_strstr - Locate a substring
+ * @param haystack String (haystack) to search from
+ * @param needle Needle to search from haystack
+ * @returns char * Pointer to the beginning of the substring or %NULL if not found
+ */
+char * sys_strstr(const char *haystack, const char *needle);
 
 /**
  * @brief Becomes a daemon

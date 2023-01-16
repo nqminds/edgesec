@@ -29,5 +29,5 @@ else()
   target_link_libraries(radius_server PUBLIC os eloop::eloop PRIVATE attr_mapper radius wpabuf log net)
   target_link_libraries(radius_service PRIVATE radius_server)
 endif ()
-target_compile_definitions(radius_server PRIVATE _DEFAULT_SOURCE _BSD_SOURCE IEEE8021X_EAPOL)
+target_compile_definitions(radius_server PRIVATE _DEFAULT_SOURCE _BSD_SOURCE IEEE8021X_EAPOL CONFIG_TESTING_OPTIONS)
 

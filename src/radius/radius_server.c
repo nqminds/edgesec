@@ -542,11 +542,11 @@ static void radius_server_testing_options(struct radius_session *sess,
 #ifdef CONFIG_TESTING_OPTIONS
 	const char *pos;
 
-	pos = os_strstr(sess->username, "@test-");
+	pos = sys_strstr(sess->username, "@test-");
 	if (pos == NULL)
 		return;
 	pos += 6;
-	if (os_strncmp(pos, "tls-", 4) == 0)
+	if (sys_strncmp(pos, "tls-", 4) == 0)
 		radius_server_testing_options_tls(sess, pos + 4, eap_conf);
 	else
 		srv_log(sess, "Unrecognized test: %s", pos);

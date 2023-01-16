@@ -171,22 +171,19 @@ int convert_identity2mac(const u8 *identity, size_t identity_len, uint8_t *mac_a
 int radius_get_eap_user(void *ctx, const u8 *identity,
 				       size_t identity_len, int phase2,
 				       struct eap_user *user, struct radius_msg *msg) {
-  (void)identity;
-  (void)identity_len;
   (void)msg;
-
   struct radius_context *context = (struct radius_context *) ctx;
 
   os_memset(user, 0, sizeof(*user));
 
-  // user->methods[0].vendor = EAP_VENDOR_IETF;
-  // user->methods[0].method = EAP_TYPE_TLS;
+  user->methods[0].vendor = EAP_VENDOR_IETF;
+  user->methods[0].method = EAP_TYPE_TLS;
 
   log_trace("radius_get_eap_user: phase2=%d", phase2);
   if (identity_len && identity != NULL) {
-	  user->password = (u8 *) sys_memdup(identity, identity_len);
-	  user->password_len = identity_len;
-    user->salt = NULL;
+	  // user->password = (u8 *) sys_memdup(identity, identity_len);
+	  // user->password_len = identity_len;
+    // user->salt = NULL;
 
     uint8_t mac_addr[ETHER_ADDR_LEN];
     if (convert_identity2mac(identity, identity_len, mac_addr) < 0) {
@@ -199,37 +196,39 @@ int radius_get_eap_user(void *ctx, const u8 *identity,
     if (context->get_vlaninfo_fn != NULL) {
       struct mac_conn_info info = context->get_vlaninfo_fn(mac_addr, context->ctx_cb);
       if (info.vlanid >= 0) {
-        struct hostapd_radius_attr *last_attr = NULL;
-        struct hostapd_radius_attr *vlan_attr = get_vlan_attribute(info.vlanid, &last_attr);
-        if (vlan_attr == NULL) {
-          log_error("get_vlan_attribute fail");
-          return -1;
-        }
+        // struct hostapd_radius_attr *last_attr = NULL;
+        // struct hostapd_radius_attr *vlan_attr = get_vlan_attribute(info.vlanid, &last_attr);
+        // if (vlan_attr == NULL) {
+        //   log_error("get_vlan_attribute fail");
+        //   return -1;
+        // }
 
-        struct radius_hdr *hdr = radius_msg_get_hdr(msg);
-        struct hostapd_radius_attr *pass_attr = get_password_attribute(
-                                                      hdr->authenticator,
-                                                      user->password,
-                                                      user->password_len,
-                                                      info.pass, info.pass_len);
-        if (pass_attr == NULL) {
-          log_error("get_password_attribute fail");
-          free_attr(vlan_attr);
-          return -1;
-        }
-        last_attr->next = pass_attr;
+        // if (msg != NULL) {
+        //   struct radius_hdr *hdr = radius_msg_get_hdr(msg);
+        //   struct hostapd_radius_attr *pass_attr = get_password_attribute(
+        //                                                 hdr->authenticator,
+        //                                                 user->password,
+        //                                                 user->password_len,
+        //                                                 info.pass, info.pass_len);
+        //   if (pass_attr == NULL) {
+        //     log_error("get_password_attribute fail");
+        //     free_attr(vlan_attr);
+        //     return -1;
+        //   }
+        //   last_attr->next = pass_attr;
+        // }
 
-        if (put_attr_mapper(&context->attr_mapper, mac_addr, vlan_attr) < 0) {
-          log_error("put_attr_mapper fail");
-          free_attr(vlan_attr);
-          return -1;
-        }
+        // if (put_attr_mapper(&context->attr_mapper, mac_addr, vlan_attr) < 0) {
+        //   log_error("put_attr_mapper fail");
+        //   free_attr(vlan_attr);
+        //   return -1;
+        // }
 
-        if (get_attr_mapper(&context->attr_mapper, mac_addr, &user->accept_attr) < 0) {
-          log_error("get_attr_mapper fail");
-          free_attr(vlan_attr);
-          return -1;
-        }
+        // if (get_attr_mapper(&context->attr_mapper, mac_addr, &user->accept_attr) < 0) {
+        //   log_error("get_attr_mapper fail");
+        //   free_attr(vlan_attr);
+        //   return -1;
+        // }
 
         user->macacl = 1;
       } else {
@@ -367,7 +366,7 @@ struct eap_config* generate_eap_config(struct radius_conf *rconf) {
 
 #define TLS_CONN_DISABLE_TLSv1_3 BIT(13)
 
-	cfg->tls_flags = TLS_CONN_DISABLE_TLSv1_3;
+	// cfg->tls_flags = TLS_CONN_DISABLE_TLSv1_3;
 	cfg->max_auth_rounds = 100;
 	cfg->max_auth_rounds_short = 50;
 	cfg->server_id = (u8 *) os_strdup(EAP_SERVER_IDENTITY);
