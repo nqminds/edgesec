@@ -21,6 +21,7 @@
 #include "common.h"
 
 #include <eloop.h>
+#include <crypto/tls.h>
 #include <eap_server/eap.h>
 
 #include "../supervisor/mac_mapper.h"
@@ -262,8 +263,61 @@ int generate_client_conf(struct radius_conf *rconf) {
   return 0;
 }
 
+static int eap_server_register_methods(void) {
+  int ret = 0;
+
+  ret = eap_server_identity_register();
+  
+  if (ret == 0) {
+    ret = eap_server_md5_register();
+  }
+
+  if (ret == 0) {
+    ret = eap_server_tls_register();
+  }
+
+  if (ret == 0) {
+    ret = eap_server_mschapv2_register();
+  }
+
+  if (ret == 0) {
+    ret = eap_server_peap_register();
+  }
+
+  if (ret == 0) {
+    ret = eap_server_gtc_register();
+  }
+
+  if (ret == 0) {
+    ret = eap_server_ttls_register();
+  }
+
+  if (ret == 0) {
+    ret = eap_server_pax_register();
+  }
+
+  if (ret == 0) {
+    ret = eap_server_psk_register();
+  }
+
+  if (ret == 0) {
+    ret = eap_server_sake_register();
+  }
+
+  if (ret == 0) {
+    ret = eap_server_gpsk_register();
+  }
+
+  return ret;
+}
+
 struct eap_config* generate_eap_config(struct radius_conf *rconf) {
   (void)rconf;
+
+  if (eap_server_register_methods() < 0) {
+    log_error("eap_server_register_methods fail");
+    return NULL;
+  }
 
   struct eap_config *cfg = sys_zalloc(sizeof(struct eap_config));
 
