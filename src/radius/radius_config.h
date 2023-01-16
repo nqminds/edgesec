@@ -40,5 +40,6 @@ struct radius_context {
   attr_mac_conn *attr_mapper;
   get_vlaninfo_cb get_vlaninfo_fn;
   void *ctx_cb;
+  void *tls_ctx;
 };
 #endif
