@@ -263,7 +263,7 @@ int generate_client_conf(struct radius_conf *rconf) {
   return 0;
 }
 
-static int eap_server_register_methods(void) {
+static int register_eap_methods(void) {
   int ret = 0;
 
   ret = eap_server_identity_register();
@@ -311,14 +311,14 @@ static int eap_server_register_methods(void) {
   return ret;
 }
 
-// int eap_test_server_init_tls(void)
+void *init_eap_tls(struct radius_conf *rconf) {
+  (void) rconf;
+
+  return NULL;
+}
+
 struct eap_config* generate_eap_config(struct radius_conf *rconf) {
   (void)rconf;
-
-  if (eap_server_register_methods() < 0) {
-    log_error("eap_server_register_methods fail");
-    return NULL;
-  }
 
   struct eap_config *cfg = sys_zalloc(sizeof(struct eap_config));
 
@@ -383,11 +383,6 @@ int generate_radius_server_conf(struct eloop_data *eloop,
 	context->sconf->conf_ctx = (void *)context;
 	context->sconf->get_eap_user = radius_get_eap_user;
 
-  if((context->sconf->eap_cfg = generate_eap_config(rconf)) == NULL) {
-    log_error("generate_eap_config fail");
-    return -1;
-  }
-
   context->sconf->acct_port = 0;
   context->sconf->sqlite_file = NULL;
   context->sconf->subscr_remediation_url = NULL;
@@ -405,17 +400,17 @@ void close_radius(struct radius_context *context) {
     if (context->sconf != NULL) {
       if (context->sconf->eap_cfg != NULL) {
         os_free(context->sconf->eap_cfg->server_id);
+        if (context->sconf->eap_cfg->ssl_ctx != NULL) {
+          tls_deinit(context->sconf->eap_cfg->ssl_ctx);
+        }
         os_free(context->sconf->eap_cfg);
+        eap_server_unregister_methods();
       }
       os_free(context->sconf);
     }
 
     free_attr_mapper(&context->attr_mapper);
     radius_server_deinit(context->srv);
-    eap_server_unregister_methods();
-    if (context->tls_ctx != NULL) {
-      tls_deinit(context->tls_ctx);
-    }
     os_free(context);
   }
 }
@@ -446,6 +441,24 @@ struct radius_context *run_radius(struct eloop_data *eloop,
   context->rconf = rconf;
   context->get_vlaninfo_fn = get_vlaninfo_fn;
   context->ctx_cb = ctx_cb;
+
+  if (register_eap_methods() < 0) {
+    log_error("eap_server_register_methods fail");
+    close_radius(context);
+    return NULL;
+  }
+
+  if((context->sconf->eap_cfg = generate_eap_config(rconf)) == NULL) {
+    log_error("generate_eap_config fail");
+    close_radius(context);
+    return NULL;
+  }
+
+  if((context->sconf->eap_cfg->ssl_ctx = init_eap_tls(rconf)) == NULL) {
+    log_error("init_eap_tls fail");
+    close_radius(context);
+    return NULL;
+  }
 
   if ((context->srv = radius_server_init(context->sconf)) == NULL) {
     log_error("radius_server_init failure");
