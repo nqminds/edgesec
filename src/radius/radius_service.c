@@ -311,6 +311,7 @@ static int eap_server_register_methods(void) {
   return ret;
 }
 
+// int eap_test_server_init_tls(void)
 struct eap_config* generate_eap_config(struct radius_conf *rconf) {
   (void)rconf;
 
@@ -411,6 +412,10 @@ void close_radius(struct radius_context *context) {
 
     free_attr_mapper(&context->attr_mapper);
     radius_server_deinit(context->srv);
+    eap_server_unregister_methods();
+    if (context->tls_ctx != NULL) {
+      tls_deinit(context->tls_ctx);
+    }
     os_free(context);
   }
 }
