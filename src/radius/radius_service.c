@@ -320,23 +320,30 @@ static int register_eap_methods(void) {
 }
 
 void *init_eap_tls(struct radius_conf *rconf) {
-  (void) rconf;
   void *tls_ctx = NULL;
 
   struct tls_config tconf;
   struct tls_connection_params tparams;
 
   os_memset(&tconf, 0, sizeof(tconf));
-  tls_ctx = tls_init(&tconf);
+
   if ((tls_ctx = tls_init(&tconf)) == NULL) {
     log_error("tls_init fail");
     return NULL;
   }
 
   os_memset(&tparams, 0, sizeof(tparams));
+
+  log_trace("Loading EAP CA file %s", rconf->eap_ca_cert_path);
   tparams.ca_cert = rconf->eap_ca_cert_path;
+
+  log_trace("Loading EAP server certificate file %s", rconf->eap_server_cert_path);
   tparams.client_cert = rconf->eap_server_cert_path;
+
+  log_trace("Loading EAP server private key file %s", rconf->eap_server_key_path);
   tparams.private_key = rconf->eap_server_key_path;
+
+  log_trace("Loading EAP DH config params file %s", rconf->eap_dh_path);
   tparams.dh_file = rconf->eap_dh_path;
 
   if (tls_global_set_params(tls_ctx, &tparams)) {
@@ -364,7 +371,6 @@ struct eap_config* generate_eap_config(struct radius_conf *rconf) {
     return NULL;
   }
 
-	cfg->ssl_ctx = NULL; // Actual ssl context
 	cfg->tls_session_lifetime = 0;
 
 #define TLS_CONN_DISABLE_TLSv1_3 BIT(13)
@@ -376,8 +382,8 @@ struct eap_config* generate_eap_config(struct radius_conf *rconf) {
 	cfg->server_id_len = os_strlen(EAP_SERVER_IDENTITY);
 	cfg->erp = -1;
 
-  /*
-  cfg->eap_server = 0;
+  cfg->eap_server = 1;
+/*
 	cfg->msg_ctx = NULL;
 	cfg->eap_sim_db_priv = NULL;
   cfg->pac_opaque_encr_key = 0;
