@@ -217,6 +217,11 @@ static void test_edgesec(void **state) {
 
   assert_int_equal(load_app_config(TEST_CONFIG_INI_PATH, &config), 0);
 
+  strcpy(config.rconfig.eap_ca_cert_path, EAP_TEST_DIR "ca.pem");
+  strcpy(config.rconfig.eap_server_cert_path, EAP_TEST_DIR "server.pem");
+  strcpy(config.rconfig.eap_server_key_path, EAP_TEST_DIR "server.key");
+  strcpy(config.rconfig.eap_dh_path, EAP_TEST_DIR "dh.conf");
+
 #ifdef WITH_CRYPTO_SERVICE
   os_strlcpy(config.crypt_secret, "test", MAX_USER_SECRET);
 #endif
