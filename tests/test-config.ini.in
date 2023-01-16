@@ -63,10 +63,10 @@ wpaPskRadius = 2
 
 [radius]
 clientConfigPath = "/tmp/radius.conf"
-eapCACertPath = ""
-eapServerCertPath = ""
-eapServerKeyPath = ""
-eapDHPath = ""
+eapCACertPath = "@EAP_TEST_BINARY_DIR@/ca.pem"
+eapServerCertPath = "@EAP_TEST_BINARY_DIR@/server.pem"
+eapServerKeyPath = "@EAP_TEST_BINARY_DIR@/server.key"
+eapDHPath = "@EAP_TEST_BINARY_DIR@/dh.conf"
 port = 54321
 clientIP = "127.0.0.1"
 clientMask = 32
