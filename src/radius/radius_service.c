@@ -367,12 +367,12 @@ struct eap_config* generate_eap_config(struct radius_conf *rconf) {
 
 #define TLS_CONN_DISABLE_TLSv1_3 BIT(13)
 
-	// cfg->tls_flags = TLS_CONN_DISABLE_TLSv1_3;
+	cfg->tls_flags = TLS_CONN_DISABLE_TLSv1_3;
 	cfg->max_auth_rounds = 100;
 	cfg->max_auth_rounds_short = 50;
 	cfg->server_id = (u8 *) os_strdup(EAP_SERVER_IDENTITY);
 	cfg->server_id_len = os_strlen(EAP_SERVER_IDENTITY);
-	cfg->erp = -1;
+	// cfg->erp = -1;
 
   cfg->eap_server = 1;
 /*
