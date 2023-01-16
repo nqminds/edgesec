@@ -44,6 +44,11 @@ add_cmocka_test(test_config
 )
 target_compile_definitions(test_config PRIVATE TEST_CONFIG_INI_PATH="${CMAKE_BINARY_DIR}/test-config.ini")
 
+if (TARGET hostapd::libeap)
+  set(EAP_TEST_DIR "${CMAKE_SOURCE_DIR}/tests/data/eap/")
+  add_compile_definitions(EAP_TEST_DIR="${EAP_TEST_DIR}")
+endif ()
+
 if (USE_RADIUS_SERVICE)
   add_cmocka_test(test_edgesec
     SOURCES test_edgesec.c
@@ -80,6 +85,7 @@ endif()
 if (USE_MDNS_SERVICE)
   target_link_options(test_runctl PRIVATE "LINKER:--wrap=run_mdns_thread")
 endif()
+
 if (USE_UCI_SERVICE)
   target_link_libraries(test_runctl PRIVATE __wrap_uwrt_init_context)
   target_link_libraries(test_edgesec PRIVATE __wrap_uwrt_init_context)

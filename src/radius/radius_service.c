@@ -343,7 +343,7 @@ void *init_eap_tls(struct radius_conf *rconf) {
     return NULL;
   }
 
-  return NULL;
+  return tls_ctx;
 }
 
 struct eap_config* generate_eap_config(struct radius_conf *rconf) {
