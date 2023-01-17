@@ -52,9 +52,9 @@ target_compile_definitions(test_config PRIVATE TEST_CONFIG_INI_PATH="${CMAKE_BIN
 if (USE_RADIUS_SERVICE)
   add_cmocka_test(test_edgesec
     SOURCES test_edgesec.c
-    LINK_LIBRARIES radius radius_client sockctl runctl cmocka::cmocka log config
+    LINK_LIBRARIES os eloop sockctl radius_client cmocka::cmocka runctl config
   )
-  target_compile_definitions(test_edgesec PRIVATE TEST_CONFIG_INI_PATH="${CMAKE_BINARY_DIR}/test-config.ini")
+  target_compile_definitions(test_edgesec PRIVATE TEST_CONFIG_INI_PATH="${CMAKE_BINARY_DIR}/test-config.ini" _DEFAULT_SOURCE _BSD_SOURCE IEEE8021X_EAPOL)
   set_tests_properties(test_edgesec PROPERTIES TIMEOUT 10)
 endif()
 

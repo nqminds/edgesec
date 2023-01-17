@@ -28,12 +28,6 @@ if (BUILD_HOSTAPD)
     @ONLY
   )
 
-  configure_file(
-    "${CMAKE_CURRENT_LIST_DIR}/eap.Makefile.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/eap.Makefile"
-    @ONLY
-  )
-
   FetchContent_Declare(hostapdsrc
     URL https://w1.fi/releases/hostapd-2.10.tar.gz
     URL_HASH SHA512=243baa82d621f859d2507d8d5beb0ebda15a75548a62451dc9bca42717dcc8607adac49b354919a41d8257d16d07ac7268203a79750db0cfb34b51f80ff1ce8f
@@ -91,7 +85,7 @@ if (BUILD_HOSTAPD_EAP_LIB)
       INSTALL_DIR "${LIBEAP_INSTALL_DIR}" # we have to set this in the `.config` file
       CONFIGURE_COMMAND
         COMMAND ${CMAKE_COMMAND} -E make_directory <SOURCE_DIR>/libeap
-        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_LIST_DIR}/libeap.mak" <SOURCE_DIR>/libeap/Makefile
+        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_LIST_DIR}/libeap.mk" <SOURCE_DIR>/libeap/Makefile
         COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/hostapd-eap.config" <SOURCE_DIR>/libeap/.config
       BUILD_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" "${MAKE_COMMAND}" -C <BINARY_DIR>/libeap
       INSTALL_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" "${MAKE_COMMAND}" -C <BINARY_DIR>/libeap install
@@ -99,7 +93,7 @@ if (BUILD_HOSTAPD_EAP_LIB)
   ExternalProject_Add_StepDependencies(
     hostapd_libeap_project
     configure
-    "${CMAKE_CURRENT_LIST_DIR}/libeap.mak"
+    "${CMAKE_CURRENT_LIST_DIR}/libeap.mk"
     "${CMAKE_CURRENT_BINARY_DIR}/hostapd-eap.config"
   )
 
@@ -118,6 +112,7 @@ if (BUILD_HOSTAPD_EAP_LIB)
 
   set_target_properties(hostapd::libeap PROPERTIES
       IMPORTED_LOCATION "${LIBEAP_LIB}"
+      INTERFACE_LINK_LIBRARIES OpenSSL3::Crypto
       INTERFACE_INCLUDE_DIRECTORIES "${LIBEAP_INCLUDE_DIRS}"
   )
 

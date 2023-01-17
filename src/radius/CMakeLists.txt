@@ -33,7 +33,7 @@ target_compile_definitions(radius_server
 
 if (BUILD_EAP_LIB)
   target_compile_definitions(radius_server PRIVATE WITH_EAP_LIB)
-  target_link_libraries(radius_server PUBLIC hostapd::libeap PRIVATE net SQLite::SQLite3)
+  target_link_libraries(radius_server PUBLIC hostapd::libeap OpenSSL::SSL PRIVATE net SQLite::SQLite3)
 else ()
   target_link_libraries(radius_server PUBLIC os PRIVATE log net)
 endif ()

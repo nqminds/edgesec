@@ -69,7 +69,7 @@ static int eap_test_server_init_tls(void) {
   tparams.ca_cert = EAP_TEST_DIR "ca.pem";
   tparams.client_cert = EAP_TEST_DIR "server.pem";
   tparams.private_key = EAP_TEST_DIR "server.key";
-  tparams.dh_file = EAP_TEST_DIR "dh.conf";
+  tparams.dh_file = EAP_TEST_DIR "dh.pem";
 
   if (tls_global_set_params(eap_ctx.tls_ctx, &tparams)) {
     printf("Failed to set TLS parameters\n");
