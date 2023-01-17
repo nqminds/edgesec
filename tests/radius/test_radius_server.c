@@ -50,8 +50,9 @@ struct radius_test_ctx {
   int tagged[2];
 };
 
-struct mac_conn_info get_mac_conn(uint8_t mac_addr[], void *mac_conn_arg) {
+struct mac_conn_info get_mac_conn(uint8_t mac_addr[], void *mac_conn_arg, struct radius_identity_info *iinfo) {
   (void)mac_conn_arg;
+  (void)iinfo;
 
   struct mac_conn_info info = {.vlanid = VLAN_ID};
   log_trace("RADIUS requested mac=%02x:%02x:%02x:%02x:%02x:%02x",

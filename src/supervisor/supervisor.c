@@ -115,7 +115,8 @@ int save_device_vlan(struct supervisor_context *context, uint8_t mac_addr[],
   return 0;
 }
 
-struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg) {
+struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg, struct radius_identity_info *iinfo) {
+  (void)iinfo;
   struct supervisor_context *context =
       (struct supervisor_context *)mac_conn_arg;
   struct mac_conn_info info;

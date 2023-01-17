@@ -58,7 +58,8 @@ static void test_get_mac_conn_cmd(void **state) {
   create_vlan_mapper(ctx.config_ifinfo_array, &ctx.vlan_mapper);
   open_sqlite_macconn_db(":memory:", &ctx.macconn_db);
 
-  struct mac_conn_info info = get_mac_conn_cmd(mac_addr, (void *)&ctx);
+  struct radius_identity_info iinfo;
+  struct mac_conn_info info = get_mac_conn_cmd(mac_addr, (void *)&ctx, &iinfo);
 
   assert_int_equal(info.vlanid, 10);
   struct mac_conn_info info1;
@@ -86,7 +87,8 @@ static void test_get_mac_conn_cmd(void **state) {
   };
   assert_int_equal(save_mac_mapper(&ctx, conn), 0);
 
-  struct mac_conn_info info2 = get_mac_conn_cmd(conn.mac_addr, (void *)&ctx);
+  struct radius_identity_info iinfo2;
+  struct mac_conn_info info2 = get_mac_conn_cmd(conn.mac_addr, (void *)&ctx, &iinfo2);
   assert_int_equal(info2.vlanid, -1);
 
   utarray_free(ctx.config_ifinfo_array);

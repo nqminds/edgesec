@@ -18,9 +18,10 @@
  *
  * @param mac_addr The input MAC adderss
  * @param mac_conn_arg The supervisor_context pointer
+ * @param iinfo The returned idenity info structure
  * @return struct mac_conn_info
  */
-struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg);
+struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg, struct radius_identity_info *iinfo);
 
 /**
  * @brief The AP service callback
