@@ -27,6 +27,7 @@ struct hostapd_params {
   int auth_algs;
   int wpa;
   char *wpa_key_mgmt;
+  int ieee8021x;
   char *rsn_pairwise;
   char *radius_client_ip;
   char *radius_server_ip;

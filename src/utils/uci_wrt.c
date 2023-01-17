@@ -986,6 +986,11 @@ int uwrt_gen_hostapd_instance(const struct uctx *context,
   utarray_push_back(list_properties, &property);
 
   snprintf(property, property_size,
+           "wireless.%s.hostapd_options=ieee8021x=%d", params->device,
+           params->ieee8021x);
+  utarray_push_back(list_properties, &property);
+
+  snprintf(property, property_size,
            "wireless.%s.hostapd_options=rsn_pairwise=%s", params->device,
            params->rsn_pairwise);
   utarray_push_back(list_properties, &property);

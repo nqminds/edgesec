@@ -79,6 +79,7 @@ int generate_hostapd_conf(struct apconf *hconf, struct radius_conf *rconf) {
   params.auth_algs = hconf->auth_algs;
   params.wpa = hconf->wpa;
   params.wpa_key_mgmt = hconf->wpa_key_mgmt;
+  params.ieee8021x = hconf->ieee8021x;
   params.rsn_pairwise = hconf->rsn_pairwise;
   params.radius_client_ip = rconf->radius_client_ip;
   params.radius_server_ip = rconf->radius_server_ip;
@@ -127,6 +128,7 @@ int generate_hostapd_conf(struct apconf *hconf, struct radius_conf *rconf) {
   fprintf(fp, "auth_algs=%d\n", hconf->auth_algs);
   fprintf(fp, "wpa=%d\n", hconf->wpa);
   fprintf(fp, "wpa_key_mgmt=%s\n", hconf->wpa_key_mgmt);
+  fprintf(fp, "ieee8021x=%d\n", hconf->ieee8021x);
   fprintf(fp, "rsn_pairwise=%s\n", hconf->rsn_pairwise);
   fprintf(fp, "ctrl_interface=%s\n", hconf->ctrl_interface);
   fprintf(fp, "own_ip_addr=%s\n", rconf->radius_client_ip);

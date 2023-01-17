@@ -49,6 +49,7 @@ wmmEnabled = 1
 authAlgs = 1
 wpa = 2
 wpaKeyMgmt = "WPA-PSK"
+ieee8021x = 0
 rsnPairwise = "CCMP"
 ctrlInterface = "/tmp"
 macaddrAcl = 2
