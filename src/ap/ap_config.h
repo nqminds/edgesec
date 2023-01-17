@@ -91,6 +91,8 @@ struct apconf {
                                 @see
                                 https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf
                               */
+  int ieee8021x;        /**< The hostapd @c ieee8021x param @see
+                          https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf */
   char rsn_pairwise
       [AP_RSN_PAIRWISE_LEN]; /**< The hostapd @c rsn_pairwise param
                                 @see

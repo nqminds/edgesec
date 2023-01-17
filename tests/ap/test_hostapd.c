@@ -86,6 +86,7 @@ static void test_generate_hostapd_conf(void **state) {
   hconf.auth_algs = 1;
   hconf.wpa = 2;
   strcpy(hconf.wpa_key_mgmt, "WPA-PSK");
+  hconf.ieee8021x = 0;
   strcpy(hconf.rsn_pairwise, "CCMP");
   strcpy(hconf.ctrl_interface, "/var/run/hostapd");
   hconf.macaddr_acl = 2;
@@ -136,6 +137,7 @@ static void test_generate_hostapd_conf(void **state) {
                                      "auth_algs=1\n"
                                      "wpa=2\n"
                                      "wpa_key_mgmt=WPA-PSK\n"
+                                     "ieee8021x=0\n"
                                      "rsn_pairwise=CCMP\n"
                                      "ctrl_interface=/var/run/hostapd\n"
                                      "own_ip_addr=192.168.1.2\n"

@@ -51,6 +51,7 @@ wmmEnabled = 1
 authAlgs = 1
 wpa = 2
 wpaKeyMgmt = "WPA-PSK"
+ieee8021x = 0
 rsnPairwise = "CCMP"
 ctrlInterface = "@EDGESEC_full_runstate_dir@/hostapd"
 macaddrAcl = 2

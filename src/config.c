@@ -401,6 +401,9 @@ bool load_ap_conf(const char *filename, struct app_config *config) {
   os_strlcpy(config->hconfig.wpa_key_mgmt, value, AP_WPA_KEY_MGMT_LEN);
   os_free(value);
 
+  // Load ap ieee8021x
+  config->hconfig.ieee8021x = (int)ini_getl("ap", "ieee8021x", 0, filename);
+
   // Load ap rsnPairwise
   value = os_malloc(INI_BUFFERSIZE);
   ini_gets("ap", "rsnPairwise", "CCMP", value, INI_BUFFERSIZE, filename);
