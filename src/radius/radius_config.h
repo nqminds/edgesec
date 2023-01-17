@@ -34,8 +34,18 @@ struct radius_conf {
   char radius_secret[RADIUS_SECRET_LEN]; /**< Radius secret string */
 };
 
+struct radius_identity_info {
+  char id[MAX_RANDOM_UUID_LEN];      /**< The identity ID */
+  uint8_t mac_addr[ETHER_ADDR_LEN]; /**< MAC address in byte format */
+  uint8_t cert_serial_num[255];     /**< The certificate serial number */
+  int vlanid;
+  uint8_t wifi_pass[AP_SECRET_LEN]; /**< WiFi password assigned to the identity */
+  ssize_t wifi_pass_len; /**< WiFi password length assigned to the identity */
+};
+
 typedef struct mac_conn_info (*get_vlaninfo_cb)(uint8_t mac_addr[],
-                                            void *ctx_cb);
+                                            void *ctx_cb,
+                                            struct radius_identity_info *iinfo);
 
 struct radius_context {
   struct radius_conf *rconf;

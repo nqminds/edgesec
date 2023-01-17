@@ -195,7 +195,8 @@ int radius_get_eap_user(void *ctx, const u8 *identity,
     log_trace("Received RADIUS identity "MACSTR, MAC2STR(mac_addr));
 
     if (context->get_vlaninfo_fn != NULL) {
-      struct mac_conn_info info = context->get_vlaninfo_fn(mac_addr, context->ctx_cb);
+      struct radius_identity_info iinfo;
+      struct mac_conn_info info = context->get_vlaninfo_fn(mac_addr, context->ctx_cb, &iinfo);
       if (info.vlanid >= 0) {
         struct hostapd_radius_attr *last_attr = NULL;
         struct hostapd_radius_attr *vlan_attr = get_vlan_attribute(info.vlanid, &last_attr);
