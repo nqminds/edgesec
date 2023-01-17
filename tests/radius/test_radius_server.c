@@ -33,10 +33,10 @@
 
 #include "supervisor/mac_mapper.h"
 
+#define VLAN_ID 34
 static char *test_radius_conf_file = "/tmp/test-radius.conf";
 
 static uint8_t addr[6] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05};
-static uint8_t saved_addr[6];
 
 static struct eloop_data *eloop = NULL;
 
@@ -45,15 +45,17 @@ struct radius_test_ctx {
   struct hostapd_radius_servers conf;
   uint8_t radius_identifier;
   struct in_addr own_ip_addr;
+  uint8_t code;
+  int untagged;
+  int tagged[2];
 };
 
 struct mac_conn_info get_mac_conn(uint8_t mac_addr[], void *mac_conn_arg) {
   (void)mac_conn_arg;
 
-  struct mac_conn_info info = {.vlanid = 0};
+  struct mac_conn_info info = {.vlanid = VLAN_ID};
   log_trace("RADIUS requested mac=%02x:%02x:%02x:%02x:%02x:%02x",
             MAC2STR(mac_addr));
-  memcpy(saved_addr, mac_addr, 6);
   return info;
 }
 
@@ -67,9 +69,11 @@ static RadiusRxResult receive_auth(struct radius_msg *msg,
   (void)shared_secret_len;
   (void)data;
 
-  /* struct radius_test_ctx *ctx = data; */
-  log_trace("Received RADIUS Authentication message; code=%d",
-            radius_msg_get_hdr(msg)->code);
+  struct radius_test_ctx *ctx = data;
+  ctx->code = radius_msg_get_hdr(msg)->code;
+  radius_msg_get_vlanid(msg, &ctx->untagged, 1,
+                          ctx->tagged);
+  log_trace("Received RADIUS Authentication message; code=%d", ctx->code);
 
   /* We're done for this example, so request eloop to terminate. */
   eloop_terminate(eloop);
@@ -112,8 +116,10 @@ static void start_test(void *eloop_ctx, void *timeout_ctx) {
     return;
   }
 
+  char user_password[COMPACT_MACSTR_LEN];
+  sprintf(user_password, COMPACT_MACSTR, MAC2STR(addr));
   if (!radius_msg_add_attr_user_password(
-          msg, (uint8_t *)"radius", 6, ctx->conf.auth_server->shared_secret,
+          msg, (uint8_t *)user_password, strlen(user_password), ctx->conf.auth_server->shared_secret,
           ctx->conf.auth_server->shared_secret_len)) {
     log_trace("Could not add User-Password");
     radius_msg_free(msg);
@@ -190,8 +196,8 @@ static void test_radius_server_init(void **state) {
 
   eloop_run(eloop);
 
-  int cmp = memcmp(&saved_addr[0], &addr[0], 6);
-  assert_int_equal(cmp, 0);
+  assert_int_equal(ctx.code, RADIUS_CODE_ACCESS_ACCEPT);
+  assert_int_equal(ctx.untagged, VLAN_ID);
 
   radius_client_deinit(ctx.radius);
   close_radius(radius_srv_ctx);

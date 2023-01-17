@@ -28,7 +28,7 @@
 #include "utils/sockctl.h"
 
 #define AP_CTRL_IFACE_PATH "/tmp/wifi0"
-#define SUPERVISOR_CONTROL_PATH "/tmp/edgesec-control-server"
+#define SUPERVISOR_CONTROL_PATH "/tmp/test-edgesec-control-server"
 
 pthread_mutex_t log_lock;
 
@@ -90,9 +90,10 @@ static RadiusRxResult receive_auth(struct radius_msg *msg,
   (void)shared_secret_len;
   struct eloop_data *eloop = (struct eloop_data *)data;
 
+  uint8_t code = radius_msg_get_hdr(msg)->code;
   log_trace("Received RADIUS Authentication message; code=%d",
             radius_msg_get_hdr(msg)->code);
-
+  assert_int_equal(code, RADIUS_CODE_ACCESS_ACCEPT);
   /* We're done for this example, so request eloop to terminate. */
   eloop_terminate(eloop);
 
@@ -174,7 +175,10 @@ void *supervisor_client_thread(void *arg) {
   assert_non_null(radius_msg_add_attr(msg, RADIUS_ATTR_CALLING_STATION_ID,
                                       (uint8_t *)buf, strlen(buf)));
 
-  assert_non_null(radius_msg_add_attr_user_password(msg, (uint8_t *)"radius", 6,
+  char user_password[COMPACT_MACSTR_LEN];
+  sprintf(user_password, COMPACT_MACSTR, MAC2STR(addr));
+
+  assert_non_null(radius_msg_add_attr_user_password(msg, (uint8_t *)user_password, strlen(user_password),
                                                     server.shared_secret,
                                                     server.shared_secret_len));
 
@@ -191,7 +195,7 @@ void *supervisor_client_thread(void *arg) {
   writeread_domain_data_str(socket_path, command, &reply);
   if (reply != NULL) {
     if (strstr(reply, "a,00:01:02:03:04:05,,,2,1,,") == NULL) {
-      fail_msg("Wrong GET_MAP commadn reply");
+      fail_msg("Wrong GET_MAP command reply");
     }
     os_free(reply);
   }

@@ -181,60 +181,59 @@ int radius_get_eap_user(void *ctx, const u8 *identity,
 
   log_trace("radius_get_eap_user: phase2=%d", phase2);
   if (identity_len && identity != NULL) {
-	  // user->password = (u8 *) sys_memdup(identity, identity_len);
-	  // user->password_len = identity_len;
-    // user->salt = NULL;
+	  user->password = (u8 *) sys_memdup(identity, identity_len);
+	  user->password_len = identity_len;
+    user->salt = NULL;
 
-    // uint8_t mac_addr[ETHER_ADDR_LEN];
-    // if (convert_identity2mac(identity, identity_len, mac_addr) < 0) {
-    //   log_error("convert_identity2mac fail");
-    //   return -1;
-    // }
+    uint8_t mac_addr[ETHER_ADDR_LEN];
+    if (convert_identity2mac(identity, identity_len, mac_addr) < 0) {
+      log_error("convert_identity2mac fail");
+      return -1;
+    }
 
-    // log_trace("Received RADIUS identity "MACSTR, MAC2STR(mac_addr));
+    log_trace("Received RADIUS identity "MACSTR, MAC2STR(mac_addr));
 
     if (context->get_vlaninfo_fn != NULL) {
-      // struct mac_conn_info info = context->get_vlaninfo_fn(mac_addr, context->ctx_cb);
-      // if (info.vlanid >= 0) {
-        // struct hostapd_radius_attr *last_attr = NULL;
-        // struct hostapd_radius_attr *vlan_attr = get_vlan_attribute(info.vlanid, &last_attr);
-        // if (vlan_attr == NULL) {
-        //   log_error("get_vlan_attribute fail");
-        //   return -1;
-        // }
+      struct mac_conn_info info = context->get_vlaninfo_fn(mac_addr, context->ctx_cb);
+      if (info.vlanid >= 0) {
+        struct hostapd_radius_attr *last_attr = NULL;
+        struct hostapd_radius_attr *vlan_attr = get_vlan_attribute(info.vlanid, &last_attr);
+        if (vlan_attr == NULL) {
+          log_error("get_vlan_attribute fail");
+          return -1;
+        }
 
-        // if (msg != NULL) {
-        //   struct radius_hdr *hdr = radius_msg_get_hdr(msg);
-        //   struct hostapd_radius_attr *pass_attr = get_password_attribute(
-        //                                                 hdr->authenticator,
-        //                                                 user->password,
-        //                                                 user->password_len,
-        //                                                 info.pass, info.pass_len);
-        //   if (pass_attr == NULL) {
-        //     log_error("get_password_attribute fail");
-        //     free_attr(vlan_attr);
-        //     return -1;
-        //   }
-        //   last_attr->next = pass_attr;
-        // }
+        if (msg != NULL) {
+          struct radius_hdr *hdr = radius_msg_get_hdr(msg);
+          struct hostapd_radius_attr *pass_attr = get_password_attribute(
+                                                        hdr->authenticator,
+                                                        user->password,
+                                                        user->password_len,
+                                                        info.pass, info.pass_len);
+          if (pass_attr == NULL) {
+            log_error("get_password_attribute fail");
+            free_attr(vlan_attr);
+            return -1;
+          }
+          last_attr->next = pass_attr;
+        }
 
-        // if (put_attr_mapper(&context->attr_mapper, mac_addr, vlan_attr) < 0) {
-        //   log_error("put_attr_mapper fail");
-        //   free_attr(vlan_attr);
-        //   return -1;
-        // }
+        if (put_attr_mapper(&context->attr_mapper, mac_addr, vlan_attr) < 0) {
+          log_error("put_attr_mapper fail");
+          free_attr(vlan_attr);
+          return -1;
+        }
 
-        // if (get_attr_mapper(&context->attr_mapper, mac_addr, &user->accept_attr) < 0) {
-        //   log_error("get_attr_mapper fail");
-        //   free_attr(vlan_attr);
-        //   return -1;
-        // }
+        if (get_attr_mapper(&context->attr_mapper, mac_addr, &user->accept_attr) < 0) {
+          log_error("get_attr_mapper fail");
+          free_attr(vlan_attr);
+          return -1;
+        }
 
-      //   user->macacl = 1;
-      // } else {
-      //   user->macacl = 0;
-      // }
-      user->macacl = 1;
+        user->macacl = 1;
+      } else {
+        user->macacl = 0;
+      }
     } else {
       log_error("RADIUS callback is NULL");
       user->macacl = 0;
