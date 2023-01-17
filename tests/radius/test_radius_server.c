@@ -144,7 +144,7 @@ static void test_radius_server_init(void **state) {
   strcpy(rconf.eap_ca_cert_path, EAP_TEST_DIR "ca.pem");
   strcpy(rconf.eap_server_cert_path, EAP_TEST_DIR "server.pem");
   strcpy(rconf.eap_server_key_path, EAP_TEST_DIR "server.key");
-  strcpy(rconf.eap_dh_path, EAP_TEST_DIR "dh.conf");
+  strcpy(rconf.eap_dh_path, EAP_TEST_DIR "dh.pem");
 
   strcpy(rconf.radius_client_ip, "127.0.0.1");
   strcpy(rconf.radius_server_ip, "127.0.0.1");
