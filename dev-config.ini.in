@@ -64,10 +64,10 @@ wpaPskRadius = 2
 
 [radius]
 clientConfigPath = "/tmp/radius.conf"
-eapCACertPath = ""
-eapServerCertPath = ""
-eapServerKeyPath = ""
-eapDHPath = ""
+eapCACertPath = "@CMAKE_CURRENT_LIST_DIR@/tests/data/eap/ca.pem"
+eapServerCertPath = "@CMAKE_CURRENT_LIST_DIR@/tests/data/eap/server.pem"
+eapServerKeyPath = "@CMAKE_CURRENT_LIST_DIR@/tests/data/eap/server.key"
+eapDHPath = "@CMAKE_CURRENT_LIST_DIR@/tests/data/eap/dh.pem"
 port = 1812
 clientIP = "127.0.0.1"
 clientMask = 32
