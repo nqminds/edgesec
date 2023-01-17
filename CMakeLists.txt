@@ -237,9 +237,9 @@ configure_file(
 # Copy the default configuration file to the build folder
 # This config file is for development, not for `make install` use
 configure_file(
-  "dev-config.ini"
+  "dev-config.ini.in"
   "${PROJECT_BINARY_DIR}/dev-config.ini"
-  COPYONLY # does not edit the file
+  @ONLY
 )
 
 include(doxygen)

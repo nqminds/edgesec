@@ -11,9 +11,10 @@ include_directories (
   "${PROJECT_SOURCE_DIR}/src"
 )
 
+# tests may modify these files, so we only run on a copy
+file(COPY "${CMAKE_SOURCE_DIR}/tests/data" DESTINATION "${CMAKE_BINARY_DIR}/tests")
+
 if (USE_UCI_SERVICE)
-  # tests may modify these files, so we only run on a copy
-  file(COPY "${CMAKE_SOURCE_DIR}/tests/data/uci" DESTINATION "${CMAKE_BINARY_DIR}/tests/data")
   set(UCI_CONFIG_DIR "${CMAKE_BINARY_DIR}/tests/data/uci")
   add_compile_definitions(UCI_CONFIG_DIR="${UCI_CONFIG_DIR}")
 endif ()
@@ -39,7 +40,6 @@ endif ()
 
 if (TARGET hostapd::libeap)
   set(EAP_TEST_BINARY_DIR "${CMAKE_BINARY_DIR}/tests/data/eap")
-  file(COPY "${CMAKE_SOURCE_DIR}/tests/data/eap" DESTINATION "${CMAKE_BINARY_DIR}/tests/data/")
 endif ()
 
 configure_file("${CMAKE_CURRENT_LIST_DIR}/test-config.ini.in" "${CMAKE_BINARY_DIR}/test-config.ini" @ONLY)
