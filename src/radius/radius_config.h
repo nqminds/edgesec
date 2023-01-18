@@ -43,16 +43,17 @@ struct radius_identity_info {
   ssize_t wifi_pass_len; /**< WiFi password length assigned to the identity */
 };
 
-typedef struct mac_conn_info (*get_vlaninfo_cb)(uint8_t mac_addr[],
-                                            void *ctx_cb,
-                                            struct radius_identity_info *iinfo);
+typedef struct mac_conn_info (*get_identity_ac_cb)(const uint8_t *identity,
+                                                size_t identity_len,  
+                                                void *ctx_cb,
+                                                struct radius_identity_info *iinfo);
 
 struct radius_context {
   struct radius_conf *rconf;
   struct radius_server_conf *sconf;
   struct radius_server_data *srv;
   attr_mac_conn *attr_mapper;
-  get_vlaninfo_cb get_vlaninfo_fn;
+  get_identity_ac_cb get_identity_ac_fn;
   void *ctx_cb;
   void *tls_ctx;
 };

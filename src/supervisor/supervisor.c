@@ -115,11 +115,45 @@ int save_device_vlan(struct supervisor_context *context, uint8_t mac_addr[],
   return 0;
 }
 
-struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg, struct radius_identity_info *iinfo) {
+int convert_identity2mac(const u8 *identity, size_t identity_len, uint8_t *mac_addr) {
+  char *mac_addr_str = sys_zalloc(identity_len + 1);
+  if (mac_addr_str == NULL) {
+    log_errno("sys_zalloc");
+    return -1;
+  }
+
+  sprintf(mac_addr_str, "%.*s", (int)identity_len, identity);
+
+  if (convert_ascii2mac(mac_addr_str, mac_addr) < 0) {
+    log_error("convert_ascii2mac fail");
+    os_free(mac_addr_str);
+    return -1;
+  }
+  os_free(mac_addr_str);
+
+  return 0;
+}
+
+struct mac_conn_info get_identity_ac(const uint8_t *identity, size_t identity_len,
+                                      void *mac_conn_arg, struct radius_identity_info *iinfo) {
   (void)iinfo;
   struct supervisor_context *context =
       (struct supervisor_context *)mac_conn_arg;
   struct mac_conn_info info;
+
+  if (iinfo == NULL) {
+    log_error("iinfo param is NULL");
+    info.vlanid = -1;
+    return info;    
+  }
+
+  uint8_t mac_addr[ETHER_ADDR_LEN];
+  if (convert_identity2mac(identity, identity_len, mac_addr) < 0) {
+    log_error("convert_identity2mac fail");
+    info.vlanid = -1;
+    return info;
+  }
+
   int alloc_vlanid = (context->allocate_vlans)
                          ? allocate_vlan(context, mac_addr, VLAN_ALLOCATE_HASH)
                          : context->default_open_vlanid;
