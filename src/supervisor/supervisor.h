@@ -20,10 +20,10 @@
  * @param identity_len The identity array size
  * @param mac_conn_arg The supervisor_context pointer
  * @param iinfo The returned idenity info structure
- * @return struct mac_conn_info
+ * @return 0 for success, -1 for error
  */
-struct mac_conn_info get_identity_ac(const uint8_t *identity, size_t identity_len,
-                                      void *mac_conn_arg, struct radius_identity_info *iinfo);
+int get_identity_ac(const uint8_t *identity, size_t identity_len,
+                                      void *mac_conn_arg, struct identity_info *iinfo);
 
 /**
  * @brief The AP service callback

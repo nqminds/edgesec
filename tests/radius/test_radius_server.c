@@ -50,16 +50,14 @@ struct radius_test_ctx {
   int tagged[2];
 };
 
-struct mac_conn_info get_mac_conn(const uint8_t *identity, size_t identity_len,
-                                  void *mac_conn_arg, struct radius_identity_info *iinfo) {
-  (void)identity;
-  (void)identity_len;
+int get_mac_conn(const uint8_t *identity, size_t identity_len,
+                                  void *mac_conn_arg, struct identity_info *iinfo) {
   (void)mac_conn_arg;
-  (void)iinfo;
 
-  struct mac_conn_info info = {.vlanid = VLAN_ID};
+  iinfo->vlanid = VLAN_ID;
+  iinfo->access = IDENTITY_ACCESS_ALLOW;
   log_trace("RADIUS requested mac=%.*s", identity_len, identity);
-  return info;
+  return 0;
 }
 
 /* Process the RADIUS frames from Authentication Server */
