@@ -12,6 +12,7 @@
 #define RADIUS_CONFIG_H
 
 #include "../utils/net.h"
+#include "../supervisor/identity.h"
 #include "attr_mapper.h"
 
 #define RADIUS_SECRET_LEN 255
@@ -32,21 +33,6 @@ struct radius_conf {
   char radius_server_ip[OS_INET_ADDRSTRLEN]; /**< Radius server IP string */
   int radius_server_mask;                /**< Radius server IP mask string */
   char radius_secret[RADIUS_SECRET_LEN]; /**< Radius secret string */
-};
-
-enum IDENTITY_ACCESS {
-  IDENTITY_ACCESS_DENY = 0,
-  IDENTITY_ACCESS_ALLOW
-};
-
-struct identity_info {
-  char id[MAX_RANDOM_UUID_LEN];      /**< The identity ID */
-  uint8_t mac_addr[ETHER_ADDR_LEN]; /**< MAC address in byte format */
-  uint8_t cert_serial_num[255];     /**< The certificate serial number */
-  int vlanid;
-  uint8_t id_pass[AP_SECRET_LEN]; /**< WiFi password assigned to the identity */
-  ssize_t id_pass_len; /**< WiFi password length assigned to the identity */
-  enum IDENTITY_ACCESS access;           /**< The identity access*/
 };
 
 typedef int (*get_identity_ac_cb)(const uint8_t *identity,

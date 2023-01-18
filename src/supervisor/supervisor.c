@@ -115,7 +115,7 @@ int save_device_vlan(struct supervisor_context *context, uint8_t mac_addr[],
   return 0;
 }
 
-int convert_identity2mac(const u8 *identity, size_t identity_len, uint8_t *mac_addr) {
+int convert_identity2mac(const uint8_t *identity, size_t identity_len, uint8_t *mac_addr) {
   char *mac_addr_str = sys_zalloc(identity_len + 1);
   if (mac_addr_str == NULL) {
     log_errno("sys_zalloc");

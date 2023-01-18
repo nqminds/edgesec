@@ -25,6 +25,7 @@
 #include <eap_server/eap.h>
 
 #include "../supervisor/mac_mapper.h"
+#include "../supervisor/identity.h"
 #include "radius_server.h"
 #include "radius_config.h"
 #include "radius.h"
