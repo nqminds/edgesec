@@ -21,6 +21,12 @@
 #include "radius.h"
 #include "wpabuf.h"
 
+// Randomlyh selected MAC key for MD5 algorithm
+static const uint8_t mac_hash_base_key[MD5_MAC_LEN] = {0x76, 0x7a, 0x20, 0x0b,
+                                                       0x20, 0x0c, 0x90, 0x38,
+                                                       0xc0, 0xae, 0x91, 0x07,
+                                                       0x41, 0xba, 0x47, 0xdb};
+
 void free_attr(struct hostapd_radius_attr *attr) {
   struct hostapd_radius_attr *prev;
 
@@ -43,26 +49,33 @@ void copy_attr_contents(struct hostapd_radius_attr *src, struct hostapd_radius_a
     dst->next = src->next;
 }
 
-int get_attr_mapper(attr_mac_conn **hmap, uint8_t mac_addr[ETHER_ADDR_LEN],
-                   struct hostapd_radius_attr **attr) {
+int get_attr_mapper(attr_mac_conn **hmap, const uint8_t *key,
+                    size_t key_size,
+                    struct hostapd_radius_attr **attr) {
   attr_mac_conn *s;
 
   if (hmap == NULL) {
-    log_trace("hmap param is NULL");
+    log_error("hmap param is NULL");
     return -1;
   }
 
-  if (mac_addr == NULL) {
-    log_trace("mac_addr param is NULL");
+  if (key == NULL) {
+    log_error("key param is NULL");
     return -1;
   }
 
   if (attr == NULL) {
-    log_trace("attr param is NULL");
+    log_error("attr param is NULL");
     return -1;
   }
 
-  HASH_FIND(hh, *hmap, mac_addr, ETHER_ADDR_LEN, s);
+  uint8_t hashkey[MD5_MAC_LEN];
+  if (hmac_md5_base(mac_hash_base_key, MD5_MAC_LEN, key, key_size, hashkey) < 0) {
+    log_error("hmac_md5_base fail");
+    return -1;
+  }
+
+  HASH_FIND(hh, *hmap, hashkey, MD5_MAC_LEN, s);
 
   if (s != NULL) {
     *attr = s->attr;
@@ -72,25 +85,33 @@ int get_attr_mapper(attr_mac_conn **hmap, uint8_t mac_addr[ETHER_ADDR_LEN],
   return 0;
 }
 
-int put_attr_mapper(attr_mac_conn **hmap, uint8_t mac_addr[ETHER_ADDR_LEN], struct hostapd_radius_attr *attr) {
+int put_attr_mapper(attr_mac_conn **hmap, const uint8_t *key,
+                    size_t key_size,
+                    struct hostapd_radius_attr *attr) {
   attr_mac_conn *s;
 
   if (hmap == NULL) {
-    log_trace("hmap param is NULL");
+    log_error("hmap param is NULL");
     return -1;
   }
 
-  if (mac_addr == NULL) {
-    log_trace("mac_addr param is NULL");
+  if (key == NULL) {
+    log_error("key param is NULL");
     return -1;
   }
 
   if (attr == NULL) {
-    log_trace("attr param is NULL");
+    log_error("attr param is NULL");
     return -1;
   }
 
-  HASH_FIND(hh, *hmap, mac_addr, ETHER_ADDR_LEN, s);
+  uint8_t hashkey[MD5_MAC_LEN];
+  if (hmac_md5_base(mac_hash_base_key, MD5_MAC_LEN, key, key_size, hashkey) < 0) {
+    log_error("hmac_md5_base fail");
+    return -1;
+  }
+
+  HASH_FIND(hh, *hmap, hashkey, MD5_MAC_LEN, s);
 
   if (s == NULL) {
     s = (attr_mac_conn *)os_malloc(sizeof(attr_mac_conn));
@@ -100,10 +121,10 @@ int put_attr_mapper(attr_mac_conn **hmap, uint8_t mac_addr[ETHER_ADDR_LEN], stru
     }
 
     // Copy the key and value
-    os_memcpy(s->key, mac_addr, ETHER_ADDR_LEN);
+    os_memcpy(s->key, hashkey, MD5_MAC_LEN);
     s->attr = attr;
 
-    HASH_ADD(hh, *hmap, key[0], ETHER_ADDR_LEN, s);
+    HASH_ADD(hh, *hmap, key[0], MD5_MAC_LEN, s);
   } else {
     // Copy the value
     free_attr_contents(s->attr);
