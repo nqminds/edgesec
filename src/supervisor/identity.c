@@ -10,18 +10,41 @@
 
 #include "identity.h"
 
-int get_identity_type(const uint8_t *identity, size_t identity_len, enum IDENTITY_TYPE *type) {
-  (void)identity_len;
+int convert_identity2mac(const uint8_t *identity, size_t identity_len, uint8_t *mac_addr) {
+  char *mac_addr_str = sys_zalloc(identity_len + 1);
+  if (mac_addr_str == NULL) {
+    log_errno("sys_zalloc");
+    return -1;
+  }
+
+  sprintf(mac_addr_str, "%.*s", (int)identity_len, identity);
+
+  if (convert_ascii2mac(mac_addr_str, mac_addr) < 0) {
+    log_error("convert_ascii2mac fail");
+    os_free(mac_addr_str);
+    return -1;
+  }
+  os_free(mac_addr_str);
+
+  return 0;
+}
+
+int process_identity_type(const uint8_t *identity, size_t identity_len, struct identity_info *iinfo) {
   if (identity == NULL) {
     log_error("identity param is NULL");
     return -1;
   }
 
-  if (type == NULL) {
-    log_error("type param is NULL");
+  if (iinfo == NULL) {
+    log_error("iinfo param is NULL");
     return -1;
   }
+  
+  if (convert_identity2mac(identity, identity_len, iinfo->mac_addr) < 0) {
 
+  } else {
+    iinfo->type = IDENTITY_TYPE_MAC;
+  }
 
   return 0;
 }

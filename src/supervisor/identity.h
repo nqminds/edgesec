@@ -39,8 +39,8 @@ struct identity_info {
  *
  * @param identity The identity array
  * @param identity_len The identity array size
- * @param iinfo The returned identity type
+ * @param iinfo The returned identity info
  * @return 0 for success, -1 for error
  */
-int get_identity_type(const uint8_t *identity, size_t identity_len, enum IDENTITY_TYPE *type);
+int process_identity_type(const uint8_t *identity, size_t identity_len, struct identity_info *iinfo);
 #endif

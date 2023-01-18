@@ -115,50 +115,12 @@ int save_device_vlan(struct supervisor_context *context, uint8_t mac_addr[],
   return 0;
 }
 
-int convert_identity2mac(const uint8_t *identity, size_t identity_len, uint8_t *mac_addr) {
-  char *mac_addr_str = sys_zalloc(identity_len + 1);
-  if (mac_addr_str == NULL) {
-    log_errno("sys_zalloc");
-    return -1;
-  }
-
-  sprintf(mac_addr_str, "%.*s", (int)identity_len, identity);
-
-  if (convert_ascii2mac(mac_addr_str, mac_addr) < 0) {
-    log_error("convert_ascii2mac fail");
-    os_free(mac_addr_str);
-    return -1;
-  }
-  os_free(mac_addr_str);
-
-  return 0;
-}
-
-int get_identity_ac(const uint8_t *identity, size_t identity_len,
-                                      void *mac_conn_arg, struct identity_info *iinfo) {
-  if (iinfo == NULL) {
-    log_error("iinfo param is NULL");
-    return -1;
-  }
-
-  if (mac_conn_arg == NULL) {
-    log_error("context is NULL");
-    return -1;
-  }
-
+int get_mac_ac(uint8_t *mac_addr, struct supervisor_context *context, struct identity_info *iinfo) {
   iinfo->access = IDENTITY_ACCESS_DENY;
 
-  uint8_t mac_addr[ETHER_ADDR_LEN];
-  if (convert_identity2mac(identity, identity_len, mac_addr) < 0) {
-    log_error("convert_identity2mac fail");
-    return -1;
-  }
-
-  struct supervisor_context *context =
-      (struct supervisor_context *)mac_conn_arg;
   struct mac_conn_info info;
   int alloc_vlanid = (context->allocate_vlans)
-                         ? allocate_vlan(context, mac_addr, VLAN_ALLOCATE_HASH)
+                         ? allocate_vlan(context, mac_addr, ETHER_ADDR_LEN, VLAN_ALLOCATE_HASH)
                          : context->default_open_vlanid;
 
   init_default_mac_info(&info, alloc_vlanid, context->allow_all_nat);
@@ -233,12 +195,53 @@ int get_identity_ac(const uint8_t *identity, size_t identity_len,
   os_memcpy(iinfo->id_pass, info.pass, iinfo->id_pass_len);
 
   if (iinfo->access == IDENTITY_ACCESS_DENY) {
-    log_debug("REJECTING mac=" MACSTR, MAC2STR(mac_addr));
+    log_debug("ACCESS DENY for mac=" MACSTR, MAC2STR(mac_addr));
   } else if(iinfo->access == IDENTITY_ACCESS_ALLOW){
-    log_debug("ACCEPTING mac=" MACSTR, MAC2STR(mac_addr));
+    log_debug("ACCESS ALLOW for mac=" MACSTR, MAC2STR(mac_addr));
   }
 
   return 0;
+}
+
+int get_cert_ac(const uint8_t *identity, size_t identity_len, struct supervisor_context *context, struct identity_info *iinfo) {
+  iinfo->vlanid = (context->allocate_vlans)
+                         ? allocate_vlan(context, identity, identity_len, VLAN_ALLOCATE_HASH)
+                         : context->default_open_vlanid;
+
+  log_debug("REQUESTING vlanid=%d for cert=%.*s", iinfo->vlanid, identity_len, identity);
+  iinfo->access = IDENTITY_ACCESS_ALLOW;
+
+  return 0;
+}
+
+int get_identity_ac(const uint8_t *identity, size_t identity_len,
+                                      void *mac_conn_arg, struct identity_info *iinfo) {
+  if (iinfo == NULL) {
+    log_error("iinfo param is NULL");
+    return -1;
+  }
+
+  if (mac_conn_arg == NULL) {
+    log_error("context is NULL");
+    return -1;
+  }
+
+  struct supervisor_context *context =
+      (struct supervisor_context *)mac_conn_arg;
+
+  if (process_identity_type(identity, identity_len, iinfo) < 0) {
+    log_error("process_identity_type fail");
+    return -1;
+  }
+
+  if (iinfo->type == IDENTITY_TYPE_MAC) {
+    return get_mac_ac(iinfo->mac_addr, context, iinfo);
+  } else if (iinfo->type == IDENTITY_TYPE_CERT) {
+    return get_cert_ac(identity, identity_len, context, iinfo);
+  } else {
+    log_error("Unknown identity type");
+    return -1;
+  }
 }
 
 void ap_service_callback(struct supervisor_context *context, uint8_t mac_addr[],
