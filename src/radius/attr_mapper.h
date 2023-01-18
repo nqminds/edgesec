@@ -19,37 +19,44 @@
 #include "../utils/hashmap.h"
 #include "../utils/os.h"
 
+#include "md5.h"
+
 /**
  * @brief Radius attribute mapper structure
  *
  */
 typedef struct attr_mac_conn { /**< hashmap key */
-  uint8_t key[ETHER_ADDR_LEN];
+  uint8_t key[MD5_MAC_LEN];
   struct hostapd_radius_attr *attr; /**< Radius attribute structure */
   UT_hash_handle hh;                /**< hashmap handle */
 } attr_mac_conn;
 
 /**
- * @brief Get the attribute structure for a given MAC address
+ * @brief Get the attribute structure for a given key
  *
  * @param hmap Attribute mapper object
- * @param mac_addr MAC address in byte format
+ * @param key The key array
+ * @param key_size The key size
  * @param attr Output attribute structure address
- * @return int @c 1 if MAC address found, @c -1 error and @c 0 if MAC address
+ * @return int @c 1 if key/value found, @c -1 error and @c 0 if key/value
  * not found
  */
-int get_attr_mapper(attr_mac_conn **hmap, uint8_t mac_addr[ETHER_ADDR_LEN],
-                   struct hostapd_radius_attr **attr);
+int get_attr_mapper(attr_mac_conn **hmap, const uint8_t *key,
+                    size_t key_size,
+                    struct hostapd_radius_attr **attr);
 
 /**
- * @brief Insert an attribute structure into the attribute mapper connection object
+ * @brief Insert an attribute structure into the attribute mapper object for a given key
  *
  * @param hmap Attribute mapper object
- * @param mac_addr MAC address in byte format
+ * @param key The key array
+ * @param key_size The key size
  * @param attr Input attribute structure address
  * @return int @c 0 on success, @c -1 otherwise
  */
-int put_attr_mapper(attr_mac_conn **hmap, uint8_t mac_addr[ETHER_ADDR_LEN], struct hostapd_radius_attr *attr);
+int put_attr_mapper(attr_mac_conn **hmap, const uint8_t *key,
+                    size_t key_size,
+                    struct hostapd_radius_attr *attr);
 
 /**
  * @brief Frees the attribute structure

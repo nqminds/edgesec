@@ -220,13 +220,13 @@ int radius_get_eap_user(void *ctx, const u8 *identity,
           last_attr->next = pass_attr;
         }
 
-        if (put_attr_mapper(&context->attr_mapper, mac_addr, vlan_attr) < 0) {
+        if (put_attr_mapper(&context->attr_mapper, identity, identity_len, vlan_attr) < 0) {
           log_error("put_attr_mapper fail");
           free_attr(vlan_attr);
           return -1;
         }
 
-        if (get_attr_mapper(&context->attr_mapper, mac_addr, &user->accept_attr) < 0) {
+        if (get_attr_mapper(&context->attr_mapper, identity, identity_len, &user->accept_attr) < 0) {
           log_error("get_attr_mapper fail");
           free_attr(vlan_attr);
           return -1;
