@@ -134,26 +134,29 @@ int convert_identity2mac(const u8 *identity, size_t identity_len, uint8_t *mac_a
   return 0;
 }
 
-struct mac_conn_info get_identity_ac(const uint8_t *identity, size_t identity_len,
-                                      void *mac_conn_arg, struct radius_identity_info *iinfo) {
-  (void)iinfo;
-  struct supervisor_context *context =
-      (struct supervisor_context *)mac_conn_arg;
-  struct mac_conn_info info;
-
+int get_identity_ac(const uint8_t *identity, size_t identity_len,
+                                      void *mac_conn_arg, struct identity_info *iinfo) {
   if (iinfo == NULL) {
     log_error("iinfo param is NULL");
-    info.vlanid = -1;
-    return info;    
+    return -1;
   }
+
+  if (mac_conn_arg == NULL) {
+    log_error("context is NULL");
+    return -1;
+  }
+
+  iinfo->access = IDENTITY_ACCESS_DENY;
 
   uint8_t mac_addr[ETHER_ADDR_LEN];
   if (convert_identity2mac(identity, identity_len, mac_addr) < 0) {
     log_error("convert_identity2mac fail");
-    info.vlanid = -1;
-    return info;
+    return -1;
   }
 
+  struct supervisor_context *context =
+      (struct supervisor_context *)mac_conn_arg;
+  struct mac_conn_info info;
   int alloc_vlanid = (context->allocate_vlans)
                          ? allocate_vlan(context, mac_addr, VLAN_ALLOCATE_HASH)
                          : context->default_open_vlanid;
@@ -162,18 +165,6 @@ struct mac_conn_info get_identity_ac(const uint8_t *identity, size_t identity_le
 
   log_debug("REQUESTING vlanid=%d for mac=" MACSTR, alloc_vlanid,
             MAC2STR(mac_addr));
-
-  if (mac_addr == NULL) {
-    log_error("mac_addr is NULL");
-    info.vlanid = -1;
-    return info;
-  }
-
-  if (context == NULL) {
-    log_error("context is NULL");
-    info.vlanid = -1;
-    return info;
-  }
 
   int find_mac = get_mac_mapper(&context->mac_mapper, mac_addr, &info);
 
@@ -190,20 +181,21 @@ struct mac_conn_info get_identity_ac(const uint8_t *identity, size_t identity_le
 
     if (save_device_vlan(context, mac_addr, &info) < 0) {
       log_error("assign_device_vlan fail");
-      info.vlanid = -1;
+      return -1;
     }
 
-    return info;
+    iinfo->access = IDENTITY_ACCESS_ALLOW;
   } else if (!context->allow_all_connections &&
              (find_mac == 1 && info.allow_connection && info.pass_len)) {
     if (save_device_vlan(context, mac_addr, &info) < 0) {
       log_error("assign_device_vlan fail");
-      info.vlanid = -1;
+      return -1;
     }
 
-    return info;
+    iinfo->access = IDENTITY_ACCESS_ALLOW;
   } else if (!context->allow_all_connections && find_mac == -1) {
     log_error("get_mac_mapper fail");
+    return -1;
   } else if (!context->allow_all_connections &&
              (find_mac == 0 ||
               (find_mac == 1 && info.allow_connection && !info.pass_len))) {
@@ -230,15 +222,23 @@ struct mac_conn_info get_identity_ac(const uint8_t *identity, size_t identity_le
 
     if (save_device_vlan(context, mac_addr, &info) < 0) {
       log_error("assign_device_vlan fail");
-      info.vlanid = -1;
+      return -1;
     }
 
-    return info;
+    iinfo->access = IDENTITY_ACCESS_ALLOW;
   }
 
-  log_debug("REJECTING mac=" MACSTR, MAC2STR(mac_addr));
-  info.vlanid = -1;
-  return info;
+  iinfo->vlanid = info.vlanid;
+  iinfo->id_pass_len = info.pass_len;
+  os_memcpy(iinfo->id_pass, info.pass, iinfo->id_pass_len);
+
+  if (iinfo->access == IDENTITY_ACCESS_DENY) {
+    log_debug("REJECTING mac=" MACSTR, MAC2STR(mac_addr));
+  } else if(iinfo->access == IDENTITY_ACCESS_ALLOW){
+    log_debug("ACCEPTING mac=" MACSTR, MAC2STR(mac_addr));
+  }
+
+  return 0;
 }
 
 void ap_service_callback(struct supervisor_context *context, uint8_t mac_addr[],
