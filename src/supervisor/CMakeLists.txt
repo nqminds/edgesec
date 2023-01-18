@@ -2,6 +2,9 @@ include_directories (
   "${PROJECT_SOURCE_DIR}/src"
 )
 
+add_library(identity identity.c)
+target_link_libraries(identity PRIVATE log os)
+
 add_library(sqlite_macconn_writer sqlite_macconn_writer.c)
 target_link_libraries(sqlite_macconn_writer PUBLIC LibUTHash::LibUTHash mac_mapper PRIVATE sqliteu squeue log net os SQLite::SQLite3)
 
@@ -67,4 +70,4 @@ target_link_libraries(supervisor_config INTERFACE SQLite::SQLite3 iface ap_confi
 
 add_library(supervisor supervisor.c)
 target_include_directories(supervisor PUBLIC $<TARGET_PROPERTY:iface,INCLUDE_DIRECTORIES>)
-target_link_libraries(supervisor PUBLIC supervisor_config PRIVATE LibUTHash::LibUTHash supervisor_utils capture_service network_commands cmd_processor sockctl log firewall_service)
+target_link_libraries(supervisor PUBLIC identity supervisor_config PRIVATE LibUTHash::LibUTHash supervisor_utils capture_service network_commands cmd_processor sockctl log firewall_service)

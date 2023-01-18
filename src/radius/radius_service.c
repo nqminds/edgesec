@@ -24,6 +24,7 @@
 #include <eloop.h>
 #include <eap_server/eap.h>
 
+#include "../supervisor/identity.h"
 #include "../supervisor/mac_mapper.h"
 #include "./attr_mapper.h"
 #include "radius.h"
