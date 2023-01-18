@@ -41,7 +41,7 @@ int process_identity_type(const uint8_t *identity, size_t identity_len, struct i
   }
   
   if (convert_identity2mac(identity, identity_len, iinfo->mac_addr) < 0) {
-
+    iinfo->type = IDENTITY_TYPE_CERT;
   } else {
     iinfo->type = IDENTITY_TYPE_MAC;
   }
