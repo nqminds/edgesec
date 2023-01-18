@@ -29,6 +29,7 @@ static const UT_icd mac_conn_icd = {sizeof(struct mac_conn), NULL, NULL, NULL};
 static void test_get_mac_conn_cmd(void **state) {
   (void)state; /* unused */
   uint8_t mac_addr[6] = {0x04, 0xf0, 0x21, 0x5a, 0xf4, 0xc4};
+  char *mac_addr_str = "04:f0:21:5a:f4:c4";
   uint8_t wpa_passphrase[4] = {0x1, 0x2, 0x3, 0x0};
 
   struct supervisor_context ctx = {
@@ -59,7 +60,7 @@ static void test_get_mac_conn_cmd(void **state) {
   open_sqlite_macconn_db(":memory:", &ctx.macconn_db);
 
   struct radius_identity_info iinfo;
-  struct mac_conn_info info = get_mac_conn_cmd(mac_addr, (void *)&ctx, &iinfo);
+  struct mac_conn_info info = get_identity_ac((const uint8_t *)mac_addr_str, strlen(mac_addr_str), (void *)&ctx, &iinfo);
 
   assert_int_equal(info.vlanid, 10);
   struct mac_conn_info info1;
@@ -85,10 +86,12 @@ static void test_get_mac_conn_cmd(void **state) {
           },
       .mac_addr = {0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff},
   };
+  char *mac_addr_str1 = "aa:bb:cc:dd:ee:ff";
+
   assert_int_equal(save_mac_mapper(&ctx, conn), 0);
 
   struct radius_identity_info iinfo2;
-  struct mac_conn_info info2 = get_mac_conn_cmd(conn.mac_addr, (void *)&ctx, &iinfo2);
+  struct mac_conn_info info2 = get_identity_ac((const uint8_t *)mac_addr_str1, strlen(mac_addr_str1), (void *)&ctx, &iinfo2);
   assert_int_equal(info2.vlanid, -1);
 
   utarray_free(ctx.config_ifinfo_array);

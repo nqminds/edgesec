@@ -149,25 +149,6 @@ get_password_attribute_fail:
   return NULL;
 }
 
-int convert_identity2mac(const u8 *identity, size_t identity_len, uint8_t *mac_addr) {
-  char *mac_addr_str = sys_zalloc(identity_len + 1);
-  if (mac_addr_str == NULL) {
-    log_errno("sys_zalloc");
-    return -1;
-  }
-
-  sprintf(mac_addr_str, "%.*s", (int)identity_len, identity);
-
-  if (convert_ascii2mac(mac_addr_str, mac_addr) < 0) {
-    log_error("convert_ascii2mac fail");
-    os_free(mac_addr_str);
-    return -1;
-  }
-  os_free(mac_addr_str);
-
-  return 0;
-}
-
 int radius_get_eap_user(void *ctx, const u8 *identity,
 				       size_t identity_len, int phase2,
 				       struct eap_user *user, struct radius_msg *msg) {
@@ -181,21 +162,15 @@ int radius_get_eap_user(void *ctx, const u8 *identity,
 
   log_trace("radius_get_eap_user: phase2=%d", phase2);
   if (identity_len && identity != NULL) {
+    log_trace("Received RADIUS identity=%.*s", identity_len, identity);
+
 	  user->password = (u8 *) sys_memdup(identity, identity_len);
 	  user->password_len = identity_len;
     user->salt = NULL;
 
-    uint8_t mac_addr[ETHER_ADDR_LEN];
-    if (convert_identity2mac(identity, identity_len, mac_addr) < 0) {
-      log_error("convert_identity2mac fail");
-      return -1;
-    }
-
-    log_trace("Received RADIUS identity "MACSTR, MAC2STR(mac_addr));
-
-    if (context->get_vlaninfo_fn != NULL) {
+    if (context->get_identity_ac_fn != NULL) {
       struct radius_identity_info iinfo;
-      struct mac_conn_info info = context->get_vlaninfo_fn(mac_addr, context->ctx_cb, &iinfo);
+      struct mac_conn_info info = context->get_identity_ac_fn(identity, identity_len, context->ctx_cb, &iinfo);
       if (info.vlanid >= 0) {
         struct hostapd_radius_attr *last_attr = NULL;
         struct hostapd_radius_attr *vlan_attr = get_vlan_attribute(info.vlanid, &last_attr);
@@ -452,7 +427,7 @@ void close_radius(struct radius_context *context) {
 
 struct radius_context *run_radius(struct eloop_data *eloop,
                                       struct radius_conf *rconf,
-                                      get_vlaninfo_cb get_vlaninfo_fn,
+                                      get_identity_ac_cb get_identity_ac_fn,
                                       void *ctx_cb) {
   struct radius_context *context = sys_zalloc(sizeof(struct radius_context));
 
@@ -474,7 +449,7 @@ struct radius_context *run_radius(struct eloop_data *eloop,
   }
 
   context->rconf = rconf;
-  context->get_vlaninfo_fn = get_vlaninfo_fn;
+  context->get_identity_ac_fn = get_identity_ac_fn;
   context->ctx_cb = ctx_cb;
 
   if (register_eap_methods() < 0) {

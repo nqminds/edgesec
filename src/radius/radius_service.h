@@ -21,13 +21,13 @@
  *
  * @param eloop The eloop context
  * @param rconf The radius config
- * @param get_vlaninfo_fn The radius callback function
+ * @param get_identity_ac_fn The identity access control callback function
  * @param radius_callback_args The Radius callback arguments
  * @return Pointer to private RADIUS server context or NULL on failure
  */
 struct radius_context *run_radius(struct eloop_data *eloop,
                                       struct radius_conf *rconf,
-                                      get_vlaninfo_cb get_vlaninfo_fn,
+                                      get_identity_ac_cb get_identity_ac_fn,
                                       void *ctx_cb);
 
 /**

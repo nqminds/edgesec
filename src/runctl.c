@@ -517,7 +517,7 @@ int run_ctl(struct app_config *app_config, struct eloop_data *eloop) {
              context->rconfig.radius_port, context->rconfig.radius_client_ip);
 
     if ((context->radius_ctx = run_radius(context->eloop, &context->rconfig,
-                                          get_mac_conn_cmd, context)) == NULL) {
+                                          get_identity_ac, context)) == NULL) {
       log_error("run_radius fail");
       goto run_engine_fail;
     }
