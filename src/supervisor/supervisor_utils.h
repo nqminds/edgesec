@@ -21,12 +21,14 @@ enum VLAN_ALLOCATION_TYPE { VLAN_ALLOCATE_RANDOM = 0, VLAN_ALLOCATE_HASH };
  * @brief Allocates a VLAN ID for a given MAC address
  *
  * @param context[in] The supervisor context
- * @param mac_addr[in] The MAC address
+ * @param addr[in] The address
+ * @param addr_len[in] The address length
  * @param type[in] The VLAN allocation type
  *
  * @return VLAN ID, -1 on failure
  */
-int allocate_vlan(struct supervisor_context *context, uint8_t *mac_addr,
+int allocate_vlan(struct supervisor_context *context, const uint8_t *mac_addr,
+                  size_t addr_len,
                   enum VLAN_ALLOCATION_TYPE type);
 
 /**

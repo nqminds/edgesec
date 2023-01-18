@@ -21,10 +21,13 @@
 #include "supervisor_config.h"
 #include "supervisor_utils.h"
 
-int allocate_vlan(struct supervisor_context *context, uint8_t *mac_addr,
+int allocate_vlan(struct supervisor_context *context, const uint8_t *addr,
+                  size_t addr_len,
                   enum VLAN_ALLOCATION_TYPE type) {
-  (void)mac_addr;
-  (void)type;
+  if (addr == NULL) {
+    log_error("addr param is NULL");
+    return -1;
+  }
 
   UT_array *config_ifinfo_array = context->config_ifinfo_array;
 
@@ -50,7 +53,7 @@ int allocate_vlan(struct supervisor_context *context, uint8_t *mac_addr,
   if (type == VLAN_ALLOCATE_RANDOM) {
     vlanid = vlan_arr[os_get_random_int_range(0, len)];
   } else if (type == VLAN_ALLOCATE_HASH) {
-    uint32_t hash = sdbm_hash(mac_addr, ETHER_ADDR_LEN);
+    uint32_t hash = sdbm_hash(addr, addr_len);
     vlanid = vlan_arr[hash % len];
   }
 
