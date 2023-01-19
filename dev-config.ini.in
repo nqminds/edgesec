@@ -17,12 +17,12 @@ execCapture = false
 execMdnsForward = false
 execFirewall = true
 setIpForward = true
-connectionDbPath = "./connection.sqlite"
-cryptDbPath = "./crypt.sqlite"
+connectionDbPath = "/tmp/connection.sqlite"
+cryptDbPath = "/tmp/crypt.sqlite"
 pidFilePath = "/var/run/edgesec.pid"
 
 [capture]
-captureDbPath = "./capture.sqlite"
+captureDbPath = "/tmp/capture.sqlite"
 filter = ""
 promiscuous = false
 bufferTimeout = 10
