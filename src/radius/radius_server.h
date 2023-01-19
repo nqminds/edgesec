@@ -14,6 +14,12 @@
 #include "common.h"
 #include "radius.h"
 
+enum RADIUS_USER_ATTR {
+	RADIUS_USER_NO_ATTR = 0,
+	RADIUS_USER_VLAN_ATTR,
+	RADIUS_USER_VLANPASS_ATTR
+};
+
 struct radius_server_data;
 struct eap_user;
 
@@ -75,6 +81,8 @@ struct radius_server_conf {
 	 * @identity_len: identity buffer length in octets
 	 * @phase2: Whether this is for Phase 2 identity
 	 * @user: Data structure for filling in the user information
+	 * @msg: The radius message
+	 * @user_attr: The user attribute type
 	 * Returns: 0 on success, -1 on failure
 	 *
 	 * This is used to fetch information from user database. The callback
@@ -83,7 +91,8 @@ struct radius_server_conf {
 	 * password data and RADIUS server will free it after use.
 	 */
 	int (*get_eap_user)(void *ctx, const u8 *identity, size_t identity_len,
-			    int phase2, struct eap_user *user, struct radius_msg *msg);
+			    int phase2, struct eap_user *user, struct radius_msg *msg,
+				enum RADIUS_USER_ATTR user_attr);
 
 	/**
 	 * eap_req_id_text - Optional data for EAP-Request/Identity

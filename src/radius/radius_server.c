@@ -195,6 +195,7 @@ struct radius_server_data {
 	 * @phase2: Whether this is for Phase 2 identity
 	 * @user: Data structure for filling in the user information
 	 * @msg: The Radius message request
+	 * @user_attr: The user attribute type
 	 * Returns: 0 on success, -1 on failure
 	 *
 	 * This is used to fetch information from user database. The callback
@@ -203,7 +204,8 @@ struct radius_server_data {
 	 * password data and RADIUS server will free it after use.
 	 */
 	int (*get_eap_user)(void *ctx, const u8 *identity, size_t identity_len,
-			    int phase2, struct eap_user *user, struct radius_msg *msg);
+			    int phase2, struct eap_user *user, struct radius_msg *msg,
+				enum RADIUS_USER_ATTR user_attr);
 
 	/**
 	 * eap_req_id_text - Optional data for EAP-Request/Identity
@@ -598,7 +600,7 @@ radius_server_get_new_session(struct radius_server_data *data,
 	if (!tmp)
 		return NULL;
 
-	res = data->get_eap_user(data->conf_ctx, user, user_len, 0, tmp, msg);
+	res = data->get_eap_user(data->conf_ctx, user, user_len, 0, tmp, msg, RADIUS_USER_VLANPASS_ATTR);
 #ifdef CONFIG_ERP
 	if (res != 0 && data->eap_cfg->erp) {
 		char *username;
@@ -1198,7 +1200,7 @@ radius_server_macacl(struct radius_server_data *data,
 
 		os_memset(&tmp, 0, sizeof(tmp));
 		res = data->get_eap_user(data->conf_ctx, (u8 *) sess->username,
-					 os_strlen(sess->username), 0, &tmp, request);
+					 os_strlen(sess->username), 0, &tmp, NULL, RADIUS_USER_NO_ATTR);
 		if (res || !tmp.macacl || tmp.password == NULL) {
 			RADIUS_DEBUG("No MAC ACL user entry");
 			bin_clear_free(tmp.password, tmp.password_len);
@@ -2533,7 +2535,7 @@ static int radius_server_get_eap_user(void *ctx, const u8 *identity,
 	int ret;
 
 	ret = data->get_eap_user(data->conf_ctx, identity, identity_len,
-				 phase2, user, NULL);
+				 phase2, user, NULL, RADIUS_USER_VLAN_ATTR);
 	if (ret == 0 && user) {
 		sess->accept_attr = user->accept_attr;
 		sess->remediation = user->remediation;

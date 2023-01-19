@@ -98,7 +98,7 @@ get_vlan_attribute_fail:
 }
 
 struct hostapd_radius_attr *
-get_password_attribute(const uint8_t *req_authenticator, const uint8_t *secret,
+get_tunnel_pass_attribute(const uint8_t *req_authenticator, const uint8_t *secret,
                        size_t secret_len, const uint8_t *key, size_t key_len) {
   struct hostapd_radius_attr *attr = NULL;
   uint16_t salt;
@@ -149,10 +149,58 @@ get_password_attribute_fail:
   return NULL;
 }
 
+int save_user_attribute(struct radius_context *context, const u8 *identity,
+				       size_t identity_len,
+				       struct eap_user *user, struct radius_msg *msg,
+               enum RADIUS_USER_ATTR user_attr, struct identity_info *iinfo) {
+
+  if (user_attr == RADIUS_USER_VLAN_ATTR || user_attr == RADIUS_USER_VLANPASS_ATTR) {
+    struct hostapd_radius_attr *last_attr = NULL;
+    struct hostapd_radius_attr *vlan_attr = get_vlan_attribute(iinfo->vlanid, &last_attr);
+
+    if (vlan_attr == NULL) {
+      log_error("get_vlan_attribute fail");
+      return -1;
+    }
+
+    if (msg != NULL && iinfo->id_pass_len && user_attr == RADIUS_USER_VLANPASS_ATTR) {
+      struct radius_hdr *hdr = radius_msg_get_hdr(msg); 
+      struct hostapd_radius_attr *pass_attr = get_tunnel_pass_attribute(
+                                                    hdr->authenticator,
+                                                    (const uint8_t *)context->rconf->radius_secret,
+                                                    os_strlen(context->rconf->radius_secret),
+                                                    iinfo->id_pass, iinfo->id_pass_len);
+      if (pass_attr == NULL) {
+        log_error("get_tunnel_pass_attribute fail");
+        free_attr(vlan_attr);
+        return -1;
+      }
+
+      last_attr->next = pass_attr;
+    } else {
+      log_trace("msg attr is NULL");
+    }
+ 
+    log_trace("Saving user RADIUS attribute");  
+    if (put_attr_mapper(&context->attr_mapper, identity, identity_len, vlan_attr) < 0) {
+      log_error("put_attr_mapper fail");
+      free_attr(vlan_attr);
+      return -1;
+    } 
+    if (get_attr_mapper(&context->attr_mapper, identity, identity_len, &user->accept_attr) < 0) {
+      log_error("get_attr_mapper fail");
+      free_attr(vlan_attr);
+      return -1;
+    }
+  }
+
+  return 0;
+}
+
 int radius_get_eap_user(void *ctx, const u8 *identity,
 				       size_t identity_len, int phase2,
-				       struct eap_user *user, struct radius_msg *msg) {
-  (void)msg;
+				       struct eap_user *user, struct radius_msg *msg,
+               enum RADIUS_USER_ATTR user_attr) {
   struct radius_context *context = (struct radius_context *) ctx;
 
   *user = (struct eap_user){
@@ -181,39 +229,8 @@ int radius_get_eap_user(void *ctx, const u8 *identity,
         if (iinfo.access == IDENTITY_ACCESS_DENY) {
           user->macacl = 0;
         } else if (iinfo.access == IDENTITY_ACCESS_ALLOW) {
-          struct hostapd_radius_attr *last_attr = NULL;
-          struct hostapd_radius_attr *vlan_attr = get_vlan_attribute(iinfo.vlanid, &last_attr);
-          if (vlan_attr == NULL) {
-            log_error("get_vlan_attribute fail");
-            return -1;
-          }
-
-          if (msg != NULL && iinfo.id_pass_len) {
-            struct radius_hdr *hdr = radius_msg_get_hdr(msg);
-            struct hostapd_radius_attr *pass_attr = get_password_attribute(
-                                                          hdr->authenticator,
-                                                          user->password,
-                                                          user->password_len,
-                                                          iinfo.id_pass, iinfo.id_pass_len);
-            if (pass_attr == NULL) {
-              log_error("get_password_attribute fail");
-              free_attr(vlan_attr);
-              return -1;
-            }
-            last_attr->next = pass_attr;
-          } else {
-            log_trace("msg attr is NULL");
-          }
-
-          if (put_attr_mapper(&context->attr_mapper, identity, identity_len, vlan_attr) < 0) {
-            log_error("put_attr_mapper fail");
-            free_attr(vlan_attr);
-            return -1;
-          }
-
-          if (get_attr_mapper(&context->attr_mapper, identity, identity_len, &user->accept_attr) < 0) {
-            log_error("get_attr_mapper fail");
-            free_attr(vlan_attr);
+          if (save_user_attribute(context, identity, identity_len, user, msg, user_attr, &iinfo) < 0) {
+            log_error("save_user_attribute fail");
             return -1;
           }
           user->macacl = 1;
