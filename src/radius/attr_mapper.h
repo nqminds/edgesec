@@ -41,12 +41,12 @@ typedef struct attr_mac_conn { /**< hashmap key */
  * @return int @c 1 if key/value found, @c -1 error and @c 0 if key/value
  * not found
  */
-int get_attr_mapper(attr_mac_conn **hmap, const uint8_t *key,
-                    size_t key_size,
+int get_attr_mapper(attr_mac_conn **hmap, const uint8_t *key, size_t key_size,
                     struct hostapd_radius_attr **attr);
 
 /**
- * @brief Insert an attribute structure into the attribute mapper object for a given key
+ * @brief Insert an attribute structure into the attribute mapper object for a
+ * given key
  *
  * @param hmap Attribute mapper object
  * @param key The key array
@@ -54,8 +54,7 @@ int get_attr_mapper(attr_mac_conn **hmap, const uint8_t *key,
  * @param attr Input attribute structure address
  * @return int @c 0 on success, @c -1 otherwise
  */
-int put_attr_mapper(attr_mac_conn **hmap, const uint8_t *key,
-                    size_t key_size,
+int put_attr_mapper(attr_mac_conn **hmap, const uint8_t *key, size_t key_size,
                     struct hostapd_radius_attr *attr);
 
 /**

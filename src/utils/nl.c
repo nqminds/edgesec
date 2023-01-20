@@ -217,22 +217,22 @@ int get_addrinfo(struct nlmsghdr *n, netif_info_t *info) {
 
   if (rta_tb[IFA_LOCAL] && info->ifa_family == AF_INET) {
     sys_strlcpy(info->ip_addr,
-               format_host_rta(ifa->ifa_family, rta_tb[IFA_LOCAL]),
-               OS_INET_ADDRSTRLEN);
+                format_host_rta(ifa->ifa_family, rta_tb[IFA_LOCAL]),
+                OS_INET_ADDRSTRLEN);
     log_trace("ifindex=%d ip_addr=%s", info->ifindex, info->ip_addr);
     if (rta_tb[IFA_ADDRESS] &&
         memcmp(RTA_DATA(rta_tb[IFA_ADDRESS]), RTA_DATA(rta_tb[IFA_LOCAL]), 4)) {
       sys_strlcpy(info->peer_addr,
-                 format_host_rta(ifa->ifa_family, rta_tb[IFA_ADDRESS]),
-                 OS_INET_ADDRSTRLEN);
+                  format_host_rta(ifa->ifa_family, rta_tb[IFA_ADDRESS]),
+                  OS_INET_ADDRSTRLEN);
       log_trace("ifindex=%d peer_addr=%s", info->ifindex, info->peer_addr);
     }
   }
 
   if (rta_tb[IFA_BROADCAST] && info->ifa_family == AF_INET) {
     sys_strlcpy(info->brd_addr,
-               format_host_rta(ifa->ifa_family, rta_tb[IFA_BROADCAST]),
-               OS_INET_ADDRSTRLEN);
+                format_host_rta(ifa->ifa_family, rta_tb[IFA_BROADCAST]),
+                OS_INET_ADDRSTRLEN);
     log_trace("ifindex=%d brd_addr=%s", info->ifindex, info->brd_addr);
   }
 
@@ -301,7 +301,7 @@ int get_linkinfo(struct nlmsghdr *n, netif_info_t *info) {
 
   log_trace("ifindex=%d state=%d", ifi->ifi_index, info->state);
   sys_strlcpy(info->link_type, ll_type_n2a(ifi->ifi_type, b1, sizeof(b1)),
-             LINK_TYPE_LEN);
+              LINK_TYPE_LEN);
   log_trace("ifindex=%d link_type=%s", ifi->ifi_index, info->link_type);
   if (tb[IFLA_ADDRESS]) {
     if (RTA_PAYLOAD(tb[IFLA_ADDRESS]) == ETHER_ADDR_LEN) {
@@ -1056,7 +1056,7 @@ static int process_iface_handler(struct nl_msg *msg, void *arg) {
 
   if (tb_msg[NL80211_ATTR_IFNAME]) {
     sys_strlcpy(element.ifname, nla_get_string(tb_msg[NL80211_ATTR_IFNAME]),
-               IF_NAMESIZE);
+                IF_NAMESIZE);
 
     if (tb_msg[NL80211_ATTR_IFINDEX]) {
       element.ifindex = nla_get_u32(tb_msg[NL80211_ATTR_IFINDEX]);

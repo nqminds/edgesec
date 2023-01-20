@@ -111,9 +111,8 @@ int __wrap_run_ap(struct supervisor_context *context, bool exec_ap,
 }
 #ifdef WITH_RADIUS_SERVICE
 struct radius_context *__wrap_run_radius(struct eloop_data *eloop,
-                                             struct radius_conf *rconf,
-                                             void *get_vlaninfo_fn,
-                                             void *ctx_cb) {
+                                         struct radius_conf *rconf,
+                                         void *get_vlaninfo_fn, void *ctx_cb) {
   (void)eloop;
   (void)rconf;
   (void)get_vlaninfo_fn;
@@ -210,8 +209,7 @@ static void test_run_engine(void **state) {
       (struct crypt_context *)sys_zalloc(sizeof(struct crypt_context));
 #endif
 #ifdef WITH_RADIUS_SERVICE
-  struct radius_context *radius_ctx =
-      sys_zalloc(sizeof(struct radius_context));
+  struct radius_context *radius_ctx = sys_zalloc(sizeof(struct radius_context));
 #endif
 
   struct fwctx *fw_ctx = sys_zalloc(sizeof(struct fwctx));

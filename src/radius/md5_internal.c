@@ -32,7 +32,7 @@ typedef struct MD5Context MD5_CTX;
  * Returns: 0 on success, -1 of failure
  */
 int md5_vector_base(size_t num_elem, const uint8_t *addr[], const size_t *len,
-               uint8_t *mac) {
+                    uint8_t *mac) {
   MD5_CTX ctx;
   size_t i;
 
@@ -96,7 +96,8 @@ void MD5Init_base(struct MD5Context *ctx) {
  * Update context to reflect the concatenation of another buffer full
  * of bytes.
  */
-void MD5Update_base(struct MD5Context *ctx, unsigned char const *buf, unsigned len) {
+void MD5Update_base(struct MD5Context *ctx, unsigned char const *buf,
+                    unsigned len) {
   uint32_t t;
 
   /* Update bitcount */

@@ -15,8 +15,8 @@
 
 #include <stddef.h>
 #include <stdlib.h>
-#include "../utils/log.h"
 #include "../utils/allocs.h"
+#include "../utils/log.h"
 
 typedef uint64_t u64;
 typedef uint32_t u32;
@@ -165,17 +165,15 @@ static inline u32 WPA_GET_BE24(const u8 *a) {
   return (a[0] << 16) | (a[1] << 8) | a[2];
 }
 
-static inline int os_snprintf_error(size_t size, int res)
-{
-	return res < 0 || (unsigned int) res >= size;
+static inline int os_snprintf_error(size_t size, int res) {
+  return res < 0 || (unsigned int)res >= size;
 }
 
-static inline void bin_clear_free(void *bin, size_t len)
-{
-	if (bin) {
-		memset(bin, 0, len); //forced_memzero(bin, len);
-		free(bin);
-	}
+static inline void bin_clear_free(void *bin, size_t len) {
+  if (bin) {
+    memset(bin, 0, len); // forced_memzero(bin, len);
+    free(bin);
+  }
 }
 
 /**
@@ -211,16 +209,21 @@ static inline void *__hide_aliasing_typecast(void *foo) { return foo; }
 #define WLAN_REASON_IEEE_802_1X_AUTH_FAILED 23
 
 struct hostapd_radius_attr {
-	u8 type;
-	struct wpabuf *val;
-	struct hostapd_radius_attr *next;
+  u8 type;
+  struct wpabuf *val;
+  struct hostapd_radius_attr *next;
 };
 
 /* Debugging function - conditional printf and hex dump. Driver wrappers can
  * use these for debugging purposes. */
 
 enum {
-	MSG_EXCESSIVE, MSG_MSGDUMP, MSG_DEBUG, MSG_INFO, MSG_WARNING, MSG_ERROR
+  MSG_EXCESSIVE,
+  MSG_MSGDUMP,
+  MSG_DEBUG,
+  MSG_INFO,
+  MSG_WARNING,
+  MSG_ERROR
 };
 
 #define wpa_printf(level, ...)                                                 \
@@ -228,15 +231,16 @@ enum {
 #define wpa_snprintf_hex(buf, buf_size, data, len)                             \
   printf_hex(buf, buf_size, data, len, 0)
 
-static inline void wpa_hexdump_ascii(int level, const char *title, const void *buf,
-			       size_t len) {
+static inline void wpa_hexdump_ascii(int level, const char *title,
+                                     const void *buf, size_t len) {
   (void)level;
   char hex_buf[32];
   printf_hex(hex_buf, 32, buf, len, 0);
   log_trace("%s - hexdump(len=%lu):%s", title, len, hex_buf);
 }
 
-static inline void printf_encode(char *txt, size_t maxlen, const uint8_t *data, size_t len) {
+static inline void printf_encode(char *txt, size_t maxlen, const uint8_t *data,
+                                 size_t len) {
   char *end = txt + maxlen;
   size_t i;
 
@@ -288,7 +292,8 @@ static inline void printf_encode(char *txt, size_t maxlen, const uint8_t *data, 
   *txt = '\0';
 }
 
-#define wpa_hexdump(level, title, buf, len) wpa_hexdump_ascii(level, title, buf, len)
+#define wpa_hexdump(level, title, buf, len)                                    \
+  wpa_hexdump_ascii(level, title, buf, len)
 
 #ifndef wpa_trace_show
 #define wpa_trace_show(s) log_trace("%s", s)

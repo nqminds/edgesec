@@ -23,11 +23,11 @@ struct MD5Context {
 };
 
 int md5_vector_base(size_t num_elem, const uint8_t *addr[], const size_t *len,
-               uint8_t *mac);
+                    uint8_t *mac);
 
 void MD5Init_base(struct MD5Context *context);
 void MD5Update_base(struct MD5Context *context, unsigned char const *buf,
-               unsigned len);
+                    unsigned len);
 void MD5Final_base(unsigned char digest[16], struct MD5Context *context);
 
 #endif /* MD5_INTERNAL_H */

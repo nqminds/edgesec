@@ -22,8 +22,7 @@
 #include "supervisor_utils.h"
 
 int allocate_vlan(struct supervisor_context *context, const uint8_t *addr,
-                  size_t addr_len,
-                  enum VLAN_ALLOCATION_TYPE type) {
+                  size_t addr_len, enum VLAN_ALLOCATION_TYPE type) {
   if (addr == NULL) {
     log_error("addr param is NULL");
     return -1;

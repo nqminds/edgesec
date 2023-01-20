@@ -28,7 +28,8 @@
  * Returns: 0 on success, -1 on failure
  */
 int hmac_md5_vector_base(const uint8_t *key, size_t key_len, size_t num_elem,
-                    const uint8_t *addr[], const size_t *len, uint8_t *mac) {
+                         const uint8_t *addr[], const size_t *len,
+                         uint8_t *mac) {
   uint8_t k_pad[64]; /* padding - key XORd with ipad/opad */
   uint8_t tk[16];
   const uint8_t *_addr[6];
@@ -105,6 +106,6 @@ int hmac_md5_vector_base(const uint8_t *key, size_t key_len, size_t num_elem,
  * Returns: 0 on success, -1 on failure
  */
 int hmac_md5_base(const uint8_t *key, size_t key_len, const uint8_t *data,
-             size_t data_len, uint8_t *mac) {
+                  size_t data_len, uint8_t *mac) {
   return hmac_md5_vector_base(key, key_len, 1, &data, &data_len, mac);
 }

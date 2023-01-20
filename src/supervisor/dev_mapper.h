@@ -22,8 +22,8 @@
 
 #include "../utils/allocs.h"
 #include "../utils/hashmap.h"
-#include "../utils/os.h"
 #include "../utils/net.h"
+#include "../utils/os.h"
 
 #define MAX_DEVICE_LABEL_SIZE 255
 

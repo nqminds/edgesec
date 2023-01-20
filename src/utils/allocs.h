@@ -31,7 +31,7 @@ void *sys_zalloc(size_t size);
 
 /**
  * os_memdup - Allocate duplicate of passed memory chunk
- * 
+ *
  * This function allocates a memory block like os_malloc() would, and
  * copies the given source buffer into it.
  *
@@ -39,7 +39,7 @@ void *sys_zalloc(size_t size);
  * @param len Length of source buffer
  * @return void* %NULL if allocation failed, copy of src buffer otherwise
  */
-void * sys_memdup(const void *src, size_t len);
+void *sys_memdup(const void *src, size_t len);
 
 #ifndef os_zalloc
 #define os_zalloc(s) sys_zalloc((s))

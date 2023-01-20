@@ -97,9 +97,10 @@ struct os_reltime {
  * sys_strstr - Locate a substring
  * @param haystack String (haystack) to search from
  * @param needle Needle to search from haystack
- * @returns char * Pointer to the beginning of the substring or %NULL if not found
+ * @returns char * Pointer to the beginning of the substring or %NULL if not
+ * found
  */
-char * sys_strstr(const char *haystack, const char *needle);
+char *sys_strstr(const char *haystack, const char *needle);
 
 /**
  * @brief Becomes a daemon

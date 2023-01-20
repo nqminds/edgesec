@@ -733,7 +733,7 @@ int init_mdns_context(struct mdns_conf *mdns_config,
   os_memcpy(&context->config, mdns_config, sizeof(struct mdns_conf));
   context->pctx_list = NULL;
   sys_strlcpy(context->supervisor_control_path, supervisor_control_path,
-             MAX_OS_PATH_LEN);
+              MAX_OS_PATH_LEN);
   context->command_mapper = NULL;
   context->sfd = 0;
 

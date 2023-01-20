@@ -115,14 +115,16 @@ int save_device_vlan(struct supervisor_context *context, uint8_t mac_addr[],
   return 0;
 }
 
-int get_mac_ac(struct supervisor_context *context, struct identity_info *iinfo) {
+int get_mac_ac(struct supervisor_context *context,
+               struct identity_info *iinfo) {
   uint8_t *mac_addr = iinfo->mac_addr;
   iinfo->access = IDENTITY_ACCESS_DENY;
 
   struct mac_conn_info info;
-  int alloc_vlanid = (context->allocate_vlans)
-                         ? allocate_vlan(context, mac_addr, ETHER_ADDR_LEN, VLAN_ALLOCATE_HASH)
-                         : context->default_open_vlanid;
+  int alloc_vlanid =
+      (context->allocate_vlans)
+          ? allocate_vlan(context, mac_addr, ETHER_ADDR_LEN, VLAN_ALLOCATE_HASH)
+          : context->default_open_vlanid;
 
   init_default_mac_info(&info, alloc_vlanid, context->allow_all_nat);
 
@@ -197,26 +199,29 @@ int get_mac_ac(struct supervisor_context *context, struct identity_info *iinfo) 
 
   if (iinfo->access == IDENTITY_ACCESS_DENY) {
     log_debug("ACCESS DENY for mac=" MACSTR, MAC2STR(mac_addr));
-  } else if(iinfo->access == IDENTITY_ACCESS_ALLOW){
+  } else if (iinfo->access == IDENTITY_ACCESS_ALLOW) {
     log_debug("ACCESS ALLOW for mac=" MACSTR, MAC2STR(mac_addr));
   }
 
   return 0;
 }
 
-int get_cert_ac(struct supervisor_context *context, struct identity_info *iinfo) {
+int get_cert_ac(struct supervisor_context *context,
+                struct identity_info *iinfo) {
   iinfo->vlanid = (context->allocate_vlans)
-                         ? allocate_vlan(context, iinfo->cert_id, iinfo->cert_id_len, VLAN_ALLOCATE_HASH)
-                         : context->default_open_vlanid;
+                      ? allocate_vlan(context, iinfo->cert_id,
+                                      iinfo->cert_id_len, VLAN_ALLOCATE_HASH)
+                      : context->default_open_vlanid;
 
-  log_debug("REQUESTING vlanid=%d for cert_id_len=%d", iinfo->vlanid, iinfo->cert_id_len);
+  log_debug("REQUESTING vlanid=%d for cert_id_len=%d", iinfo->vlanid,
+            iinfo->cert_id_len);
   iinfo->access = IDENTITY_ACCESS_ALLOW;
 
   return 0;
 }
 
-struct identity_info * get_identity_ac(const uint8_t *identity, size_t identity_len,
-                                      void *mac_conn_arg) {
+struct identity_info *get_identity_ac(const uint8_t *identity,
+                                      size_t identity_len, void *mac_conn_arg) {
   if (identity == NULL) {
     log_error("identity param is NULL");
     return NULL;
@@ -227,7 +232,8 @@ struct identity_info * get_identity_ac(const uint8_t *identity, size_t identity_
     return NULL;
   }
 
-  struct identity_info *iinfo = (struct identity_info *) sys_zalloc(sizeof(struct identity_info));
+  struct identity_info *iinfo =
+      (struct identity_info *)sys_zalloc(sizeof(struct identity_info));
   if ((iinfo == NULL)) {
     log_errno("sys_zalloc");
     return NULL;

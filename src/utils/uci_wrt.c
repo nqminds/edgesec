@@ -168,7 +168,7 @@ int uwrt_lookup_option(struct uci_option *o, char *sref, UT_array *kv) {
   }
 
   if ((kvstr = sys_zalloc(strlen(cname) + strlen(sname) + strlen(oname) +
-                         strlen(vname) + 4)) == NULL) {
+                          strlen(vname) + 4)) == NULL) {
     log_errno("sys_zalloc");
     os_free(vname);
     return -1;
@@ -985,9 +985,8 @@ int uwrt_gen_hostapd_instance(const struct uctx *context,
            params->wpa_key_mgmt);
   utarray_push_back(list_properties, &property);
 
-  snprintf(property, property_size,
-           "wireless.%s.hostapd_options=ieee8021x=%d", params->device,
-           params->ieee8021x);
+  snprintf(property, property_size, "wireless.%s.hostapd_options=ieee8021x=%d",
+           params->device, params->ieee8021x);
   utarray_push_back(list_properties, &property);
 
   snprintf(property, property_size,

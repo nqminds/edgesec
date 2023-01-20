@@ -11,8 +11,8 @@
 #ifndef RADIUS_CONFIG_H
 #define RADIUS_CONFIG_H
 
-#include "../utils/net.h"
 #include "../supervisor/identity.h"
+#include "../utils/net.h"
 #include "attr_mapper.h"
 
 #define RADIUS_SECRET_LEN 255
@@ -22,12 +22,16 @@
  *
  */
 struct radius_conf {
-  char client_conf_path[MAX_OS_PATH_LEN];  /**< The client config path string */
-  char eap_ca_cert_path[MAX_OS_PATH_LEN];  /**< The certificate authority file path in pem format */
-  char eap_server_cert_path[MAX_OS_PATH_LEN]; /**< The server certificate file path in pem format */
-  char eap_server_key_path[MAX_OS_PATH_LEN]; /**< The server private key file path */
-  char eap_dh_path[MAX_OS_PATH_LEN]; /**< The Diffie-Hellman config params file path */
-  int radius_port;                           /**< Radius port */
+  char client_conf_path[MAX_OS_PATH_LEN]; /**< The client config path string */
+  char eap_ca_cert_path[MAX_OS_PATH_LEN]; /**< The certificate authority file
+                                             path in pem format */
+  char eap_server_cert_path[MAX_OS_PATH_LEN]; /**< The server certificate file
+                                                 path in pem format */
+  char eap_server_key_path[MAX_OS_PATH_LEN];  /**< The server private key file
+                                                 path */
+  char eap_dh_path[MAX_OS_PATH_LEN]; /**< The Diffie-Hellman config params file
+                                        path */
+  int radius_port;                   /**< Radius port */
   char radius_client_ip[OS_INET_ADDRSTRLEN]; /**< Radius client IP string */
   int radius_client_mask; /**< Radius client IP mask string */
   char radius_server_ip[OS_INET_ADDRSTRLEN]; /**< Radius server IP string */
@@ -35,9 +39,9 @@ struct radius_conf {
   char radius_secret[RADIUS_SECRET_LEN]; /**< Radius secret string */
 };
 
-typedef struct identity_info * (*get_identity_ac_cb)(const uint8_t *identity,
-                                                size_t identity_len,  
-                                                void *ctx_cb);
+typedef struct identity_info *(*get_identity_ac_cb)(const uint8_t *identity,
+                                                    size_t identity_len,
+                                                    void *ctx_cb);
 
 struct radius_context {
   struct radius_conf *rconf;

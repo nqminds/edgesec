@@ -30,4 +30,3 @@ else()
   target_link_libraries(radius_service PRIVATE identity radius_server)
 endif ()
 target_compile_definitions(radius_server PRIVATE _DEFAULT_SOURCE _BSD_SOURCE IEEE8021X_EAPOL CONFIG_TESTING_OPTIONS)
-

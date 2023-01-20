@@ -17,7 +17,7 @@ ssize_t convert_identity2certid(const char *identity, uint8_t **cert_id) {
 
   *cert_id = NULL;
 
-  //cert-2AFE6B8ADBAC8145803605F53B43F8268D9996D1
+  // cert-2AFE6B8ADBAC8145803605F53B43F8268D9996D1
   char *pos = sys_strstr(identity, IDENTITY_CERT_PREFIX);
   if (pos == NULL) {
     log_error("cert prefix not found");
@@ -46,7 +46,8 @@ ssize_t convert_identity2certid(const char *identity, uint8_t **cert_id) {
   return cert_id_len;
 }
 
-int process_identity_type(const uint8_t *identity, size_t identity_len, struct identity_info *iinfo) {
+int process_identity_type(const uint8_t *identity, size_t identity_len,
+                          struct identity_info *iinfo) {
   if (identity == NULL) {
     log_error("identity param is NULL");
     return -1;
@@ -66,10 +67,11 @@ int process_identity_type(const uint8_t *identity, size_t identity_len, struct i
   sprintf(identity_str, "%.*s", (int)identity_len, identity);
 
   if (convert_ascii2mac(identity_str, iinfo->mac_addr) < 0) {
-    if ((iinfo->cert_id_len = convert_identity2certid(identity_str, &iinfo->cert_id)) < 0) {
+    if ((iinfo->cert_id_len =
+             convert_identity2certid(identity_str, &iinfo->cert_id)) < 0) {
       log_error("convert_identity2certid fail");
       os_free(identity_str);
-      return -1;    
+      return -1;
     }
 
     iinfo->type = IDENTITY_TYPE_CERT;

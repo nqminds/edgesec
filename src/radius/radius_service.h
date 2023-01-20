@@ -26,9 +26,9 @@
  * @return Pointer to private RADIUS server context or NULL on failure
  */
 struct radius_context *run_radius(struct eloop_data *eloop,
-                                      struct radius_conf *rconf,
-                                      get_identity_ac_cb get_identity_ac_fn,
-                                      void *ctx_cb);
+                                  struct radius_conf *rconf,
+                                  get_identity_ac_cb get_identity_ac_fn,
+                                  void *ctx_cb);
 
 /**
  * @brief Closes the radius service

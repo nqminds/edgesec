@@ -35,7 +35,8 @@ static void test_allocate_vlan(void **state) {
     utarray_push_back(ctx.config_ifinfo_array, &el);
   }
 
-  int vlanid = allocate_vlan(&ctx, mac_addr, ETHER_ADDR_LEN, VLAN_ALLOCATE_RANDOM);
+  int vlanid =
+      allocate_vlan(&ctx, mac_addr, ETHER_ADDR_LEN, VLAN_ALLOCATE_RANDOM);
   assert_in_range(vlanid, 0, 10);
 
   vlanid = allocate_vlan(&ctx, mac_addr, ETHER_ADDR_LEN, VLAN_ALLOCATE_HASH);

@@ -340,7 +340,7 @@ char *run_dhcp_process(const char *dhcp_bin_path, const char *dhcp_conf_path) {
     sys_strlcpy(dnsmasq_proc_name_buffer, dhcp_bin_path, MAX_OS_PATH_LEN - 1);
     dnsmasq_proc_name_buffer[MAX_OS_PATH_LEN - 1] = '\0';
     sys_strlcpy(dnsmasq_proc_name, basename(dnsmasq_proc_name_buffer),
-               MAX_OS_PATH_LEN - 1);
+                MAX_OS_PATH_LEN - 1);
   }
 
   pid_t child_pid = 0;

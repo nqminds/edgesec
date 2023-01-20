@@ -13,8 +13,8 @@
 #include <utarray.h>
 #include <uthash.h>
 
-#include "../utils/net.h"
 #include "../utils/hashmap.h"
+#include "../utils/net.h"
 #include "../utils/os.h"
 
 #include "attr_mapper.h"
@@ -22,10 +22,9 @@
 #include "wpabuf.h"
 
 // Randomlyh selected MAC key for MD5 algorithm
-static const uint8_t mac_hash_base_key[MD5_MAC_LEN] = {0x76, 0x7a, 0x20, 0x0b,
-                                                       0x20, 0x0c, 0x90, 0x38,
-                                                       0xc0, 0xae, 0x91, 0x07,
-                                                       0x41, 0xba, 0x47, 0xdb};
+static const uint8_t mac_hash_base_key[MD5_MAC_LEN] = {
+    0x76, 0x7a, 0x20, 0x0b, 0x20, 0x0c, 0x90, 0x38,
+    0xc0, 0xae, 0x91, 0x07, 0x41, 0xba, 0x47, 0xdb};
 
 void free_attr(struct hostapd_radius_attr *attr) {
   struct hostapd_radius_attr *prev;
@@ -39,18 +38,18 @@ void free_attr(struct hostapd_radius_attr *attr) {
 }
 
 void free_attr_contents(struct hostapd_radius_attr *attr) {
-    wpabuf_free(attr->val);
-    free_attr(attr->next);
+  wpabuf_free(attr->val);
+  free_attr(attr->next);
 }
 
-void copy_attr_contents(struct hostapd_radius_attr *src, struct hostapd_radius_attr *dst) {
-    dst->val = src->val;
-    dst->type = src->type;
-    dst->next = src->next;
+void copy_attr_contents(struct hostapd_radius_attr *src,
+                        struct hostapd_radius_attr *dst) {
+  dst->val = src->val;
+  dst->type = src->type;
+  dst->next = src->next;
 }
 
-int get_attr_mapper(attr_mac_conn **hmap, const uint8_t *key,
-                    size_t key_size,
+int get_attr_mapper(attr_mac_conn **hmap, const uint8_t *key, size_t key_size,
                     struct hostapd_radius_attr **attr) {
   attr_mac_conn *s;
 
@@ -70,7 +69,8 @@ int get_attr_mapper(attr_mac_conn **hmap, const uint8_t *key,
   }
 
   uint8_t hashkey[MD5_MAC_LEN];
-  if (hmac_md5_base(mac_hash_base_key, MD5_MAC_LEN, key, key_size, hashkey) < 0) {
+  if (hmac_md5_base(mac_hash_base_key, MD5_MAC_LEN, key, key_size, hashkey) <
+      0) {
     log_error("hmac_md5_base fail");
     return -1;
   }
@@ -85,8 +85,7 @@ int get_attr_mapper(attr_mac_conn **hmap, const uint8_t *key,
   return 0;
 }
 
-int put_attr_mapper(attr_mac_conn **hmap, const uint8_t *key,
-                    size_t key_size,
+int put_attr_mapper(attr_mac_conn **hmap, const uint8_t *key, size_t key_size,
                     struct hostapd_radius_attr *attr) {
   attr_mac_conn *s;
 
@@ -106,7 +105,8 @@ int put_attr_mapper(attr_mac_conn **hmap, const uint8_t *key,
   }
 
   uint8_t hashkey[MD5_MAC_LEN];
-  if (hmac_md5_base(mac_hash_base_key, MD5_MAC_LEN, key, key_size, hashkey) < 0) {
+  if (hmac_md5_base(mac_hash_base_key, MD5_MAC_LEN, key, key_size, hashkey) <
+      0) {
     log_error("hmac_md5_base fail");
     return -1;
   }

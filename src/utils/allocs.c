@@ -36,11 +36,10 @@ char *os_strdup(const char *s) {
   return dest;
 }
 
-void * sys_memdup(const void *src, size_t len)
-{
-	void *r = os_malloc(len);
+void *sys_memdup(const void *src, size_t len) {
+  void *r = os_malloc(len);
 
-	if (r && src)
-		os_memcpy(r, src, len);
-	return r;
+  if (r && src)
+    os_memcpy(r, src, len);
+  return r;
 }

@@ -178,9 +178,9 @@ void *supervisor_client_thread(void *arg) {
   char user_password[COMPACT_MACSTR_LEN];
   sprintf(user_password, COMPACT_MACSTR, MAC2STR(addr));
 
-  assert_non_null(radius_msg_add_attr_user_password(msg, (uint8_t *)user_password, strlen(user_password),
-                                                    server.shared_secret,
-                                                    server.shared_secret_len));
+  assert_non_null(radius_msg_add_attr_user_password(
+      msg, (uint8_t *)user_password, strlen(user_password),
+      server.shared_secret, server.shared_secret_len));
 
   assert_non_null(radius_msg_add_attr(msg, RADIUS_ATTR_NAS_IP_ADDRESS,
                                       (uint8_t *)&own_ip_addr, 4));

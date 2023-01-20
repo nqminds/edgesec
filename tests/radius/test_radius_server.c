@@ -23,8 +23,8 @@
 
 #include <eloop.h>
 #include "radius/radius.h"
-#include "radius/radius_service.h"
 #include "radius/radius_config.h"
+#include "radius/radius_service.h"
 #include "utils/allocs.h"
 #include "utils/log.h"
 #include "utils/os.h"
@@ -50,8 +50,8 @@ struct radius_test_ctx {
   int tagged[2];
 };
 
-struct identity_info * get_mac_conn(const uint8_t *identity, size_t identity_len,
-                                  void *mac_conn_arg) {
+struct identity_info *get_mac_conn(const uint8_t *identity, size_t identity_len,
+                                   void *mac_conn_arg) {
   (void)mac_conn_arg;
 
   struct identity_info *iinfo = sys_zalloc(sizeof(struct identity_info));
@@ -73,8 +73,7 @@ static RadiusRxResult receive_auth(struct radius_msg *msg,
 
   struct radius_test_ctx *ctx = data;
   ctx->code = radius_msg_get_hdr(msg)->code;
-  radius_msg_get_vlanid(msg, &ctx->untagged, 1,
-                          ctx->tagged);
+  radius_msg_get_vlanid(msg, &ctx->untagged, 1, ctx->tagged);
   log_trace("Received RADIUS Authentication message; code=%d", ctx->code);
 
   /* We're done for this example, so request eloop to terminate. */
@@ -121,7 +120,8 @@ static void start_test(void *eloop_ctx, void *timeout_ctx) {
   char user_password[COMPACT_MACSTR_LEN];
   sprintf(user_password, COMPACT_MACSTR, MAC2STR(addr));
   if (!radius_msg_add_attr_user_password(
-          msg, (uint8_t *)user_password, strlen(user_password), ctx->conf.auth_server->shared_secret,
+          msg, (uint8_t *)user_password, strlen(user_password),
+          ctx->conf.auth_server->shared_secret,
           ctx->conf.auth_server->shared_secret_len)) {
     log_trace("Could not add User-Password");
     radius_msg_free(msg);
@@ -191,7 +191,8 @@ static void test_radius_server_init(void **state) {
   ret = radius_client_register(ctx.radius, RADIUS_AUTH, receive_auth, &ctx);
   assert_int_equal(ret, 0);
 
-  struct radius_context *radius_srv_ctx = run_radius(eloop, &rconf, get_mac_conn, NULL);
+  struct radius_context *radius_srv_ctx =
+      run_radius(eloop, &rconf, get_mac_conn, NULL);
   assert_non_null(radius_srv_ctx);
 
   eloop_register_timeout(eloop, 0, 0, start_test, &ctx, NULL);

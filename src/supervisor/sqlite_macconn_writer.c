@@ -198,7 +198,8 @@ int get_sqlite_macconn_entries(sqlite3 *db, UT_array *entries) {
     os_memset(&el.info, 0, sizeof(el.info));
 
     // mac
-    if (convert_ascii2mac((char *)sqlite3_column_text(res, 0), mac_addr) == -1) {
+    if (convert_ascii2mac((char *)sqlite3_column_text(res, 0), mac_addr) ==
+        -1) {
       log_trace("convert_ascii2mac fail");
       sqlite3_finalize(res);
       return -1;

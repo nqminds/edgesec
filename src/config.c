@@ -227,14 +227,14 @@ bool load_dhcp_list(const char *filename, struct app_config *config) {
 bool load_radius_conf(const char *filename, struct app_config *config) {
   char *value = os_malloc(INI_BUFFERSIZE);
 
-  int ret =
-      ini_gets("radius", "clientConfigPath", "", value, MAX_OS_PATH_LEN, filename);
+  int ret = ini_gets("radius", "clientConfigPath", "", value, MAX_OS_PATH_LEN,
+                     filename);
   if (!ret) {
     log_error("clientConfigPath was not specified\n");
     os_free(value);
     return false;
   }
-  
+
   sys_strlcpy(config->rconfig.client_conf_path, value, MAX_OS_PATH_LEN);
   os_free(value);
 
@@ -592,7 +592,8 @@ bool load_capture_config(const char *filename, struct capture_conf *config) {
   ini_gets("capture", "middlewareParams", "", ini_buffer, INI_BUFFERSIZE,
            filename);
 
-  sys_strlcpy(config->middleware_params, ini_buffer, MAX_MIDDLEWARE_PARAMS_SIZE);
+  sys_strlcpy(config->middleware_params, ini_buffer,
+              MAX_MIDDLEWARE_PARAMS_SIZE);
 
   // Load promiscuous param
   config->promiscuous = (int)ini_getbool("capture", "promiscuous", 0, filename);

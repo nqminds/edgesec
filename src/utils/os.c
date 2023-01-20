@@ -1514,16 +1514,15 @@ char *string_append_char(const char *str, char character) {
   return appended;
 }
 
-char * sys_strstr(const char *haystack, const char *needle)
-{
-	size_t len = os_strlen(needle);
-	while (*haystack) {
-		if (sys_strncmp(haystack, needle, len) == 0)
-			return (char *) haystack;
-		haystack++;
-	}
+char *sys_strstr(const char *haystack, const char *needle) {
+  size_t len = os_strlen(needle);
+  while (*haystack) {
+    if (sys_strncmp(haystack, needle, len) == 0)
+      return (char *)haystack;
+    haystack++;
+  }
 
-	return NULL;
+  return NULL;
 }
 
 // void *os_malloc(size_t size)

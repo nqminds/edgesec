@@ -21,8 +21,8 @@
  * @param mac_conn_arg The supervisor_context pointer
  * @return identity_info * The returned identity info structure, NULL for error
  */
-struct identity_info * get_identity_ac(const uint8_t *identity, size_t identity_len,
-                                      void *mac_conn_arg);
+struct identity_info *get_identity_ac(const uint8_t *identity,
+                                      size_t identity_len, void *mac_conn_arg);
 
 /**
  * @brief The AP service callback

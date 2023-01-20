@@ -28,8 +28,7 @@ enum VLAN_ALLOCATION_TYPE { VLAN_ALLOCATE_RANDOM = 0, VLAN_ALLOCATE_HASH };
  * @return VLAN ID, -1 on failure
  */
 int allocate_vlan(struct supervisor_context *context, const uint8_t *mac_addr,
-                  size_t addr_len,
-                  enum VLAN_ALLOCATION_TYPE type);
+                  size_t addr_len, enum VLAN_ALLOCATION_TYPE type);
 
 /**
  * @brief Save a MAC entry into the mapper

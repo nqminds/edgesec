@@ -16,12 +16,12 @@
 
 #include <eloop.h>
 #include "../ap/ap_config.h"
-#include "../radius/radius_config.h"
 #include "../capture/capture_config.h"
 #include "../crypt/crypt_config.h"
 #include "../dhcp/dhcp_config.h"
 #include "../dns/dns_config.h"
 #include "../firewall/firewall_service.h"
+#include "../radius/radius_config.h"
 #include "../utils/iface.h"
 #include "../utils/iface_mapper.h"
 
@@ -77,12 +77,12 @@ struct supervisor_context {
   struct mdns_conf mconfig;             /**< DNS service configuration. */
   struct radius_conf rconfig;           /**< Radius service configuration. */
   sqlite3 *macconn_db;                  /**< The macconn db structure. */
-  struct radius_context *radius_ctx; /**< The radius server context. */
-  struct crypt_context *crypt_ctx;       /**< The crypt context. */
-  struct iface_context *iface_ctx;       /**< The interface context. */
-  struct auth_ticket *ticket;            /**< The authentication ticket. */
-  int ap_sock;                           /**< The AP notifier socket. */
-  struct eloop_data *eloop;              /**< The main eloop context. */
+  struct radius_context *radius_ctx;    /**< The radius server context. */
+  struct crypt_context *crypt_ctx;      /**< The crypt context. */
+  struct iface_context *iface_ctx;      /**< The interface context. */
+  struct auth_ticket *ticket;           /**< The authentication ticket. */
+  int ap_sock;                          /**< The AP notifier socket. */
+  struct eloop_data *eloop;             /**< The main eloop context. */
 };
 
 #endif
