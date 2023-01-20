@@ -14,7 +14,7 @@
 #include <stdint.h>
 #include <sqlite3.h>
 
-#include "mac_mapper.h"
+#include "dev_mapper.h"
 
 #include <utarray.h>
 #include "../utils/allocs.h"

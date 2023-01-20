@@ -31,7 +31,7 @@
 
 #include "radius_client.h"
 
-#include "supervisor/mac_mapper.h"
+#include "supervisor/dev_mapper.h"
 
 #define VLAN_ID 34
 static char *test_radius_conf_file = "/tmp/test-radius.conf";

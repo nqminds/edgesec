@@ -11,7 +11,7 @@
 #include <sys/un.h>
 #include <utarray.h>
 
-#include "mac_mapper.h"
+#include "dev_mapper.h"
 #include "network_commands.h"
 #include "sqlite_macconn_writer.h"
 #include "subscriber_events.h"

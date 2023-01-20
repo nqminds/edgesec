@@ -18,7 +18,7 @@
 #include <sys/un.h>
 
 #include "cmd_processor.h"
-#include "mac_mapper.h"
+#include "dev_mapper.h"
 #include "network_commands.h"
 #ifdef WITH_CRYPTO_SERVICE
 #include "crypt_commands.h"

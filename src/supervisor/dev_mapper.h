@@ -5,11 +5,11 @@
  * @copyright
  * SPDX-FileCopyrightText: © 2020 NQMCyber Ltd and edgesec contributors
  * SPDX-License-Identifier: LGPL-3.0-or-later
- * @brief File containing the definition of the mac mapper.
+ * @brief File containing the definition of the device mapper.
  */
 
-#ifndef MAC_MAPPER_H
-#define MAC_MAPPER_H
+#ifndef DEV_MAPPER_H
+#define DEV_MAPPER_H
 
 #include <stdbool.h>
 #include <inttypes.h>

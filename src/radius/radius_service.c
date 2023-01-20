@@ -24,8 +24,8 @@
 #include <eloop.h>
 #include <eap_server/eap.h>
 
+#include "../supervisor/dev_mapper.h"
 #include "../supervisor/identity.h"
-#include "../supervisor/mac_mapper.h"
 #include "./attr_mapper.h"
 #include "radius.h"
 #include "radius_server.h"
@@ -164,7 +164,7 @@ int save_user_attribute(struct radius_context *context, const u8 *identity,
     }
 
     if (msg != NULL && iinfo->id_pass_len && user_attr == RADIUS_USER_VLANPASS_ATTR) {
-      struct radius_hdr *hdr = radius_msg_get_hdr(msg); 
+      struct radius_hdr *hdr = radius_msg_get_hdr(msg);
       struct hostapd_radius_attr *pass_attr = get_tunnel_pass_attribute(
                                                     hdr->authenticator,
                                                     (const uint8_t *)context->rconf->radius_secret,
@@ -180,13 +180,13 @@ int save_user_attribute(struct radius_context *context, const u8 *identity,
     } else {
       log_trace("msg attr is NULL");
     }
- 
-    log_trace("Saving user RADIUS attribute");  
+
+    log_trace("Saving user RADIUS attribute");
     if (put_attr_mapper(&context->attr_mapper, identity, identity_len, vlan_attr) < 0) {
       log_error("put_attr_mapper fail");
       free_attr(vlan_attr);
       return -1;
-    } 
+    }
     if (get_attr_mapper(&context->attr_mapper, identity, identity_len, &user->accept_attr) < 0) {
       log_error("get_attr_mapper fail");
       free_attr(vlan_attr);

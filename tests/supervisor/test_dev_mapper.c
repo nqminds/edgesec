@@ -13,7 +13,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "supervisor/mac_mapper.h"
+#include "supervisor/dev_mapper.h"
 #include "utils/log.h"
 
 static const UT_icd mac_conn_icd = {sizeof(struct mac_conn), NULL, NULL, NULL};
