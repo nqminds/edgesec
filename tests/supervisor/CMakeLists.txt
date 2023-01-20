@@ -49,7 +49,7 @@ endif ()
 
 add_cmocka_test(test_mac_mapper
   SOURCES test_mac_mapper.c
-  LINK_LIBRARIES log os mac_mapper cmocka::cmocka
+  LINK_LIBRARIES log os dev_mapper cmocka::cmocka
 )
 
 add_cmocka_test(test_sqlite_macconn_writer

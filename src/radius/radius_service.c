@@ -24,7 +24,7 @@
 #include <crypto/tls.h>
 #include <eap_server/eap.h>
 
-#include "../supervisor/mac_mapper.h"
+#include "../supervisor/dev_mapper.h"
 #include "../supervisor/identity.h"
 #include "radius_server.h"
 #include "radius_config.h"

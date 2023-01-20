@@ -60,7 +60,7 @@ endif()
 
 add_cmocka_test(test_runctl
   SOURCES test_runctl.c
-  LINK_LIBRARIES SQLite::SQLite3 LibUTHash::LibUTHash runctl log os supervisor_config mac_mapper cmocka::cmocka
+  LINK_LIBRARIES SQLite::SQLite3 LibUTHash::LibUTHash runctl log os supervisor_config dev_mapper cmocka::cmocka
 )
 
 target_link_options(test_runctl PRIVATE

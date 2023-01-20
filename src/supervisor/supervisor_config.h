@@ -25,7 +25,7 @@
 #include "../utils/iface.h"
 #include "../utils/iface_mapper.h"
 
-#include "mac_mapper.h"
+#include "dev_mapper.h"
 
 /**
  * @brief Authentication ticket structure definition

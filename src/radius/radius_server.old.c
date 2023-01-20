@@ -16,7 +16,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "../supervisor/mac_mapper.h"
+#include "../supervisor/dev_mapper.h"
 #include "../utils/allocs.h"
 #include "../utils/log.h"
 #include "../utils/net.h"

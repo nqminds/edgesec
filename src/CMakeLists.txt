@@ -45,7 +45,7 @@ endif ()
 target_link_libraries(runctl PRIVATE
   LibUTHash::LibUTHash capture_service net log iface_mapper os
   sqlite_macconn_writer firewall_service eloop::eloop supervisor
-  network_commands mac_mapper ap_service firewall_service dhcp_service
+  network_commands dev_mapper ap_service firewall_service dhcp_service
   Threads::Threads
 )
 
