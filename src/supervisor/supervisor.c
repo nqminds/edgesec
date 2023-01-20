@@ -115,7 +115,8 @@ int save_device_vlan(struct supervisor_context *context, uint8_t mac_addr[],
   return 0;
 }
 
-int get_mac_ac(uint8_t *mac_addr, struct supervisor_context *context, struct identity_info *iinfo) {
+int get_mac_ac(struct supervisor_context *context, struct identity_info *iinfo) {
+  uint8_t *mac_addr = iinfo->mac_addr;
   iinfo->access = IDENTITY_ACCESS_DENY;
 
   struct mac_conn_info info;
@@ -203,12 +204,12 @@ int get_mac_ac(uint8_t *mac_addr, struct supervisor_context *context, struct ide
   return 0;
 }
 
-int get_cert_ac(const uint8_t *identity, size_t identity_len, struct supervisor_context *context, struct identity_info *iinfo) {
+int get_cert_ac(struct supervisor_context *context, struct identity_info *iinfo) {
   iinfo->vlanid = (context->allocate_vlans)
-                         ? allocate_vlan(context, identity, identity_len, VLAN_ALLOCATE_HASH)
+                         ? allocate_vlan(context, iinfo->cert_id, iinfo->cert_id_len, VLAN_ALLOCATE_HASH)
                          : context->default_open_vlanid;
 
-  log_debug("REQUESTING vlanid=%d for cert=%.*s", iinfo->vlanid, identity_len, identity);
+  log_debug("REQUESTING vlanid=%d for cert_id_len=%d", iinfo->vlanid, iinfo->cert_id_len);
   iinfo->access = IDENTITY_ACCESS_ALLOW;
 
   return 0;
@@ -242,13 +243,13 @@ struct identity_info * get_identity_ac(const uint8_t *identity, size_t identity_
       (struct supervisor_context *)mac_conn_arg;
 
   if (iinfo->type == IDENTITY_TYPE_MAC) {
-    if (get_mac_ac(iinfo->mac_addr, context, iinfo) < 0) {
+    if (get_mac_ac(context, iinfo) < 0) {
       log_error("get_mac_ac fail");
       free_identity_info(iinfo);
       return NULL;
     }
   } else if (iinfo->type == IDENTITY_TYPE_CERT) {
-    if (get_cert_ac(identity, identity_len, context, iinfo) < 0) {
+    if (get_cert_ac(context, iinfo) < 0) {
       log_error("get_cert_ac fail");
       free_identity_info(iinfo);
       return NULL;

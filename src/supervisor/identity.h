@@ -26,6 +26,8 @@ enum IDENTITY_TYPE {
 };
 
 struct identity_info {
+  uint8_t *cert_id;     /**< The certificate serial number or ID */
+  ssize_t cert_id_len; /**< The certificate ID length */
   uint8_t mac_addr[ETHER_ADDR_LEN]; /**< MAC address in byte format */
   int vlanid;
   uint8_t id_pass[AP_SECRET_LEN]; /**< WiFi password assigned to the identity */
