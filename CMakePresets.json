@@ -84,6 +84,7 @@
         "USE_GENERIC_IP_SERVICE": true,
         "USE_RADIUS_SERVICE": false,
         "BUILD_HOSTAPD": false,
+        "BUILD_HOSTAPD_EAP_LIB": true,
         "USE_CRYPTO_SERVICE": false,
         "BUILD_OPENSSL3_LIB": false,
         "USE_HEADER_MIDDLEWARE": true,

@@ -14,7 +14,7 @@ add_library(sqlite_macconn_writer sqlite_macconn_writer.c)
 target_link_libraries(sqlite_macconn_writer PUBLIC LibUTHash::LibUTHash dev_mapper PRIVATE sqliteu squeue log net os SQLite::SQLite3)
 
 add_library(bridge_list bridge_list.c)
-target_link_libraries(bridge_list PUBLIC LibUTHash::LibUTHash eloop::list PRIVATE log os)
+target_link_libraries(bridge_list PUBLIC LibUTHash::LibUTHash PRIVATE log os)
 
 add_library(supervisor_utils supervisor_utils.c)
 target_link_libraries(supervisor_utils PUBLIC supervisor_config PRIVATE dev_mapper sqlite_macconn_writer hash log os)

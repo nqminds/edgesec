@@ -3,7 +3,7 @@ include_directories (
 )
 
 add_library(pcap_queue pcap_queue.c)
-target_link_libraries(pcap_queue PUBLIC PCAP::pcap eloop::list PRIVATE log os)
+target_link_libraries(pcap_queue PUBLIC PCAP::pcap PRIVATE log os)
 
 add_library(sqlite_pcap sqlite_pcap.c)
 target_link_libraries(sqlite_pcap PUBLIC PCAP::pcap squeue PRIVATE sqliteu log os SQLite::SQLite3)

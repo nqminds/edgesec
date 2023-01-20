@@ -17,7 +17,7 @@
 #include <pcap.h>
 #include <string.h>
 
-#include <list.h>
+#include "../../../utils/list.h"
 
 /**
  * @brief pcap queueu structure definition
