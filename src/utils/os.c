@@ -42,8 +42,6 @@ struct proc_signal_arg {
 };
 
 int become_daemon(int flags) {
-  int maxfd, fd;
-
   /* Become background process */
   switch (fork()) {
     case -1:
@@ -83,14 +81,15 @@ int become_daemon(int flags) {
 
   /* Close all open files */
   if (!(flags & BD_NO_CLOSE_FILES)) {
-    maxfd = sysconf(_SC_OPEN_MAX);
+    long maxfd = sysconf(_SC_OPEN_MAX);
 
     /* Limit is indeterminate... */
     if (maxfd == -1) {
       maxfd = BD_MAX_CLOSE; /* so take a guess */
     }
+    int maxfd_int = maxfd > INT_MAX ? INT_MAX : (int)maxfd;
 
-    for (fd = 0; fd < maxfd; fd++) {
+    for (int fd = 0; fd < maxfd_int; fd++) {
       close(fd);
     }
   }
@@ -136,7 +135,7 @@ bool is_number(const char *ptr) {
   return (*ptr == '\0') ? false : true;
 }
 
-int hex2num(char c) {
+int8_t hex2num(char c) {
   if (c >= '0' && c <= '9')
     return c - '0';
   if (c >= 'a' && c <= 'f')
@@ -164,54 +163,42 @@ int sys_get_reltime(struct os_reltime *t) {
   return res;
 }
 
-int convert_hex2byte(const char *hex) {
-  int a, b;
-  a = hex2num(*hex++);
+int16_t hex2byte(const char hex[static 2]) {
+  int_fast8_t a = hex2num(*hex++);
   if (a < 0)
     return -1;
-  b = hex2num(*hex++);
+  int_fast8_t b = hex2num(*hex++);
   if (b < 0)
     return -1;
   return (a << 4) | b;
 }
 
-int convert_hexstr2bin(const char *hex, uint8_t *buf, size_t len) {
-  size_t i;
-  int a;
+int hexstr2bin(const char *hex, uint8_t *buf, size_t len) {
   const char *ipos = hex;
   uint8_t *opos = buf;
 
-  for (i = 0; i < len; i++) {
-    a = convert_hex2byte(ipos);
+  for (size_t i = 0; i < len; i++) {
+    int_fast16_t a = hex2byte(ipos);
     if (a < 0)
       return -1;
-    *opos++ = a;
+    *opos++ = (uint8_t)a; // should always be between 0-255
     ipos += 2;
   }
   return 0;
 }
 
-size_t sys_strlcpy(char *dest, const char *src, size_t siz) {
-  const char *s = src;
-  size_t left = siz;
+size_t os_strlcpy(char *restrict dest, const char *restrict src, size_t siz) {
+  /* Copy string up to the maximum size of the dest buffer */
+  const char *char_after_NUL = memccpy(dest, src, '\0', siz);
 
-  if (left) {
-    /* Copy string up to the maximum size of the dest buffer */
-    while (--left != 0) {
-      if ((*dest++ = *s++) == '\0')
-        break;
-    }
-  }
-
-  if (left == 0) {
+  if (char_after_NUL != NULL) {
+    return (size_t)(char_after_NUL - dest - 1);
+  } else {
     /* Not enough room for the string; force NUL-termination */
-    if (siz != 0)
-      *dest = '\0';
-    while (*s++)
-      ; /* determine total src string length */
+    dest[siz - 1] = '\0';
+    /* determine total src string length */
+    return strlen(src);
   }
-
-  return s - src - 1;
 }
 
 int sys_memcmp_const(const void *a, const void *b, size_t len) {
@@ -246,7 +233,10 @@ int os_get_random_int_range(int low, int up) {
   return rand() % (up - low + 1) + low;
 }
 
-void os_init_random_seed(void) { srand(time(NULL)); }
+void os_init_random_seed(void) {
+  int_fast64_t current_time = time(NULL);
+  srand((unsigned int)current_time);
+}
 
 int os_get_random_number_s(unsigned char *buf, size_t len) {
   size_t idx = 0;

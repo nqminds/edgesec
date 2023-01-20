@@ -166,7 +166,7 @@ jobs:
       - name: Upload recap as Release Assets
         # only run action if this is being run from a GitHub Release
         if: ${{ github.event_name == 'release' }}
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
@@ -272,7 +272,7 @@ jobs:
       - name: Upload debs as Release Assets
         # only run action if this is being run from a GitHub Release
         if: ${{ github.event_name == 'release' }}
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         env:
           PBUILDER_RESULT_DIR: '${{ runner.temp }}/pbuilder/result'
         with:
