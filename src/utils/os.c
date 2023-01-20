@@ -163,7 +163,7 @@ int sys_get_reltime(struct os_reltime *t) {
   return res;
 }
 
-int16_t hex2byte(const char hex[static 2]) {
+int16_t convert_hex2byte(const char hex[static 2]) {
   int_fast8_t a = hex2num(*hex++);
   if (a < 0)
     return -1;
@@ -173,12 +173,12 @@ int16_t hex2byte(const char hex[static 2]) {
   return (a << 4) | b;
 }
 
-int hexstr2bin(const char *hex, uint8_t *buf, size_t len) {
+int convert_hexstr2bin(const char *hex, uint8_t *buf, size_t len) {
   const char *ipos = hex;
   uint8_t *opos = buf;
 
   for (size_t i = 0; i < len; i++) {
-    int_fast16_t a = hex2byte(ipos);
+    int_fast16_t a = convert_hex2byte(ipos);
     if (a < 0)
       return -1;
     *opos++ = (uint8_t)a; // should always be between 0-255
@@ -187,7 +187,7 @@ int hexstr2bin(const char *hex, uint8_t *buf, size_t len) {
   return 0;
 }
 
-size_t os_strlcpy(char *restrict dest, const char *restrict src, size_t siz) {
+size_t sys_strlcpy(char *restrict dest, const char *restrict src, size_t siz) {
   /* Copy string up to the maximum size of the dest buffer */
   const char *char_after_NUL = memccpy(dest, src, '\0', siz);
 

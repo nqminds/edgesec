@@ -29,20 +29,12 @@ if (BUILD_HOSTAPD)
   )
 
   ExternalProject_Add(
-    hostapd_externalproject
+    hostapd_project
     URL
       https://w1.fi/releases/hostapd-2.10.tar.gz
       https://src.fedoraproject.org/repo/pkgs/hostapd/hostapd-2.10.tar.gz/sha512/243baa82d621f859d2507d8d5beb0ebda15a75548a62451dc9bca42717dcc8607adac49b354919a41d8257d16d07ac7268203a79750db0cfb34b51f80ff1ce8f/hostapd-2.10.tar.gz
     URL_HASH SHA512=243baa82d621f859d2507d8d5beb0ebda15a75548a62451dc9bca42717dcc8607adac49b354919a41d8257d16d07ac7268203a79750db0cfb34b51f80ff1ce8f
     DOWNLOAD_DIR "${EP_DOWNLOAD_DIR}" # if empty string, uses default download dir
-  )
-  FetchContent_MakeAvailable(hostapdsrc)
-endif ()
-
-if (BUILD_HOSTAPD AND NOT (BUILD_ONLY_DOCS))
-  ExternalProject_Add(
-    hostapd_project
-    SOURCE_DIR ${hostapdsrc_SOURCE_DIR}
     INSTALL_DIR "${HOSTAPD_INSTALL_DIR}"
     BUILD_IN_SOURCE true
     SOURCE_SUBDIR "hostapd" # we only care about hostapd, not the entire hostap dir
@@ -102,10 +94,10 @@ if (BUILD_HOSTAPD_EAP_LIB)
     "${CMAKE_CURRENT_BINARY_DIR}/hostapd-eap.config"
   )
 
-  if (TARGET hostapd_externalproject-download)
-    # If we're building hostapd_externalproject, wait for it to download to prevent
+  if (TARGET hostapd_project-download)
+    # If we're building hostapdsrc, wait for it to download to prevent
     # a race-condition
-    add_dependencies(hostapd_libeap_project hostapd_externalproject-download)
+    add_dependencies(hostapd_libeap_project hostapd_project-download)
   endif()
 
   # Hardcoded to be static, we can set CONFIG_SOLIB=yes in `.config` if we really want a shared-library

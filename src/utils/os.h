@@ -215,7 +215,7 @@ int os_get_random_number_s(unsigned char *buf, size_t len);
  * @param hex Two char string
  * @return converted number from 0-255, or `-1` on error.
  */
-int16_t hex2byte(const char hex[static 2]);
+int16_t convert_hex2byte(const char hex[static 2]);
 
 /**
  * @brief Hex char to number
