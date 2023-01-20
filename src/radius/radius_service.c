@@ -219,23 +219,24 @@ int radius_get_eap_user(void *ctx, const u8 *identity,
     user->salt = NULL;
 
     if (context->get_identity_ac_fn != NULL) {
-      struct identity_info iinfo;
-      os_memset(&iinfo, 0, sizeof(struct identity_info));
+      struct identity_info *iinfo = NULL;
 
-      if (context->get_identity_ac_fn(identity, identity_len, context->ctx_cb, &iinfo) < 0) {
+      if ((iinfo = context->get_identity_ac_fn(identity, identity_len, context->ctx_cb)) == NULL) {
         log_error("get_identity_ac_fn fail");
         return -1;
       } else {
-        if (iinfo.access == IDENTITY_ACCESS_DENY) {
+        if (iinfo->access == IDENTITY_ACCESS_DENY) {
           user->macacl = 0;
-        } else if (iinfo.access == IDENTITY_ACCESS_ALLOW) {
-          if (save_user_attribute(context, identity, identity_len, user, msg, user_attr, &iinfo) < 0) {
+        } else if (iinfo->access == IDENTITY_ACCESS_ALLOW) {
+          if (save_user_attribute(context, identity, identity_len, user, msg, user_attr, iinfo) < 0) {
             log_error("save_user_attribute fail");
+            free_identity_info(iinfo);
             return -1;
           }
           user->macacl = 1;
         }
       }
+      free_identity_info(iinfo);
     } else {
       log_error("RADIUS callback is NULL");
       user->macacl = 0;

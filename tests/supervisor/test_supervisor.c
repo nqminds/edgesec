@@ -59,10 +59,12 @@ static void test_get_mac_conn_cmd(void **state) {
   create_vlan_mapper(ctx.config_ifinfo_array, &ctx.vlan_mapper);
   open_sqlite_macconn_db(":memory:", &ctx.macconn_db);
 
-  struct identity_info iinfo;
-  get_identity_ac((const uint8_t *)mac_addr_str, strlen(mac_addr_str), (void *)&ctx, &iinfo);
+  
+  struct identity_info *iinfo = get_identity_ac((const uint8_t *)mac_addr_str, strlen(mac_addr_str), (void *)&ctx);
 
-  assert_int_equal(iinfo.vlanid, 10);
+  assert_int_equal(iinfo->vlanid, 10);
+  free_identity_info(iinfo);
+
   struct mac_conn_info info1;
   get_mac_mapper(&ctx.mac_mapper, mac_addr, &info1);
 
@@ -90,9 +92,9 @@ static void test_get_mac_conn_cmd(void **state) {
 
   assert_int_equal(save_mac_mapper(&ctx, conn), 0);
 
-  struct identity_info iinfo2;
-  get_identity_ac((const uint8_t *)mac_addr_str1, strlen(mac_addr_str1), (void *)&ctx, &iinfo2);
-  assert_int_equal(iinfo2.access, IDENTITY_ACCESS_DENY);
+  struct identity_info *iinfo2 = get_identity_ac((const uint8_t *)mac_addr_str1, strlen(mac_addr_str1), (void *)&ctx);
+  assert_int_equal(iinfo2->access, IDENTITY_ACCESS_DENY);
+  free_identity_info(iinfo2);
 
   utarray_free(ctx.config_ifinfo_array);
   free(ctx.crypt_ctx); // only needed if WITH_CRYPTO_SERVICE

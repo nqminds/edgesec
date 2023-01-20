@@ -42,9 +42,16 @@ int process_identity_type(const uint8_t *identity, size_t identity_len, struct i
   
   if (convert_identity2mac(identity, identity_len, iinfo->mac_addr) < 0) {
     iinfo->type = IDENTITY_TYPE_CERT;
+    // cert-2AFE6B8ADBAC8145803605F53B43F8268D9996D1
   } else {
     iinfo->type = IDENTITY_TYPE_MAC;
   }
 
   return 0;
+}
+
+void free_identity_info(struct identity_info *iinfo) {
+  if (iinfo != NULL) {
+    os_free(iinfo);
+  }
 }

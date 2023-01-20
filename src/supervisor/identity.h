@@ -43,4 +43,11 @@ struct identity_info {
  * @return 0 for success, -1 for error
  */
 int process_identity_type(const uint8_t *identity, size_t identity_len, struct identity_info *iinfo);
+
+/**
+ * @brief Frees the identity info structure
+ *
+ * @param iinfo The identity info structure
+ */
+void free_identity_info(struct identity_info *iinfo);
 #endif

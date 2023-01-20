@@ -39,4 +39,4 @@ else ()
 endif ()
 
 add_library(radius_service radius_service.c)
-target_link_libraries(radius_service PRIVATE radius_server attr_mapper)
+target_link_libraries(radius_service PRIVATE radius_server attr_mapper identity)
