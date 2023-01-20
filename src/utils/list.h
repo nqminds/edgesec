@@ -1,9 +1,13 @@
-/*
- * Doubly-linked list
+/**
+ * @file
+ * @author Alexandru Mereacre
+ * @date 2023
+ * @copyright
+ * SPDX-FileCopyrightText: © 2023 NQMCyber Ltd and edgesec contributors
  * Copyright (c) 2009-2019, Jouni Malinen <j@w1.fi>
- *
- * This software may be distributed under the terms of the BSD license.
- * See README for more details.
+ * SPDX-License-Identifier: BSD licence
+ * @version hostapd-2.10
+ * @brief Doubly-linked list
  */
 
 #ifndef LIST_H

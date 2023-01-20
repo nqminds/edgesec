@@ -16,8 +16,6 @@
 #include <inttypes.h>
 #include <net/ethernet.h>
 
-#include <utarray.h>
-#include <uthash.h>
 #include "allocs.h"
 #include "os.h"
 
