@@ -47,8 +47,8 @@ if (USE_CRYPTO_SERVICE)
   )
 endif ()
 
-add_cmocka_test(test_mac_mapper
-  SOURCES test_mac_mapper.c
+add_cmocka_test(test_dev_mapper
+  SOURCES test_dev_mapper.c
   LINK_LIBRARIES log os dev_mapper cmocka::cmocka
 )
 
