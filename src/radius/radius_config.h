@@ -35,10 +35,9 @@ struct radius_conf {
   char radius_secret[RADIUS_SECRET_LEN]; /**< Radius secret string */
 };
 
-typedef int (*get_identity_ac_cb)(const uint8_t *identity,
+typedef struct identity_info * (*get_identity_ac_cb)(const uint8_t *identity,
                                                 size_t identity_len,  
-                                                void *ctx_cb,
-                                                struct identity_info *iinfo);
+                                                void *ctx_cb);
 
 struct radius_context {
   struct radius_conf *rconf;

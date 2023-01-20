@@ -214,34 +214,52 @@ int get_cert_ac(const uint8_t *identity, size_t identity_len, struct supervisor_
   return 0;
 }
 
-int get_identity_ac(const uint8_t *identity, size_t identity_len,
-                                      void *mac_conn_arg, struct identity_info *iinfo) {
-  if (iinfo == NULL) {
-    log_error("iinfo param is NULL");
-    return -1;
+struct identity_info * get_identity_ac(const uint8_t *identity, size_t identity_len,
+                                      void *mac_conn_arg) {
+  if (identity == NULL) {
+    log_error("identity param is NULL");
+    return NULL;
   }
 
   if (mac_conn_arg == NULL) {
     log_error("context is NULL");
-    return -1;
+    return NULL;
+  }
+
+  struct identity_info *iinfo = (struct identity_info *) sys_zalloc(sizeof(struct identity_info));
+  if ((iinfo == NULL)) {
+    log_errno("sys_zalloc");
+    return NULL;
+  }
+
+  if (process_identity_type(identity, identity_len, iinfo) < 0) {
+    log_error("process_identity_type fail");
+    free_identity_info(iinfo);
+    return NULL;
   }
 
   struct supervisor_context *context =
       (struct supervisor_context *)mac_conn_arg;
 
-  if (process_identity_type(identity, identity_len, iinfo) < 0) {
-    log_error("process_identity_type fail");
-    return -1;
-  }
-
   if (iinfo->type == IDENTITY_TYPE_MAC) {
-    return get_mac_ac(iinfo->mac_addr, context, iinfo);
+    if (get_mac_ac(iinfo->mac_addr, context, iinfo) < 0) {
+      log_error("get_mac_ac fail");
+      free_identity_info(iinfo);
+      return NULL;
+    }
   } else if (iinfo->type == IDENTITY_TYPE_CERT) {
-    return get_cert_ac(identity, identity_len, context, iinfo);
+    if (get_cert_ac(identity, identity_len, context, iinfo) < 0) {
+      log_error("get_cert_ac fail");
+      free_identity_info(iinfo);
+      return NULL;
+    }
   } else {
     log_error("Unknown identity type");
-    return -1;
+    free_identity_info(iinfo);
+    return NULL;
   }
+
+  return iinfo;
 }
 
 void ap_service_callback(struct supervisor_context *context, uint8_t mac_addr[],
