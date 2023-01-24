@@ -167,9 +167,9 @@ int uwrt_lookup_option(struct uci_option *o, char *sref, UT_array *kv) {
     return -1;
   }
 
-  if ((kvstr = os_zalloc(strlen(cname) + strlen(sname) + strlen(oname) +
-                         strlen(vname) + 4)) == NULL) {
-    log_errno("os_zalloc");
+  if ((kvstr = sys_zalloc(strlen(cname) + strlen(sname) + strlen(oname) +
+                          strlen(vname) + 4)) == NULL) {
+    log_errno("sys_zalloc");
     os_free(vname);
     return -1;
   }
@@ -189,9 +189,9 @@ int uwrt_lookup_section(struct uci_section *s, char *sref, UT_array *kv) {
   char *vname = s->type;
   char *kvstr = NULL;
 
-  if ((kvstr = os_zalloc(strlen(cname) + strlen(sname) + strlen(vname) + 3)) ==
+  if ((kvstr = sys_zalloc(strlen(cname) + strlen(sname) + strlen(vname) + 3)) ==
       NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return -1;
   }
 
@@ -461,10 +461,10 @@ void uwrt_free_context(struct uctx *context) {
 }
 
 struct uctx *uwrt_init_context(const char *path) {
-  struct uctx *context = os_zalloc(sizeof(struct uctx));
+  struct uctx *context = sys_zalloc(sizeof(struct uctx));
 
   if (context == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return NULL;
   }
 
@@ -983,6 +983,10 @@ int uwrt_gen_hostapd_instance(const struct uctx *context,
   snprintf(property, property_size,
            "wireless.%s.hostapd_options=wpa_key_mgmt=%s", params->device,
            params->wpa_key_mgmt);
+  utarray_push_back(list_properties, &property);
+
+  snprintf(property, property_size, "wireless.%s.hostapd_options=ieee8021x=%d",
+           params->device, params->ieee8021x);
   utarray_push_back(list_properties, &property);
 
   snprintf(property, property_size,
@@ -1742,16 +1746,16 @@ int uwrt_cleanup_firewall(const struct uctx *context) {
     if (strstr(*ptr, "edgesec_") != NULL) {
       fo = strstr(*ptr, "=zone");
       if (fo != NULL) {
-        os_strlcpy(property, *ptr, (size_t)(fo - *ptr) + 1);
+        sys_strlcpy(property, *ptr, (size_t)(fo - *ptr) + 1);
       }
       fo = strstr(*ptr, "=rule");
       if (fo != NULL) {
-        os_strlcpy(property, *ptr, (size_t)(fo - *ptr) + 1);
+        sys_strlcpy(property, *ptr, (size_t)(fo - *ptr) + 1);
       }
 
       fo = strstr(*ptr, "=nat");
       if (fo != NULL) {
-        os_strlcpy(property, *ptr, (size_t)(fo - *ptr) + 1);
+        sys_strlcpy(property, *ptr, (size_t)(fo - *ptr) + 1);
       }
 
       if (strlen(property)) {

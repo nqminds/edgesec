@@ -29,6 +29,7 @@
 #include "utils/log.h"
 #include "utils/os.h"
 
+#include "radius/radius_config.h"
 #define WITH_HOSTAPD_UCI
 
 #ifdef WITH_UCI_SERVICE
@@ -47,14 +48,14 @@ static bool ap_process_started = false;
 
 int generate_vlan_conf(char *vlan_file, char *interface) {
 
+  log_debug("Writing into %s", vlan_file);
+
   FILE *fp = fopen(vlan_file, "w");
 
   if (fp == NULL) {
     log_errno("fopen");
     return -1;
   }
-
-  log_debug("Writing into %s", vlan_file);
 
   fprintf(fp, "*\t%s.#\n", interface);
 
@@ -78,6 +79,7 @@ int generate_hostapd_conf(struct apconf *hconf, struct radius_conf *rconf) {
   params.auth_algs = hconf->auth_algs;
   params.wpa = hconf->wpa;
   params.wpa_key_mgmt = hconf->wpa_key_mgmt;
+  params.ieee8021x = hconf->ieee8021x;
   params.rsn_pairwise = hconf->rsn_pairwise;
   params.radius_client_ip = rconf->radius_client_ip;
   params.radius_server_ip = rconf->radius_server_ip;
@@ -109,13 +111,13 @@ int generate_hostapd_conf(struct apconf *hconf, struct radius_conf *rconf) {
 }
 #else
 int generate_hostapd_conf(struct apconf *hconf, struct radius_conf *rconf) {
+  log_debug("Writing into %s", hconf->ap_file_path);
+
   FILE *fp = fopen(hconf->ap_file_path, "w");
   if (fp == NULL) {
     log_errno("fopen");
     return -1;
   }
-
-  log_debug("Writing into %s", hconf->ap_file_path);
 
   fprintf(fp, "interface=%s\n", hconf->interface);
   fprintf(fp, "driver=%s\n", hconf->driver);
@@ -126,6 +128,7 @@ int generate_hostapd_conf(struct apconf *hconf, struct radius_conf *rconf) {
   fprintf(fp, "auth_algs=%d\n", hconf->auth_algs);
   fprintf(fp, "wpa=%d\n", hconf->wpa);
   fprintf(fp, "wpa_key_mgmt=%s\n", hconf->wpa_key_mgmt);
+  fprintf(fp, "ieee8021x=%d\n", hconf->ieee8021x);
   fprintf(fp, "rsn_pairwise=%s\n", hconf->rsn_pairwise);
   fprintf(fp, "ctrl_interface=%s\n", hconf->ctrl_interface);
   fprintf(fp, "own_ip_addr=%s\n", rconf->radius_client_ip);
@@ -212,7 +215,7 @@ int run_ap_process(struct apconf *hconf) {
   }
 
 #if (defined(WITH_UCI_SERVICE) && defined(WITH_HOSTAPD_UCI))
-  os_strlcpy(hostapd_proc_name, HOSTAPD_PROCESS_NAME, MAX_OS_PATH_LEN);
+  sys_strlcpy(hostapd_proc_name, HOSTAPD_PROCESS_NAME, MAX_OS_PATH_LEN);
 
   int ret = run_process(argv_copy, &child_pid);
   if (ret < 0) {
@@ -233,8 +236,8 @@ int run_ap_process(struct apconf *hconf) {
   log_trace("hostapd instance running");
 #else
   char ap_bin_path_copy[MAX_OS_PATH_LEN];
-  os_strlcpy(ap_bin_path_copy, hconf->ap_bin_path, MAX_OS_PATH_LEN);
-  os_strlcpy(hostapd_proc_name, basename(ap_bin_path_copy), MAX_OS_PATH_LEN);
+  sys_strlcpy(ap_bin_path_copy, hconf->ap_bin_path, MAX_OS_PATH_LEN);
+  sys_strlcpy(hostapd_proc_name, basename(ap_bin_path_copy), MAX_OS_PATH_LEN);
 
   // Kill any running hostapd process
   if (!kill_process(hostapd_proc_name)) {
@@ -280,8 +283,8 @@ bool kill_ap_process(void) {
 
 int signal_ap_process(const struct apconf *hconf) {
   char ap_bin_path_copy[MAX_OS_PATH_LEN];
-  os_strlcpy(ap_bin_path_copy, hconf->ap_bin_path, MAX_OS_PATH_LEN);
-  os_strlcpy(hostapd_proc_name, basename(ap_bin_path_copy), MAX_OS_PATH_LEN);
+  sys_strlcpy(ap_bin_path_copy, hconf->ap_bin_path, MAX_OS_PATH_LEN);
+  sys_strlcpy(hostapd_proc_name, basename(ap_bin_path_copy), MAX_OS_PATH_LEN);
 
   // Signal any running hostapd process to reload the config
   if (!signal_process(hostapd_proc_name, SIGHUP)) {

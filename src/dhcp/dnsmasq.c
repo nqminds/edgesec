@@ -207,14 +207,14 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array) {
   config_dhcpinfo_t *el = NULL;
   char ifname[IF_NAMESIZE];
 
+  log_debug("Writing into %s", dconf->dhcp_conf_path);
+
   FILE *fp = fopen(dconf->dhcp_conf_path, "w");
 
   if (fp == NULL) {
     log_errno("fopen");
     return -1;
   }
-
-  log_debug("Writing into %s", dconf->dhcp_conf_path);
 
   fprintf(fp, "no-resolv\n");
   while ((p = (char **)utarray_next(dns_server_array, p)) != NULL) {
@@ -242,14 +242,15 @@ int generate_dnsmasq_conf(struct dhcp_conf *dconf, UT_array *dns_server_array) {
 
 int generate_dnsmasq_script(char *dhcp_script_path,
                             char *supervisor_control_path) {
+
+  log_debug("Writing into %s", dhcp_script_path);
+
   FILE *fp = fopen(dhcp_script_path, "w");
 
   if (fp == NULL) {
     log_errno("fopen");
     return -1;
   }
-
-  log_debug("Writing into %s", dhcp_script_path);
 
   fprintf(fp, DNSMASQ_SCRIPT_STR, supervisor_control_path);
 
@@ -336,10 +337,10 @@ char *run_dhcp_process(const char *dhcp_bin_path, const char *dhcp_conf_path) {
   {
     // basename() might modify the input string, so make a copy first
     char dnsmasq_proc_name_buffer[MAX_OS_PATH_LEN];
-    os_strlcpy(dnsmasq_proc_name_buffer, dhcp_bin_path, MAX_OS_PATH_LEN - 1);
+    sys_strlcpy(dnsmasq_proc_name_buffer, dhcp_bin_path, MAX_OS_PATH_LEN - 1);
     dnsmasq_proc_name_buffer[MAX_OS_PATH_LEN - 1] = '\0';
-    os_strlcpy(dnsmasq_proc_name, basename(dnsmasq_proc_name_buffer),
-               MAX_OS_PATH_LEN - 1);
+    sys_strlcpy(dnsmasq_proc_name, basename(dnsmasq_proc_name_buffer),
+                MAX_OS_PATH_LEN - 1);
   }
 
   pid_t child_pid = 0;
@@ -415,7 +416,7 @@ int signal_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path) {
 }
 #else
 int signal_dhcp_process(char *dhcp_bin_path) {
-  os_strlcpy(dnsmasq_proc_name, basename(dhcp_bin_path), MAX_OS_PATH_LEN);
+  sys_strlcpy(dnsmasq_proc_name, basename(dhcp_bin_path), MAX_OS_PATH_LEN);
 
   // Signal any running dnsmasq process to reload the config
   if (!signal_process(dnsmasq_proc_name, SIGHUP)) {

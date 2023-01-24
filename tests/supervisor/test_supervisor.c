@@ -29,6 +29,7 @@ static const UT_icd mac_conn_icd = {sizeof(struct mac_conn), NULL, NULL, NULL};
 static void test_get_mac_conn_cmd(void **state) {
   (void)state; /* unused */
   uint8_t mac_addr[6] = {0x04, 0xf0, 0x21, 0x5a, 0xf4, 0xc4};
+  char *mac_addr_str = "04:f0:21:5a:f4:c4";
   uint8_t wpa_passphrase[4] = {0x1, 0x2, 0x3, 0x0};
 
   struct supervisor_context ctx = {
@@ -58,9 +59,12 @@ static void test_get_mac_conn_cmd(void **state) {
   create_vlan_mapper(ctx.config_ifinfo_array, &ctx.vlan_mapper);
   open_sqlite_macconn_db(":memory:", &ctx.macconn_db);
 
-  struct mac_conn_info info = get_mac_conn_cmd(mac_addr, (void *)&ctx);
+  struct identity_info *iinfo = get_identity_ac(
+      (const uint8_t *)mac_addr_str, strlen(mac_addr_str), (void *)&ctx);
 
-  assert_int_equal(info.vlanid, 10);
+  assert_int_equal(iinfo->vlanid, 10);
+  free_identity_info(iinfo);
+
   struct mac_conn_info info1;
   get_mac_mapper(&ctx.mac_mapper, mac_addr, &info1);
 
@@ -84,10 +88,14 @@ static void test_get_mac_conn_cmd(void **state) {
           },
       .mac_addr = {0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff},
   };
+  char *mac_addr_str1 = "aa:bb:cc:dd:ee:ff";
+
   assert_int_equal(save_mac_mapper(&ctx, conn), 0);
 
-  struct mac_conn_info info2 = get_mac_conn_cmd(conn.mac_addr, (void *)&ctx);
-  assert_int_equal(info2.vlanid, -1);
+  struct identity_info *iinfo2 = get_identity_ac(
+      (const uint8_t *)mac_addr_str1, strlen(mac_addr_str1), (void *)&ctx);
+  assert_int_equal(iinfo2->access, IDENTITY_ACCESS_DENY);
+  free_identity_info(iinfo2);
 
   utarray_free(ctx.config_ifinfo_array);
   free(ctx.crypt_ctx); // only needed if WITH_CRYPTO_SERVICE

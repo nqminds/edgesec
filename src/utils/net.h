@@ -16,8 +16,6 @@
 #include <inttypes.h>
 #include <net/ethernet.h>
 
-#include <utarray.h>
-#include <uthash.h>
 #include "allocs.h"
 #include "os.h"
 
@@ -152,6 +150,6 @@ int disable_pmtu_discovery(int sock);
  * @param[out] addr Buffer for the MAC address (ETHER_ADDR_LEN = 6 bytes)
  * @return int Characters used (> 0) on success, -1 on failure
  */
-int hwaddr_aton2(const char *txt, uint8_t *addr);
+int convert_ascii2mac(const char *txt, uint8_t *addr);
 
 #endif

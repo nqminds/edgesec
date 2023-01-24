@@ -19,7 +19,7 @@ execFirewall = false
 setIpForward = false
 connectionDbPath = ":memory:"
 cryptDbPath = ":memory:"
-pidFilePath = "/tmp/edgesec.pid"
+pidFilePath = "/tmp/test-edgesec.pid"
 
 [capture]
 captureDbPath = ":memory:"
@@ -31,13 +31,13 @@ middlewareParams = "tap0"
 
 [supervisor]
 supervisorControlPort = 32001
-supervisorControlPath = "/tmp/edgesec-control-server"
+supervisorControlPath = "/tmp/test-edgesec-control-server"
 
 [ap]
 apBinPath = "./hostapd"
-apFilePath = "/tmp/hostapd.conf"
-apLogPath = "/tmp/hostapd.log"
-interface = "wifi0"
+apFilePath = "/tmp/test-hostapd.conf"
+apLogPath = "/tmp/test-hostapd.log"
+interface = "wlan4"
 device = "radio1"
 vlanTaggedInterface = ""
 ssid = "IOTH_TEST"
@@ -49,11 +49,12 @@ wmmEnabled = 1
 authAlgs = 1
 wpa = 2
 wpaKeyMgmt = "WPA-PSK"
+ieee8021x = 0
 rsnPairwise = "CCMP"
 ctrlInterface = "/tmp"
 macaddrAcl = 2
 dynamicVlan = 2
-vlanFile = "/tmp/hostapd.vlan"
+vlanFile = "/tmp/test-hostapd.vlan"
 loggerStdout = -1
 loggerStdoutLevel = 0
 loggerSyslog = -1
@@ -62,6 +63,11 @@ ignoreBroadcastSsid = 0
 wpaPskRadius = 2
 
 [radius]
+clientConfigPath = "/tmp/test-radius.conf"
+eapCACertPath = "@EAP_TEST_BINARY_DIR@/ca.pem"
+eapServerCertPath = "@EAP_TEST_BINARY_DIR@/server.pem"
+eapServerKeyPath = "@EAP_TEST_BINARY_DIR@/server.key"
+eapDHPath = "@EAP_TEST_BINARY_DIR@/dh.pem"
 port = 54321
 clientIP = "127.0.0.1"
 clientMask = 32
@@ -84,9 +90,9 @@ mdnsFilter = "src net 10.0 and dst net 10.0"
 
 [dhcp]
 dhcpBinPath = "/usr/sbin/dnsmasq"
-dhcpConfigPath = "/tmp/dnsmasq.conf"
-dhcpScriptPath = "/tmp/dnsmasq_exec.sh"
-dhcpLeasefilePath = "/tmp/dnsmasq.leases"
+dhcpConfigPath = "/tmp/test-dnsmasq.conf"
+dhcpScriptPath = "/tmp/test-dnsmasq_exec.sh"
+dhcpLeasefilePath = "/tmp/test-dnsmasq.leases"
 dhcpRange0 = "0,10.0.0.2,10.0.0.254,255.255.255.0,24h"
 dhcpRange1 = "1,10.0.1.2,10.0.1.254,255.255.255.0,24h"
 dhcpRange2 = "2,10.0.2.2,10.0.2.254,255.255.255.0,24h"

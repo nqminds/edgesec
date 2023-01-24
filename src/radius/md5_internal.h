@@ -1,15 +1,12 @@
-/*
- * MD5 internal definitions
- * Copyright (c) 2003-2005, Jouni Malinen <j@w1.fi>
- *
- * This software may be distributed under the terms of the BSD license.
- * See README for more details.
- */
-
 /**
- * @file md5_internal.h
- * @author Jouni Malinen
- * @brief MD5 internal definitions.
+ * @file
+ * @author Alexandru Mereacre
+ * @date 2023
+ * @copyright
+ * SPDX-FileCopyrightText: Copyright (c) 2003-2005, Jouni Malinen <j@w1.fi>
+ * SPDX-License-Identifier: BSD license
+ * @version hostapd-2.10
+ * @brief MD5 hash implementation and interface functions.
  */
 
 #ifndef MD5_INTERNAL_H
@@ -25,12 +22,12 @@ struct MD5Context {
   uint8_t in[64];
 };
 
-int md5_vector(size_t num_elem, const uint8_t *addr[], const size_t *len,
-               uint8_t *mac);
+int md5_vector_base(size_t num_elem, const uint8_t *addr[], const size_t *len,
+                    uint8_t *mac);
 
-void MD5Init(struct MD5Context *context);
-void MD5Update(struct MD5Context *context, unsigned char const *buf,
-               unsigned len);
-void MD5Final(unsigned char digest[16], struct MD5Context *context);
+void MD5Init_base(struct MD5Context *context);
+void MD5Update_base(struct MD5Context *context, unsigned char const *buf,
+                    unsigned len);
+void MD5Final_base(unsigned char digest[16], struct MD5Context *context);
 
 #endif /* MD5_INTERNAL_H */

@@ -13,7 +13,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "supervisor/mac_mapper.h"
+#include "supervisor/dev_mapper.h"
 #include "supervisor/sqlite_macconn_writer.h"
 #include "utils/log.h"
 #include "utils/sqliteu.h"

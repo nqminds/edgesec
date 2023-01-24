@@ -18,7 +18,7 @@
 #include <sys/un.h>
 
 #include "cmd_processor.h"
-#include "mac_mapper.h"
+#include "dev_mapper.h"
 #include "network_commands.h"
 #ifdef WITH_CRYPTO_SERVICE
 #include "crypt_commands.h"
@@ -111,7 +111,7 @@ ssize_t process_accept_mac_cmd(int sock, struct client_address *client_addr,
   // MAC address
   ptr = (char **)utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
-    if (hwaddr_aton2(*ptr, addr) != -1) {
+    if (convert_ascii2mac(*ptr, addr) != -1) {
       // vlanid
       ptr = (char **)utarray_next(cmd_arr, ptr);
       if (ptr != NULL && *ptr != NULL) {
@@ -142,7 +142,7 @@ ssize_t process_deny_mac_cmd(int sock, struct client_address *client_addr,
   // MAC address
   ptr = (char **)utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
-    if (hwaddr_aton2(*ptr, addr) != -1) {
+    if (convert_ascii2mac(*ptr, addr) != -1) {
       if (deny_mac_cmd(context, addr) < 0) {
         log_error("deny_mac_cmd fail");
         return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
@@ -165,7 +165,7 @@ ssize_t process_add_nat_cmd(int sock, struct client_address *client_addr,
   // MAC address
   ptr = (char **)utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
-    if (hwaddr_aton2(*ptr, addr) != -1) {
+    if (convert_ascii2mac(*ptr, addr) != -1) {
       if (add_nat_cmd(context, addr) < 0) {
         log_error("add_nat_cmd fail");
         return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
@@ -188,7 +188,7 @@ ssize_t process_remove_nat_cmd(int sock, struct client_address *client_addr,
   // MAC address
   ptr = (char **)utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
-    if (hwaddr_aton2(*ptr, addr) != -1) {
+    if (convert_ascii2mac(*ptr, addr) != -1) {
       if (remove_nat_cmd(context, addr) < 0) {
         log_error("remove_nat_cmd fail");
         return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
@@ -212,7 +212,7 @@ ssize_t process_assign_psk_cmd(int sock, struct client_address *client_addr,
   // MAC address
   ptr = (char **)utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
-    if (hwaddr_aton2(*ptr, addr) != -1) {
+    if (convert_ascii2mac(*ptr, addr) != -1) {
       // psk
       ptr = (char **)utarray_next(cmd_arr, ptr);
       if (ptr != NULL && *ptr != NULL) {
@@ -248,7 +248,7 @@ ssize_t process_get_map_cmd(int sock, struct client_address *client_addr,
   // MAC address
   ptr = (char **)utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
-    if (hwaddr_aton2(*ptr, addr) != -1) {
+    if (convert_ascii2mac(*ptr, addr) != -1) {
       log_trace("GET_MAP for mac=" MACSTR, MAC2STR(addr));
 
       int ret = get_mac_mapper(&context->mac_mapper, addr, &info);
@@ -299,7 +299,7 @@ ssize_t process_get_all_cmd(int sock, struct client_address *client_addr,
           (int)el.info.status);
       total += line_size + 1;
       if (reply_buf == NULL)
-        reply_buf = os_zalloc(total);
+        reply_buf = sys_zalloc(total);
       else
         reply_buf = os_realloc(reply_buf, total);
       strcat(reply_buf, temp);
@@ -329,7 +329,7 @@ ssize_t process_set_ip_cmd(int sock, struct client_address *client_addr,
   // add type
   ptr = (char **)utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
-    os_strlcpy(dhcp_type, *ptr, 4);
+    sys_strlcpy(dhcp_type, *ptr, 4);
     log_debug("Received DHCP request with type=%s", dhcp_type);
     if (strcmp(dhcp_type, "add") == 0) {
       ip_type = DHCP_IP_NEW;
@@ -353,7 +353,7 @@ ssize_t process_set_ip_cmd(int sock, struct client_address *client_addr,
   // MAC address
   ptr = (char **)utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
-    if (hwaddr_aton2(*ptr, addr) != -1) {
+    if (convert_ascii2mac(*ptr, addr) != -1) {
       // ip
       ptr = (char **)utarray_next(cmd_arr, ptr);
       if (ptr != NULL && *ptr != NULL) {
@@ -388,11 +388,11 @@ ssize_t process_add_bridge_cmd(int sock, struct client_address *client_addr,
   // MAC address source
   ptr = (char **)utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
-    if (hwaddr_aton2(*ptr, left_addr) != -1) {
+    if (convert_ascii2mac(*ptr, left_addr) != -1) {
       // MAC address destination
       ptr = (char **)utarray_next(cmd_arr, ptr);
       if (ptr != NULL && *ptr != NULL) {
-        if (hwaddr_aton2(*ptr, right_addr) != -1) {
+        if (convert_ascii2mac(*ptr, right_addr) != -1) {
           if (add_bridge_mac_cmd(context, left_addr, right_addr) < 0) {
             log_error("add_bridge_cmd fail");
             return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
@@ -403,13 +403,13 @@ ssize_t process_add_bridge_cmd(int sock, struct client_address *client_addr,
         }
       }
     } else if (validate_ipv4_string(*ptr)) {
-      os_strlcpy(left_ip, *ptr, OS_INET_ADDRSTRLEN);
+      sys_strlcpy(left_ip, *ptr, OS_INET_ADDRSTRLEN);
 
       // IP address destination
       ptr = (char **)utarray_next(cmd_arr, ptr);
       if (ptr != NULL && *ptr != NULL) {
         if (validate_ipv4_string(*ptr)) {
-          os_strlcpy(right_ip, *ptr, OS_INET_ADDRSTRLEN);
+          sys_strlcpy(right_ip, *ptr, OS_INET_ADDRSTRLEN);
 
           if (add_bridge_ip_cmd(context, left_ip, right_ip) < 0) {
             log_error("add_bridge_cmd fail");
@@ -436,11 +436,11 @@ ssize_t process_remove_bridge_cmd(int sock, struct client_address *client_addr,
   // MAC address source
   ptr = (char **)utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
-    if (hwaddr_aton2(*ptr, left_addr) != -1) {
+    if (convert_ascii2mac(*ptr, left_addr) != -1) {
       // MAC address destination
       ptr = (char **)utarray_next(cmd_arr, ptr);
       if (ptr != NULL && *ptr != NULL) {
-        if (hwaddr_aton2(*ptr, right_addr) != -1) {
+        if (convert_ascii2mac(*ptr, right_addr) != -1) {
           if (remove_bridge_cmd(context, left_addr, right_addr) < 0) {
             log_error("remove_bridge_cmd fail");
             return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
@@ -465,7 +465,7 @@ ssize_t process_clear_bridges_cmd(int sock, struct client_address *client_addr,
   // MAC address source
   ptr = (char **)utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
-    if (hwaddr_aton2(*ptr, left_addr) != -1) {
+    if (convert_ascii2mac(*ptr, left_addr) != -1) {
       if (clear_bridges_cmd(context, left_addr) < 0) {
         log_error("remove_bridge_cmd fail");
         return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
@@ -496,7 +496,7 @@ ssize_t process_get_bridges_cmd(int sock, struct client_address *client_addr,
                                MAC2STR(p->src_addr), MAC2STR(p->dst_addr));
       total += line_size + 1;
       if (reply_buf == NULL)
-        reply_buf = os_zalloc(total);
+        reply_buf = sys_zalloc(total);
       else
         reply_buf = os_realloc(reply_buf, total);
       strcat(reply_buf, temp);
@@ -528,12 +528,12 @@ ssize_t process_register_ticket_cmd(int sock,
   // MAC address of issuer
   ptr = (char **)utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
-    if (hwaddr_aton2(*ptr, mac_addr) != -1) {
+    if (convert_ascii2mac(*ptr, mac_addr) != -1) {
       // Device label
       ptr = (char **)utarray_next(cmd_arr, ptr);
       if (ptr != NULL && *ptr != NULL) {
         if (os_strnlen_s(*ptr, MAX_DEVICE_LABEL_SIZE) < MAX_DEVICE_LABEL_SIZE) {
-          os_strlcpy(label, *ptr, MAX_DEVICE_LABEL_SIZE);
+          sys_strlcpy(label, *ptr, MAX_DEVICE_LABEL_SIZE);
 
           // VLAN ID
           ptr = (char **)utarray_next(cmd_arr, ptr);
@@ -569,7 +569,7 @@ ssize_t process_clear_psk_cmd(int sock, struct client_address *client_addr,
   // MAC address of issuer
   ptr = (char **)utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
-    if (hwaddr_aton2(*ptr, mac_addr) != -1) {
+    if (convert_ascii2mac(*ptr, mac_addr) != -1) {
       if (clear_psk_cmd(context, mac_addr) >= 0) {
         return write_socket_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
       }

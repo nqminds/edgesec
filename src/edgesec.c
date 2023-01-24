@@ -164,7 +164,7 @@ int main(int argc, char *argv[]) {
 #ifdef WITH_CRYPTO_SERVICE
   char *env_key_value;
   if ((env_key_value = getenv("CRYPT_KEY")) != NULL) {
-    os_strlcpy(config.crypt_secret, env_key_value, MAX_USER_SECRET);
+    sys_strlcpy(config.crypt_secret, env_key_value, MAX_USER_SECRET);
   }
 #endif
 

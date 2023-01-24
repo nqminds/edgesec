@@ -1,14 +1,11 @@
-/*
- * MD5 hash implementation and interface functions
- * Copyright (c) 2003-2005, Jouni Malinen <j@w1.fi>
- *
- * This software may be distributed under the terms of the BSD license.
- * See README for more details.
- */
-
 /**
- * @file md5.c
- * @author Jouni Malinen
+ * @file
+ * @author Alexandru Mereacre
+ * @date 2023
+ * @copyright
+ * SPDX-FileCopyrightText: Copyright (c) 2003-2005, Jouni Malinen <j@w1.fi>
+ * SPDX-License-Identifier: BSD license
+ * @version hostapd-2.10
  * @brief MD5 hash implementation and interface functions.
  */
 
@@ -30,8 +27,9 @@
  * @mac: Buffer for the hash (16 bytes)
  * Returns: 0 on success, -1 on failure
  */
-int hmac_md5_vector(const uint8_t *key, size_t key_len, size_t num_elem,
-                    const uint8_t *addr[], const size_t *len, uint8_t *mac) {
+int hmac_md5_vector_base(const uint8_t *key, size_t key_len, size_t num_elem,
+                         const uint8_t *addr[], const size_t *len,
+                         uint8_t *mac) {
   uint8_t k_pad[64]; /* padding - key XORd with ipad/opad */
   uint8_t tk[16];
   const uint8_t *_addr[6];
@@ -48,7 +46,7 @@ int hmac_md5_vector(const uint8_t *key, size_t key_len, size_t num_elem,
 
   /* if key is longer than 64 bytes reset it to key = MD5(key) */
   if (key_len > 64) {
-    if (md5_vector(1, &key, &key_len, tk))
+    if (md5_vector_base(1, &key, &key_len, tk))
       return -1;
     key = tk;
     key_len = 16;
@@ -78,7 +76,7 @@ int hmac_md5_vector(const uint8_t *key, size_t key_len, size_t num_elem,
     _addr[i + 1] = addr[i];
     _len[i + 1] = len[i];
   }
-  if (md5_vector(1 + num_elem, _addr, _len, mac))
+  if (md5_vector_base(1 + num_elem, _addr, _len, mac))
     return -1;
 
   os_memset(k_pad, 0, sizeof(k_pad));
@@ -92,7 +90,7 @@ int hmac_md5_vector(const uint8_t *key, size_t key_len, size_t num_elem,
   _len[0] = 64;
   _addr[1] = mac;
   _len[1] = MD5_MAC_LEN;
-  res = md5_vector(2, _addr, _len, mac);
+  res = md5_vector_base(2, _addr, _len, mac);
   os_memset(k_pad, 0, sizeof(k_pad));
   os_memset(tk, 0, sizeof(tk));
   return res;
@@ -107,7 +105,7 @@ int hmac_md5_vector(const uint8_t *key, size_t key_len, size_t num_elem,
  * @mac: Buffer for the hash (16 bytes)
  * Returns: 0 on success, -1 on failure
  */
-int hmac_md5(const uint8_t *key, size_t key_len, const uint8_t *data,
-             size_t data_len, uint8_t *mac) {
-  return hmac_md5_vector(key, key_len, 1, &data, &data_len, mac);
+int hmac_md5_base(const uint8_t *key, size_t key_len, const uint8_t *data,
+                  size_t data_len, uint8_t *mac) {
+  return hmac_md5_vector_base(key, key_len, 1, &data, &data_len, mac);
 }

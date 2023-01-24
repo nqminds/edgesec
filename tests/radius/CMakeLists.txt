@@ -7,16 +7,16 @@ if (TARGET hostapd::libeap)
   add_compile_definitions(EAP_TEST_DIR="${EAP_TEST_DIR}")
 
   add_library(eap_test_peer eap_test_peer.c)
-  target_link_libraries(eap_test_peer PRIVATE hostapd::libeap)
+  target_link_libraries(eap_test_peer PRIVATE hostapd::libeap OpenSSL3::Crypto)
   target_compile_definitions(eap_test_peer PRIVATE _DEFAULT_SOURCE _BSD_SOURCE IEEE8021X_EAPOL)
 
   add_library(eap_test_server eap_test_server.c)
-  target_link_libraries(eap_test_server PRIVATE hostapd::libeap)
+  target_link_libraries(eap_test_server PRIVATE hostapd::libeap OpenSSL3::Crypto)
   target_compile_definitions(eap_test_server PRIVATE _DEFAULT_SOURCE _BSD_SOURCE IEEE8021X_EAPOL)
 
   add_cmocka_test(test_libeap
     SOURCES test_libeap.c
-    LINK_LIBRARIES eap_test_peer eap_test_server hostapd::libeap cmocka::cmocka
+    LINK_LIBRARIES eap_test_peer eap_test_server cmocka::cmocka hostapd::libeap OpenSSL3::SSL OpenSSL3::Crypto
   )
   target_compile_definitions(test_libeap PRIVATE _DEFAULT_SOURCE _BSD_SOURCE IEEE8021X_EAPOL)
 endif ()
@@ -31,7 +31,7 @@ target_link_libraries(radius_client PUBLIC ip_addr PRIVATE radius md5 wpabuf log
 
 add_cmocka_test(test_radius_server
   SOURCES test_radius_server.c
-  LINK_LIBRARIES radius_client ip_addr radius radius_server md5 wpabuf log os eloop::eloop cmocka::cmocka
+  LINK_LIBRARIES radius_client ip_addr radius_service log os eloop::eloop cmocka::cmocka
 )
 # requires inet_aton, which is a non-standard glibc function, see https://linux.die.net/man/3/inet_aton
 target_compile_definitions(test_radius_server PRIVATE _DEFAULT_SOURCE _BSD_SOURCE)

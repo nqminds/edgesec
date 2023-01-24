@@ -24,9 +24,10 @@ if (USE_MDNS_SERVICE)
 endif ()
 add_subdirectory(capture)
 
-
-add_library(sqlhook SHARED sqlhook.c)
-target_link_libraries(sqlhook PRIVATE sockctl os allocs SQLite::SQLite3 LibUTHash::LibUTHash)
+if (BUILD_SQLHOOK)
+  add_library(sqlhook SHARED sqlhook.c)
+  target_link_libraries(sqlhook PRIVATE sockctl os allocs SQLite::SQLite3 LibUTHash::LibUTHash)
+endif ()
 
 add_library(runctl runctl.c)
 target_include_directories(runctl PRIVATE SQLite::SQLite3)
@@ -44,7 +45,7 @@ endif ()
 target_link_libraries(runctl PRIVATE
   LibUTHash::LibUTHash capture_service net log iface_mapper os
   sqlite_macconn_writer firewall_service eloop::eloop supervisor
-  network_commands mac_mapper ap_service firewall_service dhcp_service
+  network_commands dev_mapper ap_service firewall_service dhcp_service
   Threads::Threads
 )
 
@@ -54,7 +55,7 @@ target_link_libraries(config PUBLIC supervisor_config LibUTHash::LibUTHash PRIVA
 add_executable(edgesec edgesec.c)
 if (USE_CRYPTO_SERVICE)
   add_compile_definitions(WITH_CRYPTO_SERVICE)
-  target_include_directories(edgesec PRIVATE ${PROJECT_BINARY_DIR} ${LIBOPENSSL_INCLUDE_PATH})
+  target_include_directories(edgesec PRIVATE ${PROJECT_BINARY_DIR} ${LIBOPENSSL3_INCLUDE_PATH})
 else ()
   target_include_directories(edgesec PRIVATE ${PROJECT_BINARY_DIR})
 endif ()

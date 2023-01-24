@@ -11,7 +11,7 @@
 #include <sys/un.h>
 #include <utarray.h>
 
-#include "mac_mapper.h"
+#include "dev_mapper.h"
 #include "network_commands.h"
 #include "sqlite_macconn_writer.h"
 #include "subscriber_events.h"
@@ -67,10 +67,10 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
       }
 
       if (!strlen(info.ip_addr)) {
-        os_strlcpy(info.ip_addr, ip_addr, OS_INET_ADDRSTRLEN);
+        sys_strlcpy(info.ip_addr, ip_addr, OS_INET_ADDRSTRLEN);
         primary = true;
       } else if (strlen(info.ip_addr) && !strlen(info.ip_sec_addr)) {
-        os_strlcpy(info.ip_sec_addr, ip_addr, OS_INET_ADDRSTRLEN);
+        sys_strlcpy(info.ip_sec_addr, ip_addr, OS_INET_ADDRSTRLEN);
         primary = false;
       } else {
         log_error("IPs already present");

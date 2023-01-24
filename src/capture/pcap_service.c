@@ -126,10 +126,10 @@ int run_pcap(char *interface, bool immediate, bool promiscuous, int timeout,
               IP2STR(ip_str), IP2STR(mask_str));
   }
 
-  ctx = os_zalloc(sizeof(struct pcap_context));
+  ctx = sys_zalloc(sizeof(struct pcap_context));
   *pctx = ctx;
 
-  os_strlcpy(ctx->ifname, interface, IF_NAMESIZE);
+  sys_strlcpy(ctx->ifname, interface, IF_NAMESIZE);
   ctx->pcap_fn = pcap_fn;
   ctx->fn_ctx = fn_ctx;
   if ((ctx->pd = pcap_create(interface, err)) == NULL) {

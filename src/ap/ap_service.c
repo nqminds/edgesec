@@ -194,7 +194,7 @@ int find_ap_status(const char *ap_answer,
   if (mac_address_string == NULL || *mac_address_string == NULL) {
     goto cleanup;
   }
-  if (hwaddr_aton2(*mac_address_string, mac_addr) < 0) {
+  if (convert_ascii2mac(*mac_address_string, mac_addr) < 0) {
     goto cleanup;
   }
 
@@ -215,9 +215,9 @@ void ap_sock_handler(int sock, void *eloop_ctx, void *sock_ctx) {
     return;
   }
 
-  char *rec_data = os_zalloc(bytes_available + 1);
+  char *rec_data = sys_zalloc(bytes_available + 1);
   if (rec_data == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return;
   }
 
@@ -286,7 +286,7 @@ int run_ap(struct supervisor_context *context, bool exec_ap, bool generate_ssid,
       log_error("get_hostname fail");
       return -1;
     }
-    os_strlcpy(context->hconfig.ssid, hostname, AP_NAME_LEN);
+    sys_strlcpy(context->hconfig.ssid, hostname, AP_NAME_LEN);
     log_debug("Regenerating SSID=%s", context->hconfig.ssid);
   }
 

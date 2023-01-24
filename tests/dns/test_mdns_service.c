@@ -32,7 +32,7 @@ int __wrap_run_pcap(char *interface, bool immediate, bool promiscuous,
   (void)pcap_fn;
   (void)fn_ctx;
 
-  *pctx = (struct pcap_context *)os_zalloc(sizeof(struct pcap_context));
+  *pctx = (struct pcap_context *)sys_zalloc(sizeof(struct pcap_context));
 
   return 0;
 }
@@ -61,7 +61,7 @@ static void test_run_mdns(void **state) {
   (void)state;
 
   struct mdns_context context;
-  struct eloop_data *eloop = os_zalloc(sizeof(struct eloop_data));
+  struct eloop_data *eloop = sys_zalloc(sizeof(struct eloop_data));
 
   will_return(__wrap_eloop_init, eloop);
   assert_int_equal(run_mdns(&context), 0);
@@ -72,7 +72,7 @@ static void test_close_mdns(void **state) {
   (void)state;
 
   struct mdns_context context;
-  struct eloop_data *eloop = os_zalloc(sizeof(struct eloop_data));
+  struct eloop_data *eloop = sys_zalloc(sizeof(struct eloop_data));
   will_return(__wrap_eloop_init, eloop);
   run_mdns(&context);
   assert_int_equal(close_mdns(&context), 0);

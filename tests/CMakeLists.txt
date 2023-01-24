@@ -11,9 +11,10 @@ include_directories (
   "${PROJECT_SOURCE_DIR}/src"
 )
 
+# tests may modify these files, so we only run on a copy
+file(COPY "${CMAKE_SOURCE_DIR}/tests/data" DESTINATION "${CMAKE_BINARY_DIR}/tests")
+
 if (USE_UCI_SERVICE)
-  # tests may modify these files, so we only run on a copy
-  file(COPY "${CMAKE_SOURCE_DIR}/tests/data/uci" DESTINATION "${CMAKE_BINARY_DIR}/tests/data")
   set(UCI_CONFIG_DIR "${CMAKE_BINARY_DIR}/tests/data/uci")
   add_compile_definitions(UCI_CONFIG_DIR="${UCI_CONFIG_DIR}")
 endif ()
@@ -37,6 +38,10 @@ if (USE_MDNS_SERVICE)
   add_subdirectory(dns)
 endif ()
 
+if (TARGET hostapd::libeap)
+  set(EAP_TEST_BINARY_DIR "${CMAKE_BINARY_DIR}/tests/data/eap")
+endif ()
+
 configure_file("${CMAKE_CURRENT_LIST_DIR}/test-config.ini.in" "${CMAKE_BINARY_DIR}/test-config.ini" @ONLY)
 add_cmocka_test(test_config
   SOURCES test_config.c
@@ -47,15 +52,15 @@ target_compile_definitions(test_config PRIVATE TEST_CONFIG_INI_PATH="${CMAKE_BIN
 if (USE_RADIUS_SERVICE)
   add_cmocka_test(test_edgesec
     SOURCES test_edgesec.c
-    LINK_LIBRARIES radius radius_client sockctl runctl cmocka::cmocka log config
+    LINK_LIBRARIES os eloop sockctl radius_client cmocka::cmocka runctl config
   )
-  target_compile_definitions(test_edgesec PRIVATE TEST_CONFIG_INI_PATH="${CMAKE_BINARY_DIR}/test-config.ini")
+  target_compile_definitions(test_edgesec PRIVATE TEST_CONFIG_INI_PATH="${CMAKE_BINARY_DIR}/test-config.ini" _DEFAULT_SOURCE _BSD_SOURCE IEEE8021X_EAPOL)
   set_tests_properties(test_edgesec PROPERTIES TIMEOUT 10)
 endif()
 
 add_cmocka_test(test_runctl
   SOURCES test_runctl.c
-  LINK_LIBRARIES SQLite::SQLite3 LibUTHash::LibUTHash runctl log os supervisor_config mac_mapper cmocka::cmocka
+  LINK_LIBRARIES SQLite::SQLite3 LibUTHash::LibUTHash runctl log os supervisor_config dev_mapper cmocka::cmocka
 )
 
 target_link_options(test_runctl PRIVATE
@@ -80,6 +85,7 @@ endif()
 if (USE_MDNS_SERVICE)
   target_link_options(test_runctl PRIVATE "LINKER:--wrap=run_mdns_thread")
 endif()
+
 if (USE_UCI_SERVICE)
   target_link_libraries(test_runctl PRIVATE __wrap_uwrt_init_context)
   target_link_libraries(test_edgesec PRIVATE __wrap_uwrt_init_context)

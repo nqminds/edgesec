@@ -17,9 +17,9 @@
 #include "../utils/os.h"
 
 zkCTX *init_zymkey4(void) {
-  zkCTX *context = os_zalloc(sizeof(zkCTX));
+  zkCTX *context = sys_zalloc(sizeof(zkCTX));
   if (context == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return NULL;
   }
 

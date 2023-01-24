@@ -29,10 +29,10 @@ static void test_add_bridge_mac(void **state) {
   uint8_t mac_addr_2[ETHER_ADDR_LEN];
   uint8_t mac_addr_3[ETHER_ADDR_LEN];
   uint8_t mac_addr_4[ETHER_ADDR_LEN];
-  hwaddr_aton2(mac_str_1, mac_addr_1);
-  hwaddr_aton2(mac_str_2, mac_addr_2);
-  hwaddr_aton2(mac_str_3, mac_addr_3);
-  hwaddr_aton2(mac_str_4, mac_addr_4);
+  convert_ascii2mac(mac_str_1, mac_addr_1);
+  convert_ascii2mac(mac_str_2, mac_addr_2);
+  convert_ascii2mac(mac_str_3, mac_addr_3);
+  convert_ascii2mac(mac_str_4, mac_addr_4);
 
   int ret = add_bridge_mac(bridge_list, mac_addr_1, mac_addr_2);
   assert_int_equal(ret, 1);
@@ -106,10 +106,10 @@ static void test_remove_bridge_mac(void **state) {
   uint8_t mac_addr_2[ETHER_ADDR_LEN];
   uint8_t mac_addr_3[ETHER_ADDR_LEN];
   uint8_t mac_addr_4[ETHER_ADDR_LEN];
-  hwaddr_aton2(mac_str_1, mac_addr_1);
-  hwaddr_aton2(mac_str_2, mac_addr_2);
-  hwaddr_aton2(mac_str_3, mac_addr_3);
-  hwaddr_aton2(mac_str_4, mac_addr_4);
+  convert_ascii2mac(mac_str_1, mac_addr_1);
+  convert_ascii2mac(mac_str_2, mac_addr_2);
+  convert_ascii2mac(mac_str_3, mac_addr_3);
+  convert_ascii2mac(mac_str_4, mac_addr_4);
 
   int ret = remove_bridge_mac(bridge_list, mac_addr_1, mac_addr_2);
   assert_int_equal(ret, 0);
@@ -189,10 +189,10 @@ static void test_get_all_bridge_edges(void **state) {
   uint8_t mac_addr_2[ETHER_ADDR_LEN];
   uint8_t mac_addr_3[ETHER_ADDR_LEN];
   uint8_t mac_addr_4[ETHER_ADDR_LEN];
-  hwaddr_aton2(mac_str_1, mac_addr_1);
-  hwaddr_aton2(mac_str_2, mac_addr_2);
-  hwaddr_aton2(mac_str_3, mac_addr_3);
-  hwaddr_aton2(mac_str_4, mac_addr_4);
+  convert_ascii2mac(mac_str_1, mac_addr_1);
+  convert_ascii2mac(mac_str_2, mac_addr_2);
+  convert_ascii2mac(mac_str_3, mac_addr_3);
+  convert_ascii2mac(mac_str_4, mac_addr_4);
 
   int count = get_all_bridge_edges(bridge_list, &tuple_list_arr);
   assert_int_equal(count, 0);
@@ -252,10 +252,10 @@ static void test_get_src_mac_list(void **state) {
   uint8_t mac_addr_2[ETHER_ADDR_LEN];
   uint8_t mac_addr_3[ETHER_ADDR_LEN];
   uint8_t mac_addr_4[ETHER_ADDR_LEN];
-  hwaddr_aton2(mac_str_1, mac_addr_1);
-  hwaddr_aton2(mac_str_2, mac_addr_2);
-  hwaddr_aton2(mac_str_3, mac_addr_3);
-  hwaddr_aton2(mac_str_4, mac_addr_4);
+  convert_ascii2mac(mac_str_1, mac_addr_1);
+  convert_ascii2mac(mac_str_2, mac_addr_2);
+  convert_ascii2mac(mac_str_3, mac_addr_3);
+  convert_ascii2mac(mac_str_4, mac_addr_4);
 
   int count = get_src_mac_list(bridge_list, mac_addr_1, &mac_list_arr);
   assert_int_equal(count, 0);

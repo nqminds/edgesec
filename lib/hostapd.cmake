@@ -9,8 +9,7 @@ endif()
 
 if (BUILD_HOSTAPD)
   set(HOSTAPD_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}")
-
-  include(FindPkgConfig)
+  find_package(PkgConfig)
   if (NOT PKG_CONFIG_FOUND)
     message(FATAL_ERROR "pkg-config is required to build hostapd, but could not be found")
   endif()
@@ -30,7 +29,7 @@ if (BUILD_HOSTAPD)
   )
 
   ExternalProject_Add(
-    hostapd_externalproject
+    hostapd_project
     URL
       https://w1.fi/releases/hostapd-2.10.tar.gz
       https://src.fedoraproject.org/repo/pkgs/hostapd/hostapd-2.10.tar.gz/sha512/243baa82d621f859d2507d8d5beb0ebda15a75548a62451dc9bca42717dcc8607adac49b354919a41d8257d16d07ac7268203a79750db0cfb34b51f80ff1ce8f/hostapd-2.10.tar.gz
@@ -83,7 +82,7 @@ if (BUILD_HOSTAPD_EAP_LIB)
       INSTALL_DIR "${LIBEAP_INSTALL_DIR}" # we have to set this in the `.config` file
       CONFIGURE_COMMAND
         COMMAND ${CMAKE_COMMAND} -E make_directory <SOURCE_DIR>/libeap
-        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_LIST_DIR}/libeap.mak" <SOURCE_DIR>/libeap/Makefile
+        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_LIST_DIR}/libeap.mk" <SOURCE_DIR>/libeap/Makefile
         COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/hostapd-eap.config" <SOURCE_DIR>/libeap/.config
       BUILD_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" "${MAKE_COMMAND}" -C <BINARY_DIR>/libeap
       INSTALL_COMMAND ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" "${MAKE_COMMAND}" -C <BINARY_DIR>/libeap install
@@ -91,14 +90,14 @@ if (BUILD_HOSTAPD_EAP_LIB)
   ExternalProject_Add_StepDependencies(
     hostapd_libeap_project
     configure
-    "${CMAKE_CURRENT_LIST_DIR}/libeap.mak"
+    "${CMAKE_CURRENT_LIST_DIR}/libeap.mk"
     "${CMAKE_CURRENT_BINARY_DIR}/hostapd-eap.config"
   )
 
-  if (TARGET hostapd_externalproject-download)
-    # If we're building hostapd_externalproject, wait for it to download to prevent
+  if (TARGET hostapd_project-download)
+    # If we're building hostapdsrc, wait for it to download to prevent
     # a race-condition
-    add_dependencies(hostapd_libeap_project hostapd_externalproject-download)
+    add_dependencies(hostapd_libeap_project hostapd_project-download)
   endif()
 
   # Hardcoded to be static, we can set CONFIG_SOLIB=yes in `.config` if we really want a shared-library
@@ -110,6 +109,7 @@ if (BUILD_HOSTAPD_EAP_LIB)
 
   set_target_properties(hostapd::libeap PROPERTIES
       IMPORTED_LOCATION "${LIBEAP_LIB}"
+      INTERFACE_LINK_LIBRARIES OpenSSL3::Crypto
       INTERFACE_INCLUDE_DIRECTORIES "${LIBEAP_INCLUDE_DIRS}"
   )
 

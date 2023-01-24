@@ -65,8 +65,8 @@ struct middleware_context *init_tap_middleware(sqlite3 *db, char *db_path,
     return NULL;
   }
 
-  if ((context = os_zalloc(sizeof(struct middleware_context))) == NULL) {
-    log_errno("zalloc");
+  if ((context = sys_zalloc(sizeof(struct middleware_context))) == NULL) {
+    log_errno("sys_zalloc");
     return NULL;
   }
 

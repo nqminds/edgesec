@@ -109,10 +109,10 @@ struct fwctx *fw_init_context(hmap_if_conn *if_mapper,
     return NULL;
   }
 
-  struct fwctx *fw_ctx = os_zalloc(sizeof(struct fwctx));
+  struct fwctx *fw_ctx = sys_zalloc(sizeof(struct fwctx));
 
   if (fw_ctx == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return NULL;
   }
 

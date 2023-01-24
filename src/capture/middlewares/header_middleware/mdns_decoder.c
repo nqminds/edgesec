@@ -33,8 +33,8 @@ int copy_mdns_query_name(uint8_t *start, char **out) {
     return 0;
   }
 
-  if ((qname = os_zalloc(start[0] + 2)) == NULL) {
-    log_errno("os_zalloc");
+  if ((qname = sys_zalloc(start[0] + 2)) == NULL) {
+    log_errno("sys_zalloc");
     return -1;
   }
 

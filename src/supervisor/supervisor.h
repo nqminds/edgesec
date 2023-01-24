@@ -14,13 +14,15 @@
 #include "supervisor_config.h"
 
 /**
- * @brief Return a mac_conn_info for a given MAC address
+ * @brief Returns the identity access control
  *
- * @param mac_addr The input MAC adderss
+ * @param identity The identity array
+ * @param identity_len The identity array size
  * @param mac_conn_arg The supervisor_context pointer
- * @return struct mac_conn_info
+ * @return identity_info * The returned identity info structure, NULL for error
  */
-struct mac_conn_info get_mac_conn_cmd(uint8_t mac_addr[], void *mac_conn_arg);
+struct identity_info *get_identity_ac(const uint8_t *identity,
+                                      size_t identity_len, void *mac_conn_arg);
 
 /**
  * @brief The AP service callback

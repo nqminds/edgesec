@@ -57,10 +57,10 @@ struct secrets_row *prepare_secret_entry(const char *key_id, const uint8_t *key,
                                          int salt_size, const uint8_t *iv,
                                          int iv_size) {
   size_t out_len;
-  struct secrets_row *row = os_zalloc(sizeof(struct secrets_row));
+  struct secrets_row *row = sys_zalloc(sizeof(struct secrets_row));
 
   if (row == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return NULL;
   }
 
@@ -253,9 +253,9 @@ struct crypt_context *load_crypt_service(const char *crypt_db_path,
     return NULL;
   }
 
-  context = (struct crypt_context *)os_zalloc(sizeof(struct crypt_context));
+  context = (struct crypt_context *)sys_zalloc(sizeof(struct crypt_context));
   if (context == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     free_sqlite_crypt_db(db);
     return NULL;
   }

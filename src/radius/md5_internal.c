@@ -1,14 +1,11 @@
-/*
- * MD5 hash implementation and interface functions
- * Copyright (c) 2003-2005, Jouni Malinen <j@w1.fi>
- *
- * This software may be distributed under the terms of the BSD license.
- * See README for more details.
- */
-
 /**
- * @file md5_internal.c
- * @author Jouni Malinen
+ * @file
+ * @author Alexandru Mereacre
+ * @date 2023
+ * @copyright
+ * SPDX-FileCopyrightText: Copyright (c) 2003-2005, Jouni Malinen <j@w1.fi>
+ * SPDX-License-Identifier: BSD license
+ * @version hostapd-2.10
  * @brief MD5 hash implementation and interface functions.
  */
 
@@ -19,6 +16,7 @@
 #include "utils/allocs.h"
 #include "utils/os.h"
 
+#include "common.h"
 #include "md5_internal.h"
 
 static void MD5Transform(uint32_t buf[4], uint32_t const in[16]);
@@ -26,22 +24,22 @@ static void MD5Transform(uint32_t buf[4], uint32_t const in[16]);
 typedef struct MD5Context MD5_CTX;
 
 /**
- * md5_vector - MD5 hash for data vector
+ * md5_vector_base - MD5 hash for data vector
  * @num_elem: Number of elements in the data vector
  * @addr: Pointers to the data areas
  * @len: Lengths of the data blocks
  * @mac: Buffer for the hash
  * Returns: 0 on success, -1 of failure
  */
-int md5_vector(size_t num_elem, const uint8_t *addr[], const size_t *len,
-               uint8_t *mac) {
+int md5_vector_base(size_t num_elem, const uint8_t *addr[], const size_t *len,
+                    uint8_t *mac) {
   MD5_CTX ctx;
   size_t i;
 
-  MD5Init(&ctx);
+  MD5Init_base(&ctx);
   for (i = 0; i < num_elem; i++)
-    MD5Update(&ctx, addr[i], len[i]);
-  MD5Final(mac, &ctx);
+    MD5Update_base(&ctx, addr[i], len[i]);
+  MD5Final_base(mac, &ctx);
   return 0;
 }
 
@@ -58,8 +56,8 @@ int md5_vector(size_t num_elem, const uint8_t *addr[], const size_t *len,
  * with every copy.
  *
  * To compute the message digest of a chunk of bytes, declare an
- * MD5Context structure, pass it to MD5Init, call MD5Update as
- * needed on buffers full of bytes, and then call MD5Final, which
+ * MD5Context structure, pass it to MD5Init_base, call MD5Update_base as
+ * needed on buffers full of bytes, and then call MD5Final_base, which
  * will fill a supplied 16-byte array with the digest.
  */
 
@@ -84,7 +82,7 @@ static void byteReverse(unsigned char *buf, unsigned longs) {
  * Start MD5 accumulation.  Set bit count to 0 and buffer to mysterious
  * initialization constants.
  */
-void MD5Init(struct MD5Context *ctx) {
+void MD5Init_base(struct MD5Context *ctx) {
   ctx->buf[0] = 0x67452301;
   ctx->buf[1] = 0xefcdab89;
   ctx->buf[2] = 0x98badcfe;
@@ -98,7 +96,8 @@ void MD5Init(struct MD5Context *ctx) {
  * Update context to reflect the concatenation of another buffer full
  * of bytes.
  */
-void MD5Update(struct MD5Context *ctx, unsigned char const *buf, unsigned len) {
+void MD5Update_base(struct MD5Context *ctx, unsigned char const *buf,
+                    unsigned len) {
   uint32_t t;
 
   /* Update bitcount */
@@ -145,7 +144,7 @@ void MD5Update(struct MD5Context *ctx, unsigned char const *buf, unsigned len) {
  * Final wrapup - pad to 64-byte boundary with the bit pattern
  * 1 0* (64-bit count of bits processed, MSB-first)
  */
-void MD5Final(unsigned char digest[16], struct MD5Context *ctx) {
+void MD5Final_base(unsigned char digest[16], struct MD5Context *ctx) {
   unsigned count;
   unsigned char *p;
 
@@ -199,7 +198,7 @@ void MD5Final(unsigned char digest[16], struct MD5Context *ctx) {
 
 /*
  * The core of the MD5 algorithm, this alters an existing MD5 hash to
- * reflect the addition of 16 longwords of new data.  MD5Update blocks
+ * reflect the addition of 16 longwords of new data.  MD5Update_base blocks
  * the data and converts bytes into longwords for this routine.
  */
 static void MD5Transform(uint32_t buf[4], uint32_t const in[16]) {

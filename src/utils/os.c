@@ -145,7 +145,7 @@ int8_t hex2num(char c) {
   return -1;
 }
 
-int os_get_time(struct os_time *t) {
+int sys_get_time(struct os_time *t) {
   int res;
   struct timeval tv;
   res = gettimeofday(&tv, NULL);
@@ -154,7 +154,7 @@ int os_get_time(struct os_time *t) {
   return res;
 }
 
-int os_get_reltime(struct os_reltime *t) {
+int sys_get_reltime(struct os_reltime *t) {
   int res;
   struct timeval tv;
   res = gettimeofday(&tv, NULL);
@@ -163,7 +163,7 @@ int os_get_reltime(struct os_reltime *t) {
   return res;
 }
 
-int16_t hex2byte(const char hex[static 2]) {
+int16_t convert_hex2byte(const char hex[static 2]) {
   int_fast8_t a = hex2num(*hex++);
   if (a < 0)
     return -1;
@@ -173,12 +173,12 @@ int16_t hex2byte(const char hex[static 2]) {
   return (a << 4) | b;
 }
 
-int hexstr2bin(const char *hex, uint8_t *buf, size_t len) {
+int convert_hexstr2bin(const char *hex, uint8_t *buf, size_t len) {
   const char *ipos = hex;
   uint8_t *opos = buf;
 
   for (size_t i = 0; i < len; i++) {
-    int_fast16_t a = hex2byte(ipos);
+    int_fast16_t a = convert_hex2byte(ipos);
     if (a < 0)
       return -1;
     *opos++ = (uint8_t)a; // should always be between 0-255
@@ -187,7 +187,7 @@ int hexstr2bin(const char *hex, uint8_t *buf, size_t len) {
   return 0;
 }
 
-size_t os_strlcpy(char *restrict dest, const char *restrict src, size_t siz) {
+size_t sys_strlcpy(char *restrict dest, const char *restrict src, size_t siz) {
   /* Copy string up to the maximum size of the dest buffer */
   const char *char_after_NUL = memccpy(dest, src, '\0', siz);
 
@@ -201,7 +201,7 @@ size_t os_strlcpy(char *restrict dest, const char *restrict src, size_t siz) {
   }
 }
 
-int os_memcmp_const(const void *a, const void *b, size_t len) {
+int sys_memcmp_const(const void *a, const void *b, size_t len) {
   const uint8_t *aa = a;
   const uint8_t *bb = b;
   size_t i;
@@ -213,7 +213,7 @@ int os_memcmp_const(const void *a, const void *b, size_t len) {
   return res;
 }
 
-int os_get_random(unsigned char *buf, size_t len) {
+int get_random(unsigned char *buf, size_t len) {
   FILE *f;
   size_t rc;
 
@@ -240,8 +240,8 @@ void os_init_random_seed(void) {
 
 int os_get_random_number_s(unsigned char *buf, size_t len) {
   size_t idx = 0;
-  if (os_get_random(buf, len) < 0) {
-    log_trace("os_get_random fail");
+  if (get_random(buf, len) < 0) {
+    log_trace("get_random fail");
     return -1;
   }
 
@@ -251,8 +251,6 @@ int os_get_random_number_s(unsigned char *buf, size_t len) {
 
   return 0;
 }
-
-void *__hide_aliasing_typecast(void *foo) { return foo; }
 
 int read_command_output(int fd, process_callback_fn fn, void *ctx) {
   ssize_t read_bytes, count = 0;
@@ -595,10 +593,10 @@ char *concat_paths(const char *path_left, const char *path_right) {
   else
     concat_len = strlen(path_left) + strlen(path_right) + 2;
 
-  char *concat = os_zalloc(concat_len);
+  char *concat = sys_zalloc(concat_len);
 
   if (concat == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return NULL;
   }
 
@@ -1408,8 +1406,8 @@ int read_file_string(char *path, char **out) {
     return -1;
   }
 
-  if ((buffer = (char *)os_zalloc(data_size + 1)) == NULL) {
-    log_errno("os_zalloc");
+  if ((buffer = (char *)sys_zalloc(data_size + 1)) == NULL) {
+    log_errno("sys_zalloc");
     return -1;
   }
 
@@ -1492,7 +1490,7 @@ char *string_append_char(const char *str, char character) {
 
   char *appended = os_malloc(str_len + 2);
   if (appended == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return NULL;
   }
 
@@ -1504,6 +1502,17 @@ char *string_append_char(const char *str, char character) {
   appended[str_len + 1] = 0;
 
   return appended;
+}
+
+char *sys_strstr(const char *haystack, const char *needle) {
+  size_t len = os_strlen(needle);
+  while (*haystack) {
+    if (sys_strncmp(haystack, needle, len) == 0)
+      return (char *)haystack;
+    haystack++;
+  }
+
+  return NULL;
 }
 
 // void *os_malloc(size_t size)

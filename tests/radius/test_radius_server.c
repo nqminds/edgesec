@@ -23,35 +23,42 @@
 
 #include <eloop.h>
 #include "radius/radius.h"
-#include "radius/radius_server.h"
+#include "radius/radius_config.h"
+#include "radius/radius_service.h"
 #include "utils/allocs.h"
 #include "utils/log.h"
 #include "utils/os.h"
 
 #include "radius_client.h"
 
-#include "supervisor/mac_mapper.h"
+#include "supervisor/dev_mapper.h"
+
+#define VLAN_ID 34
+static char *test_radius_conf_file = "/tmp/test-radius.conf";
 
 static uint8_t addr[6] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05};
-static uint8_t saved_addr[6];
 
 static struct eloop_data *eloop = NULL;
 
-struct radius_ctx {
+struct radius_test_ctx {
   struct radius_client_data *radius;
   struct hostapd_radius_servers conf;
   uint8_t radius_identifier;
   struct in_addr own_ip_addr;
+  uint8_t code;
+  int untagged;
+  int tagged[2];
 };
 
-struct mac_conn_info get_mac_conn(uint8_t mac_addr[], void *mac_conn_arg) {
+struct identity_info *get_mac_conn(const uint8_t *identity, size_t identity_len,
+                                   void *mac_conn_arg) {
   (void)mac_conn_arg;
 
-  struct mac_conn_info info = {.vlanid = 0};
-  log_trace("RADIUS requested mac=%02x:%02x:%02x:%02x:%02x:%02x",
-            MAC2STR(mac_addr));
-  memcpy(saved_addr, mac_addr, 6);
-  return info;
+  struct identity_info *iinfo = sys_zalloc(sizeof(struct identity_info));
+  iinfo->vlanid = VLAN_ID;
+  iinfo->access = IDENTITY_ACCESS_ALLOW;
+  log_trace("RADIUS requested mac=%.*s", identity_len, identity);
+  return iinfo;
 }
 
 /* Process the RADIUS frames from Authentication Server */
@@ -64,9 +71,10 @@ static RadiusRxResult receive_auth(struct radius_msg *msg,
   (void)shared_secret_len;
   (void)data;
 
-  /* struct radius_ctx *ctx = data; */
-  log_trace("Received RADIUS Authentication message; code=%d",
-            radius_msg_get_hdr(msg)->code);
+  struct radius_test_ctx *ctx = data;
+  ctx->code = radius_msg_get_hdr(msg)->code;
+  radius_msg_get_vlanid(msg, &ctx->untagged, 1, ctx->tagged);
+  log_trace("Received RADIUS Authentication message; code=%d", ctx->code);
 
   /* We're done for this example, so request eloop to terminate. */
   eloop_terminate(eloop);
@@ -77,7 +85,7 @@ static RadiusRxResult receive_auth(struct radius_msg *msg,
 static void start_test(void *eloop_ctx, void *timeout_ctx) {
   (void)timeout_ctx;
 
-  struct radius_ctx *ctx = eloop_ctx;
+  struct radius_test_ctx *ctx = eloop_ctx;
   struct radius_msg *msg;
 
   char buf[20];
@@ -109,8 +117,11 @@ static void start_test(void *eloop_ctx, void *timeout_ctx) {
     return;
   }
 
+  char user_password[COMPACT_MACSTR_LEN];
+  sprintf(user_password, COMPACT_MACSTR, MAC2STR(addr));
   if (!radius_msg_add_attr_user_password(
-          msg, (uint8_t *)"radius", 6, ctx->conf.auth_server->shared_secret,
+          msg, (uint8_t *)user_password, strlen(user_password),
+          ctx->conf.auth_server->shared_secret,
           ctx->conf.auth_server->shared_secret_len)) {
     log_trace("Could not add User-Password");
     radius_msg_free(msg);
@@ -133,37 +144,42 @@ static void start_test(void *eloop_ctx, void *timeout_ctx) {
 static void test_radius_server_init(void **state) {
   (void)state; /* unused */
 
-  struct radius_ctx ctx;
-  struct hostapd_radius_server *srv = NULL;
-  struct radius_conf conf;
+  struct radius_conf rconf;
+  os_memset(&rconf, 0, sizeof(struct radius_conf));
 
-  os_memset(&ctx, 0, sizeof(struct radius_ctx));
-  os_memset(&conf, 0, sizeof(struct radius_conf));
+  strcpy(rconf.client_conf_path, test_radius_conf_file);
 
-  strcpy(conf.radius_client_ip, "127.0.0.1");
-  conf.radius_client_mask = 32;
-  strcpy(conf.radius_secret, "radius");
+  strcpy(rconf.eap_ca_cert_path, EAP_TEST_DIR "ca.pem");
+  strcpy(rconf.eap_server_cert_path, EAP_TEST_DIR "server.pem");
+  strcpy(rconf.eap_server_key_path, EAP_TEST_DIR "server.key");
+  strcpy(rconf.eap_dh_path, EAP_TEST_DIR "dh.pem");
 
-  struct radius_client *client = init_radius_client(&conf, get_mac_conn, NULL);
-  struct radius_server_data *radius_srv = NULL;
+  strcpy(rconf.radius_client_ip, "127.0.0.1");
+  strcpy(rconf.radius_server_ip, "127.0.0.1");
+  rconf.radius_client_mask = 32;
+  rconf.radius_server_mask = 32;
+  strcpy(rconf.radius_secret, "radius");
+  rconf.radius_port = 12345;
 
-  log_set_level(0);
+  struct radius_test_ctx ctx;
+  os_memset(&ctx, 0, sizeof(struct radius_test_ctx));
 
-  inet_aton(conf.radius_client_ip, &ctx.own_ip_addr);
+  inet_aton(rconf.radius_client_ip, &ctx.own_ip_addr);
 
   eloop = eloop_init();
   assert_non_null(eloop);
 
-  srv = os_zalloc(sizeof(*srv));
+  struct hostapd_radius_server *srv;
+  srv = sys_zalloc(sizeof(*srv));
   assert_non_null(srv);
 
   srv->addr.af = AF_INET;
-  srv->port = 12345;
-  int ret = (hostapd_parse_ip_addr(conf.radius_client_ip, &srv->addr) >= 0);
+  srv->port = rconf.radius_port;
+  int ret = (hostapd_parse_ip_addr(rconf.radius_client_ip, &srv->addr) >= 0);
   assert_true(ret);
 
-  srv->shared_secret = (uint8_t *)strdup(conf.radius_secret);
-  srv->shared_secret_len = strlen(conf.radius_secret);
+  srv->shared_secret = (uint8_t *)strdup(rconf.radius_secret);
+  srv->shared_secret_len = strlen(rconf.radius_secret);
 
   ctx.conf.auth_server = ctx.conf.auth_servers = srv;
   ctx.conf.num_auth_servers = 1;
@@ -175,18 +191,19 @@ static void test_radius_server_init(void **state) {
   ret = radius_client_register(ctx.radius, RADIUS_AUTH, receive_auth, &ctx);
   assert_int_equal(ret, 0);
 
-  radius_srv = radius_server_init(eloop, srv->port, client);
-  assert_non_null(radius_srv);
+  struct radius_context *radius_srv_ctx =
+      run_radius(eloop, &rconf, get_mac_conn, NULL);
+  assert_non_null(radius_srv_ctx);
 
   eloop_register_timeout(eloop, 0, 0, start_test, &ctx, NULL);
 
   eloop_run(eloop);
 
-  int cmp = memcmp(&saved_addr[0], &addr[0], 6);
-  assert_int_equal(cmp, 0);
+  assert_int_equal(ctx.code, RADIUS_CODE_ACCESS_ACCEPT);
+  assert_int_equal(ctx.untagged, VLAN_ID);
 
   radius_client_deinit(ctx.radius);
-  radius_server_deinit(radius_srv);
+  close_radius(radius_srv_ctx);
   os_free(srv->shared_secret);
   os_free(srv);
 
@@ -197,7 +214,7 @@ int main(int argc, char *argv[]) {
   (void)argc;
   (void)argv;
 
-  log_set_quiet(true);
+  log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {cmocka_unit_test(test_radius_server_init)};
 

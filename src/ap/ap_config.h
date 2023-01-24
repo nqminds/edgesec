@@ -18,8 +18,6 @@
 #include <net/if.h>
 #include <sys/types.h>
 
-#include "../radius/radius_server.h"
-#include "../utils/allocs.h"
 #include "../utils/os.h"
 
 #define AP_NAME_LEN 32 /* Maximum length of the AP name, i.e., ESSID name */
@@ -91,6 +89,8 @@ struct apconf {
                                 @see
                                 https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf
                               */
+  int ieee8021x;             /**< The hostapd @c ieee8021x param @see
+                               https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf */
   char rsn_pairwise
       [AP_RSN_PAIRWISE_LEN]; /**< The hostapd @c rsn_pairwise param
                                 @see

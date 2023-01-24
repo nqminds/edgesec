@@ -359,8 +359,8 @@ char *crypto_get_key_str(bool private, EVP_PKEY *pkey) {
   }
 
   BIO_get_mem_ptr(mem, &ptr);
-  if ((key_str = (char *)os_zalloc(ptr->length + 1)) == NULL) {
-    log_errno("os_zalloc");
+  if ((key_str = (char *)sys_zalloc(ptr->length + 1)) == NULL) {
+    log_errno("sys_zalloc");
     BIO_free(mem);
     return NULL;
   }
@@ -460,8 +460,8 @@ int crypto_generate_cert_str(struct certificate_meta *meta, uint8_t *key,
   }
 
   BIO_get_mem_ptr(mem, &ptr);
-  if ((*cert = (char *)os_zalloc(ptr->length + 1)) == NULL) {
-    log_errno("os_zalloc");
+  if ((*cert = (char *)sys_zalloc(ptr->length + 1)) == NULL) {
+    log_errno("sys_zalloc");
     X509_free(x509);
     EVP_PKEY_free(pkey);
     BIO_free(mem);

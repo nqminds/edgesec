@@ -732,8 +732,8 @@ int init_mdns_context(struct mdns_conf *mdns_config,
   context->vlan_mapper = NULL;
   os_memcpy(&context->config, mdns_config, sizeof(struct mdns_conf));
   context->pctx_list = NULL;
-  os_strlcpy(context->supervisor_control_path, supervisor_control_path,
-             MAX_OS_PATH_LEN);
+  sys_strlcpy(context->supervisor_control_path, supervisor_control_path,
+              MAX_OS_PATH_LEN);
   context->command_mapper = NULL;
   context->sfd = 0;
 
@@ -762,8 +762,8 @@ int run_mdns_thread(struct mdns_conf *mdns_config,
                     pthread_t *id) {
   struct mdns_context *context = NULL;
 
-  if ((context = os_zalloc(sizeof(struct mdns_context))) == NULL) {
-    log_errno("os_zalloc");
+  if ((context = sys_zalloc(sizeof(struct mdns_context))) == NULL) {
+    log_errno("sys_zalloc");
     return -1;
   }
 

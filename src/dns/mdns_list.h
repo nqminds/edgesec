@@ -16,7 +16,7 @@
 #include <inttypes.h>
 #include <string.h>
 
-#include <list.h>
+#include "../utils/list.h"
 
 enum MDNS_REQUEST_TYPE {
   MDNS_REQUEST_NONE = 0,

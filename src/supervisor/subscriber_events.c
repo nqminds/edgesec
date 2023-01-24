@@ -78,8 +78,8 @@ int send_events(struct supervisor_context *context, const char *name,
 
   vsnprintf(args_buf, MAX_SEND_EVENTS_BUF_SIZE, format, args);
 
-  if ((send_buf = os_zalloc(strlen(name) + strlen(args_buf) + 2)) == NULL) {
-    log_errno("os_malloc");
+  if ((send_buf = sys_zalloc(strlen(name) + strlen(args_buf) + 2)) == NULL) {
+    log_errno("sys_zalloc");
     return -1;
   }
 

@@ -198,8 +198,9 @@ int get_sqlite_macconn_entries(sqlite3 *db, UT_array *entries) {
     os_memset(&el.info, 0, sizeof(el.info));
 
     // mac
-    if (hwaddr_aton2((char *)sqlite3_column_text(res, 0), mac_addr) == -1) {
-      log_trace("hwaddr_aton2 fail");
+    if (convert_ascii2mac((char *)sqlite3_column_text(res, 0), mac_addr) ==
+        -1) {
+      log_trace("convert_ascii2mac fail");
       sqlite3_finalize(res);
       return -1;
     }
@@ -208,7 +209,7 @@ int get_sqlite_macconn_entries(sqlite3 *db, UT_array *entries) {
 
     // id
     if ((value = (char *)sqlite3_column_text(res, 1)) != NULL) {
-      os_strlcpy(el.info.id, value, MAX_RANDOM_UUID_LEN);
+      sys_strlcpy(el.info.id, value, MAX_RANDOM_UUID_LEN);
     }
 
     // status
@@ -225,12 +226,12 @@ int get_sqlite_macconn_entries(sqlite3 *db, UT_array *entries) {
 
     // label
     if ((value = (char *)sqlite3_column_text(res, 6)) != NULL) {
-      os_strlcpy(el.info.label, value, MAX_DEVICE_LABEL_SIZE);
+      sys_strlcpy(el.info.label, value, MAX_DEVICE_LABEL_SIZE);
     }
 
     // pass
     if ((value = (char *)sqlite3_column_text(res, 7)) != NULL) {
-      os_strlcpy((char *)el.info.pass, value, AP_SECRET_LEN);
+      sys_strlcpy((char *)el.info.pass, value, AP_SECRET_LEN);
       el.info.pass_len = os_strnlen_s(value, AP_SECRET_LEN);
     }
 

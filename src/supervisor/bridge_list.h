@@ -14,8 +14,8 @@
 #include <net/ethernet.h>
 #include <utarray.h>
 
-#include <list.h>
 #include "../utils/allocs.h"
+#include "../utils/list.h"
 #include "../utils/os.h"
 
 /**

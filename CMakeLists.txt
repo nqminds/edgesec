@@ -99,7 +99,8 @@ cmake_dependent_option(BUILD_UCI_LIB "Build OpenWRT UCI library" ON USE_UCI_SERV
 option(USE_GENERIC_IP_SERVICE "Use generic ip service" OFF)
 
 option(USE_CRYPTO_SERVICE "Use the crypto service" OFF)
-cmake_dependent_option(BUILD_OPENSSL_LIB "Build OpenSSL" ON USE_CRYPTO_SERVICE OFF)
+cmake_dependent_option(BUILD_OPENSSL_LIB "Build OpenSSL 1.1.1" OFF "BUILD_HOSTAPD OR BUILD_HOSTAPD_EAP_LIB" OFF)
+cmake_dependent_option(BUILD_OPENSSL3_LIB "Build OpenSSL 3" ON USE_CRYPTO_SERVICE OFF)
 
 option(USE_ZYMKEY4_HSM "Use the Zymkey4 HSM" OFF)
 cmake_dependent_option(CONFIGURE_COVERAGE "Configure for code coverage (requires lcov)" OFF BUILD_TESTING OFF)
@@ -190,6 +191,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Include the libraries
+include(openssl) # openssl 1.1.1 Used only for hostapd
 include(hostapd)
 include(cmocka)
 include(minIni)
@@ -199,7 +201,7 @@ include(netlink)
 include(nl)
 include(uuid)
 include(pcap)
-include(openssl)
+include(openssl3)
 include(sqlite)
 include(zymkey4)
 include(uci)
@@ -235,9 +237,9 @@ configure_file(
 # Copy the default configuration file to the build folder
 # This config file is for development, not for `make install` use
 configure_file(
-  "dev-config.ini"
+  "dev-config.ini.in"
   "${PROJECT_BINARY_DIR}/dev-config.ini"
-  COPYONLY # does not edit the file
+  @ONLY
 )
 
 include(doxygen)

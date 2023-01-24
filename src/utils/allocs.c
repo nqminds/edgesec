@@ -18,15 +18,7 @@
 
 #include "allocs.h"
 
-void *os_zalloc(size_t size) { return os_calloc(size, 1); }
-
-void *os_memdup(const void *src, size_t len) {
-  void *r = os_malloc(len);
-
-  if (r && src)
-    os_memcpy(r, src, len);
-  return r;
-}
+void *sys_zalloc(size_t size) { return os_calloc(size, 1); }
 
 char *os_strdup(const char *s) {
   char *dest = NULL;
@@ -42,4 +34,12 @@ char *os_strdup(const char *s) {
   }
 
   return dest;
+}
+
+void *sys_memdup(const void *src, size_t len) {
+  void *r = os_malloc(len);
+
+  if (r && src)
+    os_memcpy(r, src, len);
+  return r;
 }

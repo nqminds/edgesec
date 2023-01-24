@@ -21,10 +21,10 @@
 #include "../utils/os.h"
 
 struct hsm_context *init_hsm(void) {
-  struct hsm_context *context = os_zalloc(sizeof(struct hsm_context));
+  struct hsm_context *context = sys_zalloc(sizeof(struct hsm_context));
 
   if (context == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return NULL;
   }
 

@@ -3,6 +3,8 @@
 # Automatically generated from CMake.
 CC="@CMAKE_C_COMPILER@"
 PKG_CONFIG="@PKG_CONFIG_EXECUTABLE@"
+#CFLAGS += -I@LIBOPENSSL_INCLUDE_PATH@
+#LIBS += -L@LIBOPENSSL_LIB_PATH@
 
 # Driver interface for Host AP driver
 CONFIG_DRIVER_HOSTAP=y
@@ -70,34 +72,34 @@ CONFIG_EAP_GTC=y
 CONFIG_EAP_TTLS=y
 
 # EAP-SIM for the integrated EAP server
-#CONFIG_EAP_SIM=y
+CONFIG_EAP_SIM=y
 
 # EAP-AKA for the integrated EAP server
-#CONFIG_EAP_AKA=y
+CONFIG_EAP_AKA=y
 
 # EAP-AKA' for the integrated EAP server
 # This requires CONFIG_EAP_AKA to be enabled, too.
-#CONFIG_EAP_AKA_PRIME=y
+CONFIG_EAP_AKA_PRIME=y
 
 # EAP-PAX for the integrated EAP server
-#CONFIG_EAP_PAX=y
+CONFIG_EAP_PAX=y
 
 # EAP-PSK for the integrated EAP server (this is _not_ needed for WPA-PSK)
-#CONFIG_EAP_PSK=y
+CONFIG_EAP_PSK=y
 
 # EAP-pwd for the integrated EAP server (secure authentication with a password)
-#CONFIG_EAP_PWD=y
+CONFIG_EAP_PWD=y
 
 # EAP-SAKE for the integrated EAP server
-#CONFIG_EAP_SAKE=y
+CONFIG_EAP_SAKE=y
 
 # EAP-GPSK for the integrated EAP server
-#CONFIG_EAP_GPSK=y
+CONFIG_EAP_GPSK=y
 # Include support for optional SHA256 cipher suite in EAP-GPSK
-#CONFIG_EAP_GPSK_SHA256=y
+CONFIG_EAP_GPSK_SHA256=y
 
 # EAP-FAST for the integrated EAP server
-#CONFIG_EAP_FAST=y
+CONFIG_EAP_FAST=y
 
 # EAP-TEAP for the integrated EAP server
 # Note: The current EAP-TEAP implementation is experimental and should not be
@@ -107,7 +109,7 @@ CONFIG_EAP_TTLS=y
 # any other implementation. This should not be used for anything else than
 # experimentation and interoperability testing until those issues has been
 # resolved.
-#CONFIG_EAP_TEAP=y
+CONFIG_EAP_TEAP=y
 
 # Wi-Fi Protected Setup (WPS)
 #CONFIG_WPS=y
@@ -117,13 +119,13 @@ CONFIG_EAP_TTLS=y
 #CONFIG_WPS_NFC=y
 
 # EAP-IKEv2
-#CONFIG_EAP_IKEV2=y
+CONFIG_EAP_IKEV2=y
 
 # Trusted Network Connect (EAP-TNC)
-#CONFIG_EAP_TNC=y
+CONFIG_EAP_TNC=y
 
 # EAP-EKE for the integrated EAP server
-#CONFIG_EAP_EKE=y
+CONFIG_EAP_EKE=y
 
 # PKCS#12 (PFX) support (used to read private key and certificate file from
 # a file that usually has extension .p12 or .pfx)
@@ -268,20 +270,20 @@ CONFIG_VLAN_NETLINK=y
 # internal = Internal TLSv1 implementation (experimental)
 # linux = Linux kernel AF_ALG and internal TLSv1 implementation (experimental)
 # none = Empty template
-#CONFIG_TLS=openssl
+CONFIG_TLS=openssl
 
 # TLS-based EAP methods require at least TLS v1.0. Newer version of TLS (v1.1)
 # can be enabled to get a stronger construction of messages when block ciphers
 # are used.
-#CONFIG_TLSV11=y
+CONFIG_TLSV11=y
 
 # TLS-based EAP methods require at least TLS v1.0. Newer version of TLS (v1.2)
 # can be enabled to enable use of stronger crypto algorithms.
-#CONFIG_TLSV12=y
+CONFIG_TLSV12=y
 
 # Select which ciphers to use by default with OpenSSL if the user does not
 # specify them.
-#CONFIG_TLS_DEFAULT_CIPHERS="DEFAULT:!EXP:!LOW"
+CONFIG_TLS_DEFAULT_CIPHERS="DEFAULT:!EXP:!LOW"
 
 # If CONFIG_TLS=internal is used, additional library and include paths are
 # needed for LibTomMath. Alternatively, an integrated, minimal version of
@@ -322,7 +324,7 @@ CONFIG_HS20=y
 # connect to this hostapd. These options allow, for example, to drop a
 # certain percentage of probe requests or auth/(re)assoc frames.
 #
-#CONFIG_TESTING_OPTIONS=y
+CONFIG_TESTING_OPTIONS=y
 
 # Automatic Channel Selection
 # This will allow hostapd to pick the channel automatically when channel is set

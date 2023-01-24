@@ -4,6 +4,7 @@ uci delete wireless.radio1.hostapd_options
 uci add_list wireless.radio1.hostapd_options="auth_algs=1"
 uci add_list wireless.radio1.hostapd_options="wpa=2"
 uci add_list wireless.radio1.hostapd_options="wpa_key_mgmt=WPA-PSK"
+uci add_list wireless.radio1.hostapd_options="ieee8021x=0"
 uci add_list wireless.radio1.hostapd_options="rsn_pairwise=CCMP"
 uci add_list wireless.radio1.hostapd_options="own_ip_addr=127.0.0.1"
 uci add_list wireless.radio1.hostapd_options="auth_server_addr=127.0.0.1"

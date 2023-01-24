@@ -20,10 +20,10 @@
 
 struct pcap_queue *init_pcap_queue(void) {
   struct pcap_queue *queue;
-  queue = os_zalloc(sizeof(*queue));
+  queue = sys_zalloc(sizeof(*queue));
 
   if (queue == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return NULL;
   }
 

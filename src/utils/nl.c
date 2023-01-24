@@ -216,23 +216,23 @@ int get_addrinfo(struct nlmsghdr *n, netif_info_t *info) {
   }
 
   if (rta_tb[IFA_LOCAL] && info->ifa_family == AF_INET) {
-    os_strlcpy(info->ip_addr,
-               format_host_rta(ifa->ifa_family, rta_tb[IFA_LOCAL]),
-               OS_INET_ADDRSTRLEN);
+    sys_strlcpy(info->ip_addr,
+                format_host_rta(ifa->ifa_family, rta_tb[IFA_LOCAL]),
+                OS_INET_ADDRSTRLEN);
     log_trace("ifindex=%d ip_addr=%s", info->ifindex, info->ip_addr);
     if (rta_tb[IFA_ADDRESS] &&
         memcmp(RTA_DATA(rta_tb[IFA_ADDRESS]), RTA_DATA(rta_tb[IFA_LOCAL]), 4)) {
-      os_strlcpy(info->peer_addr,
-                 format_host_rta(ifa->ifa_family, rta_tb[IFA_ADDRESS]),
-                 OS_INET_ADDRSTRLEN);
+      sys_strlcpy(info->peer_addr,
+                  format_host_rta(ifa->ifa_family, rta_tb[IFA_ADDRESS]),
+                  OS_INET_ADDRSTRLEN);
       log_trace("ifindex=%d peer_addr=%s", info->ifindex, info->peer_addr);
     }
   }
 
   if (rta_tb[IFA_BROADCAST] && info->ifa_family == AF_INET) {
-    os_strlcpy(info->brd_addr,
-               format_host_rta(ifa->ifa_family, rta_tb[IFA_BROADCAST]),
-               OS_INET_ADDRSTRLEN);
+    sys_strlcpy(info->brd_addr,
+                format_host_rta(ifa->ifa_family, rta_tb[IFA_BROADCAST]),
+                OS_INET_ADDRSTRLEN);
     log_trace("ifindex=%d brd_addr=%s", info->ifindex, info->brd_addr);
   }
 
@@ -291,7 +291,7 @@ int get_linkinfo(struct nlmsghdr *n, netif_info_t *info) {
     return -1;
 
   info->ifindex = ifi->ifi_index;
-  os_strlcpy(info->ifname, name, IF_NAMESIZE);
+  sys_strlcpy(info->ifname, name, IF_NAMESIZE);
   log_trace("ifindex=%d if=%s", ifi->ifi_index, info->ifname);
 
   if (tb[IFLA_OPERSTATE]) {
@@ -300,8 +300,8 @@ int get_linkinfo(struct nlmsghdr *n, netif_info_t *info) {
     info->state = IF_STATE_UNKNOWN;
 
   log_trace("ifindex=%d state=%d", ifi->ifi_index, info->state);
-  os_strlcpy(info->link_type, ll_type_n2a(ifi->ifi_type, b1, sizeof(b1)),
-             LINK_TYPE_LEN);
+  sys_strlcpy(info->link_type, ll_type_n2a(ifi->ifi_type, b1, sizeof(b1)),
+              LINK_TYPE_LEN);
   log_trace("ifindex=%d link_type=%s", ifi->ifi_index, info->link_type);
   if (tb[IFLA_ADDRESS]) {
     if (RTA_PAYLOAD(tb[IFLA_ADDRESS]) == ETHER_ADDR_LEN) {
@@ -830,10 +830,10 @@ nl_set_interface_state_err:
 }
 
 struct nlctx *nl_init_context(void) {
-  struct nlctx *context = os_zalloc(sizeof(struct nlctx));
+  struct nlctx *context = sys_zalloc(sizeof(struct nlctx));
 
   if (context == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return NULL;
   }
 
@@ -1055,8 +1055,8 @@ static int process_iface_handler(struct nl_msg *msg, void *arg) {
             genlmsg_attrlen(gnlh, 0), NULL);
 
   if (tb_msg[NL80211_ATTR_IFNAME]) {
-    os_strlcpy(element.ifname, nla_get_string(tb_msg[NL80211_ATTR_IFNAME]),
-               IF_NAMESIZE);
+    sys_strlcpy(element.ifname, nla_get_string(tb_msg[NL80211_ATTR_IFNAME]),
+                IF_NAMESIZE);
 
     if (tb_msg[NL80211_ATTR_IFINDEX]) {
       element.ifindex = nla_get_u32(tb_msg[NL80211_ATTR_IFINDEX]);
@@ -1257,7 +1257,7 @@ char *nl_get_valid_iw(char buf[static IF_NAMESIZE]) {
     int ret = iwace_isvlan(el->wiphy);
 
     if (ret == 1) {
-      os_strlcpy(buf, el->ifname, IF_NAMESIZE);
+      sys_strlcpy(buf, el->ifname, IF_NAMESIZE);
       utarray_free(netif_list);
       return buf;
     } else if (ret < 0) {

@@ -62,10 +62,10 @@ void iface_free_context(struct iface_context *ctx) {
 }
 
 struct iface_context *iface_init_context(void *params) {
-  struct iface_context *ctx = os_zalloc(sizeof(struct iface_context));
+  struct iface_context *ctx = sys_zalloc(sizeof(struct iface_context));
 
   if (ctx == NULL) {
-    log_errno("os_zalloc");
+    log_errno("sys_zalloc");
     return NULL;
   }
 
@@ -135,9 +135,9 @@ UT_array *iface_get(const char *ifname) {
       }
 
       if (nif.ifa_family == AF_INET) {
-        os_strlcpy(nif.ip_addr, ipaddr, OS_INET_ADDRSTRLEN);
+        sys_strlcpy(nif.ip_addr, ipaddr, OS_INET_ADDRSTRLEN);
       } else if (nif.ifa_family == AF_INET6) {
-        os_strlcpy(nif.ip_addr6, ipaddr, OS_INET6_ADDRSTRLEN);
+        sys_strlcpy(nif.ip_addr6, ipaddr, OS_INET6_ADDRSTRLEN);
       }
 
       if (ifname == NULL) {

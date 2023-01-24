@@ -15,7 +15,7 @@ add_library(packet_decoder packet_decoder.c)
 target_link_libraries(packet_decoder PUBLIC PCAP::pcap LibUTHash::LibUTHash PRIVATE mdns_decoder dns_decoder hash net log os hashmap)
 
 add_library(packet_queue packet_queue.c)
-target_link_libraries(packet_queue PUBLIC packet_decoder eloop::list PRIVATE log os)
+target_link_libraries(packet_queue PUBLIC packet_decoder PRIVATE log os)
 
 add_library(sqlite_header sqlite_header.c)
 target_link_libraries(sqlite_header PUBLIC PCAP::pcap SQLite::SQLite3 PRIVATE sqliteu log os iface)

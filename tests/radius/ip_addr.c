@@ -18,7 +18,7 @@ const char *hostapd_ip_txt(const struct hostapd_ip_addr *addr, char *buf,
     return NULL;
 
   if (addr->af == AF_INET) {
-    os_strlcpy(buf, inet_ntoa(addr->u.v4), buflen);
+    sys_strlcpy(buf, inet_ntoa(addr->u.v4), buflen);
   } else {
     buf[0] = '\0';
   }

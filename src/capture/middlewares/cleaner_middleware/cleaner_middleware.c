@@ -188,17 +188,17 @@ struct middleware_context *init_cleaner_middleware(sqlite3 *db, char *db_path,
   }
 
   struct middleware_context *context =
-      os_zalloc(sizeof(struct middleware_context));
+      sys_zalloc(sizeof(struct middleware_context));
 
   if (context == NULL) {
-    log_errno("zalloc");
+    log_errno("sys_zalloc");
     return NULL;
   }
 
   struct cleaner_middleware_context *cleaner_context =
-      os_zalloc(sizeof(struct cleaner_middleware_context));
+      sys_zalloc(sizeof(struct cleaner_middleware_context));
   if (cleaner_context == NULL) {
-    log_errno("zalloc");
+    log_errno("sys_zalloc");
     free_cleaner_middleware(context);
     return NULL;
   }

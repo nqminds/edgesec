@@ -348,37 +348,37 @@ ssize_t encode_protobuf_sync_delimited(const PACKET_TYPES type,
     case PACKET_NONE:
       return -1;
     case PACKET_ETHERNET:
-      os_strlcpy(header_id, "eth", 20);
+      sys_strlcpy(header_id, "eth", 20);
       break;
     case PACKET_ARP:
-      os_strlcpy(header_id, "arp", 20);
+      sys_strlcpy(header_id, "arp", 20);
       break;
     case PACKET_IP4:
-      os_strlcpy(header_id, "ip4", 20);
+      sys_strlcpy(header_id, "ip4", 20);
       break;
     case PACKET_IP6:
-      os_strlcpy(header_id, "ip6", 20);
+      sys_strlcpy(header_id, "ip6", 20);
       break;
     case PACKET_TCP:
-      os_strlcpy(header_id, "tcp", 20);
+      sys_strlcpy(header_id, "tcp", 20);
       break;
     case PACKET_UDP:
-      os_strlcpy(header_id, "udp", 20);
+      sys_strlcpy(header_id, "udp", 20);
       break;
     case PACKET_ICMP4:
-      os_strlcpy(header_id, "icmp4", 20);
+      sys_strlcpy(header_id, "icmp4", 20);
       break;
     case PACKET_ICMP6:
-      os_strlcpy(header_id, "icmp6", 20);
+      sys_strlcpy(header_id, "icmp6", 20);
       break;
     case PACKET_DNS:
-      os_strlcpy(header_id, "dns", 20);
+      sys_strlcpy(header_id, "dns", 20);
       break;
     case PACKET_MDNS:
-      os_strlcpy(header_id, "mdns", 20);
+      sys_strlcpy(header_id, "mdns", 20);
       break;
     case PACKET_DHCP:
-      os_strlcpy(header_id, "dhcp", 20);
+      sys_strlcpy(header_id, "dhcp", 20);
       break;
     default:
       return -1;

@@ -55,6 +55,27 @@
 #define BD_MAX_CLOSE                                                           \
   8192 /* Maximum file descriptors to close if                                 \
          sysconf(_SC_OPEN_MAX) is indeterminate */
+
+#ifndef os_strlen
+#define os_strlen(s) strlen((s))
+#endif
+
+#ifndef os_snprintf
+#define os_snprintf snprintf
+#endif
+
+#ifndef sys_strncmp
+#define sys_strncmp(s1, s2, n) strncmp((s1), (s2), (n))
+#endif
+
+#ifndef sys_strcmp
+#define sys_strcmp(s1, s2) strcmp((s1), (s2))
+#endif
+
+#ifndef sys_strchr
+#define sys_strchr(s, c) strchr((s), (c))
+#endif
+
 struct find_dir_type {
   int proc_running;
   char *proc_name;
@@ -73,6 +94,15 @@ struct os_reltime {
 };
 
 /**
+ * sys_strstr - Locate a substring
+ * @param haystack String (haystack) to search from
+ * @param needle Needle to search from haystack
+ * @returns char * Pointer to the beginning of the substring or %NULL if not
+ * found
+ */
+char *sys_strstr(const char *haystack, const char *needle);
+
+/**
  * @brief Becomes a daemon
  *
  * @copyright Michael Kerrisk, 2019.
@@ -87,7 +117,7 @@ int become_daemon(int flags);
  * @param t Pointer to buffer for the time
  * @return int 0 on success, -1 on failure
  */
-int os_get_time(struct os_time *t);
+int sys_get_time(struct os_time *t);
 
 /**
  * @brief Get relative time (sec, usec)
@@ -95,7 +125,11 @@ int os_get_time(struct os_time *t);
  * @param t Pointer to buffer for the time
  * @return int 0 on success, -1 on failure
  */
-int os_get_reltime(struct os_reltime *t);
+int sys_get_reltime(struct os_reltime *t);
+
+#ifndef os_get_reltime
+#define os_get_reltime(t) sys_get_reltime((t))
+#endif
 
 /**
  * @brief Compares the seconds value of two time params
@@ -149,7 +183,7 @@ void os_to_timestamp(struct timeval ts, uint64_t *timestamp);
  * @param len Length of the buffer.
  * @return int 0 on success, -1 on failure
  */
-int os_get_random(unsigned char *buf, size_t len);
+int get_random(unsigned char *buf, size_t len);
 
 /**
  * @brief Return a random int from a give range
@@ -181,7 +215,7 @@ int os_get_random_number_s(unsigned char *buf, size_t len);
  * @param hex Two char string
  * @return converted number from 0-255, or `-1` on error.
  */
-int16_t hex2byte(const char hex[static 2]);
+int16_t convert_hex2byte(const char hex[static 2]);
 
 /**
  * @brief Hex char to number
@@ -204,7 +238,7 @@ int8_t hex2num(char c);
  * double this size
  * @return int 0 on success, -1 on failure (invalid hex string)
  */
-int hexstr2bin(const char *hex, uint8_t *buf, size_t len);
+int convert_hexstr2bin(const char *hex, uint8_t *buf, size_t len);
 
 /**
  * @brief Check if a string is a number
@@ -225,7 +259,7 @@ bool is_number(const char *ptr);
  * @return size_t Total length of the target string (length of src) (not
  * including NUL-termination)
  */
-size_t os_strlcpy(char *restrict dest, const char *restrict src, size_t siz);
+size_t sys_strlcpy(char *restrict dest, const char *restrict src, size_t siz);
 
 /**
  * @brief Returns the size of string with a give max length
@@ -242,9 +276,9 @@ size_t os_strnlen_s(char *str, size_t max_len);
  * This function is meant for comparing passwords or hash values where
  * difference in execution time could provide external observer information
  * about the location of the difference in the memory buffers. The return value
- * does not behave like os_memcmp(), i.e., os_memcmp_const() cannot be used to
+ * does not behave like os_memcmp(), i.e., sys_memcmp_const() cannot be used to
  * sort items into a defined order. Unlike os_memcmp(), execution time of
- * os_memcmp_const() does not depend on the contents of the compared memory
+ * sys_memcmp_const() does not depend on the contents of the compared memory
  * buffers, but only on the total compared length.
  *
  * @param a First buffer to compare
@@ -252,19 +286,7 @@ size_t os_strnlen_s(char *str, size_t max_len);
  * @param len Number of octets to compare
  * @return int 0 if buffers are equal, non-zero if not
  */
-int os_memcmp_const(const void *a, const void *b, size_t len);
-
-/*
- * gcc 4.4 ends up generating strict-aliasing warnings about some very common
- * networking socket uses that do not really result in a real problem and
- * cannot be easily avoided with union-based type-punning due to struct
- * definitions including another struct in system header files. To avoid having
- * to fully disable strict-aliasing warnings, provide a mechanism to hide the
- * typecast from aliasing for now. A cleaner solution will hopefully be found
- * in the future to handle these cases.
- */
-void *__hide_aliasing_typecast(void *foo);
-#define aliasing_hide_typecast(a, t) (t *)__hide_aliasing_typecast((a))
+int sys_memcmp_const(const void *a, const void *b, size_t len);
 
 /**
  * @brief Callback function for run_command() and similar functions.

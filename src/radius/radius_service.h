@@ -21,20 +21,20 @@
  *
  * @param eloop The eloop context
  * @param rconf The radius config
- * @param radius_callback_fn The radius callback function
+ * @param get_identity_ac_fn The identity access control callback function
  * @param radius_callback_args The Radius callback arguments
  * @return Pointer to private RADIUS server context or NULL on failure
  */
-struct radius_server_data *run_radius(struct eloop_data *eloop,
-                                      struct radius_conf *rconf,
-                                      mac_conn_fn radius_callback_fn,
-                                      void *radius_callback_args);
+struct radius_context *run_radius(struct eloop_data *eloop,
+                                  struct radius_conf *rconf,
+                                  get_identity_ac_cb get_identity_ac_fn,
+                                  void *ctx_cb);
 
 /**
  * @brief Closes the radius service
  *
- * @param srv Pointer to private RADIUS server context
+ * @param ctx Pointer to private RADIUS server context
  */
-void close_radius(struct radius_server_data *srv);
+void close_radius(struct radius_context *ctx);
 
 #endif
