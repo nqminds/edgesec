@@ -9,14 +9,14 @@
  * @brief RADIUS authentication server.
  */
 
-#include <linux/if_ether.h>
-#include <net/if.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <errno.h>
+#include <linux/if_ether.h>
+#include <net/if.h>
 #include <netinet/if_ether.h>
 #include <sys/types.h>
 #include <unistd.h>
