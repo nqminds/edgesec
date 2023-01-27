@@ -69,10 +69,10 @@ void eloop_tout_header_handler(void *eloop_ctx, void *user_ctx) {
     }
   }
 
-  if (eloop_register_timeout(context->eloop, 0, HEADER_PROCESS_INTERVAL,
+  if (edge_eloop_register_timeout(context->eloop, 0, HEADER_PROCESS_INTERVAL,
                              eloop_tout_header_handler, NULL,
                              (void *)user_ctx) == -1) {
-    log_error("eloop_register_timeout fail");
+    log_error("edge_eloop_register_timeout fail");
   }
 }
 
@@ -128,10 +128,10 @@ struct middleware_context *init_header_middleware(sqlite3 *db, char *db_path,
     return NULL;
   }
 
-  if (eloop_register_timeout(eloop, 0, HEADER_PROCESS_INTERVAL,
+  if (edge_eloop_register_timeout(eloop, 0, HEADER_PROCESS_INTERVAL,
                              eloop_tout_header_handler, NULL,
                              (void *)context) == -1) {
-    log_error("eloop_register_timeout fail");
+    log_error("edge_eloop_register_timeout fail");
     free_header_middleware(context);
     return NULL;
   }

@@ -214,8 +214,8 @@ radius_server_get_session(struct radius_client *client, unsigned int sess_id) {
 
 static void radius_server_session_free(struct radius_server_data *data,
                                        struct radius_session *sess) {
-  eloop_cancel_timeout(data->eloop, radius_server_session_timeout, data, sess);
-  eloop_cancel_timeout(data->eloop, radius_server_session_remove_timeout, data,
+  edge_eloop_cancel_timeout(data->eloop, radius_server_session_timeout, data, sess);
+  edge_eloop_cancel_timeout(data->eloop, radius_server_session_remove_timeout, data,
                        sess);
   radius_msg_free(sess->last_msg);
   os_free(sess->last_from_addr);
@@ -232,7 +232,7 @@ static void radius_server_session_remove(struct radius_server_data *data,
   struct radius_client *client = sess->client;
   struct radius_session *session, *prev;
 
-  eloop_cancel_timeout(data->eloop, radius_server_session_remove_timeout, data,
+  edge_eloop_cancel_timeout(data->eloop, radius_server_session_remove_timeout, data,
                        sess);
 
   prev = NULL;
@@ -287,7 +287,7 @@ radius_server_new_session(struct radius_server_data *data,
   sess->sess_id = data->next_sess_id++;
   sess->next = client->sessions;
   client->sessions = sess;
-  eloop_register_timeout(data->eloop, RADIUS_SESSION_TIMEOUT, 0,
+  edge_eloop_register_timeout(data->eloop, RADIUS_SESSION_TIMEOUT, 0,
                          radius_server_session_timeout, data, sess);
   data->num_sess++;
   return sess;
@@ -611,9 +611,9 @@ static int radius_server_request(struct radius_server_data *data,
   if (is_complete) {
     log_trace("Removing RADIUS completed session 0x%x after timeout",
               sess->sess_id);
-    eloop_cancel_timeout(data->eloop, radius_server_session_remove_timeout,
+    edge_eloop_cancel_timeout(data->eloop, radius_server_session_remove_timeout,
                          data, sess);
-    eloop_register_timeout(data->eloop, RADIUS_SESSION_MAINTAIN, 0,
+    edge_eloop_register_timeout(data->eloop, RADIUS_SESSION_MAINTAIN, 0,
                            radius_server_session_remove_timeout, data, sess);
   }
 
@@ -845,7 +845,7 @@ struct radius_server_data *radius_server_init(struct eloop_data *eloop,
     log_error("Failed to open UDP socket for RADIUS authentication server");
     goto fail;
   }
-  if (eloop_register_read_sock(data->eloop, data->auth_sock,
+  if (edge_eloop_register_read_sock(data->eloop, data->auth_sock,
                                radius_server_receive_auth, data, NULL)) {
     goto fail;
   }
@@ -865,7 +865,7 @@ void radius_server_deinit(struct radius_server_data *data) {
     return;
 
   if (data->auth_sock >= 0) {
-    eloop_unregister_read_sock(data->eloop, data->auth_sock);
+    edge_eloop_unregister_read_sock(data->eloop, data->auth_sock);
     close(data->auth_sock);
   }
 

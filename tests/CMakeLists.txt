@@ -59,7 +59,7 @@ add_cmocka_test(test_runctl
 )
 
 target_link_options(test_runctl PRIVATE
-  "LINKER:--wrap=get_vlan_mapper,--wrap=eloop_run,--wrap=get_commands_paths,--wrap=hmap_str_keychar_get"
+  "LINKER:--wrap=get_vlan_mapper,--wrap=edge_eloop_run,--wrap=get_commands_paths,--wrap=hmap_str_keychar_get"
   "LINKER:--wrap=fw_init_context,--wrap=fw_set_ip_forward"
 )
 

@@ -59,11 +59,11 @@ void __wrap_close_pcap(struct pcap_context *ctx) {
     os_free(ctx);
 }
 
-struct eloop_data *__wrap_eloop_init(void) {
+struct eloop_data *__wrap_edge_eloop_init(void) {
   return (struct eloop_data *)&test_eloop;
 }
 
-int __wrap_eloop_register_read_sock(struct eloop_data *eloop, int sock,
+int __wrap_edge_eloop_register_read_sock(struct eloop_data *eloop, int sock,
                                     eloop_sock_handler handler,
                                     void *eloop_data, void *user_data) {
   (void)eloop;
@@ -75,7 +75,7 @@ int __wrap_eloop_register_read_sock(struct eloop_data *eloop, int sock,
   return 0;
 }
 
-int __wrap_eloop_register_timeout(struct eloop_data *eloop, unsigned long secs,
+int __wrap_edge_eloop_register_timeout(struct eloop_data *eloop, unsigned long secs,
                                   unsigned long usecs,
                                   eloop_timeout_handler handler,
                                   void *eloop_data, void *user_data) {
@@ -89,9 +89,9 @@ int __wrap_eloop_register_timeout(struct eloop_data *eloop, unsigned long secs,
   return 0;
 }
 
-void __wrap_eloop_run(struct eloop_data *eloop) { (void)eloop; }
+void __wrap_edge_eloop_run(struct eloop_data *eloop) { (void)eloop; }
 
-void __wrap_eloop_free(struct eloop_data *eloop) { (void)eloop; }
+void __wrap_edge_eloop_free(struct eloop_data *eloop) { (void)eloop; }
 
 uint32_t __wrap_run_register_db(char *address, char *name) {
   (void)address;

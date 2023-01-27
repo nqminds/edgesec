@@ -1,7 +1,7 @@
 From cfd320e14f72a8dbd6c86897fcb31599379889dc Mon Sep 17 00:00:00 2001
 From: Alois Klink <alois@nquiringminds.com>
 Date: Tue, 6 Sep 2022 18:28:04 +0100
-Subject: [PATCH 2/4] Allow multiple eloops to run at same time
+Subject: [PATCH 2/5] Allow multiple eloops to run at same time
 
 Passes the `eloop_data eloop` variable as a parameter to all
 eloop functions, instead of using a static/shared eloop variable.

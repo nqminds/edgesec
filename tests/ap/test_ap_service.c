@@ -58,7 +58,7 @@ int __wrap_create_domain_client(char *addr) {
   return 0;
 }
 
-int __wrap_eloop_register_read_sock(int sock, eloop_sock_handler handler,
+int __wrap_edge_eloop_register_read_sock(int sock, eloop_sock_handler handler,
                                     void *eloop_data, void *user_data) {
   (void)sock;
   (void)handler;

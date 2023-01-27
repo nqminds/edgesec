@@ -340,9 +340,9 @@ int register_reflector_if6(struct eloop_data *eloop,
       return -1;
     }
 
-    if (eloop_register_read_sock(eloop, el->recv_fd, eloop_reflector_handler,
+    if (edge_eloop_register_read_sock(eloop, el->recv_fd, eloop_reflector_handler,
                                  (void *)context, (void *)rif) < 0) {
-      log_error("eloop_register_read_sock fail");
+      log_error("edge_eloop_register_read_sock fail");
       return -1;
     }
 
@@ -390,9 +390,9 @@ int register_reflector_if4(struct eloop_data *eloop,
       return -1;
     }
 
-    if (eloop_register_read_sock(eloop, el->recv_fd, eloop_reflector_handler,
+    if (edge_eloop_register_read_sock(eloop, el->recv_fd, eloop_reflector_handler,
                                  (void *)context, (void *)rif) < 0) {
-      log_error("eloop_register_read_sock fail");
+      log_error("edge_eloop_register_read_sock fail");
       return -1;
     }
 
@@ -656,10 +656,10 @@ int run_mdns_capture(struct eloop_data *eloop, struct mdns_context *context) {
 
     utarray_push_back(context->pctx_list, &pctx);
 
-    if (eloop_register_read_sock(eloop, pctx->pcap_fd,
+    if (edge_eloop_register_read_sock(eloop, pctx->pcap_fd,
                                  eloop_read_mdns_fd_handler, (void *)pctx,
                                  (void *)NULL) == -1) {
-      log_error("eloop_register_read_sock fail");
+      log_error("edge_eloop_register_read_sock fail");
       return -1;
     }
   }
@@ -685,20 +685,20 @@ int run_mdns(struct mdns_context *context) {
     return -1;
   }
 
-  if ((eloop = eloop_init()) == NULL) {
-    log_error("eloop_init fail");
+  if ((eloop = edge_eloop_init()) == NULL) {
+    log_error("edge_eloop_init fail");
     return -1;
   }
 
   if (register_reflector_if6(eloop, context) < 0) {
     log_error("register_reflector_if6 fail");
-    eloop_free(eloop);
+    edge_eloop_free(eloop);
     return -1;
   }
 
   if (register_reflector_if4(eloop, context) < 0) {
     log_error("register_reflector_if4 fail");
-    eloop_free(eloop);
+    edge_eloop_free(eloop);
     return -1;
   }
 
@@ -706,13 +706,13 @@ int run_mdns(struct mdns_context *context) {
 
   if (run_mdns_capture(eloop, context) < 0) {
     log_error("run_mdns_capture fail");
-    eloop_free(eloop);
+    edge_eloop_free(eloop);
     return -1;
   }
 
-  eloop_run(eloop);
+  edge_eloop_run(eloop);
 
-  eloop_free(eloop);
+  edge_eloop_free(eloop);
   return 0;
 }
 

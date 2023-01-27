@@ -25,14 +25,14 @@
  * Macros](https://www.drdobbs.com/the-new-c-x-macros/184401387)
  */
 #define TEST_HANDLE_ELOOP_NULL_FUNCTIONS                                       \
-  X(eloop_register_read_sock, (NULL, 0, NULL, NULL, NULL))                     \
-  X(eloop_register_sock, (NULL, 0, EVENT_TYPE_READ, NULL, NULL, NULL))         \
-  X(eloop_register_timeout, (NULL, 0, 0, NULL, NULL, NULL))                    \
-  X(eloop_cancel_timeout, (NULL, NULL, NULL, NULL))                            \
-  X(eloop_cancel_timeout_one, (NULL, NULL, NULL, NULL, NULL))                  \
-  X(eloop_is_timeout_registered, (NULL, NULL, NULL, NULL))                     \
-  X(eloop_deplete_timeout, (NULL, 0, 0, NULL, NULL, NULL))                     \
-  X(eloop_replenish_timeout, (NULL, 0, 0, NULL, NULL, NULL))
+  X(edge_eloop_register_read_sock, (NULL, 0, NULL, NULL, NULL))                     \
+  X(edge_eloop_register_sock, (NULL, 0, EVENT_TYPE_READ, NULL, NULL, NULL))         \
+  X(edge_eloop_register_timeout, (NULL, 0, 0, NULL, NULL, NULL))                    \
+  X(edge_eloop_cancel_timeout, (NULL, NULL, NULL, NULL))                            \
+  X(edge_eloop_cancel_timeout_one, (NULL, NULL, NULL, NULL, NULL))                  \
+  X(edge_eloop_is_timeout_registered, (NULL, NULL, NULL, NULL))                     \
+  X(edge_eloop_deplete_timeout, (NULL, 0, 0, NULL, NULL, NULL))                     \
+  X(edge_eloop_replenish_timeout, (NULL, 0, 0, NULL, NULL, NULL))
 
 // Creates all the test functions defined in TEST_HANDLE_ELOOP_NULL_FUNCTIONS
 #define X(function, args)                                                      \

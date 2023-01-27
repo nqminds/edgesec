@@ -569,10 +569,10 @@ void eloop_tout_header_handler(void *eloop_ctx, void *user_ctx) {
   }
 
   struct eloop_data *eloop = (struct eloop_data *)eloop_ctx;
-  if (eloop_register_timeout(eloop, 0, QUEUE_PROCESS_INTERVAL,
+  if (edge_eloop_register_timeout(eloop, 0, QUEUE_PROCESS_INTERVAL,
                              eloop_tout_header_handler, eloop,
                              (void *)pctx) == -1) {
-    log_error("eloop_register_timeout fail");
+    log_error("edge_eloop_register_timeout fail");
   }
 }
 
@@ -581,8 +581,8 @@ int process_pcap_capture(struct recap_context *pctx) {
   int exit_code = -1;
   struct pcap_context *pc = NULL;
 
-  if ((eloop = eloop_init()) == NULL) {
-    log_error("eloop_init fail");
+  if ((eloop = edge_eloop_init()) == NULL) {
+    log_error("edge_eloop_init fail");
     goto process_pcap_capture_fail;
   }
   if (run_pcap(pctx->ifname, false, false, 10, NULL, true, pcap_callback,
@@ -597,16 +597,16 @@ int process_pcap_capture(struct recap_context *pctx) {
       goto process_pcap_capture_fail;
     }
 
-    if (eloop_register_read_sock(eloop, pc->pcap_fd, eloop_read_fd_handler,
+    if (edge_eloop_register_read_sock(eloop, pc->pcap_fd, eloop_read_fd_handler,
                                  (void *)pc, (void *)NULL) == -1) {
-      log_error("eloop_register_read_sock fail");
+      log_error("edge_eloop_register_read_sock fail");
       goto process_pcap_capture_fail;
     }
 
-    if (eloop_register_timeout(eloop, 0, QUEUE_PROCESS_INTERVAL,
+    if (edge_eloop_register_timeout(eloop, 0, QUEUE_PROCESS_INTERVAL,
                                eloop_tout_header_handler, eloop,
                                (void *)pctx) == -1) {
-      log_error("eloop_register_timeout fail");
+      log_error("edge_eloop_register_timeout fail");
       goto process_pcap_capture_fail;
     }
   } else {
@@ -614,12 +614,12 @@ int process_pcap_capture(struct recap_context *pctx) {
     goto process_pcap_capture_fail;
   }
 
-  eloop_run(eloop);
+  edge_eloop_run(eloop);
 
   exit_code = 0;
 
 process_pcap_capture_fail:
-  eloop_free(eloop);
+  edge_eloop_free(eloop);
   close_pcap(pc);
   free_packet_queue(pctx->pq);
   return exit_code;

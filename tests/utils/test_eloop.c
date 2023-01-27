@@ -32,7 +32,7 @@ void test_eloop_sock_handler_read(int sock, void *eloop_ctx, void *sock_ctx) {
   read_socket_data(sock, read_buf, sizeof(read_buf), &addr, 0);
   assert_string_equal(read_buf, TEST_SEND_BUF_DATA);
 
-  eloop_terminate(eloop);
+  edge_eloop_terminate(eloop);
 }
 
 void test_eloop_sock_handler_unreg(int sock, void *eloop_ctx, void *sock_ctx) {
@@ -54,14 +54,14 @@ void test_eloop_timeout_handler(void *eloop_ctx, void *user_ctx) {
   strcpy(user_ctx_data, TEST_ELOOP_PARAM);
 }
 
-static void test_eloop_init(void **state) {
+static void test_edge_eloop_init(void **state) {
   (void)state; /* unused */
 
-  struct eloop_data *eloop = eloop_init();
+  struct eloop_data *eloop = edge_eloop_init();
 
   assert_non_null(eloop);
 
-  eloop_free(eloop);
+  edge_eloop_free(eloop);
 }
 
 struct test_state_t {
@@ -70,7 +70,7 @@ struct test_state_t {
 
 int setup(void **state) {
   struct test_state_t *test_state = calloc(1, sizeof(struct test_state_t));
-  test_state->eloop = eloop_init();
+  test_state->eloop = edge_eloop_init();
   assert_non_null(test_state->eloop);
   *state = test_state;
   return 0;
@@ -78,7 +78,7 @@ int setup(void **state) {
 
 int teardown(void **state) {
   struct test_state_t *test_state = *state;
-  eloop_free(test_state->eloop);
+  edge_eloop_free(test_state->eloop);
   free(test_state);
   return 0;
 }
@@ -101,16 +101,16 @@ static void test_eloop_timeout(void **state) {
   char user_data[] = "user data";
 
   // check if timeout is registered
-  assert_false(eloop_is_timeout_registered(test_state->eloop,
+  assert_false(edge_eloop_is_timeout_registered(test_state->eloop,
                                            eloop_timeout_handler_function,
                                            eloop_data, user_data));
   expect_string(eloop_timeout_handler_function, eloop_ctx, eloop_data);
   expect_string(eloop_timeout_handler_function, user_ctx, user_data);
-  assert_return_code(eloop_register_timeout(test_state->eloop, 0, 1,
+  assert_return_code(edge_eloop_register_timeout(test_state->eloop, 0, 1,
                                             eloop_timeout_handler_function,
                                             eloop_data, user_data),
                      0);
-  assert_true(eloop_is_timeout_registered(test_state->eloop,
+  assert_true(edge_eloop_is_timeout_registered(test_state->eloop,
                                           eloop_timeout_handler_function,
                                           eloop_data, user_data));
 
@@ -119,7 +119,7 @@ static void test_eloop_timeout(void **state) {
   char user_data1[] = "this is user data: run 1";
   expect_string(eloop_timeout_handler_function, eloop_ctx, eloop_data1);
   expect_string(eloop_timeout_handler_function, user_ctx, user_data1);
-  assert_return_code(eloop_register_timeout(test_state->eloop, 0, 100,
+  assert_return_code(edge_eloop_register_timeout(test_state->eloop, 0, 100,
                                             eloop_timeout_handler_function,
                                             eloop_data1, user_data1),
                      0);
@@ -127,37 +127,37 @@ static void test_eloop_timeout(void **state) {
   // test cancelling timeouts
   char eloop_data2[] = "this is eloop data: run 2";
   char user_data2[] = "this is user data: run 2";
-  assert_return_code(eloop_register_timeout(test_state->eloop, 0, 200,
+  assert_return_code(edge_eloop_register_timeout(test_state->eloop, 0, 200,
                                             eloop_timeout_handler_function,
                                             eloop_data2, user_data2),
                      0);
   assert_int_equal(
-      eloop_cancel_timeout(test_state->eloop, eloop_timeout_handler_function,
+      edge_eloop_cancel_timeout(test_state->eloop, eloop_timeout_handler_function,
                            eloop_data2, user_data2),
       1 // should cancel only all = one timeout
   );
 
-  assert_return_code(eloop_register_timeout(test_state->eloop, 1, 0,
+  assert_return_code(edge_eloop_register_timeout(test_state->eloop, 1, 0,
                                             eloop_timeout_handler_function,
                                             eloop_data2, user_data2),
                      0);
-  assert_return_code(eloop_register_timeout(test_state->eloop, 2, 0,
+  assert_return_code(edge_eloop_register_timeout(test_state->eloop, 2, 0,
                                             eloop_timeout_handler_function,
                                             eloop_data2, user_data2),
                      0);
-  assert_return_code(eloop_register_timeout(test_state->eloop, 3, 0,
+  assert_return_code(edge_eloop_register_timeout(test_state->eloop, 3, 0,
                                             eloop_timeout_handler_function,
                                             eloop_data2, user_data2),
                      0);
 
   struct os_reltime remaining = {0};
-  assert_int_equal(eloop_cancel_timeout_one(
+  assert_int_equal(edge_eloop_cancel_timeout_one(
                        test_state->eloop, eloop_timeout_handler_function,
                        eloop_data2, user_data2, &remaining),
                    1 // should cancel only one timeout
   );
   assert_int_equal(
-      eloop_cancel_timeout(test_state->eloop, eloop_timeout_handler_function,
+      edge_eloop_cancel_timeout(test_state->eloop, eloop_timeout_handler_function,
                            eloop_data2, user_data2),
       2 // should cancel all = two timeouts
   );
@@ -166,7 +166,7 @@ static void test_eloop_timeout(void **state) {
   char user_data3[] = "this is user data: run 3";
   expect_string(eloop_timeout_handler_function, eloop_ctx, eloop_data3);
   expect_string(eloop_timeout_handler_function, user_ctx, user_data3);
-  assert_return_code(eloop_register_timeout(test_state->eloop, 0, 300,
+  assert_return_code(edge_eloop_register_timeout(test_state->eloop, 0, 300,
                                             eloop_timeout_handler_function,
                                             eloop_data3, user_data3),
                      0);
@@ -175,20 +175,20 @@ static void test_eloop_timeout(void **state) {
   char eloop_data4[] = "this is eloop data: run 4";
   expect_string(eloop_timeout_handler_function, eloop_ctx, eloop_data4);
   expect_string(eloop_timeout_handler_function, user_ctx, user_data);
-  assert_return_code(eloop_register_timeout(test_state->eloop, 120,
+  assert_return_code(edge_eloop_register_timeout(test_state->eloop, 120,
                                             0, // super long time
                                             eloop_timeout_handler_function,
                                             eloop_data4, user_data),
                      0);
-  assert_int_equal(eloop_deplete_timeout(
+  assert_int_equal(edge_eloop_deplete_timeout(
                        test_state->eloop, 100000, 0, // longer, so no change
                        eloop_timeout_handler_function, eloop_data4, user_data),
                    0);
-  assert_int_equal(eloop_deplete_timeout(test_state->eloop, 1, 0,
+  assert_int_equal(edge_eloop_deplete_timeout(test_state->eloop, 1, 0,
                                          eloop_timeout_handler_function,
                                          "this data does not exist", user_data),
                    -1);
-  assert_int_equal(eloop_deplete_timeout(test_state->eloop, 0, 400,
+  assert_int_equal(edge_eloop_deplete_timeout(test_state->eloop, 0, 400,
                                          eloop_timeout_handler_function,
                                          eloop_data4, user_data),
                    1);
@@ -197,31 +197,31 @@ static void test_eloop_timeout(void **state) {
   char eloop_data5[] = "this is eloop data: run 5";
   expect_string(eloop_timeout_handler_function, eloop_ctx, eloop_data5);
   expect_string(eloop_timeout_handler_function, user_ctx, user_data);
-  assert_return_code(eloop_register_timeout(test_state->eloop, 0,
+  assert_return_code(edge_eloop_register_timeout(test_state->eloop, 0,
                                             2, // super short time
                                             eloop_timeout_handler_function,
                                             eloop_data5, user_data),
                      0);
-  assert_int_equal(eloop_replenish_timeout(
+  assert_int_equal(edge_eloop_replenish_timeout(
                        test_state->eloop, 0, 1, // no change, should return 0
                        eloop_timeout_handler_function, eloop_data5, user_data),
                    0);
-  assert_int_equal(eloop_replenish_timeout(test_state->eloop, 100000, 0,
+  assert_int_equal(edge_eloop_replenish_timeout(test_state->eloop, 100000, 0,
                                            eloop_timeout_handler_function,
                                            "this data does not exist",
                                            user_data),
                    -1);
-  assert_int_equal(eloop_replenish_timeout(test_state->eloop, 0, 500,
+  assert_int_equal(edge_eloop_replenish_timeout(test_state->eloop, 0, 500,
                                            eloop_timeout_handler_function,
                                            eloop_data5, user_data),
                    1);
 
   log_debug("Starting eloop");
-  eloop_run(test_state->eloop);
+  edge_eloop_run(test_state->eloop);
   log_debug("Finished eloop");
 }
 
-static void test_eloop_register_read_sock(void **state) {
+static void test_edge_eloop_register_read_sock(void **state) {
   struct tmpdir *tmpdir = *state;
   char *send_buf = TEST_SEND_BUF_DATA;
   char *eloop_param = TEST_ELOOP_PARAM;
@@ -230,9 +230,9 @@ static void test_eloop_register_read_sock(void **state) {
   char server_file_path[PATH_MAX];
   server_file_path[PATH_MAX - 1] = '\0';
   snprintf(server_file_path, PATH_MAX - 1, "%s/%s", tmpdir->tmpdir,
-           "test_eloop_register_read_sock.sock");
+           "test_edge_eloop_register_read_sock.sock");
 
-  struct eloop_data *eloop = eloop_init();
+  struct eloop_data *eloop = edge_eloop_init();
 
   int ss = create_domain_server(server_file_path);
 
@@ -241,7 +241,7 @@ static void test_eloop_register_read_sock(void **state) {
   int cs = create_domain_client(NULL);
   assert_int_not_equal(cs, -1);
 
-  int eret = eloop_register_read_sock(eloop, ss, test_eloop_sock_handler_read,
+  int eret = edge_eloop_register_read_sock(eloop, ss, test_eloop_sock_handler_read,
                                       (void *)eloop, (void *)eloop_param);
   assert_int_not_equal(eret, -1);
 
@@ -253,68 +253,68 @@ static void test_eloop_register_read_sock(void **state) {
                        sizeof(struct sockaddr_un));
   assert_int_equal(ret, buf_len);
 
-  eloop_run(eloop);
+  edge_eloop_run(eloop);
 
   close(ss);
   close(cs);
   assert_return_code(remove(server_file_path), /** errno */ 0);
-  eloop_free(eloop);
+  edge_eloop_free(eloop);
 }
 
-static void test_eloop_unregister_read_sock(void **state) {
+static void test_edge_eloop_unregister_read_sock(void **state) {
   struct tmpdir *tmpdir = *state;
   char server_file_path[PATH_MAX];
   server_file_path[PATH_MAX - 1] = '\0';
   snprintf(server_file_path, PATH_MAX - 1, "%s/%s", tmpdir->tmpdir,
-           "test_eloop_unregister_read_sock.sock");
+           "test_edge_eloop_unregister_read_sock.sock");
 
-  struct eloop_data *eloop = eloop_init();
+  struct eloop_data *eloop = edge_eloop_init();
   int ss = create_domain_server(server_file_path);
 
   assert_int_not_equal(ss, -1);
 
-  int ret = eloop_register_read_sock(eloop, ss, test_eloop_sock_handler_unreg,
+  int ret = edge_eloop_register_read_sock(eloop, ss, test_eloop_sock_handler_unreg,
                                      NULL, NULL);
   assert_int_not_equal(ret, -1);
 
-  eloop_unregister_read_sock(eloop, ss);
+  edge_eloop_unregister_read_sock(eloop, ss);
 
-  eloop_run(eloop);
+  edge_eloop_run(eloop);
 
   close(ss);
-  eloop_free(eloop);
+  edge_eloop_free(eloop);
   assert_return_code(remove(server_file_path), /** errno */ 0);
 }
 
-static void test_eloop_register_timeout(void **state) {
+static void test_edge_eloop_register_timeout(void **state) {
   (void)state; /* unused */
 
   char buf[100] = {0};
-  struct eloop_data *eloop = eloop_init();
-  int ret = eloop_register_timeout(eloop, 0, 0, test_eloop_timeout_handler,
+  struct eloop_data *eloop = edge_eloop_init();
+  int ret = edge_eloop_register_timeout(eloop, 0, 0, test_eloop_timeout_handler,
                                    eloop, (void *)buf);
 
   assert_int_not_equal(ret, -1);
-  eloop_run(eloop);
+  edge_eloop_run(eloop);
   assert_string_equal(buf, TEST_ELOOP_PARAM);
-  eloop_free(eloop);
+  edge_eloop_free(eloop);
 }
 
-static void test_eloop_cancel_timeout(void **state) {
+static void test_edge_eloop_cancel_timeout(void **state) {
   (void)state; /* unused */
 
   char buf[100] = {0};
-  struct eloop_data *eloop = eloop_init();
-  int ret = eloop_register_timeout(eloop, 0, 0, test_eloop_timeout_handler,
+  struct eloop_data *eloop = edge_eloop_init();
+  int ret = edge_eloop_register_timeout(eloop, 0, 0, test_eloop_timeout_handler,
                                    eloop, (void *)buf);
 
   assert_int_not_equal(ret, -1);
 
-  ret = eloop_cancel_timeout(eloop, test_eloop_timeout_handler, eloop,
+  ret = edge_eloop_cancel_timeout(eloop, test_eloop_timeout_handler, eloop,
                              (void *)buf);
-  eloop_run(eloop);
+  edge_eloop_run(eloop);
   assert_string_equal(buf, "");
-  eloop_free(eloop);
+  edge_eloop_free(eloop);
 }
 
 int main(int argc, char *argv[]) {
@@ -324,13 +324,13 @@ int main(int argc, char *argv[]) {
   log_set_quiet(false);
 
   const struct CMUnitTest tests[] = {
-      cmocka_unit_test(test_eloop_init),
-      cmocka_unit_test_setup_teardown(test_eloop_register_read_sock,
+      cmocka_unit_test(test_edge_eloop_init),
+      cmocka_unit_test_setup_teardown(test_edge_eloop_register_read_sock,
                                       setup_tmpdir, teardown_tmpdir),
-      cmocka_unit_test_setup_teardown(test_eloop_unregister_read_sock,
+      cmocka_unit_test_setup_teardown(test_edge_eloop_unregister_read_sock,
                                       setup_tmpdir, teardown_tmpdir),
-      cmocka_unit_test(test_eloop_register_timeout),
-      cmocka_unit_test(test_eloop_cancel_timeout),
+      cmocka_unit_test(test_edge_eloop_register_timeout),
+      cmocka_unit_test(test_edge_eloop_cancel_timeout),
       cmocka_unit_test_setup_teardown(test_eloop_timeout, setup, teardown)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);

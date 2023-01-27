@@ -72,9 +72,9 @@ void *ap_server_thread(void *arg) {
   assert_int_not_equal(fd, -1);
 
   assert_int_not_equal(
-      eloop_register_read_sock(eloop, fd, ap_eloop, (void *)eloop, NULL), -1);
+      edge_eloop_register_read_sock(eloop, fd, ap_eloop, (void *)eloop, NULL), -1);
 
-  eloop_run(eloop);
+  edge_eloop_run(eloop);
   log_trace("AP server thread end");
   assert_int_equal(close_domain_socket(fd), 0);
   return NULL;
@@ -94,7 +94,7 @@ static RadiusRxResult receive_auth(struct radius_msg *msg,
             radius_msg_get_hdr(msg)->code);
 
   /* We're done for this example, so request eloop to terminate. */
-  eloop_terminate(eloop);
+  edge_eloop_terminate(eloop);
 
   return RADIUS_RX_PROCESSED;
 }
@@ -146,7 +146,7 @@ void *supervisor_client_thread(void *arg) {
                                            .num_auth_servers = 1,
                                            .msg_dumps = 1};
 
-  struct eloop_data *eloop = eloop_init();
+  struct eloop_data *eloop = edge_eloop_init();
   struct radius_client_data *radius =
       radius_client_init(eloop, /*ctx*/ eloop, &servers);
   assert_non_null(radius);
@@ -183,8 +183,8 @@ void *supervisor_client_thread(void *arg) {
 
   assert_int_not_equal(radius_client_send(radius, msg, RADIUS_AUTH, addr), -1);
 
-  eloop_run(eloop);
-  eloop_free(eloop);
+  edge_eloop_run(eloop);
+  edge_eloop_free(eloop);
 
   char command[128];
   snprintf(command, 128, "%s 00:01:02:03:04:05", CMD_GET_MAP);
@@ -196,7 +196,7 @@ void *supervisor_client_thread(void *arg) {
     os_free(reply);
   }
 
-  eloop_terminate(main_eloop);
+  edge_eloop_terminate(main_eloop);
 
   // Send a PING command to terminate the eloop
   writeread_domain_data_str(socket_path, CMD_PING, &reply);
@@ -223,10 +223,10 @@ static void test_edgesec(void **state) {
 
   os_init_random_seed();
 
-  struct eloop_data *main_eloop = eloop_init();
+  struct eloop_data *main_eloop = edge_eloop_init();
 
   pthread_t ap_id = 0;
-  struct eloop_data *ap_eloop = eloop_init();
+  struct eloop_data *ap_eloop = edge_eloop_init();
   assert_int_equal(
       pthread_create(&ap_id, NULL, ap_server_thread, (void *)ap_eloop), 0);
 
@@ -237,9 +237,9 @@ static void test_edgesec(void **state) {
 
   assert_int_equal(run_ctl(&config, main_eloop), 0);
 
-  eloop_terminate(ap_eloop);
+  edge_eloop_terminate(ap_eloop);
 
-  eloop_free(ap_eloop);
+  edge_eloop_free(ap_eloop);
   free_app_config(&config);
   pthread_mutex_destroy(&log_lock);
 }

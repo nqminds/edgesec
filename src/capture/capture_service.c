@@ -82,8 +82,8 @@ int run_capture(struct capture_middleware_context *context) {
     return -1;
   }
 
-  if ((eloop = eloop_init()) == NULL) {
-    log_error("eloop_init fail");
+  if ((eloop = edge_eloop_init()) == NULL) {
+    log_error("edge_eloop_init fail");
     goto capture_fail;
   }
 
@@ -97,9 +97,9 @@ int run_capture(struct capture_middleware_context *context) {
   }
 
   if (pc != NULL) {
-    if (eloop_register_read_sock(eloop, pc->pcap_fd, eloop_read_fd_handler,
+    if (edge_eloop_register_read_sock(eloop, pc->pcap_fd, eloop_read_fd_handler,
                                  (void *)pc, (void *)NULL) == -1) {
-      log_error("eloop_register_read_sock fail");
+      log_error("edge_eloop_register_read_sock fail");
       goto capture_fail;
     }
   } else {
@@ -115,18 +115,18 @@ int run_capture(struct capture_middleware_context *context) {
     goto capture_fail;
   }
 
-  eloop_run(eloop);
+  edge_eloop_run(eloop);
   log_info("Capture ended.");
 
   /* And close the session */
   close_pcap(pc);
-  eloop_free(eloop);
+  edge_eloop_free(eloop);
   sqlite3_close(db);
   return 0;
 
 capture_fail:
   close_pcap(pc);
-  eloop_free(eloop);
+  edge_eloop_free(eloop);
   sqlite3_close(db);
   return -1;
 }

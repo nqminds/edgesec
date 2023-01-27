@@ -1,7 +1,7 @@
 From 5460b966705ead1b350d43fef51e2a8e21877a8e Mon Sep 17 00:00:00 2001
 From: Alois Klink <alois@nquiringminds.com>
 Date: Tue, 6 Sep 2022 18:24:27 +0100
-Subject: [PATCH 1/4] Replace eloop logging with edgesec logs
+Subject: [PATCH 1/5] Replace eloop logging with edgesec logs
 
 ---
  src/utils/eloop.c | 51 ++++++++++++++++++++++-------------------------
