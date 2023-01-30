@@ -37,6 +37,33 @@ int __wrap_writeread_domain_data_str(char *socket_path, char *write_str,
   return mock();
 }
 
+/** If set to true, every call to `malloc()` will fail and return NULL/ENOMEM */
+static bool malloc_enomem = false;
+
+int setup_malloc_enomem_to_false(void **state) {
+  (void)state;
+  malloc_enomem = false;
+  return 0;
+};
+
+void *__real_malloc(size_t size);
+/**
+ * @brief mocked version of malloc()
+ *
+ * Use `will_return_ptr()` to control what this returns.
+ * If you use `will_return_ptr(NULL)`, this will set `errno` to `ENOMEM`;
+ *
+ * @param size - bytes to allocate.
+ * @return The value of `will_return()`.
+ */
+void *__wrap_malloc(size_t size) {
+  if (malloc_enomem) {
+    errno = ENOMEM;
+    return NULL;
+  }
+  return __real_malloc(size);
+}
+
 static void test_ping_ap_command(void **state) {
   (void)state;
 
@@ -81,22 +108,30 @@ static void test_denyacl_ap_command(void **state) {
     const DenyaclApCommand function_to_test =
         denyacl_ap_command_functions_to_test[i];
 
-    // should succeed when writeread_domain_data_str succeeds!
+    log_debug("test_denyacl_ap_command: Testing function %d", i);
+
+    log_debug("should succeed when writeread_domain_data_str succeeds!");
     will_return_ptr(__wrap_writeread_domain_data_str,
                     GENERIC_AP_COMMAND_OK_REPLY);
     will_return(__wrap_writeread_domain_data_str, 0);
     assert_return_code(function_to_test(&hconf, "11:22:33:44:55:66"), errno);
 
-    // should error if writeread_domain_data_str returns an invalid response
+    log_debug("should error if writeread_domain_data_str returns an invalid "
+              "response");
     will_return_ptr(__wrap_writeread_domain_data_str, "invalid response");
     will_return(__wrap_writeread_domain_data_str, 0);
     assert_int_equal(function_to_test(&hconf, "11:22:33:44:55:66"), -1);
 
-    // should error if writeread_domain_data_str errors
+    log_debug("should error if writeread_domain_data_str errors");
     will_return_ptr(__wrap_writeread_domain_data_str,
                     GENERIC_AP_COMMAND_OK_REPLY);
     will_return(__wrap_writeread_domain_data_str, -1);
     assert_int_equal(function_to_test(&hconf, "11:22:33:44:55:66"), -1);
+
+    log_debug("should fail when forcing malloc() to fail");
+    malloc_enomem = true;
+    assert_int_equal(function_to_test(&hconf, "11:22:33:44:55:66"), -1);
+    malloc_enomem = false;
   }
 }
 
@@ -106,8 +141,10 @@ int main(int argc, char *argv[]) {
 
   log_set_quiet(false);
 
-  const struct CMUnitTest tests[] = {cmocka_unit_test(test_ping_ap_command),
-                                     cmocka_unit_test(test_denyacl_ap_command)};
+  const struct CMUnitTest tests[] = {
+      cmocka_unit_test(test_ping_ap_command),
+      cmocka_unit_test_setup(test_denyacl_ap_command,
+                             setup_malloc_enomem_to_false)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

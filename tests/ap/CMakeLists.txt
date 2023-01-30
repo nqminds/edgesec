@@ -30,5 +30,5 @@ add_cmocka_test(test_ap_service_failure
 )
 target_link_options(test_ap_service_failure
   PRIVATE
-  "LINKER:--wrap=writeread_domain_data_str"
+  "LINKER:--wrap=writeread_domain_data_str,--wrap=malloc"
 )
