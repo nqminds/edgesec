@@ -60,13 +60,54 @@ static void test_ping_ap_command(void **state) {
   assert_int_equal(ping_ap_command(&hconf), -1);
 }
 
+static void test_denyacl_ap_command(void **state) {
+  (void)state;
+
+  struct apconf hconf = {
+      .ctrl_interface_path = "unused",
+  };
+
+  typedef int (*DenyaclApCommand)(struct apconf * hconf, const char *mac_addr);
+
+  // both of denyacl_add_ap_command and denyacl_del_ap_command should react
+  // the same way to erroneous writeread_domain_data_str() results
+  const DenyaclApCommand denyacl_ap_command_functions_to_test[] = {
+      denyacl_add_ap_command,
+      denyacl_del_ap_command,
+  };
+
+  for (size_t i = 0; i < ARRAY_SIZE(denyacl_ap_command_functions_to_test);
+       i++) {
+    const DenyaclApCommand function_to_test =
+        denyacl_ap_command_functions_to_test[i];
+
+    // should succeed when writeread_domain_data_str succeeds!
+    will_return_ptr(__wrap_writeread_domain_data_str,
+                    GENERIC_AP_COMMAND_OK_REPLY);
+    will_return(__wrap_writeread_domain_data_str, 0);
+    assert_return_code(function_to_test(&hconf, "11:22:33:44:55:66"), errno);
+
+    // should error if writeread_domain_data_str returns an invalid response
+    will_return_ptr(__wrap_writeread_domain_data_str, "invalid response");
+    will_return(__wrap_writeread_domain_data_str, 0);
+    assert_int_equal(function_to_test(&hconf, "11:22:33:44:55:66"), -1);
+
+    // should error if writeread_domain_data_str errors
+    will_return_ptr(__wrap_writeread_domain_data_str,
+                    GENERIC_AP_COMMAND_OK_REPLY);
+    will_return(__wrap_writeread_domain_data_str, -1);
+    assert_int_equal(function_to_test(&hconf, "11:22:33:44:55:66"), -1);
+  }
+}
+
 int main(int argc, char *argv[]) {
   (void)argc;
   (void)argv;
 
   log_set_quiet(false);
 
-  const struct CMUnitTest tests[] = {cmocka_unit_test(test_ping_ap_command)};
+  const struct CMUnitTest tests[] = {cmocka_unit_test(test_ping_ap_command),
+                                     cmocka_unit_test(test_denyacl_ap_command)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }
