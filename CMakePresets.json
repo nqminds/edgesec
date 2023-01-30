@@ -340,7 +340,12 @@
     },
     {
       "name": "freebsd",
-      "configurePreset": "freebsd"
+      "configurePreset": "freebsd",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "FreeBSD"
+      }
     },
     {
       "name": "openwrt",
