@@ -98,7 +98,7 @@ int run_capture(struct capture_middleware_context *context) {
 
   if (pc != NULL) {
     if (edge_eloop_register_read_sock(eloop, pc->pcap_fd, eloop_read_fd_handler,
-                                 (void *)pc, (void *)NULL) == -1) {
+                                      (void *)pc, (void *)NULL) == -1) {
       log_error("edge_eloop_register_read_sock fail");
       goto capture_fail;
     }

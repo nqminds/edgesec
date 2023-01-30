@@ -340,8 +340,9 @@ int register_reflector_if6(struct eloop_data *eloop,
       return -1;
     }
 
-    if (edge_eloop_register_read_sock(eloop, el->recv_fd, eloop_reflector_handler,
-                                 (void *)context, (void *)rif) < 0) {
+    if (edge_eloop_register_read_sock(eloop, el->recv_fd,
+                                      eloop_reflector_handler, (void *)context,
+                                      (void *)rif) < 0) {
       log_error("edge_eloop_register_read_sock fail");
       return -1;
     }
@@ -390,8 +391,9 @@ int register_reflector_if4(struct eloop_data *eloop,
       return -1;
     }
 
-    if (edge_eloop_register_read_sock(eloop, el->recv_fd, eloop_reflector_handler,
-                                 (void *)context, (void *)rif) < 0) {
+    if (edge_eloop_register_read_sock(eloop, el->recv_fd,
+                                      eloop_reflector_handler, (void *)context,
+                                      (void *)rif) < 0) {
       log_error("edge_eloop_register_read_sock fail");
       return -1;
     }
@@ -657,8 +659,8 @@ int run_mdns_capture(struct eloop_data *eloop, struct mdns_context *context) {
     utarray_push_back(context->pctx_list, &pctx);
 
     if (edge_eloop_register_read_sock(eloop, pctx->pcap_fd,
-                                 eloop_read_mdns_fd_handler, (void *)pctx,
-                                 (void *)NULL) == -1) {
+                                      eloop_read_mdns_fd_handler, (void *)pctx,
+                                      (void *)NULL) == -1) {
       log_error("edge_eloop_register_read_sock fail");
       return -1;
     }

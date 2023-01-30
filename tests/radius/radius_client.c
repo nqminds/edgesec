@@ -555,7 +555,7 @@ static void radius_client_timer(void *eloop_ctx, void *timeout_ctx) {
       first = now.sec;
     edge_eloop_cancel_timeout(radius->eloop, radius_client_timer, radius, NULL);
     edge_eloop_register_timeout(radius->eloop, first - now.sec, 0,
-                           radius_client_timer, radius, NULL);
+                                radius_client_timer, radius, NULL);
     log_trace("Next RADIUS client retransmit in %ld seconds",
               (long int)(first - now.sec));
   }
@@ -628,8 +628,8 @@ static void radius_client_update_timeout(struct radius_client_data *radius) {
   os_get_reltime(&now);
   if (first < now.sec)
     first = now.sec;
-  edge_eloop_register_timeout(radius->eloop, first - now.sec, 0, radius_client_timer,
-                         radius, NULL);
+  edge_eloop_register_timeout(radius->eloop, first - now.sec, 0,
+                              radius_client_timer, radius, NULL);
   log_trace("Next RADIUS client retransmit in %ld seconds",
             (long int)(first - now.sec));
 }
@@ -1056,7 +1056,7 @@ static int radius_change_server(struct radius_client_data *radius,
   if (radius->msgs) {
     edge_eloop_cancel_timeout(radius->eloop, radius_client_timer, radius, NULL);
     edge_eloop_register_timeout(radius->eloop, RADIUS_CLIENT_FIRST_WAIT, 0,
-                           radius_client_timer, radius, NULL);
+                                radius_client_timer, radius, NULL);
   }
 
   switch (nserv->addr.af) {
@@ -1197,7 +1197,7 @@ static void radius_retry_primary_timer(void *eloop_ctx, void *timeout_ctx) {
 
   if (conf->retry_primary_interval)
     edge_eloop_register_timeout(radius->eloop, conf->retry_primary_interval, 0,
-                           radius_retry_primary_timer, radius, NULL);
+                                radius_retry_primary_timer, radius, NULL);
 }
 
 static int radius_client_disable_pmtu_discovery(int s) {
@@ -1279,8 +1279,8 @@ static int radius_client_init_auth(struct radius_client_data *radius) {
 
   if (radius->auth_serv_sock >= 0 &&
       edge_eloop_register_read_sock(radius->eloop, radius->auth_serv_sock,
-                               radius_client_receive, radius,
-                               (void *)RADIUS_AUTH)) {
+                                    radius_client_receive, radius,
+                                    (void *)RADIUS_AUTH)) {
     log_trace(
         "RADIUS: Could not register read socket for authentication server");
     radius_close_auth_sockets(radius);
@@ -1289,8 +1289,9 @@ static int radius_client_init_auth(struct radius_client_data *radius) {
 
 #ifdef CONFIG_IPV6
   if (radius->auth_serv_sock6 >= 0 &&
-      edge_eloop_register_read_sock(radius->auth_serv_sock6, radius_client_receive,
-                               radius, (void *)RADIUS_AUTH)) {
+      edge_eloop_register_read_sock(radius->auth_serv_sock6,
+                                    radius_client_receive, radius,
+                                    (void *)RADIUS_AUTH)) {
     wpa_printf(
         MSG_INFO,
         "RADIUS: Could not register read socket for authentication server");
@@ -1333,8 +1334,8 @@ static int radius_client_init_acct(struct radius_client_data *radius) {
 
   if (radius->acct_serv_sock >= 0 &&
       edge_eloop_register_read_sock(radius->eloop, radius->acct_serv_sock,
-                               radius_client_receive, radius,
-                               (void *)RADIUS_ACCT)) {
+                                    radius_client_receive, radius,
+                                    (void *)RADIUS_ACCT)) {
     log_trace("RADIUS: Could not register read socket for accounting server");
     radius_close_acct_sockets(radius);
     return -1;
@@ -1342,8 +1343,9 @@ static int radius_client_init_acct(struct radius_client_data *radius) {
 
 #ifdef CONFIG_IPV6
   if (radius->acct_serv_sock6 >= 0 &&
-      edge_eloop_register_read_sock(radius->acct_serv_sock6, radius_client_receive,
-                               radius, (void *)RADIUS_ACCT)) {
+      edge_eloop_register_read_sock(radius->acct_serv_sock6,
+                                    radius_client_receive, radius,
+                                    (void *)RADIUS_ACCT)) {
     wpa_printf(MSG_INFO,
                "RADIUS: Could not register read socket for accounting server");
     radius_close_acct_sockets(radius);
@@ -1398,7 +1400,7 @@ radius_client_init(struct eloop_data *eloop, void *ctx,
 
   if (conf->retry_primary_interval)
     edge_eloop_register_timeout(radius->eloop, conf->retry_primary_interval, 0,
-                           radius_retry_primary_timer, radius, NULL);
+                                radius_retry_primary_timer, radius, NULL);
 
   return radius;
 }
@@ -1415,7 +1417,8 @@ void radius_client_deinit(struct radius_client_data *radius) {
   radius_close_auth_sockets(radius);
   radius_close_acct_sockets(radius);
 
-  edge_eloop_cancel_timeout(radius->eloop, radius_retry_primary_timer, radius, NULL);
+  edge_eloop_cancel_timeout(radius->eloop, radius_retry_primary_timer, radius,
+                            NULL);
 
   radius_client_flush(radius, 0);
   os_free(radius->auth_handlers);

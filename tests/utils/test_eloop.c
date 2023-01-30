@@ -102,17 +102,17 @@ static void test_eloop_timeout(void **state) {
 
   // check if timeout is registered
   assert_false(edge_eloop_is_timeout_registered(test_state->eloop,
-                                           eloop_timeout_handler_function,
-                                           eloop_data, user_data));
+                                                eloop_timeout_handler_function,
+                                                eloop_data, user_data));
   expect_string(eloop_timeout_handler_function, eloop_ctx, eloop_data);
   expect_string(eloop_timeout_handler_function, user_ctx, user_data);
   assert_return_code(edge_eloop_register_timeout(test_state->eloop, 0, 1,
-                                            eloop_timeout_handler_function,
-                                            eloop_data, user_data),
+                                                 eloop_timeout_handler_function,
+                                                 eloop_data, user_data),
                      0);
   assert_true(edge_eloop_is_timeout_registered(test_state->eloop,
-                                          eloop_timeout_handler_function,
-                                          eloop_data, user_data));
+                                               eloop_timeout_handler_function,
+                                               eloop_data, user_data));
 
   // basic test
   char eloop_data1[] = "this is eloop data: run 1";
@@ -120,34 +120,34 @@ static void test_eloop_timeout(void **state) {
   expect_string(eloop_timeout_handler_function, eloop_ctx, eloop_data1);
   expect_string(eloop_timeout_handler_function, user_ctx, user_data1);
   assert_return_code(edge_eloop_register_timeout(test_state->eloop, 0, 100,
-                                            eloop_timeout_handler_function,
-                                            eloop_data1, user_data1),
+                                                 eloop_timeout_handler_function,
+                                                 eloop_data1, user_data1),
                      0);
 
   // test cancelling timeouts
   char eloop_data2[] = "this is eloop data: run 2";
   char user_data2[] = "this is user data: run 2";
   assert_return_code(edge_eloop_register_timeout(test_state->eloop, 0, 200,
-                                            eloop_timeout_handler_function,
-                                            eloop_data2, user_data2),
+                                                 eloop_timeout_handler_function,
+                                                 eloop_data2, user_data2),
                      0);
-  assert_int_equal(
-      edge_eloop_cancel_timeout(test_state->eloop, eloop_timeout_handler_function,
-                           eloop_data2, user_data2),
-      1 // should cancel only all = one timeout
+  assert_int_equal(edge_eloop_cancel_timeout(test_state->eloop,
+                                             eloop_timeout_handler_function,
+                                             eloop_data2, user_data2),
+                   1 // should cancel only all = one timeout
   );
 
   assert_return_code(edge_eloop_register_timeout(test_state->eloop, 1, 0,
-                                            eloop_timeout_handler_function,
-                                            eloop_data2, user_data2),
+                                                 eloop_timeout_handler_function,
+                                                 eloop_data2, user_data2),
                      0);
   assert_return_code(edge_eloop_register_timeout(test_state->eloop, 2, 0,
-                                            eloop_timeout_handler_function,
-                                            eloop_data2, user_data2),
+                                                 eloop_timeout_handler_function,
+                                                 eloop_data2, user_data2),
                      0);
   assert_return_code(edge_eloop_register_timeout(test_state->eloop, 3, 0,
-                                            eloop_timeout_handler_function,
-                                            eloop_data2, user_data2),
+                                                 eloop_timeout_handler_function,
+                                                 eloop_data2, user_data2),
                      0);
 
   struct os_reltime remaining = {0};
@@ -156,10 +156,10 @@ static void test_eloop_timeout(void **state) {
                        eloop_data2, user_data2, &remaining),
                    1 // should cancel only one timeout
   );
-  assert_int_equal(
-      edge_eloop_cancel_timeout(test_state->eloop, eloop_timeout_handler_function,
-                           eloop_data2, user_data2),
-      2 // should cancel all = two timeouts
+  assert_int_equal(edge_eloop_cancel_timeout(test_state->eloop,
+                                             eloop_timeout_handler_function,
+                                             eloop_data2, user_data2),
+                   2 // should cancel all = two timeouts
   );
 
   char eloop_data3[] = "this is eloop data: run 3";
@@ -167,8 +167,8 @@ static void test_eloop_timeout(void **state) {
   expect_string(eloop_timeout_handler_function, eloop_ctx, eloop_data3);
   expect_string(eloop_timeout_handler_function, user_ctx, user_data3);
   assert_return_code(edge_eloop_register_timeout(test_state->eloop, 0, 300,
-                                            eloop_timeout_handler_function,
-                                            eloop_data3, user_data3),
+                                                 eloop_timeout_handler_function,
+                                                 eloop_data3, user_data3),
                      0);
 
   // test depleting (shortening) timeouts
@@ -176,21 +176,21 @@ static void test_eloop_timeout(void **state) {
   expect_string(eloop_timeout_handler_function, eloop_ctx, eloop_data4);
   expect_string(eloop_timeout_handler_function, user_ctx, user_data);
   assert_return_code(edge_eloop_register_timeout(test_state->eloop, 120,
-                                            0, // super long time
-                                            eloop_timeout_handler_function,
-                                            eloop_data4, user_data),
+                                                 0, // super long time
+                                                 eloop_timeout_handler_function,
+                                                 eloop_data4, user_data),
                      0);
   assert_int_equal(edge_eloop_deplete_timeout(
                        test_state->eloop, 100000, 0, // longer, so no change
                        eloop_timeout_handler_function, eloop_data4, user_data),
                    0);
-  assert_int_equal(edge_eloop_deplete_timeout(test_state->eloop, 1, 0,
-                                         eloop_timeout_handler_function,
-                                         "this data does not exist", user_data),
+  assert_int_equal(edge_eloop_deplete_timeout(
+                       test_state->eloop, 1, 0, eloop_timeout_handler_function,
+                       "this data does not exist", user_data),
                    -1);
   assert_int_equal(edge_eloop_deplete_timeout(test_state->eloop, 0, 400,
-                                         eloop_timeout_handler_function,
-                                         eloop_data4, user_data),
+                                              eloop_timeout_handler_function,
+                                              eloop_data4, user_data),
                    1);
 
   // test replenishing (lengthening) timeouts
@@ -198,22 +198,22 @@ static void test_eloop_timeout(void **state) {
   expect_string(eloop_timeout_handler_function, eloop_ctx, eloop_data5);
   expect_string(eloop_timeout_handler_function, user_ctx, user_data);
   assert_return_code(edge_eloop_register_timeout(test_state->eloop, 0,
-                                            2, // super short time
-                                            eloop_timeout_handler_function,
-                                            eloop_data5, user_data),
+                                                 2, // super short time
+                                                 eloop_timeout_handler_function,
+                                                 eloop_data5, user_data),
                      0);
   assert_int_equal(edge_eloop_replenish_timeout(
                        test_state->eloop, 0, 1, // no change, should return 0
                        eloop_timeout_handler_function, eloop_data5, user_data),
                    0);
   assert_int_equal(edge_eloop_replenish_timeout(test_state->eloop, 100000, 0,
-                                           eloop_timeout_handler_function,
-                                           "this data does not exist",
-                                           user_data),
+                                                eloop_timeout_handler_function,
+                                                "this data does not exist",
+                                                user_data),
                    -1);
   assert_int_equal(edge_eloop_replenish_timeout(test_state->eloop, 0, 500,
-                                           eloop_timeout_handler_function,
-                                           eloop_data5, user_data),
+                                                eloop_timeout_handler_function,
+                                                eloop_data5, user_data),
                    1);
 
   log_debug("Starting eloop");
@@ -241,8 +241,9 @@ static void test_edge_eloop_register_read_sock(void **state) {
   int cs = create_domain_client(NULL);
   assert_int_not_equal(cs, -1);
 
-  int eret = edge_eloop_register_read_sock(eloop, ss, test_eloop_sock_handler_read,
-                                      (void *)eloop, (void *)eloop_param);
+  int eret =
+      edge_eloop_register_read_sock(eloop, ss, test_eloop_sock_handler_read,
+                                    (void *)eloop, (void *)eloop_param);
   assert_int_not_equal(eret, -1);
 
   memset(&svaddr, 0, sizeof(struct sockaddr_un));
@@ -273,8 +274,8 @@ static void test_edge_eloop_unregister_read_sock(void **state) {
 
   assert_int_not_equal(ss, -1);
 
-  int ret = edge_eloop_register_read_sock(eloop, ss, test_eloop_sock_handler_unreg,
-                                     NULL, NULL);
+  int ret = edge_eloop_register_read_sock(
+      eloop, ss, test_eloop_sock_handler_unreg, NULL, NULL);
   assert_int_not_equal(ret, -1);
 
   edge_eloop_unregister_read_sock(eloop, ss);
@@ -292,7 +293,7 @@ static void test_edge_eloop_register_timeout(void **state) {
   char buf[100] = {0};
   struct eloop_data *eloop = edge_eloop_init();
   int ret = edge_eloop_register_timeout(eloop, 0, 0, test_eloop_timeout_handler,
-                                   eloop, (void *)buf);
+                                        eloop, (void *)buf);
 
   assert_int_not_equal(ret, -1);
   edge_eloop_run(eloop);
@@ -306,12 +307,12 @@ static void test_edge_eloop_cancel_timeout(void **state) {
   char buf[100] = {0};
   struct eloop_data *eloop = edge_eloop_init();
   int ret = edge_eloop_register_timeout(eloop, 0, 0, test_eloop_timeout_handler,
-                                   eloop, (void *)buf);
+                                        eloop, (void *)buf);
 
   assert_int_not_equal(ret, -1);
 
   ret = edge_eloop_cancel_timeout(eloop, test_eloop_timeout_handler, eloop,
-                             (void *)buf);
+                                  (void *)buf);
   edge_eloop_run(eloop);
   assert_string_equal(buf, "");
   edge_eloop_free(eloop);

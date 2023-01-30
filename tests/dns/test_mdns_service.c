@@ -38,8 +38,8 @@ int __wrap_run_pcap(char *interface, bool immediate, bool promiscuous,
 }
 
 int __wrap_edge_eloop_register_read_sock(struct eloop_data *eloop, int sock,
-                                    eloop_sock_handler handler,
-                                    void *eloop_data, void *user_data) {
+                                         eloop_sock_handler handler,
+                                         void *eloop_data, void *user_data) {
   (void)eloop;
   (void)sock;
   (void)handler;

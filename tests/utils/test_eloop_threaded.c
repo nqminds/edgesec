@@ -214,26 +214,26 @@ static void test_eloop_sock(void **state) {
   utarray_push_back(sent_data, &test1.data);
   assert_return_code(
       edge_eloop_register_timeout(test_state->eloop, 0, initial_delay_useconds,
-                             send_data_to_sock, &eloop_ctx, &test1),
+                                  send_data_to_sock, &eloop_ctx, &test1),
       0);
   utarray_push_back(sent_data, &test1.data);
-  assert_return_code(
-      edge_eloop_register_timeout(test_state->eloop, 0, initial_delay_useconds + 1,
-                             send_data_to_sock, &eloop_ctx, &test1),
-      0);
+  assert_return_code(edge_eloop_register_timeout(
+                         test_state->eloop, 0, initial_delay_useconds + 1,
+                         send_data_to_sock, &eloop_ctx, &test1),
+                     0);
 
   make_struct_test_eloop_sock_user_ctx(test2, "Foo bar!");
   utarray_push_back(sent_data, &test2.data);
-  assert_return_code(
-      edge_eloop_register_timeout(test_state->eloop, 0, initial_delay_useconds + 2,
-                             send_data_to_sock, &eloop_ctx, &test2),
-      0);
+  assert_return_code(edge_eloop_register_timeout(
+                         test_state->eloop, 0, initial_delay_useconds + 2,
+                         send_data_to_sock, &eloop_ctx, &test2),
+                     0);
 
   make_struct_test_eloop_sock_user_ctx(stop_packet, "STOP");
   utarray_push_back(sent_data, &stop_packet.data);
   assert_return_code(edge_eloop_register_timeout(test_state->eloop, 1, 0,
-                                            send_data_to_sock, &eloop_ctx,
-                                            &stop_packet),
+                                                 send_data_to_sock, &eloop_ctx,
+                                                 &stop_packet),
                      0);
 
   struct eloop_sock_handler_args eloop_sock_handler_args = {

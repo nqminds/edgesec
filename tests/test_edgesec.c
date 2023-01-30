@@ -72,7 +72,8 @@ void *ap_server_thread(void *arg) {
   assert_int_not_equal(fd, -1);
 
   assert_int_not_equal(
-      edge_eloop_register_read_sock(eloop, fd, ap_eloop, (void *)eloop, NULL), -1);
+      edge_eloop_register_read_sock(eloop, fd, ap_eloop, (void *)eloop, NULL),
+      -1);
 
   edge_eloop_run(eloop);
   log_trace("AP server thread end");

@@ -147,8 +147,8 @@ void eloop_tout_cleaner_handler(void *eloop_ctx, void *user_ctx) {
   }
 
   if (edge_eloop_register_timeout(context->eloop, CLEANER_PROCESS_INTERVAL, 0,
-                             eloop_tout_cleaner_handler, NULL,
-                             (void *)user_ctx) == -1) {
+                                  eloop_tout_cleaner_handler, NULL,
+                                  (void *)user_ctx) == -1) {
     log_error("edge_eloop_register_timeout fail");
   }
 }
@@ -223,8 +223,8 @@ struct middleware_context *init_cleaner_middleware(sqlite3 *db, char *db_path,
   log_info("Cleaning store_size=%llu bytes", cleaner_context->store_size);
 
   if (edge_eloop_register_timeout(eloop, CLEANER_PROCESS_INTERVAL, 0,
-                             eloop_tout_cleaner_handler, NULL,
-                             (void *)context) == -1) {
+                                  eloop_tout_cleaner_handler, NULL,
+                                  (void *)context) == -1) {
     log_error("edge_eloop_register_timeout fail");
     free_cleaner_middleware(context);
     return NULL;
