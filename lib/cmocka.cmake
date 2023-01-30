@@ -20,7 +20,7 @@
 # Compile the cmocka library
 if (BUILD_ONLY_DOCS OR NOT (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING))
   # skip building cmocka, not needed
-elseif (BUILD_CMOCKA_LIB)
+else ()
   include(FetchContent)
 
   set(CMOCKA_GIT_SHA "8ded122b0b44155b1869418af5d931ee6800389e")
@@ -57,11 +57,4 @@ elseif (BUILD_CMOCKA_LIB)
   if (NOT TARGET cmocka::cmocka)
     add_library(cmocka::cmocka ALIAS cmocka)
   endif(NOT TARGET cmocka::cmocka)
-else ()
-  find_package(cmocka 1.1.5 REQUIRED)
-  add_library(cmocka::cmocka UNKNOWN IMPORTED)
-  set_target_properties(cmocka::cmocka PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES ${CMOCKA_INCLUDE_DIR}
-    IMPORTED_LOCATION ${CMOCKA_LIBRARY}
-)
 endif ()
