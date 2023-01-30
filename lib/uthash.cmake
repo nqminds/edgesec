@@ -9,7 +9,7 @@ else ()
     FetchContent_Declare(
         uthash
         URL "https://api.github.com/repos/troydhanson/uthash/tarball/${UTHASH_VERSION}"
-        URL_HASH SHA512=2343ea488694e3d982a20cde0a2dfe371fc4cf7873f692eaca86f4ba36ad1e082797ad2006450cc0e68c504de689c0d7c12942622e724213782c6887f671512b
+        URL_HASH SHA512=0f67b2842ceecb7d59d5538a89cf25e198cf14e009d5d6141839dd3aea241bd9a1529d5eb87eed0468dbf4478d9db0ef9096f5826f32d512b96e3edd2b19e41a
         DOWNLOAD_NAME "uthash-${UTHASH_VERSION}.tar.gz"
         DOWNLOAD_DIR "${EP_DOWNLOAD_DIR}" # if empty string, uses default download dir
     )
