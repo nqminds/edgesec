@@ -1,7 +1,7 @@
-From f03a7d46df0966fc764c7fa97130cebedb95ed7c Mon Sep 17 00:00:00 2001
+From cfd320e14f72a8dbd6c86897fcb31599379889dc Mon Sep 17 00:00:00 2001
 From: Alois Klink <alois@nquiringminds.com>
 Date: Tue, 6 Sep 2022 18:28:04 +0100
-Subject: [PATCH 2/3] Allow multiple eloops to run at same time
+Subject: [PATCH 2/5] Allow multiple eloops to run at same time
 
 Passes the `eloop_data eloop` variable as a parameter to all
 eloop functions, instead of using a static/shared eloop variable.
@@ -17,7 +17,7 @@ https://github.com/nqminds/edgesec/commit/09d9bed9d31496d62da44d37aef37cec97ff5b
  2 files changed, 414 insertions(+), 486 deletions(-)
 
 diff --git a/src/utils/eloop.c b/src/utils/eloop.c
-index 66e05d1..4035a9a 100644
+index 66e05d1ba..4035a9af3 100644
 --- a/src/utils/eloop.c
 +++ b/src/utils/eloop.c
 @@ -10,118 +10,15 @@
@@ -1168,7 +1168,7 @@ index 66e05d1..4035a9a 100644
  
  
 diff --git a/src/utils/eloop.h b/src/utils/eloop.h
-index 6241beb..d38e2a9 100644
+index 6241beb5f..d38e2a98d 100644
 --- a/src/utils/eloop.h
 +++ b/src/utils/eloop.h
 @@ -22,6 +22,8 @@
@@ -1605,5 +1605,5 @@ index 6241beb..d38e2a9 100644
   *
   * Do a blocking wait for a single read socket.
 -- 
-2.25.1
+2.34.1
 

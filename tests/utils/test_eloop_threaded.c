@@ -31,7 +31,7 @@ struct test_state_t {
 
 int setup(void **state) {
   struct test_state_t *test_state = calloc(1, sizeof(struct test_state_t));
-  test_state->eloop = eloop_init();
+  test_state->eloop = edge_eloop_init();
   assert_non_null(test_state->eloop);
   *state = test_state;
   return 0;
@@ -39,17 +39,17 @@ int setup(void **state) {
 
 int teardown(void **state) {
   struct test_state_t *test_state = *state;
-  eloop_free(test_state->eloop);
+  edge_eloop_free(test_state->eloop);
   free(test_state);
   return 0;
 }
 
 static void test_basic_eloop(void **state) {
   struct test_state_t *test_state = *state;
-  eloop_run(test_state->eloop);
+  edge_eloop_run(test_state->eloop);
 
-  eloop_terminate(test_state->eloop);
-  assert_true(eloop_terminated(test_state->eloop));
+  edge_eloop_terminate(test_state->eloop);
+  assert_true(edge_eloop_terminated(test_state->eloop));
 }
 
 struct test_eloop_sock_ctx {
@@ -116,7 +116,7 @@ static void eloop_sock_handler_function(int sock, void *eloop_ctx,
   utarray_push_back(sock_handler_recieved_data, &pointer_to_buffer);
 
   if (strcmp(buf, "STOP") == 0) {
-    eloop_terminate(eloop);
+    edge_eloop_terminate(eloop);
   }
 }
 
@@ -140,7 +140,7 @@ struct eloop_sock_handler_args {
 static int eloop_sock_handler_thread(void *thread_ctx) {
   struct eloop_sock_handler_args *args = thread_ctx;
 
-  struct eloop_data *eloop = eloop_init();
+  struct eloop_data *eloop = edge_eloop_init();
   assert_non_null(
       eloop); // might crash, since CMocka doesn't support multithreading
 
@@ -152,18 +152,18 @@ static int eloop_sock_handler_thread(void *thread_ctx) {
   assert_non_null(args->sock_handler_recieved_data);
 
   int server_socket = create_udp_server(args->udp_port);
-  assert_return_code(eloop_register_read_sock(
+  assert_return_code(edge_eloop_register_read_sock(
                          eloop, server_socket, eloop_sock_handler_function,
                          eloop, args->sock_handler_recieved_data),
                      0);
 
   log_debug("Starting server UDP eloop");
-  eloop_run(eloop);
+  edge_eloop_run(eloop);
   log_debug("Stopping server UDP eloop");
   log_debug("Recieved %d packets of data on port %d",
             utarray_len(args->sock_handler_recieved_data), args->udp_port);
 
-  eloop_free(eloop);
+  edge_eloop_free(eloop);
   close(server_socket);
   return 0;
 }
@@ -171,7 +171,7 @@ static int eloop_sock_handler_thread(void *thread_ctx) {
 /**
  * @brief eloop socket tests.
  *
- * Creates a background UDP thread that uses eloop_register_read_sock()
+ * Creates a background UDP thread that uses edge_eloop_register_read_sock()
  * to listen for UDP packets.
  *
  * The foreground client thread sends packets to the server, then sends `STOP`
@@ -213,27 +213,27 @@ static void test_eloop_sock(void **state) {
   make_struct_test_eloop_sock_user_ctx(test1, "Hello World!");
   utarray_push_back(sent_data, &test1.data);
   assert_return_code(
-      eloop_register_timeout(test_state->eloop, 0, initial_delay_useconds,
-                             send_data_to_sock, &eloop_ctx, &test1),
+      edge_eloop_register_timeout(test_state->eloop, 0, initial_delay_useconds,
+                                  send_data_to_sock, &eloop_ctx, &test1),
       0);
   utarray_push_back(sent_data, &test1.data);
-  assert_return_code(
-      eloop_register_timeout(test_state->eloop, 0, initial_delay_useconds + 1,
-                             send_data_to_sock, &eloop_ctx, &test1),
-      0);
+  assert_return_code(edge_eloop_register_timeout(
+                         test_state->eloop, 0, initial_delay_useconds + 1,
+                         send_data_to_sock, &eloop_ctx, &test1),
+                     0);
 
   make_struct_test_eloop_sock_user_ctx(test2, "Foo bar!");
   utarray_push_back(sent_data, &test2.data);
-  assert_return_code(
-      eloop_register_timeout(test_state->eloop, 0, initial_delay_useconds + 2,
-                             send_data_to_sock, &eloop_ctx, &test2),
-      0);
+  assert_return_code(edge_eloop_register_timeout(
+                         test_state->eloop, 0, initial_delay_useconds + 2,
+                         send_data_to_sock, &eloop_ctx, &test2),
+                     0);
 
   make_struct_test_eloop_sock_user_ctx(stop_packet, "STOP");
   utarray_push_back(sent_data, &stop_packet.data);
-  assert_return_code(eloop_register_timeout(test_state->eloop, 1, 0,
-                                            send_data_to_sock, &eloop_ctx,
-                                            &stop_packet),
+  assert_return_code(edge_eloop_register_timeout(test_state->eloop, 1, 0,
+                                                 send_data_to_sock, &eloop_ctx,
+                                                 &stop_packet),
                      0);
 
   struct eloop_sock_handler_args eloop_sock_handler_args = {
@@ -246,7 +246,7 @@ static void test_eloop_sock(void **state) {
                    thrd_success);
 
   log_debug("Starting eloop");
-  eloop_run(test_state->eloop);
+  edge_eloop_run(test_state->eloop);
   log_debug("Finished eloop");
 
   assert_return_code(close(client_socket), 0);

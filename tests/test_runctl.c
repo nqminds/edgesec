@@ -34,7 +34,7 @@ int __wrap_get_vlan_mapper(hmap_vlan_conn **hmap, int vlanid,
   return (int)mock();
 }
 
-void __wrap_eloop_run(struct eloop_data *eloop) { (void)eloop; }
+void __wrap_edge_eloop_run(struct eloop_data *eloop) { (void)eloop; }
 
 int __wrap_get_commands_paths(char *commands[], UT_array *bin_path_arr,
                               hmap_str_keychar **hmap_bin_paths) {
