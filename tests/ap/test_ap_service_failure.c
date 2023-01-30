@@ -135,6 +135,37 @@ static void test_denyacl_ap_command(void **state) {
   }
 }
 
+static void test_disconnect_ap_command(void **state) {
+  (void)state;
+  struct apconf hconf = {
+      .ctrl_interface_path = "unused",
+  };
+
+  log_debug("should succeed if both *add_ap_command and *del_ap_command pass");
+  will_return_ptr(__wrap_writeread_domain_data_str,
+                  GENERIC_AP_COMMAND_OK_REPLY);
+  will_return(__wrap_writeread_domain_data_str, 0);
+  will_return_ptr(__wrap_writeread_domain_data_str,
+                  GENERIC_AP_COMMAND_OK_REPLY);
+  will_return(__wrap_writeread_domain_data_str, 0);
+  assert_return_code(disconnect_ap_command(&hconf, "11:22:33:44:55:66"), errno);
+
+  log_debug("should fail if denyacl_add_ap_command fails");
+  will_return_ptr(__wrap_writeread_domain_data_str,
+                  "invalid denyacl_add_ap_command response");
+  will_return(__wrap_writeread_domain_data_str, 0);
+  assert_int_equal(disconnect_ap_command(&hconf, "11:22:33:44:55:66"), -1);
+
+  log_debug("should fail if denyacl_del_ap_command fails");
+  will_return_ptr(__wrap_writeread_domain_data_str,
+                  GENERIC_AP_COMMAND_OK_REPLY);
+  will_return(__wrap_writeread_domain_data_str, 0);
+  will_return_ptr(__wrap_writeread_domain_data_str,
+                  "invalid denyacl_del_ap_command response");
+  will_return(__wrap_writeread_domain_data_str, 0);
+  assert_int_equal(disconnect_ap_command(&hconf, "11:22:33:44:55:66"), -1);
+}
+
 int main(int argc, char *argv[]) {
   (void)argc;
   (void)argv;
@@ -144,6 +175,8 @@ int main(int argc, char *argv[]) {
   const struct CMUnitTest tests[] = {
       cmocka_unit_test(test_ping_ap_command),
       cmocka_unit_test_setup(test_denyacl_ap_command,
+                             setup_malloc_enomem_to_false),
+      cmocka_unit_test_setup(test_disconnect_ap_command,
                              setup_malloc_enomem_to_false)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
