@@ -1,14 +1,19 @@
 if (NOT (BUILD_ONLY_DOCS))
     include(FetchContent)
 
-    # To generate or modify these patch files, do:
-    # cd "${eloop_download_SOURCE_DIR}"
-    # git init
-    # git add . && git commit -m "initial commit"
-    # git am ~/edgesec/lib/eloop/patches/*.patch
+    # To generate or modify these patch files, do the following to recreate
+    # the hostapd code in a git repo:
+    #
+    #     cd "${eloop_download_SOURCE_DIR}"
+    #     git init
+    #     git add . && git commit -m "initial commit"
+    #     git am ~/edgesec/lib/eloop/patches/*.patch
+    #
+    # To make this easier, you can use https://github.com/nqminds/hostap/tree/edgesec
+    # which may already has these patches applied.
     #
     # Then you can use `git rebase` to modify your git history.
-    # When done, do `git format-patch <FIRST_COMMID_ID>` to remake the patches
+    # When done, do `git format-patch hostap_2_10` to remake the patches
     file(GLOB eloop_patches CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/lib/eloop/patches/*.patch")
 
     function(cat IN_FILE OUT_FILE)

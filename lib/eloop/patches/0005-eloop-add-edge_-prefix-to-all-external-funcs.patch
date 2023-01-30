@@ -1,0 +1,613 @@
+From 4f93b015d84cb583f4dcfbe683598c25341172bb Mon Sep 17 00:00:00 2001
+From: Alois Klink <alois@nquiringminds.com>
+Date: Fri, 27 Jan 2023 10:57:15 +0000
+Subject: [PATCH 5/5] eloop: add `edge_` prefix to all external funcs
+
+Add the `edge_` prefix to all functions with external linkage
+in eloop.h
+
+In the edgesec project, we're having difficulties, as we use our own
+patched version of `eloop`. However, another library we want to use has
+their own version of `eloop`, which is causing linking errors since
+they both use the same names for different functions.
+
+Unfortunately, we're not using C++, so we can't just wrap everything
+in a namespace, so we have to manually namespace the functions by
+adding our own custom prefix to every externally linked function.
+---
+ src/utils/eloop.c | 111 ++++++++++++++++++-------------
+ src/utils/eloop.h | 163 +++++++++++++++++++++++++---------------------
+ 2 files changed, 154 insertions(+), 120 deletions(-)
+
+diff --git a/src/utils/eloop.c b/src/utils/eloop.c
+index d1affd29f..61c65514e 100644
+--- a/src/utils/eloop.c
++++ b/src/utils/eloop.c
+@@ -64,7 +64,7 @@ static void eloop_trace_sock_remove_ref(struct eloop_sock_table *table)
+ #endif /* WPA_TRACE */
+ 
+ 
+-struct eloop_data *eloop_init(void)
++struct eloop_data *edge_eloop_init(void)
+ {
+ 	struct eloop_data *eloop = NULL;
+ 
+@@ -586,7 +586,7 @@ static int eloop_sock_table_requeue(struct eloop_data *eloop, struct eloop_sock_
+ #endif /* CONFIG_ELOOP_KQUEUE */
+ 
+ 
+-int eloop_sock_requeue(struct eloop_data *eloop)
++int edge_eloop_sock_requeue(struct eloop_data *eloop)
+ {
+ 	int r = 0;
+ 
+@@ -594,7 +594,7 @@ int eloop_sock_requeue(struct eloop_data *eloop)
+ 	close(eloop->kqueuefd);
+ 	eloop->kqueuefd = kqueue();
+ 	if (eloop->kqueuefd < 0) {
+-		log_errno("eloop_sock_requeue: kqueue failed");
++		log_errno("edge_eloop_sock_requeue: kqueue failed");
+ 		return -1;
+ 	}
+ 
+@@ -635,17 +635,18 @@ static void eloop_sock_table_destroy(struct eloop_sock_table *table)
+ }
+ 
+ 
+-int eloop_register_read_sock(struct eloop_data *eloop, int sock, eloop_sock_handler handler,
+-			     void *eloop_data, void *user_data)
++int edge_eloop_register_read_sock(struct eloop_data *eloop, int sock,
++				  eloop_sock_handler handler,
++				  void *eloop_data, void *user_data)
+ {
+-	return eloop_register_sock(eloop, sock, EVENT_TYPE_READ, handler,
+-				   eloop_data, user_data);
++	return edge_eloop_register_sock(eloop, sock, EVENT_TYPE_READ,
++					handler, eloop_data, user_data);
+ }
+ 
+ 
+-void eloop_unregister_read_sock(struct eloop_data *eloop, int sock)
++void edge_eloop_unregister_read_sock(struct eloop_data *eloop, int sock)
+ {
+-	eloop_unregister_sock(eloop, sock, EVENT_TYPE_READ);
++	edge_eloop_unregister_sock(eloop, sock, EVENT_TYPE_READ);
+ }
+ 
+ 
+@@ -668,9 +669,10 @@ static struct eloop_sock_table *eloop_get_sock_table(struct eloop_data *eloop, e
+ }
+ 
+ 
+-int eloop_register_sock(struct eloop_data *eloop, int sock, eloop_event_type type,
+-			eloop_sock_handler handler,
+-			void *eloop_data, void *user_data)
++int edge_eloop_register_sock(struct eloop_data *eloop, int sock,
++				eloop_event_type type,
++				eloop_sock_handler handler,
++				void *eloop_data, void *user_data)
+ {
+ 	if (eloop == NULL) {
+ 		log_error("eloop param is NULL");
+@@ -685,7 +687,8 @@ int eloop_register_sock(struct eloop_data *eloop, int sock, eloop_event_type typ
+ }
+ 
+ 
+-void eloop_unregister_sock(struct eloop_data *eloop, int sock, eloop_event_type type)
++void edge_eloop_unregister_sock(struct eloop_data *eloop, int sock,
++				eloop_event_type type)
+ {
+ 	struct eloop_sock_table *table;
+ 
+@@ -694,9 +697,10 @@ void eloop_unregister_sock(struct eloop_data *eloop, int sock, eloop_event_type
+ }
+ 
+ 
+-int eloop_register_timeout(struct eloop_data *eloop, unsigned long secs, unsigned long usecs,
+-			   eloop_timeout_handler handler,
+-			   void *eloop_data, void *user_data)
++int edge_eloop_register_timeout(struct eloop_data *eloop, unsigned long secs,
++				unsigned long usecs,
++				eloop_timeout_handler handler,
++				void *eloop_data, void *user_data)
+ {
+ 	if (eloop == NULL) {
+ 		log_error("eloop param is NULL");
+@@ -764,8 +768,9 @@ static void eloop_remove_timeout(struct eloop_timeout *timeout)
+ }
+ 
+ 
+-int eloop_cancel_timeout(struct eloop_data *eloop, eloop_timeout_handler handler,
+-			 void *eloop_data, void *user_data)
++int edge_eloop_cancel_timeout(struct eloop_data *eloop,
++			      eloop_timeout_handler handler,
++			      void *eloop_data, void *user_data)
+ {
+ 	if (eloop == NULL) {
+ 		log_error("eloop param is NULL");
+@@ -791,9 +796,10 @@ int eloop_cancel_timeout(struct eloop_data *eloop, eloop_timeout_handler handler
+ }
+ 
+ 
+-int eloop_cancel_timeout_one(struct eloop_data *eloop, eloop_timeout_handler handler,
+-			     void *eloop_data, void *user_data,
+-			     struct os_reltime *remaining)
++int edge_eloop_cancel_timeout_one(struct eloop_data *eloop,
++				  eloop_timeout_handler handler,
++				  void *eloop_data, void *user_data,
++				  struct os_reltime *remaining)
+ {
+ 	if (eloop == NULL) {
+ 		log_error("eloop param is NULL");
+@@ -823,8 +829,9 @@ int eloop_cancel_timeout_one(struct eloop_data *eloop, eloop_timeout_handler han
+ }
+ 
+ 
+-int eloop_is_timeout_registered(struct eloop_data *eloop, eloop_timeout_handler handler,
+-				void *eloop_data, void *user_data)
++int edge_eloop_is_timeout_registered(struct eloop_data *eloop,
++				     eloop_timeout_handler handler,
++				     void *eloop_data, void *user_data)
+ {
+ 	if (eloop == NULL) {
+ 		log_error("eloop param is NULL");
+@@ -843,9 +850,12 @@ int eloop_is_timeout_registered(struct eloop_data *eloop, eloop_timeout_handler
+ }
+ 
+ 
+-int eloop_deplete_timeout(struct eloop_data *eloop, unsigned long req_secs, unsigned long req_usecs,
+-			  eloop_timeout_handler handler, void *eloop_data,
+-			  void *user_data)
++int edge_eloop_deplete_timeout(struct eloop_data *eloop,
++			       unsigned long req_secs,
++			       unsigned long req_usecs,
++			       eloop_timeout_handler handler,
++			       void *eloop_data,
++			       void *user_data)
+ {
+ 	if (eloop == NULL) {
+ 		log_error("eloop param is NULL");
+@@ -864,12 +874,15 @@ int eloop_deplete_timeout(struct eloop_data *eloop, unsigned long req_secs, unsi
+ 			os_get_reltime(&now);
+ 			os_reltime_sub(&tmp->time, &now, &remaining);
+ 			if (os_reltime_before(&requested, &remaining)) {
+-				eloop_cancel_timeout(eloop, handler, eloop_data,
+-						     user_data);
+-				eloop_register_timeout(eloop, requested.sec,
+-						       requested.usec,
+-						       handler, eloop_data,
+-						       user_data);
++				edge_eloop_cancel_timeout(eloop, handler,
++							  eloop_data,
++							  user_data);
++				edge_eloop_register_timeout(eloop,
++							    requested.sec,
++							    requested.usec,
++							    handler,
++							    eloop_data,
++							    user_data);
+ 				return 1;
+ 			}
+ 			return 0;
+@@ -880,9 +893,12 @@ int eloop_deplete_timeout(struct eloop_data *eloop, unsigned long req_secs, unsi
+ }
+ 
+ 
+-int eloop_replenish_timeout(struct eloop_data *eloop, unsigned long req_secs, unsigned long req_usecs,
+-			    eloop_timeout_handler handler, void *eloop_data,
+-			    void *user_data)
++int edge_eloop_replenish_timeout(struct eloop_data *eloop,
++				 unsigned long req_secs,
++				 unsigned long req_usecs,
++				 eloop_timeout_handler handler,
++				 void *eloop_data,
++				 void *user_data)
+ {
+ 	if (eloop == NULL) {
+ 		log_error("eloop param is NULL");
+@@ -901,12 +917,15 @@ int eloop_replenish_timeout(struct eloop_data *eloop, unsigned long req_secs, un
+ 			os_get_reltime(&now);
+ 			os_reltime_sub(&tmp->time, &now, &remaining);
+ 			if (os_reltime_before(&remaining, &requested)) {
+-				eloop_cancel_timeout(eloop, handler, eloop_data,
+-						     user_data);
+-				eloop_register_timeout(eloop, requested.sec,
+-						       requested.usec,
+-						       handler, eloop_data,
+-						       user_data);
++				edge_eloop_cancel_timeout(eloop, handler,
++							  eloop_data,
++							  user_data);
++				edge_eloop_register_timeout(eloop,
++							    requested.sec,
++							    requested.usec,
++							    handler,
++							    eloop_data,
++							    user_data);
+ 				return 1;
+ 			}
+ 			return 0;
+@@ -916,7 +935,7 @@ int eloop_replenish_timeout(struct eloop_data *eloop, unsigned long req_secs, un
+ 	return -1;
+ }
+ 
+-void eloop_run(struct eloop_data *eloop)
++void edge_eloop_run(struct eloop_data *eloop)
+ {
+ 	if (eloop == NULL) {
+ 		log_error("eloop param is NULL");
+@@ -1089,7 +1108,7 @@ out:
+ }
+ 
+ 
+-void eloop_terminate(struct eloop_data *eloop)
++void edge_eloop_terminate(struct eloop_data *eloop)
+ {
+ 	if (eloop == NULL) {
+ 		log_error("eloop param is NULL");
+@@ -1150,7 +1169,7 @@ void eloop_destroy(struct eloop_data *eloop)
+ #endif /* CONFIG_ELOOP_KQUEUE */
+ }
+ 
+-void eloop_free(struct eloop_data *eloop) {
++void edge_eloop_free(struct eloop_data *eloop) {
+   if (eloop == NULL) {
+     return;
+   }
+@@ -1160,7 +1179,7 @@ void eloop_free(struct eloop_data *eloop) {
+ }
+ 
+ 
+-int eloop_terminated(struct eloop_data *eloop)
++int edge_eloop_terminated(struct eloop_data *eloop)
+ {
+ 	if (eloop == NULL) {
+ 		log_error("eloop param is NULL");
+@@ -1171,7 +1190,7 @@ int eloop_terminated(struct eloop_data *eloop)
+ }
+ 
+ 
+-void eloop_wait_for_read_sock(int sock)
++void edge_eloop_wait_for_read_sock(int sock)
+ {
+ #ifdef CONFIG_ELOOP_POLL
+ 	struct pollfd pfd;
+diff --git a/src/utils/eloop.h b/src/utils/eloop.h
+index 3269f02b0..022f83967 100644
+--- a/src/utils/eloop.h
++++ b/src/utils/eloop.h
+@@ -12,13 +12,17 @@
+  * suitable for most UNIX/POSIX systems. When porting to other operating
+  * systems, it may be necessary to replace that implementation with OS specific
+  * mechanisms.
++ *
++ * Copyright (c) 2023, NquiringMinds
++ * - Added `edge_` prefix to functions to avoid linking conflicts
+  */
+ 
+ #ifndef ELOOP_H
+ #define ELOOP_H
+ 
+ /**
+- * ELOOP_ALL_CTX - eloop_cancel_timeout() magic number to match all timeouts
++ * ELOOP_ALL_CTX - edge_eloop_cancel_timeout() magic number to match all
++ * timeouts
+  */
+ #define ELOOP_ALL_CTX (void *) -1
+ 
+@@ -27,7 +31,7 @@
+ #include "src/utils/os.h"
+ 
+ /**
+- * eloop_event_type - eloop socket event type for eloop_register_sock()
++ * eloop_event_type - eloop socket event type for edge_eloop_register_sock()
+  * @EVENT_TYPE_READ: Socket has data available for reading
+  * @EVENT_TYPE_WRITE: Socket has room for new data to be written
+  * @EVENT_TYPE_EXCEPTION: An exception has been reported
+@@ -169,23 +173,24 @@ struct eloop_data {
+ };
+ 
+ /**
+- * eloop_init() - Initialize global event loop data
++ * edge_edge_eloop_init() - Initialize and returns new event loop data structure.
++ *
+  * Returns: struct eloop_data on success, NULL on failure
+  *
+- * This function must be called before any other eloop_* function.
++ * This function must be called before any other edge_eloop_* function.
+  */
+-struct eloop_data *eloop_init(void);
++struct eloop_data *edge_eloop_init(void);
+ 
+ /**
+- * eloop_free() - Free's the eloop context
++ * edge_eloop_free() - Free's the eloop context
+  * @eloop: eloop context
+  *
+- * This function must be called before any other eloop_* function.
++ * This function must be called before any other edge_eloop_* function.
+  */
+-void eloop_free(struct eloop_data *eloop);
++void edge_eloop_free(struct eloop_data *eloop);
+ 
+ /**
+- * eloop_register_read_sock - Register handler for read events
++ * edge_eloop_register_read_sock - Register handler for read events
+  * @eloop: eloop context
+  * @sock: File descriptor number for the socket
+  * @handler: Callback function to be called when data is available for reading
+@@ -199,22 +204,22 @@ void eloop_free(struct eloop_data *eloop);
+  * having processed it in order to avoid eloop from calling the handler again
+  * for the same event.
+  */
+-int eloop_register_read_sock(struct eloop_data *eloop, int sock,
+-                             eloop_sock_handler handler, void *eloop_data,
+-                             void *user_data);
++int edge_eloop_register_read_sock(struct eloop_data *eloop, int sock,
++				  eloop_sock_handler handler, void *eloop_data,
++				  void *user_data);
+ 
+ /**
+- * eloop_unregister_read_sock - Unregister handler for read events
++ * edge_eloop_unregister_read_sock - Unregister handler for read events
+  * @eloop: eloop context
+  * @sock: File descriptor number for the socket
+  *
+  * Unregister a read socket notifier that was previously registered with
+- * eloop_register_read_sock().
++ * edge_eloop_register_read_sock().
+  */
+-void eloop_unregister_read_sock(struct eloop_data *eloop, int sock);
++void edge_eloop_unregister_read_sock(struct eloop_data *eloop, int sock);
+ 
+ /**
+- * eloop_register_sock - Register handler for socket events
++ * edge_eloop_register_sock - Register handler for socket events
+  * @eloop: eloop context
+  * @sock: File descriptor number for the socket
+  * @type: Type of event to wait for
+@@ -229,24 +234,25 @@ void eloop_unregister_read_sock(struct eloop_data *eloop, int sock);
+  * having processed it in order to avoid eloop from calling the handler again
+  * for the same event.
+  */
+-int eloop_register_sock(struct eloop_data *eloop, int sock,
+-                        eloop_event_type type, eloop_sock_handler handler,
+-                        void *eloop_data, void *user_data);
++int edge_eloop_register_sock(struct eloop_data *eloop, int sock,
++			     eloop_event_type type,
++			     eloop_sock_handler handler,
++			     void *eloop_data, void *user_data);
+ 
+ /**
+- * eloop_unregister_sock - Unregister handler for socket events
++ * edge_eloop_unregister_sock - Unregister handler for socket events
+  * @eloop: eloop context
+  * @sock: File descriptor number for the socket
+  * @type: Type of event for which sock was registered
+  *
+  * Unregister a socket event notifier that was previously registered with
+- * eloop_register_sock().
++ * edge_eloop_register_sock().
+  */
+-void eloop_unregister_sock(struct eloop_data *eloop, int sock,
+-                           eloop_event_type type);
++void edge_eloop_unregister_sock(struct eloop_data *eloop, int sock,
++				eloop_event_type type);
+ 
+ /**
+- * eloop_register_event - Register handler for generic events
++ * edge_eloop_register_event - Register handler for generic events
+  * @eloop: eloop context
+  * @event: Event to wait (eloop implementation specific)
+  * @event_size: Size of event data
+@@ -265,27 +271,27 @@ void eloop_unregister_sock(struct eloop_data *eloop, int sock,
+  *
+  * In case of Windows implementation (eloop_win.c), event pointer is of HANDLE
+  * type, i.e., void*. The callers are likely to have 'HANDLE h' type variable,
+- * and they would call this function with eloop_register_event(h, sizeof(h),
+- * ...).
++ * and they would call this function with
++ * edge_eloop_register_event(h, sizeof(h), ...).
+  */
+-int eloop_register_event(struct eloop_data *eloop, void *event,
+-                         size_t event_size, eloop_event_handler handler,
+-                         void *eloop_data, void *user_data);
++int edge_eloop_register_event(struct eloop_data *eloop, void *event,
++			      size_t event_size, eloop_event_handler handler,
++			      void *eloop_data, void *user_data);
+ 
+ /**
+- * eloop_unregister_event - Unregister handler for a generic event
++ * edge_eloop_unregister_event - Unregister handler for a generic event
+  * @eloop: eloop context
+  * @event: Event to cancel (eloop implementation specific)
+  * @event_size: Size of event data
+  *
+  * Unregister a generic event notifier that was previously registered with
+- * eloop_register_event().
++ * edge_eloop_register_event().
+  */
+-void eloop_unregister_event(struct eloop_data *eloop, void *event,
+-                            size_t event_size);
++void edge_eloop_unregister_event(struct eloop_data *eloop, void *event,
++				 size_t event_size);
+ 
+ /**
+- * eloop_register_timeout - Register timeout
++ * edge_eloop_register_timeout - Register timeout
+  * @eloop: eloop context
+  * @secs: Number of seconds to the timeout
+  * @usecs: Number of microseconds to the timeout
+@@ -297,12 +303,13 @@ void eloop_unregister_event(struct eloop_data *eloop, void *event,
+  * Register a timeout that will cause the handler function to be called after
+  * given time.
+  */
+-int eloop_register_timeout(struct eloop_data *eloop, unsigned long secs,
+-                           unsigned long usecs, eloop_timeout_handler handler,
+-                           void *eloop_data, void *user_data);
++int edge_eloop_register_timeout(struct eloop_data *eloop, unsigned long secs,
++				unsigned long usecs,
++				eloop_timeout_handler handler,
++				void *eloop_data, void *user_data);
+ 
+ /**
+- * eloop_cancel_timeout - Cancel timeouts
++ * edge_eloop_cancel_timeout - Cancel timeouts
+  * @eloop: eloop context
+  * @handler: Matching callback function
+  * @eloop_data: Matching eloop_data or %ELOOP_ALL_CTX to match all
+@@ -310,15 +317,16 @@ int eloop_register_timeout(struct eloop_data *eloop, unsigned long secs,
+  * Returns: Number of cancelled timeouts
+  *
+  * Cancel matching <handler,eloop_data,user_data> timeouts registered with
+- * eloop_register_timeout(). ELOOP_ALL_CTX can be used as a wildcard for
++ * edge_eloop_register_timeout(). ELOOP_ALL_CTX can be used as a wildcard for
+  * cancelling all timeouts regardless of eloop_data/user_data.
+  */
+-int eloop_cancel_timeout(struct eloop_data *eloop,
+-                         eloop_timeout_handler handler, void *eloop_data,
+-                         void *user_data);
++int edge_eloop_cancel_timeout(struct eloop_data *eloop,
++			      eloop_timeout_handler handler,
++			      void *eloop_data,
++			      void *user_data);
+ 
+ /**
+- * eloop_cancel_timeout_one - Cancel a single timeout
++ * edge_eloop_cancel_timeout_one - Cancel a single timeout
+  * @eloop: eloop context
+  * @handler: Matching callback function
+  * @eloop_data: Matching eloop_data
+@@ -327,14 +335,16 @@ int eloop_cancel_timeout(struct eloop_data *eloop,
+  * Returns: Number of cancelled timeouts
+  *
+  * Cancel matching <handler,eloop_data,user_data> timeout registered with
+- * eloop_register_timeout() and return the remaining time left.
++ * edge_eloop_register_timeout() and return the remaining time left.
+  */
+-int eloop_cancel_timeout_one(struct eloop_data *eloop,
+-                             eloop_timeout_handler handler, void *eloop_data,
+-                             void *user_data, struct os_reltime *remaining);
++int edge_eloop_cancel_timeout_one(struct eloop_data *eloop,
++				  eloop_timeout_handler handler,
++				  void *eloop_data,
++				  void *user_data,
++				  struct os_reltime *remaining);
+ 
+ /**
+- * eloop_is_timeout_registered - Check if a timeout is already registered
++ * edge_eloop_is_timeout_registered - Check if a timeout is already registered
+  * @eloop: eloop context
+  * @handler: Matching callback function
+  * @eloop_data: Matching eloop_data
+@@ -342,14 +352,15 @@ int eloop_cancel_timeout_one(struct eloop_data *eloop,
+  * Returns: 1 if the timeout is registered, 0 if the timeout is not registered
+  *
+  * Determine if a matching <handler,eloop_data,user_data> timeout is registered
+- * with eloop_register_timeout().
++ * with edge_eloop_register_timeout().
+  */
+-int eloop_is_timeout_registered(struct eloop_data *eloop,
+-                                eloop_timeout_handler handler, void *eloop_data,
+-                                void *user_data);
++int edge_eloop_is_timeout_registered(struct eloop_data *eloop,
++				     eloop_timeout_handler handler,
++				     void *eloop_data,
++				     void *user_data);
+ 
+ /**
+- * eloop_deplete_timeout - Deplete a timeout that is already registered
++ * edge_eloop_deplete_timeout - Deplete a timeout that is already registered
+  * @eloop: eloop context
+  * @req_secs: Requested number of seconds to the timeout
+  * @req_usecs: Requested number of microseconds to the timeout
+@@ -362,13 +373,15 @@ int eloop_is_timeout_registered(struct eloop_data *eloop,
+  * Find a registered matching <handler,eloop_data,user_data> timeout. If found,
+  * deplete the timeout if remaining time is more than the requested time.
+  */
+-int eloop_deplete_timeout(struct eloop_data *eloop, unsigned long req_secs,
+-                          unsigned long req_usecs,
+-                          eloop_timeout_handler handler, void *eloop_data,
+-                          void *user_data);
++int edge_eloop_deplete_timeout(struct eloop_data *eloop,
++			       unsigned long req_secs,
++			       unsigned long req_usecs,
++			       eloop_timeout_handler handler,
++			       void *eloop_data,
++			       void *user_data);
+ 
+ /**
+- * eloop_replenish_timeout - Replenish a timeout that is already registered
++ * edge_eloop_replenish_timeout - Replenish a timeout that is already registered
+  * @eloop: eloop context
+  * @req_secs: Requested number of seconds to the timeout
+  * @req_usecs: Requested number of microseconds to the timeout
+@@ -381,47 +394,49 @@ int eloop_deplete_timeout(struct eloop_data *eloop, unsigned long req_secs,
+  * Find a registered matching <handler,eloop_data,user_data> timeout. If found,
+  * replenish the timeout if remaining time is less than the requested time.
+  */
+-int eloop_replenish_timeout(struct eloop_data *eloop, unsigned long req_secs,
+-                            unsigned long req_usecs,
+-                            eloop_timeout_handler handler, void *eloop_data,
+-                            void *user_data);
++int edge_eloop_replenish_timeout(struct eloop_data *eloop,
++				 unsigned long req_secs,
++				 unsigned long req_usecs,
++				 eloop_timeout_handler handler,
++				 void *eloop_data,
++				 void *user_data);
+ 
+ /**
+- * eloop_sock_requeue - Requeue sockets
++ * edge_eloop_sock_requeue - Requeue sockets
+  * @eloop: eloop context
+  * Requeue sockets after forking because some implementations require this,
+  * such as epoll and kqueue.
+  */
+-int eloop_sock_requeue(struct eloop_data *eloop);
++int edge_eloop_sock_requeue(struct eloop_data *eloop);
+ 
+ /**
+- * eloop_run - Start the event loop
++ * edge_eloop_run - Start the event loop
+  * @eloop: eloop context
+  * Start the event loop and continue running as long as there are any
+  * registered event handlers. This function is run after event loop has been
+  * initialized with event_init() and one or more events have been registered.
+  */
+-void eloop_run(struct eloop_data *eloop);
++void edge_eloop_run(struct eloop_data *eloop);
+ 
+ /**
+- * eloop_terminate - Terminate event loop
++ * edge_eloop_terminate - Terminate event loop
+  * @eloop: eloop context
+  * Terminate event loop even if there are registered events. This can be used
+  * to request the program to be terminated cleanly.
+  */
+-void eloop_terminate(struct eloop_data *eloop);
++void edge_eloop_terminate(struct eloop_data *eloop);
+ 
+ /**
+- * eloop_terminated - Check whether event loop has been terminated
++ * edge_eloop_terminated - Check whether event loop has been terminated
+  * @eloop: eloop context
+  * Returns: 1 = event loop terminate, 0 = event loop still running
+  *
+- * This function can be used to check whether eloop_terminate() has been called
+- * to request termination of the event loop. This is normally used to abort
+- * operations that may still be queued to be run when eloop_terminate() was
+- * called.
++ * This function can be used to check whether edge_eloop_terminate() has
++ * been called to request termination of the event loop.
++ * This is normally used to abort operations that may still be queued to be run
++ * when edge_eloop_terminate() was called.
+  */
+-int eloop_terminated(struct eloop_data *eloop);
++int edge_eloop_terminated(struct eloop_data *eloop);
+ 
+ /**
+  * eloop_wait_for_read_sock - Wait for a single reader
+-- 
+2.34.1
+
