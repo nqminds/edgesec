@@ -384,3 +384,8 @@ CONFIG_HS20=y
 CONFIG_LIBEAP_INSTALL_DIR=@LIBEAP_INSTALL_DIR@
 # Set to `yes` exactly to create libeap.so instead of libeap.a
 # CONFIG_SOLIB=yes
+
+# Custom CFLAGS and LIBS variables taken from CMake
+# Added by @aloisklink for the edgesec project
+LIBS += @HOSTAPD_CUSTOM_LIBS@
+CFLAGS += @HOSTAPD_CUSTOM_CFLAGS@

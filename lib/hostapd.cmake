@@ -7,6 +7,28 @@ if (BUILD_ONLY_DOCS)
   return()
 endif()
 
+# Manually construct CFLAGs and LIBS for the hostapd Makefile using the CMake
+# targets for OpenSSL.
+# This is a bit of a nightmare, and may only work on specific compilers, due to
+# us needing to manually play around with options and folders.
+
+get_target_property(OpenSSL_SSL_include_dirs OpenSSL::SSL INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(OpenSSL_SSL_imported_location OpenSSL::SSL IMPORTED_LOCATION)
+get_target_property(OpenSSL_Crypto_include_dirs OpenSSL::Crypto INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(OpenSSL_Crypto_imported_location OpenSSL::Crypto IMPORTED_LOCATION)
+
+set(HOSTAPD_CUSTOM_LIBS "")
+foreach(OpenSSL_import_location IN ITEMS "${OpenSSL_Crypto_imported_location}" "${OpenSSL_SSL_imported_location}")
+  get_filename_component(OpenSSL_import_location_dir "${OpenSSL_import_location}" DIRECTORY)
+  get_filename_component(OpenSSL_import_name "${OpenSSL_import_location}" NAME)
+  set(HOSTAPD_CUSTOM_LIBS "${HOSTAPD_CUSTOM_LIBS} -L ${OpenSSL_import_location_dir} -l:${OpenSSL_import_name}")
+endforeach()
+
+set(HOSTAPD_CUSTOM_CFLAGS "")
+set(OpenSSL_include_dirs "${OpenSSL_Crypto_include_dirs}" "${OpenSSL_SSL_include_dirs}")
+list(TRANSFORM OpenSSL_include_dirs PREPEND "-I ")
+list(JOIN OpenSSL_include_dirs " " HOSTAPD_CUSTOM_CFLAGS)
+
 if (BUILD_HOSTAPD)
   set(HOSTAPD_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 
@@ -46,6 +68,12 @@ if (BUILD_HOSTAPD)
         <BINARY_DIR>/.config
     INSTALL_COMMAND cmake -E copy <BINARY_DIR>/hostapd <INSTALL_DIR>/hostapd
     STEP_TARGETS download # may be used by hostapd_eap externalproject
+  )
+  ExternalProject_Add_StepDependencies(
+    hostapd_externalproject
+    configure
+    # use our own version of OpenSSL to compile hostapd
+    hostapd_externalproject build OpenSSL::SSL
   )
   set(HOSTAPD "${HOSTAPD_INSTALL_DIR}/hostapd")
 endif (BUILD_HOSTAPD)
@@ -93,6 +121,8 @@ if (BUILD_HOSTAPD_EAP_LIB)
     configure
     "${CMAKE_CURRENT_LIST_DIR}/libeap.mak"
     "${CMAKE_CURRENT_BINARY_DIR}/hostapd-eap.config"
+    # use our own version of OpenSSL to compile hostapd
+    OpenSSL::SSL
   )
 
   if (TARGET hostapd_externalproject-download)
