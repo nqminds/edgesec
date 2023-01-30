@@ -166,6 +166,42 @@ static void test_disconnect_ap_command(void **state) {
   assert_int_equal(disconnect_ap_command(&hconf, "11:22:33:44:55:66"), -1);
 }
 
+static void test_check_sta_ap_command(void **state) {
+  (void)state;
+  struct apconf hconf = {
+      .ctrl_interface_path = "unused",
+  };
+
+  log_debug("should succeed if writeread_domain_data_str returns something");
+  will_return_ptr(__wrap_writeread_domain_data_str, "my_super_cool_sta");
+  will_return(__wrap_writeread_domain_data_str, 0);
+  assert_return_code(check_sta_ap_command(&hconf, "11:22:33:44:55:66"), errno);
+
+  log_debug("should fail if malloc fails");
+  malloc_enomem = true;
+  assert_int_equal(check_sta_ap_command(&hconf, "11:22:33:44:55:66"), -1);
+  malloc_enomem = false;
+
+  log_debug("should error if writeread_domain_data_str errors");
+  will_return_ptr(__wrap_writeread_domain_data_str,
+                  GENERIC_AP_COMMAND_OK_REPLY);
+  will_return(__wrap_writeread_domain_data_str, -1);
+  assert_int_equal(check_sta_ap_command(&hconf, "11:22:33:44:55:66"), -1);
+
+  log_debug("should error if writeread_domain_data_str "
+            "returns " GENERIC_AP_COMMAND_FAIL_REPLY);
+  will_return_ptr(__wrap_writeread_domain_data_str,
+                  GENERIC_AP_COMMAND_FAIL_REPLY);
+  will_return(__wrap_writeread_domain_data_str, 0);
+  assert_int_equal(check_sta_ap_command(&hconf, "11:22:33:44:55:66"), -1);
+
+  log_debug("should error if writeread_domain_data_str returns an empty "
+            "string" GENERIC_AP_COMMAND_FAIL_REPLY);
+  will_return_ptr(__wrap_writeread_domain_data_str, "");
+  will_return(__wrap_writeread_domain_data_str, 0);
+  assert_int_equal(check_sta_ap_command(&hconf, "11:22:33:44:55:66"), -1);
+}
+
 int main(int argc, char *argv[]) {
   (void)argc;
   (void)argv;
@@ -177,6 +213,8 @@ int main(int argc, char *argv[]) {
       cmocka_unit_test_setup(test_denyacl_ap_command,
                              setup_malloc_enomem_to_false),
       cmocka_unit_test_setup(test_disconnect_ap_command,
+                             setup_malloc_enomem_to_false),
+      cmocka_unit_test_setup(test_check_sta_ap_command,
                              setup_malloc_enomem_to_false)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
