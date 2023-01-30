@@ -138,6 +138,9 @@ static void test_denyacl_add_ap_command(void **state) {
   struct apconf hconf;
 
   assert_int_equal(denyacl_add_ap_command(&hconf, "11:22:33:44:55:66"), 0);
+
+  // should error if MAC address string is NULL
+  assert_int_equal(denyacl_add_ap_command(&hconf, NULL), -1);
 }
 
 static void test_denyacl_del_ap_command(void **state) {
@@ -146,6 +149,9 @@ static void test_denyacl_del_ap_command(void **state) {
   struct apconf hconf;
 
   assert_int_equal(denyacl_del_ap_command(&hconf, "11:22:33:44:55:66"), 0);
+
+  // should error if MAC address string is NULL
+  assert_int_equal(denyacl_del_ap_command(&hconf, NULL), -1);
 }
 
 static void test_disconnect_ap_command(void **state) {
@@ -162,6 +168,9 @@ static void test_check_sta_ap_command(void **state) {
   struct apconf hconf;
 
   assert_int_equal(check_sta_ap_command(&hconf, "11:22:33:44:55:66"), 0);
+
+  // should error if MAC address string is NULL
+  assert_int_equal(check_sta_ap_command(&hconf, NULL), -1);
 }
 
 int main(int argc, char *argv[]) {
