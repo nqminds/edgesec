@@ -25,11 +25,11 @@
 #include "utils/log.h"
 #include "utils/os.h"
 
-bool __wrap_generate_vlan_conf(char *vlan_file, char *interface) {
+int __wrap_generate_vlan_conf(char *vlan_file, char *interface) {
   (void)vlan_file;
   (void)interface;
 
-  return true;
+  return 0;
 }
 
 int __wrap_run_ap_process(struct apconf *hconf) {
@@ -38,12 +38,12 @@ int __wrap_run_ap_process(struct apconf *hconf) {
   return 0;
 }
 
-bool __wrap_generate_hostapd_conf(struct apconf *hconf,
-                                  struct radius_conf *rconf) {
+int __wrap_generate_hostapd_conf(struct apconf *hconf,
+                                 struct radius_conf *rconf) {
   (void)hconf;
   (void)rconf;
 
-  return true;
+  return 0;
 }
 
 int __wrap_signal_ap_process(struct apconf *hconf) {
