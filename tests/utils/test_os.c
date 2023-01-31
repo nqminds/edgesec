@@ -14,6 +14,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <signal.h>
+
 #include <limits.h>
 
 #include "utils/allocs.h"
@@ -690,6 +692,16 @@ static void test_hexstr2bin(void **state) {
   assert_int_equal(hexstr2bin("0", buffer, 1), -1);
 }
 
+static void test_signal_process(void **state) {
+  (void)state; /* unused */
+
+  log_debug("should error if passing `.`");
+  assert_false(signal_process(
+      ".",
+      SIGURG /* use SIGURG since it's ignored by default on most processes */
+      ));
+}
+
 int main(int argc, char *argv[]) {
   (void)argc;
   (void)argv;
@@ -712,7 +724,8 @@ int main(int argc, char *argv[]) {
                                       teardown_tmpdir),
       cmocka_unit_test_setup_teardown(test_os_strlcpy, setup_os_strlcpy_test,
                                       teardown_os_strlcpy_test),
-      cmocka_unit_test(test_hexstr2bin)};
+      cmocka_unit_test(test_hexstr2bin),
+      cmocka_unit_test(test_signal_process)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }
