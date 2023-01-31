@@ -65,6 +65,9 @@ int __wrap_generate_vlan_conf(char *vlan_file, char *interface) {
 /** Wraps run_ap_process() to do nothing and return success */
 int __wrap_run_ap_process(struct apconf *hconf) {
   (void)hconf;
+
+  function_called();
+
   return 0;
 }
 
@@ -288,6 +291,14 @@ static void test_run_ap(void **state) {
   will_return(__wrap_writeread_domain_data_str, 0);
   will_return(__wrap_write_domain_data_s, -1); // makes register_ap_event fail
   assert_return_code(run_ap(context, false, false, NULL), errno);
+
+  log_debug("should call run_ap_process if exec_ap is `true`");
+  expect_function_call(__wrap_run_ap_process);
+  will_return_ptr(__wrap_writeread_domain_data_str, PING_AP_COMMAND_REPLY);
+  will_return(__wrap_writeread_domain_data_str, 0);
+  will_return(__wrap_write_domain_data_s, 0);
+  bool exec_ap = true;
+  assert_return_code(run_ap(context, exec_ap, false, NULL), errno);
 }
 
 int main(int argc, char *argv[]) {
