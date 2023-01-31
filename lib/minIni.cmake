@@ -8,7 +8,7 @@ elseif(BUILD_LIB_MININI)
     libminini_src
     # From 2020-04-22. Matches minIni.* files from https://github.com/nqminds/edgesec/tree/2a18535cb57f7059dba72eb50490bda587291fe8
     URL https://api.github.com/repos/compuphase/minIni/tarball/b40dff4924461272f669814da7d0c9fdc8be6d94
-    URL_HASH SHA512=3907cbe381a6f9bfd2afed9bebc92360e996d84327301226e535ca12d103414089f7f923a159e16fe7befa905781ae31ad8551937d91ac5811cb4e5cb331d5b0
+    URL_HASH SHA512=7cab1b3b7732a33eae3450426fe13dc2eac8720052e410521ab0a0e0439c154cf0cf8d7080ce35d8cff36733ed0f44574fd7c85f6a92de4210d8ed4312cb166e
     DOWNLOAD_NAME minIni.tar.gz
   )
   FetchContent_MakeAvailable(libminini_src)
