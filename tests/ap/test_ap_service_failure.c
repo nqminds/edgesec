@@ -36,6 +36,37 @@ int __wrap_writeread_domain_data_str(char *socket_path, char *write_str,
 
   return mock();
 }
+/** Wraps around write_domain_data_s() to do nothing and return success */
+int __wrap_write_domain_data_s(int sock, const char *data, size_t data_len,
+                               const char *addr) {
+  (void)sock;
+  (void)data;
+  (void)data_len;
+  (void)addr;
+
+  return mock();
+}
+
+/** Wraps generate_hostapd_conf() to do nothing and return success */
+int __wrap_generate_hostapd_conf(struct apconf *hconf,
+                                 struct radius_conf *rconf) {
+  (void)hconf;
+  (void)rconf;
+
+  return 0;
+}
+/** Wraps generate_vlan_conf() to do nothing and return success */
+int __wrap_generate_vlan_conf(char *vlan_file, char *interface) {
+  (void)vlan_file;
+  (void)interface;
+
+  return 0;
+}
+/** Wraps run_ap_process() to do nothing and return success */
+int __wrap_run_ap_process(struct apconf *hconf) {
+  (void)hconf;
+  return 0;
+}
 
 /** If set to true, every call to `malloc()` will fail and return NULL/ENOMEM */
 static bool malloc_enomem = false;
@@ -202,6 +233,63 @@ static void test_check_sta_ap_command(void **state) {
   assert_int_equal(check_sta_ap_command(&hconf, "11:22:33:44:55:66"), -1);
 }
 
+int setup_supervisor_context(void **state) {
+  malloc_enomem = false;
+
+  struct supervisor_context *context =
+      malloc(sizeof(struct supervisor_context));
+  assert_non_null(context);
+  *context = (struct supervisor_context){
+      .hconfig =
+          {
+              .ctrl_interface_path =
+                  "/tmp/edgesec/this-file-should-not-be-created",
+              .vlan_file = "/tmp/edgesec/this-file-should-not-be-created",
+              .ap_file_path = "/tmp/edgesec/this-file-should-not-be-created",
+              .ssid = "unused",
+              .interface = "unused-interface",
+              .ap_bin_path =
+                  "/tmp/edgesec/this-hostapd-executable-should-not-exist",
+          },
+      .eloop = edge_eloop_init(),
+  };
+  assert_non_null(context->eloop);
+  *state = context;
+  return 0;
+};
+
+int teardown_supervisor_context(void **state) {
+  struct supervisor_context *context = *state;
+  close_ap(context);
+  edge_eloop_free(context->eloop);
+  free(context);
+  return 0;
+};
+
+static void test_run_ap(void **state) {
+  struct supervisor_context *context = *state;
+  errno = 0;
+
+  log_debug("should work with default test context");
+  will_return_ptr(__wrap_writeread_domain_data_str, PING_AP_COMMAND_REPLY);
+  will_return(__wrap_writeread_domain_data_str, 0);
+  will_return(__wrap_write_domain_data_s, 0);
+  assert_return_code(run_ap(context, false, false, NULL), errno);
+
+  log_debug("should work (with warning) even if ping_ap_command fails");
+  will_return_ptr(__wrap_writeread_domain_data_str,
+                  "returns some other message");
+  will_return(__wrap_writeread_domain_data_str, 0);
+  will_return(__wrap_write_domain_data_s, 0);
+  assert_return_code(run_ap(context, false, false, NULL), errno);
+
+  log_debug("should work (with warning) even if register_ap_event fails");
+  will_return_ptr(__wrap_writeread_domain_data_str, PING_AP_COMMAND_REPLY);
+  will_return(__wrap_writeread_domain_data_str, 0);
+  will_return(__wrap_write_domain_data_s, -1); // makes register_ap_event fail
+  assert_return_code(run_ap(context, false, false, NULL), errno);
+}
+
 int main(int argc, char *argv[]) {
   (void)argc;
   (void)argv;
@@ -215,7 +303,9 @@ int main(int argc, char *argv[]) {
       cmocka_unit_test_setup(test_disconnect_ap_command,
                              setup_malloc_enomem_to_false),
       cmocka_unit_test_setup(test_check_sta_ap_command,
-                             setup_malloc_enomem_to_false)};
+                             setup_malloc_enomem_to_false),
+      cmocka_unit_test_setup_teardown(test_run_ap, setup_supervisor_context,
+                                      teardown_supervisor_context)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

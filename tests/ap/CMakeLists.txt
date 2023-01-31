@@ -30,5 +30,5 @@ add_cmocka_test(test_ap_service_failure
 )
 target_link_options(test_ap_service_failure
   PRIVATE
-  "LINKER:--wrap=writeread_domain_data_str,--wrap=malloc"
+  "LINKER:--wrap=writeread_domain_data_str,--wrap=malloc,--wrap=close=run_ap_process,--wrap=generate_vlan_conf,--wrap=generate_hostapd_conf,--wrap=write_domain_data_s"
 )
