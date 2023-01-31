@@ -23,3 +23,12 @@ target_link_options(test_ap_service
   PRIVATE
   "LINKER:--wrap=close,--wrap=generate_vlan_conf,--wrap=run_ap_process,--wrap=generate_hostapd_conf,--wrap=signal_ap_process,--wrap=create_domain_client,--wrap=edge_eloop_register_read_sock,--wrap=write_domain_data_s,--wrap=writeread_domain_data_str"
 )
+
+add_cmocka_test(test_ap_service_failure
+  SOURCES test_ap_service_failure.c
+  LINK_LIBRARIES ap_service cmocka::cmocka
+)
+target_link_options(test_ap_service_failure
+  PRIVATE
+  "LINKER:--wrap=writeread_domain_data_str,--wrap=malloc,--wrap=run_ap_process,--wrap=generate_vlan_conf,--wrap=generate_hostapd_conf,--wrap=write_domain_data_s"
+)

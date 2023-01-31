@@ -40,8 +40,9 @@ int __wrap_run_ap_process(struct apconf *hconf) {
 
 int __wrap_generate_hostapd_conf(struct apconf *hconf,
                                  struct radius_conf *rconf) {
-  (void)hconf;
   (void)rconf;
+
+  check_expected_ptr(hconf->ssid);
 
   return 0;
 }
@@ -118,16 +119,25 @@ int __wrap_close(int __fd) {
 static void test_run_ap(void **state) {
   (void)state; /* unused */
 
-  struct supervisor_context context;
+  struct supervisor_context context = {.hconfig = {.ssid = "my default SSID"}};
 
+  log_debug("should use the old SSID if generate_ssid is `false`");
+  expect_string(__wrap_generate_hostapd_conf, hconf->ssid, "my default SSID");
   assert_int_equal(run_ap(&context, true, false, NULL), 0);
+
+  log_debug("should create a new SSID if generate_ssid is `true`");
+  bool generate_ssid = true;
+  expect_not_string(__wrap_generate_hostapd_conf, hconf->ssid,
+                    "my default SSID");
+  assert_int_equal(run_ap(&context, true, generate_ssid, NULL), 0);
 }
 
 static void test_close_ap(void **state) {
   (void)state;
 
-  struct supervisor_context context;
+  struct supervisor_context context = {0};
 
+  expect_any(__wrap_generate_hostapd_conf, hconf->ssid);
   assert_int_equal(run_ap(&context, true, false, NULL), 0);
   assert_true(close_ap(&context));
 }
@@ -138,6 +148,9 @@ static void test_denyacl_add_ap_command(void **state) {
   struct apconf hconf;
 
   assert_int_equal(denyacl_add_ap_command(&hconf, "11:22:33:44:55:66"), 0);
+
+  // should error if MAC address string is NULL
+  assert_int_equal(denyacl_add_ap_command(&hconf, NULL), -1);
 }
 
 static void test_denyacl_del_ap_command(void **state) {
@@ -146,6 +159,9 @@ static void test_denyacl_del_ap_command(void **state) {
   struct apconf hconf;
 
   assert_int_equal(denyacl_del_ap_command(&hconf, "11:22:33:44:55:66"), 0);
+
+  // should error if MAC address string is NULL
+  assert_int_equal(denyacl_del_ap_command(&hconf, NULL), -1);
 }
 
 static void test_disconnect_ap_command(void **state) {
@@ -162,6 +178,9 @@ static void test_check_sta_ap_command(void **state) {
   struct apconf hconf;
 
   assert_int_equal(check_sta_ap_command(&hconf, "11:22:33:44:55:66"), 0);
+
+  // should error if MAC address string is NULL
+  assert_int_equal(check_sta_ap_command(&hconf, NULL), -1);
 }
 
 int main(int argc, char *argv[]) {

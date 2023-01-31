@@ -74,6 +74,15 @@ int run_ap(struct supervisor_context *context, bool exec_ap, bool generate_ssid,
 bool close_ap(struct supervisor_context *context);
 
 /**
+ * @brief Pings the hostapd daemon.
+ *
+ * @param hconf AP config structure
+ * @retval  `0` if the hostapd daemon responded okay.
+ * @retval `-1` if the hostapd daemon didn't respond or had an invalid response.
+ */
+int ping_ap_command(struct apconf *hconf);
+
+/**
  * @brief Deny ACL ADD AP command
  *
  * @param hconf AP config structure
