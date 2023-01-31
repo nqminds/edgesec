@@ -890,6 +890,12 @@ bool signal_process(char *proc_name, int sig) {
     return false;
   }
 
+  if (strcmp(proc_name, ".") == 0) {
+    // may be caused by somebody calling basename(proc_name);
+    log_error("proc_name is .");
+    return false;
+  }
+
   if (!os_strnlen_s(proc_name, MAX_OS_PATH_LEN)) {
     log_error("proc_name is empty");
     return false;
