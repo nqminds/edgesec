@@ -10,7 +10,7 @@ else()
     libpcap
     # warning, libpcap 1.9.1 is the latest on OpenWRT 19.07 and Ubuntu 20.04
     URL https://github.com/the-tcpdump-group/libpcap/archive/refs/tags/libpcap-1.10.1.tar.gz
-    URL_HASH SHA3_256=40df178532696ce7ba34ebec4834123e4f45b69817e0b5367d754b849bb99937
+    URL_HASH SHA3_256=9aedcbec09b7b3b01c78cc80822c505846d73928a72ae96eb907b1f467eee649
     DOWNLOAD_DIR "${EP_DOWNLOAD_DIR}" # if empty string, uses default download dir
   )
 
