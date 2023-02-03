@@ -39,9 +39,9 @@ Files: src/radius/md5.* src/radius/md5_internal.*
 Copyright: 2003-2005, Jouni Malinen <j@w1.fi>
 License: BSD-3-clause
 
-Files: src/radius/radius.* src/radius/radius_server.* src/radius/wpabuf.*
+Files: src/radius/radius.* src/radius/radius_server.* src/radius/wpabuf.* src/radius/common.h
 Copyright: 2002-2019, Jouni Malinen <j@w1.fi>
-           2021-2022, NquiringMinds Ltd.
+           2021-2023, NquiringMinds Ltd.
 License: BSD-3-clause
 
 Files: lib/libeap.mak tests/radius/eap_test_peer.c tests/radius/eap_test_server.c tests/radius/test_libeap.c

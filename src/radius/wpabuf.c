@@ -1,53 +1,67 @@
-/*
- * Dynamic data buffer
- * Copyright (c) 2007-2012, Jouni Malinen <j@w1.fi>
- *
- * This software may be distributed under the terms of the BSD license.
- * See README for more details.
- */
-
 /**
- * @file wpabuf.c
- * @author Jouni Malinen
- * @brief Dynamic data buffer.
+ * @file
+ * @brief Dynamic data buffer
+ * @author Alexandru Mereacre, Jouni Malinen
+ * @copyright SPDX-FileCopyrightText: © 2022-2023 NQMCyber Ltd and edgesec
+ * contributors
+ * @copyright SPDX-FileCopyrightText: © 2007-2012, Jouni Malinen <j@w1.fi>
+ * @copyright SPDX-License-Identifier: BSD-3-clause
+ * @version Adapted from [hostap 2.10 -
+ * `src/utils/wpabuf.c`](https://w1.fi/cgit/hostap/tree/src/utils/wpabuf.c?h=hostap_2_10)
  */
-
-#include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <errno.h>
-#include <signal.h>
-#include <string.h>
-#include <sys/select.h>
-
-/* According to earlier standards */
-#include <sys/time.h>
-#include <sys/types.h>
-#include <unistd.h>
 
 #include "wpabuf.h"
+#include "common.h"
 
 #include "utils/allocs.h"
 #include "utils/log.h"
 #include "utils/os.h"
 
+#ifdef WPA_TRACE
+#define WPABUF_MAGIC 0x51a974e3
+
+struct wpabuf_trace {
+  unsigned int magic;
+} __attribute__((aligned(8)));
+
+static struct wpabuf_trace *wpabuf_get_trace(const struct wpabuf *buf) {
+  return (struct wpabuf_trace *)((const u8 *)buf - sizeof(struct wpabuf_trace));
+}
+#endif /* WPA_TRACE */
+
 static void wpabuf_overflow(const struct wpabuf *buf, size_t len) {
-  log_trace("wpabuf %p (size=%lu used=%lu) overflow len=%lu", buf,
-            (unsigned long)buf->size, (unsigned long)buf->used,
-            (unsigned long)len);
-  log_trace("wpabuf overflow");
+#ifdef WPA_TRACE
+  struct wpabuf_trace *trace = wpabuf_get_trace(buf);
+  if (trace->magic != WPABUF_MAGIC) {
+    wpa_printf(MSG_ERROR, "wpabuf: invalid magic %x", trace->magic);
+  }
+#endif /* WPA_TRACE */
+  wpa_printf(MSG_ERROR, "wpabuf %p (size=%lu used=%lu) overflow len=%lu", buf,
+             (unsigned long)buf->size, (unsigned long)buf->used,
+             (unsigned long)len);
+  wpa_trace_show("wpabuf overflow");
   abort();
 }
 
 int wpabuf_resize(struct wpabuf **_buf, size_t add_len) {
   struct wpabuf *buf = *_buf;
+#ifdef WPA_TRACE
+  struct wpabuf_trace *trace;
+#endif /* WPA_TRACE */
 
   if (buf == NULL) {
     *_buf = wpabuf_alloc(add_len);
     return *_buf == NULL ? -1 : 0;
   }
+
+#ifdef WPA_TRACE
+  trace = wpabuf_get_trace(buf);
+  if (trace->magic != WPABUF_MAGIC) {
+    wpa_printf(MSG_ERROR, "wpabuf: invalid magic %x", trace->magic);
+    wpa_trace_show("wpabuf_resize invalid magic");
+    abort();
+  }
+#endif /* WPA_TRACE */
 
   if (buf->used + add_len > buf->size) {
     unsigned char *nbuf;
@@ -58,12 +72,24 @@ int wpabuf_resize(struct wpabuf **_buf, size_t add_len) {
       os_memset(nbuf + buf->used, 0, add_len);
       buf->buf = nbuf;
     } else {
+#ifdef WPA_TRACE
+      nbuf = os_realloc(trace, sizeof(struct wpabuf_trace) +
+                                   sizeof(struct wpabuf) + buf->used + add_len);
+      if (nbuf == NULL)
+        return -1;
+      trace = (struct wpabuf_trace *)nbuf;
+      buf = (struct wpabuf *)(trace + 1);
+      os_memset(nbuf + sizeof(struct wpabuf_trace) + sizeof(struct wpabuf) +
+                    buf->used,
+                0, add_len);
+#else  /* WPA_TRACE */
       nbuf = os_realloc(buf, sizeof(struct wpabuf) + buf->used + add_len);
       if (nbuf == NULL)
         return -1;
       buf = (struct wpabuf *)nbuf;
       os_memset(nbuf + sizeof(struct wpabuf) + buf->used, 0, add_len);
-      buf->buf = (uint8_t *)(buf + 1);
+#endif /* WPA_TRACE */
+      buf->buf = (u8 *)(buf + 1);
       *_buf = buf;
     }
     buf->size = buf->used + add_len;
@@ -78,19 +104,39 @@ int wpabuf_resize(struct wpabuf **_buf, size_t add_len) {
  * Returns: Buffer to the allocated wpabuf or %NULL on failure
  */
 struct wpabuf *wpabuf_alloc(size_t len) {
+#ifdef WPA_TRACE
+  struct wpabuf_trace *trace =
+      os_zalloc(sizeof(struct wpabuf_trace) + sizeof(struct wpabuf) + len);
+  struct wpabuf *buf;
+  if (trace == NULL)
+    return NULL;
+  trace->magic = WPABUF_MAGIC;
+  buf = (struct wpabuf *)(trace + 1);
+#else  /* WPA_TRACE */
   struct wpabuf *buf = os_zalloc(sizeof(struct wpabuf) + len);
   if (buf == NULL)
     return NULL;
+#endif /* WPA_TRACE */
 
   buf->size = len;
-  buf->buf = (uint8_t *)(buf + 1);
+  buf->buf = (u8 *)(buf + 1);
   return buf;
 }
 
-struct wpabuf *wpabuf_alloc_ext_data(uint8_t *data, size_t len) {
+struct wpabuf *wpabuf_alloc_ext_data(u8 *data, size_t len) {
+#ifdef WPA_TRACE
+  struct wpabuf_trace *trace =
+      os_zalloc(sizeof(struct wpabuf_trace) + sizeof(struct wpabuf));
+  struct wpabuf *buf;
+  if (trace == NULL)
+    return NULL;
+  trace->magic = WPABUF_MAGIC;
+  buf = (struct wpabuf *)(trace + 1);
+#else  /* WPA_TRACE */
   struct wpabuf *buf = os_zalloc(sizeof(struct wpabuf));
   if (buf == NULL)
     return NULL;
+#endif /* WPA_TRACE */
 
   buf->size = len;
   buf->used = len;
@@ -119,11 +165,26 @@ struct wpabuf *wpabuf_dup(const struct wpabuf *src) {
  * @buf: wpabuf buffer
  */
 void wpabuf_free(struct wpabuf *buf) {
+#ifdef WPA_TRACE
+  struct wpabuf_trace *trace;
+  if (buf == NULL)
+    return;
+  trace = wpabuf_get_trace(buf);
+  if (trace->magic != WPABUF_MAGIC) {
+    wpa_printf(MSG_ERROR, "wpabuf_free: invalid magic %x", trace->magic);
+    wpa_trace_show("wpabuf_free magic mismatch");
+    abort();
+  }
+  if (buf->flags & WPABUF_FLAG_EXT_DATA)
+    os_free(buf->buf);
+  os_free(trace);
+#else  /* WPA_TRACE */
   if (buf == NULL)
     return;
   if (buf->flags & WPABUF_FLAG_EXT_DATA)
     os_free(buf->buf);
   os_free(buf);
+#endif /* WPA_TRACE */
 }
 
 void wpabuf_clear_free(struct wpabuf *buf) {
@@ -232,7 +293,7 @@ struct wpabuf *wpabuf_parse_bin(const char *buf) {
   size_t len;
   struct wpabuf *ret;
 
-  len = strlen(buf);
+  len = os_strlen(buf);
   if (len & 0x01)
     return NULL;
   len /= 2;
