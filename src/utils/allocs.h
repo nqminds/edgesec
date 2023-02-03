@@ -27,7 +27,7 @@
  * @param size Number of bytes to allocate
  * @return void* Pointer to allocated and zeroed memory or %NULL on failure
  */
-void *os_zalloc(size_t size);
+static inline void *os_zalloc(size_t size) { return calloc(size, 1); }
 
 // void *os_malloc(size_t size);
 // void os_free(void* ptr);

@@ -18,8 +18,6 @@
 
 #include "allocs.h"
 
-void *os_zalloc(size_t size) { return os_calloc(size, 1); }
-
 void *os_memdup(const void *src, size_t len) {
   void *r = os_malloc(len);
 
