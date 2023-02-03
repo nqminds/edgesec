@@ -54,6 +54,10 @@ static inline void *os_realloc_array(void *ptr, size_t nmemb, size_t size) {
   return os_realloc(ptr, nmemb * size);
 }
 
+#ifndef os_memcpy
+#define os_memcpy(d, s, n) memcpy((d), (s), (n))
+#endif
+
 /**
  * @brief Allocate duplicate of passed memory chunk
  *
@@ -64,11 +68,14 @@ static inline void *os_realloc_array(void *ptr, size_t nmemb, size_t size) {
  * @param len Length of source buffer
  * @return void* %NULL if allocation failed, copy of src buffer otherwise
  */
-void *os_memdup(const void *src, size_t len);
+static inline void *os_memdup(const void *src, size_t len) {
+  void *r = os_malloc(len);
 
-#ifndef os_memcpy
-#define os_memcpy(d, s, n) memcpy((d), (s), (n))
-#endif
+  if (r && src)
+    os_memcpy(r, src, len);
+  return r;
+}
+
 #ifndef os_memmove
 #define os_memmove(d, s, n) memmove((d), (s), (n))
 #endif
@@ -80,7 +87,6 @@ void *os_memdup(const void *src, size_t len);
 #endif
 
 /**
- * @brief Returns a pointer to a new string which is a duplicate of the string s
  *
  * @param s The input string
  * @return char* The dublicate string pointer, NULL on error
