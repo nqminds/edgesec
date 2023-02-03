@@ -37,9 +37,9 @@ int __wrap_run_pcap(char *interface, bool immediate, bool promiscuous,
   return 0;
 }
 
-int __wrap_eloop_register_read_sock(struct eloop_data *eloop, int sock,
-                                    eloop_sock_handler handler,
-                                    void *eloop_data, void *user_data) {
+int __wrap_edge_eloop_register_read_sock(struct eloop_data *eloop, int sock,
+                                         eloop_sock_handler handler,
+                                         void *eloop_data, void *user_data) {
   (void)eloop;
   (void)sock;
   (void)handler;
@@ -49,13 +49,13 @@ int __wrap_eloop_register_read_sock(struct eloop_data *eloop, int sock,
   return 0;
 }
 
-struct eloop_data *__wrap_eloop_init(void) {
+struct eloop_data *__wrap_edge_eloop_init(void) {
   return mock_ptr_type(struct eloop_data *);
 }
 
-void __wrap_eloop_free(struct eloop_data *eloop) { os_free(eloop); }
+void __wrap_edge_eloop_free(struct eloop_data *eloop) { os_free(eloop); }
 
-void __wrap_eloop_run(struct eloop_data *eloop) { (void)eloop; }
+void __wrap_edge_eloop_run(struct eloop_data *eloop) { (void)eloop; }
 
 static void test_run_mdns(void **state) {
   (void)state;
@@ -63,7 +63,7 @@ static void test_run_mdns(void **state) {
   struct mdns_context context;
   struct eloop_data *eloop = os_zalloc(sizeof(struct eloop_data));
 
-  will_return(__wrap_eloop_init, eloop);
+  will_return(__wrap_edge_eloop_init, eloop);
   assert_int_equal(run_mdns(&context), 0);
   close_mdns(&context);
 }
@@ -73,7 +73,7 @@ static void test_close_mdns(void **state) {
 
   struct mdns_context context;
   struct eloop_data *eloop = os_zalloc(sizeof(struct eloop_data));
-  will_return(__wrap_eloop_init, eloop);
+  will_return(__wrap_edge_eloop_init, eloop);
   run_mdns(&context);
   assert_int_equal(close_mdns(&context), 0);
 }

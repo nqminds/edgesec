@@ -69,7 +69,7 @@ static RadiusRxResult receive_auth(struct radius_msg *msg,
             radius_msg_get_hdr(msg)->code);
 
   /* We're done for this example, so request eloop to terminate. */
-  eloop_terminate(eloop);
+  edge_eloop_terminate(eloop);
 
   return RADIUS_RX_PROCESSED;
 }
@@ -151,7 +151,7 @@ static void test_radius_server_init(void **state) {
 
   inet_aton(conf.radius_client_ip, &ctx.own_ip_addr);
 
-  eloop = eloop_init();
+  eloop = edge_eloop_init();
   assert_non_null(eloop);
 
   srv = os_zalloc(sizeof(*srv));
@@ -178,9 +178,9 @@ static void test_radius_server_init(void **state) {
   radius_srv = radius_server_init(eloop, srv->port, client);
   assert_non_null(radius_srv);
 
-  eloop_register_timeout(eloop, 0, 0, start_test, &ctx, NULL);
+  edge_eloop_register_timeout(eloop, 0, 0, start_test, &ctx, NULL);
 
-  eloop_run(eloop);
+  edge_eloop_run(eloop);
 
   int cmp = memcmp(&saved_addr[0], &addr[0], 6);
   assert_int_equal(cmp, 0);
@@ -190,7 +190,7 @@ static void test_radius_server_init(void **state) {
   os_free(srv->shared_secret);
   os_free(srv);
 
-  eloop_free(eloop);
+  edge_eloop_free(eloop);
 }
 
 int main(int argc, char *argv[]) {

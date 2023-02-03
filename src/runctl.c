@@ -416,7 +416,7 @@ int run_ctl(struct app_config *app_config, struct eloop_data *eloop) {
   }
 
   if (eloop == NULL) {
-    if ((context->eloop = (struct eloop_data *)eloop_init()) == NULL) {
+    if ((context->eloop = (struct eloop_data *)edge_eloop_init()) == NULL) {
       log_error("Failed to initialize event loop");
       goto run_engine_fail;
     }
@@ -549,7 +549,7 @@ int run_ctl(struct app_config *app_config, struct eloop_data *eloop) {
   log_info("Running event loop");
   log_info("++++++++++++++++++");
 
-  eloop_run(context->eloop);
+  edge_eloop_run(context->eloop);
   log_info("Exit event loop");
 
   if (context->exec_capture) {
@@ -582,7 +582,7 @@ int run_ctl(struct app_config *app_config, struct eloop_data *eloop) {
 #endif
   iface_free_context(context->iface_ctx);
   utarray_free(context->config_ifinfo_array);
-  eloop_free(context->eloop);
+  edge_eloop_free(context->eloop);
   os_free(context);
 
   return 0;
@@ -608,7 +608,7 @@ run_engine_fail:
   if (context->config_ifinfo_array != NULL) {
     utarray_free(context->config_ifinfo_array);
   }
-  eloop_free(context->eloop);
+  edge_eloop_free(context->eloop);
   os_free(context);
   return -1;
 }
