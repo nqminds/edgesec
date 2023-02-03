@@ -1,12 +1,13 @@
 /**
  * @file
- * @author Alexandru Mereacre
- * @date 2023
- * @copyright
- * SPDX-FileCopyrightText: Copyright (c) 2007-2012, Jouni Malinen <j@w1.fi>
- * SPDX-License-Identifier: BSD license
- * @version hostapd-2.10
  * @brief Dynamic data buffer
+ * @author Alexandru Mereacre, Alois Klink, Jouni Malinen
+ * @copyright SPDX-FileCopyrightText: © 2022-2023 NQMCyber Ltd and edgesec
+ * contributors
+ * @copyright SPDX-FileCopyrightText: © 2007-2012, Jouni Malinen <j@w1.fi>
+ * @copyright SPDX-License-Identifier: BSD-3-clause
+ * @version Adapted from [hostap 2.10 -
+ * `src/utils/wpabuf.h`](https://w1.fi/cgit/hostap/tree/src/utils/wpabuf.h?h=hostap_2_10)
  */
 
 #ifndef WPABUF_H

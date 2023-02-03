@@ -363,18 +363,18 @@ int run_supervisor(char *server_path, unsigned int port,
     return -1;
   }
 
-  if (eloop_register_read_sock(context->eloop, context->domain_sock,
-                               eloop_read_domain_handler, NULL,
-                               (void *)context) == -1) {
-    log_error("eloop_register_read_sock fail");
+  if (edge_eloop_register_read_sock(context->eloop, context->domain_sock,
+                                    eloop_read_domain_handler, NULL,
+                                    (void *)context) == -1) {
+    log_error("edge_eloop_register_read_sock fail");
     close_supervisor(context);
     return -1;
   }
 
-  if (eloop_register_read_sock(context->eloop, context->udp_sock,
-                               eloop_read_udp_handler, NULL,
-                               (void *)context) == -1) {
-    log_error("eloop_register_read_sock fail");
+  if (edge_eloop_register_read_sock(context->eloop, context->udp_sock,
+                                    eloop_read_udp_handler, NULL,
+                                    (void *)context) == -1) {
+    log_error("edge_eloop_register_read_sock fail");
     close_supervisor(context);
     return -1;
   }

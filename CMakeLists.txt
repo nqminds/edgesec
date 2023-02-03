@@ -73,7 +73,6 @@ set(
 option(BUILD_ONLY_DOCS "Build only docs" OFF)
 option(BUILD_HOSTAPD "Build hostapd" OFF)
 option(BUILD_SQLITE_LIB "Build sqlite3 library" ON)
-option(BUILD_CMOCKA_LIB "Build cmocka library" OFF)
 option(BUILD_UUID_LIB "Build uuid library" ON)
 option(BUILD_PCAP_LIB "Build pcap library" ON)
 option(BUILD_PROTOBUFC_LIB "Build protobuf-c library" ON)

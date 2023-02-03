@@ -60,9 +60,9 @@ jobs:
         run: |
           if ctest --list-presets | grep -s "${{ matrix.cmake-preset }}"; then
             # ctest --preset "${{ matrix.cmake-preset }}" --output-on-failure
-            echo "::set-output name=tested::true"
+            echo "tested=true" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=tested::false"
+            echo "tested=false" >> $GITHUB_OUTPUT
           fi
       - name: Code Coverage
         # code coverage only works if ctest works
@@ -91,7 +91,7 @@ jobs:
           preset='${{ matrix.cmake-preset }}'
           # replace `/` with `-`
           escaped_preset="${preset////-}"
-          echo "::set-output name=ESCAPED_CMAKE_PRESET::${escaped_preset}"
+          echo "ESCAPED_CMAKE_PRESET=${escaped_preset}" >> $GITHUB_OUTPUT
       - name: Archive Install Output
         uses: actions/upload-artifact@v2
         with:
@@ -166,7 +166,7 @@ jobs:
       - name: Upload recap as Release Assets
         # only run action if this is being run from a GitHub Release
         if: ${{ github.event_name == 'release' }}
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
@@ -257,9 +257,9 @@ jobs:
           OLD_DEB_PATH="$(ls -rt '${{ runner.temp }}/pbuilder/result'/edgesec*.deb | head -1)"
           NEW_DEB_PATH="$(echo "$OLD_DEB_PATH" | sed -E 's/_(([[:digit:]]\.){0,2}[[:digit:]](-[A-Za-z0-9+.~]+)*)_/_\1_${{ matrix.distribution }}_/')"
           mv "$OLD_DEB_PATH" "$NEW_DEB_PATH"
-          echo " ::set-output name=old-deb-path::${OLD_DEB_PATH}"
-          echo " ::set-output name=deb-path::${NEW_DEB_PATH}"
-          echo " ::set-output name=deb-name::$(basename "${NEW_DEB_PATH}")"
+          echo "old-deb-path=${OLD_DEB_PATH}" >> $GITHUB_OUTPUT
+          echo "deb-path=${NEW_DEB_PATH}" >> $GITHUB_OUTPUT
+          echo "deb-name=$(basename "${NEW_DEB_PATH}")" >> $GITHUB_OUTPUT
       - name: Archive built debs
         uses: actions/upload-artifact@v2
         with:
@@ -272,7 +272,7 @@ jobs:
       - name: Upload debs as Release Assets
         # only run action if this is being run from a GitHub Release
         if: ${{ github.event_name == 'release' }}
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         env:
           PBUILDER_RESULT_DIR: '${{ runner.temp }}/pbuilder/result'
         with:

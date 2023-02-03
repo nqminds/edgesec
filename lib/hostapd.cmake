@@ -28,14 +28,11 @@ if (BUILD_HOSTAPD)
     @ONLY
   )
 
-  configure_file(
-    "${CMAKE_CURRENT_LIST_DIR}/eap.Makefile.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/eap.Makefile"
-    @ONLY
-  )
-
-  FetchContent_Declare(hostapdsrc
-    URL https://w1.fi/releases/hostapd-2.10.tar.gz
+  ExternalProject_Add(
+    hostapd_externalproject
+    URL
+      https://w1.fi/releases/hostapd-2.10.tar.gz
+      https://src.fedoraproject.org/repo/pkgs/hostapd/hostapd-2.10.tar.gz/sha512/243baa82d621f859d2507d8d5beb0ebda15a75548a62451dc9bca42717dcc8607adac49b354919a41d8257d16d07ac7268203a79750db0cfb34b51f80ff1ce8f/hostapd-2.10.tar.gz
     URL_HASH SHA512=243baa82d621f859d2507d8d5beb0ebda15a75548a62451dc9bca42717dcc8607adac49b354919a41d8257d16d07ac7268203a79750db0cfb34b51f80ff1ce8f
     DOWNLOAD_DIR "${EP_DOWNLOAD_DIR}" # if empty string, uses default download dir
   )
@@ -84,7 +81,9 @@ if (BUILD_HOSTAPD_EAP_LIB)
   set(EAPLIB_SOURCE_DIR "${hostapdsrc_SOURCE_DIR}/libeap")
   ExternalProject_Add(
       hostapd_libeap_project
-      URL https://w1.fi/releases/hostapd-2.10.tar.gz
+      URL
+        https://w1.fi/releases/hostapd-2.10.tar.gz
+        https://src.fedoraproject.org/repo/pkgs/hostapd/hostapd-2.10.tar.gz/sha512/243baa82d621f859d2507d8d5beb0ebda15a75548a62451dc9bca42717dcc8607adac49b354919a41d8257d16d07ac7268203a79750db0cfb34b51f80ff1ce8f/hostapd-2.10.tar.gz
       URL_HASH SHA512=243baa82d621f859d2507d8d5beb0ebda15a75548a62451dc9bca42717dcc8607adac49b354919a41d8257d16d07ac7268203a79750db0cfb34b51f80ff1ce8f
       DOWNLOAD_DIR "${EP_DOWNLOAD_DIR}" # if empty string, uses default download dir
       BUILD_IN_SOURCE true

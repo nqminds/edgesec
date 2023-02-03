@@ -1,7 +1,7 @@
 From 203dddf79ec58094eff4b2e3c20f6b86999722fc Mon Sep 17 00:00:00 2001
 From: Alois Klink <alois@nquiringminds.com>
 Date: Fri, 11 Nov 2022 14:59:44 +0000
-Subject: [PATCH 4/4] list: add missing include on <stdddef.h>
+Subject: [PATCH 4/5] list: add missing include on <stdddef.h>
 
 The `list.h` header uses `NULL`, which is defined in stddef.h
 ---

@@ -20,10 +20,10 @@
 # Compile the cmocka library
 if (BUILD_ONLY_DOCS OR NOT (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING))
   # skip building cmocka, not needed
-elseif (BUILD_CMOCKA_LIB)
+else ()
   include(FetchContent)
 
-  set(CMOCKA_GIT_SHA "55c444ee6ab77f27b188b09b1a32792d3a02d2f1")
+  set(CMOCKA_GIT_SHA "8ded122b0b44155b1869418af5d931ee6800389e")
   FetchContent_Declare(
     cmocka
     # Use upstream in development cmocka version to fix some bugs
@@ -33,8 +33,9 @@ elseif (BUILD_CMOCKA_LIB)
     # - CHERI PureCap fixes
     #   - Use `__builtin_align_down` to align pointers https://gitlab.com/cmocka/cmocka/-/merge_requests/55
     #   - Remove casts from `uintptr_t` to `uintmax_t` https://gitlab.com/cmocka/cmocka/-/merge_requests/56
+    # - Fix for GCC -Wmaybe-uninitialized warnings
     URL "https://gitlab.com/api/v4/projects/aloisklink%2Fcmocka/repository/archive.tar.bz2?sha=${CMOCKA_GIT_SHA}"
-    URL_HASH SHA256=496c8628a7e9fd000a59540fab97d21fdd3721a8e8b7930c55bdef78acf301f7
+    URL_HASH SHA256=422cb08ea1a2a39babfd9532e8bedacf27a4e0e97bc95fd8ff46e04e0b413a99
     DOWNLOAD_NAME "cmocka-${CMOCKA_GIT_SHA}.tar.bz2"
     DOWNLOAD_DIR "${EP_DOWNLOAD_DIR}" # if empty string, uses default dir
   )
@@ -56,11 +57,4 @@ elseif (BUILD_CMOCKA_LIB)
   if (NOT TARGET cmocka::cmocka)
     add_library(cmocka::cmocka ALIAS cmocka)
   endif(NOT TARGET cmocka::cmocka)
-else ()
-  find_package(cmocka 1.1.5 REQUIRED)
-  add_library(cmocka::cmocka UNKNOWN IMPORTED)
-  set_target_properties(cmocka::cmocka PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES ${CMOCKA_INCLUDE_DIR}
-    IMPORTED_LOCATION ${CMOCKA_LIBRARY}
-)
 endif ()

@@ -1,12 +1,14 @@
 /**
  * @file
- * @author Alexandru Mereacre
- * @date 2023
- * @copyright
- * SPDX-FileCopyrightText: Copyright (c) 2002-2009, 2012, 2014-2015, Jouni
- * Malinen <j@w1.fi> SPDX-License-Identifier: BSD license
- * @version hostapd-2.10
  * @brief RADIUS message processing
+ * @author Alexandru Mereacre, Jouni Malinen
+ * @copyright SPDX-FileCopyrightText: © 2022-2023 NQMCyber Ltd and edgesec
+ * contributors
+ * @copyright SPDX-FileCopyrightText: © 2002-2009, 2012, 2014-2015, Jouni
+ * Malinen <j@w1.fi>
+ * @copyright SPDX-License-Identifier: BSD-3-clause
+ * @version Adapted from [hostap 2.10 -
+ * `src/radius/radius.h`](https://w1.fi/cgit/hostap/tree/src/radius/radius.c?h=hostap_2_10)
  */
 
 #ifndef RADIUS_H

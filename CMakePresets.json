@@ -37,7 +37,7 @@
         "BUILD_HOSTAPD": false,
         "USE_CRYPTO_SERVICE": false,
         "BUILD_OPENSSL3_LIB": false,
-        "BUILD_CMOCKA_LIB": true
+        "BUILD_CMOCKA_LIB": false
       }
     },
     {
@@ -147,11 +147,7 @@
       "name": "clang",
       "inherits": "linux",
       "displayName": "Clang",
-      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/clang.cmake",
-      "cacheVariables": {
-        "//": "We need to test CMocka builds somewhere, might as well be here",
-        "BUILD_CMOCKA_LIB": true
-      }
+      "toolchainFile": "${sourceDir}/CMakeModules/CMakeToolchains/clang.cmake"
     },
     {
       "name": "openwrt",
@@ -341,7 +337,12 @@
     },
     {
       "name": "freebsd",
-      "configurePreset": "freebsd"
+      "configurePreset": "freebsd",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "FreeBSD"
+      }
     },
     {
       "name": "openwrt",

@@ -14,6 +14,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <signal.h>
+
 #include <limits.h>
 
 #include "utils/allocs.h"
@@ -615,6 +617,91 @@ static void test_string_append_char(void **state) {
   free(combined_str);
 }
 
+#define OS_STRLCPY_TEST_SIZE 16
+
+struct os_strlcpy_state {
+  char *string_a;
+  char *string_b;
+};
+static int setup_os_strlcpy_test(void **state) {
+  // use malloc instead of buffers, since cmocka checks for stack overflow
+  struct os_strlcpy_state *my_state = malloc(sizeof(struct os_strlcpy_state));
+  assert_non_null(my_state);
+  *my_state = (struct os_strlcpy_state){
+      .string_a = malloc(OS_STRLCPY_TEST_SIZE),
+      .string_b = malloc(OS_STRLCPY_TEST_SIZE),
+  };
+  assert_non_null(my_state->string_a);
+  assert_non_null(my_state->string_b);
+  *state = my_state;
+  return 0;
+}
+static int teardown_os_strlcpy_test(void **state) {
+  struct os_strlcpy_state *my_state = *state;
+  free(my_state->string_a);
+  free(my_state->string_b);
+  free(my_state);
+
+  return 0;
+}
+static void test_os_strlcpy(void **state) {
+  struct os_strlcpy_state *my_state = *state;
+
+  assert_int_equal(
+      os_strlcpy(my_state->string_a, "hello world", OS_STRLCPY_TEST_SIZE),
+      strlen("hello world"));
+  assert_string_equal(my_state->string_a, "hello world");
+
+  // should truncate
+  assert_int_equal(os_strlcpy(my_state->string_a,
+                              "0123456789abcdeTHIS_PART_IS_TOO_LONG",
+                              OS_STRLCPY_TEST_SIZE),
+                   strlen("0123456789abcdeTHIS_PART_IS_TOO_LONG"));
+  assert_string_equal(my_state->string_a, "0123456789abcde");
+}
+
+static void test_hexstr2bin(void **state) {
+  (void)state; /* unused */
+
+  uint8_t buffer[256] = {0};
+  {
+    assert_return_code(hexstr2bin("01", buffer, 1), errno);
+    uint8_t expected_data[] = {0x01};
+    assert_memory_equal(expected_data, buffer, sizeof(expected_data));
+  }
+
+  {
+    assert_return_code(
+        hexstr2bin("0123456789abcdef", buffer, sizeof("0123456789abcdef") / 2),
+        errno);
+    uint8_t expected_data[] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef};
+    assert_memory_equal(expected_data, buffer, sizeof(expected_data));
+  }
+
+  { // should handle capital and lower-case letters
+    assert_return_code(
+        hexstr2bin("0123456789ABCDEF", buffer, sizeof("0123456789ABCDEF") / 2),
+        errno);
+    uint8_t expected_data[] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF};
+    assert_memory_equal(expected_data, buffer, sizeof(expected_data));
+  }
+
+  // should return `-1` for invalid chars
+  assert_int_equal(hexstr2bin("0g", buffer, 1), -1);
+  assert_int_equal(hexstr2bin("ꙮ", buffer, 1), -1);
+  assert_int_equal(hexstr2bin("0", buffer, 1), -1);
+}
+
+static void test_signal_process(void **state) {
+  (void)state; /* unused */
+
+  log_debug("should error if passing `.`");
+  assert_false(signal_process(
+      ".",
+      SIGURG /* use SIGURG since it's ignored by default on most processes */
+      ));
+}
+
 int main(int argc, char *argv[]) {
   (void)argc;
   (void)argv;
@@ -634,7 +721,11 @@ int main(int argc, char *argv[]) {
       cmocka_unit_test(test_list_dir),
       cmocka_unit_test(test_string_append_char),
       cmocka_unit_test_setup_teardown(test_make_dirs_to_path, setup_tmpdir,
-                                      teardown_tmpdir)};
+                                      teardown_tmpdir),
+      cmocka_unit_test_setup_teardown(test_os_strlcpy, setup_os_strlcpy_test,
+                                      teardown_os_strlcpy_test),
+      cmocka_unit_test(test_hexstr2bin),
+      cmocka_unit_test(test_signal_process)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

@@ -1,13 +1,13 @@
 /**
  * @file
- * @author Alexandru Mereacre
- * @date 2023
- * @copyright
- * SPDX-FileCopyrightText: © 2022 NQMCyber Ltd and edgesec contributors
- * Copyright (c) 2002-2007, Jouni Malinen <j@w1.fi>
- * SPDX-License-Identifier: BSD licence
- * @version hostapd-2.10
  * @brief File containing the common definitions used by radius and eap
+ * @author Alexandru Mereacre, Jouni Malinen
+ * @copyright SPDX-FileCopyrightText: © 2022-2023 NQMCyber Ltd and edgesec
+ * contributors
+ * @copyright SPDX-FileCopyrightText: © 2002-2007, Jouni Malinen <j@w1.fi>
+ * @copyright SPDX-License-Identifier: BSD-3-clause
+ * @version Adapted from [hostap 2.10 -
+ * `src/utils/common.h`](https://w1.fi/cgit/hostap/tree/src/utils/common.h?h=hostap_2_10)
  */
 
 #ifndef COMMON_H

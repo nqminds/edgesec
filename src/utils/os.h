@@ -57,6 +57,7 @@
          sysconf(_SC_OPEN_MAX) is indeterminate */
 
 #ifndef os_strlen
+// Used by code taken from hostapd
 #define os_strlen(s) strlen((s))
 #endif
 
@@ -182,23 +183,23 @@ int os_get_random_number_s(unsigned char *buf, size_t len);
 
 /**
  * @brief ASCII hex character to number
+ *
+ * @param hex Two char string
+ * @return converted number from 0-255, or `-1` on error.
+ */
+int16_t hex2byte(const char hex[static 2]);
+
+/**
+ * @brief Hex char to number
  * @code{.c}
  * // returns 0x9 aka 9 aka '\x09'
  * hex2num('9')
  * @endcode
  *
- * @param hex Two char string
- * @return int Converted byte
- */
-int hex2byte(const char *hex);
-
-/**
- * @brief Hex char two number
- *
  * @param[in] c Hex char
- * @return int converted number
+ * @return Converted byte from 0-15, or `-1` on error.
  */
-int hex2num(char c);
+int8_t hex2num(char c);
 
 /**
  * @brief Convert ASCII hex string into binary data
@@ -230,7 +231,7 @@ bool is_number(const char *ptr);
  * @return size_t Total length of the target string (length of src) (not
  * including NUL-termination)
  */
-size_t os_strlcpy(char *dest, const char *src, size_t siz);
+size_t os_strlcpy(char *restrict dest, const char *restrict src, size_t siz);
 
 /**
  * @brief Returns the size of string with a give max length

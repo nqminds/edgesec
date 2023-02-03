@@ -29,6 +29,6 @@ if (USE_MDNS_SERVICE AND USE_CAPTURE_SERVICE)
   )
   target_link_options(test_mdns_service
     PRIVATE
-    "LINKER:--wrap=run_pcap,--wrap=eloop_register_read_sock,--wrap=eloop_init,--wrap=eloop_run,--wrap=eloop_free"
+    "LINKER:--wrap=run_pcap,--wrap=edge_eloop_register_read_sock,--wrap=edge_eloop_init,--wrap=edge_eloop_run,--wrap=edge_eloop_free"
   )
 endif ()
