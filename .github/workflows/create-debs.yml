@@ -235,9 +235,6 @@ jobs:
           - jammy # uses libssl3
     permissions:
       contents: write # needed for publishing release artifact
-    env:
-      OTHER_MIRROR:
-        deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${{ matrix.distribution }} main universe | deb [arch=amd64] http://archive.ubuntu.com/ubuntu ${{ matrix.distribution }} main universe
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -251,7 +248,7 @@ jobs:
         with:
           path: |
             /var/cache/pbuilder/base.tgz
-          key: ${{ runner.os }}-${{ matrix.distribution }}-${{ matrix.architecture }}
+          key: ${{ runner.os }}-${{ matrix.distribution }}-${{ matrix.architecture }}-v2
         # Sometimes the cache step just freezes forever
         # so put a limit on it so that we can restart it earlier on failure
         timeout-minutes: 10
@@ -260,9 +257,18 @@ jobs:
         # see https://github.com/actions/runner-images/issues/7048
         run: |
           # make sure there is a `\t` between URL and `priority:*` attributes
-          printf 'http://azure.archive.ubuntu.com/ubuntu	priority:1\n' | sudo tee /etc/apt/mirrors.txt
+          printf 'http://azure.archive.ubuntu.com/ubuntu	priority:1 arch:amd64\n' | sudo tee /etc/apt/mirrors.txt
+          # Ubuntu places arm64 in a seperate `ubuntu-ports` repo
+          printf 'http://ports.ubuntu.com/ubuntu-ports	priority:1 arch:arm64\n' | sudo tee --append /etc/apt/mirrors.txt
+          # This seems to be the only official ubuntu ports mirror in the US
+          printf 'http://mirrors.ocf.berkeley.edu/ubuntu-ports/	priority:2 arch:arm64\n' | sudo tee --append /etc/apt/mirrors.txt
+          # German backup ubuntu-ports mirror
+          printf 'http://ftp.tu-chemnitz.de/pub/linux/ubuntu-ports/	priority:3 arch:arm64\n' | sudo tee --append /etc/apt/mirrors.txt
+          # General ubuntu mirrors (probably won't have ports however)
           curl http://mirrors.ubuntu.com/mirrors.txt | sudo tee --append /etc/apt/mirrors.txt
           sudo sed -i 's/http:\/\/azure.archive.ubuntu.com\/ubuntu\//mirror+file:\/etc\/apt\/mirrors.txt/' /etc/apt/sources.list
+          # delete all extra GitHub Actions apt sources, as otherwise pdebuild gets confused with signing keys
+          sudo rm -r /etc/apt/sources.list.d/*
       - name: Install dependencies
         run: |
           sudo apt-get update && sudo apt-get install pbuilder debhelper -y
@@ -273,16 +279,18 @@ jobs:
             USENETWORK=yes
             # Faster than default, and is requried if we want to do cross-compiling
             PBUILDERSATISFYDEPENDSCMD="/usr/lib/pbuilder/pbuilder-satisfydepends-apt"
+            # copy over our custom mirrors.txt file into the chroot
+            APTCONFDIR=/etc/apt
         run: |
           echo "$PBUILDER_RC" | sudo tee -a /etc/pbuilderrc
       - name: Build pbuilder base.tgz
         if: steps.cache-pbuilder-base.outputs.cache-hit != 'true'
         run: |
-          sudo pbuilder create --debootstrapopts --variant=buildd --distribution ${{ matrix.distribution }} --mirror "" --othermirror "$OTHER_MIRROR"
+          sudo pbuilder create --debootstrapopts --variant=buildd --distribution ${{ matrix.distribution }}
       - name: Build .deb
         run: |
           mkdir -p '${{ runner.temp }}/pbuilder/result'
-          pdebuild --buildresult '${{ runner.temp }}/pbuilder/result' --debbuildopts "-us -uc" -- --override-config --distribution ${{ matrix.distribution }} --mirror "" --othermirror "$OTHER_MIRROR" --host-arch ${{ matrix.architecture }}
+          pdebuild --buildresult '${{ runner.temp }}/pbuilder/result' --debbuildopts "-us -uc" -- --override-config --distribution ${{ matrix.distribution }} --host-arch ${{ matrix.architecture }}
       - name: Load output .deb name
         id: load-deb-name
         run: |
