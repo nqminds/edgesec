@@ -9,7 +9,8 @@
     {
       "name": "default",
       "displayName": "Default Config",
-      "description": "Default build",
+      "hidden": true,
+      "description": "Default build (won't compile without enabling one of `USE_*_SERVICE`)",
       "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": {
