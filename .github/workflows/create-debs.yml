@@ -257,13 +257,13 @@ jobs:
         # see https://github.com/actions/runner-images/issues/7048
         run: |
           # make sure there is a `\t` between URL and `priority:*` attributes
-          printf 'http://azure.archive.ubuntu.com/ubuntu	priority:1 arch:amd64\n' | sudo tee /etc/apt/mirrors.txt
+          printf 'http://azure.archive.ubuntu.com/ubuntu	priority:1 arch:amd64 arch:i386 arch:all\n' | sudo tee /etc/apt/mirrors.txt
           # Ubuntu places arm64 in a seperate `ubuntu-ports` repo
-          printf 'http://ports.ubuntu.com/ubuntu-ports	priority:1 arch:arm64\n' | sudo tee --append /etc/apt/mirrors.txt
+          printf 'http://ports.ubuntu.com/ubuntu-ports	priority:1 arch:arm64 arch:all\n' | sudo tee --append /etc/apt/mirrors.txt
           # This seems to be the only official ubuntu ports mirror in the US
-          printf 'http://mirrors.ocf.berkeley.edu/ubuntu-ports/	priority:2 arch:arm64\n' | sudo tee --append /etc/apt/mirrors.txt
+          printf 'http://mirrors.ocf.berkeley.edu/ubuntu-ports/	priority:2 arch:arm64 arch:all\n' | sudo tee --append /etc/apt/mirrors.txt
           # German backup ubuntu-ports mirror
-          printf 'http://ftp.tu-chemnitz.de/pub/linux/ubuntu-ports/	priority:3 arch:arm64\n' | sudo tee --append /etc/apt/mirrors.txt
+          printf 'http://ftp.tu-chemnitz.de/pub/linux/ubuntu-ports/	priority:3 arch:arm64 arch:all\n' | sudo tee --append /etc/apt/mirrors.txt
           # General ubuntu mirrors (probably won't have ports however)
           # Only use `http://` mirrors, since pdebuild doesn't come with https certificates
           curl http://mirrors.ubuntu.com/mirrors.txt | grep 'http://.*/ubuntu/' | sudo tee --append /etc/apt/mirrors.txt
