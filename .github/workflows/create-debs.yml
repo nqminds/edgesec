@@ -266,7 +266,7 @@ jobs:
           printf 'http://ftp.tu-chemnitz.de/pub/linux/ubuntu-ports/	priority:3 arch:arm64\n' | sudo tee --append /etc/apt/mirrors.txt
           # General ubuntu mirrors (probably won't have ports however)
           # Only use `http://` mirrors, since pdebuild doesn't come with https certificates
-          curl http://mirrors.ubuntu.com/mirrors.txt | grep 'http://' | sudo tee --append /etc/apt/mirrors.txt
+          curl http://mirrors.ubuntu.com/mirrors.txt | grep 'http://.*/ubuntu/' | sudo tee --append /etc/apt/mirrors.txt
           sudo sed -i 's/http:\/\/azure.archive.ubuntu.com\/ubuntu\//mirror+file:\/etc\/apt\/mirrors.txt/' /etc/apt/sources.list
           # delete all extra GitHub Actions apt sources, as otherwise pdebuild gets confused with signing keys
           sudo rm -r /etc/apt/sources.list.d/*
