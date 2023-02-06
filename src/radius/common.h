@@ -15,6 +15,7 @@
 
 #include <stddef.h>
 
+#include "utils/allocs.h"
 #include "utils/log.h"
 
 typedef uint64_t u64;
@@ -146,6 +147,24 @@ static inline u32 WPA_GET_BE32(const u8 *a) {
 
 static inline u32 WPA_GET_BE24(const u8 *a) {
   return (a[0] << 16) | (a[1] << 8) | a[2];
+}
+
+/**
+ * @brief Allocate duplicate of passed memory chunk
+ *
+ * This function allocates a memory block like os_malloc() would, and
+ * copies the given source buffer into it.
+ *
+ * @param src Source buffer to duplicate
+ * @param len Length of source buffer
+ * @return void* %NULL if allocation failed, copy of src buffer otherwise
+ */
+static inline void *os_memdup(const void *src, size_t len) {
+  void *r = os_malloc(len);
+
+  if (r && src)
+    os_memcpy(r, src, len);
+  return r;
 }
 
 #define wpa_printf(level, ...)                                                 \
