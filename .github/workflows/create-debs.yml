@@ -31,6 +31,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+      - name: Set apt mirror
+        # GitHub Actions apt proxy is super unstable
+        # see https://github.com/actions/runner-images/issues/7048
+        run: |
+          # make sure there is a `\t` between URL and `priority:*` attributes
+          printf 'http://azure.archive.ubuntu.com/ubuntu	priority:1\n' | sudo tee /etc/apt/mirrors.txt
+          curl http://mirrors.ubuntu.com/mirrors.txt | sudo tee --append /etc/apt/mirrors.txt
+          sudo sed -i 's/http:\/\/azure.archive.ubuntu.com\/ubuntu\//mirror+file:\/etc\/apt\/mirrors.txt/' /etc/apt/sources.list
       - name: Install Dependencies
         shell: bash # we're using bash arrays here
         run: |
@@ -113,6 +121,14 @@ jobs:
       - name: Checkout code
         # not sure if needed, maybe the codecov action uses it
         uses: actions/checkout@v3
+      - name: Set apt mirror
+        # GitHub Actions apt proxy is super unstable
+        # see https://github.com/actions/runner-images/issues/7048
+        run: |
+          # make sure there is a `\t` between URL and `priority:*` attributes
+          printf 'http://azure.archive.ubuntu.com/ubuntu	priority:1\n' | sudo tee /etc/apt/mirrors.txt
+          curl http://mirrors.ubuntu.com/mirrors.txt | sudo tee --append /etc/apt/mirrors.txt
+          sudo sed -i 's/http:\/\/azure.archive.ubuntu.com\/ubuntu\//mirror+file:\/etc\/apt\/mirrors.txt/' /etc/apt/sources.list
       - name: Install Coverage Tools
         run: |
           sudo apt-get install lcov -y || ( sudo apt-get update && sudo apt-get install lcov -y )
@@ -146,6 +162,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+      - name: Set apt mirror
+        # GitHub Actions apt proxy is super unstable
+        # see https://github.com/actions/runner-images/issues/7048
+        run: |
+          # make sure there is a `\t` between URL and `priority:*` attributes
+          printf 'http://azure.archive.ubuntu.com/ubuntu	priority:1\n' | sudo tee /etc/apt/mirrors.txt
+          curl http://mirrors.ubuntu.com/mirrors.txt | sudo tee --append /etc/apt/mirrors.txt
+          sudo sed -i 's/http:\/\/azure.archive.ubuntu.com\/ubuntu\//mirror+file:\/etc\/apt\/mirrors.txt/' /etc/apt/sources.list
       - name: Install Dependencies
         run: |
           sudo apt-get update
@@ -201,7 +225,7 @@ jobs:
   build-deb:
     name: Build Debian Package
     # building a deb is super slow, but we're a public repo now, so it's free!!
-    runs-on: [ubuntu-20.04]
+    runs-on: [ubuntu-22.04]
     strategy:
       matrix:
         architecture: [arm64, amd64]
@@ -231,6 +255,14 @@ jobs:
         # Sometimes the cache step just freezes forever
         # so put a limit on it so that we can restart it earlier on failure
         timeout-minutes: 10
+      - name: Set apt mirror
+        # GitHub Actions apt proxy is super unstable
+        # see https://github.com/actions/runner-images/issues/7048
+        run: |
+          # make sure there is a `\t` between URL and `priority:*` attributes
+          printf 'http://azure.archive.ubuntu.com/ubuntu	priority:1\n' | sudo tee /etc/apt/mirrors.txt
+          curl http://mirrors.ubuntu.com/mirrors.txt | sudo tee --append /etc/apt/mirrors.txt
+          sudo sed -i 's/http:\/\/azure.archive.ubuntu.com\/ubuntu\//mirror+file:\/etc\/apt\/mirrors.txt/' /etc/apt/sources.list
       - name: Install dependencies
         run: |
           sudo apt-get update && sudo apt-get install pbuilder debhelper -y
