@@ -25,7 +25,11 @@ target_link_libraries(attr_mapper PRIVATE wpabuf radius os log)
 
 add_library(radius_server radius_server.c)
 target_link_libraries(radius_server PUBLIC eloop::eloop PRIVATE radius wpabuf)
-target_compile_definitions(radius_server PRIVATE _DEFAULT_SOURCE _BSD_SOURCE IEEE8021X_EAPOL)
+target_compile_definitions(radius_server
+  PRIVATE
+    _DEFAULT_SOURCE _BSD_SOURCE IEEE8021X_EAPOL
+    $<$<CONFIG:Debug>:CONFIG_TESTING_OPTIONS> # runs TLS tests on some magic EAP usernames
+)
 
 if (BUILD_EAP_LIB)
   target_compile_definitions(radius_server PRIVATE WITH_EAP_LIB)
