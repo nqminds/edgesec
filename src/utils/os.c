@@ -201,7 +201,7 @@ int edge_hexstr2bin(const char *hex, uint8_t *buf, size_t len) {
   return 0;
 }
 
-size_t os_strlcpy(char *dest, const char *src, size_t siz) {
+size_t edge_os_strlcpy(char *dest, const char *src, size_t siz) {
   const char *s = src;
   size_t left = siz;
 
