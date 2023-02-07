@@ -9,11 +9,16 @@ if (USE_UCI_SERVICE AND NOT (BUILD_ONLY_DOCS))
     set(LIBUBOX_INCLUDE_PATH ${LIBUBOX_INSTALL_DIR}/include)
     set(LIBUBOX_LIB_DIR "${LIBUBOX_INSTALL_DIR}/lib")
 
+    set(libubox_git_tag f2d6752901f2f2d8612fb43e10061570c9198af1) # master as of 2022-02-10
     ExternalProject_Add(
       libubox
-      GIT_REPOSITORY https://git.openwrt.org/project/libubox.git
-      GIT_TAG f2d6752901f2f2d8612fb43e10061570c9198af1 # master as of 2022-02-10
-      GIT_PROGRESS true
+      #GIT_REPOSITORY https://git.openwrt.org/project/libubox.git
+      #GIT_TAG "${libubox_git_tag}"
+      # Escape semicolons in gitweb URL with `\\\;`
+      URL "https://git.openwrt.org/?p=project/libubox.git\\\;a=snapshot\\\;h=${libubox_git_tag}\\\;sf=tgz"
+      # this hash will change when OpenWRT's git server updates to v2.38.0+
+      URL_HASH SHA3_256=2189a3dbe55095e1a53c20aeb48d0d40b4fe8ea6f85a85653899bae63209cd5c
+      DOWNLOAD_NAME "libubox-${libubox_git_tag}.tar.gz"
       DOWNLOAD_DIR "${EP_DOWNLOAD_DIR}" # if empty string, uses default download dir
       INSTALL_DIR "${LIBUBOX_INSTALL_DIR}"
       CMAKE_ARGS
@@ -33,11 +38,16 @@ if (USE_UCI_SERVICE AND NOT (BUILD_ONLY_DOCS))
     set(LIBUCI_INCLUDE_PATH ${LIBUCI_INSTALL_DIR}/include)
     set(LIBUCI_LIB_DIR "${LIBUCI_INSTALL_DIR}/lib")
 
+    set(libuci_git_tag f84f49f00fb70364f58b4cce72f1796a7190d370) # master as of 2021-10-22
     ExternalProject_Add(
       libuci
-      GIT_REPOSITORY https://git.openwrt.org/project/uci.git
-      GIT_TAG f84f49f00fb70364f58b4cce72f1796a7190d370 # master as of 2021-10-22
-      GIT_PROGRESS true
+      #GIT_REPOSITORY https://git.openwrt.org/project/uci.git
+      #GIT_TAG "${libuci_git_tag}"
+      # Escape semicolons in gitweb URL with `\\\;`
+      URL "https://git.openwrt.org/?p=project/uci.git\\\;a=snapshot\\\;h=${libuci_git_tag}\\\;sf=tgz"
+      # this hash will change when OpenWRT's git server updates to v2.38.0+
+      URL_HASH SHA3_256=4524e6d408204e9a3f3e5a3531888d4e45fdf617a3aceb1a2e271e262f0fd3bd
+      DOWNLOAD_NAME "uci-${libuci_git_tag}.tar.gz"
       DOWNLOAD_DIR "${EP_DOWNLOAD_DIR}" # if empty string, uses default download dir
       INSTALL_DIR "${LIBUCI_INSTALL_DIR}"
       CMAKE_ARGS
