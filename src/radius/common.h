@@ -157,7 +157,14 @@ static inline u32 WPA_GET_BE24(const u8 *a) {
  *
  * @param src Source buffer to duplicate
  * @param len Length of source buffer
- * @return void* %NULL if allocation failed, copy of src buffer otherwise
+ * @return `NULL` if allocation failed, copy of src buffer otherwise
+ *
+ * @author Johannes Berg <johannes.berg@intel.com>
+ * @date 2017-03-17
+ * @copyright SPDX-License-Identifier: BSD license
+ * @remark Adapted from hostap commit dbdda355d0add3f7d96e3279321d3a63abfc4b32,
+ * see
+ * https://w1.fi/cgit/hostap/commit/?id=dbdda355d0add3f7d96e3279321d3a63abfc4b32
  */
 static inline void *os_memdup(const void *src, size_t len) {
   void *r = os_malloc(len);
