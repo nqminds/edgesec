@@ -31,6 +31,15 @@
  * @param[out] mac Buffer for the hash (16 bytes)
  * @retval  0 on success
  * @retval -1 on failure
+ *
+ * @author Jouni Malinen <j@w1.fi>
+ * @date 2003-2009
+ * @copyright SPDX-License-Identifier: BSD license
+ * @remarks
+ * The source of this code was adapted from `hmac_md5()` in commit
+ * 0a5d68aba50c385e316a30d834d5b6174a4041d2 in `src/crypto/md5.c`
+ * of the hostap project, see
+ * https://w1.fi/cgit/hostap/tree/src/crypto/md5.c?id=0a5d68aba50c385e316a30d834d5b6174a4041d2#n98
  */
 int edge_hmac_md5(const uint8_t *key, size_t key_len, const uint8_t *data,
                   size_t data_len, uint8_t *mac);
