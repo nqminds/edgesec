@@ -100,7 +100,7 @@ static inline int hmac_md5_vector(const uint8_t *key, size_t key_len,
 }
 
 /**
- * hmac_md5 - HMAC-MD5 over data buffer (RFC 2104)
+ * edge_hmac_md5 - HMAC-MD5 over data buffer (RFC 2104)
  * @key: Key for HMAC operations
  * @key_len: Length of the key in bytes
  * @data: Pointers to the data area
@@ -108,7 +108,7 @@ static inline int hmac_md5_vector(const uint8_t *key, size_t key_len,
  * @mac: Buffer for the hash (16 bytes)
  * Returns: 0 on success, -1 on failure
  */
-int hmac_md5(const uint8_t *key, size_t key_len, const uint8_t *data,
-             size_t data_len, uint8_t *mac) {
+int edge_hmac_md5(const uint8_t *key, size_t key_len, const uint8_t *data,
+                  size_t data_len, uint8_t *mac) {
   return hmac_md5_vector(key, key_len, 1, &data, &data_len, mac);
 }
