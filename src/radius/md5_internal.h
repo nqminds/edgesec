@@ -37,6 +37,15 @@ struct MD5Context {
  * @param[out] mac Buffer for the hash
  * @retval  0 on success
  * @retval -1 on failure
+ *
+ * @author Jouni Malinen <j@w1.fi>
+ * @date 2009
+ * @copyright SPDX-License-Identifier: BSD-3-Clause
+ * @remarks
+ * The source of this code was adapted from `md5_internal()` in commit
+ * 0a5d68aba50c385e316a30d834d5b6174a4041d2 in `src/crypto/md5-internal.c`
+ * of the hostap project, see
+ * https://w1.fi/cgit/hostap/tree/src/crypto/md5-internal.c?id=0a5d68aba50c385e316a30d834d5b6174a4041d2#n34
  */
 int edge_md5_vector(size_t num_elem, const uint8_t *addr[], const size_t *len,
                     uint8_t *mac);
