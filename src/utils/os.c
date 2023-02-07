@@ -201,7 +201,7 @@ size_t os_strlcpy(char *restrict dest, const char *restrict src, size_t siz) {
   }
 }
 
-int os_memcmp_const(const void *a, const void *b, size_t len) {
+int edge_os_memcmp_const(const void *a, const void *b, size_t len) {
   const uint8_t *aa = a;
   const uint8_t *bb = b;
   size_t i;
