@@ -86,13 +86,15 @@ struct os_reltime {
  */
 int become_daemon(int flags);
 
+#define os_get_time(t) edge_os_get_time(t)
+
 /**
  * @brief Get current time (sec, usec)
  *
  * @param t Pointer to buffer for the time
  * @return int 0 on success, -1 on failure
  */
-int os_get_time(struct os_time *t);
+int edge_os_get_time(struct os_time *t);
 
 /**
  * @brief Get relative time (sec, usec)
