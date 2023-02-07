@@ -28,6 +28,16 @@ struct MD5Context {
 #define md5_vector(num_elem, addr, len, mac)                                   \
   edge_md5_vector((num_elem), (addr), (len), (mac))
 
+/**
+ * MD5 hash for data vector
+ *
+ * @param num_elem Number of elements in the data vector
+ * @param addr Pointers to the data areas
+ * @param len Lengths of the data blocks
+ * @param[out] mac Buffer for the hash
+ * @retval  0 on success
+ * @retval -1 on failure
+ */
 int edge_md5_vector(size_t num_elem, const uint8_t *addr[], const size_t *len,
                     uint8_t *mac);
 
