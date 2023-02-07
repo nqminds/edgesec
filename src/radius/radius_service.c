@@ -21,10 +21,10 @@
 #include <eloop.h>
 #include "radius_server.h"
 
-struct radius_server_data *run_radius(struct eloop_data *eloop,
-                                      struct radius_conf *rconf,
-                                      mac_conn_fn radius_callback_fn,
-                                      void *radius_callback_args) {
+struct radius_context *run_radius(struct eloop_data *eloop,
+                                  struct radius_conf *rconf,
+                                  mac_conn_fn radius_callback_fn,
+                                  void *radius_callback_args) {
   (void)eloop;
   (void)rconf;
   (void)radius_callback_fn;
@@ -36,8 +36,9 @@ struct radius_server_data *run_radius(struct eloop_data *eloop,
   // return radius_server_init(eloop, rconf->radius_port, client);
 }
 
-void close_radius(struct radius_server_data *srv) {
-  if (srv != NULL) {
-    // radius_server_deinit(srv);
+void close_radius(struct radius_context *ctx) {
+  if (ctx != NULL) {
+    radius_server_deinit(ctx->radius_srv);
+    os_free(ctx);
   }
 }
