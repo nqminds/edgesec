@@ -18,7 +18,10 @@
 
 #define MD5_MAC_LEN 16
 
-int hmac_md5(const uint8_t *key, size_t key_len, const uint8_t *data,
-             size_t data_len, uint8_t *mac);
+#define hmac_md5(key, key_len, data, data_len, mac)                            \
+  edge_hmac_md5((key), (key_len), (data), (data_len), (mac))
+
+int edge_hmac_md5(const uint8_t *key, size_t key_len, const uint8_t *data,
+                  size_t data_len, uint8_t *mac);
 
 #endif /* MD5_H */
