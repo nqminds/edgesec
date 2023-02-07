@@ -15,6 +15,14 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     # warning! This is a shallow clone, and has no git history for docs!
     - uses: actions/checkout@v2
+    - name: Set apt mirror
+      # GitHub Actions apt proxy is super unstable
+      # see https://github.com/actions/runner-images/issues/7048
+      run: |
+        # make sure there is a `\t` between URL and `priority:*` attributes
+        printf 'http://azure.archive.ubuntu.com/ubuntu	priority:1\n' | sudo tee /etc/apt/mirrors.txt
+        curl http://mirrors.ubuntu.com/mirrors.txt | sudo tee --append /etc/apt/mirrors.txt
+        sudo sed -i 's/http:\/\/azure.archive.ubuntu.com\/ubuntu\//mirror+file:\/etc\/apt\/mirrors.txt/' /etc/apt/sources.list
     - name: Install Dependencies
       run: sudo apt-get update && sudo apt-get install doxygen graphviz texinfo -y
     - name: Configure
