@@ -225,7 +225,7 @@ jobs:
   build-deb:
     name: Build Debian Package
     # building a deb is super slow, but we're a public repo now, so it's free!!
-    runs-on: [ubuntu-20.04]
+    runs-on: [ubuntu-22.04]
     strategy:
       matrix:
         architecture: [arm64, amd64]
