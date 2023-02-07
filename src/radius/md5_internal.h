@@ -22,8 +22,11 @@ struct MD5Context {
   uint8_t in[64];
 };
 
-int md5_vector(size_t num_elem, const uint8_t *addr[], const size_t *len,
-               uint8_t *mac);
+#define md5_vector(num_elem, addr, len, mac)                                   \
+  edge_md5_vector((num_elem), (addr), (len), (mac))
+
+int edge_md5_vector(size_t num_elem, const uint8_t *addr[], const size_t *len,
+                    uint8_t *mac);
 
 void MD5Init(struct MD5Context *context);
 void MD5Update(struct MD5Context *context, unsigned char const *buf,

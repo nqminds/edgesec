@@ -30,8 +30,8 @@ typedef struct MD5Context MD5_CTX;
  * @mac: Buffer for the hash
  * Returns: 0 on success, -1 of failure
  */
-int md5_vector(size_t num_elem, const uint8_t *addr[], const size_t *len,
-               uint8_t *mac) {
+int edge_md5_vector(size_t num_elem, const uint8_t *addr[], const size_t *len,
+                    uint8_t *mac) {
   MD5_CTX ctx;
   size_t i;
 
