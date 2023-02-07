@@ -60,6 +60,10 @@
 #define os_strlen(s) strlen((s))
 #endif
 
+#ifndef os_strncmp
+#define os_strncmp(s1, s2, n) strncmp((s1), (s2), (n))
+#endif
+
 struct find_dir_type {
   int proc_running;
   char *proc_name;
