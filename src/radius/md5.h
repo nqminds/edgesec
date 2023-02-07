@@ -22,13 +22,15 @@
   edge_hmac_md5((key), (key_len), (data), (data_len), (mac))
 
 /**
- * edge_hmac_md5 - HMAC-MD5 over data buffer (RFC 2104)
- * @key: Key for HMAC operations
- * @key_len: Length of the key in bytes
- * @data: Pointers to the data area
- * @data_len: Length of the data area
- * @mac: Buffer for the hash (16 bytes)
- * Returns: 0 on success, -1 on failure
+ * HMAC-MD5 over data buffer (RFC 2104)
+ *
+ * @param key Key for HMAC operations
+ * @param key_len Length of the key in bytes
+ * @param data Pointers to the data area
+ * @param data_len Length of the data area
+ * @param[out] mac Buffer for the hash (16 bytes)
+ * @retval  0 on success
+ * @retval -1 on failure
  */
 int edge_hmac_md5(const uint8_t *key, size_t key_len, const uint8_t *data,
                   size_t data_len, uint8_t *mac);
