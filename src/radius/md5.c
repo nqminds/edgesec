@@ -30,8 +30,9 @@
  * @mac: Buffer for the hash (16 bytes)
  * Returns: 0 on success, -1 on failure
  */
-int hmac_md5_vector(const uint8_t *key, size_t key_len, size_t num_elem,
-                    const uint8_t *addr[], const size_t *len, uint8_t *mac) {
+static inline int hmac_md5_vector(const uint8_t *key, size_t key_len,
+                                  size_t num_elem, const uint8_t *addr[],
+                                  const size_t *len, uint8_t *mac) {
   uint8_t k_pad[64]; /* padding - key XORd with ipad/opad */
   uint8_t tk[16];
   const uint8_t *_addr[6];
