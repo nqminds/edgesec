@@ -166,6 +166,30 @@ static inline int os_snprintf_error(size_t size, int res) {
   return res < 0 || (unsigned int)res >= size;
 }
 
+/**
+ * Sets the memory to '\0' before freeing it.
+ *
+ * Clears the given memory to `'\0'` before free()-ing it, to avoid leaking
+ * sensitive information.
+ *
+ * @param bin - Pointer to the memory to free()
+ * @param len - Number of bytes to `'\0'` before free()-ing
+ * @see
+ * https://wiki.sei.cmu.edu/confluence/display/c/MEM03-C.+Clear+sensitive+information+stored+in+reusable+resources
+ * @see https://cwe.mitre.org/data/definitions/226.html
+ * @remarks Adapted from commit 19c48da06b6980915e97a84ea8387a9db858c662
+ * of hostap, see
+ * https://w1.fi/cgit/hostap/commit/?id=19c48da06b6980915e97a84ea8387a9db858c662
+ */
+static inline void bin_clear_free(void *bin, size_t len) {
+  if (bin) {
+    // may be optimized out by a smart compiler, we should use
+    // memset_s (C11 Annex K) or memset_explicit (C23) instead
+    os_memset(bin, '\0', len);
+    os_free(bin);
+  }
+}
+
 #define wpa_printf(level, ...)                                                 \
   log_levels(LOGC_TRACE, __FILENAME__, __LINE__, __VA_ARGS__)
 #define wpa_snprintf_hex(buf, buf_size, data, len)                             \
