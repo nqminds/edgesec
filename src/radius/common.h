@@ -149,6 +149,23 @@ static inline u32 WPA_GET_BE24(const u8 *a) {
   return (a[0] << 16) | (a[1] << 8) | a[2];
 }
 
+/**
+ * Returns `true` if `snprintf` was truncated.
+ *
+ * @param size - Size of snprintf() output buffer.
+ * @param res - Return code from snprintf()
+ * @retval 0 if snprintf() was successful
+ * @retval 1 if snprintf() failed
+ *
+ * @author Jouni Malinen <j@w1.fi>
+ * @remarks Taken from commit 0047306bc9ab7d46e8cc22ff9a3e876c47626473 of
+ * hostap, see
+ * https://w1.fi/cgit/hostap/commit/?id=0047306bc9ab7d46e8cc22ff9a3e876c47626473
+ */
+static inline int os_snprintf_error(size_t size, int res) {
+  return res < 0 || (unsigned int)res >= size;
+}
+
 #define wpa_printf(level, ...)                                                 \
   log_levels(LOGC_TRACE, __FILENAME__, __LINE__, __VA_ARGS__)
 #define wpa_snprintf_hex(buf, buf_size, data, len)                             \
