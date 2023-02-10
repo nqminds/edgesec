@@ -210,6 +210,19 @@ static inline void bin_clear_free(void *bin, size_t len) {
 }
 
 /**
+ * Log levels used by source-code taken from hostap. Used as the @c level
+ * parameter for functions like wpa_hexdump_ascii().
+ */
+enum hostap_log_level {
+  MSG_EXCESSIVE,
+  MSG_MSGDUMP,
+  MSG_DEBUG,
+  MSG_INFO,
+  MSG_WARNING,
+  MSG_ERROR
+};
+
+/**
  * Logs the given text.
  *
  * @remarks This macro has an API compatible with hostap's wpa_printf()
@@ -247,10 +260,10 @@ static inline void bin_clear_free(void *bin, size_t len) {
  * see https://w1.fi/cgit/hostap/tree/src/utils/wpa_debug.h?h=hostap_2_10#n118
  * However, it prints every byte as hex, and never prints bytes as ASCII.
  */
-static inline void
-wpa_hexdump_ascii(__maybe_unused int level, // used by hostap, but our
-                                            // implementation doesn't use it
-                  const char *title, const void *buf, size_t len) {
+static inline void wpa_hexdump_ascii(
+    __maybe_unused enum hostap_log_level
+        level, // used by hostap, but our implementation doesn't use it
+    const char *title, const void *buf, size_t len) {
   char hex_buf[33];
   printf_hex(hex_buf, sizeof(hex_buf), buf, len, false);
   log_trace("%s - hexdump(len=%lu):%s", title, len, hex_buf);
