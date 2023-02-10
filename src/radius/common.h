@@ -192,6 +192,18 @@ static inline void bin_clear_free(void *bin, size_t len) {
 }
 
 /**
+ * Linked-list of hostapd RADIUS attributes.
+ *
+ * @see
+ * https://w1.fi/cgit/hostap/commit/?id=af35e7af7f8bb1ca9f0905b4074fb56a264aa12b
+ */
+struct hostapd_radius_attr {
+  uint8_t type;
+  struct wpabuf *val;
+  struct hostapd_radius_attr *next;
+};
+
+/**
  * Log levels used by source-code taken from hostap. Used as the @c level
  * parameter for functions like wpa_hexdump_ascii().
  */
