@@ -55,6 +55,10 @@
 #define os_strlen(s) strlen((s))
 #endif
 
+#ifndef os_snprintf
+#define os_snprintf(s, maxlen, ...) snprintf((s), (maxlen), __VA_ARGS__)
+#endif
+
 #ifndef os_strncmp
 #define os_strncmp(s1, s2, n) strncmp((s1), (s2), (n))
 #endif
