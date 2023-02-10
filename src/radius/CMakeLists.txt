@@ -22,6 +22,7 @@ target_link_libraries(radius_config INTERFACE net os)
 
 add_library(radius_server radius_server.c)
 target_link_libraries(radius_server PUBLIC os eloop::eloop PRIVATE radius wpabuf log net)
+target_compile_definitions(radius_server PRIVATE _DEFAULT_SOURCE _BSD_SOURCE IEEE8021X_EAPOL)
 
 if (BUILD_EAP_LIB)
 target_compile_definitions(radius_server PRIVATE WITH_EAP_LIB)
