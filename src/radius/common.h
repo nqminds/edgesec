@@ -42,6 +42,24 @@ typedef int8_t s8;
 #define __bitwise
 #endif
 
+#ifndef __maybe_unused
+#if defined __has_attribute
+#if __has_attribute(unused)
+/**
+ * If used before a variable, tells the compiler that variable can be unused.
+ * (e.g. does the same thing as casting to `(void)`).
+ *
+ * @see https://clang.llvm.org/docs/AttributeReference.html#maybe-unused-unused
+ */
+#define __maybe_unused __attribute__((unused))
+#else
+#define __maybe_unused
+#endif /* __has_attribute(unused) */
+#else
+#define __maybe_unused
+#endif /* defined __has_attribute */
+#endif /* __maybe_unused */
+
 typedef u16 __bitwise be16;
 typedef u16 __bitwise le16;
 typedef u32 __bitwise be32;
