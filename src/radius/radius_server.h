@@ -42,12 +42,6 @@ struct radius_server_counters {
   uint32_t unknown_types;
 };
 
-struct hostapd_radius_attr {
-  uint8_t type;
-  struct wpabuf *val;
-  struct hostapd_radius_attr *next;
-};
-
 /**
  * struct radius_session - Internal RADIUS server data for a session
  */
