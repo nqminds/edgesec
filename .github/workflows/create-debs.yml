@@ -101,7 +101,7 @@ jobs:
           escaped_preset="${preset////-}"
           echo "ESCAPED_CMAKE_PRESET=${escaped_preset}" >> $GITHUB_OUTPUT
       - name: Archive Install Output
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: edgesec-build-${{ steps.escape_preset.outputs.ESCAPED_CMAKE_PRESET }}
           # EDGESec is a public repo, so storage is free
@@ -293,7 +293,7 @@ jobs:
           echo "deb-path=${NEW_DEB_PATH}" >> $GITHUB_OUTPUT
           echo "deb-name=$(basename "${NEW_DEB_PATH}")" >> $GITHUB_OUTPUT
       - name: Archive built debs
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: edgesec-built-debs
           # EDGESec is a public repo, so storage is free
