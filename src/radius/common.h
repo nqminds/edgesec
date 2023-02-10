@@ -214,6 +214,27 @@ static inline void bin_clear_free(void *bin, size_t len) {
 #define wpa_snprintf_hex(buf, buf_size, data, len)                             \
   printf_hex(buf, buf_size, data, len, false)
 
+/**
+ * Prints the first 32-bytes of the given buffer with the given title.
+ *
+ * @param level priority level of the message
+ * @param title of for the message
+ * @param data buffer to be dumped
+ * @param length of the buf
+ *
+ * @remarks Designed to have the same API as hostap's wpa_hexdump_ascii(),
+ * see https://w1.fi/cgit/hostap/tree/src/utils/wpa_debug.h?h=hostap_2_10#n118
+ * However, it prints every byte as hex, and never prints bytes as ASCII.
+ */
+static inline void
+wpa_hexdump_ascii(__maybe_unused int level, // used by hostap, but our
+                                            // implementation doesn't use it
+                  const char *title, const void *buf, size_t len) {
+  char hex_buf[32];
+  printf_hex(hex_buf, 32, buf, len, false);
+  log_trace("%s - hexdump(len=%lu):%s", title, len, hex_buf);
+}
+
 static inline void printf_encode(char *txt, size_t maxlen, const uint8_t *data,
                                  size_t len) {
   char *end = txt + maxlen;
