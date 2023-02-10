@@ -335,5 +335,12 @@ static inline void printf_encode(char *txt, size_t maxlen, const uint8_t *data,
 #define wpa_trace_show(s) log_trace("%s", s)
 #endif /* wpa_trace_show */
 
+/**
+ * Used in hostap source code to test failures.
+ *
+ * @see
+ * https://w1.fi/cgit/hostap/commit/?h=hostap_2_10&id=2da525651d9aa49854bff51f7e4faf9273f68868
+ */
 #define TEST_FAIL() 0
-#endif
+
+#endif /* COMMON_H */
