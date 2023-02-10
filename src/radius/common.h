@@ -208,8 +208,16 @@ static inline void bin_clear_free(void *bin, size_t len) {
   }
 }
 
+/**
+ * Logs the given text.
+ *
+ * @remarks This macro has an API compatible with hostap's wpa_printf()
+ * function, see
+ * https://w1.fi/cgit/hostap/tree/src/utils/wpa_debug.h?h=hostap_2_10#n62
+ */
 #define wpa_printf(level, ...)                                                 \
   log_levels(LOGC_TRACE, __FILENAME__, __LINE__, __VA_ARGS__)
+
 #define wpa_snprintf_hex(buf, buf_size, data, len)                             \
   printf_hex(buf, buf_size, data, len, false)
 
