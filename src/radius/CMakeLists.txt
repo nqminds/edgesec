@@ -23,5 +23,10 @@ target_link_libraries(radius_config INTERFACE net os)
 add_library(radius_server radius_server.c)
 target_link_libraries(radius_server PUBLIC os eloop::eloop PRIVATE radius wpabuf log net)
 
+if (BUILD_EAP_LIB)
+target_compile_definitions(radius_server PRIVATE WITH_EAP_LIB)
+  target_link_libraries(radius_server PRIVATE hostapd::libeap)
+endif ()
+
 add_library(radius_service radius_service.c)
 target_link_libraries(radius_service PRIVATE radius_server)
