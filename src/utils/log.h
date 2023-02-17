@@ -87,7 +87,6 @@ void log_error_exit(uint8_t level, const char *file, uint32_t line,
 void log_error_exit_proc(uint8_t level, const char *file, uint32_t line,
                          const char *format, ...);
 
-void printf_encode(char *txt, size_t maxlen, const uint8_t *data, size_t len);
 size_t printf_hex(char *buf, size_t buf_size, const uint8_t *data, size_t len,
                   int uppercase);
 #endif
