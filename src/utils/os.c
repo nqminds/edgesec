@@ -224,7 +224,7 @@ int edge_os_memcmp_const(const void *a, const void *b, size_t len) {
   return res;
 }
 
-int os_get_random(unsigned char *buf, size_t len) {
+int edge_os_get_random(unsigned char *buf, size_t len) {
   FILE *f;
   size_t rc;
 

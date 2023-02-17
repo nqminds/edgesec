@@ -154,6 +154,8 @@ int os_get_timestamp(uint64_t *timestamp);
  */
 void os_to_timestamp(struct timeval ts, uint64_t *timestamp);
 
+#define os_get_random(buf, len) edge_os_get_random((buf), (len))
+
 /**
  * @brief Get cryptographically strong pseudo random data
  *
@@ -161,7 +163,7 @@ void os_to_timestamp(struct timeval ts, uint64_t *timestamp);
  * @param len Length of the buffer.
  * @return int 0 on success, -1 on failure
  */
-int os_get_random(unsigned char *buf, size_t len);
+int edge_os_get_random(unsigned char *buf, size_t len);
 
 /**
  * @brief Return a random int from a give range
