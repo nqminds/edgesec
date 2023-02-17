@@ -31,14 +31,12 @@ if (BUILD_UUID_LIB AND NOT (BUILD_ONLY_DOCS))
   endif()
   list(JOIN SOLIB_LDFLAGS " " SOLIB_LDFLAGS)
 
-  set(UTIL_LINUX_VERSION 2.37.2)
   # ExternalProject downloads/builds/installs at **build** time
   # (e.g. during the `cmake --build` step)
   ExternalProject_Add(
     util_linux
-    URL "https://github.com/karelzak/util-linux/archive/refs/tags/v${UTIL_LINUX_VERSION}.tar.gz"
-    URL_HASH SHA3_256=d45c2b0ef0cca67ef9cbac1099503564d559fa1c52c0335dfd119546624b6bd0
-    DOWNLOAD_NAME "util_linux-${UTIL_LINUX_VERSION}.tar.gz"
+    URL "https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v2.37/util-linux-2.37.2.tar.xz"
+    URL_HASH SHA256=6a0764c1aae7fb607ef8a6dd2c0f6c47d5e5fd27aa08820abaad9ec14e28e9d9
     DOWNLOAD_DIR "${EP_DOWNLOAD_DIR}" # if empty string, uses default download dir
     CONFIGURE_COMMAND <SOURCE_DIR>/autogen.sh
     COMMAND
