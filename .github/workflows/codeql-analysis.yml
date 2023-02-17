@@ -38,6 +38,14 @@ jobs:
         sudo apt-get update
         sudo apt-get install devscripts equivs -y # install mk-build-depends
         sudo mk-build-deps --install --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' debian/control
+    - name: Cache CMake build/dl folder
+      uses: actions/cache@v3
+      with:
+        path: ./build/dl
+        key: codeql-analysis-${{ hashFiles( 'lib/*' ) }}
+      # Sometimes the cache step just freezes forever
+      # so put a limit on it so that we can restart it earlier on failure
+      timeout-minutes: 10
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v2
