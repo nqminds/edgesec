@@ -197,7 +197,8 @@ int edge_hexstr2bin(const char *hex, uint8_t *buf, size_t len) {
   return 0;
 }
 
-size_t os_strlcpy(char *restrict dest, const char *restrict src, size_t siz) {
+size_t edge_os_strlcpy(char *restrict dest, const char *restrict src,
+                       size_t siz) {
   /* Copy string up to the maximum size of the dest buffer */
   const char *char_after_NUL = memccpy(dest, src, '\0', siz);
 

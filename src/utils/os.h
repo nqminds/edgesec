@@ -215,6 +215,8 @@ int edge_hexstr2bin(const char *hex, uint8_t *buf, size_t len);
  */
 bool is_number(const char *ptr);
 
+#define os_strlcpy(dest, src, siz) edge_os_strlcpy((dest), (src), (siz))
+
 /**
  * @brief Copy a string with size bound and NUL-termination
  *
@@ -226,7 +228,8 @@ bool is_number(const char *ptr);
  * @return size_t Total length of the target string (length of src) (not
  * including NUL-termination)
  */
-size_t os_strlcpy(char *restrict dest, const char *restrict src, size_t siz);
+size_t edge_os_strlcpy(char *restrict dest, const char *restrict src,
+                       size_t siz);
 
 /**
  * @brief Returns the size of string with a give max length
