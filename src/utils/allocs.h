@@ -54,18 +54,6 @@ static inline void *os_realloc_array(void *ptr, size_t nmemb, size_t size) {
   return os_realloc(ptr, nmemb * size);
 }
 
-/**
- * @brief Allocate duplicate of passed memory chunk
- *
- * This function allocates a memory block like os_malloc() would, and
- * copies the given source buffer into it.
- *
- * @param src Source buffer to duplicate
- * @param len Length of source buffer
- * @return void* %NULL if allocation failed, copy of src buffer otherwise
- */
-void *os_memdup(const void *src, size_t len);
-
 #ifndef os_memcpy
 #define os_memcpy(d, s, n) memcpy((d), (s), (n))
 #endif
@@ -80,7 +68,6 @@ void *os_memdup(const void *src, size_t len);
 #endif
 
 /**
- * @brief Returns a pointer to a new string which is a duplicate of the string s
  *
  * @param s The input string
  * @return char* The dublicate string pointer, NULL on error
