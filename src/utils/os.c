@@ -154,7 +154,7 @@ int os_get_time(struct os_time *t) {
   return res;
 }
 
-int os_get_reltime(struct os_reltime *t) {
+int edge_os_get_reltime(struct os_reltime *t) {
   int res;
   struct timeval tv;
   res = gettimeofday(&tv, NULL);
@@ -163,7 +163,17 @@ int os_get_reltime(struct os_reltime *t) {
   return res;
 }
 
-int16_t hex2byte(const char hex[static 2]) {
+/**
+ * @brief ASCII hex character pair to byte
+ * @code{.c}
+ * // returns 0x91 aka 145 aka '\x91'
+ * hex2byte("91")
+ * @endcode
+ *
+ * @param hex Two char string
+ * @return Converted byte, or `-1` on error.
+ */
+static inline int16_t hex2byte(const char hex[static 2]) {
   int_fast8_t a = hex2num(*hex++);
   if (a < 0)
     return -1;
@@ -173,7 +183,7 @@ int16_t hex2byte(const char hex[static 2]) {
   return (a << 4) | b;
 }
 
-int hexstr2bin(const char *hex, uint8_t *buf, size_t len) {
+int edge_hexstr2bin(const char *hex, uint8_t *buf, size_t len) {
   const char *ipos = hex;
   uint8_t *opos = buf;
 
@@ -187,7 +197,8 @@ int hexstr2bin(const char *hex, uint8_t *buf, size_t len) {
   return 0;
 }
 
-size_t os_strlcpy(char *restrict dest, const char *restrict src, size_t siz) {
+size_t edge_os_strlcpy(char *restrict dest, const char *restrict src,
+                       size_t siz) {
   /* Copy string up to the maximum size of the dest buffer */
   const char *char_after_NUL = memccpy(dest, src, '\0', siz);
 
@@ -201,7 +212,7 @@ size_t os_strlcpy(char *restrict dest, const char *restrict src, size_t siz) {
   }
 }
 
-int os_memcmp_const(const void *a, const void *b, size_t len) {
+int edge_os_memcmp_const(const void *a, const void *b, size_t len) {
   const uint8_t *aa = a;
   const uint8_t *bb = b;
   size_t i;

@@ -101,7 +101,11 @@ int os_get_time(struct os_time *t);
  * @param t Pointer to buffer for the time
  * @return int 0 on success, -1 on failure
  */
-int os_get_reltime(struct os_reltime *t);
+int edge_os_get_reltime(struct os_reltime *t);
+
+#ifndef os_get_reltime
+#define os_get_reltime(t) edge_os_get_reltime((t))
+#endif
 
 /**
  * @brief Compares the seconds value of two time params
@@ -182,20 +186,11 @@ void os_init_random_seed(void);
 int os_get_random_number_s(unsigned char *buf, size_t len);
 
 /**
- * @brief ASCII hex character to number
- *
- * @param hex Two char string
- * @return converted number from 0-255, or `-1` on error.
- */
-int16_t hex2byte(const char hex[static 2]);
-
-/**
  * @brief Hex char to number
  * @code{.c}
  * // returns 0x9 aka 9 aka '\x09'
  * hex2num('9')
  * @endcode
- *
  * @param[in] c Hex char
  * @return Converted byte from 0-15, or `-1` on error.
  */
@@ -210,7 +205,7 @@ int8_t hex2num(char c);
  * double this size
  * @return int 0 on success, -1 on failure (invalid hex string)
  */
-int hexstr2bin(const char *hex, uint8_t *buf, size_t len);
+int edge_hexstr2bin(const char *hex, uint8_t *buf, size_t len);
 
 /**
  * @brief Check if a string is a number
@@ -219,6 +214,8 @@ int hexstr2bin(const char *hex, uint8_t *buf, size_t len);
  * @return true if numer, false otherwise
  */
 bool is_number(const char *ptr);
+
+#define os_strlcpy(dest, src, siz) edge_os_strlcpy((dest), (src), (siz))
 
 /**
  * @brief Copy a string with size bound and NUL-termination
@@ -231,7 +228,8 @@ bool is_number(const char *ptr);
  * @return size_t Total length of the target string (length of src) (not
  * including NUL-termination)
  */
-size_t os_strlcpy(char *restrict dest, const char *restrict src, size_t siz);
+size_t edge_os_strlcpy(char *restrict dest, const char *restrict src,
+                       size_t siz);
 
 /**
  * @brief Returns the size of string with a give max length
@@ -242,15 +240,17 @@ size_t os_strlcpy(char *restrict dest, const char *restrict src, size_t siz);
  */
 size_t os_strnlen_s(char *str, size_t max_len);
 
+#define os_memcmp_const(a, b, len) edge_os_memcmp_const((a), (b), (len))
+
 /**
  * @brief Constant time memory comparison
  *
  * This function is meant for comparing passwords or hash values where
  * difference in execution time could provide external observer information
  * about the location of the difference in the memory buffers. The return value
- * does not behave like os_memcmp(), i.e., os_memcmp_const() cannot be used to
- * sort items into a defined order. Unlike os_memcmp(), execution time of
- * os_memcmp_const() does not depend on the contents of the compared memory
+ * does not behave like os_memcmp(), i.e., edge_os_memcmp_const() cannot be used
+ * to sort items into a defined order. Unlike os_memcmp(), execution time of
+ * edge_os_memcmp_const() does not depend on the contents of the compared memory
  * buffers, but only on the total compared length.
  *
  * @param a First buffer to compare
@@ -258,7 +258,7 @@ size_t os_strnlen_s(char *str, size_t max_len);
  * @param len Number of octets to compare
  * @return int 0 if buffers are equal, non-zero if not
  */
-int os_memcmp_const(const void *a, const void *b, size_t len);
+int edge_os_memcmp_const(const void *a, const void *b, size_t len);
 
 /*
  * gcc 4.4 ends up generating strict-aliasing warnings about some very common
