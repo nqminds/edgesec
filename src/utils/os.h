@@ -201,7 +201,7 @@ int8_t hex2num(char c);
  * double this size
  * @return int 0 on success, -1 on failure (invalid hex string)
  */
-int hexstr2bin(const char *hex, uint8_t *buf, size_t len);
+int edge_hexstr2bin(const char *hex, uint8_t *buf, size_t len);
 
 /**
  * @brief Check if a string is a number

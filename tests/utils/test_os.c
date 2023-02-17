@@ -665,31 +665,31 @@ static void test_hexstr2bin(void **state) {
 
   uint8_t buffer[256] = {0};
   {
-    assert_return_code(hexstr2bin("01", buffer, 1), errno);
+    assert_return_code(edge_hexstr2bin("01", buffer, 1), errno);
     uint8_t expected_data[] = {0x01};
     assert_memory_equal(expected_data, buffer, sizeof(expected_data));
   }
 
   {
-    assert_return_code(
-        hexstr2bin("0123456789abcdef", buffer, sizeof("0123456789abcdef") / 2),
-        errno);
+    assert_return_code(edge_hexstr2bin("0123456789abcdef", buffer,
+                                       sizeof("0123456789abcdef") / 2),
+                       errno);
     uint8_t expected_data[] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef};
     assert_memory_equal(expected_data, buffer, sizeof(expected_data));
   }
 
   { // should handle capital and lower-case letters
-    assert_return_code(
-        hexstr2bin("0123456789ABCDEF", buffer, sizeof("0123456789ABCDEF") / 2),
-        errno);
+    assert_return_code(edge_hexstr2bin("0123456789ABCDEF", buffer,
+                                       sizeof("0123456789ABCDEF") / 2),
+                       errno);
     uint8_t expected_data[] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF};
     assert_memory_equal(expected_data, buffer, sizeof(expected_data));
   }
 
   // should return `-1` for invalid chars
-  assert_int_equal(hexstr2bin("0g", buffer, 1), -1);
-  assert_int_equal(hexstr2bin("ꙮ", buffer, 1), -1);
-  assert_int_equal(hexstr2bin("0", buffer, 1), -1);
+  assert_int_equal(edge_hexstr2bin("0g", buffer, 1), -1);
+  assert_int_equal(edge_hexstr2bin("ꙮ", buffer, 1), -1);
+  assert_int_equal(edge_hexstr2bin("0", buffer, 1), -1);
 }
 
 static void test_signal_process(void **state) {

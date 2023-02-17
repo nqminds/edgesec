@@ -183,7 +183,7 @@ static inline int16_t hex2byte(const char hex[static 2]) {
   return (a << 4) | b;
 }
 
-int hexstr2bin(const char *hex, uint8_t *buf, size_t len) {
+int edge_hexstr2bin(const char *hex, uint8_t *buf, size_t len) {
   const char *ipos = hex;
   uint8_t *opos = buf;
 
