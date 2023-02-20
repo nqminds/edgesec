@@ -63,7 +63,7 @@ endif()
 
 add_library(supervisor_config INTERFACE)
 set_target_properties(supervisor_config PROPERTIES PUBLIC_HEADER "supervisor_config.h")
-target_link_libraries(supervisor_config INTERFACE SQLite::SQLite3 iface ap_config dhcp_config)
+target_link_libraries(supervisor_config INTERFACE SQLite::SQLite3 iface ap_config dhcp_config radius_config)
 
 add_library(supervisor supervisor.c)
 target_include_directories(supervisor PUBLIC $<TARGET_PROPERTY:iface,INCLUDE_DIRECTORIES>)
