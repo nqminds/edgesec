@@ -129,6 +129,11 @@ struct radius_client {
  */
 struct radius_server_data {
 	/**
+	 * eloop - the pointer to the eloop context
+	 */
+	struct eloop_data *eloop;
+
+	/**
 	 * auth_sock - Socket for RADIUS authentication messages
 	 */
 	int auth_sock;
@@ -390,8 +395,11 @@ radius_server_get_session(struct radius_client *client, unsigned int sess_id)
 static void radius_server_session_free(struct radius_server_data *data,
 				       struct radius_session *sess)
 {
-	eloop_cancel_timeout(radius_server_session_timeout, data, sess);
-	eloop_cancel_timeout(radius_server_session_remove_timeout, data, sess);
+	edge_eloop_cancel_timeout(data->eloop, radius_server_session_timeout,
+				  data, sess);
+	edge_eloop_cancel_timeout(data->eloop,
+				  radius_server_session_remove_timeout, data,
+				  sess);
 	eap_server_sm_deinit(sess->eap);
 	radius_msg_free(sess->last_msg);
 	os_free(sess->last_from_addr);
@@ -409,7 +417,9 @@ static void radius_server_session_remove(struct radius_server_data *data,
 	struct radius_client *client = sess->client;
 	struct radius_session *session, *prev;
 
-	eloop_cancel_timeout(radius_server_session_remove_timeout, data, sess);
+	edge_eloop_cancel_timeout(data->eloop,
+				  radius_server_session_remove_timeout,
+				  data, sess);
 
 	prev = NULL;
 	session = client->sessions;
@@ -470,8 +480,8 @@ radius_server_new_session(struct radius_server_data *data,
 	sess->sess_id = data->next_sess_id++;
 	sess->next = client->sessions;
 	client->sessions = sess;
-	eloop_register_timeout(RADIUS_SESSION_TIMEOUT, 0,
-			       radius_server_session_timeout, data, sess);
+	edge_eloop_register_timeout(data->eloop, RADIUS_SESSION_TIMEOUT, 0,
+				    radius_server_session_timeout, data, sess);
 	data->num_sess++;
 	return sess;
 }
@@ -1538,11 +1548,13 @@ send_reply:
 	if (is_complete) {
 		RADIUS_DEBUG("Removing completed session 0x%x after timeout",
 			     sess->sess_id);
-		eloop_cancel_timeout(radius_server_session_remove_timeout,
-				     data, sess);
-		eloop_register_timeout(RADIUS_SESSION_MAINTAIN, 0,
-				       radius_server_session_remove_timeout,
-				       data, sess);
+		edge_eloop_cancel_timeout(data->eloop,
+					  radius_server_session_remove_timeout,
+					  data, sess);
+		edge_eloop_register_timeout(data->eloop,
+					    RADIUS_SESSION_MAINTAIN, 0,
+					    radius_server_session_remove_timeout,
+					    data, sess);
 	}
 
 	return 0;
@@ -2204,6 +2216,7 @@ radius_server_init(struct radius_server_conf *conf)
 	if (data == NULL)
 		return NULL;
 
+	data->eloop = conf->eloop;
 	data->eap_cfg = conf->eap_cfg;
 	data->auth_sock = -1;
 	data->acct_sock = -1;
@@ -2276,9 +2289,9 @@ radius_server_init(struct radius_server_conf *conf)
 		wpa_printf(MSG_ERROR, "Failed to open UDP socket for RADIUS authentication server");
 		goto fail;
 	}
-	if (eloop_register_read_sock(data->auth_sock,
-				     radius_server_receive_auth,
-				     data, NULL)) {
+	if (edge_eloop_register_read_sock(data->eloop, data->auth_sock,
+					  radius_server_receive_auth,
+					  data, NULL)) {
 		goto fail;
 	}
 
@@ -2294,9 +2307,9 @@ radius_server_init(struct radius_server_conf *conf)
 			wpa_printf(MSG_ERROR, "Failed to open UDP socket for RADIUS accounting server");
 			goto fail;
 		}
-		if (eloop_register_read_sock(data->acct_sock,
-					     radius_server_receive_acct,
-					     data, NULL))
+		if (edge_eloop_register_read_sock(data->eloop, data->acct_sock,
+						  radius_server_receive_acct,
+						  data, NULL))
 			goto fail;
 	} else {
 		data->acct_sock = -1;
@@ -2337,12 +2350,12 @@ void radius_server_deinit(struct radius_server_data *data)
 		return;
 
 	if (data->auth_sock >= 0) {
-		eloop_unregister_read_sock(data->auth_sock);
+		edge_eloop_unregister_read_sock(data->eloop, data->auth_sock);
 		close(data->auth_sock);
 	}
 
 	if (data->acct_sock >= 0) {
-		eloop_unregister_read_sock(data->acct_sock);
+		edge_eloop_unregister_read_sock(data->eloop, data->acct_sock);
 		close(data->acct_sock);
 	}
 

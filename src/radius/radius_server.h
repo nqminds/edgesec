@@ -9,6 +9,8 @@
 #ifndef RADIUS_SERVER_H
 #define RADIUS_SERVER_H
 
+#include <eloop.h>
+
 struct radius_server_data;
 struct eap_user;
 
@@ -16,6 +18,11 @@ struct eap_user;
  * struct radius_server_conf - RADIUS server configuration
  */
 struct radius_server_conf {
+	/**
+	 * eloop - the pointer to the eloop context
+	 */
+	struct eloop_data *eloop;
+
 	/**
 	 * auth_port - UDP port to listen to as an authentication server
 	 */
