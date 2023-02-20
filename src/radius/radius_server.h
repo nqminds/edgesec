@@ -11,6 +11,8 @@
 
 #include <eloop.h>
 
+#include "common.h"
+
 struct radius_server_data;
 struct eap_user;
 
