@@ -20,6 +20,7 @@
 
 #include "common.h"
 
+#include <crypto/tls.h>
 #include <eloop.h>
 #include <eap_server/eap.h>
 
