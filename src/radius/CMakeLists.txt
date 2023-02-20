@@ -4,7 +4,7 @@ include_directories (
 
 add_library(common INTERFACE)
 set_target_properties(common PROPERTIES PUBLIC_HEADER "common.h")
-target_link_libraries(common INTERFACE allocs log)
+target_link_libraries(common INTERFACE attributes allocs log)
 
 add_library(md5_internal md5_internal.c)
 target_link_libraries(md5_internal PRIVATE log os)
