@@ -14,6 +14,7 @@
 #include <eloop.h>
 #include "../supervisor/supervisor.h"
 
+#include "radius_config.h"
 #include "radius_server.h"
 
 /**
