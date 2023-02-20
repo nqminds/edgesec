@@ -199,15 +199,16 @@ int disable_pmtu_discovery(int sock) {
   return 0;
 }
 
-int hwaddr_aton2(const char *txt, uint8_t *addr) {
+int edge_hwaddr_aton2(const char *txt, uint8_t *addr) {
   int i;
   const char *pos = txt;
 
   for (i = 0; i < 6; i++) {
     int a, b;
 
-    while (*pos == ':' || *pos == '.' || *pos == '-')
+    while (*pos == ':' || *pos == '.' || *pos == '-') {
       pos++;
+    }
 
     a = hex2num(*pos++);
     if (a < 0)

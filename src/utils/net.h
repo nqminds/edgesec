@@ -152,6 +152,8 @@ int disable_pmtu_discovery(int sock);
  * @param[out] addr Buffer for the MAC address (ETHER_ADDR_LEN = 6 bytes)
  * @return int Characters used (> 0) on success, -1 on failure
  */
-int hwaddr_aton2(const char *txt, uint8_t *addr);
+int edge_hwaddr_aton2(const char *txt, uint8_t *addr);
+
+#define hwaddr_aton2(txt, addr) edge_hwaddr_aton2((txt), (addr))
 
 #endif
