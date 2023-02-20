@@ -230,8 +230,8 @@ static inline void
 wpa_hexdump_ascii(__maybe_unused int level, // used by hostap, but our
                                             // implementation doesn't use it
                   const char *title, const void *buf, size_t len) {
-  char hex_buf[32];
-  printf_hex(hex_buf, 32, buf, len, false);
+  char hex_buf[33];
+  printf_hex(hex_buf, sizeof(hex_buf), buf, len, false);
   log_trace("%s - hexdump(len=%lu):%s", title, len, hex_buf);
 }
 
