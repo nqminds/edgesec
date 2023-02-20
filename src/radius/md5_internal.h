@@ -50,6 +50,4 @@ struct MD5Context {
 int edge_md5_vector(size_t num_elem, const uint8_t *addr[], const size_t *len,
                     uint8_t *mac);
 
-void MD5Final(unsigned char digest[16], struct MD5Context *context);
-
 #endif /* MD5_INTERNAL_H */
