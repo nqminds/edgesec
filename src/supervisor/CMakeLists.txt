@@ -10,8 +10,8 @@ target_link_libraries(bridge_list PUBLIC LibUTHash::LibUTHash eloop::list PRIVAT
 
 add_library(mac_mapper mac_mapper.c)
 target_link_libraries(mac_mapper
-  PUBLIC LibUTHash::LibUTHash ap_config
-  PRIVATE bridge_list net log os)
+  PUBLIC LibUTHash::LibUTHash ap_config net
+  PRIVATE bridge_list log os)
 
 add_library(supervisor_utils supervisor_utils.c)
 target_link_libraries(supervisor_utils PUBLIC supervisor_config PRIVATE mac_mapper sqlite_macconn_writer hash log os)
