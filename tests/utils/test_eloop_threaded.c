@@ -229,9 +229,18 @@ static void test_eloop_sock(void **state) {
                          send_data_to_sock, &eloop_ctx, &test2),
                      0);
 
+  // one million microseconds should rollover to 1 second
+  make_struct_test_eloop_sock_user_ctx(
+      test1Second, "CↈↃµs (one million in ancient roman numerals)");
+  utarray_push_back(sent_data, &test1Second.data);
+  assert_return_code(edge_eloop_register_timeout(test_state->eloop, 0, 1000000,
+                                                 send_data_to_sock, &eloop_ctx,
+                                                 &test1Second),
+                     0);
+
   make_struct_test_eloop_sock_user_ctx(stop_packet, "STOP");
   utarray_push_back(sent_data, &stop_packet.data);
-  assert_return_code(edge_eloop_register_timeout(test_state->eloop, 1, 0,
+  assert_return_code(edge_eloop_register_timeout(test_state->eloop, 1, 1,
                                                  send_data_to_sock, &eloop_ctx,
                                                  &stop_packet),
                      0);
