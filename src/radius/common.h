@@ -210,6 +210,14 @@ static inline void bin_clear_free(void *bin, size_t len) {
 }
 
 /**
+ * Reason codes (IEEE Std 802.11-2016, 9.4.1.7, Table 9-45)
+ *
+ * @see
+ * https://w1.fi/cgit/hostap/tree/src/common/ieee802_11_defs.h?h=hostap_2_10#n213
+ */
+enum ieee802_11_reason_code { WLAN_REASON_IEEE_802_1X_AUTH_FAILED = 23 };
+
+/**
  * Linked-list of hostapd RADIUS attributes.
  *
  * @see
