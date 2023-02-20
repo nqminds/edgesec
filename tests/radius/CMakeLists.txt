@@ -11,7 +11,7 @@ if (BUILD_EAP_LIB)
   target_compile_definitions(eap_test_peer PRIVATE _DEFAULT_SOURCE _BSD_SOURCE IEEE8021X_EAPOL)
 
   add_library(eap_test_server eap_test_server.c)
-  target_link_libraries(eap_test_server PRIVATE hostapd::libeap OpenSSL::Crypto)
+  target_link_libraries(eap_test_server PRIVATE os wpabuf hostapd::libeap OpenSSL::Crypto)
   target_compile_definitions(eap_test_server PRIVATE _DEFAULT_SOURCE _BSD_SOURCE IEEE8021X_EAPOL)
 
   add_cmocka_test(test_libeap
