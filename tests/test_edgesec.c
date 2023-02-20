@@ -6,7 +6,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cmocka.h>
+
 #include <arpa/inet.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <inttypes.h>
 #include <pthread.h>
@@ -59,6 +61,8 @@ void ap_eloop(int sock, void *eloop_ctx, void *sock_ctx) {
   } else if (strcmp(buf, ATTACH_AP_COMMAND) == 0) {
     log_trace("RECEIVED ATTACH");
   } else {
+    log_error("Uknown AP command received %s", buf);
+    // WIP, this is broken !!!!! fail_msg() doesn't work with multithreading
     fail_msg("Uknown AP command received %s", buf);
   }
   os_free(buf);
@@ -245,6 +249,63 @@ static void test_edgesec(void **state) {
   pthread_mutex_destroy(&log_lock);
 }
 
+struct ap_server_thread_context {
+  pthread_t ap_id;
+  struct eloop_data *ap_eloop;
+};
+
+static int setup_ap_server_thread(void **state) {
+  struct ap_server_thread_context *ap_server_thread_context =
+      malloc(sizeof(struct ap_server_thread_context));
+  assert_non_null(ap_server_thread_context);
+
+  ap_server_thread_context->ap_eloop = edge_eloop_init();
+  assert_non_null(ap_server_thread_context->ap_eloop);
+
+  assert_return_code(pthread_create(&(ap_server_thread_context->ap_id), NULL,
+                                    ap_server_thread,
+                                    ap_server_thread_context->ap_eloop),
+                     errno);
+
+  *state = ap_server_thread_context;
+  return 0;
+}
+static int teardown_ap_server_thread(void **state) {
+  struct ap_server_thread_context *ap_server_thread_context = *state;
+  if (ap_server_thread_context != NULL &&
+      ap_server_thread_context->ap_eloop != NULL) {
+    edge_eloop_terminate(ap_server_thread_context->ap_eloop);
+
+    edge_eloop_free(ap_server_thread_context->ap_eloop);
+  }
+  free(ap_server_thread_context);
+  return 0;
+}
+
+/**
+ * @brief Confirm that ap_server_thread errors for invalid AP commands
+ */
+static void test_edgesec_expect_failure(void **state) {
+  (void)state;
+
+  char socket_path[MAX_OS_PATH_LEN];
+  char ping_reply[] = PING_REPLY;
+  rtrim(ping_reply, NULL);
+  strcpy(socket_path, AP_CTRL_IFACE_PATH);
+
+  // send a PING command to confirm that server is online
+  char *reply = NULL;
+  sleep(1);
+  assert_return_code(writeread_domain_data_str(socket_path, CMD_PING, &reply),
+                     errno);
+  assert_string_equal(reply, ping_reply);
+
+  // confirm that sending an invalid command results in an error
+  int invalidCommandRc =
+      writeread_domain_data_str(socket_path, "INVALID COMMAND", &reply);
+  assert_int_equal(invalidCommandRc, -1); // should timeout after 10 seconds
+}
+
 int main(int argc, char *argv[]) {
   (void)argc;
   (void)argv;
@@ -254,5 +315,21 @@ int main(int argc, char *argv[]) {
 
   const struct CMUnitTest tests[] = {cmocka_unit_test(test_edgesec)};
 
-  return cmocka_run_group_tests(tests, NULL, NULL);
+  const struct CMUnitTest failing_tests[] = {cmocka_unit_test_setup_teardown(
+      test_edgesec_expect_failure, setup_ap_server_thread,
+      teardown_ap_server_thread)};
+
+  const int FAILING_TESTS = ARRAY_SIZE(failing_tests);
+
+  int passing_test_failures =
+      cmocka_run_group_tests_name("passing tests", tests, NULL, NULL);
+
+  int failing_test_failures = 0;
+  if (passing_test_failures == 0) {
+    failing_test_failures =
+        cmocka_run_group_tests_name("failing tests", failing_tests, NULL, NULL);
+    log_info("Expected %d failing tests and got %d", FAILING_TESTS, 1);
+  }
+
+  return failing_test_failures == FAILING_TESTS ? EXIT_SUCCESS : EXIT_FAILURE;
 }
