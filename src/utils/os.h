@@ -65,6 +65,15 @@
 #define os_strncmp(s1, s2, n) strncmp((s1), (s2), (n))
 #endif
 
+#ifndef os_strstr
+/**
+ * @brief Macro to strstr() for code taken from hostap.
+ * @remarks strstr() is a type-generic function in C23 and might not return a
+ * a `char *`.
+ */
+#define os_strstr(s1, s2) strstr((s1), (s2))
+#endif
+
 struct find_dir_type {
   int proc_running;
   char *proc_name;
