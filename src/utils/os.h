@@ -72,6 +72,15 @@
 #define os_strcmp(s1, s2) strcmp((s1), (s2))
 #endif
 
+#ifndef os_strchr
+/**
+ * @brief Macro to strchr() for code taken from hostap.
+ * @remarks strchr() is a type-generic function in C23, and might return a
+ * `const char *` instead of a `char *`.
+ */
+#define os_strchr(s, c) strchr((s), (c))
+#endif
+
 struct find_dir_type {
   int proc_running;
   char *proc_name;
