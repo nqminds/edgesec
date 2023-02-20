@@ -30,4 +30,4 @@ add_library(radius_server radius_server.c)
 target_link_libraries(radius_server PUBLIC os eloop::eloop PRIVATE radius wpabuf log net)
 
 add_library(radius_service radius_service.c)
-target_link_libraries(radius_service PRIVATE radius_server)
+target_link_libraries(radius_service PUBLIC radius_config PRIVATE radius_server)
