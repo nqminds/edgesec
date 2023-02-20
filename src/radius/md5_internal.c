@@ -19,6 +19,8 @@
 #include "md5_internal.h"
 
 static void MD5Init(struct MD5Context *ctx);
+static void MD5Update(struct MD5Context *ctx, unsigned char const *buf,
+                      unsigned len);
 static void MD5Transform(uint32_t buf[4], uint32_t const in[16]);
 
 typedef struct MD5Context MD5_CTX;
@@ -88,7 +90,8 @@ static void MD5Init(struct MD5Context *ctx) {
  * Update context to reflect the concatenation of another buffer full
  * of bytes.
  */
-void MD5Update(struct MD5Context *ctx, unsigned char const *buf, unsigned len) {
+static void MD5Update(struct MD5Context *ctx, unsigned char const *buf,
+                      unsigned len) {
   uint32_t t;
 
   /* Update bitcount */
