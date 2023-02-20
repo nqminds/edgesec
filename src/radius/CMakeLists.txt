@@ -29,6 +29,7 @@ target_compile_definitions(radius_server
   PRIVATE
     _DEFAULT_SOURCE _BSD_SOURCE IEEE8021X_EAPOL
     $<$<CONFIG:Debug>:CONFIG_TESTING_OPTIONS> # runs TLS tests on some magic EAP usernames
+    $<$<CONFIG:Debug>:CONFIG_RADIUS_TEST> # more verbose logs, and dumps stuff to `dump_msk_file`
 )
 
 if (BUILD_EAP_LIB)
