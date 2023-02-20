@@ -21,6 +21,7 @@
 #include "../dhcp/dhcp_config.h"
 #include "../dns/dns_config.h"
 #include "../firewall/firewall_service.h"
+#include "../radius/radius_config.h"
 #include "../utils/iface.h"
 #include "../utils/iface_mapper.h"
 
