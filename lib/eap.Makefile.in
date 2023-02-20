@@ -623,6 +623,6 @@ install: $(alib)
 	mkdir -p $(INSTALL_DIR)/include/tls
 	cp src/tls/*.h $(INSTALL_DIR)/include/tls
 	mkdir -p $(INSTALL_DIR)/include/common
-	cp src/common/*.h $(INSTALL_DIR)/include/common
+	cp src/common/defs.h $(INSTALL_DIR)/include/common
 
 -include $(OBJS:%.o=%.d)
