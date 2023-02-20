@@ -68,6 +68,31 @@ static inline void *os_realloc_array(void *ptr, size_t nmemb, size_t size) {
 #endif
 
 /**
+ * @brief Allocate duplicate of passed memory chunk
+ *
+ * This function allocates a memory block like os_malloc() would, and
+ * copies the given source buffer into it.
+ *
+ * @param src Source buffer to duplicate
+ * @param len Length of source buffer
+ * @return `NULL` if allocation failed, copy of src buffer otherwise
+ *
+ * @author Johannes Berg <johannes.berg@intel.com>
+ * @date 2017-03-17
+ * @copyright SPDX-License-Identifier: BSD-3-Clause
+ * @remark Adapted from hostap commit dbdda355d0add3f7d96e3279321d3a63abfc4b32,
+ * see
+ * https://w1.fi/cgit/hostap/commit/?id=dbdda355d0add3f7d96e3279321d3a63abfc4b32
+ */
+static inline void *os_memdup(const void *src, size_t len) {
+  void *r = os_malloc(len);
+
+  if (r && src)
+    os_memcpy(r, src, len);
+  return r;
+}
+
+/**
  *
  * @param s The input string
  * @return char* The dublicate string pointer, NULL on error
