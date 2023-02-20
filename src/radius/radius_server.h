@@ -68,8 +68,6 @@ struct radius_session {
   struct hostapd_radius_attr *accept_attr;
 };
 
-typedef struct mac_conn_info (*mac_conn_fn)(uint8_t mac_addr[],
-                                            void *mac_conn_arg);
 /**
  * struct radius_client - Internal RADIUS server data for a client
  */
