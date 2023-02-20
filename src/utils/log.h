@@ -87,6 +87,29 @@ void log_error_exit(uint8_t level, const char *file, uint32_t line,
 void log_error_exit_proc(uint8_t level, const char *file, uint32_t line,
                          const char *format, ...);
 
+/**
+ * @brief Prints the data in @c data to @c buf as hex.
+ *
+ * Prints the data in @c data to @c buf as hex.
+ *
+ * @param[out] buf The output string buffer.
+ * @param buf_size The size of the output buffer, @c buf.
+ * As this will NUL terminated, make sure that this is an odd number,
+ * otherwise you may cut a hex-byte in half.
+ * @param[in] data The input data to print to @c buf.
+ * @param len The length of @c data.
+ * @param uppercase If `0`, print hex in lowercase. If `>0`, print hex in
+ * uppercase.
+ * @return The number of hex characters that have been written to `buf` without
+ * truncation. This excludes the `NUL`-terminator.
+ *
+ * @author Jouni Malinen <j@w1.fi>
+ * @copyright SPDX-License-Identifier: BSD-3-clause
+ * @author Alexandru Mereacre
+ * @remark Adapted from hostap's `src/utils/common.c`, see
+ * https://w1.fi/cgit/hostap/tree/src/utils/common.c?h=hostap_2_10#n317,
+ * except with additional NULL pointer checking.
+ */
 size_t printf_hex(char *buf, size_t buf_size, const uint8_t *data, size_t len,
                   int uppercase);
 #endif
