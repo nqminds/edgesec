@@ -9,12 +9,12 @@
  * @brief Example application showing how EAP server code from hostapd can be used as a library.
  */
 
-#include <utils/includes.h>
+// #include <utils/includes.h>
 
-#include <utils/common.h>
+// #include <utils/common.h>
 #include <crypto/tls.h>
 #include <eap_server/eap.h>
-#include <utils/wpabuf.h>
+// #include <utils/wpabuf.h>
 
 void eap_test_peer_rx(const u8 *data, size_t data_len);
 
