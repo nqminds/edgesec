@@ -32,10 +32,24 @@
 #endif /* defined __has_attribute */
 #endif /* __maybe_unused */
 
-#ifdef __GNUC__
+#if defined __has_attribute
+#if __has_attribute(packed)
+/**
+ * Use as little memory as possible for the attributed `enum`, `struct`, or
+ * `union`.
+ *
+ * @remarks Please be aware that this packing algorithm is platform specific.
+ * Even using GCC on Windows has different results:
+ * see https://gcc.gnu.org/onlinedocs/gcc/x86-Variable-Attributes.html
+ *
+ * @see https://clang.llvm.org/docs/AttributeReference.html#packed
+ */
 #define STRUCT_PACKED __attribute__((packed))
 #else
 #define STRUCT_PACKED
-#endif
+#endif /* __has_attribute(packed) */
+#else
+#define STRUCT_PACKED
+#endif /* defined __has_attribute */
 
 #endif /* ATTRIBUTES_H */
