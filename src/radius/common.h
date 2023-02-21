@@ -15,6 +15,7 @@
 
 #include <stddef.h>
 
+#include "../utils/attributes.h"
 #include "utils/allocs.h"
 #include "utils/log.h"
 

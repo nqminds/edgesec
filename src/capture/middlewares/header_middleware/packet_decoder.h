@@ -16,6 +16,7 @@
 
 #include <utarray.h>
 #include "../../../utils/allocs.h"
+#include "../../../utils/attributes.h"
 #include "../../../utils/net.h"
 #include "../../../utils/os.h"
 

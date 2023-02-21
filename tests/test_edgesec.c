@@ -25,6 +25,7 @@
 #include "radius/radius_client.h"
 #include "supervisor/cmd_processor.h"
 #include "supervisor/system_commands.h"
+#include "utils/attributes.h"
 #include "utils/sockctl.h"
 
 #define AP_CTRL_IFACE_PATH "/tmp/wifi0"
@@ -40,10 +41,8 @@ void log_lock_fun(bool lock) {
   }
 }
 
-void ap_eloop(int sock, void *eloop_ctx, void *sock_ctx) {
-  (void)eloop_ctx;
-  (void)sock_ctx;
-
+void ap_eloop(int sock, __maybe_unused void *eloop_ctx,
+              __maybe_unused void *sock_ctx) {
   uint32_t bytes_available = 0;
 
   assert_int_not_equal(ioctl(sock, FIONREAD, &bytes_available), -1);
@@ -83,12 +82,10 @@ void *ap_server_thread(void *arg) {
 
 /* Process the RADIUS frames from Authentication Server */
 static RadiusRxResult receive_auth(struct radius_msg *msg,
-                                   struct radius_msg *req,
-                                   const uint8_t *shared_secret,
-                                   size_t shared_secret_len, void *data) {
-  (void)req;
-  (void)shared_secret;
-  (void)shared_secret_len;
+                                   __maybe_unused struct radius_msg *req,
+                                   __maybe_unused const uint8_t *shared_secret,
+                                   __maybe_unused size_t shared_secret_len,
+                                   void *data) {
   struct eloop_data *eloop = (struct eloop_data *)data;
 
   log_trace("Received RADIUS Authentication message; code=%d",
@@ -100,8 +97,7 @@ static RadiusRxResult receive_auth(struct radius_msg *msg,
   return RADIUS_RX_PROCESSED;
 }
 
-void *supervisor_client_thread(void *arg) {
-  (void)arg;
+void *supervisor_client_thread(__maybe_unused void *arg) {
   char socket_path[MAX_OS_PATH_LEN];
   char ping_reply[] = PING_REPLY;
   rtrim(ping_reply, NULL);
@@ -211,9 +207,7 @@ void *supervisor_client_thread(void *arg) {
 /**
  * @brief Performs an integration test on edgesec
  */
-static void test_edgesec(void **state) {
-  (void)state; /* unused */
-
+static void test_edgesec(__maybe_unused void **state) {
   struct app_config config = {0};
 
   assert_int_equal(load_app_config(TEST_CONFIG_INI_PATH, &config), 0);
@@ -245,10 +239,7 @@ static void test_edgesec(void **state) {
   pthread_mutex_destroy(&log_lock);
 }
 
-int main(int argc, char *argv[]) {
-  (void)argc;
-  (void)argv;
-
+int main(__maybe_unused int argc, __maybe_unused char *argv[]) {
   log_set_quiet(false);
   log_set_lock(log_lock_fun);
 

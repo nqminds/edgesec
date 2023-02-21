@@ -16,6 +16,7 @@
 
 #include "common.h"
 
+#include "../utils/attributes.h"
 #include "utils/os.h"
 
 /* RFC 2865 - RADIUS */

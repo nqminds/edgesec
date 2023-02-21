@@ -30,6 +30,7 @@
 #include "capture/middlewares/header_middleware/packet_queue.h"
 #include "capture/middlewares/header_middleware/sqlite_header.h"
 #include "capture/middlewares/protobuf_middleware/protobuf_middleware.h"
+#include "utils/attributes.h"
 #include "utils/os.h"
 #include "utils/sqliteu.h"
 #include "version.h"

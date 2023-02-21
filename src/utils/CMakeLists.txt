@@ -4,6 +4,9 @@ set_target_properties(log PROPERTIES C_EXTENSIONS ON POSITION_INDEPENDENT_CODE O
 
 add_library(allocs allocs.c)
 
+add_library(attributes INTERFACE) # #define's for compiler attributes
+set_target_properties(attributes PROPERTIES PUBLIC_HEADER "attributes.h")
+
 if (USE_CRYPTO_SERVICE)
   add_library(cryptou cryptou.c)
   target_link_libraries(cryptou PRIVATE base64 os log OpenSSL::Crypto)
