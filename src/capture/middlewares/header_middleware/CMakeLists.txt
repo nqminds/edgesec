@@ -12,7 +12,7 @@ target_link_libraries(dns_decoder PUBLIC PCAP::pcap SQLite::SQLite3 PRIVATE log 
 
 # packet_decoder.h has an #include <pcap.h>, so need to make it PUBLIC include
 add_library(packet_decoder packet_decoder.c)
-target_link_libraries(packet_decoder PUBLIC PCAP::pcap LibUTHash::LibUTHash PRIVATE mdns_decoder dns_decoder hash net log os hashmap)
+target_link_libraries(packet_decoder PUBLIC PCAP::pcap LibUTHash::LibUTHash attributes PRIVATE mdns_decoder dns_decoder hash net log os hashmap)
 
 add_library(packet_queue packet_queue.c)
 target_link_libraries(packet_queue PUBLIC packet_decoder eloop::list PRIVATE log os)

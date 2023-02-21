@@ -19,7 +19,7 @@ target_compile_definitions(wpabuf PUBLIC _DEFAULT_SOURCE _BSD_SOURCE)
 
 add_library(radius radius.c)
 target_link_libraries(radius
-  PUBLIC common
+  PUBLIC common attributes
   PRIVATE wpabuf md5 md5_internal log os)
 
 add_library(radius_server radius_server.c)

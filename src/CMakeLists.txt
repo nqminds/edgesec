@@ -67,6 +67,6 @@ set_target_properties(edgesec PROPERTIES
 
 if (USE_CAPTURE_SERVICE)
   add_executable(edgesec-recap edgesec-recap.c)
-  target_link_libraries(edgesec-recap PRIVATE capture_service protobuf_middleware packet_queue packet_decoder sqlite_header os log SQLite::SQLite3 eloop::eloop)
+  target_link_libraries(edgesec-recap PRIVATE capture_service protobuf_middleware packet_queue packet_decoder sqlite_header attributes os log SQLite::SQLite3 eloop::eloop)
   target_include_directories(edgesec-recap PRIVATE ${PROJECT_BINARY_DIR})
 endif()

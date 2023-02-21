@@ -32,12 +32,6 @@
 
 #define OS_HOST_NAME_MAX 64
 
-#ifdef __GNUC__
-#define STRUCT_PACKED __attribute__((packed))
-#else
-#define STRUCT_PACKED
-#endif
-
 #ifndef BIT
 #define BIT(x) (1U << (x))
 #endif
