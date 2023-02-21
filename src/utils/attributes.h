@@ -32,10 +32,14 @@
 #endif /* defined __has_attribute */
 #endif /* __maybe_unused */
 
-#ifdef __GNUC__
+#if defined __has_attribute
+#if __has_attribute(packed)
 #define STRUCT_PACKED __attribute__((packed))
 #else
 #define STRUCT_PACKED
-#endif
+#endif /* __has_attribute(packed) */
+#else
+#define STRUCT_PACKED
+#endif /* defined __has_attribute */
 
 #endif /* ATTRIBUTES_H */
