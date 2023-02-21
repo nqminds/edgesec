@@ -19,24 +19,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#ifndef __must_check
-#if defined __has_attribute
-#if __has_attribute(__warn_unused_result__)
-/**
- * If used before a function, tells compilers that the result of the function
- * should be used and not ignored.
- *
- * @see
- * https://clang.llvm.org/docs/AttributeReference.html#nodiscard-warn-unused-result
- */
-#define __must_check __attribute__((__warn_unused_result__))
-#else
-#define __must_check
-#endif /* __has_attribute(__warn_unused_result__) */
-#else
-#define __must_check
-#endif /* defined __has_attribute */
-#endif /* __has_attribute */
+#include "./attributes.h"
 
 /**
  * @brief Allocate and zero memory
