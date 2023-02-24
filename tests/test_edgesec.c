@@ -43,8 +43,22 @@ void log_lock_fun(bool lock) {
   }
 }
 
-void ap_eloop(int sock, __maybe_unused void *eloop_ctx,
-              __maybe_unused void *sock_ctx) {
+/** Stores information about a thread that is running an eloop */
+struct thread_context {
+  struct eloop_data *eloop;
+  thrd_t thread;
+  /** Set this to `true` to stop the eloop from a different thread */
+  atomic_bool should_die;
+  char error_message[512];
+  /**
+   * Set to `true` if you want teardown_edgesec_test() to join
+   * your thread (i.e. if you've haven't joined it in your CMocka test)
+   */
+  bool cleanup_thread;
+};
+
+void ap_eloop(int sock, __maybe_unused void *eloop_ctx, void *sock_ctx) {
+  struct thread_context *thread_context = sock_ctx;
   uint32_t bytes_available = 0;
 
   assert_int_not_equal(ioctl(sock, FIONREAD, &bytes_available), -1);
@@ -60,20 +74,26 @@ void ap_eloop(int sock, __maybe_unused void *eloop_ctx,
   } else if (strcmp(buf, ATTACH_AP_COMMAND) == 0) {
     log_trace("RECEIVED ATTACH");
   } else {
-    fail_msg("Uknown AP command received %s", buf);
+    snprintf(thread_context->error_message,
+             sizeof(thread_context->error_message) - 1, "Unknown command: %s",
+             buf);
+    os_free(buf);
+    log_error("%s", thread_context->error_message);
+    thrd_exit(EXIT_FAILURE);
   }
   os_free(buf);
 }
 
 int ap_server_thread(void *arg) {
-  struct eloop_data *eloop = (struct eloop_data *)arg;
+  struct thread_context *thread_context = arg;
+  struct eloop_data *eloop = thread_context->eloop;
 
   int fd = create_domain_server(AP_CTRL_IFACE_PATH);
 
   assert_int_not_equal(fd, -1);
 
   assert_int_not_equal(
-      edge_eloop_register_read_sock(eloop, fd, ap_eloop, (void *)eloop, NULL),
+      edge_eloop_register_read_sock(eloop, fd, ap_eloop, NULL, thread_context),
       -1);
 
   edge_eloop_run(eloop);
@@ -231,19 +251,8 @@ void check_if_should_terminate(void *eloop_ctx, void *user_ctx) {
 }
 
 struct edgesec_test_context {
-  struct {
-    struct eloop_data *eloop;
-    thrd_t thread;
-    /** Used to stop the eloop from a different thread */
-    atomic_bool should_die;
-  } ap_server;
-
-  struct {
-    struct eloop_data *eloop;
-    thrd_t thread;
-    /** Used to stop the eloop from a different thread */
-    atomic_bool should_die;
-  } supervisor;
+  struct thread_context ap_server;
+  struct thread_context supervisor;
 };
 
 static int setup_edgesec_test(void **state) {
@@ -294,10 +303,15 @@ static int teardown_edgesec_test(void **state) {
     ctx->supervisor.should_die = true;
     // don't free supervisor eloop, since it's freed by run_ctl() already
 
-    log_info("Waiting for AP Server thread to finish");
-    thrd_join(ctx->ap_server.thread, &ap_server_thread_rc);
-    log_info("Waiting for Supervisor thread to finish");
-    thrd_join(ctx->supervisor.thread, &supervisor_thread_rc);
+    if (ctx->ap_server.cleanup_thread) {
+      log_info("Waiting for AP Server thread to finish");
+      thrd_join(ctx->ap_server.thread, &ap_server_thread_rc);
+    }
+
+    if (ctx->supervisor.cleanup_thread) {
+      log_info("Waiting for Supervisor thread to finish");
+      thrd_join(ctx->supervisor.thread, &supervisor_thread_rc);
+    }
 
     edge_eloop_free(ctx->ap_server.eloop);
   }
