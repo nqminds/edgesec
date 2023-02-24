@@ -170,7 +170,7 @@ static inline int os_snprintf_error(size_t size, int res) {
 #define wpa_printf(level, ...)                                                 \
   log_levels(LOGC_TRACE, __FILENAME__, __LINE__, __VA_ARGS__)
 #define wpa_snprintf_hex(buf, buf_size, data, len)                             \
-  printf_hex(buf, buf_size, data, len, 0)
+  printf_hex(buf, buf_size, data, len, false)
 
 static inline void printf_encode(char *txt, size_t maxlen, const uint8_t *data,
                                  size_t len) {
