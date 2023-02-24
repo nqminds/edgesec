@@ -16,6 +16,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <stdatomic.h>
 #include <threads.h>
 
 #include "config.h"
@@ -204,15 +205,44 @@ int supervisor_client_thread(void *arg) {
   return 0;
 }
 
+/**
+ * Terminates the current eloop if `should_die` is true.
+ *
+ * Otherwise, run this function again in 10ms.
+ *
+ * Our eloop implementation can only be terminated from within the eloop.
+ * (e.g. calling `edge_eloop_terminate()` from another thread does nothing)
+ * Therefore, this function runs every 10ms, and checks whether the given atomic
+ * is `true`, and then stops the eloop for us.
+ *
+ * @param[in] eloop_ctx - Current eloop context.
+ * @param[in] user_ctx - Pointer to a @c atomic_bool, which if `true`,
+ * terminates the eloop.
+ */
+void check_if_should_terminate(void *eloop_ctx, void *user_ctx) {
+  struct eloop_data *eloop = eloop_ctx;
+  atomic_bool *should_die = user_ctx;
+  if (*should_die) {
+    edge_eloop_terminate(eloop);
+  } else {
+    edge_eloop_register_timeout(eloop, 0, 10000, check_if_should_terminate,
+                                eloop, should_die);
+  }
+}
+
 struct edgesec_test_context {
   struct {
     struct eloop_data *eloop;
     thrd_t thread;
+    /** Used to stop the eloop from a different thread */
+    atomic_bool should_die;
   } ap_server;
 
   struct {
     struct eloop_data *eloop;
     thrd_t thread;
+    /** Used to stop the eloop from a different thread */
+    atomic_bool should_die;
   } supervisor;
 };
 
@@ -225,15 +255,29 @@ static int setup_edgesec_test(void **state) {
       .ap_server =
           {
               .eloop = edge_eloop_init(),
+              .should_die = false,
           },
       .supervisor =
           {
               .eloop = edge_eloop_init(),
+              .should_die = false,
           },
   };
 
   assert_non_null(ctx->ap_server.eloop);
   assert_non_null(ctx->supervisor.eloop);
+
+  assert_return_code(edge_eloop_register_timeout(ctx->ap_server.eloop, 0, 10000,
+                                                 check_if_should_terminate,
+                                                 ctx->ap_server.eloop,
+                                                 &(ctx->ap_server.should_die)),
+                     0);
+
+  assert_return_code(edge_eloop_register_timeout(
+                         ctx->supervisor.eloop, 0, 10000,
+                         check_if_should_terminate, ctx->ap_server.eloop,
+                         &(ctx->supervisor.should_die)),
+                     0);
 
   *state = ctx;
   return 0;
@@ -241,21 +285,26 @@ static int setup_edgesec_test(void **state) {
 
 static int teardown_edgesec_test(void **state) {
   struct edgesec_test_context *ctx = *state;
-  if (ctx != NULL) {
-    if (ctx->ap_server.eloop != NULL &&
-        !edge_eloop_terminated(ctx->ap_server.eloop)) {
-      edge_eloop_terminate(ctx->ap_server.eloop);
-    }
-    edge_eloop_free(ctx->ap_server.eloop);
 
-    if (ctx->supervisor.eloop != NULL &&
-        !edge_eloop_terminated(ctx->supervisor.eloop)) {
-      edge_eloop_terminate(ctx->supervisor.eloop);
-    }
+  int ap_server_thread_rc = 0;
+  int supervisor_thread_rc = 0;
+
+  if (ctx != NULL) {
+    ctx->ap_server.should_die = true;
+    ctx->supervisor.should_die = true;
     // don't free supervisor eloop, since it's freed by run_ctl() already
+
+    log_info("Waiting for AP Server thread to finish");
+    thrd_join(ctx->ap_server.thread, &ap_server_thread_rc);
+    log_info("Waiting for Supervisor thread to finish");
+    thrd_join(ctx->supervisor.thread, &supervisor_thread_rc);
+
+    edge_eloop_free(ctx->ap_server.eloop);
   }
+
   free(ctx);
-  return 0;
+  // returns an error if any of the threads failed
+  return ap_server_thread_rc && supervisor_thread_rc;
 }
 
 /**
