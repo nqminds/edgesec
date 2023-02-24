@@ -312,7 +312,7 @@ void log_error_exit_proc(uint8_t level, const char *file, uint32_t line,
 }
 
 size_t printf_hex(char *buf, size_t buf_size, const uint8_t *data, size_t len,
-                  int uppercase) {
+                  bool uppercase) {
   size_t i;
   char *pos = buf, *end = buf + buf_size;
   int ret;
