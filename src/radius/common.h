@@ -247,8 +247,18 @@ static inline void printf_encode(char *txt, size_t maxlen, const uint8_t *data,
 }
 
 #ifndef wpa_trace_show
+/**
+ * Dummy implementation of hostap's wpa_trace_show()
+ *
+ * @see https://w1.fi/cgit/hostap/tree/src/utils/trace.h?h=hostap_2_10#n33
+ *
+ * @note
+ * In the future, we could use something like GCC's backtrace_symbols()
+ * to implement this,
+ * https://www.gnu.org/software/libc/manual/html_node/Backtraces.html
+ */
 #define wpa_trace_show(s) log_trace("%s", s)
-#endif
+#endif /* wpa_trace_show */
 
 #define TEST_FAIL() 0
 #endif
