@@ -9,13 +9,14 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <inttypes.h>
-#include <pthread.h>
 #include <signal.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#include <threads.h>
 
 #include "config.h"
 #include "runctl.h"
@@ -31,13 +32,13 @@
 #define AP_CTRL_IFACE_PATH "/tmp/wifi0"
 #define SUPERVISOR_CONTROL_PATH "/tmp/edgesec-control-server"
 
-pthread_mutex_t log_lock;
+static mtx_t log_lock;
 
 void log_lock_fun(bool lock) {
   if (lock) {
-    pthread_mutex_lock(&log_lock);
+    mtx_lock(&log_lock);
   } else {
-    pthread_mutex_unlock(&log_lock);
+    mtx_unlock(&log_lock);
   }
 }
 
@@ -63,7 +64,7 @@ void ap_eloop(int sock, __maybe_unused void *eloop_ctx,
   os_free(buf);
 }
 
-void *ap_server_thread(void *arg) {
+int ap_server_thread(void *arg) {
   struct eloop_data *eloop = (struct eloop_data *)arg;
 
   int fd = create_domain_server(AP_CTRL_IFACE_PATH);
@@ -77,7 +78,7 @@ void *ap_server_thread(void *arg) {
   edge_eloop_run(eloop);
   log_trace("AP server thread end");
   assert_int_equal(close_domain_socket(fd), 0);
-  return NULL;
+  return 0;
 }
 
 /* Process the RADIUS frames from Authentication Server */
@@ -97,7 +98,7 @@ static RadiusRxResult receive_auth(struct radius_msg *msg,
   return RADIUS_RX_PROCESSED;
 }
 
-void *supervisor_client_thread(__maybe_unused void *arg) {
+int supervisor_client_thread(void *arg) {
   char socket_path[MAX_OS_PATH_LEN];
   char ping_reply[] = PING_REPLY;
   rtrim(ping_reply, NULL);
@@ -181,7 +182,6 @@ void *supervisor_client_thread(__maybe_unused void *arg) {
   assert_int_not_equal(radius_client_send(radius, msg, RADIUS_AUTH, addr), -1);
 
   edge_eloop_run(eloop);
-  edge_eloop_free(eloop);
 
   char command[128];
   snprintf(command, 128, "%s 00:01:02:03:04:05", CMD_GET_MAP);
@@ -201,13 +201,68 @@ void *supervisor_client_thread(__maybe_unused void *arg) {
     os_free(reply);
   }
 
-  return NULL;
+  return 0;
+}
+
+struct edgesec_test_context {
+  struct {
+    struct eloop_data *eloop;
+    thrd_t thread;
+  } ap_server;
+
+  struct {
+    struct eloop_data *eloop;
+    thrd_t thread;
+  } supervisor;
+};
+
+static int setup_edgesec_test(void **state) {
+  struct edgesec_test_context *ctx =
+      calloc(1, sizeof(struct edgesec_test_context));
+  assert_non_null(ctx);
+
+  *ctx = (struct edgesec_test_context){
+      .ap_server =
+          {
+              .eloop = edge_eloop_init(),
+          },
+      .supervisor =
+          {
+              .eloop = edge_eloop_init(),
+          },
+  };
+
+  assert_non_null(ctx->ap_server.eloop);
+  assert_non_null(ctx->supervisor.eloop);
+
+  *state = ctx;
+  return 0;
+}
+
+static int teardown_edgesec_test(void **state) {
+  struct edgesec_test_context *ctx = *state;
+  if (ctx != NULL) {
+    if (ctx->ap_server.eloop != NULL &&
+        !edge_eloop_terminated(ctx->ap_server.eloop)) {
+      edge_eloop_terminate(ctx->ap_server.eloop);
+    }
+    edge_eloop_free(ctx->ap_server.eloop);
+
+    if (ctx->supervisor.eloop != NULL &&
+        !edge_eloop_terminated(ctx->supervisor.eloop)) {
+      edge_eloop_terminate(ctx->supervisor.eloop);
+    }
+    // don't free supervisor eloop, since it's freed by run_ctl() already
+  }
+  free(ctx);
+  return 0;
 }
 
 /**
  * @brief Performs an integration test on edgesec
  */
-static void test_edgesec(__maybe_unused void **state) {
+static void test_edgesec(void **state) {
+  struct edgesec_test_context *ctx = *state;
   struct app_config config = {0};
 
   assert_int_equal(load_app_config(TEST_CONFIG_INI_PATH, &config), 0);
@@ -218,32 +273,30 @@ static void test_edgesec(__maybe_unused void **state) {
 
   os_init_random_seed();
 
-  struct eloop_data *main_eloop = edge_eloop_init();
+  assert_int_equal(thrd_create(&ctx->ap_server.thread, ap_server_thread,
+                               ctx->ap_server.eloop),
+                   thrd_success);
+  assert_int_equal(thrd_create(&ctx->supervisor.thread,
+                               supervisor_client_thread, ctx->supervisor.eloop),
+                   thrd_success);
 
-  pthread_t ap_id = 0;
-  struct eloop_data *ap_eloop = edge_eloop_init();
-  assert_int_equal(
-      pthread_create(&ap_id, NULL, ap_server_thread, (void *)ap_eloop), 0);
-
-  pthread_t supervisor_id = 0;
-  assert_int_equal(pthread_create(&supervisor_id, NULL,
-                                  supervisor_client_thread, (void *)main_eloop),
-                   0);
-
-  assert_int_equal(run_ctl(&config, main_eloop), 0);
-
-  edge_eloop_terminate(ap_eloop);
-
-  edge_eloop_free(ap_eloop);
-  free_app_config(&config);
-  pthread_mutex_destroy(&log_lock);
+  assert_int_equal(run_ctl(&config, ctx->supervisor.eloop), 0);
 }
 
 int main(__maybe_unused int argc, __maybe_unused char *argv[]) {
   log_set_quiet(false);
+
+  assert_return_code(mtx_init(&log_lock, mtx_plain), thrd_success);
   log_set_lock(log_lock_fun);
 
-  const struct CMUnitTest tests[] = {cmocka_unit_test(test_edgesec)};
+  const struct CMUnitTest tests[] = {
+      cmocka_unit_test_setup_teardown(test_edgesec, setup_edgesec_test,
+                                      teardown_edgesec_test),
+  };
 
-  return cmocka_run_group_tests(tests, NULL, NULL);
+  int rc = cmocka_run_group_tests(tests, NULL, NULL);
+
+  mtx_destroy(&log_lock);
+
+  return rc;
 }
