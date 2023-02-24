@@ -72,6 +72,10 @@
 #define os_strstr(s1, s2) strstr((s1), (s2))
 #endif
 
+#ifndef os_strcmp
+#define os_strcmp(s1, s2) strcmp((s1), (s2))
+#endif
+
 struct find_dir_type {
   int proc_running;
   char *proc_name;
