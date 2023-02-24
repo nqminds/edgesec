@@ -17,6 +17,7 @@
 #include <unistd.h>
 
 #include <stdatomic.h>
+#include <errno.h>
 #include <threads.h>
 
 #include "config.h"
@@ -63,7 +64,9 @@ void ap_eloop(int sock, __maybe_unused void *eloop_ctx, void *sock_ctx) {
 
   assert_int_not_equal(ioctl(sock, FIONREAD, &bytes_available), -1);
 
-  char *buf = os_malloc(bytes_available);
+  // allocate an extra byte, just in case the string isn't NUL-terminated
+  char *buf = os_malloc(bytes_available + 1);
+  buf[bytes_available] = '\0';
 
   struct client_address addr = {.type = SOCKET_TYPE_DOMAIN};
   read_socket_data(sock, buf, bytes_available, &addr, 0);
@@ -336,14 +339,54 @@ static void test_edgesec(void **state) {
 
   os_init_random_seed();
 
-  assert_int_equal(thrd_create(&ctx->ap_server.thread, ap_server_thread,
-                               ctx->ap_server.eloop),
-                   thrd_success);
+  assert_int_equal(
+      thrd_create(&ctx->ap_server.thread, ap_server_thread, &ctx->ap_server),
+      thrd_success);
+  ctx->ap_server.cleanup_thread = true;
   assert_int_equal(thrd_create(&ctx->supervisor.thread,
                                supervisor_client_thread, ctx->supervisor.eloop),
                    thrd_success);
+  ctx->supervisor.cleanup_thread = true;
 
   assert_int_equal(run_ctl(&config, ctx->supervisor.eloop), 0);
+}
+
+/**
+ * @brief Confirm that ap_server_thread errors for invalid AP commands
+ *
+ * This test is a bit slow, since we need to wait 10 seconds for
+ * writeread_domain_data_str() to timeout.
+ */
+static void test_edgesec_ap_failure(void **state) {
+  struct edgesec_test_context *ctx = *state;
+
+  char socket_path[MAX_OS_PATH_LEN] = AP_CTRL_IFACE_PATH;
+
+  assert_int_equal(
+      thrd_create(&ctx->ap_server.thread, ap_server_thread, &ctx->ap_server),
+      thrd_success);
+
+  // send a PING command to confirm that server is online
+  char *reply = NULL;
+  sleep(1);
+  assert_return_code(
+      writeread_domain_data_str(socket_path, PING_AP_COMMAND, &reply), errno);
+  assert_string_equal(reply, PING_AP_COMMAND_REPLY);
+
+  // confirm that sending an invalid command results in an timeout error, since
+  // we don't get a reply
+  // TODO: we need to wait for 10 seconds until we get a timeout.
+  // Can we somehow make this timeout faster, or use a different function?:
+  assert_int_equal(
+      writeread_domain_data_str(socket_path, "INVALID COMMAND", &reply), -1);
+
+  int ap_server_thread_rc = 0;
+  log_info("Waiting for AP Server thread to finish");
+  thrd_join(ctx->ap_server.thread, &ap_server_thread_rc);
+
+  assert_int_equal(ap_server_thread_rc, 1); // should be an error condition!
+  assert_string_equal(ctx->ap_server.error_message,
+                      "Unknown command: INVALID COMMAND");
 }
 
 int main(__maybe_unused int argc, __maybe_unused char *argv[]) {
@@ -355,6 +398,8 @@ int main(__maybe_unused int argc, __maybe_unused char *argv[]) {
   const struct CMUnitTest tests[] = {
       cmocka_unit_test_setup_teardown(test_edgesec, setup_edgesec_test,
                                       teardown_edgesec_test),
+      cmocka_unit_test_setup_teardown(
+          test_edgesec_ap_failure, setup_edgesec_test, teardown_edgesec_test),
   };
 
   int rc = cmocka_run_group_tests(tests, NULL, NULL);
