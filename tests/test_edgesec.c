@@ -353,9 +353,6 @@ static void test_edgesec(void **state) {
 
 /**
  * @brief Confirm that ap_server_thread errors for invalid AP commands
- *
- * This test is a bit slow, since we need to wait 10 seconds for
- * writeread_domain_data_str() to timeout.
  */
 static void test_edgesec_ap_failure(void **state) {
   struct edgesec_test_context *ctx = *state;
@@ -373,12 +370,15 @@ static void test_edgesec_ap_failure(void **state) {
       writeread_domain_data_str(socket_path, PING_AP_COMMAND, &reply), errno);
   assert_string_equal(reply, PING_AP_COMMAND_REPLY);
 
-  // confirm that sending an invalid command results in an timeout error, since
-  // we don't get a reply
-  // TODO: we need to wait for 10 seconds until we get a timeout.
-  // Can we somehow make this timeout faster, or use a different function?:
-  assert_int_equal(
-      writeread_domain_data_str(socket_path, "INVALID COMMAND", &reply), -1);
+  // send invalid command to ap server
+  {
+    int sfd = create_domain_client(NULL);
+    assert_return_code(sfd, errno);
+    ssize_t send_invalid_cmd_bytes = write_domain_data_s(
+        sfd, "INVALID COMMAND", strlen("INVALID COMMAND"), socket_path);
+    close_domain_socket(sfd);
+    assert_return_code(send_invalid_cmd_bytes, errno);
+  }
 
   int ap_server_thread_rc = 0;
   log_info("Waiting for AP Server thread to finish");
