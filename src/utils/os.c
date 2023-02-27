@@ -850,23 +850,33 @@ pid_t is_proc_app(const char *path, const char *proc_name) {
     os_strlcpy(pid_basename_buffer, path, sizeof(pid_basename_buffer));
     const char *pid_string = basename(pid_basename_buffer);
 
-    pid = strtoul(pid_string, NULL, 10);
+    unsigned long parsed_pid_long = strtoul(pid_string, NULL, 10);
+    pid = parsed_pid_long;
+
+    if (parsed_pid_long >= LONG_MAX // check that strtoul result didn't
+                                    // overflow, and fits in `signed long`
+        || parsed_pid_long == 0     // check that strloul didn't fail
+        || pid != (signed long)
+                      parsed_pid_long // check that `unsigned long` value didn't
+                                      // overflow when converting to pid_t
+    ) {
+      log_error("is_proc_app: Failed to parse the pid in %s", path);
+      return 0;
+    }
   }
 
   char exe_path[MAX_OS_PATH_LEN];
   char cmdline_path[MAX_OS_PATH_LEN];
 
-  if (errno != ERANGE && pid != 0) {
-    snprintf(exe_path, MAX_OS_PATH_LEN - 1, "%s/exe", path);
-    snprintf(cmdline_path, MAX_OS_PATH_LEN - 1, "%s/cmdline", path);
+  snprintf(exe_path, MAX_OS_PATH_LEN - 1, "%s/exe", path);
+  snprintf(cmdline_path, MAX_OS_PATH_LEN - 1, "%s/cmdline", path);
 
-    char resolved_path_buffer[PATH_MAX];
-    char *resolved_path = realpath(exe_path, resolved_path_buffer);
-    if (resolved_path != NULL) {
-      bool in_file = is_string_in_cmdline_file(cmdline_path, proc_name);
-      if (strcmp(basename(resolved_path), proc_name) == 0 || in_file) {
-        return pid;
-      }
+  char resolved_path_buffer[PATH_MAX];
+  char *resolved_path = realpath(exe_path, resolved_path_buffer);
+  if (resolved_path != NULL) {
+    bool in_file = is_string_in_cmdline_file(cmdline_path, proc_name);
+    if (strcmp(basename(resolved_path), proc_name) == 0 || in_file) {
+      return pid;
     }
   }
 
