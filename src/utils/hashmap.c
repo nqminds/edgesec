@@ -60,31 +60,25 @@ bool hmap_str_keychar_put(hmap_str_keychar **hmap, const char *keyptr,
     return false;
   }
 
-  hmap_str_keychar *s;
-  HASH_FIND_STR(*hmap, keyptr, s); /* id already in the hash? */
+  hmap_str_keychar *new_entry = malloc(sizeof(hmap_str_keychar));
+  if (new_entry == NULL) {
+    log_errno("malloc: failed to malloc");
+    return false;
+  }
+  strcpy(new_entry->key, keyptr);
+  new_entry->value = strdup(value);
+  if (new_entry->value == NULL) {
+    log_errno("Failed to strdup(): %s", value);
+    free(new_entry);
+    return false;
+  }
 
-  if (s == NULL) {
-    s = (hmap_str_keychar *)malloc(sizeof(hmap_str_keychar));
-    if (s == NULL) {
-      log_errno("malloc");
-      return false;
-    }
+  hmap_str_keychar *old_entry;
+  HASH_REPLACE_STR(*hmap, key, new_entry, old_entry);
 
-    // Copy the key
-    strcpy(s->key, keyptr);
-    s->value = strdup(value);
-    if (s->value == NULL) {
-      log_errno("Failed to strdup(): %s", value);
-    }
-
-    HASH_ADD_STR(*hmap, key, s);
-  } else {
-    // Copy the value
-    free(s->value);
-    s->value = strdup(value);
-    if (s->value == NULL) {
-      log_errno("Failed to strdup(): %s", value);
-    }
+  if (old_entry != NULL) {
+    free(old_entry->value);
+    free(old_entry);
   }
 
   return true;
