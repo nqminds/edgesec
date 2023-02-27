@@ -731,6 +731,16 @@ static void test_is_proc_app(__maybe_unused void **state) {
 #endif /* __linux__ */
 }
 
+static void test_is_proc_running(__maybe_unused void **state) {
+#if __linux__
+  assert_true(is_proc_running("test_os"));
+  assert_false(is_proc_running("hello world, this is a long and complex exe"));
+#else  /* __linux__ */
+  // `/proc` only exists in Linux OS
+  return;
+#endif /* __linux__ */
+};
+
 int main(int argc, char *argv[]) {
   (void)argc;
   (void)argv;
@@ -755,7 +765,8 @@ int main(int argc, char *argv[]) {
                                       teardown_os_strlcpy_test),
       cmocka_unit_test(test_hexstr2bin),
       cmocka_unit_test(test_signal_process),
-      cmocka_unit_test(test_is_proc_app)};
+      cmocka_unit_test(test_is_proc_app),
+      cmocka_unit_test(test_is_proc_running)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }
