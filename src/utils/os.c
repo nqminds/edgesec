@@ -1402,9 +1402,11 @@ ssize_t read_file(char *path, uint8_t **out) {
   read_size = (long int)fread(buffer, sizeof(char), file_size, fp);
 
   if (read_size != file_size) {
-    log_trace("fread fail");
+    log_trace("fread fail, only read %ld bytes out of %ld", read_size,
+              file_size);
     os_free(buffer);
     fclose(fp);
+    return -1;
   }
 
   *out = buffer;
