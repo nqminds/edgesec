@@ -816,7 +816,7 @@ exit_list_dir:
  * @see [man proc(5)](https://linux.die.net/man/5/proc) for details on the
  * `/proc/.../cmdline` format.
  */
-static bool is_string_in_cmdline_file(char *filename, char *str) {
+static bool is_string_in_cmdline_file(const char *filename, const char *str) {
   FILE *fp = fopen(filename, "r");
   if (fp == NULL) {
     log_errno("fopen");
