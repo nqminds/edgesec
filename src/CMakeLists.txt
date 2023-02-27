@@ -1,6 +1,9 @@
 add_compile_options(
   # Error on all C/C++ warnings in the src/ directory if making a Debug build
   $<$<CONFIG:Debug>:-Werror>
+  # Enable GCC static analysis if compiling in Debug mode
+  # (warning, is very slow)
+  $<$<AND:$<C_COMPILER_ID:GNU>,$<CONFIG:Debug>>:-fanalyzer>
   # Warn/error if using a non-const pointer to a string literal
   $<$<COMPILE_LANGUAGE:C>:-Wwrite-strings>
   $<$<COMPILE_LANGUAGE:C>:-Wpedantic>
