@@ -823,6 +823,8 @@ static bool is_string_in_cmdline_file(const char *filename, const char *str) {
     return false;
   }
 
+  // The output buffer for `getdelim()`, getdelim() will automatically realloc()
+  // this if it's too small to hold the next line
   char *line = NULL;
   size_t len = 0;
 
@@ -834,10 +836,9 @@ static bool is_string_in_cmdline_file(const char *filename, const char *str) {
       fclose(fp);
       return true;
     }
-    free(line);
-    line = NULL;
   }
 
+  free(line);
   fclose(fp);
   return false;
 }
