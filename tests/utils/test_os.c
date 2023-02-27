@@ -702,6 +702,35 @@ static void test_signal_process(void **state) {
       ));
 }
 
+static void test_is_proc_app(__maybe_unused void **state) {
+#if __linux__
+  pid_t my_pid = getpid(); // never fails
+
+  char my_pid_dir[MAX_OS_PATH_LEN];
+  snprintf(my_pid_dir, sizeof(my_pid_dir), "/proc/%d", my_pid);
+  // tests whether is_proc_app() works on the currently running process
+  {
+    pid_t pid_from_proc_app = is_proc_app(my_pid_dir, "test_os");
+    assert_int_not_equal(pid_from_proc_app, 0);
+    assert_int_equal(pid_from_proc_app, my_pid);
+  }
+
+  // invalid PID (no PID at all)
+  assert_int_equal(is_proc_app("/this/folder/does/not/exist", "test_os"), 0);
+
+  // invalid PID (PID probably does not exist)
+  {
+    char invalid_pid_dir[MAX_OS_PATH_LEN];
+    snprintf(invalid_pid_dir, sizeof(invalid_pid_dir), "/proc/%d", INT_MAX);
+    assert_int_equal(is_proc_app(invalid_pid_dir, "test_os"), 0);
+  }
+
+#else  /* __linux__ */
+  // `/proc` only exists in Linux OS
+  return;
+#endif /* __linux__ */
+}
+
 int main(int argc, char *argv[]) {
   (void)argc;
   (void)argv;
@@ -725,7 +754,8 @@ int main(int argc, char *argv[]) {
       cmocka_unit_test_setup_teardown(test_os_strlcpy, setup_os_strlcpy_test,
                                       teardown_os_strlcpy_test),
       cmocka_unit_test(test_hexstr2bin),
-      cmocka_unit_test(test_signal_process)};
+      cmocka_unit_test(test_signal_process),
+      cmocka_unit_test(test_is_proc_app)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }
