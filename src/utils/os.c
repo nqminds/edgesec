@@ -825,11 +825,10 @@ static bool is_string_in_cmdline_file(const char *filename, const char *str) {
 
   char *line = NULL;
   size_t len = 0;
-  ssize_t nread;
 
   // /proc/.../cmdline files have arg0, arg1, arg2... delimited by NUL-chars
   // see man proc(5) https://linux.die.net/man/5/proc
-  while ((nread = getdelim(&line, &len, '\0', fp)) != -1) {
+  while (getdelim(&line, &len, '\0', fp) != -1) {
     if (strstr(line, str)) {
       free(line);
       fclose(fp);
