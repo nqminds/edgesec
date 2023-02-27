@@ -1414,31 +1414,27 @@ ssize_t read_file(const char *path, uint8_t **out) {
 }
 
 int read_file_string(char *path, char **out) {
-  int return_code = -1;
   uint8_t *data = NULL;
   ssize_t data_size = 0;
-  char *buffer;
 
   *out = NULL;
 
   if ((data_size = read_file(path, &data)) < 0) {
     log_trace("read_file fail");
-    goto cleanup;
+    os_free(data); // should be NULL, so a no-op
+    return -1;
   }
 
-  if ((buffer = (char *)os_zalloc(data_size + 1)) == NULL) {
-    log_errno("os_zalloc");
-    goto cleanup
+  char *buffer = os_realloc(data, data_size + 1);
+  if (buffer == NULL) {
+    log_errno("os_realloc");
+    os_free(data);
+    return -1;
   }
-
-  os_memcpy(buffer, data, data_size);
+  buffer[data_size] = '\0';
 
   *out = buffer;
-
-  return_code = 0;
-cleanup:
-  os_free(data);
-  return return_code;
+  return 0;
 }
 
 ssize_t open_write_nonblock(const char *path, int *fd, const uint8_t *buffer,
