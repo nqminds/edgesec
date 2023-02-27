@@ -456,7 +456,7 @@ int list_dir(const char *dirpath, list_dir_fn fun, void *args);
  * @param proc_name The process name
  * @return long The process PID
  */
-long is_proc_app(char *path, char *proc_name);
+long is_proc_app(const char *path, const char *proc_name);
 
 /**
  * @brief Kill a process by name

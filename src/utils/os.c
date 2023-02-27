@@ -843,12 +843,19 @@ static bool is_string_in_cmdline_file(const char *filename, const char *str) {
   return false;
 }
 
-long is_proc_app(char *path, char *proc_name) {
+long is_proc_app(const char *path, const char *proc_name) {
+  pid_t pid;
+  { // use a separate scope for this, to avoid allocating too much on the stack
+    char pid_basename_buffer[MAX_OS_PATH_LEN];
+    os_strlcpy(pid_basename_buffer, path, sizeof(pid_basename_buffer));
+    const char *pid_string = basename(pid_basename_buffer);
+
+    pid = strtoul(pid_string, NULL, 10);
+  }
+
   char exe_path[MAX_OS_PATH_LEN];
   char cmdline_path[MAX_OS_PATH_LEN];
   char *resolved_path;
-
-  pid_t pid = strtoul(basename(path), NULL, 10);
 
   if (errno != ERANGE && pid != 0L) {
     snprintf(exe_path, MAX_OS_PATH_LEN - 1, "%s/exe", path);
