@@ -945,6 +945,11 @@ char *string_array2string(char *strings[]) {
       buf = os_realloc(buf, total + strlen(strings[idx]) + 2);
     }
 
+    if (buf == NULL) {
+      log_error("realloc failure");
+      return NULL;
+    }
+
     len = sprintf(&buf[total], "%s ", strings[idx]);
 
     if (len >= 0) {
