@@ -855,18 +855,18 @@ pid_t is_proc_app(const char *path, const char *proc_name) {
 
   char exe_path[MAX_OS_PATH_LEN];
   char cmdline_path[MAX_OS_PATH_LEN];
-  char *resolved_path;
 
   if (errno != ERANGE && pid != 0) {
     snprintf(exe_path, MAX_OS_PATH_LEN - 1, "%s/exe", path);
     snprintf(cmdline_path, MAX_OS_PATH_LEN - 1, "%s/cmdline", path);
-    if ((resolved_path = realpath(exe_path, NULL)) != NULL) {
+
+    char resolved_path_buffer[PATH_MAX];
+    char *resolved_path = realpath(exe_path, resolved_path_buffer);
+    if (resolved_path != NULL) {
       bool in_file = is_string_in_cmdline_file(cmdline_path, proc_name);
       if (strcmp(basename(resolved_path), proc_name) == 0 || in_file) {
-        os_free(resolved_path);
         return pid;
       }
-      os_free(resolved_path);
     }
   }
 
