@@ -1363,7 +1363,7 @@ int create_pid_file(const char *pid_file, int flags) {
   return fd;
 }
 
-ssize_t read_file(char *path, uint8_t **out) {
+ssize_t read_file(const char *path, uint8_t **out) {
   long int read_size;
   long int file_size;
   uint8_t *buffer;

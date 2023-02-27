@@ -641,7 +641,7 @@ int create_pid_file(const char *pid_file, int flags);
  * Will be `malloc()`-ed, so you must free() this when done.
  * @return ssize_t The file size, -1 on failure
  */
-ssize_t read_file(char *path, uint8_t **out);
+ssize_t read_file(const char *path, uint8_t **out);
 
 /**
  * @brief Read the entire file into a string
