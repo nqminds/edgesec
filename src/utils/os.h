@@ -454,9 +454,10 @@ int list_dir(const char *dirpath, list_dir_fn fun, void *args);
  *
  * @param path The process path from /proc fodler
  * @param proc_name The process name
- * @return long The process PID
+ * @return The process PID if the process contains the given `proc_name` stirng,
+ * or `0` if it doesn't.
  */
-long is_proc_app(const char *path, const char *proc_name);
+pid_t is_proc_app(const char *path, const char *proc_name);
 
 /**
  * @brief Kill a process by name

@@ -843,7 +843,7 @@ static bool is_string_in_cmdline_file(const char *filename, const char *str) {
   return false;
 }
 
-long is_proc_app(const char *path, const char *proc_name) {
+pid_t is_proc_app(const char *path, const char *proc_name) {
   pid_t pid;
   { // use a separate scope for this, to avoid allocating too much on the stack
     char pid_basename_buffer[MAX_OS_PATH_LEN];
@@ -857,7 +857,7 @@ long is_proc_app(const char *path, const char *proc_name) {
   char cmdline_path[MAX_OS_PATH_LEN];
   char *resolved_path;
 
-  if (errno != ERANGE && pid != 0L) {
+  if (errno != ERANGE && pid != 0) {
     snprintf(exe_path, MAX_OS_PATH_LEN - 1, "%s/exe", path);
     snprintf(cmdline_path, MAX_OS_PATH_LEN - 1, "%s/cmdline", path);
     if ((resolved_path = realpath(exe_path, NULL)) != NULL) {
