@@ -803,6 +803,19 @@ exit_list_dir:
   return returnValue;
 }
 
+/**
+ * @brief Checks to see if the given `str` is in the given `/proc/.../cmdline`
+ *
+ * This will return `true` if the string is **anywhere** in the command line
+ * for the function, including in the process arguments.
+ *
+ * @param filename - The filename to search in. Should be a `/proc/.../cmdline`
+ * file.
+ * @param str - The string to search for.
+ * @return `true` is the string is in the `/proc/.../cmdline` file.
+ * @see [man proc(5)](https://linux.die.net/man/5/proc) for details on the
+ * `/proc/.../cmdline` format.
+ */
 bool is_string_in_cmdline_file(char *filename, char *str) {
   FILE *fp = fopen(filename, "r");
   if (fp == NULL) {
@@ -814,6 +827,8 @@ bool is_string_in_cmdline_file(char *filename, char *str) {
   size_t len = 0;
   ssize_t nread;
 
+  // /proc/.../cmdline files have arg0, arg1, arg2... delimited by NUL-chars
+  // see man proc(5) https://linux.die.net/man/5/proc
   while ((nread = getdelim(&line, &len, '\0', fp)) != -1) {
     if (strstr(line, str)) {
       free(line);
