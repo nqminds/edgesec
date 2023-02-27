@@ -637,7 +637,8 @@ int create_pid_file(const char *pid_file, int flags);
  * @brief Read the entire file
  *
  * @param path The file path
- * @param out The output buffer
+ * @param[out] out Pointer to the output buffer, or NULL on error.
+ * Will be `malloc()`-ed, so you must free() this when done.
  * @return ssize_t The file size, -1 on failure
  */
 ssize_t read_file(char *path, uint8_t **out);
