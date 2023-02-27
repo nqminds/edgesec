@@ -716,6 +716,11 @@ char *get_secure_path(const UT_array *bin_path_arr, const char *filename,
   while ((p = (char **)utarray_next(bin_path_arr, p))) {
     struct stat sb;
     char *path = construct_path(*p, filename);
+    if (path == NULL) {
+      log_error("construct_path: failed to construct a path from %s and %s", *p,
+                filename);
+      return NULL;
+    }
 
     // Check if file exists
     if (stat(path, &sb) != -1) {
