@@ -122,6 +122,38 @@ static RadiusRxResult receive_auth(struct radius_msg *msg,
   return RADIUS_RX_PROCESSED;
 }
 
+/**
+ * @brief Tries to ping the given socket multiple times.
+ *
+ * @param[in, out] socket_path - The path to the socket.
+ * @param[in] ping_command - The ping command to send.
+ * @param[in] ping_response - The expected ping response.
+ *
+ * Calls CMocka's `fail_msg()` if the socket doesn't respond with a ping after
+ * a couple of tries.
+ */
+void wait_until_server_is_online(char *socket_path, const char *ping_command,
+                                 const char *ping_response) {
+  const int MAX_COUNT = 100;
+  const useconds_t POLL_TIME_us = 100;
+
+  for (int count = 0; count < MAX_COUNT; count++) {
+    char *reply;
+    if (writeread_domain_data_str(socket_path, ping_command, &reply) == 0) {
+      bool got_ping_reply = strcmp(reply, ping_response) == 0;
+      os_free(reply);
+
+      if (got_ping_reply) {
+        return;
+      }
+    }
+    usleep(POLL_TIME_us);
+  }
+
+  fail_msg("Couldn't ping %s after %f ms", socket_path,
+           MAX_COUNT * POLL_TIME_us / 1000.0);
+}
+
 int supervisor_client_thread(void *arg) {
   char socket_path[MAX_OS_PATH_LEN];
   char ping_reply[] = PING_REPLY;
@@ -129,22 +161,7 @@ int supervisor_client_thread(void *arg) {
   strcpy(socket_path, SUPERVISOR_CONTROL_PATH);
   struct eloop_data *main_eloop = (struct eloop_data *)arg;
 
-  int count = 10;
-  char *reply = NULL;
-  while (count--) {
-    writeread_domain_data_str(socket_path, CMD_PING, &reply);
-    if (reply != NULL) {
-      if (strcmp(reply, ping_reply) == 0) {
-        os_free(reply);
-        break;
-      }
-    }
-    sleep(1);
-  }
-
-  if (!count) {
-    fail_msg("Couldn't ping supervisor");
-  }
+  wait_until_server_is_online(socket_path, CMD_PING, ping_reply);
 
   struct radius_conf conf = {
       .radius_client_mask = 32,
@@ -209,6 +226,7 @@ int supervisor_client_thread(void *arg) {
 
   char command[128];
   snprintf(command, 128, "%s 00:01:02:03:04:05", CMD_GET_MAP);
+  char *reply;
   writeread_domain_data_str(socket_path, command, &reply);
   if (reply != NULL) {
     if (strstr(reply, "a,00:01:02:03:04:05,,,2,1,,") == NULL) {
@@ -364,11 +382,8 @@ static void test_edgesec_ap_failure(void **state) {
       thrd_success);
 
   // send a PING command to confirm that server is online
-  char *reply = NULL;
-  sleep(1);
-  assert_return_code(
-      writeread_domain_data_str(socket_path, PING_AP_COMMAND, &reply), errno);
-  assert_string_equal(reply, PING_AP_COMMAND_REPLY);
+  wait_until_server_is_online(socket_path, PING_AP_COMMAND,
+                              PING_AP_COMMAND_REPLY);
 
   // send invalid command to ap server
   {
