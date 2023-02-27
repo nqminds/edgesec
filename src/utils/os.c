@@ -860,22 +860,32 @@ pid_t is_proc_app(const char *path, const char *proc_name) {
                       parsed_pid_long // check that `unsigned long` value didn't
                                       // overflow when converting to pid_t
     ) {
-      log_error("is_proc_app: Failed to parse the pid in %s", path);
+      // don't log anything, since we expect this to happen for many files in
+      // /proc
       return 0;
     }
   }
 
-  char exe_path[MAX_OS_PATH_LEN];
-  char cmdline_path[MAX_OS_PATH_LEN];
+  {
+    // check if the basename of the realpath of the process matches proc_name
+    char exe_path[MAX_OS_PATH_LEN];
+    snprintf(exe_path, MAX_OS_PATH_LEN - 1, "%s/exe", path);
+    char resolved_path_buffer[PATH_MAX];
+    char *resolved_path = realpath(exe_path, resolved_path_buffer);
+    if (resolved_path == NULL) {
+      // don't log anything, since many `/proc/[pid]/exe` point nowhere, if
+      // they're from a multithreaded program
+      return 0;
+    }
+    if (strcmp(basename(resolved_path), proc_name) == 0) {
+      return pid;
+    }
+  }
 
-  snprintf(exe_path, MAX_OS_PATH_LEN - 1, "%s/exe", path);
-  snprintf(cmdline_path, MAX_OS_PATH_LEN - 1, "%s/cmdline", path);
-
-  char resolved_path_buffer[PATH_MAX];
-  char *resolved_path = realpath(exe_path, resolved_path_buffer);
-  if (resolved_path != NULL) {
-    bool in_file = is_string_in_cmdline_file(cmdline_path, proc_name);
-    if (strcmp(basename(resolved_path), proc_name) == 0 || in_file) {
+  { // check if proc_name is in **any** of the cmdline args
+    char cmdline_path[MAX_OS_PATH_LEN];
+    snprintf(cmdline_path, MAX_OS_PATH_LEN - 1, "%s/cmdline", path);
+    if (is_string_in_cmdline_file(cmdline_path, proc_name)) {
       return pid;
     }
   }
