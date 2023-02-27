@@ -450,12 +450,21 @@ typedef bool (*list_dir_fn)(char *, void *args);
 int list_dir(const char *dirpath, list_dir_fn fun, void *args);
 
 /**
- * @brief Check if a process path from /proc folder contains the process name
+ * @brief Check if the given process's basename matches proc_name.
  *
- * @param path The process path from /proc fodler
- * @param proc_name The process name
- * @return The process PID if the process contains the given `proc_name` stirng,
- * or `0` if it doesn't.
+ * Checks both:
+ * - the realpath (aka `/proc/[pid]/exe`), and
+ * - the given argv0 (from `/proc/[pid]/cmdline`).
+ *
+ * As an example, if a process was started with `/usr/bin/gcc`,
+ * which is a symlink to `/usr/bin/x86_64-linux-gnu-gcc-11`,
+ * then both`is_proc_app(..., "gcc")` AND `is_proc_app(...,
+ * "x86_64-linux-gnu-gcc-11")` will work.
+ *
+ * @param path The `/proc/[pid]` folder for the process
+ * @param proc_name The process name to search for.
+ * @return The process PID if the process's basename contains the given
+ * `proc_name` string, or `0` if it doesn't.
  */
 pid_t is_proc_app(const char *path, const char *proc_name);
 

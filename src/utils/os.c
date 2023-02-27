@@ -804,20 +804,22 @@ exit_list_dir:
 }
 
 /**
- * @brief Checks to see if the given `str` is in the given `/proc/.../cmdline`
+ * @brief Checks to see if the given `str` is in the given argv0 of the
+ * `/proc/.../cmdline` file.
  *
- * This will return `true` if the string is **anywhere** in the command line
- * for the function, including in the process arguments.
+ * Gets the argv[0] from the `/proc/[pid]/cmdline` file, then returns
+ * `true` if `basename(argv[0])` is equal to the given `procname`.
  *
- * @param filename - The filename to search in. Should be a `/proc/.../cmdline`
- * file.
- * @param str - The string to search for.
+ * @param pid_cmdline_file - The filename to search in. Should be a
+ * `/proc/.../cmdline` file.
+ * @param proc_name - The expected name of the process.
  * @return `true` is the string is in the `/proc/.../cmdline` file.
  * @see [man proc(5)](https://linux.die.net/man/5/proc) for details on the
  * `/proc/.../cmdline` format.
  */
-static bool is_string_in_cmdline_file(const char *filename, const char *str) {
-  FILE *fp = fopen(filename, "r");
+static bool is_cmdline_procname(const char *pid_cmdline_file,
+                                const char *proc_name) {
+  FILE *fp = fopen(pid_cmdline_file, "r");
   if (fp == NULL) {
     log_errno("fopen");
     return false;
@@ -825,21 +827,25 @@ static bool is_string_in_cmdline_file(const char *filename, const char *str) {
 
   // The output buffer for `getdelim()`, getdelim() will automatically realloc()
   // this if it's too small to hold the next line
-  char *line = NULL;
-  size_t len = 0;
+  char *argv0 = NULL;
+  size_t argv0_buffer_size = 0;
 
-  // /proc/.../cmdline files have arg0, arg1, arg2... delimited by NUL-chars
+  // /proc/.../cmdline files have argv0, argv1, argv2... delimited by NUL-chars
   // see man proc(5) https://linux.die.net/man/5/proc
-  while (getdelim(&line, &len, '\0', fp) != -1) {
-    if (strstr(line, str)) {
-      free(line);
-      fclose(fp);
-      return true;
-    }
+  ssize_t arvg0_bytes = getdelim(&argv0, &argv0_buffer_size, '\0', fp);
+  fclose(fp);
+  if (arvg0_bytes == -1) {
+    log_errno("getdelim: failed to read argv0 from %s", pid_cmdline_file);
+    return false;
   }
 
-  free(line);
-  fclose(fp);
+  const char *argv0_basename = basename(argv0);
+
+  if (strcmp(argv0_basename, proc_name) == 0) {
+    free(argv0);
+    return true;
+  }
+  free(argv0);
   return false;
 }
 
@@ -866,8 +872,7 @@ pid_t is_proc_app(const char *path, const char *proc_name) {
     }
   }
 
-  {
-    // check if the basename of the realpath of the process matches proc_name
+  { // check if the basename of the realpath of the process matches proc_name
     char exe_path[MAX_OS_PATH_LEN];
     snprintf(exe_path, MAX_OS_PATH_LEN - 1, "%s/exe", path);
     char resolved_path_buffer[PATH_MAX];
@@ -882,10 +887,10 @@ pid_t is_proc_app(const char *path, const char *proc_name) {
     }
   }
 
-  { // check if proc_name is in **any** of the cmdline args
+  { // check if proc_name is in arg0 of the cmdline file
     char cmdline_path[MAX_OS_PATH_LEN];
     snprintf(cmdline_path, MAX_OS_PATH_LEN - 1, "%s/cmdline", path);
-    if (is_string_in_cmdline_file(cmdline_path, proc_name)) {
+    if (is_cmdline_procname(cmdline_path, proc_name)) {
       return pid;
     }
   }
