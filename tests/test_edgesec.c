@@ -9,13 +9,16 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <inttypes.h>
-#include <pthread.h>
 #include <signal.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#include <stdatomic.h>
+#include <errno.h>
+#include <threads.h>
 
 #include "config.h"
 #include "runctl.h"
@@ -31,23 +34,39 @@
 #define AP_CTRL_IFACE_PATH "/tmp/wifi0"
 #define SUPERVISOR_CONTROL_PATH "/tmp/edgesec-control-server"
 
-pthread_mutex_t log_lock;
+static mtx_t log_lock;
 
 void log_lock_fun(bool lock) {
   if (lock) {
-    pthread_mutex_lock(&log_lock);
+    mtx_lock(&log_lock);
   } else {
-    pthread_mutex_unlock(&log_lock);
+    mtx_unlock(&log_lock);
   }
 }
 
-void ap_eloop(int sock, __maybe_unused void *eloop_ctx,
-              __maybe_unused void *sock_ctx) {
+/** Stores information about a thread that is running an eloop */
+struct thread_context {
+  struct eloop_data *eloop;
+  thrd_t thread;
+  /** Set this to `true` to stop the eloop from a different thread */
+  atomic_bool should_die;
+  char error_message[512];
+  /**
+   * Set to `true` if you want teardown_edgesec_test() to join
+   * your thread (i.e. if you've haven't joined it in your CMocka test)
+   */
+  bool cleanup_thread;
+};
+
+void ap_eloop(int sock, __maybe_unused void *eloop_ctx, void *sock_ctx) {
+  struct thread_context *thread_context = sock_ctx;
   uint32_t bytes_available = 0;
 
   assert_int_not_equal(ioctl(sock, FIONREAD, &bytes_available), -1);
 
-  char *buf = os_malloc(bytes_available);
+  // allocate an extra byte, just in case the string isn't NUL-terminated
+  char *buf = os_malloc(bytes_available + 1);
+  buf[bytes_available] = '\0';
 
   struct client_address addr = {.type = SOCKET_TYPE_DOMAIN};
   read_socket_data(sock, buf, bytes_available, &addr, 0);
@@ -58,26 +77,32 @@ void ap_eloop(int sock, __maybe_unused void *eloop_ctx,
   } else if (strcmp(buf, ATTACH_AP_COMMAND) == 0) {
     log_trace("RECEIVED ATTACH");
   } else {
-    fail_msg("Uknown AP command received %s", buf);
+    snprintf(thread_context->error_message,
+             sizeof(thread_context->error_message) - 1, "Unknown command: %s",
+             buf);
+    os_free(buf);
+    log_error("%s", thread_context->error_message);
+    thrd_exit(EXIT_FAILURE);
   }
   os_free(buf);
 }
 
-void *ap_server_thread(void *arg) {
-  struct eloop_data *eloop = (struct eloop_data *)arg;
+int ap_server_thread(void *arg) {
+  struct thread_context *thread_context = arg;
+  struct eloop_data *eloop = thread_context->eloop;
 
   int fd = create_domain_server(AP_CTRL_IFACE_PATH);
 
   assert_int_not_equal(fd, -1);
 
   assert_int_not_equal(
-      edge_eloop_register_read_sock(eloop, fd, ap_eloop, (void *)eloop, NULL),
+      edge_eloop_register_read_sock(eloop, fd, ap_eloop, NULL, thread_context),
       -1);
 
   edge_eloop_run(eloop);
   log_trace("AP server thread end");
   assert_int_equal(close_domain_socket(fd), 0);
-  return NULL;
+  return 0;
 }
 
 /* Process the RADIUS frames from Authentication Server */
@@ -97,29 +122,46 @@ static RadiusRxResult receive_auth(struct radius_msg *msg,
   return RADIUS_RX_PROCESSED;
 }
 
-void *supervisor_client_thread(__maybe_unused void *arg) {
+/**
+ * @brief Tries to ping the given socket multiple times.
+ *
+ * @param[in, out] socket_path - The path to the socket.
+ * @param[in] ping_command - The ping command to send.
+ * @param[in] ping_response - The expected ping response.
+ *
+ * Calls CMocka's `fail_msg()` if the socket doesn't respond with a ping after
+ * a couple of tries.
+ */
+void wait_until_server_is_online(char *socket_path, const char *ping_command,
+                                 const char *ping_response) {
+  const int MAX_COUNT = 100;
+  const useconds_t POLL_TIME_us = 100;
+
+  for (int count = 0; count < MAX_COUNT; count++) {
+    char *reply;
+    if (writeread_domain_data_str(socket_path, ping_command, &reply) == 0) {
+      bool got_ping_reply = strcmp(reply, ping_response) == 0;
+      os_free(reply);
+
+      if (got_ping_reply) {
+        return;
+      }
+    }
+    usleep(POLL_TIME_us);
+  }
+
+  fail_msg("Couldn't ping %s after %f ms", socket_path,
+           MAX_COUNT * POLL_TIME_us / 1000.0);
+}
+
+int supervisor_client_thread(void *arg) {
   char socket_path[MAX_OS_PATH_LEN];
   char ping_reply[] = PING_REPLY;
   rtrim(ping_reply, NULL);
   strcpy(socket_path, SUPERVISOR_CONTROL_PATH);
   struct eloop_data *main_eloop = (struct eloop_data *)arg;
 
-  int count = 10;
-  char *reply = NULL;
-  while (count--) {
-    writeread_domain_data_str(socket_path, CMD_PING, &reply);
-    if (reply != NULL) {
-      if (strcmp(reply, ping_reply) == 0) {
-        os_free(reply);
-        break;
-      }
-    }
-    sleep(1);
-  }
-
-  if (!count) {
-    fail_msg("Couldn't ping supervisor");
-  }
+  wait_until_server_is_online(socket_path, CMD_PING, ping_reply);
 
   struct radius_conf conf = {
       .radius_client_mask = 32,
@@ -181,10 +223,10 @@ void *supervisor_client_thread(__maybe_unused void *arg) {
   assert_int_not_equal(radius_client_send(radius, msg, RADIUS_AUTH, addr), -1);
 
   edge_eloop_run(eloop);
-  edge_eloop_free(eloop);
 
   char command[128];
   snprintf(command, 128, "%s 00:01:02:03:04:05", CMD_GET_MAP);
+  char *reply;
   writeread_domain_data_str(socket_path, command, &reply);
   if (reply != NULL) {
     if (strstr(reply, "a,00:01:02:03:04:05,,,2,1,,") == NULL) {
@@ -201,13 +243,110 @@ void *supervisor_client_thread(__maybe_unused void *arg) {
     os_free(reply);
   }
 
-  return NULL;
+  return 0;
+}
+
+/**
+ * Terminates the current eloop if `should_die` is true.
+ *
+ * Otherwise, run this function again in 10ms.
+ *
+ * Our eloop implementation can only be terminated from within the eloop.
+ * (e.g. calling `edge_eloop_terminate()` from another thread does nothing)
+ * Therefore, this function runs every 10ms, and checks whether the given atomic
+ * is `true`, and then stops the eloop for us.
+ *
+ * @param[in] eloop_ctx - Current eloop context.
+ * @param[in] user_ctx - Pointer to a @c atomic_bool, which if `true`,
+ * terminates the eloop.
+ */
+void check_if_should_terminate(void *eloop_ctx, void *user_ctx) {
+  struct eloop_data *eloop = eloop_ctx;
+  atomic_bool *should_die = user_ctx;
+  if (*should_die) {
+    edge_eloop_terminate(eloop);
+  } else {
+    edge_eloop_register_timeout(eloop, 0, 10000, check_if_should_terminate,
+                                eloop, should_die);
+  }
+}
+
+struct edgesec_test_context {
+  struct thread_context ap_server;
+  struct thread_context supervisor;
+};
+
+static int setup_edgesec_test(void **state) {
+  struct edgesec_test_context *ctx =
+      calloc(1, sizeof(struct edgesec_test_context));
+  assert_non_null(ctx);
+
+  *ctx = (struct edgesec_test_context){
+      .ap_server =
+          {
+              .eloop = edge_eloop_init(),
+              .should_die = false,
+          },
+      .supervisor =
+          {
+              .eloop = edge_eloop_init(),
+              .should_die = false,
+          },
+  };
+
+  assert_non_null(ctx->ap_server.eloop);
+  assert_non_null(ctx->supervisor.eloop);
+
+  assert_return_code(edge_eloop_register_timeout(ctx->ap_server.eloop, 0, 10000,
+                                                 check_if_should_terminate,
+                                                 ctx->ap_server.eloop,
+                                                 &(ctx->ap_server.should_die)),
+                     0);
+
+  assert_return_code(edge_eloop_register_timeout(
+                         ctx->supervisor.eloop, 0, 10000,
+                         check_if_should_terminate, ctx->ap_server.eloop,
+                         &(ctx->supervisor.should_die)),
+                     0);
+
+  *state = ctx;
+  return 0;
+}
+
+static int teardown_edgesec_test(void **state) {
+  struct edgesec_test_context *ctx = *state;
+
+  int ap_server_thread_rc = 0;
+  int supervisor_thread_rc = 0;
+
+  if (ctx != NULL) {
+    ctx->ap_server.should_die = true;
+    ctx->supervisor.should_die = true;
+    // don't free supervisor eloop, since it's freed by run_ctl() already
+
+    if (ctx->ap_server.cleanup_thread) {
+      log_info("Waiting for AP Server thread to finish");
+      thrd_join(ctx->ap_server.thread, &ap_server_thread_rc);
+    }
+
+    if (ctx->supervisor.cleanup_thread) {
+      log_info("Waiting for Supervisor thread to finish");
+      thrd_join(ctx->supervisor.thread, &supervisor_thread_rc);
+    }
+
+    edge_eloop_free(ctx->ap_server.eloop);
+  }
+
+  free(ctx);
+  // returns an error if any of the threads failed
+  return ap_server_thread_rc && supervisor_thread_rc;
 }
 
 /**
  * @brief Performs an integration test on edgesec
  */
-static void test_edgesec(__maybe_unused void **state) {
+static void test_edgesec(void **state) {
+  struct edgesec_test_context *ctx = *state;
   struct app_config config = {0};
 
   assert_int_equal(load_app_config(TEST_CONFIG_INI_PATH, &config), 0);
@@ -218,32 +357,69 @@ static void test_edgesec(__maybe_unused void **state) {
 
   os_init_random_seed();
 
-  struct eloop_data *main_eloop = edge_eloop_init();
-
-  pthread_t ap_id = 0;
-  struct eloop_data *ap_eloop = edge_eloop_init();
   assert_int_equal(
-      pthread_create(&ap_id, NULL, ap_server_thread, (void *)ap_eloop), 0);
+      thrd_create(&ctx->ap_server.thread, ap_server_thread, &ctx->ap_server),
+      thrd_success);
+  ctx->ap_server.cleanup_thread = true;
+  assert_int_equal(thrd_create(&ctx->supervisor.thread,
+                               supervisor_client_thread, ctx->supervisor.eloop),
+                   thrd_success);
+  ctx->supervisor.cleanup_thread = true;
 
-  pthread_t supervisor_id = 0;
-  assert_int_equal(pthread_create(&supervisor_id, NULL,
-                                  supervisor_client_thread, (void *)main_eloop),
-                   0);
+  assert_int_equal(run_ctl(&config, ctx->supervisor.eloop), 0);
+}
 
-  assert_int_equal(run_ctl(&config, main_eloop), 0);
+/**
+ * @brief Confirm that ap_server_thread errors for invalid AP commands
+ */
+static void test_edgesec_ap_failure(void **state) {
+  struct edgesec_test_context *ctx = *state;
 
-  edge_eloop_terminate(ap_eloop);
+  char socket_path[MAX_OS_PATH_LEN] = AP_CTRL_IFACE_PATH;
 
-  edge_eloop_free(ap_eloop);
-  free_app_config(&config);
-  pthread_mutex_destroy(&log_lock);
+  assert_int_equal(
+      thrd_create(&ctx->ap_server.thread, ap_server_thread, &ctx->ap_server),
+      thrd_success);
+
+  // send a PING command to confirm that server is online
+  wait_until_server_is_online(socket_path, PING_AP_COMMAND,
+                              PING_AP_COMMAND_REPLY);
+
+  // send invalid command to ap server
+  {
+    int sfd = create_domain_client(NULL);
+    assert_return_code(sfd, errno);
+    ssize_t send_invalid_cmd_bytes = write_domain_data_s(
+        sfd, "INVALID COMMAND", strlen("INVALID COMMAND"), socket_path);
+    close_domain_socket(sfd);
+    assert_return_code(send_invalid_cmd_bytes, errno);
+  }
+
+  int ap_server_thread_rc = 0;
+  log_info("Waiting for AP Server thread to finish");
+  thrd_join(ctx->ap_server.thread, &ap_server_thread_rc);
+
+  assert_int_equal(ap_server_thread_rc, 1); // should be an error condition!
+  assert_string_equal(ctx->ap_server.error_message,
+                      "Unknown command: INVALID COMMAND");
 }
 
 int main(__maybe_unused int argc, __maybe_unused char *argv[]) {
   log_set_quiet(false);
+
+  assert_return_code(mtx_init(&log_lock, mtx_plain), thrd_success);
   log_set_lock(log_lock_fun);
 
-  const struct CMUnitTest tests[] = {cmocka_unit_test(test_edgesec)};
+  const struct CMUnitTest tests[] = {
+      cmocka_unit_test_setup_teardown(test_edgesec, setup_edgesec_test,
+                                      teardown_edgesec_test),
+      cmocka_unit_test_setup_teardown(
+          test_edgesec_ap_failure, setup_edgesec_test, teardown_edgesec_test),
+  };
 
-  return cmocka_run_group_tests(tests, NULL, NULL);
+  int rc = cmocka_run_group_tests(tests, NULL, NULL);
+
+  mtx_destroy(&log_lock);
+
+  return rc;
 }
