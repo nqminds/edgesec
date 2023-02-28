@@ -965,44 +965,30 @@ bool kill_process(char *proc_name) {
   return signal_process(proc_name, SIGTERM);
 }
 
-char *string_array2string(char *strings[]) {
-  int idx = 0;
-  ssize_t total = 0;
-  ssize_t len = 0;
-
-  char *buf = NULL;
-
+char *string_array2string(const char *const strings[]) {
   if (strings == NULL) {
     log_trace("strings is NULL");
     return NULL;
   }
 
-  while (strings[idx] != NULL && /*total <= size && */ len >= 0) {
-    if (buf == NULL) {
-      buf = os_malloc(strlen(strings[idx]) + 2);
-    } else {
-      buf = os_realloc(buf, total + strlen(strings[idx]) + 2);
-    }
-
-    if (buf == NULL) {
-      log_error("realloc failure");
-      return NULL;
-    }
-
-    len = sprintf(&buf[total], "%s ", strings[idx]);
-
-    if (len >= 0) {
-      total += len;
-    } else {
-      log_trace("snprintf fail");
-      os_free(buf);
-      return NULL;
-    }
-
-    idx++;
+  size_t total_chars = 1; // start with 1 for NUL-terminator
+  for (size_t idx = 0; strings[idx] != NULL; idx++) {
+    total_chars += strlen(strings[idx]) + 1 /* space between strings */;
   }
 
-  return buf; // total;
+  char *buf = os_malloc(total_chars);
+  if (buf == NULL) {
+    log_errno("os_malloc: Failed to allocate %d bytes of memory", total_chars);
+    return NULL;
+  }
+
+  buf[0] = '\0'; // initialise buffer as a 0-length string
+  for (size_t idx = 0; strings[idx] != NULL; idx++) {
+    strcat(buf, strings[idx]);
+    strcat(buf, " "); // todo, skip on last loop?
+  }
+
+  return buf;
 }
 
 int run_process(char *argv[], pid_t *child_pid) {
@@ -1031,7 +1017,7 @@ int run_process(char *argv[], pid_t *child_pid) {
   }
 
   log_trace("Running process %s with params:", argv[0]);
-  if ((buf = string_array2string(argv)) != NULL) {
+  if ((buf = string_array2string((const char *const *)argv)) != NULL) {
     log_trace("\t %s", buf);
     os_free(buf);
   }
