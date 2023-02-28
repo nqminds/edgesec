@@ -959,7 +959,7 @@ bool kill_process(char *proc_name) {
   return signal_process(proc_name, SIGTERM);
 }
 
-char *string_array2string(char *strings[]) {
+char *string_array2string(const char *const strings[]) {
   if (strings == NULL) {
     log_trace("strings is NULL");
     return NULL;
@@ -1011,7 +1011,7 @@ int run_process(char *argv[], pid_t *child_pid) {
   }
 
   log_trace("Running process %s with params:", argv[0]);
-  if ((buf = string_array2string(argv)) != NULL) {
+  if ((buf = string_array2string((const char *const *)argv)) != NULL) {
     log_trace("\t %s", buf);
     os_free(buf);
   }
