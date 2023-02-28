@@ -684,7 +684,7 @@ char *construct_path(const char *path_left, const char *path_right) {
   char *valid_right = get_valid_path(path_right);
   char *beg_right = valid_right;
 
-  if (strlen(valid_right) >= 2) {
+  if (valid_right != NULL && strlen(valid_right) >= 2) {
     if (valid_right[0] == '.' && valid_right[1] == '/')
       beg_right++;
   }
