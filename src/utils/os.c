@@ -782,6 +782,12 @@ int list_dir(const char *dirpath, list_dir_fn fun, void *args) {
 
     /* Print directory + filename */
     char *path = construct_path(dirpath, dp->d_name);
+    if (path == NULL) {
+      log_errno("construct_path fail");
+      returnValue = -1;
+      goto exit_list_dir;
+    }
+
     if (fun != NULL) {
       if (!fun(path, args)) {
         log_trace("list_dir callback fail");
