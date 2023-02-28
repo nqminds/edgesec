@@ -71,4 +71,25 @@
 #define STRUCT_PACKED
 #endif /* defined __has_attribute */
 
+#if __GNUC__ >= 11 // this syntax will throw an error in GCC 10 or Clang, since
+                   // __attribute__((malloc)) accepts no args
+/**
+ * Declares that the attributed function must be free()-ed with `__must_free()`.
+ *
+ * Expects that this function returns a pointer that must be `free()`-ed with
+ * `free()`.
+ *
+ * Please be aware that `__attribute((malloc))` instead does something
+ * completely different and should **NOT** be used. It tells the compiler about
+ * pointer aliasing, which does not apply to functions like `realloc()`, and
+ * so are not part of this macro.
+ *
+ * @see
+ * https://gcc.gnu.org/onlinedocs/gcc-11.1.0/gcc/Common-Function-Attributes.html#index-malloc-function-attribute
+ */
+#define __must_free __attribute__((malloc(free, 1))) __must_check
+#else
+#define __must_free __must_check
+#endif /* __GNUC__ >= 11 */
+
 #endif /* ATTRIBUTES_H */
