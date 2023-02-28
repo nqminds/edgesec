@@ -55,6 +55,10 @@
 #define os_strlen(s) strlen((s))
 #endif
 
+#ifndef os_snprintf
+#define os_snprintf(s, maxlen, ...) snprintf((s), (maxlen), __VA_ARGS__)
+#endif
+
 #ifndef os_strncmp
 #define os_strncmp(s1, s2, n) strncmp((s1), (s2), (n))
 #endif
@@ -66,6 +70,19 @@
  * a `char *`.
  */
 #define os_strstr(s1, s2) strstr((s1), (s2))
+#endif
+
+#ifndef os_strcmp
+#define os_strcmp(s1, s2) strcmp((s1), (s2))
+#endif
+
+#ifndef os_strchr
+/**
+ * @brief Macro to strchr() for code taken from hostap.
+ * @remarks strchr() is a type-generic function in C23, and might return a
+ * `const char *` instead of a `char *`.
+ */
+#define os_strchr(s, c) strchr((s), (c))
 #endif
 
 struct find_dir_type {

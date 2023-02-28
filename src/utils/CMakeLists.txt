@@ -3,6 +3,7 @@ add_library(log log.c)
 set_target_properties(log PROPERTIES C_EXTENSIONS ON POSITION_INDEPENDENT_CODE ON)
 
 add_library(allocs allocs.c)
+target_link_libraries(allocs PUBLIC attributes)
 
 add_library(attributes INTERFACE) # #define's for compiler attributes
 set_target_properties(attributes PROPERTIES PUBLIC_HEADER "attributes.h")

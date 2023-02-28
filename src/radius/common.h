@@ -15,9 +15,9 @@
 
 #include <stddef.h>
 
+#include "../utils/allocs.h"
 #include "../utils/attributes.h"
-#include "utils/allocs.h"
-#include "utils/log.h"
+#include "../utils/log.h"
 
 typedef uint64_t u64;
 typedef uint32_t u32;
@@ -150,10 +150,72 @@ static inline u32 WPA_GET_BE24(const u8 *a) {
   return (a[0] << 16) | (a[1] << 8) | a[2];
 }
 
+/**
+ * Returns `true` if `snprintf` was truncated.
+ *
+ * @param size - Size of snprintf() output buffer.
+ * @param res - Return code from snprintf()
+ * @retval 0 if snprintf() was successful
+ * @retval 1 if snprintf() failed
+ *
+ * @author Jouni Malinen <j@w1.fi>
+ * @remarks Taken from commit 0047306bc9ab7d46e8cc22ff9a3e876c47626473 of
+ * hostap, see
+ * https://w1.fi/cgit/hostap/commit/?id=0047306bc9ab7d46e8cc22ff9a3e876c47626473
+ */
+static inline int os_snprintf_error(size_t size, int res) {
+  return res < 0 || (unsigned int)res >= size;
+}
+
+/**
+ * Sets the memory to '\0' before freeing it.
+ *
+ * Clears the given memory to `'\0'` before free()-ing it, to avoid leaking
+ * sensitive information.
+ *
+ * @param bin - Pointer to the memory to free()
+ * @param len - Number of bytes to `'\0'` before free()-ing
+ * @see
+ * https://wiki.sei.cmu.edu/confluence/display/c/MEM03-C.+Clear+sensitive+information+stored+in+reusable+resources
+ * @see https://cwe.mitre.org/data/definitions/226.html
+ * @remarks Adapted from commit 19c48da06b6980915e97a84ea8387a9db858c662
+ * of hostap, see
+ * https://w1.fi/cgit/hostap/commit/?id=19c48da06b6980915e97a84ea8387a9db858c662
+ */
+static inline void bin_clear_free(void *bin, size_t len) {
+  if (bin) {
+    // may be optimized out by a smart compiler, we should use
+    // memset_s (C11 Annex K) or memset_explicit (C23) instead
+    os_memset(bin, '\0', len);
+    os_free(bin);
+  }
+}
+
 #define wpa_printf(level, ...)                                                 \
   log_levels(LOGC_TRACE, __FILENAME__, __LINE__, __VA_ARGS__)
 #define wpa_snprintf_hex(buf, buf_size, data, len)                             \
-  printf_hex(buf, buf_size, data, len, 0)
+  printf_hex(buf, buf_size, data, len, false)
+
+/**
+ * Prints the first 16-bytes of the given buffer with the given title.
+ *
+ * @param level priority level of the message
+ * @param title of for the message
+ * @param data buffer to be dumped
+ * @param length of the buf
+ *
+ * @remarks Designed to have the same API as hostap's wpa_hexdump_ascii(),
+ * see https://w1.fi/cgit/hostap/tree/src/utils/wpa_debug.h?h=hostap_2_10#n118
+ * However, it prints every byte as hex, and never prints bytes as ASCII.
+ */
+static inline void
+wpa_hexdump_ascii(__maybe_unused int level, // used by hostap, but our
+                                            // implementation doesn't use it
+                  const char *title, const void *buf, size_t len) {
+  char hex_buf[33];
+  printf_hex(hex_buf, sizeof(hex_buf), buf, len, false);
+  log_trace("%s - hexdump(len=%lu):%s", title, len, hex_buf);
+}
 
 static inline void printf_encode(char *txt, size_t maxlen, const uint8_t *data,
                                  size_t len) {
@@ -209,8 +271,25 @@ static inline void printf_encode(char *txt, size_t maxlen, const uint8_t *data,
 }
 
 #ifndef wpa_trace_show
+/**
+ * Dummy implementation of hostap's wpa_trace_show()
+ *
+ * @see https://w1.fi/cgit/hostap/tree/src/utils/trace.h?h=hostap_2_10#n33
+ *
+ * @note
+ * In the future, we could use something like GCC's backtrace_symbols()
+ * to implement this,
+ * https://www.gnu.org/software/libc/manual/html_node/Backtraces.html
+ */
 #define wpa_trace_show(s) log_trace("%s", s)
-#endif
+#endif /* wpa_trace_show */
 
+/**
+ * Used in hostap source code to test failures.
+ *
+ * @see
+ * https://w1.fi/cgit/hostap/commit/?h=hostap_2_10&id=2da525651d9aa49854bff51f7e4faf9273f68868
+ */
 #define TEST_FAIL() 0
-#endif
+
+#endif /* COMMON_H */

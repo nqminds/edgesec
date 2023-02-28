@@ -29,4 +29,6 @@ struct radius_conf {
   char radius_secret[RADIUS_SECRET_LEN]; /**< Radius secret string */
 };
 
+typedef struct mac_conn_info (*mac_conn_fn)(uint8_t mac_addr[],
+                                            void *mac_conn_arg);
 #endif
