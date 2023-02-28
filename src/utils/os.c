@@ -851,25 +851,6 @@ long is_proc_app(char *path, char *proc_name) {
   return 0;
 }
 
-bool kill_dir_fn(char *path, void *args) {
-  pid_t pid;
-  pid_t current_pid = getpid();
-  pid_t current_pid_group = getpgid(current_pid);
-  if ((pid = is_proc_app(path, args)) != 0) {
-    if (current_pid != pid && pid != current_pid_group) {
-      log_trace("Found process pid=%d current_pid=%d current_pid_group=%d", pid,
-                current_pid, current_pid_group);
-      if (kill(pid, SIGTERM) == -1) {
-        log_errno("kill");
-        return false;
-      } else
-        log_trace("killed %s process with pid=%d", args, pid);
-    }
-  }
-
-  return true;
-}
-
 bool signal_dir_fn(char *path, void *args) {
   struct proc_signal_arg *sarg = (struct proc_signal_arg *)args;
 
