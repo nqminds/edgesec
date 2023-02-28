@@ -808,48 +808,95 @@ exit_list_dir:
   return returnValue;
 }
 
-bool is_string_in_cmdline_file(char *filename, char *str) {
-  FILE *fp = fopen(filename, "r");
+/**
+ * @brief Checks to see if the given `str` is in the given argv0 of the
+ * `/proc/.../cmdline` file.
+ *
+ * Gets the argv[0] from the `/proc/[pid]/cmdline` file, then returns
+ * `true` if `basename(argv[0])` is equal to the given `procname`.
+ *
+ * @param pid_cmdline_file - The filename to search in. Should be a
+ * `/proc/.../cmdline` file.
+ * @param proc_name - The expected name of the process.
+ * @return `true` is the string is in the `/proc/.../cmdline` file.
+ * @see [man proc(5)](https://linux.die.net/man/5/proc) for details on the
+ * `/proc/.../cmdline` format.
+ */
+static bool is_cmdline_procname(const char *pid_cmdline_file,
+                                const char *proc_name) {
+  FILE *fp = fopen(pid_cmdline_file, "r");
   if (fp == NULL) {
     log_errno("fopen");
     return false;
   }
 
-  char *line = NULL;
-  size_t len = 0;
-  ssize_t nread;
+  // The output buffer for `getdelim()`, getdelim() will automatically realloc()
+  // this if it's too small to hold the next line
+  char *argv0 = NULL;
+  size_t argv0_buffer_size = 0;
 
-  while ((nread = getdelim(&line, &len, '\0', fp)) != -1) {
-    if (strstr(line, str)) {
-      free(line);
-      fclose(fp);
-      return true;
-    }
-    free(line);
-    line = NULL;
+  // /proc/.../cmdline files have argv0, argv1, argv2... delimited by NUL-chars
+  // see man proc(5) https://linux.die.net/man/5/proc
+  ssize_t arvg0_bytes = getdelim(&argv0, &argv0_buffer_size, '\0', fp);
+  fclose(fp);
+  if (arvg0_bytes == -1) {
+    log_errno("getdelim: failed to read argv0 from %s", pid_cmdline_file);
+    return false;
   }
 
-  fclose(fp);
+  const char *argv0_basename = basename(argv0);
+
+  if (strcmp(argv0_basename, proc_name) == 0) {
+    free(argv0);
+    return true;
+  }
+  free(argv0);
   return false;
 }
 
-long is_proc_app(char *path, char *proc_name) {
-  char exe_path[MAX_OS_PATH_LEN];
-  char cmdline_path[MAX_OS_PATH_LEN];
-  char *resolved_path;
+pid_t is_proc_app(const char *path, const char *proc_name) {
+  pid_t pid;
+  { // use a separate scope for this, to avoid allocating too much on the stack
+    char pid_basename_buffer[MAX_OS_PATH_LEN];
+    os_strlcpy(pid_basename_buffer, path, sizeof(pid_basename_buffer));
+    const char *pid_string = basename(pid_basename_buffer);
 
-  pid_t pid = strtoul(basename(path), NULL, 10);
+    unsigned long parsed_pid_long = strtoul(pid_string, NULL, 10);
+    pid = parsed_pid_long;
 
-  if (errno != ERANGE && pid != 0L) {
+    if (parsed_pid_long >= LONG_MAX // check that strtoul result didn't
+                                    // overflow, and fits in `signed long`
+        || parsed_pid_long == 0     // check that strloul didn't fail
+        || pid != (signed long)
+                      parsed_pid_long // check that `unsigned long` value didn't
+                                      // overflow when converting to pid_t
+    ) {
+      // don't log anything, since we expect this to happen for many files in
+      // /proc
+      return 0;
+    }
+  }
+
+  { // check if the basename of the realpath of the process matches proc_name
+    char exe_path[MAX_OS_PATH_LEN];
     snprintf(exe_path, MAX_OS_PATH_LEN - 1, "%s/exe", path);
+    char resolved_path_buffer[PATH_MAX];
+    char *resolved_path = realpath(exe_path, resolved_path_buffer);
+    if (resolved_path == NULL) {
+      // don't log anything, since many `/proc/[pid]/exe` point nowhere, if
+      // they're from a multithreaded program
+      return 0;
+    }
+    if (strcmp(basename(resolved_path), proc_name) == 0) {
+      return pid;
+    }
+  }
+
+  { // check if proc_name is in arg0 of the cmdline file
+    char cmdline_path[MAX_OS_PATH_LEN];
     snprintf(cmdline_path, MAX_OS_PATH_LEN - 1, "%s/cmdline", path);
-    if ((resolved_path = realpath(exe_path, NULL)) != NULL) {
-      bool in_file = is_string_in_cmdline_file(cmdline_path, proc_name);
-      if (strcmp(basename(resolved_path), proc_name) == 0 || in_file) {
-        os_free(resolved_path);
-        return pid;
-      }
-      os_free(resolved_path);
+    if (is_cmdline_procname(cmdline_path, proc_name)) {
+      return pid;
     }
   }
 

@@ -8,7 +8,7 @@ add_cmocka_test(test_hostapd
 )
 target_link_options(test_hostapd
   PRIVATE
-  "LINKER:--wrap=kill_process,--wrap=signal_process,--wrap=reset_interface,--wrap=run_process,--wrap=list_dir,--wrap=check_sock_file_exists"
+  "LINKER:--wrap=kill_process,--wrap=signal_process,--wrap=reset_interface,--wrap=run_process,--wrap=list_dir,--wrap=check_sock_file_exists,--wrap=is_proc_running"
 )
 
 if (USE_UCI_SERVICE)

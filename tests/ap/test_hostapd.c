@@ -71,6 +71,11 @@ int __wrap_check_sock_file_exists(char *path) {
   return 0;
 }
 
+int __wrap_is_proc_running(char *proc_name) {
+  assert_string_equal(proc_name, "hostapd");
+  return 1;
+}
+
 static void test_generate_hostapd_conf(void **state) {
   (void)state; /* unused */
   struct apconf hconf;
