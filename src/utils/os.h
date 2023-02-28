@@ -523,9 +523,10 @@ char *rtrim(char *str, const char *seps);
  * @brief Concatenates an array of strings into a single string
  *
  * @param strings The array of string, the last element is NULL
- * @return char* The concatenated string
+ * @return The concatenated string, which must be `free()`-ed when done, or
+ * `NULL` on error.
  */
-char *string_array2string(char *strings[]);
+char *string_array2string(const char *const strings[]);
 
 /**
  * @brief Generates a random UUID string of MAX_RANDOM_UUID_LEN - 1 characters
