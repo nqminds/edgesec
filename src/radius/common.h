@@ -191,8 +191,29 @@ static inline void bin_clear_free(void *bin, size_t len) {
   }
 }
 
+/**
+ * Logs the given text.
+ *
+ * @remarks This macro has an API compatible with hostap's wpa_printf()
+ * function, see
+ * https://w1.fi/cgit/hostap/tree/src/utils/wpa_debug.h?h=hostap_2_10#n62
+ */
 #define wpa_printf(level, ...)                                                 \
   log_levels(LOGC_TRACE, __FILENAME__, __LINE__, __VA_ARGS__)
+
+/**
+ * Print data as a hex string into a buffer.
+ *
+ * @param[out] buf Memory area to use as the output buffer
+ * @param buf_size Maximum buffer size in bytes (should be at least 2 * len + 1)
+ * @param[in] data Data to be printed
+ * @param len Length of data in bytes
+ * @returns Number of bytes written
+ *
+ * @remarks This function has an API compatible with hostap's
+ * wpa_snprintf_hex() function, see
+ * https://w1.fi/cgit/hostap/tree/src/utils/common.c?h=hostap_2_10#n338
+ */
 #define wpa_snprintf_hex(buf, buf_size, data, len)                             \
   printf_hex(buf, buf_size, data, len, false)
 
