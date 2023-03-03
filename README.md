@@ -58,7 +58,7 @@ configures, compiles (using all cores, but `nice -n19` for lower CPU priority),
 tests (if a test config exists), then installs into the `./tmp` folder.
 
 ```bash
-export PRESET=linux && cmake --preset "$PRESET" && nice -n19 cmake --build --preset "$PRESET" -j=$(nproc) && { if ctest --list-presets | grep "\"$PRESET\""; then ctest --preset "$PRESET" --output-on-failure; fi } && cmake --install "./build/$PRESET" --prefix "./tmp/$PRESET"
+export PRESET=linux && cmake --preset "$PRESET" && nice -n19 cmake --build --preset "$PRESET" -j=$(nproc) && { if ctest --list-presets | grep "\"$PRESET\""; then ctest --preset "$PRESET" --output-on-failure -j=$(nproc); fi } && cmake --install "./build/$PRESET" --prefix "./tmp/$PRESET"
 ```
 
 For older versions of CMake, or for manual configuration, please see the next headings for more details.
