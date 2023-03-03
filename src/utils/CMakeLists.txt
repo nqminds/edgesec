@@ -66,7 +66,7 @@ endif ()
 add_library(hash OBJECT hash.c)
 
 add_library(squeue squeue.c)
-target_link_libraries(squeue PUBLIC eloop::list PRIVATE allocs os log)
+target_link_libraries(squeue PUBLIC eloop::list attributes PRIVATE allocs os log)
 
 add_library(sqliteu sqliteu.c)
 target_link_libraries(sqliteu PUBLIC SQLite::SQLite3 PRIVATE log os)

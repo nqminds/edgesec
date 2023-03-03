@@ -15,6 +15,8 @@
 
 #include <list.h>
 
+#include "./attributes.h"
+
 /**
  * @brief String queue structure definition
  *
@@ -100,5 +102,6 @@ void free_string_queue(struct string_queue *queue);
  * @return char* The pointer to the concatenated string, NULL for failure or
  * empty queue
  */
-char *concat_string_queue(const struct string_queue *queue, ssize_t count);
+__must_free char *concat_string_queue(const struct string_queue *queue,
+                                      ssize_t count);
 #endif

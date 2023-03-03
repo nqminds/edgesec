@@ -13,6 +13,8 @@
 #ifndef ATTRIBUTES_H
 #define ATTRIBUTES_H
 
+#include <stdlib.h> // required for `free()` definition in `__must_free`
+
 #ifndef __must_check
 #if defined __has_attribute
 #if __has_attribute(__warn_unused_result__)
