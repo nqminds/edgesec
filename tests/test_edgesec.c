@@ -389,6 +389,11 @@ static void test_edgesec_ap_failure(void **state) {
   {
     int sfd = create_domain_client(NULL);
     assert_return_code(sfd, errno);
+    // should do nothing (just log RECEIVED ATTACH)
+    assert_return_code(write_domain_data_s(sfd, ATTACH_AP_COMMAND,
+                                           strlen(ATTACH_AP_COMMAND),
+                                           socket_path),
+                       errno);
     ssize_t send_invalid_cmd_bytes = write_domain_data_s(
         sfd, "INVALID COMMAND", strlen("INVALID COMMAND"), socket_path);
     close_domain_socket(sfd);
