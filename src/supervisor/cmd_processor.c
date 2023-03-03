@@ -277,7 +277,7 @@ ssize_t process_get_all_cmd(int sock, struct client_address *client_addr,
                             UT_array *cmd_arr) {
   (void)cmd_arr; /* unused */
 
-  char temp[255], *reply_buf = NULL;
+  char temp[255];
   struct mac_conn *mac_list = NULL;
   int mac_list_len = get_mac_list(&context->mac_mapper, &mac_list);
   int total = 0;
@@ -286,6 +286,14 @@ ssize_t process_get_all_cmd(int sock, struct client_address *client_addr,
   log_trace("GET_ALL");
 
   if (mac_list != NULL) {
+    char *reply_buf = os_malloc(1);
+    if (reply_buf == NULL) {
+      log_errno("malloc");
+      os_free(mac_list);
+      return -1;
+    }
+    reply_buf[0] = '\0';
+
     for (int count = 0; count < mac_list_len; count++) {
       struct mac_conn el = mac_list[count];
       int line_size = snprintf(
@@ -298,10 +306,15 @@ ssize_t process_get_all_cmd(int sock, struct client_address *client_addr,
           (el.info.pass_len) ? 1 : 0, el.info.join_timestamp,
           (int)el.info.status);
       total += line_size + 1;
-      if (reply_buf == NULL)
-        reply_buf = os_zalloc(total);
-      else
-        reply_buf = os_realloc(reply_buf, total);
+      char *expanded_reply_buf = os_realloc(reply_buf, total);
+      if (expanded_reply_buf == NULL) {
+        log_errno("realloc: failed to re-allocate %d bytes", total);
+        os_free(mac_list);
+        os_free(reply_buf);
+        return -1;
+      } else {
+        reply_buf = expanded_reply_buf;
+      }
       strcat(reply_buf, temp);
     }
 

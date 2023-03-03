@@ -187,7 +187,7 @@ ssize_t process_get_map_cmd(int sock, struct client_address *client_addr,
  * @param client_addr The client address for replies
  * @param context The supervisor structure instance
  * @param cmd_arr The array of received commands
- * @return ssize_t Size of reply written data
+ * @return ssize_t Size of reply written data, or `-1` on failure
  */
 ssize_t process_get_all_cmd(int sock, struct client_address *client_addr,
                             struct supervisor_context *context,
