@@ -14,7 +14,6 @@
 #include <net/ethernet.h>
 #include <utarray.h>
 
-#include <list.h>
 #include "../utils/allocs.h"
 #include "../utils/os.h"
 
@@ -29,12 +28,19 @@ struct bridge_mac_tuple {
                                        destination node*/
 };
 /**
- * @brief The MAC bridge address store list
- *
+ * @brief The MAC bridge address store circular doubly-linked list.
  */
 struct bridge_mac_list {
-  struct bridge_mac_tuple mac_tuple; /**< The MAC address tuple */
-  struct dl_list list;               /**< List definition */
+  struct bridge_mac_list_entry *head; /**< head of the list*/
+};
+
+/**
+ * @brief The MAC bridge address store doubly-linked list entry.
+ */
+struct bridge_mac_list_entry {
+  struct bridge_mac_tuple mac_tuple;  /**< The MAC address tuple */
+  struct bridge_mac_list_entry *prev; /* previous entry in doubly-linked list */
+  struct bridge_mac_list_entry *next; /* nex entry in doubly-linked list */
 };
 
 /**
@@ -42,8 +48,8 @@ struct bridge_mac_list {
  *
  */
 struct bridge_mac_list_tuple {
-  struct bridge_mac_list *left_edge;
-  struct bridge_mac_list *right_edge;
+  struct bridge_mac_list_entry *left_edge;
+  struct bridge_mac_list_entry *right_edge;
 };
 
 /**
