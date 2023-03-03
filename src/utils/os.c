@@ -595,31 +595,33 @@ ssize_t split_string_array(const char *str, char sep, UT_array *arr) {
 }
 
 char *concat_paths(const char *path_left, const char *path_right) {
-  size_t concat_len;
+  size_t concat_len = 1;
+  if (path_left != NULL) {
+    concat_len += strlen(path_left);
+  }
+  if (path_right != NULL) {
+    concat_len += strlen(path_right);
+  }
 
-  if (path_left == NULL && path_right != NULL)
-    concat_len = strlen(path_right) + 1;
-  else if (path_left != NULL && path_right == NULL)
-    concat_len = strlen(path_left) + 1;
-  else if (path_left == NULL && path_right == NULL)
-    concat_len = 1;
-  else
-    concat_len = strlen(path_left) + strlen(path_right) + 2;
+  bool add_separator = false;
+  if (path_left != NULL && path_right != NULL && strcmp(path_left, "/") != 0) {
+    add_separator = true;
+    concat_len += 1;
+  }
 
-  char *concat = os_zalloc(concat_len);
+  char *concat = os_malloc(concat_len);
 
   if (concat == NULL) {
-    log_errno("os_zalloc");
+    log_errno("os_malloc");
     return NULL;
   }
 
+  concat[0] = '\0';
   if (path_left != NULL)
     strcat(concat, path_left);
 
-  if (path_left != NULL && path_right != NULL) {
-    if (strcmp(path_left, "/") != 0)
-      strcat(concat, "/");
-  }
+  if (add_separator)
+    strcat(concat, "/");
 
   if (path_right != NULL)
     strcat(concat, path_right);
