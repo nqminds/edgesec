@@ -135,14 +135,21 @@ char *concat_string_queue(const struct string_queue *queue, ssize_t count) {
   dl_list_for_each(el, &queue->list, struct string_queue, list) {
     if (el != NULL && ((num < count && count > 0) || count < 0)) {
       size += strlen(el->str);
-      if (concat_str == NULL) {
-        concat_str = os_zalloc(size);
-      } else
-        concat_str = os_realloc(concat_str, size);
 
-      if (concat_str == NULL) {
-        log_errno("os_malloc");
-        return NULL;
+      {
+        char *resized_concat_str = os_realloc(concat_str, size);
+
+        if (resized_concat_str == NULL) {
+          log_errno("os_realloc: failed to reallocate %d bytes", size);
+          os_free(concat_str);
+          return NULL;
+        } else {
+          if (concat_str == NULL) {
+            // allocating for the first time, so initialize the string
+            resized_concat_str[0] = '\0';
+          }
+          concat_str = resized_concat_str;
+        }
       }
 
       strcat(concat_str, el->str);
