@@ -741,6 +741,47 @@ static void test_is_proc_running(__maybe_unused void **state) {
 #endif /* __linux__ */
 };
 
+static void test_string_array2string(__maybe_unused void **state) {
+  {
+    const char *input[] = {
+        "hello",
+        "world",
+        NULL,
+    };
+    const char *expected = "hello world ";
+    char *result = string_array2string(input);
+    assert_non_null(result);
+    assert_string_equal(result, expected);
+    free(result);
+  }
+
+  // should error in NULL input
+  {
+    char *result = string_array2string(NULL);
+    assert_null(result);
+    free(result);
+  }
+
+  // should return an empty string for no inputs
+  {
+    const char *input[] = {NULL};
+    const char *expected = "";
+    char *result = string_array2string(input);
+    assert_non_null(result);
+    assert_string_equal(result, expected);
+    free(result);
+  }
+
+  {
+    const char *input[] = {"", "", "", "", NULL};
+    const char *expected = "    ";
+    char *result = string_array2string(input);
+    assert_non_null(result);
+    assert_string_equal(result, expected);
+    free(result);
+  }
+}
+
 int main(int argc, char *argv[]) {
   (void)argc;
   (void)argv;
@@ -766,7 +807,8 @@ int main(int argc, char *argv[]) {
       cmocka_unit_test(test_hexstr2bin),
       cmocka_unit_test(test_signal_process),
       cmocka_unit_test(test_is_proc_app),
-      cmocka_unit_test(test_is_proc_running)};
+      cmocka_unit_test(test_is_proc_running),
+      cmocka_unit_test(test_string_array2string)};
 
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

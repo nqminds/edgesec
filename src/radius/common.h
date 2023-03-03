@@ -192,6 +192,31 @@ static inline void bin_clear_free(void *bin, size_t len) {
 }
 
 /**
+ * Linked-list of hostapd RADIUS attributes.
+ *
+ * @see
+ * https://w1.fi/cgit/hostap/commit/?id=af35e7af7f8bb1ca9f0905b4074fb56a264aa12b
+ */
+struct hostapd_radius_attr {
+  uint8_t type;
+  struct wpabuf *val;
+  struct hostapd_radius_attr *next;
+};
+
+/**
+ * Log levels used by source-code taken from hostap. Used as the @c level
+ * parameter for functions like wpa_hexdump_ascii().
+ */
+enum hostap_log_level {
+  MSG_EXCESSIVE = LOGC_TRACE,
+  MSG_MSGDUMP = LOGC_TRACE,
+  MSG_DEBUG = LOGC_DEBUG,
+  MSG_INFO = LOGC_INFO,
+  MSG_WARNING = LOGC_WARN,
+  MSG_ERROR = LOGC_ERROR
+};
+
+/**
  * Logs the given text.
  *
  * @remarks This macro has an API compatible with hostap's wpa_printf()
@@ -199,7 +224,7 @@ static inline void bin_clear_free(void *bin, size_t len) {
  * https://w1.fi/cgit/hostap/tree/src/utils/wpa_debug.h?h=hostap_2_10#n62
  */
 #define wpa_printf(level, ...)                                                 \
-  log_levels(LOGC_TRACE, __FILENAME__, __LINE__, __VA_ARGS__)
+  log_levels(level, __FILENAME__, __LINE__, __VA_ARGS__)
 
 /**
  * Print data as a hex string into a buffer.
@@ -229,13 +254,13 @@ static inline void bin_clear_free(void *bin, size_t len) {
  * see https://w1.fi/cgit/hostap/tree/src/utils/wpa_debug.h?h=hostap_2_10#n118
  * However, it prints every byte as hex, and never prints bytes as ASCII.
  */
-static inline void
-wpa_hexdump_ascii(__maybe_unused int level, // used by hostap, but our
-                                            // implementation doesn't use it
-                  const char *title, const void *buf, size_t len) {
+static inline void wpa_hexdump_ascii(enum hostap_log_level level,
+                                     const char *title, const void *buf,
+                                     size_t len) {
   char hex_buf[33];
   printf_hex(hex_buf, sizeof(hex_buf), buf, len, false);
-  log_trace("%s - hexdump(len=%lu):%s", title, len, hex_buf);
+  log_levels(level, __FILENAME__, __LINE__, "%s - hexdump(len=%lu):%s", title,
+             len, hex_buf);
 }
 
 static inline void printf_encode(char *txt, size_t maxlen, const uint8_t *data,
