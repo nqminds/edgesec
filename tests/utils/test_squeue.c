@@ -230,6 +230,7 @@ static void test_concat_string_queue(void **state) {
   push_string_queue(sq, "test4");
 
   str = concat_string_queue(sq, -1);
+  assert_non_null(str);
   assert_string_equal(str, "test1test2test3test4");
   os_free(str);
   free_string_queue(sq);
@@ -241,6 +242,7 @@ static void test_concat_string_queue(void **state) {
   push_string_queue(sq, "test4");
 
   str = concat_string_queue(sq, 1);
+  assert_non_null(str);
   assert_string_equal(str, "test1");
   os_free(str);
   free_string_queue(sq);
