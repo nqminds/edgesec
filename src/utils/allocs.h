@@ -29,7 +29,7 @@
  * @param size Number of bytes to allocate
  * @return void* Pointer to allocated and zeroed memory or %NULL on failure
  */
-__must_check static inline void *os_zalloc(size_t size) {
+__must_free static inline void *os_zalloc(size_t size) {
   return calloc(size, 1);
 }
 
@@ -52,8 +52,8 @@ __must_check static inline void *os_zalloc(size_t size) {
 #define os_free(p) free((p))
 #endif
 
-__must_check static inline void *os_realloc_array(void *ptr, size_t nmemb,
-                                                  size_t size) {
+__must_free static inline void *os_realloc_array(void *ptr, size_t nmemb,
+                                                 size_t size) {
   if (size && nmemb > (~(size_t)0) / size)
     return NULL;
   return os_realloc(ptr, nmemb * size);
@@ -89,7 +89,7 @@ __must_check static inline void *os_realloc_array(void *ptr, size_t nmemb,
  * see
  * https://w1.fi/cgit/hostap/commit/?id=dbdda355d0add3f7d96e3279321d3a63abfc4b32
  */
-__must_check static inline void *os_memdup(const void *src, size_t len) {
+__must_free static inline void *os_memdup(const void *src, size_t len) {
   void *r = os_malloc(len);
 
   if (r && src)
@@ -102,5 +102,5 @@ __must_check static inline void *os_memdup(const void *src, size_t len) {
  * @param s The input string
  * @return char* The dublicate string pointer, NULL on error
  */
-__must_check char *os_strdup(const char *s);
+__must_free char *os_strdup(const char *s);
 #endif
