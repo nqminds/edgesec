@@ -196,11 +196,15 @@ ssize_t read_pcap(struct recap_context *pctx, size_t len) {
   ssize_t current_size = read_size + pctx->data_size;
 
   if (read_size > 0) {
-    if ((pctx->pcap_data = os_realloc(pctx->pcap_data, current_size)) == NULL) {
+    char *reallocated_pcap_data = os_realloc(pctx->pcap_data, current_size);
+    if (reallocated_pcap_data == NULL) {
       log_errno("os_realloc");
       os_free(data);
+      // don't free `pctx->pcap_data`, since it might be realloc-ed by the next
+      // read_pcap() call
       return -1;
     }
+    pctx->pcap_data = reallocated_pcap_data;
     os_memcpy(&pctx->pcap_data[pctx->data_size], data, read_size);
     pctx->data_size = current_size;
   }
