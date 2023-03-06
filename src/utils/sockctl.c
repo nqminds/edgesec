@@ -77,7 +77,7 @@ static const char *create_tmp_domain_socket_path(void) {
  */
 static int cleanup_tmp_domain_socket_path(const char *socket_path) {
   if (unlink(socket_path)) {
-    log_errno("Failed to unlink() %d", socket_path);
+    log_errno("Failed to unlink() %s", socket_path);
     return -1;
   }
   if (strncmp(TMP_UNIX_SOCK_FOLDER_PREFIX, socket_path,
