@@ -152,8 +152,8 @@ static char *uci_lookup_section_ref(struct uci_section *s,
   return ret;
 }
 
-char *uwrt_get_option(struct uci_option *o) {
-  struct uci_element *e = NULL;
+char *uwrt_get_option(const struct uci_option *o) {
+  const struct uci_element *e = NULL;
   char *vname = NULL;
   struct string_queue *squeue = NULL;
 
