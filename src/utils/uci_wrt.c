@@ -134,7 +134,8 @@ uci_lookup_section_ref(struct uci_section *s,
       char *p = os_realloc(*typestr, maxlen);
       if (p == NULL) {
         log_errno("os_realloc");
-        os_free(*typestr);
+        // don't free() *typestr, next call to uci_lookup_section_ref()
+        // may reuse this value
         return NULL;
       }
 
