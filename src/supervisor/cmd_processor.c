@@ -988,7 +988,7 @@ ssize_t process_sign_blob_cmd(int sock,
 }
 #endif
 
-process_cmd_fn get_command_function(char *cmd) {
+process_cmd_fn get_command_function(const char *cmd) {
   if (!strcmp(cmd, CMD_PING)) {
     return process_ping_cmd;
   } else if (!strcmp(cmd, CMD_SUBSCRIBE_EVENTS)) {

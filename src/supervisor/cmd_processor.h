@@ -457,5 +457,5 @@ ssize_t process_sign_blob_cmd(int sock,
  * @param cmd The command string
  * @return process_cmd_fn The returned function pointer
  */
-process_cmd_fn get_command_function(char *cmd);
+process_cmd_fn get_command_function(const char *cmd);
 #endif
