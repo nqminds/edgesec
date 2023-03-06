@@ -508,10 +508,20 @@ ssize_t process_get_bridges_cmd(int sock, struct client_address *client_addr,
       int line_size = snprintf(temp, 255, MACSTR "," MACSTR "\n",
                                MAC2STR(p->src_addr), MAC2STR(p->dst_addr));
       total += line_size + 1;
-      if (reply_buf == NULL)
-        reply_buf = os_zalloc(total);
-      else
-        reply_buf = os_realloc(reply_buf, total);
+      {
+        char *reallocated_reply_buf = os_realloc(reply_buf, total);
+        if (reallocated_reply_buf == NULL) {
+          log_errno("realloc: failed to allocate %s bytes", total);
+          free(reply_buf);
+          utarray_free(tuple_list_arr);
+          return -1;
+        }
+        if (reply_buf == NULL) {
+          // initialise the buffer as an empty string
+          reallocated_reply_buf[0] = '\0';
+        }
+        reply_buf = reallocated_reply_buf;
+      }
       strcat(reply_buf, temp);
     }
 
