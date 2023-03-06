@@ -60,11 +60,9 @@ void uci_reset_typelist(struct uci_type_list *list) {
 static char *uci_lookup_section_ref(struct uci_section *s,
                                     struct uci_type_list *list,
                                     char **typestr) {
-  struct uci_type_list *ti = list;
-  char *ret;
-  int maxlen;
 
   /* look up in section type list */
+  struct uci_type_list *ti = list;
   while (ti != NULL) {
     if (strcmp(ti->name, s->type) == 0) {
       break;
@@ -84,8 +82,10 @@ static char *uci_lookup_section_ref(struct uci_section *s,
     ti->name = s->type;
   }
 
+  char *ret;
+
   if (s->anonymous) {
-    maxlen = strlen(s->type) + 1 + 2 + 10;
+    int maxlen = strlen(s->type) + 1 + 2 + 10;
     {
       char *p = os_realloc(*typestr, maxlen);
       if (p == NULL) {
