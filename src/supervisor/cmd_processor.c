@@ -496,19 +496,20 @@ ssize_t process_get_bridges_cmd(int sock, struct client_address *client_addr,
                                 UT_array *cmd_arr) {
   (void)cmd_arr; /* unused */
 
-  char temp[255], *reply_buf = NULL;
   UT_array *tuple_list_arr;
-  int total = 0;
-  struct bridge_mac_tuple *p = NULL;
-  ssize_t bytes_sent;
   if (get_all_bridge_edges(context->bridge_list, &tuple_list_arr) <= 0) {
     // list is empty or invalid
     return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
   }
 
+  int total = 0;
+  char *reply_buf = NULL;
   log_trace("GET_BRIDGES");
+
+  struct bridge_mac_tuple *p = NULL;
   while ((p = (struct bridge_mac_tuple *)utarray_next(tuple_list_arr, p)) !=
          NULL) {
+    char temp[255];
     int line_size = snprintf(temp, 255, MACSTR "," MACSTR "\n",
                              MAC2STR(p->src_addr), MAC2STR(p->dst_addr));
     total += line_size + 1;
@@ -528,10 +529,10 @@ ssize_t process_get_bridges_cmd(int sock, struct client_address *client_addr,
     }
     strcat(reply_buf, temp);
   }
-
   utarray_free(tuple_list_arr);
+
   if (reply_buf) {
-    bytes_sent =
+    ssize_t bytes_sent =
         write_socket_data(sock, reply_buf, strlen(reply_buf), client_addr);
     os_free(reply_buf);
     return bytes_sent;
