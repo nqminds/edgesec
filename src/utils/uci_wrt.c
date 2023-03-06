@@ -96,9 +96,7 @@ char *uci_lookup_section_ref(struct uci_section *s, struct uci_type_list *list,
       *typestr = p;
     }
 
-    if (*typestr != NULL) {
-      sprintf(*typestr, "@%s[%d]", ti->name, ti->idx);
-    }
+    sprintf(*typestr, "@%s[%d]", ti->name, ti->idx);
 
     ret = *typestr;
   } else {
