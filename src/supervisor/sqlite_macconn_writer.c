@@ -34,7 +34,7 @@ int open_sqlite_macconn_db(const char *db_path, sqlite3 **sql) {
   int rc;
 
   if (make_dirs_to_path(db_path, 0755)) {
-    log_errno("Failed to create folders for sqlite macconn db: %s", db);
+    log_errno("Failed to create folders for sqlite macconn db: %s", db_path);
     return -1;
   }
 
