@@ -233,8 +233,8 @@ __must_free static char *uwrt_get_option(const struct uci_option *o) {
  * @retval  0 On success.
  * @retval -1 On failure.
  */
-int uwrt_lookup_option(const struct uci_option *o, const char *sref,
-                       UT_array *kv) {
+static int uwrt_lookup_option(const struct uci_option *o, const char *sref,
+                              UT_array *kv) {
   const char *cname = o->section->package->e.name;
   const char *sname = (sref != NULL ? sref : o->section->e.name);
   const char *oname = o->e.name;
