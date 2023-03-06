@@ -304,7 +304,7 @@ radius_server_get_new_session(struct radius_server_data *data,
     log_error("Could not get User-Name");
     return NULL;
   }
-  log_trace("User-Name length %ld", user_len);
+  log_trace("User-Name length %zd", user_len);
 
   log_trace("Matching user entry found");
   sess = radius_server_new_session(data, client);

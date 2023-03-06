@@ -168,7 +168,7 @@ bool get_config_dhcpinfo(char *info, config_dhcpinfo_t *el) {
 
   ssize_t count = split_string_array(info, ',', info_arr);
 
-  log_trace("Number of substrings=%d", count);
+  log_trace("Number of substrings=%zd", count);
 
   if (!utarray_len(info_arr))
     goto err;

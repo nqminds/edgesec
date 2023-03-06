@@ -140,7 +140,7 @@ char *concat_string_queue(const struct string_queue *queue, ssize_t count) {
         char *resized_concat_str = os_realloc(concat_str, size);
 
         if (resized_concat_str == NULL) {
-          log_errno("os_realloc: failed to reallocate %d bytes", size);
+          log_errno("os_realloc: failed to reallocate %zd bytes", size);
           os_free(concat_str);
           return NULL;
         } else {
