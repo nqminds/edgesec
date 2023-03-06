@@ -273,10 +273,10 @@ int process_pkt_header_state(struct recap_context *pctx) {
   if (pctx->data_size >= pkt_header_size) {
     log_trace("Received pkt header:");
     os_memcpy(&pctx->pkt_header, pctx->pcap_data, pkt_header_size);
-    log_trace("\tpcap_pkthdr ts_sec = %llu", pctx->pkt_header.ts_sec);
-    log_trace("\tpcap_pkthdr ts_usec = %llu", pctx->pkt_header.ts_usec);
-    log_trace("\tpcap_pkthdr caplen = %llu", pctx->pkt_header.caplen);
-    log_trace("\tpcap_pkthdr len = %llu", pctx->pkt_header.len);
+    log_trace("\tpcap_pkthdr ts_sec = %" PRIu32, pctx->pkt_header.ts_sec);
+    log_trace("\tpcap_pkthdr ts_usec = %" PRIu32, pctx->pkt_header.ts_usec);
+    log_trace("\tpcap_pkthdr caplen = %" PRIu32, pctx->pkt_header.caplen);
+    log_trace("\tpcap_pkthdr len = %" PRIu32, pctx->pkt_header.len);
 
     if (pctx->pkt_header.caplen > pctx->pkt_header.len) {
       log_error("caplen > len");
