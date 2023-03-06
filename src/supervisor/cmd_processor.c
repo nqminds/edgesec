@@ -506,9 +506,8 @@ ssize_t process_get_bridges_cmd(int sock, struct client_address *client_addr,
   char *reply_buf = NULL;
   log_trace("GET_BRIDGES");
 
-  struct bridge_mac_tuple *p = NULL;
-  while ((p = (struct bridge_mac_tuple *)utarray_next(tuple_list_arr, p)) !=
-         NULL) {
+  for (struct bridge_mac_tuple *p = utarray_front(tuple_list_arr); p != NULL;
+       p = utarray_next(tuple_list_arr, p)) {
     char temp[255];
     int line_size = snprintf(temp, 255, MACSTR "," MACSTR "\n",
                              MAC2STR(p->src_addr), MAC2STR(p->dst_addr));
