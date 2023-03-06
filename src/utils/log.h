@@ -85,12 +85,16 @@ void log_set_meta(bool enable);
 int log_open_file(char *path);
 void log_close_file(void);
 
+PRINTF_FORMAT(4, 5)
 void log_levels(uint8_t level, const char *file, uint32_t line,
                 const char *format, ...);
+PRINTF_FORMAT(4, 5)
 void log_errno_error(uint8_t level, const char *file, uint32_t line,
                      const char *format, ...);
+PRINTF_FORMAT(4, 5)
 void log_error_exit(uint8_t level, const char *file, uint32_t line,
                     const char *format, ...);
+PRINTF_FORMAT(4, 5)
 void log_error_exit_proc(uint8_t level, const char *file, uint32_t line,
                          const char *format, ...);
 
