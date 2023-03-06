@@ -6,6 +6,12 @@
  * SPDX-FileCopyrightText: © 2022 NQMCyber Ltd and edgesec contributors
  * SPDX-License-Identifier: LGPL-3.0-or-later
  * @brief File containing the implementation of the uci utilities.
+ * @details
+ * Utility functions for working with UCI (Unified Configuration Interface),
+ * which is most commonly used to configure OpenWRT services.
+ *
+ * Please see <https://openwrt.org/docs/guide-user/base-system/uci> for a
+ * description of UCI data/object model.
  */
 
 #include <arpa/inet.h>
@@ -57,6 +63,25 @@ void uci_reset_typelist(struct uci_type_list *list) {
   }
 }
 
+/**
+ * @brief Find the reference to the given UCI section.
+ *
+ * UCI supports array-like references to UCI sections.
+ *
+ * For example, `system.@timeserver[0]` will be the first `timeserver` section
+ * in `/etc/config/system`.
+ *
+ * @param s - The UCI section to find the reference to.
+ * @param list - Section type list. Should contain all the previous section
+ * entries.
+ * @param[in, out] typestr - malloc()-ed buffer that can be realloc()-ed
+ * as required, or `NULL`. Please `free()` this parameter after this function
+ * has been called.
+ * @return A reference to this section, e.g. `@timeserver[0]`.
+ * This pointer may point to `typestr` (for anonymous sections)
+ * (i.e. `@timeserver[0]`) or to `s->e.name` (for named sections), and so may
+ * be invalid once either of them are `free()`-ed.
+ */
 static char *uci_lookup_section_ref(struct uci_section *s,
                                     struct uci_type_list *list,
                                     char **typestr) {
