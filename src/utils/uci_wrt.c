@@ -261,11 +261,12 @@ static int uwrt_lookup_option(const struct uci_option *o, const char *sref,
   return 0;
 }
 
-int uwrt_lookup_section(struct uci_section *s, char *sref, UT_array *kv) {
-  struct uci_element *e = NULL;
-  char *cname = s->package->e.name;
-  char *sname = (sref != NULL ? sref : s->e.name);
-  char *vname = s->type;
+int uwrt_lookup_section(const struct uci_section *s, const char *sref,
+                        UT_array *kv) {
+  const struct uci_element *e = NULL;
+  const char *cname = s->package->e.name;
+  const char *sname = (sref != NULL ? sref : s->e.name);
+  const char *vname = s->type;
   char *kvstr = NULL;
 
   if ((kvstr = os_zalloc(strlen(cname) + strlen(sname) + strlen(vname) + 3)) ==
