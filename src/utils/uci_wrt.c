@@ -217,6 +217,22 @@ __must_free static char *uwrt_get_option(const struct uci_option *o) {
   return vname;
 }
 
+/**
+ * @brief Adds a string for the UCI option to the given array.
+ *
+ * For the given UCI option, creates a configuration string, similar
+ * to that from `uci show system`, e.g. `system.ntp.enabled=1`.
+ *
+ * Unlike `uci show system`, option values are **NOT** quoted, so are not valid
+ * to pass to `uci set`. (list options are also mangled).
+ *
+ * @param o The UCI option struct.
+ * @param sref The section reference to use. If this is NULL, uses the name
+ * of the section (won't work if the section is anonymous and has no name).
+ * @param[in, out] kv The array to store the output.
+ * @retval  0 On success.
+ * @retval -1 On failure.
+ */
 int uwrt_lookup_option(const struct uci_option *o, const char *sref,
                        UT_array *kv) {
   const char *cname = o->section->package->e.name;
