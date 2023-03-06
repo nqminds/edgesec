@@ -262,6 +262,36 @@ static int uwrt_lookup_option(const struct uci_option *o, const char *sref,
   return 0;
 }
 
+/**
+ * @brief Adds strings describing a UCI section into the given array.
+ *
+ * The output is similar to the result of using the UCI CLI command
+ * `uci show <config>.<section>`, except option values are not quoted, see
+ * uwrt_get_option().
+ *
+ * For example, given the below section:
+ *
+ * ```conf
+ * # in file /etc/config/my_config
+ * config rule 'section_name'
+ *   option string_opt 'my-val'
+ *   list list_opt 'list-val-1'
+ *   list list_opt 'list-val-2'
+ * ```
+ *
+ * The UT_array entries would look like:
+ *
+ * 1. `my_config.section_name=rule`
+ * 2. `my_config.section_name.string_opt=my-val`
+ * 3. `my_config.section_name.list_opt=list-val-1list-val-2`
+ *
+ * @param s The UCI section struct.
+ * @param sref The section reference to use. If this is NULL, uses the name
+ * of the section (won't work if the section is anonymous and has no name).
+ * @param[in, out] kv The array to store the output.
+ * @retval  0 On success.
+ * @retval -1 On failure. The array may be partially filled in an error.
+ */
 int uwrt_lookup_section(const struct uci_section *s, const char *sref,
                         UT_array *kv) {
   const struct uci_element *e = NULL;
