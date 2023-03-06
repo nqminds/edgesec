@@ -292,8 +292,8 @@ static int uwrt_lookup_option(const struct uci_option *o, const char *sref,
  * @retval  0 On success.
  * @retval -1 On failure. The array may be partially filled in an error.
  */
-int uwrt_lookup_section(const struct uci_section *s, const char *sref,
-                        UT_array *kv) {
+static int uwrt_lookup_section(const struct uci_section *s, const char *sref,
+                               UT_array *kv) {
   const struct uci_element *e = NULL;
   const char *cname = s->package->e.name;
   const char *sname = (sref != NULL ? sref : s->e.name);
