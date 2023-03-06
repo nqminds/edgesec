@@ -175,7 +175,7 @@ static char *uci_lookup_section_ref(struct uci_section *s,
  * @return The value of the option as a NUL-terminated string, or `NULL` on
  * error. Please free() the string when you're done with it.
  */
-__must_free char *uwrt_get_option(const struct uci_option *o) {
+__must_free static char *uwrt_get_option(const struct uci_option *o) {
   const struct uci_element *e = NULL;
   char *vname = NULL;
   struct string_queue *squeue = NULL;
