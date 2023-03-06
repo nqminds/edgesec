@@ -57,13 +57,12 @@ void uci_reset_typelist(struct uci_type_list *list) {
   }
 }
 
-char *uci_lookup_section_ref(struct uci_section *s, struct uci_type_list *list,
-                             char **typestr) {
-  struct uci_type_list *ti = list;
-  char *ret;
-  int maxlen;
+static char *uci_lookup_section_ref(struct uci_section *s,
+                                    struct uci_type_list *list,
+                                    char **typestr) {
 
   /* look up in section type list */
+  struct uci_type_list *ti = list;
   while (ti != NULL) {
     if (strcmp(ti->name, s->type) == 0) {
       break;
@@ -83,15 +82,12 @@ char *uci_lookup_section_ref(struct uci_section *s, struct uci_type_list *list,
     ti->name = s->type;
   }
 
+  char *ret;
+
   if (s->anonymous) {
-    maxlen = strlen(s->type) + 1 + 2 + 10;
-    if (*typestr == NULL) {
-      if ((*typestr = os_malloc(maxlen)) == NULL) {
-        log_errno("os_malloc");
-        return NULL;
-      }
-    } else {
-      void *p = os_realloc(*typestr, maxlen);
+    int maxlen = strlen(s->type) + 1 + 2 + 10;
+    {
+      char *p = os_realloc(*typestr, maxlen);
       if (p == NULL) {
         log_errno("os_realloc");
         os_free(*typestr);
@@ -101,9 +97,7 @@ char *uci_lookup_section_ref(struct uci_section *s, struct uci_type_list *list,
       *typestr = p;
     }
 
-    if (*typestr != NULL) {
-      sprintf(*typestr, "@%s[%d]", ti->name, ti->idx);
-    }
+    sprintf(*typestr, "@%s[%d]", ti->name, ti->idx);
 
     ret = *typestr;
   } else {
