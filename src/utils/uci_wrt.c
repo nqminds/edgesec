@@ -100,9 +100,10 @@ static void uci_clear_section_types_count(
  * (i.e. `@timeserver[0]`) or to `s->e.name` (for named sections), and so may
  * be invalid once either of them are `free()`-ed.
  */
-static char *uci_lookup_section_ref(struct uci_section *s,
-                                    struct uci_section_type_count **section_types_count,
-                                    char **typestr) {
+static const char *
+uci_lookup_section_ref(struct uci_section *s,
+                       struct uci_section_type_count **section_types_count,
+                       char **typestr) {
 
   struct uci_section_type_count *section_type_count;
   HASH_FIND_STR(*section_types_count, s->type, section_type_count);
@@ -295,13 +296,13 @@ int uwrt_lookup_package(struct uci_package *p, UT_array *kv) {
   struct uci_section_type_count *section_types_count = NULL;
 
   char *typestr = NULL;
-  char *sref = NULL;
   int ret = 0;
 
   uci_foreach_element(&p->sections, e) {
     struct uci_section *s = uci_to_section(e);
-    if ((sref = uci_lookup_section_ref(s, &section_types_count, &typestr)) ==
-        NULL) {
+    const char *sref =
+        uci_lookup_section_ref(s, &section_types_count, &typestr);
+    if (sref == NULL) {
       log_trace("uci_lookup_section_ref fail");
       ret = -1;
       goto uwrt_lookup_package_fail;
