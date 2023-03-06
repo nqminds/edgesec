@@ -6,6 +6,12 @@
  * SPDX-FileCopyrightText: © 2022 NQMCyber Ltd and edgesec contributors
  * SPDX-License-Identifier: LGPL-3.0-or-later
  * @brief File containing the implementation of the uci utilities.
+ * @details
+ * Utility functions for working with UCI (Unified Configuration Interface),
+ * which is most commonly used to configure OpenWRT services.
+ *
+ * Please see <https://openwrt.org/docs/guide-user/base-system/uci> for a
+ * description of UCI data/object model.
  */
 
 #include <arpa/inet.h>
@@ -26,10 +32,19 @@
 
 #define IP_SECTION_STR "%d%d%d%d"
 
-struct uci_type_list {
+#include <uthash.h>
+
+/**
+ * @brief Hashmap that stores the count of all the seen section types.
+ *
+ * Use uci_clear_section_types_count() to clear this hashmap.
+ */
+struct uci_section_type_count {
+  // the type of this section (stored on the heap)
+  char *type;
+  // how many times we've encounted this type already
   unsigned int idx;
-  const char *name;
-  struct uci_type_list *next;
+  UT_hash_handle hh; /* makes this structure hashable */
 };
 
 static const UT_icd netif_info_icd = {sizeof(netif_info_t), NULL, NULL, NULL};
@@ -47,39 +62,68 @@ void uwrt_print_error(struct uci_context *ctx, const char *name) {
   }
 }
 
-void uci_reset_typelist(struct uci_type_list *list) {
-  struct uci_type_list *type = NULL;
+/**
+ * @brief Clears the given section type count hashmap.
+ *
+ * @param[in,out] section_types_count The head of the hashmap to clear. Will
+ * be set to `NULL` when done.
+ */
+static void uci_clear_section_types_count(
+    struct uci_section_type_count **section_types_count) {
+  struct uci_section_type_count *current_type_count, *tmp;
 
-  while (list != NULL) {
-    type = list;
-    list = list->next;
-    os_free(type);
+  HASH_ITER(hh, *section_types_count, current_type_count, tmp) {
+    HASH_DEL(*section_types_count,
+             current_type_count); /* delete entry from hashmap */
+    free(current_type_count->type);
+    free(current_type_count);
   }
 }
 
-static char *uci_lookup_section_ref(struct uci_section *s,
-                                    struct uci_type_list *list,
-                                    char **typestr) {
+/**
+ * @brief Find the reference to the given UCI section.
+ *
+ * UCI supports array-like references to UCI sections.
+ *
+ * For example, `system.@timeserver[0]` will be the first `timeserver` section
+ * in `/etc/config/system`.
+ *
+ * @param s - The UCI section to find the reference to.
+ * @param[in, out] list - UCI section type count hashmap.
+ * Should contain the count of all the previous section types, and will be
+ * updated to include the current section type.
+ * @param[in, out] typestr - malloc()-ed buffer that can be realloc()-ed
+ * as required, or `NULL`. Please `free()` this parameter after this function
+ * has been called.
+ * @return A reference to this section, e.g. `@timeserver[0]`.
+ * This pointer may point to `typestr` (for anonymous sections)
+ * (i.e. `@timeserver[0]`) or to `s->e.name` (for named sections), and so may
+ * be invalid once either of them are `free()`-ed.
+ */
+static const char *
+uci_lookup_section_ref(struct uci_section *s,
+                       struct uci_section_type_count **section_types_count,
+                       char **typestr) {
 
-  /* look up in section type list */
-  struct uci_type_list *ti = list;
-  while (ti != NULL) {
-    if (strcmp(ti->name, s->type) == 0) {
-      break;
-    }
-
-    ti = ti->next;
-  }
-
-  if (ti == NULL) {
-    if ((ti = os_calloc(1, sizeof(struct uci_type_list))) == NULL) {
-      log_errno("os_calloc");
+  struct uci_section_type_count *section_type_count;
+  HASH_FIND_STR(*section_types_count, s->type, section_type_count);
+  if (section_type_count == NULL) {
+    section_type_count = os_malloc(sizeof(struct uci_section_type_count));
+    if (section_type_count == NULL) {
+      log_errno("os_malloc");
       return NULL;
     }
-
-    ti->next = list;
-    list = ti;
-    ti->name = s->type;
+    *section_type_count = (struct uci_section_type_count){
+        .idx = 0,
+        .type = os_strdup(s->type),
+    };
+    if (section_type_count->type == NULL) {
+      log_errno("os_strdup");
+      free(section_type_count);
+      return NULL;
+    }
+    HASH_ADD_KEYPTR(hh, *section_types_count, section_type_count->type,
+                    strlen(section_type_count->type), section_type_count);
   }
 
   char *ret;
@@ -90,27 +134,51 @@ static char *uci_lookup_section_ref(struct uci_section *s,
       char *p = os_realloc(*typestr, maxlen);
       if (p == NULL) {
         log_errno("os_realloc");
-        os_free(*typestr);
+        // don't free() *typestr, next call to uci_lookup_section_ref()
+        // may reuse this value
         return NULL;
       }
 
       *typestr = p;
     }
 
-    sprintf(*typestr, "@%s[%d]", ti->name, ti->idx);
+    sprintf(*typestr, "@%s[%d]", s->type, section_type_count->idx);
 
     ret = *typestr;
   } else {
     ret = s->e.name;
   }
 
-  ti->idx++;
+  section_type_count->idx++;
 
   return ret;
 }
 
-char *uwrt_get_option(struct uci_option *o) {
-  struct uci_element *e = NULL;
+/**
+ * @brief Gets the value of the given option.
+ *
+ * For list options, the value would be all the list entries concatenated
+ * together.
+ *
+ * For example, given the following UCI file:
+ *
+ * ```uci
+ * config rule
+ *   option string_opt 'my-val'
+ *   list list_open 'list-val-1'
+ *   list list_open 'list-val-2'
+ * ```
+ *
+ * - calling `uwrt_get_option()` on `string_opt` would return `my-val`
+ * - calling `uwrt_get_option()` on `list_opt` would return
+ * `list-val-1list-val-2`
+ *
+ * @param o The option to read.
+ * @return The value of the option as a NUL-terminated string, or `NULL` on
+ * error. Please free() the string when you're done with it.
+ */
+__must_free static char *uwrt_get_option(const struct uci_option *o) {
+  const struct uci_element *e = NULL;
   char *vname = NULL;
   struct string_queue *squeue = NULL;
 
@@ -146,13 +214,32 @@ char *uwrt_get_option(struct uci_option *o) {
       log_trace("unknown uci type");
   }
 
+  log_trace("Option is %s", vname);
+
   return vname;
 }
 
-int uwrt_lookup_option(struct uci_option *o, char *sref, UT_array *kv) {
-  char *cname = o->section->package->e.name;
-  char *sname = (sref != NULL ? sref : o->section->e.name);
-  char *oname = o->e.name;
+/**
+ * @brief Adds a string for the UCI option to the given array.
+ *
+ * For the given UCI option, creates a configuration string, similar
+ * to that from `uci show system`, e.g. `system.ntp.enabled=1`.
+ *
+ * Unlike `uci show system`, option values are **NOT** quoted, so are not valid
+ * to pass to `uci set`. (list options are also mangled).
+ *
+ * @param o The UCI option struct.
+ * @param sref The section reference to use. If this is NULL, uses the name
+ * of the section (won't work if the section is anonymous and has no name).
+ * @param[in, out] kv The array to store the output.
+ * @retval  0 On success.
+ * @retval -1 On failure.
+ */
+static int uwrt_lookup_option(const struct uci_option *o, const char *sref,
+                              UT_array *kv) {
+  const char *cname = o->section->package->e.name;
+  const char *sname = (sref != NULL ? sref : o->section->e.name);
+  const char *oname = o->e.name;
   char *vname = NULL;
   char *kvstr = NULL;
 
@@ -176,11 +263,42 @@ int uwrt_lookup_option(struct uci_option *o, char *sref, UT_array *kv) {
   return 0;
 }
 
-int uwrt_lookup_section(struct uci_section *s, char *sref, UT_array *kv) {
-  struct uci_element *e = NULL;
-  char *cname = s->package->e.name;
-  char *sname = (sref != NULL ? sref : s->e.name);
-  char *vname = s->type;
+/**
+ * @brief Adds strings describing a UCI section into the given array.
+ *
+ * The output is similar to the result of using the UCI CLI command
+ * `uci show <config>.<section>`, except option values are not quoted, see
+ * uwrt_get_option().
+ *
+ * For example, given the below section:
+ *
+ * ```conf
+ * # in file /etc/config/my_config
+ * config rule 'section_name'
+ *   option string_opt 'my-val'
+ *   list list_opt 'list-val-1'
+ *   list list_opt 'list-val-2'
+ * ```
+ *
+ * The UT_array entries would look like:
+ *
+ * 1. `my_config.section_name=rule`
+ * 2. `my_config.section_name.string_opt=my-val`
+ * 3. `my_config.section_name.list_opt=list-val-1list-val-2`
+ *
+ * @param s The UCI section struct.
+ * @param sref The section reference to use. If this is NULL, uses the name
+ * of the section (won't work if the section is anonymous and has no name).
+ * @param[in, out] kv The array to store the output.
+ * @retval  0 On success.
+ * @retval -1 On failure. The array may be partially filled in an error.
+ */
+static int uwrt_lookup_section(const struct uci_section *s, const char *sref,
+                               UT_array *kv) {
+  const struct uci_element *e = NULL;
+  const char *cname = s->package->e.name;
+  const char *sname = (sref != NULL ? sref : s->e.name);
+  const char *vname = s->type;
   char *kvstr = NULL;
 
   if ((kvstr = os_zalloc(strlen(cname) + strlen(sname) + strlen(vname) + 3)) ==
@@ -205,14 +323,17 @@ int uwrt_lookup_section(struct uci_section *s, char *sref, UT_array *kv) {
 
 int uwrt_lookup_package(struct uci_package *p, UT_array *kv) {
   struct uci_element *e = NULL;
-  struct uci_type_list *list = NULL;
+  /** Counts the section types we've already encountered */
+  struct uci_section_type_count *section_types_count = NULL;
+
   char *typestr = NULL;
-  char *sref = NULL;
   int ret = 0;
 
   uci_foreach_element(&p->sections, e) {
     struct uci_section *s = uci_to_section(e);
-    if ((sref = uci_lookup_section_ref(s, list, &typestr)) == NULL) {
+    const char *sref =
+        uci_lookup_section_ref(s, &section_types_count, &typestr);
+    if (sref == NULL) {
       log_trace("uci_lookup_section_ref fail");
       ret = -1;
       goto uwrt_lookup_package_fail;
@@ -225,7 +346,7 @@ int uwrt_lookup_package(struct uci_package *p, UT_array *kv) {
   }
 
 uwrt_lookup_package_fail:
-  uci_reset_typelist(list);
+  uci_clear_section_types_count(&section_types_count);
 
   if (typestr != NULL) {
     os_free(typestr);
