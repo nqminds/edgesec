@@ -501,41 +501,42 @@ ssize_t process_get_bridges_cmd(int sock, struct client_address *client_addr,
   int total = 0;
   struct bridge_mac_tuple *p = NULL;
   ssize_t bytes_sent;
-  if (get_all_bridge_edges(context->bridge_list, &tuple_list_arr) >= 0) {
-    log_trace("GET_BRIDGES");
-    while ((p = (struct bridge_mac_tuple *)utarray_next(tuple_list_arr, p)) !=
-           NULL) {
-      int line_size = snprintf(temp, 255, MACSTR "," MACSTR "\n",
-                               MAC2STR(p->src_addr), MAC2STR(p->dst_addr));
-      total += line_size + 1;
-      {
-        char *reallocated_reply_buf = os_realloc(reply_buf, total);
-        if (reallocated_reply_buf == NULL) {
-          log_errno("realloc: failed to allocate %s bytes", total);
-          free(reply_buf);
-          utarray_free(tuple_list_arr);
-          return -1;
-        }
-        if (reply_buf == NULL) {
-          // initialise the buffer as an empty string
-          reallocated_reply_buf[0] = '\0';
-        }
-        reply_buf = reallocated_reply_buf;
-      }
-      strcat(reply_buf, temp);
-    }
-
-    utarray_free(tuple_list_arr);
-    if (reply_buf) {
-      bytes_sent =
-          write_socket_data(sock, reply_buf, strlen(reply_buf), client_addr);
-      os_free(reply_buf);
-      return bytes_sent;
-    } else
-      return write_socket_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
+  if (get_all_bridge_edges(context->bridge_list, &tuple_list_arr) <= 0) {
+    // list is empty or invalid
+    return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
   }
 
-  return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
+  log_trace("GET_BRIDGES");
+  while ((p = (struct bridge_mac_tuple *)utarray_next(tuple_list_arr, p)) !=
+         NULL) {
+    int line_size = snprintf(temp, 255, MACSTR "," MACSTR "\n",
+                             MAC2STR(p->src_addr), MAC2STR(p->dst_addr));
+    total += line_size + 1;
+    {
+      char *reallocated_reply_buf = os_realloc(reply_buf, total);
+      if (reallocated_reply_buf == NULL) {
+        log_errno("realloc: failed to allocate %s bytes", total);
+        free(reply_buf);
+        utarray_free(tuple_list_arr);
+        return -1;
+      }
+      if (reply_buf == NULL) {
+        // initialise the buffer as an empty string
+        reallocated_reply_buf[0] = '\0';
+      }
+      reply_buf = reallocated_reply_buf;
+    }
+    strcat(reply_buf, temp);
+  }
+
+  utarray_free(tuple_list_arr);
+  if (reply_buf) {
+    bytes_sent =
+        write_socket_data(sock, reply_buf, strlen(reply_buf), client_addr);
+    os_free(reply_buf);
+    return bytes_sent;
+  } else
+    return write_socket_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
 }
 
 ssize_t process_register_ticket_cmd(int sock,
