@@ -152,7 +152,30 @@ static char *uci_lookup_section_ref(struct uci_section *s,
   return ret;
 }
 
-char *uwrt_get_option(const struct uci_option *o) {
+/**
+ * @brief Gets the value of the given option.
+ *
+ * For list options, the value would be all the list entries concatenated
+ * together.
+ *
+ * For example, given the following UCI file:
+ *
+ * ```uci
+ * config rule
+ *   option string_opt 'my-val'
+ *   list list_open 'list-val-1'
+ *   list list_open 'list-val-2'
+ * ```
+ *
+ * - calling `uwrt_get_option()` on `string_opt` would return `my-val`
+ * - calling `uwrt_get_option()` on `list_opt` would return
+ * `list-val-1list-val-2`
+ *
+ * @param o The option to read.
+ * @return The value of the option as a NUL-terminated string, or `NULL` on
+ * error. Please free() the string when you're done with it.
+ */
+__must_free char *uwrt_get_option(const struct uci_option *o) {
   const struct uci_element *e = NULL;
   char *vname = NULL;
   struct string_queue *squeue = NULL;
@@ -188,6 +211,8 @@ char *uwrt_get_option(const struct uci_option *o) {
     default:
       log_trace("unknown uci type");
   }
+
+  log_trace("Option is %s", vname);
 
   return vname;
 }
