@@ -85,13 +85,8 @@ char *uci_lookup_section_ref(struct uci_section *s, struct uci_type_list *list,
 
   if (s->anonymous) {
     maxlen = strlen(s->type) + 1 + 2 + 10;
-    if (*typestr == NULL) {
-      if ((*typestr = os_malloc(maxlen)) == NULL) {
-        log_errno("os_malloc");
-        return NULL;
-      }
-    } else {
-      void *p = os_realloc(*typestr, maxlen);
+    {
+      char *p = os_realloc(*typestr, maxlen);
       if (p == NULL) {
         log_errno("os_realloc");
         os_free(*typestr);
