@@ -31,7 +31,7 @@ static void lock_fn(bool lock) {
 
 static void *threadFunc(void *arg) {
   for (int i = 0; i < 1000; i++)
-    log_trace((char *)arg);
+    log_trace("%s", (char *)arg);
   return NULL;
 }
 
