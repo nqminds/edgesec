@@ -61,7 +61,7 @@ bool process_domain_buffer(char *domain_buffer, size_t domain_buffer_len,
 }
 
 int write_newline_socket_data(int sock, char *data,
-                              struct client_address *client_addr) {
+                              const struct client_address *client_addr) {
   char *msg;
   if ((msg = string_append_char(data, '\n')) == NULL) {
     log_error("string_append_char fail");
@@ -72,7 +72,7 @@ int write_newline_socket_data(int sock, char *data,
   return ret;
 }
 
-ssize_t process_ping_cmd(int sock, struct client_address *client_addr,
+ssize_t process_ping_cmd(int sock, const struct client_address *client_addr,
                          struct supervisor_context *context,
                          UT_array *cmd_arr) {
   (void)context; /* unused */
@@ -88,7 +88,7 @@ ssize_t process_ping_cmd(int sock, struct client_address *client_addr,
 }
 
 ssize_t process_subscribe_events_cmd(int sock,
-                                     struct client_address *client_addr,
+                                     const struct client_address *client_addr,
                                      struct supervisor_context *context,
                                      UT_array *cmd_arr) {
   (void)cmd_arr; /* unused */
@@ -101,7 +101,8 @@ ssize_t process_subscribe_events_cmd(int sock,
   return write_socket_data(sock, OK_REPLY, strlen(OK_REPLY), client_addr);
 }
 
-ssize_t process_accept_mac_cmd(int sock, struct client_address *client_addr,
+ssize_t process_accept_mac_cmd(int sock,
+                               const struct client_address *client_addr,
                                struct supervisor_context *context,
                                UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
@@ -133,7 +134,7 @@ ssize_t process_accept_mac_cmd(int sock, struct client_address *client_addr,
   return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
-ssize_t process_deny_mac_cmd(int sock, struct client_address *client_addr,
+ssize_t process_deny_mac_cmd(int sock, const struct client_address *client_addr,
                              struct supervisor_context *context,
                              UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
@@ -156,7 +157,7 @@ ssize_t process_deny_mac_cmd(int sock, struct client_address *client_addr,
   return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
-ssize_t process_add_nat_cmd(int sock, struct client_address *client_addr,
+ssize_t process_add_nat_cmd(int sock, const struct client_address *client_addr,
                             struct supervisor_context *context,
                             UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
@@ -179,7 +180,8 @@ ssize_t process_add_nat_cmd(int sock, struct client_address *client_addr,
   return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
-ssize_t process_remove_nat_cmd(int sock, struct client_address *client_addr,
+ssize_t process_remove_nat_cmd(int sock,
+                               const struct client_address *client_addr,
                                struct supervisor_context *context,
                                UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
@@ -202,7 +204,8 @@ ssize_t process_remove_nat_cmd(int sock, struct client_address *client_addr,
   return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
-ssize_t process_assign_psk_cmd(int sock, struct client_address *client_addr,
+ssize_t process_assign_psk_cmd(int sock,
+                               const struct client_address *client_addr,
                                struct supervisor_context *context,
                                UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
@@ -234,7 +237,7 @@ ssize_t process_assign_psk_cmd(int sock, struct client_address *client_addr,
   return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
-ssize_t process_get_map_cmd(int sock, struct client_address *client_addr,
+ssize_t process_get_map_cmd(int sock, const struct client_address *client_addr,
                             struct supervisor_context *context,
                             UT_array *cmd_arr) {
   char temp[255];
@@ -272,7 +275,7 @@ ssize_t process_get_map_cmd(int sock, struct client_address *client_addr,
   return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
-ssize_t process_get_all_cmd(int sock, struct client_address *client_addr,
+ssize_t process_get_all_cmd(int sock, const struct client_address *client_addr,
                             struct supervisor_context *context,
                             UT_array *cmd_arr) {
   (void)cmd_arr; /* unused */
@@ -331,7 +334,7 @@ ssize_t process_get_all_cmd(int sock, struct client_address *client_addr,
   return bytes_sent;
 }
 
-ssize_t process_set_ip_cmd(int sock, struct client_address *client_addr,
+ssize_t process_set_ip_cmd(int sock, const struct client_address *client_addr,
                            struct supervisor_context *context,
                            UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
@@ -391,7 +394,8 @@ ssize_t process_set_ip_cmd(int sock, struct client_address *client_addr,
   return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
-ssize_t process_add_bridge_cmd(int sock, struct client_address *client_addr,
+ssize_t process_add_bridge_cmd(int sock,
+                               const struct client_address *client_addr,
                                struct supervisor_context *context,
                                UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
@@ -439,7 +443,8 @@ ssize_t process_add_bridge_cmd(int sock, struct client_address *client_addr,
   return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
-ssize_t process_remove_bridge_cmd(int sock, struct client_address *client_addr,
+ssize_t process_remove_bridge_cmd(int sock,
+                                  const struct client_address *client_addr,
                                   struct supervisor_context *context,
                                   UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
@@ -469,7 +474,8 @@ ssize_t process_remove_bridge_cmd(int sock, struct client_address *client_addr,
   return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
-ssize_t process_clear_bridges_cmd(int sock, struct client_address *client_addr,
+ssize_t process_clear_bridges_cmd(int sock,
+                                  const struct client_address *client_addr,
                                   struct supervisor_context *context,
                                   UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
@@ -491,7 +497,8 @@ ssize_t process_clear_bridges_cmd(int sock, struct client_address *client_addr,
   return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
-ssize_t process_get_bridges_cmd(int sock, struct client_address *client_addr,
+ssize_t process_get_bridges_cmd(int sock,
+                                const struct client_address *client_addr,
                                 struct supervisor_context *context,
                                 UT_array *cmd_arr) {
   (void)cmd_arr; /* unused */
@@ -539,7 +546,7 @@ ssize_t process_get_bridges_cmd(int sock, struct client_address *client_addr,
 }
 
 ssize_t process_register_ticket_cmd(int sock,
-                                    struct client_address *client_addr,
+                                    const struct client_address *client_addr,
                                     struct supervisor_context *context,
                                     UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
@@ -583,7 +590,8 @@ ssize_t process_register_ticket_cmd(int sock,
   return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
-ssize_t process_clear_psk_cmd(int sock, struct client_address *client_addr,
+ssize_t process_clear_psk_cmd(int sock,
+                              const struct client_address *client_addr,
                               struct supervisor_context *context,
                               UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
@@ -603,7 +611,8 @@ ssize_t process_clear_psk_cmd(int sock, struct client_address *client_addr,
 }
 
 #ifdef WITH_CRYPTO_SERVICE
-ssize_t process_put_crypt_cmd(int sock, struct client_address *client_addr,
+ssize_t process_put_crypt_cmd(int sock,
+                              const struct client_address *client_addr,
                               struct supervisor_context *context,
                               UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
@@ -646,7 +655,8 @@ ssize_t process_put_crypt_cmd(int sock, struct client_address *client_addr,
   return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
-ssize_t process_get_crypt_cmd(int sock, struct client_address *client_addr,
+ssize_t process_get_crypt_cmd(int sock,
+                              const struct client_address *client_addr,
                               struct supervisor_context *context,
                               UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
@@ -677,7 +687,8 @@ ssize_t process_get_crypt_cmd(int sock, struct client_address *client_addr,
   return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
-ssize_t process_gen_randkey_cmd(int sock, struct client_address *client_addr,
+ssize_t process_gen_randkey_cmd(int sock,
+                                const struct client_address *client_addr,
                                 struct supervisor_context *context,
                                 UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
@@ -712,7 +723,8 @@ ssize_t process_gen_randkey_cmd(int sock, struct client_address *client_addr,
   return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
-ssize_t process_gen_privkey_cmd(int sock, struct client_address *client_addr,
+ssize_t process_gen_privkey_cmd(int sock,
+                                const struct client_address *client_addr,
                                 struct supervisor_context *context,
                                 UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
@@ -747,7 +759,8 @@ ssize_t process_gen_privkey_cmd(int sock, struct client_address *client_addr,
   return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
-ssize_t process_gen_pubkey_cmd(int sock, struct client_address *client_addr,
+ssize_t process_gen_pubkey_cmd(int sock,
+                               const struct client_address *client_addr,
                                struct supervisor_context *context,
                                UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
@@ -779,7 +792,7 @@ ssize_t process_gen_pubkey_cmd(int sock, struct client_address *client_addr,
   return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
-ssize_t process_gen_cert_cmd(int sock, struct client_address *client_addr,
+ssize_t process_gen_cert_cmd(int sock, const struct client_address *client_addr,
                              struct supervisor_context *context,
                              UT_array *cmd_arr) {
   struct certificate_meta meta;
@@ -834,7 +847,8 @@ ssize_t process_gen_cert_cmd(int sock, struct client_address *client_addr,
   return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
-ssize_t process_encrypt_blob_cmd(int sock, struct client_address *client_addr,
+ssize_t process_encrypt_blob_cmd(int sock,
+                                 const struct client_address *client_addr,
                                  struct supervisor_context *context,
                                  UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
@@ -885,7 +899,8 @@ ssize_t process_encrypt_blob_cmd(int sock, struct client_address *client_addr,
   return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
-ssize_t process_decrypt_blob_cmd(int sock, struct client_address *client_addr,
+ssize_t process_decrypt_blob_cmd(int sock,
+                                 const struct client_address *client_addr,
                                  struct supervisor_context *context,
                                  UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
@@ -935,7 +950,8 @@ ssize_t process_decrypt_blob_cmd(int sock, struct client_address *client_addr,
   return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
 }
 
-ssize_t process_sign_blob_cmd(int sock, struct client_address *client_addr,
+ssize_t process_sign_blob_cmd(int sock,
+                              const struct client_address *client_addr,
                               struct supervisor_context *context,
                               UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
