@@ -429,7 +429,7 @@ int process_pkt_read_state(struct recap_context *pctx) {
 }
 
 int process_file_stream_state(struct recap_context *pctx) {
-  log_trace("Processing file stream %zu bytes", pctx->total_size);
+  log_trace("Processing file stream %" PRIu64 " bytes", pctx->total_size);
 
   switch (pctx->state) {
     case PCAP_FILE_STATE_INIT:
