@@ -55,6 +55,6 @@ char *ping_cmd(void);
  * @return 0 on success, -1 on failure
  */
 int subscribe_events_cmd(struct supervisor_context *context,
-                         struct client_address *addr);
+                         const struct client_address *addr);
 
 #endif

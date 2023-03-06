@@ -36,7 +36,7 @@ enum SUBSCRIBER_EVENT {
  * @return 0 on success, -1 on failure
  */
 int add_events_subscriber(struct supervisor_context *context,
-                          struct client_address *addr);
+                          const struct client_address *addr);
 
 /**
  * @brief Send an event to the subscribers array

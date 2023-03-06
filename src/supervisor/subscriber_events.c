@@ -52,7 +52,7 @@ int sort_subscribers_array(const void *a, const void *b) {
 }
 
 int add_events_subscriber(struct supervisor_context *context,
-                          struct client_address *addr) {
+                          const struct client_address *addr) {
   struct client_address *p = NULL;
 
   p = utarray_find(context->subscribers_array, addr, sort_subscribers_array);

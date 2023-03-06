@@ -171,7 +171,7 @@ int set_ip_cmd(struct supervisor_context *context, uint8_t *mac_addr,
 char *ping_cmd(void) { return os_strdup(PING_REPLY); }
 
 int subscribe_events_cmd(struct supervisor_context *context,
-                         struct client_address *addr) {
+                         const struct client_address *addr) {
   log_debug("SUBSCRIBE_EVENTS with size=%d and type=%d", addr->len, addr->type);
   return add_events_subscriber(context, addr);
 }
