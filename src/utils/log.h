@@ -33,7 +33,8 @@ enum { LOGC_TRACE, LOGC_DEBUG, LOGC_INFO, LOGC_WARN, LOGC_ERROR };
 #define LEVEL_COLORS                                                           \
   { "\x1b[94m", "\x1b[36m", "\x1b[32m", "\x1b[33m", "\x1b[31m" }
 
-#ifdef __GNUC__
+#if defined __has_attribute
+#if __has_attribute(format)
 /**
  * @brief Specifies that the given function is a wrapper around `printf()`.
  * @param a The argument of the format specifier (1st argument is 1)
@@ -44,7 +45,10 @@ enum { LOGC_TRACE, LOGC_DEBUG, LOGC_INFO, LOGC_WARN, LOGC_ERROR };
 #define PRINTF_FORMAT(a, b) __attribute__((format(printf, (a), (b))))
 #else
 #define PRINTF_FORMAT(a, b)
-#endif
+#endif /* __has_attribute(format) */
+#else
+#define PRINTF_FORMAT(a, b)
+#endif /* defined __has_attribute */
 
 static inline int snprintf_error(size_t size, int res) {
   return res < 0 || (unsigned int)res >= size;
