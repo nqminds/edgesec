@@ -74,7 +74,7 @@ int clean_capture(struct middleware_context *context) {
         log_errno("os_malloc");
       }
 
-      log_trace("deleting %s at timestamp=%llu", path, p->timestamp);
+      log_trace("deleting %s at timestamp=%" PRIu64, path, p->timestamp);
       if (remove(path) < 0) {
         log_errno("remove");
       }
@@ -220,7 +220,8 @@ struct middleware_context *init_cleaner_middleware(sqlite3 *db, char *db_path,
 
   log_info("Cleaning db_path=%s", db_path);
   log_info("Cleaning pcap_path=%s", cleaner_context->pcap_path);
-  log_info("Cleaning store_size=%llu bytes", cleaner_context->store_size);
+  log_info("Cleaning store_size=%" PRIu64 " bytes",
+           cleaner_context->store_size);
 
   if (edge_eloop_register_timeout(eloop, CLEANER_PROCESS_INTERVAL, 0,
                                   eloop_tout_cleaner_handler, NULL,
