@@ -57,8 +57,9 @@ void uci_reset_typelist(struct uci_type_list *list) {
   }
 }
 
-char *uci_lookup_section_ref(struct uci_section *s, struct uci_type_list *list,
-                             char **typestr) {
+static char *uci_lookup_section_ref(struct uci_section *s,
+                                    struct uci_type_list *list,
+                                    char **typestr) {
   struct uci_type_list *ti = list;
   char *ret;
   int maxlen;
