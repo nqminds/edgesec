@@ -740,6 +740,8 @@ cleanup:
     fclose(pctx.pcap_fd);
   }
 
+  os_free(pctx.pcap_data);
+
   os_free(pctx.out_path);
   // sqlite3 close on a NULL ptr is fine
   // any uncommited transactions will be automatically rolled-back on close
