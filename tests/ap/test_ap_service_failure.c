@@ -142,7 +142,7 @@ static void test_denyacl_ap_command(void **state) {
     const DenyaclApCommand function_to_test =
         denyacl_ap_command_functions_to_test[i];
 
-    log_debug("test_denyacl_ap_command: Testing function %d", i);
+    log_debug("test_denyacl_ap_command: Testing function %zu", i);
 
     log_debug("should succeed when writeread_domain_data_str succeeds!");
     will_return_ptr(__wrap_writeread_domain_data_str,

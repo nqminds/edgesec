@@ -267,7 +267,7 @@ static inline void wpa_hexdump_ascii(enum hostap_log_level level,
                                      size_t len) {
   char hex_buf[33];
   printf_hex(hex_buf, sizeof(hex_buf), buf, len, false);
-  log_levels(level, __FILENAME__, __LINE__, "%s - hexdump(len=%lu):%s", title,
+  log_levels(level, __FILENAME__, __LINE__, "%s - hexdump(len=%zu):%s", title,
              len, hex_buf);
 }
 

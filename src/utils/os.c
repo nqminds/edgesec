@@ -327,7 +327,7 @@ char **copy_argv(const char *const argv[]) {
    */
   char **const argv_copy = (char **)malloc(argv_array_size + strings_length);
   if (argv_copy == NULL) {
-    log_errno("Failed to malloc %d bytes", argv_array_size + strings_length);
+    log_errno("Failed to malloc %zu bytes", argv_array_size + strings_length);
     return NULL;
   }
 
@@ -508,7 +508,7 @@ int run_argv_command(const char *path, const char *const argv[],
   const char **full_arg = os_malloc(sizeof(char *) * (full_argc + 1));
 
   if (full_arg == NULL) {
-    log_errno("Failed to malloc %d bytes", sizeof(char *) * (full_argc + 1));
+    log_errno("Failed to malloc %zu bytes", sizeof(char *) * (full_argc + 1));
     return -1;
   }
 
@@ -980,7 +980,7 @@ char *string_array2string(const char *const strings[]) {
 
   char *buf = os_malloc(total_chars);
   if (buf == NULL) {
-    log_errno("os_malloc: Failed to allocate %d bytes of memory", total_chars);
+    log_errno("os_malloc: Failed to allocate %zu bytes of memory", total_chars);
     return NULL;
   }
 
