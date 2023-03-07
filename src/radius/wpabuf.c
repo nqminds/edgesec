@@ -36,9 +36,9 @@ static void wpabuf_overflow(const struct wpabuf *buf, size_t len) {
     wpa_printf(MSG_ERROR, "wpabuf: invalid magic %x", trace->magic);
   }
 #endif /* WPA_TRACE */
-  wpa_printf(MSG_ERROR, "wpabuf %p (size=%lu used=%lu) overflow len=%lu", buf,
-             (unsigned long)buf->size, (unsigned long)buf->used,
-             (unsigned long)len);
+  wpa_printf(MSG_ERROR, "wpabuf %p (size=%lu used=%lu) overflow len=%lu",
+             (const void *)buf, (unsigned long)buf->size,
+             (unsigned long)buf->used, (unsigned long)len);
   wpa_trace_show("wpabuf overflow");
   abort();
 }
