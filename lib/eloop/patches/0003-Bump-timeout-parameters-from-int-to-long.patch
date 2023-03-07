@@ -1,4 +1,4 @@
-From 2987c02110ef3c80d05944c894ef81985f36aa00 Mon Sep 17 00:00:00 2001
+From 179c491f0b761207edd2b72870792af3fee55350 Mon Sep 17 00:00:00 2001
 From: Alois Klink <alois@nquiringminds.com>
 Date: Tue, 6 Sep 2022 18:34:47 +0100
 Subject: [PATCH 3/5] Bump timeout parameters from int to long
@@ -10,12 +10,12 @@ I'm guessing that on some platforms, the max int value is only
 Taken from commit
 https://github.com/nqminds/edgesec/commit/00d465d8705fa439b52a513541dc03c1f4231e4d
 ---
- src/utils/eloop.c |  6 +++---
+ src/utils/eloop.c |  8 ++++----
  src/utils/eloop.h | 12 ++++++------
- 2 files changed, 9 insertions(+), 9 deletions(-)
+ 2 files changed, 10 insertions(+), 10 deletions(-)
 
 diff --git a/src/utils/eloop.c b/src/utils/eloop.c
-index 4035a9af3..d1affd29f 100644
+index 4035a9af3..ab5cc07b0 100644
 --- a/src/utils/eloop.c
 +++ b/src/utils/eloop.c
 @@ -694,7 +694,7 @@ void eloop_unregister_sock(struct eloop_data *eloop, int sock, eloop_event_type
@@ -27,6 +27,15 @@ index 4035a9af3..d1affd29f 100644
  			   eloop_timeout_handler handler,
  			   void *eloop_data, void *user_data)
  {
+@@ -748,7 +748,7 @@ overflow:
+ 	 * to be infinite, i.e., the timeout would never happen.
+ 	 */
+ 	log_debug(
+-		   "ELOOP: Too long timeout (secs=%u usecs=%u) to ever happen - ignore it",
++		   "ELOOP: Too long timeout (secs=%lu usecs=%lu) to ever happen - ignore it",
+ 		   secs,usecs);
+ 	os_free(timeout);
+ 	return 0;
 @@ -843,7 +843,7 @@ int eloop_is_timeout_registered(struct eloop_data *eloop, eloop_timeout_handler
  }
  
