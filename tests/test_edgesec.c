@@ -297,16 +297,14 @@ static int setup_edgesec_test(void **state) {
   assert_non_null(ctx->ap_server.eloop);
   assert_non_null(ctx->supervisor.eloop);
 
-  assert_return_code(edge_eloop_register_timeout(ctx->ap_server.eloop, 0, 10000,
-                                                 check_if_should_terminate,
-                                                 ctx->ap_server.eloop,
-                                                 &(ctx->ap_server.should_die)),
+  assert_return_code(edge_eloop_register_timeout(
+                         ctx->ap_server.eloop, 0, 0, check_if_should_terminate,
+                         ctx->ap_server.eloop, &(ctx->ap_server.should_die)),
                      0);
 
   assert_return_code(edge_eloop_register_timeout(
-                         ctx->supervisor.eloop, 0, 10000,
-                         check_if_should_terminate, ctx->ap_server.eloop,
-                         &(ctx->supervisor.should_die)),
+                         ctx->supervisor.eloop, 0, 0, check_if_should_terminate,
+                         ctx->ap_server.eloop, &(ctx->supervisor.should_die)),
                      0);
 
   *state = ctx;
