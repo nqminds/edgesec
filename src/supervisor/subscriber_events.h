@@ -43,9 +43,11 @@ int add_events_subscriber(struct supervisor_context *context,
  *
  * @param context The supervisor context
  * @param type The event type
- * @param format The event text
+ * @param format The event format text, passed to vsnprintf()
+ * @param ... The event format variables, passed to vsnprintf()
  * @return 0 on success, -1 on failure
  */
+PRINTF_FORMAT(3, 4)
 int send_events_subscriber(struct supervisor_context *context,
                            enum SUBSCRIBER_EVENT type, const char *format, ...);
 #endif
