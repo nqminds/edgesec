@@ -76,7 +76,7 @@ static void send_data_to_sock(void *eloop_ctx, void *user_ctx) {
   struct test_eloop_sock_ctx *eloop_sock_ctx = eloop_ctx;
   struct test_eloop_sock_user_ctx *user_sock_ctx = user_ctx;
 
-  log_debug("Sending %zd bytes to fd %d on port %d, contents: %s",
+  log_debug("Sending %zd bytes to fd %d on port %" PRIu16 ", contents: %s",
             user_sock_ctx->length, eloop_sock_ctx->client_socket_fd,
             eloop_sock_ctx->serv_address.caddr.addr_in.sin_port,
             user_sock_ctx->data);
