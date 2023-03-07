@@ -33,11 +33,22 @@ enum { LOGC_TRACE, LOGC_DEBUG, LOGC_INFO, LOGC_WARN, LOGC_ERROR };
 #define LEVEL_COLORS                                                           \
   { "\x1b[94m", "\x1b[36m", "\x1b[32m", "\x1b[33m", "\x1b[31m" }
 
-#ifdef __GNUC__
+#if defined __has_attribute
+#if __has_attribute(format)
+/**
+ * @brief Specifies that the given function is a wrapper around `printf()`.
+ * @param a The argument of the format specifier (1st argument is 1)
+ * @param b The first arg of the variable argument list.
+ * (aka the number of the `...` arg).
+ * @see https://clang.llvm.org/docs/AttributeReference.html#format
+ */
 #define PRINTF_FORMAT(a, b) __attribute__((format(printf, (a), (b))))
 #else
 #define PRINTF_FORMAT(a, b)
-#endif
+#endif /* __has_attribute(format) */
+#else
+#define PRINTF_FORMAT(a, b)
+#endif /* defined __has_attribute */
 
 static inline int snprintf_error(size_t size, int res) {
   return res < 0 || (unsigned int)res >= size;
@@ -78,12 +89,16 @@ void log_set_meta(bool enable);
 int log_open_file(char *path);
 void log_close_file(void);
 
+PRINTF_FORMAT(4, 5)
 void log_levels(uint8_t level, const char *file, uint32_t line,
                 const char *format, ...);
+PRINTF_FORMAT(4, 5)
 void log_errno_error(uint8_t level, const char *file, uint32_t line,
                      const char *format, ...);
+PRINTF_FORMAT(4, 5)
 void log_error_exit(uint8_t level, const char *file, uint32_t line,
                     const char *format, ...);
+PRINTF_FORMAT(4, 5)
 void log_error_exit_proc(uint8_t level, const char *file, uint32_t line,
                          const char *format, ...);
 
