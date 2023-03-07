@@ -422,7 +422,7 @@ int writeread_domain_data_str(char *socket_path, const char *write_str,
     goto cleanup_sfd;
   }
 
-  log_trace("Sent %d bytes to %s", send_count, socket_path);
+  log_trace("Sent %zd bytes to %s", send_count, socket_path);
 
   errno = 0;
   struct timeval timeout = {

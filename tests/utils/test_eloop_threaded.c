@@ -76,7 +76,7 @@ static void send_data_to_sock(void *eloop_ctx, void *user_ctx) {
   struct test_eloop_sock_ctx *eloop_sock_ctx = eloop_ctx;
   struct test_eloop_sock_user_ctx *user_sock_ctx = user_ctx;
 
-  log_debug("Sending %d bytes to fd %d on port %d, contents: %s",
+  log_debug("Sending %zd bytes to fd %d on port %d, contents: %s",
             user_sock_ctx->length, eloop_sock_ctx->client_socket_fd,
             eloop_sock_ctx->serv_address.caddr.addr_in.sin_port,
             user_sock_ctx->data);
@@ -108,7 +108,7 @@ static void eloop_sock_handler_function(int sock, void *eloop_ctx,
                          (struct sockaddr *)&from, &fromlen);
   buf[res] = '\0';
 
-  log_trace("Read %d bytes from buffer, contents %s", res, buf);
+  log_trace("Read %zd bytes from buffer, contents %s", res, buf);
 
   // UTarray doesn't support pushing string arrays, only string pointers
   // because it's some complex C-macros.
