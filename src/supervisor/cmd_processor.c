@@ -522,7 +522,7 @@ ssize_t process_get_bridges_cmd(int sock,
     {
       char *reallocated_reply_buf = os_realloc(reply_buf, total);
       if (reallocated_reply_buf == NULL) {
-        log_errno("realloc: failed to allocate %s bytes", total);
+        log_errno("realloc: failed to allocate %d bytes", total);
         free(reply_buf);
         utarray_free(tuple_list_arr);
         return -1;
