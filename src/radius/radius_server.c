@@ -652,7 +652,7 @@ static void radius_server_receive_auth(int sock, void *eloop_ctx,
 
   client = radius_server_get_client(data, &from.sin.sin_addr);
 
-  log_trace("Received data with length %ld", len);
+  log_trace("Received data with length %d", len);
 
   if (client == NULL) {
     log_trace("Unknown client %s - packet ignored", abuf);
