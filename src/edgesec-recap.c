@@ -111,7 +111,7 @@ void show_app_help(char *app_name) {
 
 /* Diagnose an error in command-line arguments and
    terminate the process */
-void log_cmdline_error(const char *format, ...) {
+PRINTF_FORMAT(1, 2) void log_cmdline_error(const char *format, ...) {
   va_list argList;
 
   fflush(stdout); /* Flush any pending stdout */
