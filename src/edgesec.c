@@ -60,17 +60,6 @@ void log_lock_fun(bool lock) {
   }
 }
 
-void sighup_handler(int sig, void *ctx) {
-  (void)sig;
-
-  char *log_filename = (char *)ctx;
-
-  if (log_filename != NULL) {
-    log_close_file();
-    log_open_file(log_filename);
-  }
-}
-
 void show_app_version(void) {
   fprintf(stdout, "edgesec app version %s\n", EDGESEC_VERSION);
 }
