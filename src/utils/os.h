@@ -114,9 +114,10 @@ int become_daemon(int flags);
 #define os_get_time(t) edge_os_get_time(t)
 
 /**
- * @brief Get current time (sec, usec)
+ * @brief Get current time (sec, usec) in seconds since UNIX epoch.
  *
- * @param t Pointer to buffer for the time
+ * @param[out] t Pointer to buffer for the time
+ * If there is a failure, may write invalid data.
  * @return int 0 on success, -1 on failure
  */
 int edge_os_get_time(struct os_time *t);
@@ -124,7 +125,11 @@ int edge_os_get_time(struct os_time *t);
 /**
  * @brief Get relative time (sec, usec)
  *
- * @param t Pointer to buffer for the time
+ * Unlike edge_os_get_time(), the time from this function will never go
+ * backwards (e.g. due to NTP).
+ *
+ * @param[out] t Pointer to buffer for the time.
+ * If there is a failure, may write invalid data.
  * @return int 0 on success, -1 on failure
  */
 int edge_os_get_reltime(struct os_reltime *t);

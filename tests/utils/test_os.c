@@ -19,6 +19,7 @@
 #include <limits.h>
 
 #include "utils/allocs.h"
+#include "utils/attributes.h"
 #include "utils/log.h"
 #include "utils/os.h"
 
@@ -660,6 +661,24 @@ static void test_os_strlcpy(void **state) {
   assert_string_equal(my_state->string_a, "0123456789abcde");
 }
 
+static void test_edge_os_get_reltime(__maybe_unused void **state) {
+  struct os_reltime first_time;
+  assert_return_code(edge_os_get_reltime(&first_time), errno);
+
+  assert_return_code(usleep(1), errno);
+
+  struct os_reltime second_time;
+  assert_return_code(edge_os_get_reltime(&second_time), errno);
+
+  uintmax_t microseconds_per_second = 1000000;
+  uintmax_t microseconds_diff =
+      (second_time.sec * microseconds_per_second + second_time.usec) -
+      (first_time.sec * microseconds_per_second + first_time.usec);
+
+  // should have at least 1 microsecond of delay
+  assert_in_range(microseconds_diff, 1, UINTMAX_MAX);
+}
+
 static void test_hexstr2bin(void **state) {
   (void)state; /* unused */
 
@@ -804,6 +823,7 @@ int main(int argc, char *argv[]) {
                                       teardown_tmpdir),
       cmocka_unit_test_setup_teardown(test_os_strlcpy, setup_os_strlcpy_test,
                                       teardown_os_strlcpy_test),
+      cmocka_unit_test(test_edge_os_get_reltime),
       cmocka_unit_test(test_hexstr2bin),
       cmocka_unit_test(test_signal_process),
       cmocka_unit_test(test_is_proc_app),

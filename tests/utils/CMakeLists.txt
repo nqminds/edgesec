@@ -29,7 +29,7 @@ add_cmocka_test(test_net
 
 add_cmocka_test(test_os
   SOURCES test_os.c
-  LINK_LIBRARIES tmpdir os allocs hashmap cmocka::cmocka)
+  LINK_LIBRARIES tmpdir os allocs attributes hashmap cmocka::cmocka)
 
 add_cmocka_test(test_eloop
   SOURCES test_eloop.c
