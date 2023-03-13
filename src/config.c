@@ -231,7 +231,6 @@ bool load_radius_conf(const char *filename, struct app_config *config) {
   config->rconfig.radius_port = (int)ini_getl("radius", "port", 1812, filename);
 
   // Load radius client ip
-  value = os_malloc(INI_BUFFERSIZE);
   ini_gets("radius", "clientIP", "127.0.0.1", value, INI_BUFFERSIZE, filename);
 
   os_strlcpy(config->rconfig.radius_client_ip, value, OS_INET_ADDRSTRLEN);
