@@ -365,6 +365,8 @@ static void test_edgesec(void **state) {
   ctx->supervisor.cleanup_thread = true;
 
   assert_int_equal(run_ctl(&config, ctx->supervisor.eloop), 0);
+
+  free_app_config(&config);
 }
 
 /**
