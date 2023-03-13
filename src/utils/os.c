@@ -155,11 +155,21 @@ int edge_os_get_time(struct os_time *t) {
 }
 
 int edge_os_get_reltime(struct os_reltime *t) {
-  int res;
-  struct timeval tv;
-  res = gettimeofday(&tv, NULL);
-  t->sec = tv.tv_sec;
-  t->usec = tv.tv_usec;
+  struct timespec current_time = {0};
+
+#ifdef CLOCK_MONOTONIC
+  // should be supported in both Linux and FreeBSD
+  clockid_t clock = CLOCK_MONOTONIC;
+#else
+  // should be supported in any POSIX system
+  clockid_t clock = CLOCK_REALTIME;
+#endif
+  int res = clock_gettime(clock, &current_time);
+
+  // may be 0 if clock_gettime failed
+  t->sec = current_time.tv_sec;
+  t->usec = current_time.tv_nsec / 1000;
+
   return res;
 }
 

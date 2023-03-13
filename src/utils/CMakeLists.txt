@@ -21,7 +21,7 @@ target_link_libraries(hashmap PUBLIC LibUTHash::LibUTHash PRIVATE log)
 
 add_library(os os.c)
 set_target_properties(os PROPERTIES
-  C_EXTENSIONS ON # requires BSD gettimeofday
+  C_EXTENSIONS ON # requires BSD gettimeofday and POSIX clock_gettime
   POSITION_INDEPENDENT_CODE ON
 )
 target_link_libraries(os PUBLIC LibUTHash::LibUTHash PRIVATE hashmap allocs log LibUUID::LibUUID)
