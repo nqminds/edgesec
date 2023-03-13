@@ -67,17 +67,17 @@ jobs:
         name: Test
         run: |
           if ctest --list-presets | grep -s "${{ matrix.cmake-preset }}"; then
+            # Temporarily skip running tests, since we will run tests when
+            # calculating code-coverage in the next step, and there's a race-condition
+            # when we run tests twice in sucession.
             # ctest --preset "${{ matrix.cmake-preset }}" --output-on-failure
             echo "tested=true" >> $GITHUB_OUTPUT
           else
             echo "tested=false" >> $GITHUB_OUTPUT
           fi
       - name: Code Coverage
-        # code coverage only works if ctest works
         if: steps.test.outputs.tested == 'true'
         run: |
-          # Should prevent `Failed to execute statement: disk I/O error` errors
-          sleep 5
           cmake --build --preset "${{ matrix.cmake-preset }}" --parallel "$(($(nproc) + 1))" --target coverage
           mv "build/${{ matrix.cmake-preset }}/coverage.info" "build/${{ matrix.cmake-preset }}/coverage-${{ matrix.cmake-preset }}.info"
         env:
