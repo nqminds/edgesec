@@ -191,6 +191,7 @@ static void test_init_context(void **state) {
   free_crypt_service(context.crypt_ctx);
 #endif
   iface_free_context(context.iface_ctx);
+  utarray_free(context.config_ifinfo_array);
 }
 
 /**
