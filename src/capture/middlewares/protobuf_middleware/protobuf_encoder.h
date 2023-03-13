@@ -16,8 +16,8 @@
 /**
  * @brief Encodes the packet into a protobuf message
  *
- * @param tp[in] The packet
- * @param buffer[out] The encoded protobuf packet
+ * @param[in] tp The packet
+ * @param[out] buffer The encoded protobuf packet
  * @return the output buffer size, -1 on failure
  */
 ssize_t encode_protobuf_packet(struct tuple_packet *tp, uint8_t **buffer);
@@ -25,8 +25,8 @@ ssize_t encode_protobuf_packet(struct tuple_packet *tp, uint8_t **buffer);
 /**
  * @brief Encodes the packet into a wrapper protobuf message
  *
- * @param tp[in] The packet
- * @param buffer[out] The encoded wrapper protobuf packet
+ * @param[in] tp The packet
+ * @param[out] buffer The encoded wrapper protobuf packet
  * @return the output buffer size, -1 on failure
  */
 ssize_t encode_protobuf_sync_wrapper(struct tuple_packet *tp, uint8_t **buffer);
