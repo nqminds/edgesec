@@ -55,7 +55,6 @@ static void test_get_mac_conn_cmd(void **state) {
     utarray_push_back(ctx.config_ifinfo_array, &el);
   }
 
-  create_vlan_mapper(ctx.config_ifinfo_array, &ctx.vlan_mapper);
   open_sqlite_macconn_db(":memory:", &ctx.macconn_db);
 
   struct mac_conn_info info = get_mac_conn_cmd(mac_addr, (void *)&ctx);
