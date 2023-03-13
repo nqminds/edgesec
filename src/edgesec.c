@@ -146,8 +146,6 @@ void process_app_options(int argc, char *argv[], uint8_t *verbosity,
   }
 }
 
-char *get_app_name(char *app_path) { return basename(app_path); }
-
 int main(int argc, char *argv[]) {
   bool daemon = false;
   uint8_t verbosity = 0;
