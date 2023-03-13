@@ -1,6 +1,8 @@
 # at least v3.13 is required for install(x) where x is from add_subdirectory()
 cmake_minimum_required(VERSION 3.13)
-project(LIBNETLINK)
+project(LIBNETLINK
+  LANGUAGES C
+)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMakeModules")
 
