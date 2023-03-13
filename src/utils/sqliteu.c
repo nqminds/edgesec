@@ -39,6 +39,7 @@ int check_table_exists(sqlite3 *db, const char *table_name) {
 
   if (sqlite3_bind_text(res, 1, table_name, -1, SQLITE_STATIC) != SQLITE_OK) {
     log_trace("Binding params failed due to %s", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
     return -1;
   }
 
