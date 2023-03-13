@@ -89,6 +89,7 @@ static void test_get_mac_conn_cmd(void **state) {
   struct mac_conn_info info2 = get_mac_conn_cmd(conn.mac_addr, (void *)&ctx);
   assert_int_equal(info2.vlanid, -1);
 
+  free_sqlite_macconn_db(ctx.macconn_db);
   utarray_free(ctx.config_ifinfo_array);
   free(ctx.crypt_ctx); // only needed if WITH_CRYPTO_SERVICE
 }
