@@ -50,9 +50,9 @@ const char description_string[] =
     "     credentials/MAC address.\n"
     "  6. State machine: Networking monitoring and management.\n";
 
-pthread_mutex_t log_lock;
+static pthread_mutex_t log_lock;
 
-void log_lock_fun(bool lock) {
+static void log_lock_fun(bool lock) {
   if (lock) {
     pthread_mutex_lock(&log_lock);
   } else {
@@ -60,11 +60,11 @@ void log_lock_fun(bool lock) {
   }
 }
 
-void show_app_version(void) {
+static void show_app_version(void) {
   fprintf(stdout, "edgesec app version %s\n", EDGESEC_VERSION);
 }
 
-void show_app_help(char *app_name) {
+static void show_app_help(char *app_name) {
   show_app_version();
   fprintf(stdout, "Usage:\n");
   fprintf(stdout, USAGE_STRING, basename(app_name));
@@ -83,7 +83,7 @@ void show_app_help(char *app_name) {
 
 /* Diagnose an error in command-line arguments and
    terminate the process */
-PRINTF_FORMAT(1, 2) void log_cmdline_error(const char *format, ...) {
+PRINTF_FORMAT(1, 2) static void log_cmdline_error(const char *format, ...) {
   va_list argList;
 
   fflush(stdout); /* Flush any pending stdout */
@@ -97,9 +97,9 @@ PRINTF_FORMAT(1, 2) void log_cmdline_error(const char *format, ...) {
   exit(EXIT_FAILURE);
 }
 
-void process_app_options(int argc, char *argv[], uint8_t *verbosity,
-                         bool *daemon, char **config_filename,
-                         char **log_filename) {
+static void process_app_options(int argc, char *argv[], uint8_t *verbosity,
+                                bool *daemon, char **config_filename,
+                                char **log_filename) {
   int opt;
 
   while ((opt = getopt(argc, argv, OPT_STRING)) != -1) {
