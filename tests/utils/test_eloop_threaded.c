@@ -18,6 +18,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <eloop.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <threads.h>
 #include <utarray.h>
@@ -283,6 +284,40 @@ static void test_eloop_sock(void **state) {
   utarray_free(sent_data);
 }
 
+/**
+ * @brief This function has external linkage but isn't in eloop.h
+ *
+ * This is potentially a bug, but we can use it for improved tests, while
+ * it's exposed!
+ */
+extern void eloop_destroy(struct eloop_data *eloop);
+
+static void test_edge_eloop_destroy() {
+  // test coverage changes if `now.usec == 0`
+  // rerunning the tests after 1 microsecond should fix this issue
+  for (int i = 0; i < 2; i++) {
+    struct eloop_data *eloop = edge_eloop_init();
+
+    assert_return_code(
+        // make sure usec is 0, so that we have a
+        // higher chance of hitting `timeout.usec < now.usec` branch
+        edge_eloop_register_timeout(eloop, 120, 0, send_data_to_sock, eloop,
+                                    NULL),
+        errno);
+
+    assert_false(dl_list_empty(&eloop->timeout));
+
+    eloop_destroy(eloop);
+
+    assert_true(dl_list_empty(&eloop->timeout));
+
+    edge_eloop_free(eloop);
+
+    thrd_sleep(&(struct timespec){.tv_nsec = 1000},
+               NULL); // sleep 1 microsecond
+  }
+}
+
 int main(int argc, char *argv[]) {
   (void)argc;
   (void)argv;
@@ -292,6 +327,7 @@ int main(int argc, char *argv[]) {
   const struct CMUnitTest tests[] = {
       cmocka_unit_test_setup_teardown(test_basic_eloop, setup, teardown),
       cmocka_unit_test_setup_teardown(test_eloop_sock, setup, teardown),
+      cmocka_unit_test(test_edge_eloop_destroy),
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);
