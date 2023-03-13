@@ -87,7 +87,7 @@ static int cleanup_tmp_domain_socket_path(const char *socket_path) {
   }
 
   // need to make a non-const copy of path since dirname() may change
-  // stirng contents
+  // string contents
   char path[PATH_MAX];
   path[PATH_MAX - 1] = '\0'; // ensure string is always NUL terminated
   strncpy(path, socket_path, PATH_MAX - 1);
