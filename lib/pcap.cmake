@@ -9,8 +9,8 @@ else()
   FetchContent_Declare(
     libpcap
     # warning, libpcap 1.9.1 is the latest on OpenWRT 19.07 and Ubuntu 20.04
-    URL https://github.com/the-tcpdump-group/libpcap/archive/refs/tags/libpcap-1.10.1.tar.gz
-    URL_HASH SHA3_256=9aedcbec09b7b3b01c78cc80822c505846d73928a72ae96eb907b1f467eee649
+    URL https://github.com/the-tcpdump-group/libpcap/archive/refs/tags/libpcap-1.10.2.tar.gz
+    URL_HASH SHA3_256=8962bccd636a93fa9f2a8ff447b2dfded5420ea1e12d368de0f2bab557f1f0a2
     DOWNLOAD_DIR "${EP_DOWNLOAD_DIR}" # if empty string, uses default download dir
   )
 
