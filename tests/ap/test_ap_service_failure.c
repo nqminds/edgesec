@@ -24,7 +24,8 @@
  *
  * @param socket_path - Unused.
  * @param write_str - Unused.
- * @param reply - Will be set to the string given by `will_return_ptr()`
+ * @param reply - Will be set to the string given by `will_return_ptr()`,
+ * if the return code is 0.
  * @return - The value of `will_return()`.
  */
 int __wrap_writeread_domain_data_str(char *socket_path, char *write_str,
@@ -32,9 +33,15 @@ int __wrap_writeread_domain_data_str(char *socket_path, char *write_str,
   (void)socket_path;
   (void)write_str;
 
-  *reply = os_strdup(mock_ptr_type(const char *));
+  const char *reply_str = mock_ptr_type(const char *);
 
-  return mock();
+  int rc = mock();
+
+  if (rc == 0) {
+    *reply = os_strdup(reply_str);
+  }
+
+  return rc;
 }
 /** Wraps around write_domain_data_s() to do nothing and return success */
 int __wrap_write_domain_data_s(int sock, const char *data, size_t data_len,
