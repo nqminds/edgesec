@@ -62,7 +62,7 @@ static void test_check_table_exists(void **state) {
     int original_limit = sqlite3_limit(db, SQLITE_LIMIT_LENGTH, 1024);
     char super_long_table_name[2048];
     memset(super_long_table_name, 'a', 2048);
-    super_long_table_name[2047] = '\n';
+    super_long_table_name[2047] = '\0';
     assert_int_equal(check_table_exists(db, super_long_table_name), -1);
     sqlite3_limit(db, SQLITE_LIMIT_LENGTH, original_limit);
   }
