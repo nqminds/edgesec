@@ -43,7 +43,7 @@ int get_if_mapper(hmap_if_conn **hmap, in_addr_t subnet, char *ifname) {
             s); /* id already in the hash? */
 
   if (s != NULL) {
-    os_memcpy(ifname, s->value, IF_NAMESIZE);
+    os_strlcpy(ifname, s->value, IF_NAMESIZE);
     return 1;
   }
 
@@ -75,12 +75,12 @@ bool put_if_mapper(hmap_if_conn **hmap, in_addr_t subnet, char *ifname) {
 
     // Copy the key and value
     s->key = subnet;
-    os_memcpy(s->value, ifname, IF_NAMESIZE);
+    os_strlcpy(s->value, ifname, IF_NAMESIZE);
 
     HASH_ADD(hh, *hmap, key, sizeof(in_addr_t), s);
   } else {
     // Copy the value
-    os_memcpy(s->value, ifname, IF_NAMESIZE);
+    os_strlcpy(s->value, ifname, IF_NAMESIZE);
   }
 
   return true;
