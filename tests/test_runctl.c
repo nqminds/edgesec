@@ -211,7 +211,7 @@ static void test_run_engine(void **state) {
 #endif
 #ifdef WITH_RADIUS_SERVICE
   struct radius_server_data *radius_srv =
-      os_zalloc(sizeof(struct radius_server_data *));
+      os_zalloc(sizeof(struct radius_server_data));
 #endif
 
   struct fwctx *fw_ctx = os_zalloc(sizeof(struct fwctx));
