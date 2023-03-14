@@ -5,7 +5,7 @@ project(EDGESEC
   VERSION 0.1.0
   HOMEPAGE_URL "https://github.com/nqminds/edgesec"
   DESCRIPTION "Secure router - reference implementation"
-  LANGUAGES C CXX
+  LANGUAGES C
 )
 # CMake proposal for semver https://gitlab.kitware.com/cmake/cmake/-/issues/23649
 set(PROJECT_VERSION_PRERELEASE alpha.0)
@@ -178,11 +178,6 @@ add_compile_options(
   $<$<COMPILE_LANGUAGE:C>:-Wall>
   $<$<COMPILE_LANGUAGE:C>:-Wextra>
 )
-
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-# use -std=c++11 rather than -std=gnu++11
-set(CMAKE_CXX_EXTENSIONS OFF)
 
 # sqlhook is a shared library that links to static libs, so -fPIC is needed
 # todo: enable only for sqlhook dependencies

@@ -61,7 +61,8 @@ if (USE_CRYPTO_SERVICE)
       DOWNLOAD_DIR "${EP_DOWNLOAD_DIR}" # if empty string, uses default download dir
       INSTALL_DIR "${LIBOPENSSL_INSTALL_DIR}"
       CONFIGURE_COMMAND
-        ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" "CC=${CMAKE_C_COMPILER}" "CXX=${CMAKE_CXX_COMPILER}"
+        ${CMAKE_COMMAND} -E env "PATH=$ENV{PATH}" "CC=${CMAKE_C_COMPILER}"
+          "CXX=no-cxx-compiler" # explicitly disable CXX compiler, since OpenSSL doesn't need it
         <SOURCE_DIR>/Configure ${OpenSSL_Configure_Args}
       LIST_SEPARATOR " " # expand ${OpenSSL_Configure_Args} to space-separated list
       # only install software, don't install or build docs
