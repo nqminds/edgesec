@@ -28,6 +28,8 @@
  * @brief The App configuration structures. Used for configuring the networking
  * services.
  *
+ * This is normally initialised with load_app_config() and cleaned with
+ * free_app_config().
  */
 struct app_config {
   UT_array *
@@ -83,7 +85,8 @@ struct app_config {
  * @brief Load the app configuration
  *
  * @param filename The app configuration file
- * @param config The configuration structure
+ * @param[in, out] config The configuration structure to store config in.
+ * Must be cleaned up with free_app_config().
  * @return 0 on success, -1 otherwise
  */
 int load_app_config(const char *filename, struct app_config *config);
