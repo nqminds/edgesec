@@ -36,6 +36,55 @@ task:
   # uploading coverage is currently a bit difficult
   # since the codecoverage uploader doesn't yet support FreeBSD
 
+# Docker config.json that has read access to aloisklink's Docker container
+registry_config: ENCRYPTED[5a6b9031edaf3284bf98b4510a3927884f65e0c223583b916c73fff30e9ccabdcede640829b0534a39ccc7916630ba36]
+cheribuild_task:
+  name: CheriBSD (morello-purecap)
+  container:
+    image: aloisklink/cheribuild-edgesec:morello-purecap
+  cmake_dependencies_cache:
+    # cache CMake dependencies
+    folder: ./build/dl
+    fingerprint_script:
+      - echo "$CIRRUS_OS"
+      # lib/*.cmake files contains the dependencies that we use
+      - cat lib/*.cmake
+  environment:
+    # list of tests that are currently failing on CheriBSD
+    FAILING_TESTS: >-
+      test_edgesec
+      test_runctl
+      test_capture_service
+      test_header_middleware
+      test_sqlite_header
+      test_sqlite_pcap
+      test_os
+      test_eloop
+      test_sqliteu
+      test_supervisor
+      test_cmd_processor
+      test_sqlite_macconn_writer
+      test_hostapd
+      test_ap_service_failure
+      test_dnsmasq
+      test_mdns_service
+
+  build_script: |
+    /home/ubuntu/cheribuild/cheribuild.py "edgesec-morello-purecap" \
+      --edgesec/source-directory "$(pwd)" \
+      --skip-update
+  test_script: |
+    # could use --test-extra-args='' to pass extra stuff to
+    # https://github.com/CTSRD-CHERI/cheribuild/blob/main/test-scripts/run_ctest_tests.py
+    /home/ubuntu/cheribuild/cheribuild.py "edgesec-morello-purecap" \
+      --edgesec/source-directory "$(pwd)" \
+      --skip-update \
+      --run-tests \
+    || true # We look at junit XML output file for failures
+  check_failing_tests_script: |
+    python3 -c "$CHECK_FAILING_TESTS" \
+      /home/ubuntu/cheri/build/edgesec-morello-purecap-build/test-results*.xml
+
 environment:
   # Script that loads a JUnit XML file generated from CTest,
   # (generated via `ctest --output-junit <file>`)
