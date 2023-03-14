@@ -292,7 +292,9 @@ static void test_eloop_sock(void **state) {
  */
 extern void eloop_destroy(struct eloop_data *eloop);
 
-static void test_edge_eloop_destroy() {
+static void test_edge_eloop_destroy(void **state) {
+  (void)state; /* unused */
+
   // test coverage changes if `now.usec == 0`
   // rerunning the tests after 1 microsecond should fix this issue
   for (int i = 0; i < 2; i++) {
