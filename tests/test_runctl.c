@@ -148,12 +148,10 @@ int __wrap_run_dhcp(struct dhcp_conf *dconf, UT_array *dns_server_array,
 static void test_init_context(void **state) {
   (void)state; /* unused */
   struct supervisor_context context;
-  UT_array *config_ifinfo_arr = NULL;
-  utarray_new(config_ifinfo_arr, &config_ifinfo_icd);
   struct app_config app_config = {0,
                                   .default_open_vlanid = 0,
                                   .connection_db_path = ":memory:",
-                                  .config_ifinfo_array = config_ifinfo_arr,
+                                  .config_ifinfo_array = NULL,
                                   .set_ip_forward = true,
                                   .ap_detect = true,
                                   .create_interfaces = true,
@@ -193,7 +191,7 @@ static void test_init_context(void **state) {
   free_crypt_service(context.crypt_ctx);
 #endif
   iface_free_context(context.iface_ctx);
-  utarray_free(config_ifinfo_arr);
+  utarray_free(context.config_ifinfo_array);
 }
 
 /**
