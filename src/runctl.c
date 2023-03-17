@@ -405,6 +405,8 @@ void close_capture_thread(const hmap_vlan_conn *vlan_mapper) {
 int run_ctl(struct app_config *app_config, struct eloop_data *eloop) {
   struct supervisor_context *context = NULL;
 
+  int return_code = -1;
+
   if ((context = os_zalloc(sizeof(struct supervisor_context))) == NULL) {
     log_errno("os_zalloc");
     return -1;
@@ -564,28 +566,7 @@ int run_ctl(struct app_config *app_config, struct eloop_data *eloop) {
   }
 #endif
 
-  close_supervisor(context);
-  close_ap(context);
-  close_dhcp();
-#ifdef WITH_RADIUS_SERVICE
-  close_radius(context->radius_srv);
-#endif
-  hmap_str_keychar_free(&context->hmap_bin_paths);
-  fw_free_context(context->fw_ctx);
-  free_mac_mapper(&context->mac_mapper);
-  free_if_mapper(&context->if_mapper);
-  free_vlan_mapper(&context->vlan_mapper);
-  free_bridge_list(context->bridge_list);
-  free_sqlite_macconn_db(context->macconn_db);
-#ifdef WITH_CRYPTO_SERVICE
-  free_crypt_service(context->crypt_ctx);
-#endif
-  iface_free_context(context->iface_ctx);
-  utarray_free(context->config_ifinfo_array);
-  edge_eloop_free(context->eloop);
-  os_free(context);
-
-  return 0;
+  return_code = 0;
 
 run_engine_fail:
   close_supervisor(context);
@@ -608,7 +589,13 @@ run_engine_fail:
   if (context->config_ifinfo_array != NULL) {
     utarray_free(context->config_ifinfo_array);
   }
-  edge_eloop_free(context->eloop);
+  if (context->eloop != eloop) {
+    // only free context->eloop if it wasn't passed in from function as param
+    // (i.e. it was created in this function)
+    edge_eloop_free(context->eloop);
+  }
   os_free(context);
-  return -1;
+
+  // will be -1 if we got here via `goto run_engine_fail`
+  return return_code;
 }

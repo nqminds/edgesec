@@ -333,6 +333,7 @@ static int teardown_edgesec_test(void **state) {
     }
 
     edge_eloop_free(ctx->ap_server.eloop);
+    edge_eloop_free(ctx->supervisor.eloop);
   }
 
   free(ctx);
