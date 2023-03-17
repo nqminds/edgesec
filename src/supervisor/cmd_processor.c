@@ -893,8 +893,8 @@ ssize_t process_encrypt_blob_cmd(int sock,
         }
       }
       os_free(ivid);
-      os_free(keyid);
     }
+    os_free(keyid);
   }
 
   return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
@@ -943,9 +943,9 @@ ssize_t process_decrypt_blob_cmd(int sock,
           }
         }
       }
-      os_free(keyid);
       os_free(ivid);
     }
+    os_free(keyid);
   }
 
   return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
