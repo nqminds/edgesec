@@ -589,7 +589,11 @@ run_engine_fail:
   if (context->config_ifinfo_array != NULL) {
     utarray_free(context->config_ifinfo_array);
   }
-  edge_eloop_free(context->eloop);
+  if (context->eloop != eloop) {
+    // only free context->eloop if it wasn't passed in from function as param
+    // (i.e. it was created in this function)
+    edge_eloop_free(context->eloop);
+  }
   os_free(context);
 
   // will be -1 if we got here via `goto run_engine_fail`
