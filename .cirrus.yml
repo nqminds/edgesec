@@ -26,23 +26,48 @@ task:
     # list of tests that are currently failing on FreeBSD
     FAILING_TESTS: test_edgesec test_dnsmasq test_mdns_service
   test_script: |
-    exclude_regex=""
-    for failing_test in $FAILING_TESTS; do
-      exclude_regex="${exclude_regex}|(${failing_test})"
-    done
-    exclude_regex="${exclude_regex:1}" # remove first | in string
-
-    ctest --preset freebsd --output-on-failure --exclude-regex "$exclude_regex"
-  test_failing_tests_script: |
+    ctest --preset freebsd --output-on-failure --output-junit junit-test-results.xml \
+    || true # We look at junit XML output file for failures
+  check_failing_tests_script: |
     # double-check that failing tests actually fail
-    # if they don't fail, then we should be testing them normally
-    for failing_test in $FAILING_TESTS; do
-      if ctest --preset freebsd --output-on-failure --tests-regex "$failing_test"; then
-        >&2 echo "Expected test $failing_test to fail but it passed! Please update .cirrus.yml if this test now works."
-        exit 1
-      fi
-    done
+    python -c "$CHECK_FAILING_TESTS" ./build/freebsd/junit-test-results.xml
   # test_with_coverage_script: |
   #   cmake --build --preset freebsd --parallel "$(($(sysctl -n hw.ncpu) + 1))" --target coverage
   # uploading coverage is currently a bit difficult
   # since the codecoverage uploader doesn't yet support FreeBSD
+
+environment:
+  # Script that loads a JUnit XML file generated from CTest,
+  # (generated via `ctest --output-junit <file>`)
+  # then checks to see if the list of failing tests is exactly the same as the
+  # space separated list of tests in the `FAILING_TEST` environment variable.
+  #
+  # Example:
+  #   FAILING_TESTS='test_a test_b' python3 -c "$CHECK_FAILING_TESTS" junit-test-results.xml
+  CHECK_FAILING_TESTS: |
+    #!/usr/bin/env python3
+    import os
+
+    expected_failing_tests=set(
+      os.getenv("FAILING_TESTS").split(" ")
+    )
+
+    import sys
+    import xml.etree.ElementTree as ET
+
+    tree = ET.parse(sys.argv[1])
+    root = tree.getroot()
+    failing_tests = {
+      testcase.get("name")
+      for testcase in root.findall('testcase')
+      if testcase.get("status") == "fail"
+    }
+
+    import unittest
+    unittest.TestCase().assertSetEqual(
+      expected_failing_tests,
+      failing_tests,
+      "❌ CTest failing tests do not match expected edgesec failing tests."
+    )
+
+    print("✅ CTest failing tests match expected edgesec failing tests.")
