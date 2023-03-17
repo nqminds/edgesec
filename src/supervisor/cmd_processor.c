@@ -853,15 +853,12 @@ ssize_t process_encrypt_blob_cmd(int sock,
                                  struct supervisor_context *context,
                                  UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
-  char *keyid = NULL;
-  char *ivid = NULL;
-  char *encrypted = NULL;
-  int ret;
 
   // key id
   ptr = (char **)utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
-    if ((keyid = os_strdup(*ptr)) == NULL) {
+    char *keyid = os_strdup(*ptr);
+    if (keyid == NULL) {
       log_errno("os_strdup");
       return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                client_addr);
@@ -870,7 +867,8 @@ ssize_t process_encrypt_blob_cmd(int sock,
     // iv id
     ptr = (char **)utarray_next(cmd_arr, ptr);
     if (ptr != NULL && *ptr != NULL) {
-      if ((ivid = os_strdup(*ptr)) == NULL) {
+      char *ivid = os_strdup(*ptr);
+      if (ivid == NULL) {
         log_errno("os_strdup");
         os_free(keyid);
         return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
@@ -881,9 +879,9 @@ ssize_t process_encrypt_blob_cmd(int sock,
       ptr = (char **)utarray_next(cmd_arr, ptr);
       if (ptr != NULL && *ptr != NULL) {
         if (strlen(*ptr)) {
-          if ((encrypted = encrypt_blob_cmd(context, keyid, ivid, *ptr)) !=
-              NULL) {
-            ret = write_newline_socket_data(sock, encrypted, client_addr);
+          char *encrypted = encrypt_blob_cmd(context, keyid, ivid, *ptr);
+          if (encrypted != NULL) {
+            int ret = write_newline_socket_data(sock, encrypted, client_addr);
 
             os_free(ivid);
             os_free(keyid);
@@ -893,8 +891,8 @@ ssize_t process_encrypt_blob_cmd(int sock,
         }
       }
       os_free(ivid);
-      os_free(keyid);
     }
+    os_free(keyid);
   }
 
   return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
@@ -905,15 +903,12 @@ ssize_t process_decrypt_blob_cmd(int sock,
                                  struct supervisor_context *context,
                                  UT_array *cmd_arr) {
   char **ptr = (char **)utarray_next(cmd_arr, NULL);
-  char *keyid = NULL;
-  char *ivid = NULL;
-  char *decrypted = NULL;
-  int ret;
 
   // key id
   ptr = (char **)utarray_next(cmd_arr, ptr);
   if (ptr != NULL && *ptr != NULL) {
-    if ((keyid = os_strdup(*ptr)) == NULL) {
+    char *keyid = os_strdup(*ptr);
+    if (keyid == NULL) {
       log_errno("os_strdup");
       return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
                                client_addr);
@@ -922,7 +917,8 @@ ssize_t process_decrypt_blob_cmd(int sock,
     // iv id
     ptr = (char **)utarray_next(cmd_arr, ptr);
     if (ptr != NULL && *ptr != NULL) {
-      if ((ivid = os_strdup(*ptr)) == NULL) {
+      char *ivid = os_strdup(*ptr);
+      if (ivid == NULL) {
         log_errno("os_strdup");
         os_free(keyid);
         return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY),
@@ -933,9 +929,9 @@ ssize_t process_decrypt_blob_cmd(int sock,
       ptr = (char **)utarray_next(cmd_arr, ptr);
       if (ptr != NULL && *ptr != NULL) {
         if (strlen(*ptr)) {
-          if ((decrypted = decrypt_blob_cmd(context, keyid, ivid, *ptr)) !=
-              NULL) {
-            ret = write_newline_socket_data(sock, decrypted, client_addr);
+          char *decrypted = decrypt_blob_cmd(context, keyid, ivid, *ptr);
+          if (decrypted != NULL) {
+            int ret = write_newline_socket_data(sock, decrypted, client_addr);
             os_free(keyid);
             os_free(ivid);
             os_free(decrypted);
@@ -943,9 +939,9 @@ ssize_t process_decrypt_blob_cmd(int sock,
           }
         }
       }
-      os_free(keyid);
       os_free(ivid);
     }
+    os_free(keyid);
   }
 
   return write_socket_data(sock, FAIL_REPLY, strlen(FAIL_REPLY), client_addr);
