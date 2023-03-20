@@ -91,7 +91,9 @@ static void test_get_mac_conn_cmd(void **state) {
   free_mac_mapper(&ctx.mac_mapper);
   free_sqlite_macconn_db(ctx.macconn_db);
   utarray_free(ctx.config_ifinfo_array);
-  free(ctx.crypt_ctx); // only needed if WITH_CRYPTO_SERVICE
+#ifdef WITH_CRYPTO_SERVICE
+  free_crypt_service(ctx.crypt_ctx);
+#endif
 }
 
 int main(int argc, char *argv[]) {
