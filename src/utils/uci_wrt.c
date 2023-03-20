@@ -92,18 +92,18 @@ static void uci_clear_section_types_count(
  * @param[in, out] list - UCI section type count hashmap.
  * Should contain the count of all the previous section types, and will be
  * updated to include the current section type.
- * @param[in, out] typestr - malloc()-ed buffer that can be realloc()-ed
+ * @param[in, out] malloc_buffer - malloc()-ed buffer that can be realloc()-ed
  * as required, or `NULL`. Please `free()` this parameter after this function
  * has been called.
  * @return A reference to this section, e.g. `@timeserver[0]`.
- * This pointer may point to `typestr` (for anonymous sections)
+ * This pointer may point to `malloc_buffer` (for anonymous sections)
  * (i.e. `@timeserver[0]`) or to `s->e.name` (for named sections), and so may
  * be invalid once either of them are `free()`-ed.
  */
 static const char *
 uci_lookup_section_ref(struct uci_section *s,
                        struct uci_section_type_count **section_types_count,
-                       char **typestr) {
+                       char **malloc_buffer) {
 
   struct uci_section_type_count *section_type_count;
   HASH_FIND_STR(*section_types_count, s->type, section_type_count);
@@ -131,20 +131,20 @@ uci_lookup_section_ref(struct uci_section *s,
   if (s->anonymous) {
     int maxlen = strlen(s->type) + 1 + 2 + 10;
     {
-      char *p = os_realloc(*typestr, maxlen);
+      char *p = os_realloc(*malloc_buffer, maxlen);
       if (p == NULL) {
         log_errno("os_realloc");
-        // don't free() *typestr, next call to uci_lookup_section_ref()
+        // don't free() *malloc_buffer, next call to uci_lookup_section_ref()
         // may reuse this value
         return NULL;
       }
 
-      *typestr = p;
+      *malloc_buffer = p;
     }
 
-    sprintf(*typestr, "@%s[%d]", s->type, section_type_count->idx);
+    sprintf(*malloc_buffer, "@%s[%d]", s->type, section_type_count->idx);
 
-    ret = *typestr;
+    ret = *malloc_buffer;
   } else {
     ret = s->e.name;
   }
@@ -326,13 +326,13 @@ int uwrt_lookup_package(struct uci_package *p, UT_array *kv) {
   /** Counts the section types we've already encountered */
   struct uci_section_type_count *section_types_count = NULL;
 
-  char *typestr = NULL;
+  char *malloc_buffer = NULL;
   int ret = 0;
 
   uci_foreach_element(&p->sections, e) {
     struct uci_section *s = uci_to_section(e);
     const char *sref =
-        uci_lookup_section_ref(s, &section_types_count, &typestr);
+        uci_lookup_section_ref(s, &section_types_count, &malloc_buffer);
     if (sref == NULL) {
       log_trace("uci_lookup_section_ref fail");
       ret = -1;
@@ -348,8 +348,8 @@ int uwrt_lookup_package(struct uci_package *p, UT_array *kv) {
 uwrt_lookup_package_fail:
   uci_clear_section_types_count(&section_types_count);
 
-  if (typestr != NULL) {
-    os_free(typestr);
+  if (malloc_buffer != NULL) {
+    os_free(malloc_buffer);
   }
 
   return ret;
