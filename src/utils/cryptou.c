@@ -9,6 +9,16 @@
  */
 
 #include <stdint.h>
+
+/*
+ * Our minimum supported OpenSSL version is v1.1.1
+ * (Ubuntu 20.04).
+ * See https://www.openssl.org/docs/man3.1/man7/openssl_user_macros.html
+ */
+#define OPENSSL_API_COMPAT 10101
+// don't show deprecated OpenSSL funcs
+#define OPENSSL_NO_DEPRECATED 1
+
 #include <openssl/conf.h>
 #include <openssl/crypto.h>
 #include <openssl/err.h>
