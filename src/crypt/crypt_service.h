@@ -17,6 +17,7 @@
 #include "crypt_config.h"
 
 #include "../utils/allocs.h"
+#include "../utils/attributes.h"
 #include "../utils/os.h"
 #define MAIN_CRYPT_KEY_ID "main"
 
@@ -31,6 +32,25 @@ struct crypt_pair {
 };
 
 /**
+ * @brief Frees the crypt context
+ *
+ * @param ctx The crypt context
+ */
+void free_crypt_service(struct crypt_context *ctx);
+
+#if __GNUC__ >= 11
+/**
+ * Tells the compiler that return pointer must be deallocated with
+ * free_crypt_service()
+ * @see @ref __must_free
+ */
+#define __must_free_crypt_service                                              \
+  __attribute__((malloc(free_crypt_service, 1))) __must_check
+#else
+#define __must_free_crypt_service __must_check
+#endif /* __GNUC__ >= 11 */
+
+/**
  * @brief Load the crypt service
  *
  * @param crypt_db_path The crypt db path
@@ -40,19 +60,12 @@ struct crypt_pair {
  * If loading an existing key, the existing key will be writen to the buffer.
  * @param user_secret_size The user secret size, if zero use the hardware secure
  * element
- * @return struct crypt_context* The crypt contex, NULL on failure
+ * @return The crypt contex, NULL on failure.
+ * Use `free_crypt_service()` to deallocate.
  */
-struct crypt_context *load_crypt_service(const char *crypt_db_path,
-                                         const char *key_id,
-                                         uint8_t *user_secret,
-                                         int user_secret_size);
-
-/**
- * @brief Frees the crypt context
- *
- * @param ctx The crypt context
- */
-void free_crypt_service(struct crypt_context *ctx);
+__must_free_crypt_service struct crypt_context *
+load_crypt_service(const char *crypt_db_path, const char *key_id,
+                   uint8_t *user_secret, int user_secret_size);
 
 /**
  * @brief Retrieves a key/value pair from the crypt

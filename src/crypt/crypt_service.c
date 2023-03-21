@@ -20,12 +20,22 @@
 #include "../utils/log.h"
 #include "../utils/os.h"
 
-void free_crypt_service(struct crypt_context *ctx) {
+/**
+ * Private implementation of free_crypt_service()
+ *
+ * Mainly here to silence `-Werror=mismatched-dealloc` warnings, since this
+ * doesn't have all of `free_crypt_service`'s compiler attributes.
+ */
+static void __free_crypt_service(struct crypt_context *ctx) {
   if (ctx != NULL) {
     free_sqlite_crypt_db(ctx->crypt_db);
     close_hsm(ctx->hcontext);
     os_free(ctx);
   }
+}
+
+void free_crypt_service(struct crypt_context *ctx) {
+  __free_crypt_service(ctx);
 }
 
 /**
@@ -268,7 +278,7 @@ struct crypt_context *load_crypt_service(const char *crypt_db_path,
   if ((row_secret = get_sqlite_secrets_row(context->crypt_db, key_id)) ==
       NULL) {
     log_trace("get_sqlite_secrets_row fail");
-    free_crypt_service(context);
+    __free_crypt_service(context);
     return NULL;
   }
 
@@ -281,7 +291,7 @@ struct crypt_context *load_crypt_service(const char *crypt_db_path,
       // Create encryption key
       if (!crypto_genkey(context->crypto_key, AES_KEY_SIZE)) {
         log_trace("crypto_genkey fail");
-        free_crypt_service(context);
+        __free_crypt_service(context);
         return NULL;
       }
 
@@ -291,35 +301,35 @@ struct crypt_context *load_crypt_service(const char *crypt_db_path,
                key_id, user_secret, user_secret_size, context->crypto_key)) ==
           NULL) {
         log_trace("generate_user_crypto_key_entry fail");
-        free_crypt_service(context);
+        __free_crypt_service(context);
         return NULL;
       }
 
       if (save_sqlite_secrets_entry(context->crypt_db, row_secret) < 0) {
         log_trace("save_sqlite_secrets_entry fail");
         free_sqlite_secrets_row(row_secret);
-        free_crypt_service(context);
+        __free_crypt_service(context);
         return NULL;
       }
     } else {
       log_trace("Using HSM...");
       if ((context->hcontext = init_hsm()) == NULL) {
         log_trace("init_hsm fail");
-        free_crypt_service(context);
+        __free_crypt_service(context);
         return NULL;
       }
 
       if (generate_hsm_key(context->hcontext, context->crypto_key,
                            AES_KEY_SIZE) < 0) {
         log_trace("generate_hsm_key fail");
-        free_crypt_service(context);
+        __free_crypt_service(context);
         return NULL;
       }
 
       if (encrypt_hsm_blob(context->hcontext, context->crypto_key, AES_KEY_SIZE,
                            &crypto_buf, &crypto_buf_size) < 0) {
         log_trace("encrypt_hsm_blob fail");
-        free_crypt_service(context);
+        __free_crypt_service(context);
         return NULL;
       }
 
@@ -328,7 +338,7 @@ struct crypt_context *load_crypt_service(const char *crypt_db_path,
                                     0, NULL, 0)) == NULL) {
         log_trace("prepare_secret_entry fail");
         os_free(crypto_buf);
-        free_crypt_service(context);
+        __free_crypt_service(context);
         return NULL;
       }
       os_free(crypto_buf);
@@ -336,7 +346,7 @@ struct crypt_context *load_crypt_service(const char *crypt_db_path,
       if (save_sqlite_secrets_entry(context->crypt_db, row_secret) < 0) {
         log_trace("save_sqlite_secrets_entry fail");
         free_sqlite_secrets_row(row_secret);
-        free_crypt_service(context);
+        __free_crypt_service(context);
         return NULL;
       }
     }
@@ -348,7 +358,7 @@ struct crypt_context *load_crypt_service(const char *crypt_db_path,
                                         context->crypto_key) < 0) {
         log_trace("extract_user_crypto_key fail");
         free_sqlite_secrets_row(row_secret);
-        free_crypt_service(context);
+        __free_crypt_service(context);
         return NULL;
       }
     } else {
@@ -362,7 +372,7 @@ struct crypt_context *load_crypt_service(const char *crypt_db_path,
       if (row_secret->value == NULL) {
         log_trace("No value in row");
         free_sqlite_secrets_row(row_secret);
-        free_crypt_service(context);
+        __free_crypt_service(context);
         return NULL;
       }
 
@@ -372,7 +382,7 @@ struct crypt_context *load_crypt_service(const char *crypt_db_path,
       if (crypto_buf == NULL) {
         log_trace("base64_decode fail");
         free_sqlite_secrets_row(row_secret);
-        free_crypt_service(context);
+        __free_crypt_service(context);
         return NULL;
       }
 
@@ -381,7 +391,7 @@ struct crypt_context *load_crypt_service(const char *crypt_db_path,
         log_trace("decrypt_hsm_blob fail");
         os_free(crypto_buf);
         free_sqlite_secrets_row(row_secret);
-        free_crypt_service(context);
+        __free_crypt_service(context);
         return NULL;
       }
 
@@ -390,7 +400,7 @@ struct crypt_context *load_crypt_service(const char *crypt_db_path,
         os_free(decrypted_buf);
         os_free(crypto_buf);
         free_sqlite_secrets_row(row_secret);
-        free_crypt_service(context);
+        __free_crypt_service(context);
         return NULL;
       }
 

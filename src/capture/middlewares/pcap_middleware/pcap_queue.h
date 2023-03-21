@@ -19,6 +19,8 @@
 
 #include <list.h>
 
+#include "../../../utils/attributes.h"
+
 /**
  * @brief pcap queueu structure definition
  *
@@ -28,13 +30,6 @@ struct pcap_queue {
   uint8_t *packet;           /**< pointer to the packet data */
   struct dl_list list;       /**< List definition */
 };
-
-/**
- * @brief Initialises and empty pcap queue
- *
- * @return struct pcap_queue* Returned initialised empty pcap queue
- */
-struct pcap_queue *init_pcap_queue(void);
 
 /**
  * @brief Pushes a packet in the pcap queue
@@ -84,4 +79,29 @@ void free_pcap_queue(struct pcap_queue *queue);
  * @return 1, is empty, 0 otherwise, -1 for error
  */
 int is_pcap_queue_empty(struct pcap_queue *queue);
+
+#if __GNUC__ >= 11 // this syntax will throw an error in GCC 10 or Clang, since
+                   // __attribute__((malloc)) accepts no args
+/**
+ * Declares that the attributed function must be free_pcap_queue()-ed.
+ *
+ * Expects that this function returns a pointer that must be deallocated with
+ * `free_pcap_queue()`.
+ *
+ * @see __must_free
+ */
+#define __must_free_pcap_queue                                                 \
+  __attribute__((malloc(free_pcap_queue, 1))) __must_check
+#else
+#define __must_free_pcap_queue __must_check
+#endif /* __GNUC__ >= 11 */
+
+/**
+ * @brief Initialises an empty pcap queue
+ *
+ * @return Returned initialised empty pcap queue, or `NULL` on error.
+ * You must free this using free_pcap_queue().
+ */
+__must_free_pcap_queue struct pcap_queue *init_pcap_queue(void);
+
 #endif
