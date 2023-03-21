@@ -26,6 +26,9 @@
  * @brief File containing the implementation of the logging functions.
  */
 
+// needed for mode_t/umask()
+#define _POSIX_C_SOURCE 200112L
+
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
