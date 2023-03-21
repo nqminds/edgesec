@@ -71,6 +71,7 @@ static void test_uwrt_get_interfaces(void **state) {
   assert_non_null(interfaces);
   ptr = (netif_info_t *)utarray_next(interfaces, ptr);
   assert_null(ptr);
+  utarray_free(interfaces);
 
   uwrt_free_context(context);
 }
@@ -92,8 +93,7 @@ static void test_uwrt_create_interface(void **state) {
   assert_string_equal(ptr->ip_addr, "10.0.0.1");
   utarray_free(interfaces);
 
-  char *property = os_strdup("network.br0");
-
+  char property[] = "network.br0";
   assert_int_equal(uci_lookup_ptr(context->uctx, &p, property, true), UCI_OK);
   assert_int_equal(uci_delete(context->uctx, &p), UCI_OK);
   assert_int_equal(uci_save(context->uctx, p.p), UCI_OK);
