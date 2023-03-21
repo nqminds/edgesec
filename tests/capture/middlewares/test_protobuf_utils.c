@@ -37,7 +37,14 @@ uint8_t encoded[] = {0x36, 0x12, 0x03, 0x65, 0x74, 0x68, 0x1A, 0x2F, 0x08, 0xE7,
                      0x3A, 0x0B, 0x65, 0x74, 0x68, 0x65, 0x72, 0x5F, 0x73, 0x68,
                      0x6F, 0x73, 0x74, 0x40, 0x08};
 
-ssize_t serialize_protobuf(uint8_t **out) {
+/**
+ * @brief Create an example Eth__EthSchema protobuf message.
+ *
+ * @param[out] out - Where to store the pointer to the bytes.
+ * Must be deallocated with `free()` when done.
+ * @return The number of bytes allocated to `out`.
+ */
+static ssize_t serialize_protobuf(uint8_t **out) {
   Eth__EthSchema eth = ETH__ETH_SCHEMA__INIT;
 
   eth.timestamp = timestamp;
@@ -102,6 +109,9 @@ static void test_protobuf_c_message_del_pack(void **state) {
   protobuf_c_message_del_pack((const ProtobufCMessage *)&sync, sync_buffer);
 
   assert_memory_equal(encoded, sync_buffer, sync_length);
+
+  os_free(sync_buffer);
+  os_free(out_eth);
 }
 
 int main(int argc, char *argv[]) {
