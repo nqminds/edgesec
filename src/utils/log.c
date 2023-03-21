@@ -67,7 +67,7 @@ static const char *level_names[] = LEVEL_NAMES;
 static const char *level_colors[] = LEVEL_COLORS;
 
 /* Write time to buf in format YYYY-MM-DD HH:MM:SS.ms */
-uint8_t time_to_str(char *buf) {
+static void time_to_str(char buf[static 25]) {
   struct timeval tv;
   struct tm *tm;
 
@@ -88,7 +88,6 @@ uint8_t time_to_str(char *buf) {
   int len = sprintf(buf, "%04d-%02d-%02d %02d:%02d:%02d.%03d ", year, month,
                     day, hour, minutes, seconds, msec);
   buf[len] = '\0';
-  return 0;
 }
 
 #ifdef __GNUC__               /* Prevent 'gcc -Wall' complaining  */
