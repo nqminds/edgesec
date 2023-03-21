@@ -68,11 +68,19 @@ static const char *level_colors[] = LEVEL_COLORS;
 
 /* Write time to buf in format YYYY-MM-DD HH:MM:SS.ms */
 static void time_to_str(char buf[static 25]) {
-  struct timeval tv;
-  struct tm *tm;
+  struct timespec ts;
+  if (timespec_get(&ts, TIME_UTC) != TIME_UTC) {
+    // according to POSIX standard, the only time this will error is if it will
+    // otherwise cause an overflow
+    // see
+    // https://pubs.opengroup.org/onlinepubs/9699919799/functions/clock_getres.html
+    // and [Y2K38](https://en.wikipedia.org/wiki/Year_2038_problem)
+    sprintf(buf, "%s", "ERROR getting time");
+    return;
+  }
 
-  gettimeofday(&tv, NULL);
-  tm = localtime(&tv.tv_sec);
+  // warning, not thread safe!
+  struct tm *tm = localtime(&ts.tv_sec);
 
   /* Add 1900 to get the right year value read the manual page for localtime()
    */
@@ -84,7 +92,7 @@ static void time_to_str(char buf[static 25]) {
   int hour = tm->tm_hour;
   int minutes = tm->tm_min;
   int seconds = tm->tm_sec;
-  uint16_t msec = (uint16_t)(tv.tv_usec / 1000);
+  uint16_t msec = (uint16_t)(ts.tv_nsec / 10000000);
   int len = sprintf(buf, "%04d-%02d-%02d %02d:%02d:%02d.%03d ", year, month,
                     day, hour, minutes, seconds, msec);
   buf[len] = '\0';
