@@ -55,7 +55,11 @@
         "BUILD_HOSTAPD": true,
         "BUILD_HOSTAPD_EAP_LIB": true,
         "USE_CRYPTO_SERVICE": false,
-        "BUILD_OPENSSL_LIB": false
+        "BUILD_OPENSSL_LIB": false,
+        "SANITIZE_ADDRESS": {
+          "type": "BOOL",
+          "value": true
+        }
       }
     },
     {
@@ -186,7 +190,8 @@
       "hidden": true,
       "displayName": "CMake config for cross-compiling OpenWRT with the SDK",
       "cacheVariables": {
-        "BUILD_TESTING": false
+        "BUILD_TESTING": false,
+        "SANITIZE_ADDRESS": false
       },
       "condition": {
         "type": "equals",
