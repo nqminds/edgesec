@@ -78,6 +78,8 @@ option(BUILD_PCAP_LIB "Build pcap library" ON)
 option(BUILD_PROTOBUFC_LIB "Build protobuf-c library" ON)
 option(BUILD_HOSTAPD_EAP_LIB "Build hostapd eap library" OFF)
 
+option(SANITIZE_ADDRESS "Enable AddressSanitizer for debug builds." OFF)
+
 option(USE_NETLINK_SERVICE "Use netlink service" OFF)
 cmake_dependent_option(BUILD_MNL_LIB "Build mnl library" ON USE_NETLINK_SERVICE OFF)
 cmake_dependent_option(BUILD_NETLINK_LIB "Build netlink library" ON USE_NETLINK_SERVICE OFF)
@@ -269,6 +271,29 @@ if (NOT BUILD_ONLY_DOCS)
         "${PROJECT_SOURCE_DIR}/middlewares_list.c"
         # The _deps/ folder is created by CMake's FetchContent
         "${PROJECT_SOURCE_DIR}/_deps/*"
+    )
+  endif()
+
+  if (SANITIZE_ADDRESS)
+    include(CheckCCompilerFlag)
+
+    set(CMAKE_REQUIRED_LINK_OPTIONS "-fsanitize=address")
+    check_c_compiler_flag("-fsanitize=address" C_COMPILER_SUPPORTS_ASAN)
+    set(CMAKE_REQUIRED_LINK_OPTIONS "")
+
+    if (NOT C_COMPILER_SUPPORTS_ASAN)
+      message(
+        FATAL_ERROR
+        "${CMAKE_C_COMPILER} version ${CMAKE_C_COMPILER_VERSION} does not "
+        "support -fsanitize=address for target "
+        "${CMAKE_SYSTEM_PROCESSOR}-${CMAKE_SYSTEM_NAME}"
+      )
+    endif()
+    add_compile_options(
+      $<$<CONFIG:Debug>:$<$<COMPILE_LANGUAGE:C>:-fsanitize=address>> # use AddressSanitizer to check addresses
+    )
+    add_link_options(
+      $<$<CONFIG:Debug>:$<$<LINK_LANGUAGE:C>:-fsanitize=address>> # need to link AddressSantizer lib
     )
   endif()
 
