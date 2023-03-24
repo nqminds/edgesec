@@ -9,6 +9,16 @@
  */
 
 #include <stdint.h>
+
+/*
+ * Our minimum supported OpenSSL version is v1.1.1
+ * (Ubuntu 20.04).
+ * See https://www.openssl.org/docs/man3.1/man7/openssl_user_macros.html
+ */
+#define OPENSSL_API_COMPAT 10101
+// don't show deprecated OpenSSL funcs
+#define OPENSSL_NO_DEPRECATED 1
+
 #include <openssl/conf.h>
 #include <openssl/crypto.h>
 #include <openssl/err.h>
@@ -254,8 +264,8 @@ X509 *crypto_generate_cert(EVP_PKEY *pkey, struct certificate_meta *meta) {
   }
 
   /* certificate expiration date: 365 days from now (60s * 60m * 24h * 365d) */
-  X509_gmtime_adj(X509_get_notBefore(x509), meta->not_before);
-  X509_gmtime_adj(X509_get_notAfter(x509), meta->not_after);
+  X509_gmtime_adj(X509_getm_notBefore(x509), meta->not_before);
+  X509_gmtime_adj(X509_getm_notAfter(x509), meta->not_after);
 
   if (!X509_set_pubkey(x509, pkey)) {
     log_trace("X509_set_pubkey fail with code=%lu", ERR_get_error());
