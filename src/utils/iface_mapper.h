@@ -102,23 +102,25 @@ typedef struct hashmap_vlan_conn {
 /**
  * @brief Get the interface name corresponding to an IP address of the subnet
  *
- * @param hmap The interface connection mapper object
- * @param subnet The IP address of the subnet
- * @param ifname The returned interface name
+ * @param[in] hmap The interface connection mapper object
+ * @param[in] subnet The IP address of the subnet
+ * @param[out] ifname The buffer to store the returned interface name.
+ * Must be at least `IF_NAMESIZE` large.
  * @return int 1 if found, 0 not found, -1 on error
  */
-int get_if_mapper(hmap_if_conn **hmap, in_addr_t subnet, char *ifname);
+int get_if_mapper(hmap_if_conn *const *hmap, in_addr_t subnet,
+                  char ifname[static IF_NAMESIZE]);
 
 /**
- * @brief Insertes an interface and subnet IP value into the interface
+ * @brief Inserts an interface and subnet IP value into the interface
  * connection mapper
  *
- * @param hmap The interface connection mapper object
- * @param subnet The IP address of the subnet
- * @param ifname The interface name
+ * @param[in, out] hmap The interface connection mapper object
+ * @param[in] subnet The IP address of the subnet
+ * @param[in] ifname The interface name
  * @return true on success, false otherwise
  */
-bool put_if_mapper(hmap_if_conn **hmap, in_addr_t subnet, char *ifname);
+bool put_if_mapper(hmap_if_conn **hmap, in_addr_t subnet, const char *ifname);
 
 /**
  * @brief Frees the interface connection mapper object
@@ -130,31 +132,32 @@ void free_if_mapper(hmap_if_conn **hmap);
 /**
  * @brief Get the vlan connection structure corresponding to a VLAN ID
  *
- * @param hmap The VLAN ID to vlan connection mapper object
- * @param vlanid The VLAN ID
- * @param conn The returned VLAN connection structure
+ * @param[in] hmap The VLAN ID to vlan connection mapper object
+ * @param[in] vlanid The VLAN ID
+ * @param[out] conn The returned VLAN connection structure
  * @return int 1 if found, 0 not found, -1 on error
  */
-int get_vlan_mapper(hmap_vlan_conn **hmap, int vlanid, struct vlan_conn *conn);
+int get_vlan_mapper(hmap_vlan_conn *const *hmap, int vlanid,
+                    struct vlan_conn *conn);
 
 /**
  * @brief Makes a copy of the VLAn mapper structure
  *
- * @param hmap The VLAN ID to vlan connection mapper object
- * @param copy The copied VLAN mapper
+ * @param[in] hmap The VLAN ID to vlan connection mapper object
+ * @param[in, out] copy The copied VLAN mapper.
  * @return int 1 if found, 0 not found, -1 on error
  */
-int copy_vlan_mapper(hmap_vlan_conn **hmap, hmap_vlan_conn **copy);
+int copy_vlan_mapper(hmap_vlan_conn *const *hmap, hmap_vlan_conn **copy);
 
 /**
  * @brief Inserts a vlan connection structure and VLAN ID value into the
  * interface connection mapper
  *
- * @param hmap The VLAN ID to interface connection mapper object
- * @param conn The VLAN connection structure
+ * @param[in, out] hmap The VLAN ID to interface connection mapper object
+ * @param[in] conn The VLAN connection structure
  * @return true on success, false otherwise
  */
-bool put_vlan_mapper(hmap_vlan_conn **hmap, struct vlan_conn *conn);
+bool put_vlan_mapper(hmap_vlan_conn **hmap, const struct vlan_conn *conn);
 
 /**
  * @brief Frees the VLAN ID to interface connection mapper object
@@ -172,7 +175,8 @@ void free_vlan_mapper(hmap_vlan_conn **hmap);
  * preallocated at least the size of config_ifinfo_t::ifname)
  * @return 0 on success, -1 otherwise
  */
-int get_ifname_from_ip(UT_array *config_ifinfo_array, char *ip, char *ifname);
+int get_ifname_from_ip(const UT_array *config_ifinfo_array, const char *ip,
+                       char ifname[static IF_NAMESIZE]);
 
 /**
  * @brief Get the bridge name from an IP string
@@ -183,35 +187,36 @@ int get_ifname_from_ip(UT_array *config_ifinfo_array, char *ip, char *ifname);
  * preallocated to at least the size of config_ifinfo_t::brname).
  * @return 0 on success, -1 otherwise
  */
-int get_brname_from_ip(UT_array *config_ifinfo_array, char *ip_addr,
-                       char *brname);
+int get_brname_from_ip(const UT_array *config_ifinfo_array, const char *ip_addr,
+                       char brname[static IF_NAMESIZE]);
 
 /**
  * @brief Create the subnet to interface mapper
  *
- * @param config_ifinfo_array The connection info array
- * @param hmap The subnet to interface mapper
+ * @param[in] config_ifinfo_array The connection info array
+ * @param[in,out] hmap The subnet to interface mapper
  * @return true on success, false otherwise
  */
-bool create_if_mapper(UT_array *config_ifinfo_array, hmap_if_conn **hmap);
+bool create_if_mapper(const UT_array *config_ifinfo_array, hmap_if_conn **hmap);
 
 /**
  * @brief Create the VLAN ID to interface mapper
  *
- * @param config_ifinfo_array The connection info array
- * @param hmap The VLAN ID to interface mapper
+ * @param[in] config_ifinfo_array The connection info array
+ * @param[in,out] hmap The VLAN ID to interface mapper
  * @return 0 on success, -1 otherwise
  */
-int create_vlan_mapper(UT_array *config_ifinfo_array, hmap_vlan_conn **hmap);
+int create_vlan_mapper(const UT_array *config_ifinfo_array,
+                       hmap_vlan_conn **hmap);
 
 /**
  * @brief Initialise the interface names
  *
- * @param config_ifinfo_array The connection info array
- * @param ifname The interface name prefix
- * @param brname The bridge name prefix
+ * @param[in,out] config_ifinfo_array The connection info array
+ * @param[in] ifname The interface name prefix
+ * @param[in] brname The bridge name prefix
  * @return 0 on success, -1 otherwise
  */
-int init_ifbridge_names(UT_array *config_ifinfo_array, char *ifname,
-                        char *brname);
+int init_ifbridge_names(UT_array *config_ifinfo_array, const char *ifname,
+                        const char *brname);
 #endif
