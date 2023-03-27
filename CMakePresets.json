@@ -37,7 +37,8 @@
         "USE_RADIUS_SERVICE": true,
         "BUILD_HOSTAPD": false,
         "USE_CRYPTO_SERVICE": false,
-        "BUILD_OPENSSL_LIB": false
+        "BUILD_OPENSSL_LIB": false,
+        "SANITIZE_ADDRESS": true
       }
     },
     {
