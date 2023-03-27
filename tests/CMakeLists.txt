@@ -1,5 +1,9 @@
 # Error on all C/C++ warnings in the tests/ directory if making a Debug build
-add_compile_options($<$<CONFIG:Debug>:-Werror>)
+add_compile_options(
+  $<$<CONFIG:Debug>:-Werror>
+  # Warn/error if using a non-const pointer to a string literal
+  $<$<COMPILE_LANGUAGE:C>:-Wwrite-strings>
+)
 
 # Link time optimization has some issues with linker `--wrap` (mocking) arg
 # See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=88643 and

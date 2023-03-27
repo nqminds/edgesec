@@ -19,8 +19,9 @@
 
 static void test_push_mdns_list(void **state) {
   (void)state; /* unused */
-  char *name = "test";
-  char *name1 = "test1";
+  char name[] = "test";
+  char name1[] = "test1";
+
   struct mdns_list_info info = {.name = name, .request = MDNS_REQUEST_QUERY};
   struct mdns_list *list = init_mdns_list();
 
@@ -53,8 +54,7 @@ static void test_push_mdns_list(void **state) {
 static void test_init_mdns_list(void **state) {
   (void)state;
 
-  struct mdns_list *list = NULL;
-  list = init_mdns_list();
+  struct mdns_list *list = init_mdns_list();
   assert_non_null(list);
 
   free_mdns_list(list);
@@ -62,7 +62,7 @@ static void test_init_mdns_list(void **state) {
 
 static void test_check_mdns_list_req(void **state) {
   (void)state; /* unused */
-  char *name = "test";
+  char name[] = "test";
   struct mdns_list_info info = {.name = name, .request = MDNS_REQUEST_QUERY};
   struct mdns_list *list = init_mdns_list();
 

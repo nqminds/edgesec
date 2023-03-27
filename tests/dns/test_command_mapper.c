@@ -21,7 +21,7 @@ static void test_put_command_mapper(void **state) {
   (void)state;
 
   hmap_command_conn *hmap = NULL;
-  char *command = "test";
+  const char *command = "test";
 
   assert_int_equal(put_command_mapper(&hmap, command), 0);
 
@@ -32,8 +32,8 @@ static void test_check_command_mapper(void **state) {
   (void)state;
 
   hmap_command_conn *hmap = NULL;
-  char *command1 = "test1";
-  char *command2 = "test2";
+  const char *command1 = "test1";
+  const char *command2 = "test2";
 
   put_command_mapper(&hmap, command1);
   assert_int_equal(check_command_mapper(&hmap, command1), 1);

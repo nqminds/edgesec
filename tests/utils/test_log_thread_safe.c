@@ -39,8 +39,8 @@ int main(int argc, char *argv[]) {
   (void)argc;
   (void)argv;
 
-  char *thread_one_text = "one";
-  char *thread_two_text = "two";
+  char thread_one_text[] = "one";
+  char thread_two_text[] = "two";
 
   log_set_meta(0);
   log_set_lock(lock_fn);

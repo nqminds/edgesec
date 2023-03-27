@@ -121,8 +121,8 @@ static void test_run_command(void **state) {
     const char *hello_world_argv[] = {"/usr/bin/env", "echo", "Hello World!",
                                       NULL};
     char **hello_world_argv_copy = copy_argv(hello_world_argv);
-    status =
-        run_command(hello_world_argv_copy, NULL, command_out_fn, "Context");
+    char context[] = "Context";
+    status = run_command(hello_world_argv_copy, NULL, command_out_fn, context);
     assert_int_equal(status, 0);
     free(hello_world_argv_copy);
   }
@@ -147,7 +147,7 @@ static void test_split_string(void **state) {
   char **p = NULL;
   UT_array *strs = NULL;
   size_t count;
-  char *str_one = ":";
+  const char *str_one = ":";
 
   utarray_new(strs, &ut_str_icd);
   /* Testing split_string on input: \":\" */
@@ -164,7 +164,7 @@ static void test_split_string(void **state) {
 
   strs = NULL;
   utarray_new(strs, &ut_str_icd);
-  char *str_two = "12345:";
+  const char *str_two = "12345:";
   p = NULL;
 
   /* Testing split_string on input: \"12345\" */
@@ -181,7 +181,7 @@ static void test_split_string(void **state) {
   strs = NULL;
   utarray_new(strs, &ut_str_icd);
 
-  char *str_three = ":12345";
+  const char *str_three = ":12345";
   p = NULL;
 
   /* Testing split_string on input: \":12345\" */
@@ -197,7 +197,7 @@ static void test_split_string(void **state) {
   utarray_free(strs);
   utarray_new(strs, &ut_str_icd);
 
-  char *str_four = "12345";
+  const char *str_four = "12345";
   p = NULL;
 
   /* Testing split_string on input: \"12345\" */
@@ -210,7 +210,7 @@ static void test_split_string(void **state) {
   utarray_free(strs);
   utarray_new(strs, &ut_str_icd);
 
-  char *str_five = "";
+  const char *str_five = "";
   p = NULL;
   /* Testing split_string on input: "" */
   count = split_string(str_five, ':', fn_split_string, strs);
@@ -241,7 +241,7 @@ static void test_split_string_array(void **state) {
 
   UT_array *arr;
   utarray_new(arr, &ut_str_icd);
-  char *str = "12345:abcdef";
+  const char *str = "12345:abcdef";
 
   /* Testing split_string_array on input: \"%s\" */
 
@@ -275,8 +275,8 @@ static void test_allocate_string(void **state) {
 static void test_concat_paths(void **state) {
   (void)state; /* unused */
 
-  char *path_left_one = "./";
-  char *path_right_one = "./";
+  const char *path_left_one = "./";
+  const char *path_right_one = "./";
 
   char *concat = concat_paths(path_left_one, path_right_one);
 
@@ -498,7 +498,7 @@ static void test_get_secure_path(void **state) {
 
   UT_array *arr;
   utarray_new(arr, &ut_str_icd);
-  char *bin_path = "/bin";
+  const char *bin_path = "/bin";
   utarray_push_back(arr, &bin_path);
 
   /* Testing get_secure_path on path /bin and binary ls */

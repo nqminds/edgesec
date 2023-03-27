@@ -36,10 +36,10 @@ static void test_save_sqlite_store_entry(void **state) {
   (void)state; /* unused */
 
   sqlite3 *db;
-  char *key = "key";
-  char *value = "value";
-  char *id = "id";
-  char *iv = "iv";
+  char key[] = "key";
+  char value[] = "value";
+  char id[] = "id";
+  char iv[] = "iv";
 
   struct store_row row = {.key = key, .value = value, .id = id, .iv = iv};
 
@@ -52,10 +52,10 @@ static void test_get_sqlite_store_row(void **state) {
   (void)state; /* unused */
 
   sqlite3 *db;
-  char *key = "key";
-  char *value = "value";
-  char *id = "id";
-  char *iv = "iv";
+  char key[] = "key";
+  char value[] = "value";
+  char id[] = "id";
+  char iv[] = "iv";
 
   struct store_row in = {.key = key, .value = value, .id = id, .iv = iv};
   struct store_row *out;
@@ -76,7 +76,8 @@ static void test_get_sqlite_store_row(void **state) {
   assert_null(out->key);
   free_sqlite_store_row(out);
 
-  in.key = "key2";
+  char key2[] = "key2";
+  in.key = key2;
   in.value = NULL;
 
   assert_int_equal(save_sqlite_store_entry(db, &in), 0);
@@ -91,10 +92,10 @@ static void test_save_sqlite_secrets_entry(void **state) {
   (void)state; /* unused */
 
   sqlite3 *db;
-  char *salt = "salt";
-  char *value = "value";
-  char *id = "id";
-  char *iv = "iv";
+  char salt[] = "salt";
+  char value[] = "value";
+  char id[] = "id";
+  char iv[] = "iv";
 
   struct secrets_row row = {.salt = salt, .value = value, .id = id, .iv = iv};
 
@@ -107,10 +108,10 @@ static void test_get_sqlite_secrets_row(void **state) {
   (void)state; /* unused */
 
   sqlite3 *db;
-  char *salt = "salt";
-  char *value = "value";
-  char *id = "id";
-  char *iv = "iv";
+  char salt[] = "salt";
+  char value[] = "value";
+  char id[] = "id";
+  char iv[] = "iv";
 
   struct secrets_row in = {.salt = salt, .value = value, .id = id, .iv = iv};
   struct secrets_row *out;
@@ -131,7 +132,9 @@ static void test_get_sqlite_secrets_row(void **state) {
   assert_null(out->id);
   free_sqlite_secrets_row(out);
 
-  in.id = "id2";
+  char id2[] = "id2";
+
+  in.id = id2;
   in.value = NULL;
 
   assert_int_equal(save_sqlite_secrets_entry(db, &in), 0);

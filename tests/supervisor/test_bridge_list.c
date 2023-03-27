@@ -21,10 +21,10 @@ static void test_add_bridge_mac(void **state) {
   (void)state; /* unused */
 
   struct bridge_mac_list *bridge_list = init_bridge_list();
-  char *mac_str_1 = "11:22:33:44:55:66";
-  char *mac_str_2 = "aa:bb:cc:dd:ee:ff";
-  char *mac_str_3 = "12:23:34:45:56:67";
-  char *mac_str_4 = "FF:FF:FF:FF:FF:FF";
+  const char *mac_str_1 = "11:22:33:44:55:66";
+  const char *mac_str_2 = "aa:bb:cc:dd:ee:ff";
+  const char *mac_str_3 = "12:23:34:45:56:67";
+  const char *mac_str_4 = "FF:FF:FF:FF:FF:FF";
   uint8_t mac_addr_1[ETHER_ADDR_LEN];
   uint8_t mac_addr_2[ETHER_ADDR_LEN];
   uint8_t mac_addr_3[ETHER_ADDR_LEN];
@@ -98,10 +98,10 @@ static void test_remove_bridge_mac(void **state) {
   (void)state; /* unused */
 
   struct bridge_mac_list *bridge_list = init_bridge_list();
-  char *mac_str_1 = "11:22:33:44:55:66";
-  char *mac_str_2 = "aa:bb:cc:dd:ee:ff";
-  char *mac_str_3 = "12:23:34:45:56:67";
-  char *mac_str_4 = "FF:FF:FF:FF:FF:FF";
+  const char *mac_str_1 = "11:22:33:44:55:66";
+  const char *mac_str_2 = "aa:bb:cc:dd:ee:ff";
+  const char *mac_str_3 = "12:23:34:45:56:67";
+  const char *mac_str_4 = "FF:FF:FF:FF:FF:FF";
   uint8_t mac_addr_1[ETHER_ADDR_LEN];
   uint8_t mac_addr_2[ETHER_ADDR_LEN];
   uint8_t mac_addr_3[ETHER_ADDR_LEN];
@@ -181,10 +181,10 @@ static void test_get_all_bridge_edges(void **state) {
   struct bridge_mac_tuple *p = NULL;
   UT_array *tuple_list_arr;
   struct bridge_mac_list *bridge_list = init_bridge_list();
-  char *mac_str_1 = "11:22:33:44:55:66";
-  char *mac_str_2 = "aa:bb:cc:dd:ee:ff";
-  char *mac_str_3 = "12:23:34:45:56:67";
-  char *mac_str_4 = "FF:FF:FF:FF:FF:FF";
+  const char *mac_str_1 = "11:22:33:44:55:66";
+  const char *mac_str_2 = "aa:bb:cc:dd:ee:ff";
+  const char *mac_str_3 = "12:23:34:45:56:67";
+  const char *mac_str_4 = "FF:FF:FF:FF:FF:FF";
   uint8_t mac_addr_1[ETHER_ADDR_LEN];
   uint8_t mac_addr_2[ETHER_ADDR_LEN];
   uint8_t mac_addr_3[ETHER_ADDR_LEN];
@@ -244,10 +244,10 @@ static void test_get_src_mac_list(void **state) {
   uint8_t *p;
   UT_array *mac_list_arr;
   struct bridge_mac_list *bridge_list = init_bridge_list();
-  char *mac_str_1 = "11:22:33:44:55:66";
-  char *mac_str_2 = "aa:bb:cc:dd:ee:ff";
-  char *mac_str_3 = "12:23:34:45:56:67";
-  char *mac_str_4 = "FF:FF:FF:FF:FF:FF";
+  const char *mac_str_1 = "11:22:33:44:55:66";
+  const char *mac_str_2 = "aa:bb:cc:dd:ee:ff";
+  const char *mac_str_3 = "12:23:34:45:56:67";
+  const char *mac_str_4 = "FF:FF:FF:FF:FF:FF";
   uint8_t mac_addr_1[ETHER_ADDR_LEN];
   uint8_t mac_addr_2[ETHER_ADDR_LEN];
   uint8_t mac_addr_3[ETHER_ADDR_LEN];

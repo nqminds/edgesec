@@ -33,7 +33,7 @@ static void test_ip_2_nbo(void **state) {
 
 static void test_ip4_2_buf(void **state) {
   (void)state; /* unused */
-  char *ip = "10.0.0.23", *ip1 = "x.168.1.12";
+  const char *ip = "10.0.0.23", *ip1 = "x.168.1.12";
   uint8_t buf[IP_ALEN];
 
   assert_int_equal(ip4_2_buf(ip, buf), 0);

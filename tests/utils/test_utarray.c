@@ -15,7 +15,7 @@ static void test_utarray(void **state) {
   /* Testing utarray string insert */
 
   utarray_new(strs, &ut_str_icd);
-  char *str = "one";
+  const char *str = "one";
   utarray_push_back(strs, &str);
   str = "two";
   utarray_push_back(strs, &str);
