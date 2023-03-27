@@ -37,7 +37,7 @@
 #define MAX_64BIT_DIGITS 19
 
 struct proc_signal_arg {
-  char *proc_name;
+  const char *proc_name;
   int sig;
 };
 
@@ -759,7 +759,7 @@ char *get_secure_path(const UT_array *bin_path_arr, const char *filename,
   return NULL;
 }
 
-int is_proc_running(char *name) {
+int is_proc_running(const char *name) {
   struct find_dir_type dir_args = {.proc_running = 0, .proc_name = name};
 
   if (list_dir("/proc", find_dir_proc_fn, (void *)&dir_args) == -1) {
@@ -922,7 +922,7 @@ pid_t is_proc_app(const char *path, const char *proc_name) {
 }
 
 bool signal_dir_fn(char *path, void *args) {
-  struct proc_signal_arg *sarg = (struct proc_signal_arg *)args;
+  const struct proc_signal_arg *sarg = args;
 
   pid_t pid;
   pid_t current_pid = getpid();
@@ -944,7 +944,7 @@ bool signal_dir_fn(char *path, void *args) {
   return true;
 }
 
-bool signal_process(char *proc_name, int sig) {
+bool signal_process(const char *proc_name, int sig) {
   struct proc_signal_arg sarg = {.proc_name = proc_name, .sig = sig};
 
   if (proc_name == NULL) {
@@ -1150,14 +1150,14 @@ int os_get_timestamp(uint64_t *timestamp) {
   return -1;
 }
 
-void generate_radom_uuid(char *rid) {
+void generate_radom_uuid(char rid[static MAX_RANDOM_UUID_LEN]) {
   uuid_t id;
   uuid_generate(id);
   uuid_unparse_lower(id, rid);
 }
 
-size_t os_strnlen_s(char *str, size_t max_len) {
-  char *end = (char *)memchr(str, '\0', max_len);
+size_t os_strnlen_s(const char *str, size_t max_len) {
+  const char *end = memchr(str, '\0', max_len);
 
   if (end == NULL)
     return max_len;
@@ -1167,7 +1167,7 @@ size_t os_strnlen_s(char *str, size_t max_len) {
 
 bool find_dir_proc_fn(char *path, void *args) {
   unsigned long pid;
-  struct find_dir_type *dir_args = (struct find_dir_type *)args;
+  struct find_dir_type *dir_args = args;
 
   if ((pid = is_proc_app(path, dir_args->proc_name)) != 0)
     dir_args->proc_running = 1;
@@ -1263,11 +1263,11 @@ int create_pipe_file(const char *path) {
   return 0;
 }
 
-int check_file_exists(char *path, struct stat *sb) {
-  struct stat sb_in;
+int check_file_exists(const char *path, struct stat *sb) {
   int res;
 
   if (sb == NULL) {
+    struct stat sb_in;
     res = stat(path, &sb_in);
   } else {
     res = stat(path, sb);
@@ -1276,7 +1276,7 @@ int check_file_exists(char *path, struct stat *sb) {
   return res;
 }
 
-int check_sock_file_exists(char *path) {
+int check_sock_file_exists(const char *path) {
   struct stat sb;
 
   if (check_file_exists(path, &sb) < 0) {
@@ -1290,7 +1290,7 @@ int check_sock_file_exists(char *path) {
   return 0;
 }
 
-int get_hostname(char *buf) {
+int get_hostname(char buf[static OS_HOST_NAME_MAX]) {
   if (gethostname(buf, OS_HOST_NAME_MAX) < 0) {
     log_errno("gethostname");
     return -1;
