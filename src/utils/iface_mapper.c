@@ -131,8 +131,6 @@ int copy_vlan_mapper(hmap_vlan_conn *const *hmap, hmap_vlan_conn **copy) {
 }
 
 bool put_vlan_mapper(hmap_vlan_conn **hmap, const struct vlan_conn *conn) {
-  hmap_vlan_conn *s;
-
   if (hmap == NULL) {
     log_trace("hmap param is NULL");
     return false;
@@ -143,6 +141,7 @@ bool put_vlan_mapper(hmap_vlan_conn **hmap, const struct vlan_conn *conn) {
     return false;
   }
 
+  hmap_vlan_conn *s;
   HASH_FIND(hh, *hmap, &conn->vlanid, sizeof(int),
             s); /* id already in the hash? */
 
@@ -154,14 +153,16 @@ bool put_vlan_mapper(hmap_vlan_conn **hmap, const struct vlan_conn *conn) {
       return false;
     }
 
-    // Copy the key and value
-    s->key = conn->vlanid;
-    os_memcpy(&s->value, conn, sizeof(struct vlan_conn));
+    // Initialize with key and value
+    *s = (hmap_vlan_conn){
+        .key = conn->vlanid,
+        .value = *conn,
+    };
 
     HASH_ADD(hh, *hmap, key, sizeof(int), s);
   } else {
     // Copy the value
-    os_memcpy(&s->value, conn, sizeof(struct vlan_conn));
+    s->value = *conn;
   }
 
   return true;
@@ -193,7 +194,7 @@ int find_ifinfo(const UT_array *config_ifinfo_array, const char *ip,
     }
 
     if (addr_ip == addr_subnet) {
-      os_memcpy(ifinfo, p, sizeof(config_ifinfo_t));
+      *ifinfo = *p;
       return 0;
     }
   }
