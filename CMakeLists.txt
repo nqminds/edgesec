@@ -297,6 +297,29 @@ if (NOT BUILD_ONLY_DOCS)
     )
   endif()
 
+  if (SANITIZE_UNDEFINED_BEHAVIOR)
+  include(CheckCCompilerFlag)
+
+  set(CMAKE_REQUIRED_LINK_OPTIONS "-fsanitize=undefined")
+  check_c_compiler_flag("-fsanitize=undefined" C_COMPILER_SUPPORTS_UBSAN)
+  set(CMAKE_REQUIRED_LINK_OPTIONS "")
+
+  if (NOT C_COMPILER_SUPPORTS_UBSAN)
+    message(
+      FATAL_ERROR
+      "${CMAKE_C_COMPILER} version ${CMAKE_C_COMPILER_VERSION} does not "
+      "support -fsanitize=undefined for target "
+      "${CMAKE_SYSTEM_PROCESSOR}-${CMAKE_SYSTEM_NAME}"
+    )
+  endif()
+  add_compile_options(
+    $<$<CONFIG:Debug>:$<$<COMPILE_LANGUAGE:C>:-fsanitize=undefined>> # use UndefinedBehaviorSanitizer to check addresses
+  )
+  add_link_options(
+    $<$<CONFIG:Debug>:$<$<LINK_LANGUAGE:C>:-fsanitize=undefined>> # need to link UndefinedBehaviorSanitizer lib
+  )
+endif()
+
   # src must be after codecoverage but before tests
   add_subdirectory(src)
 

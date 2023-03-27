@@ -59,7 +59,8 @@
         "SANITIZE_ADDRESS": {
           "type": "BOOL",
           "value": true
-        }
+        },
+        "SANITIZE_UNDEFINED_BEHAVIOR": true
       }
     },
     {
@@ -191,7 +192,8 @@
       "displayName": "CMake config for cross-compiling OpenWRT with the SDK",
       "cacheVariables": {
         "BUILD_TESTING": false,
-        "SANITIZE_ADDRESS": false
+        "SANITIZE_ADDRESS": false,
+        "SANITIZE_UNDEFINED_BEHAVIOR": false
       },
       "condition": {
         "type": "equals",
