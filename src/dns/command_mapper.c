@@ -23,7 +23,7 @@ void free_command_mapper(hmap_command_conn **hmap) {
   }
 }
 
-int put_command_mapper(hmap_command_conn **hmap, char *command) {
+int put_command_mapper(hmap_command_conn **hmap, const char *command) {
   hmap_command_conn *s;
   uint32_t hash_key;
 
@@ -59,8 +59,8 @@ int put_command_mapper(hmap_command_conn **hmap, char *command) {
   return 0;
 }
 
-int check_command_mapper(hmap_command_conn **hmap, char *command) {
-  hmap_command_conn *s = NULL;
+int check_command_mapper(hmap_command_conn *const *hmap, const char *command) {
+  const hmap_command_conn *s = NULL;
   uint32_t hash_key;
 
   if (hmap == NULL) {

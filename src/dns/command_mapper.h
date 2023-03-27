@@ -40,18 +40,18 @@ void free_command_mapper(hmap_command_conn **hmap);
 /**
  * @brief Insert a command into the command mapper connection object
  *
- * @param hmap Command mapper object
+ * @param[in,out] hmap Command mapper object
  * @param command The command string
  * @return 0 on success, -1 on failure
  */
-int put_command_mapper(hmap_command_conn **hmap, char *command);
+int put_command_mapper(hmap_command_conn **hmap, const char *command);
 
 /**
  * @brief Check if a command is in the command mapper connection object
  *
- * @param hmap Command mapper object
+ * @param[in] hmap Command mapper object
  * @param command The command string
  * @return 1 if command is in hmap, 0 otherwise, -1 on failure
  */
-int check_command_mapper(hmap_command_conn **hmap, char *command);
+int check_command_mapper(hmap_command_conn *const *hmap, const char *command);
 #endif
