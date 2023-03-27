@@ -1445,7 +1445,7 @@ ssize_t read_file(const char *path, uint8_t **out) {
   return read_size;
 }
 
-int read_file_string(char *path, char **out) {
+int read_file_string(const char *path, char **out) {
   uint8_t *data = NULL;
   ssize_t data_size = 0;
 

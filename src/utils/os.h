@@ -655,11 +655,12 @@ ssize_t read_file(const char *path, uint8_t **out);
 /**
  * @brief Read the entire file into a string
  *
- * @param path The file path
- * @param out The output string
+ * @param[in] path The file path
+ * @param[out] out The pointer to the output string. You must `free()` this
+ * variable if `read_file_string()` is successful.
  * @return 0 on success, -1 on failure
  */
-int read_file_string(char *path, char **out);
+int read_file_string(const char *path, char **out);
 
 /**
  * @brief Opens a file for writing and write a
