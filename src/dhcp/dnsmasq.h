@@ -62,7 +62,7 @@ bool kill_dhcp_process(void);
  * @param dhcp_bin_path The DHCP server binary path
  * @return int 0 on success, -1 on failure
  */
-int signal_dhcp_process(char *dhcp_bin_path);
+int signal_dhcp_process(const char *dhcp_bin_path);
 
 /**
  * @brief Clear the DHCP lease entry for a MAC addrress

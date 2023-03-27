@@ -24,7 +24,7 @@ task:
     cmake --build --preset freebsd --parallel "$(($(sysctl -n hw.ncpu) + 1))"
   env:
     # list of tests that are currently failing on FreeBSD
-    FAILING_TESTS: test_edgesec test_dnsmasq test_mdns_service
+    FAILING_TESTS: test_edgesec test_mdns_service
   test_script: |
     ctest --preset freebsd --output-on-failure --output-junit junit-test-results.xml \
     || true # We look at junit XML output file for failures
