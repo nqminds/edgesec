@@ -38,7 +38,8 @@
         "BUILD_HOSTAPD": false,
         "USE_CRYPTO_SERVICE": false,
         "BUILD_OPENSSL_LIB": false,
-        "SANITIZE_ADDRESS": true
+        "SANITIZE_ADDRESS": true,
+        "SANITIZE_UNDEFINED_BEHAVIOR": true
       }
     },
     {
