@@ -87,7 +87,7 @@
 
 struct find_dir_type {
   int proc_running;
-  char *proc_name;
+  const char *proc_name;
 };
 
 typedef long os_time_t;
@@ -145,22 +145,25 @@ int edge_os_get_reltime(struct os_reltime *t);
  * @param b struct os_reltime second param
  * @return int true if a->sec < b->sec
  */
-static inline int os_reltime_before(struct os_reltime *a,
-                                    struct os_reltime *b) {
+static inline int os_reltime_before(const struct os_reltime *a,
+                                    const struct os_reltime *b) {
   return (a->sec < b->sec) || (a->sec == b->sec && a->usec < b->usec);
 }
 
 /**
  * @brief Subtracts the time value of two time params
  *
- * @param a struct os_reltime first param
- * @param b struct os_reltime second param
- * @param res The resulting difference of the time params
+ * @param[in] a struct os_reltime first param
+ * @param[in] b struct os_reltime second param
+ * @param[out] res The resulting difference of the time params
  */
-static inline void os_reltime_sub(struct os_reltime *a, struct os_reltime *b,
+static inline void os_reltime_sub(const struct os_reltime *a,
+                                  const struct os_reltime *b,
                                   struct os_reltime *res) {
-  res->sec = a->sec - b->sec;
-  res->usec = a->usec - b->usec;
+  *res = (struct os_reltime){
+      .sec = a->sec - b->sec,
+      .usec = a->usec - b->usec,
+  };
   if (res->usec < 0) {
     res->sec--;
     res->usec += 1000000;
@@ -170,7 +173,7 @@ static inline void os_reltime_sub(struct os_reltime *a, struct os_reltime *b,
 /**
  * @brief get the timestamp in microseconds from system time
  *
- * @param timestamp The returned timestamp
+ * @param[out] timestamp The returned timestamp
  * @return int 0 on success, -1 on failure
  */
 int os_get_timestamp(uint64_t *timestamp);
@@ -178,8 +181,8 @@ int os_get_timestamp(uint64_t *timestamp);
 /**
  * @brief get the timestamp in microseconds from struct timeval
  *
- * @param ts The input struct timeval
- * @param timestamp The returned timestamp
+ * @param[in] ts The input struct timeval
+ * @param[out] timestamp The returned timestamp
  */
 void os_to_timestamp(struct timeval ts, uint64_t *timestamp);
 
@@ -267,11 +270,12 @@ size_t edge_os_strlcpy(char *restrict dest, const char *restrict src,
 /**
  * @brief Returns the size of string with a give max length
  *
- * @param str The string pointer
+ * @param[in] str The string pointer
  * @param max_len The string max length
- * @return size_t Total length of the string
+ * @return Total length of the string, or `max_len` if the string is
+ * longer than `max_len`.
  */
-size_t os_strnlen_s(char *str, size_t max_len);
+size_t os_strnlen_s(const char *str, size_t max_len);
 
 #define os_memcmp_const(a, b, len) edge_os_memcmp_const((a), (b), (len))
 
@@ -477,11 +481,11 @@ bool kill_process(char *proc_name);
 /**
  * @brief Signal a process
  *
- * @param proc_name The process name
+ * @param[in] proc_name The process name
  * @param sig The signal value
  * @return true on success, false on failure
  */
-bool signal_process(char *proc_name, int sig);
+bool signal_process(const char *proc_name, int sig);
 
 /**
  * @brief Executes a background process with an array of string arguments.
@@ -504,7 +508,7 @@ int run_process(char *argv[], pid_t *child_pid);
  * @param name The process name
  * @return int 1 if running, 0 otherwise, -1 on failure
  */
-int is_proc_running(char *name);
+int is_proc_running(const char *name);
 
 /**
  * @brief Makes a file given by descriptor executable
@@ -537,15 +541,15 @@ char *string_array2string(const char *const strings[]);
  * @brief Generates a random UUID string of MAX_RANDOM_UUID_LEN - 1 characters
  * long not including '\0'
  *
- * @param rid The output string of MAX_RANDOM_UUID_LEN bytes
+ * @param[out] rid The output string of MAX_RANDOM_UUID_LEN bytes
  */
-void generate_radom_uuid(char *rid);
+void generate_radom_uuid(char rid[static MAX_RANDOM_UUID_LEN]);
 
 /**
  * @brief Callback function for list_dir function to check if process running
  *
- * @param path The process path
- * @param args The callback arguments of type struct find_dir_type
+ * @param[in] path The process path
+ * @param[in,out] args The callback arguments of type struct find_dir_type
  * @return bool true if process running, false otherwise
  */
 bool find_dir_proc_fn(char *path, void *args);
@@ -604,11 +608,11 @@ int create_pipe_file(const char *path);
 /**
  * @brief Check if a file exists
  *
- * @param path The path to the file
- * @param sb Optional stat struct
+ * @param[in] path The path to the file
+ * @param[out] sb If non-NULL, stores the stats of the file.
  * @return 0 if it exists, -1 on failure
  */
-int check_file_exists(char *path, struct stat *sb);
+int check_file_exists(const char *path, struct stat *sb);
 
 /**
  * @brief Check if a socket file exists
@@ -616,15 +620,18 @@ int check_file_exists(char *path, struct stat *sb);
  * @param path The path to the socket file
  * @return 0 if it exists, -1 otherwise
  */
-int check_sock_file_exists(char *path);
+int check_sock_file_exists(const char *path);
 
 /**
  * @brief Get the hostname of the running machine
  *
- * @param buf The returned hostname
+ * @param[out] buf Buffer to store the returned hostname.
+ * Must be at least `OS_HOST_NAME_MAX` bytes long.
+ * **Warning**, this string might not be NULL-terminated if it's
+ * exactly `OS_HOST_NAME_MAX` bytes long.
  * @return int 0 on success, -1 on failure
  */
-int get_hostname(char *buf);
+int get_hostname(char buf[static OS_HOST_NAME_MAX]);
 
 /**
  * @brief Open/create the file named in 'pidFile', lock it, optionally set the
