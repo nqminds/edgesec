@@ -26,8 +26,9 @@
 #include "net.h"
 #include "os.h"
 
-int get_if_mapper(hmap_if_conn **hmap, in_addr_t subnet, char *ifname) {
-  hmap_if_conn *s;
+int get_if_mapper(hmap_if_conn *const *hmap, in_addr_t subnet,
+                  char ifname[static IF_NAMESIZE]) {
+  const hmap_if_conn *s;
 
   if (hmap == NULL) {
     log_trace("hmap param is NULL");
@@ -50,7 +51,7 @@ int get_if_mapper(hmap_if_conn **hmap, in_addr_t subnet, char *ifname) {
   return 0;
 }
 
-bool put_if_mapper(hmap_if_conn **hmap, in_addr_t subnet, char *ifname) {
+bool put_if_mapper(hmap_if_conn **hmap, in_addr_t subnet, const char *ifname) {
   hmap_if_conn *s;
 
   if (hmap == NULL) {
@@ -95,14 +96,14 @@ void free_if_mapper(hmap_if_conn **hmap) {
   }
 }
 
-int get_vlan_mapper(hmap_vlan_conn **hmap, int vlanid, struct vlan_conn *conn) {
-  hmap_vlan_conn *s;
-
+int get_vlan_mapper(hmap_vlan_conn *const *hmap, int vlanid,
+                    struct vlan_conn *conn) {
   if (hmap == NULL) {
     log_trace("hmap param is NULL");
     return -1;
   }
 
+  const hmap_vlan_conn *s;
   HASH_FIND(hh, *hmap, &vlanid, sizeof(int), s); /* id already in the hash? */
 
   if (s != NULL) {
@@ -116,8 +117,8 @@ int get_vlan_mapper(hmap_vlan_conn **hmap, int vlanid, struct vlan_conn *conn) {
   return 0;
 }
 
-int copy_vlan_mapper(hmap_vlan_conn **hmap, hmap_vlan_conn **copy) {
-  hmap_vlan_conn *current, *tmp;
+int copy_vlan_mapper(hmap_vlan_conn *const *hmap, hmap_vlan_conn **copy) {
+  const hmap_vlan_conn *current, *tmp;
 
   HASH_ITER(hh, *hmap, current, tmp) {
     if (!put_vlan_mapper(copy, &current->value)) {
@@ -129,9 +130,7 @@ int copy_vlan_mapper(hmap_vlan_conn **hmap, hmap_vlan_conn **copy) {
   return 0;
 }
 
-bool put_vlan_mapper(hmap_vlan_conn **hmap, struct vlan_conn *conn) {
-  hmap_vlan_conn *s;
-
+bool put_vlan_mapper(hmap_vlan_conn **hmap, const struct vlan_conn *conn) {
   if (hmap == NULL) {
     log_trace("hmap param is NULL");
     return false;
@@ -142,6 +141,7 @@ bool put_vlan_mapper(hmap_vlan_conn **hmap, struct vlan_conn *conn) {
     return false;
   }
 
+  hmap_vlan_conn *s;
   HASH_FIND(hh, *hmap, &conn->vlanid, sizeof(int),
             s); /* id already in the hash? */
 
@@ -153,14 +153,16 @@ bool put_vlan_mapper(hmap_vlan_conn **hmap, struct vlan_conn *conn) {
       return false;
     }
 
-    // Copy the key and value
-    s->key = conn->vlanid;
-    os_memcpy(&s->value, conn, sizeof(struct vlan_conn));
+    // Initialize with key and value
+    *s = (hmap_vlan_conn){
+        .key = conn->vlanid,
+        .value = *conn,
+    };
 
     HASH_ADD(hh, *hmap, key, sizeof(int), s);
   } else {
     // Copy the value
-    os_memcpy(&s->value, conn, sizeof(struct vlan_conn));
+    s->value = *conn;
   }
 
   return true;
@@ -175,26 +177,24 @@ void free_vlan_mapper(hmap_vlan_conn **hmap) {
   }
 }
 
-int find_ifinfo(UT_array *config_ifinfo_array, char *ip,
+int find_ifinfo(const UT_array *config_ifinfo_array, const char *ip,
                 config_ifinfo_t *ifinfo) {
-  config_ifinfo_t *p = NULL;
-  in_addr_t addr_subnet;
-  in_addr_t addr_ip;
-
-  while ((p = (config_ifinfo_t *)utarray_next(config_ifinfo_array, p)) !=
-         NULL) {
+  for (const config_ifinfo_t *p = utarray_front(config_ifinfo_array); p != NULL;
+       p = utarray_next(config_ifinfo_array, p)) {
+    in_addr_t addr_subnet;
     if (ip_2_nbo(p->ip_addr, p->subnet_mask, &addr_subnet) < 0) {
       log_trace("ip_2_nbo fail");
       return -1;
     }
 
+    in_addr_t addr_ip;
     if (ip_2_nbo(ip, p->subnet_mask, &addr_ip) < 0) {
       log_trace("ip_2_nbo fail");
       return -1;
     }
 
     if (addr_ip == addr_subnet) {
-      os_memcpy(ifinfo, p, sizeof(config_ifinfo_t));
+      *ifinfo = *p;
       return 0;
     }
   }
@@ -202,8 +202,8 @@ int find_ifinfo(UT_array *config_ifinfo_array, char *ip,
   return 1;
 }
 
-int get_brname_from_ip(UT_array *config_ifinfo_array, char *ip_addr,
-                       char *brname) {
+int get_brname_from_ip(const UT_array *config_ifinfo_array, const char *ip_addr,
+                       char brname[static IF_NAMESIZE]) {
   config_ifinfo_t ifinfo;
 
   if (config_ifinfo_array == NULL) {
@@ -231,8 +231,8 @@ int get_brname_from_ip(UT_array *config_ifinfo_array, char *ip_addr,
   return 0;
 }
 
-int get_ifname_from_ip(UT_array *config_ifinfo_array, char *ip_addr,
-                       char *ifname) {
+int get_ifname_from_ip(const UT_array *config_ifinfo_array, const char *ip_addr,
+                       char ifname[static IF_NAMESIZE]) {
   config_ifinfo_t ifinfo;
 
   if (config_ifinfo_array == NULL) {
@@ -260,15 +260,15 @@ int get_ifname_from_ip(UT_array *config_ifinfo_array, char *ip_addr,
   return 0;
 }
 
-bool create_if_mapper(UT_array *config_ifinfo_array, hmap_if_conn **hmap) {
-  config_ifinfo_t *p = NULL;
-  in_addr_t addr;
-
+bool create_if_mapper(const UT_array *config_ifinfo_array,
+                      hmap_if_conn **hmap) {
   if (config_ifinfo_array != NULL) {
-    while ((p = (config_ifinfo_t *)utarray_next(config_ifinfo_array, p)) !=
-           NULL) {
+    for (const config_ifinfo_t *p = utarray_front(config_ifinfo_array);
+         p != NULL; p = utarray_next(config_ifinfo_array, p)) {
       log_trace("Adding ip=%s subnet=%s ifname=%s to mapper", p->ip_addr,
                 p->subnet_mask, p->ifname);
+
+      in_addr_t addr;
       if (ip_2_nbo(p->ip_addr, p->subnet_mask, &addr) < 0) {
         log_trace("ip_2_nbo fail");
         free_if_mapper(hmap);
@@ -285,17 +285,18 @@ bool create_if_mapper(UT_array *config_ifinfo_array, hmap_if_conn **hmap) {
   return true;
 }
 
-int create_vlan_mapper(UT_array *config_ifinfo_array, hmap_vlan_conn **hmap) {
-  config_ifinfo_t *p = NULL;
-  struct vlan_conn vlan_conn;
+int create_vlan_mapper(const UT_array *config_ifinfo_array,
+                       hmap_vlan_conn **hmap) {
   if (config_ifinfo_array != NULL) {
-    while ((p = (config_ifinfo_t *)utarray_next(config_ifinfo_array, p)) !=
-           NULL) {
+    for (const config_ifinfo_t *p = utarray_front(config_ifinfo_array);
+         p != NULL; p = utarray_next(config_ifinfo_array, p)) {
       log_trace("Adding vlanid=%d and ifname=%s to mapper", p->vlanid,
                 p->ifname);
-      vlan_conn.vlanid = p->vlanid;
+      struct vlan_conn vlan_conn = {
+          .vlanid = p->vlanid,
+          .capture_pid = 0,
+      };
       os_memcpy(vlan_conn.ifname, p->ifname, IF_NAMESIZE);
-      vlan_conn.capture_pid = 0;
       if (!put_vlan_mapper(hmap, &vlan_conn)) {
         log_trace("put_if_mapper fail");
         free_vlan_mapper(hmap);
@@ -306,8 +307,8 @@ int create_vlan_mapper(UT_array *config_ifinfo_array, hmap_vlan_conn **hmap) {
   return 0;
 }
 
-int init_ifbridge_names(UT_array *config_ifinfo_array, char *ifname,
-                        char *brname) {
+int init_ifbridge_names(UT_array *config_ifinfo_array, const char *ifname,
+                        const char *brname) {
   config_ifinfo_t *p = NULL;
 
   while ((p = (config_ifinfo_t *)utarray_next(config_ifinfo_array, p)) !=
