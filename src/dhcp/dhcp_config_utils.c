@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <errno.h>
+#include <limits.h>
 #include <utarray.h>
 
 #include "../utils/net.h"
@@ -26,10 +27,14 @@ bool get_config_dhcpinfo(const char *info, config_dhcpinfo_t *el) {
   char **lease_time = utarray_eltptr(info_arr, 4);
 
   errno = 0;
+  long vlanid_long = strtol(*vlanid_string, NULL, 10);
+  if (errno == 0 && vlanid_long > UINT_MAX) {
+    errno = ERANGE;
+  }
   *el = (config_dhcpinfo_t){
-      .vlanid = (int)strtol(*vlanid_string, NULL, 10),
+      .vlanid = (int)vlanid_long,
   };
-  if (errno == EINVAL) {
+  if (errno) {
     log_errno("get_config_dhcpinfo: Failed to convert vlanid: %s to an integer",
               *vlanid_string);
     goto err;
