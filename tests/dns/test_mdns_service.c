@@ -60,7 +60,7 @@ void __wrap_edge_eloop_run(struct eloop_data *eloop) { (void)eloop; }
 static void test_run_mdns(void **state) {
   (void)state;
 
-  struct mdns_context context;
+  struct mdns_context context = {0};
   struct eloop_data *eloop = os_zalloc(sizeof(struct eloop_data));
 
   will_return(__wrap_edge_eloop_init, eloop);
@@ -71,7 +71,7 @@ static void test_run_mdns(void **state) {
 static void test_close_mdns(void **state) {
   (void)state;
 
-  struct mdns_context context;
+  struct mdns_context context = {0};
   struct eloop_data *eloop = os_zalloc(sizeof(struct eloop_data));
   will_return(__wrap_edge_eloop_init, eloop);
   run_mdns(&context);
