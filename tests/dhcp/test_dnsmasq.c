@@ -14,6 +14,7 @@
 #include <unistd.h>
 
 #include "dhcp/dhcp_config.h"
+#include "dhcp/dhcp_config_utils.h"
 #include "dhcp/dnsmasq.h"
 #include "utils/log.h"
 
@@ -160,64 +161,6 @@ static void test_define_dhcp_interface_name(void **state) {
     assert_int_equal(define_dhcp_interface_name(&dconf, 12345, ifname), -1);
   }
 #endif
-}
-
-bool get_config_dhcpinfo(char *info, config_dhcpinfo_t *el) {
-  UT_array *info_arr;
-  utarray_new(info_arr, &ut_str_icd);
-
-  ssize_t count = split_string_array(info, ',', info_arr);
-
-  log_trace("Number of substrings=%zd", count);
-
-  if (!utarray_len(info_arr))
-    goto err;
-
-  char **p = NULL;
-  p = (char **)utarray_next(info_arr, p);
-  log_trace("vlanid=%s", *p);
-  if (*p != NULL) {
-    errno = 0;
-    el->vlanid = (int)strtol(*p, NULL, 10);
-    if (errno == EINVAL)
-      goto err;
-  } else
-    goto err;
-
-  p = (char **)utarray_next(info_arr, p);
-  log_trace("ip_addr_low=%s", *p);
-  if (*p != NULL) {
-    strcpy(el->ip_addr_low, *p);
-  } else
-    goto err;
-
-  p = (char **)utarray_next(info_arr, p);
-  log_trace("ip_addr_upp=%s", *p);
-  if (*p != NULL)
-    strcpy(el->ip_addr_upp, *p);
-  else
-    goto err;
-
-  p = (char **)utarray_next(info_arr, p);
-  log_trace("subnet_mask=%s", *p);
-  if (*p != NULL)
-    strcpy(el->subnet_mask, *p);
-  else
-    goto err;
-
-  p = (char **)utarray_next(info_arr, p);
-  log_trace("lease_time=%s", *p);
-  if (*p != NULL)
-    strcpy(el->lease_time, *p);
-  else
-    goto err;
-
-  utarray_free(info_arr);
-  return true;
-
-err:
-  utarray_free(info_arr);
-  return false;
 }
 
 static void test_generate_dnsmasq_conf(void **state) {

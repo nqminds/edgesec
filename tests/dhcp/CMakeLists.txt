@@ -4,7 +4,7 @@ include_directories(
 
 add_cmocka_test(test_dnsmasq
   SOURCES test_dnsmasq.c
-  LINK_LIBRARIES dnsmasq log cmocka::cmocka
+  LINK_LIBRARIES dhcp_config dhcp_config_utils dnsmasq log cmocka::cmocka
 )
 target_link_options(test_dnsmasq
   PRIVATE
