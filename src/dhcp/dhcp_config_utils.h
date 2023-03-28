@@ -32,6 +32,6 @@
  * @retval true  On success.
  * @retval false On failure.
  */
-bool get_config_dhcpinfo(char *info, config_dhcpinfo_t *el);
+bool get_config_dhcpinfo(const char *info, config_dhcpinfo_t *el);
 
 #endif /* DHCP_CONFIG_UTILS_H */

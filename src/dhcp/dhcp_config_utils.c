@@ -7,7 +7,7 @@
 
 #include "./dhcp_config_utils.h"
 
-bool get_config_dhcpinfo(char *info, config_dhcpinfo_t *el) {
+bool get_config_dhcpinfo(const char *info, config_dhcpinfo_t *el) {
   UT_array *info_arr;
   utarray_new(info_arr, &ut_str_icd);
 
