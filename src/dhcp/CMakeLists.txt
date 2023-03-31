@@ -19,9 +19,8 @@ target_link_libraries(dhcp_config_utils
   PUBLIC
     dhcp_config
   PRIVATE
-    LibUTHash::LibUTHash
+    log
     net
-    os
 )
 
 add_library(dhcp_config INTERFACE)
