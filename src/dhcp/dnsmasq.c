@@ -414,9 +414,13 @@ int signal_dhcp_process(char *dhcp_bin_path, char *dhcp_conf_path) {
   return 0;
 }
 #else
-int signal_dhcp_process(char *dhcp_bin_path) {
-  os_strlcpy(dnsmasq_proc_name, basename(dhcp_bin_path), MAX_OS_PATH_LEN);
-
+int signal_dhcp_process(const char *dhcp_bin_path) {
+  {
+    char dhcp_bin_path_buffer[MAX_OS_PATH_LEN];
+    os_strlcpy(dhcp_bin_path_buffer, dhcp_bin_path, MAX_OS_PATH_LEN);
+    os_strlcpy(dnsmasq_proc_name, basename(dhcp_bin_path_buffer),
+               MAX_OS_PATH_LEN);
+  }
   // Signal any running dnsmasq process to reload the config
   if (!signal_process(dnsmasq_proc_name, SIGHUP)) {
     log_error("signal_process fail");

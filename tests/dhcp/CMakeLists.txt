@@ -2,9 +2,14 @@ include_directories(
   "${PROJECT_SOURCE_DIR}/src"
 )
 
+add_cmocka_test(test_dhcp_config_utils
+  SOURCES test_dhcp_config_utils.c
+  LINK_LIBRARIES dhcp_config dhcp_config_utils cmocka::cmocka
+)
+
 add_cmocka_test(test_dnsmasq
   SOURCES test_dnsmasq.c
-  LINK_LIBRARIES dnsmasq log cmocka::cmocka
+  LINK_LIBRARIES dhcp_config dhcp_config_utils dnsmasq log cmocka::cmocka
 )
 target_link_options(test_dnsmasq
   PRIVATE
