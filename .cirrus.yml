@@ -25,8 +25,10 @@ task:
   env:
     # list of tests that are currently failing on FreeBSD
     FAILING_TESTS: test_edgesec
+  # disable aslr for AddressSanitizer support
   test_script: |
-    ctest --preset freebsd --output-on-failure --output-junit junit-test-results.xml \
+    proccontrol -m aslr -s disable \
+      ctest --preset freebsd --output-on-failure --output-junit junit-test-results.xml \
     || true # We look at junit XML output file for failures
   check_failing_tests_script: |
     # double-check that failing tests actually fail
