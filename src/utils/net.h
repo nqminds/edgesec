@@ -14,7 +14,6 @@
 #include <stdbool.h>
 #include <netinet/in.h>
 #include <inttypes.h>
-#include <net/ethernet.h>
 
 #include <utarray.h>
 #include <uthash.h>
@@ -24,6 +23,16 @@
 #define IP_ALEN 4
 #define OS_INET_ADDRSTRLEN 22
 #define OS_INET6_ADDRSTRLEN 63
+
+#ifndef ETHER_ADDR_LEN
+/*
+ * The number of bytes in an Ethernet MAC address.
+ *
+ * on Linux, we need to include <net/ethernet.h> to define this,
+ * but that causes some issues on FreeBSD 13.
+ */
+#define ETHER_ADDR_LEN 6
+#endif
 
 #ifndef MAC2STR
 #define MAC2STR(a) (a)[0], (a)[1], (a)[2], (a)[3], (a)[4], (a)[5]
