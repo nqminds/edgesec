@@ -2,8 +2,7 @@ task:
   name: FreeBSD
   freebsd_instance:
     matrix:
-      - image_family: freebsd-14-0-snap
-      # - image_family: freebsd-13-1 # currently not working
+      - image_family: freebsd-13-2
   cmake_dependencies_cache:
     # cache CMake dependencies
     folder: ./build/dl
