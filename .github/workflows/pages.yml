@@ -14,7 +14,7 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     # warning! This is a shallow clone, and has no git history for docs!
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set apt mirror
       # GitHub Actions apt proxy is super unstable
       # see https://github.com/actions/runner-images/issues/7048
