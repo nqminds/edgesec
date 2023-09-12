@@ -30,7 +30,7 @@ jobs:
     - name: Build Docs
       run: cmake --build build/docs/ --target=doxydocs
     - name: Upload docs
-      uses: actions/upload-pages-artifact@v1
+      uses: actions/upload-pages-artifact@v2
       with:
         path: ./build/docs/html
   deploy-docs:
